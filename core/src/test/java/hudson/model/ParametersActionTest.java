@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -88,8 +88,8 @@ public class ParametersActionTest {
     }
     
     @Test
-    @Bug(15094)   
-    public void checkNullParamaterValues() {
+    @Issue("JENKINS-15094")
+    public void checkNullParameterValues() {
         SubTask subtask = mock(SubTask.class);
         Build build = mock(Build.class);
                    
@@ -105,7 +105,7 @@ public class ParametersActionTest {
         
         // Interaction with build
         EnvVars vars = new EnvVars();
-        parametersAction.buildEnvVars(build, vars);
+        parametersAction.buildEnvironment(build, vars);
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         

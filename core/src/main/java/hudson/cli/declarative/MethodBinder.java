@@ -30,10 +30,12 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.Setter;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -78,6 +80,16 @@ class MethodBinder {
 
                 public boolean isMultiValued() {
                     return false;
+                }
+
+                @Override
+                public FieldSetter asFieldSetter() {
+                    return null;
+                }
+
+                @Override
+                public AnnotatedElement asAnnotatedElement() {
+                    return p;
                 }
             };
             Option option = p.annotation(Option.class);
@@ -147,6 +159,11 @@ class MethodBinder {
 
         public Class<? extends Annotation> annotationType() {
             return base.annotationType();
+        }
+
+        @Override
+        public boolean hidden() {
+            return base.hidden();
         }
     }
 }

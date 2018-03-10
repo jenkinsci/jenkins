@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  */
 
-img(src:"${imagesURL}/24x24/yellow.png",height:24,width:24)
+def l = namespace(lib.LayoutTagLib)
+
+l.icon(class: 'icon-yellow icon-md')
 text(" ");
 text(my.message)

@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
 import hudson.model.Slave;
@@ -54,9 +55,13 @@ public abstract class AbstractCloudSlave extends Slave {
     public abstract AbstractCloudComputer createComputer();
 
     /**
-     * Releases and removes this slave.
+     * Releases and removes this agent.
      */
     public void terminate() throws InterruptedException, IOException {
+        final Computer computer = toComputer();
+        if (computer != null) {
+            computer.recordTermination();
+        }
         try {
             // TODO: send the output to somewhere real
             _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));

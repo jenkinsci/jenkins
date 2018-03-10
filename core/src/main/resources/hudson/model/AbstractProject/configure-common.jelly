@@ -37,7 +37,8 @@ THE SOFTWARE.
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
-        <option>${%default.value}</option>
+        <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
+        <option>${DEFAULT_NAME}</option>
         <j:forEach var="inst" items="${jdks}">
           <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
@@ -47,19 +48,17 @@ THE SOFTWARE.
 
   <p:config-assignedLabel />
 
-  <f:section title="${%Advanced Project Options}">
-    <f:advanced>
-      <p:config-quietPeriod />
-      <p:config-retryCount />
-      <p:config-blockWhenUpstreamBuilding />
-      <p:config-blockWhenDownstreamBuilding />
-      <st:include page="configure-advanced.jelly" optional="true" />
-      <f:entry title="${%Display Name}" field="displayNameOrNull">
-         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
-      </f:entry>
-      
-    </f:advanced>
-  </f:section>
+  <f:advanced>
+    <p:config-quietPeriod />
+    <p:config-retryCount />
+    <p:config-blockWhenUpstreamBuilding />
+    <p:config-blockWhenDownstreamBuilding />
+    <st:include page="configure-advanced.jelly" optional="true" />
+    <f:entry title="${%Display Name}" field="displayNameOrNull">
+       <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
+    </f:entry>
+    <f:optionalBlock name="keepDependencies" checked="${it.keepDependencies}" title="${%Keep the build logs of dependencies}" help="/help/tasks/fingerprint/keepDependencies.html"/>
+  </f:advanced>
 
   <this:configure-scm/>
 </j:jelly>

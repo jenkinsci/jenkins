@@ -33,13 +33,29 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <l:hasPermission permission="${it.CONNECT}">
-        <h1>${it.oSDescription} slave, version ${it.slaveVersion}</h1>
 
-        <j:forEach var="instance" items="${it.systemInfoExtensions}">
-          <h1>${instance.displayName}</h1>
-          <st:include page="systemInfo" from="${instance}"/>
-        </j:forEach>
+      <h1>
+        <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
+        ${it.caption} ${%System Information}
+        <j:if test="${!empty(it.node.nodeDescription)}">
+          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
+        </j:if>
+      </h1>
+
+      <l:hasPermission permission="${it.CONNECT}">
+        <j:choose>
+          <j:when test="${it.channel != null}">
+            <h2>${it.oSDescription} slave, version ${it.slaveVersion}</h2>
+
+            <j:forEach var="instance" items="${it.systemInfoExtensions}">
+              <h1>${instance.displayName}</h1>
+              <st:include page="systemInfo" from="${instance}"/>
+            </j:forEach>
+          </j:when>
+          <j:otherwise>
+            ${%System Information is unavailable when agent is offline.}
+          </j:otherwise>
+        </j:choose>
       </l:hasPermission>
     </l:main-panel>
   </l:layout>

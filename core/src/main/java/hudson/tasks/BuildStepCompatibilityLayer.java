@@ -23,17 +23,28 @@
  */
 package hudson.tasks;
 
+import hudson.AbortException;
+import hudson.FilePath;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Action;
 import hudson.model.Project;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.util.ReflectionUtils;
 import hudson.Launcher;
+import hudson.Util;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import jenkins.tasks.SimpleBuildStep;
+
+import javax.annotation.Nonnull;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -43,6 +54,7 @@ import java.util.Collections;
  * @since 1.150
  * @deprecated since 1.150
  */
+@Deprecated
 public abstract class BuildStepCompatibilityLayer implements BuildStep {
 //
 // new definitions >= 1.150
@@ -54,11 +66,26 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
+     */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if (build instanceof Build)
-            return perform((Build)build,launcher,listener);
-        else
+        if (this instanceof SimpleBuildStep) {
+            // delegate to the overloaded version defined in SimpleBuildStep
+            FilePath workspace = build.getWorkspace();
+            if (workspace == null) {
+                throw new AbortException("no workspace for " + build);
+            }
+            ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
             return true;
+        } else if (build instanceof Build) {
+            // delegate to the legacy signature deprecated in 1.312
+            return perform((Build)build,launcher,listener);
+        } else {
+            return true;
+        }
     }
 
     public Action getProjectAction(AbstractProject<?, ?> project) {
@@ -68,6 +95,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
+    @Nonnull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);
@@ -83,6 +111,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @deprecated
      *      Use {@link #prebuild(AbstractBuild, BuildListener)} instead.
      */
+    @Deprecated
     public boolean prebuild(Build<?,?> build, BuildListener listener) {
         return true;
     }
@@ -91,14 +120,21 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @deprecated
      *      Use {@link #perform(AbstractBuild, Launcher, BuildListener)} instead.
      */
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        throw new UnsupportedOperationException();
+    @Deprecated
+    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener)
+            throws InterruptedException, IOException {       
+        if (build instanceof AbstractBuild && Util.isOverridden(BuildStepCompatibilityLayer.class, this.getClass(),
+                "perform", AbstractBuild.class, Launcher.class, BuildListener.class)) {
+            return perform((AbstractBuild<?, ?>) build, launcher, listener);
+        }
+        throw new AbstractMethodError();
     }
 
     /**
      * @deprecated
      *      Use {@link #getProjectAction(AbstractProject)} instead.
      */
+    @Deprecated
     public Action getProjectAction(Project<?,?> project) {
         return null;
     }

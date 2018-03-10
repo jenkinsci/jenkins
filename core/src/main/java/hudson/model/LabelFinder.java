@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.labels.LabelAtom;
-import jenkins.model.Jenkins;
 
 import java.util.Collection;
 
@@ -47,7 +46,7 @@ public abstract class LabelFinder implements ExtensionPoint {
      * Returns all the registered {@link LabelFinder}s.
      */
     public static ExtensionList<LabelFinder> all() {
-        return Jenkins.getInstance().getExtensionList(LabelFinder.class);
+        return ExtensionList.lookup(LabelFinder.class);
     }
 
     /**

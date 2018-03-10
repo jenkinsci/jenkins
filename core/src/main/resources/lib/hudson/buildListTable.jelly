@@ -47,7 +47,7 @@ THE SOFTWARE.
                   insert('\u00A0').
                   insert(new Element('a', {href: '${rootURL}/' + e.url, 'class': 'model-link inside'}).
                       update(e.displayName.escapeHTML())));
-              tr.insert(new Element('td', {data: e.timestampString2, tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString2 + '"))'}).
+              tr.insert(new Element('td', {data: e.timestampString2, tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString3 + '"))'}).
                   update(e.timestampString.escapeHTML()));
               tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: red' : ''}).
                   update(e.buildStatusSummaryMessage.escapeHTML()));

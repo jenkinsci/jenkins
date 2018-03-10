@@ -24,6 +24,8 @@
 
 package hudson.diagnosis;
 
+import com.gargoylesoftware.htmlunit.WebRequest;
+import java.net.URL;
 import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -33,7 +35,10 @@ public class ReverseProxySetupMonitorTest {
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Test public void normal() throws Exception {
-        r.createWebClient().goTo(r.jenkins.getAdministrativeMonitor(ReverseProxySetupMonitor.class.getName()).getUrl() + "/test", null);
+        WebRequest wrs = new WebRequest(new URL(r.getURL(), r.jenkins.getAdministrativeMonitor(ReverseProxySetupMonitor.class.getName()).getUrl() + "/test"));
+        wrs.setEncodingType(null);
+        wrs.setAdditionalHeader("Referer", r.getURL() + "manage");
+        r.createWebClient().getPage(wrs);
     }
 
 }

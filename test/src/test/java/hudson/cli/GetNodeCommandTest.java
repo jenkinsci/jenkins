@@ -30,15 +30,14 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class GetNodeCommandTest {
@@ -61,8 +60,8 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/ExtendedRead permission"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/ExtendedRead permission"));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -75,7 +74,7 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stdout(), startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertThat(result.stdout(), startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(result.stdout(), containsString("<name>MySlave</name>"));
         assertThat(result, hasNoErrorOutput());
         assertThat(result, succeeded());
@@ -88,8 +87,22 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void getNodeShouldFailForMaster() throws Exception {
+        CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
+        assertThat(result.stderr(), containsString("No such node ''"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("(master)");
+        assertThat(result.stderr(), containsString("No such node '(master)'"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+    }
+
 }

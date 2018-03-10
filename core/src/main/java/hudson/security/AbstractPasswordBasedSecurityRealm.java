@@ -3,13 +3,13 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import hudson.remoting.Callable;
 import hudson.util.spring.BeanBuilder;
 import java.io.Console;
 import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.SecurityListener;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -50,6 +50,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
                 new ImpersonatingUserDetailsService(this));
     }
 
+    @Deprecated
     @Override
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
@@ -68,12 +69,12 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
 
                 if (passwordFile!=null)
                     try {
-                        password = new FilePath(command.channel,passwordFile).readToString().trim();
+                        password = new FilePath(command.checkChannel(), passwordFile).readToString().trim();
                     } catch (IOException e) {
                         throw new BadCredentialsException("Failed to read "+passwordFile,e);
                     }
                 if (password==null)
-                    password = command.channel.call(new InteractivelyAskForPassword());
+                    password = command.checkChannel().call(new InteractivelyAskForPassword());
 
                 if (password==null)
                     throw new BadCredentialsException("No password specified");
@@ -152,7 +153,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
     /**
      * Asks for the password.
      */
-    private static class InteractivelyAskForPassword implements Callable<String,IOException> {
+    private static class InteractivelyAskForPassword extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             Console console = System.console();
             if (console == null)    return null;    // no terminal

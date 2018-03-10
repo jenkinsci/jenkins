@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.NoOverlapCategoryAxis;
 import hudson.util.ChartUtil;
 
@@ -110,6 +110,7 @@ public class MultiStageTimeSeries implements Serializable {
      * @deprecated since 2009-04-05.
      *      Use {@link #MultiStageTimeSeries(Localizable, Color, float, float)}
      */
+    @Deprecated
     public MultiStageTimeSeries(float initialValue, float decay) {
         this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Color.WHITE, initialValue,decay);
     }
@@ -151,9 +152,9 @@ public class MultiStageTimeSeries implements Serializable {
      * Choose which datapoint to use.
      */
     public enum TimeScale {
-        SEC10(TimeUnit2.SECONDS.toMillis(10)),
-        MIN(TimeUnit2.MINUTES.toMillis(1)),
-        HOUR(TimeUnit2.HOURS.toMillis(1));
+        SEC10(TimeUnit.SECONDS.toMillis(10)),
+        MIN(TimeUnit.MINUTES.toMillis(1)),
+        HOUR(TimeUnit.HOURS.toMillis(1));
 
         /**
          * Number of milliseconds (10 secs, 1 min, and 1 hour)

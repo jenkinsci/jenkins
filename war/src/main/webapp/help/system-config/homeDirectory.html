@@ -1,17 +1,29 @@
 <div>
-  Jenkins stores all the data files inside this directory in the file system.
-  You can change this by either:
-  <ol>
+  By default, Jenkins stores all of its data in this directory on the file
+  system.
+  <br>
+  Under the <i>Advanced</i> section, you can choose to store build workspaces
+  and build records elsewhere.
+  <p>
+  There are a few ways to change the Jenkins home directory:
+  <ul>
     <li>
-      Using your web container's admin tool to set the <tt>JENKINS_HOME</tt>
-      environment entry.
+      Edit the <code>JENKINS_HOME</code> variable in your Jenkins configuration
+      file (e.g. <code>/etc/sysconfig/jenkins</code> on Red Hat Linux).
     <li>
-      Setting the environment variable <tt>JENKINS_HOME</tt> before launching
-      your web container.
+      Use your web container's admin tool to set the <code>JENKINS_HOME</code>
+      environment variable.
     <li>
-      (Not recommended) modifying web.xml in <tt>jenkins.war</tt> (or its expanded image
-      in your web container).
-  </ol>
+      Set the environment variable <code>JENKINS_HOME</code> before launching
+      your web container, or before launching Jenkins directly from the WAR file.
+    <li>
+      Set the <code>JENKINS_HOME</code> Java system property when launching your
+      web container, or when launching Jenkins directly from the WAR file.
+    <li>
+      Modify <tt>web.xml</tt> in <tt>jenkins.war</tt> (or its expanded image in
+      your web container). This is not recommended.
+  </ul>
   This value cannot be changed while Jenkins is running.
-  This entry is mostly for you to make sure that your configuration is taking effect.
+  <br>
+  It is shown here to help you ensure that your configuration is taking effect.
 </div>

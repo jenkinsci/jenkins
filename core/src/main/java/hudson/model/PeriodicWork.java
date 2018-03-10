@@ -25,11 +25,9 @@ package hudson.model;
 
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
-import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 
 import java.util.concurrent.TimeUnit;
@@ -37,6 +35,7 @@ import java.util.logging.Logger;
 import java.util.Random;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
+import hudson.triggers.Trigger;
 
 /**
  * Extension point to perform a periodic task in Hudson (through {@link Timer}.)
@@ -57,6 +56,10 @@ import static hudson.init.InitMilestone.JOB_LOADED;
  * @see AsyncPeriodicWork
  */
 public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
+
+    /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
+    @SuppressWarnings("NonConstantLogger")
+    @Deprecated
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**
@@ -90,7 +93,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
+        return ExtensionList.lookup(PeriodicWork.class);
     }
 
     @Initializer(after= JOB_LOADED)

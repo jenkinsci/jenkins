@@ -24,12 +24,11 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.markup.MarkupFormatter;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.SecurityRealm;
+import hudson.model.View;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -37,13 +36,24 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=300)
+@Extension(ordinal=300) @Symbol("defaultView")
 public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
-        j.setPrimaryView(json.has("primaryView") ? j.getView(json.getString("primaryView")) : j.getViews().iterator().next());
+        if (json.has("primaryView")) {
+            final String viewName = json.getString("primaryView");
+            final View newPrimaryView = j.getView(viewName);
+            if (newPrimaryView == null) {
+                throw new FormException(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName), "primaryView");
+            }
+            j.setPrimaryView(newPrimaryView);
+        } else {
+            // Fallback if the view is not specified
+            j.setPrimaryView(j.getViews().iterator().next());
+        }
+        
         return true;
     }
 }

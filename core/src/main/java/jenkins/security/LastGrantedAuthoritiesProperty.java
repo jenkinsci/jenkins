@@ -12,6 +12,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetails;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
@@ -47,20 +48,28 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     public GrantedAuthority[] getAuthorities() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
-        GrantedAuthority[] r = new GrantedAuthority[roles==null ? 1 : roles.length+1];
-        r[0] = SecurityRealm.AUTHENTICATED_AUTHORITY;
-        if (roles != null) {
-            for (int i = 1; i < r.length; i++) {
-                r[i] = new GrantedAuthorityImpl(roles[i - 1]);
+        if(roles == null){
+            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY};
+        }
+
+        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
+        grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
+
+        for (int i = 0; i < roles.length; i++){
+            // to avoid having twice that role
+            if(!authenticatedRole.equals(roles[i])){
+                grantedAuthorities.add(new GrantedAuthorityImpl(roles[i]));
             }
         }
-        return r;
+
+        return grantedAuthorities.toArray(new GrantedAuthority[grantedAuthorities.size()]);
     }
 
     /**
      * Persist the information with the new {@link UserDetails}.
      */
-    public void update(Authentication auth) throws IOException {
+    public void update(@Nonnull Authentication auth) throws IOException {
         List<String> roles = new ArrayList<String>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
             roles.add(ga.getAuthority());
@@ -90,17 +99,11 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     @Extension
     public static class SecurityListenerImpl extends SecurityListener {
         @Override
-        protected void authenticated(@Nonnull UserDetails details) {
-        }
-
-        @Override
-        protected void failedToAuthenticate(@Nonnull String username) {
-        }
-
-        @Override
         protected void loggedIn(@Nonnull String username) {
             try {
-                User u = User.get(username);
+                // user should have been created but may not have been saved for some realms
+                // but as this is a callback of a successful login we can safely create the user.
+                User u = User.getById(username, true);
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
                 if (o==null)
                     u.addProperty(o=new LastGrantedAuthoritiesProperty());
@@ -132,7 +135,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
              */
 
 //            try {
-//                User u = User.get(username,false,Collections.emptyMap());
+//                User u = User.getById(username,false);
 //                LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
 //                if (o!=null)
 //                    o.invalidate();
@@ -140,23 +143,15 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 //                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
 //            }
         }
-
-        @Override
-        protected void loggedOut(@Nonnull String username) {
-        }
     }
 
-    @Extension
+    @Extension @Symbol("lastGrantedAuthorities")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
-        public String getDisplayName() {
-            return null;    // not visible
-        }
-
         @Override
-        public LastGrantedAuthoritiesProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LastGrantedAuthoritiesProperty();
+        public boolean isEnabled() {
+            return false;
         }
-
+        
         public UserProperty newInstance(User user) {
             return null;
         }

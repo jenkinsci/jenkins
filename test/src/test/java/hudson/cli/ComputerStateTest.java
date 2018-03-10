@@ -25,19 +25,27 @@ package hudson.cli;
 
 import static org.junit.Assert.*;
 import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+
 import jenkins.model.Jenkins;
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.model.User;
-import hudson.security.ACL;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause.UserCause;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * @author ogondza
@@ -114,5 +122,52 @@ public class ComputerStateTest {
         UserCause cause = (UserCause) slave.toComputer().getOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
+    }
+
+    @Test
+    public void testUiForConnected() throws Exception {
+        DumbSlave slave = j.createOnlineSlave();
+        Computer computer = slave.toComputer();
+
+        WebClient wc = j.createWebClient();
+        assertConnected(wc, slave);
+
+        computer.setTemporarilyOffline(true, null);
+        assertTrue(computer.isTemporarilyOffline());
+        assertConnected(wc, slave);
+
+        slave.toComputer().disconnect(null);
+
+        HtmlPage page = wc.getPage(slave);
+
+        assertLinkDoesNotExist(page, "Disconnect");
+
+        assertLinkDoesNotExist(page, "Script Console");
+        HtmlPage script = wc.getPage(slave, "script");
+        assertThat(script.getByXPath("//form[@action='script']"), empty());
+
+        assertLinkDoesNotExist(page, "System Information");
+        HtmlPage info = wc.getPage(slave, "systemInfo");
+        assertThat(info.asText(), not(containsString("Environment Variables")));
+    }
+
+    private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
+        HtmlPage main = wc.getPage(slave);
+        main.getAnchorByText("Disconnect");
+
+        main.getAnchorByText("Script Console");
+        HtmlPage script = wc.getPage(slave, "script");
+        assertThat(script.getByXPath("//form[@action='script']"), not(empty()));
+
+        main.getAnchorByText("System Information");
+        HtmlPage info = wc.getPage(slave, "systemInfo");
+        assertThat(info.asText(), containsString("Environment Variables"));
+    }
+
+    private void assertLinkDoesNotExist(HtmlPage page, String text) {
+        try {
+            page.getAnchorByText(text);
+            fail(text + " link should not exist");
+        } catch (ElementNotFoundException _) { /*expected*/ }
     }
 }

@@ -32,5 +32,6 @@ THE SOFTWARE.
     <td class="setting-description">
 	    <d:invokeBody />
 	  </td>
+	  <td />
 	</tr>
 </j:jelly>

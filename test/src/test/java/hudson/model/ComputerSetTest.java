@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,45 +23,61 @@
  */
 package hudson.model;
 
-import hudson.cli.CLI;
-import hudson.slaves.DumbSlave;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import hudson.cli.CLICommandInvoker;
+import hudson.slaves.DumbSlave;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ComputerSetTest extends HudsonTestCase {
-    @Bug(2821)
-    public void testPageRendering() throws Exception {
-        HudsonTestCase.WebClient client = new WebClient();
-        createSlave();
+public class ComputerSetTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-2821")
+    public void pageRendering() throws Exception {
+        WebClient client = j.createWebClient();
+        j.createSlave();
         client.goTo("computer");
     }
 
     /**
      * Tests the basic UI behavior of the node monitoring
      */
-    public void testConfiguration() throws Exception {
-        HudsonTestCase.WebClient client = new WebClient();
+    @Test
+    public void configuration() throws Exception {
+        WebClient client = j.createWebClient();
         HtmlForm form = client.goTo("computer/configure").getFormByName("config");
-        submit(form);
+        j.submit(form);
     }
 
-    public void testNodeOfflineCli() throws Exception {
-        DumbSlave s = createSlave();
+    @Test
+    public void nodeOfflineCli() throws Exception {
+        DumbSlave s = j.createSlave();
 
-        CLI cli = new CLI(getURL());
-        try {
-            assertTrue(cli.execute("wait-node-offline","xxx")!=0);
-            assertTrue(cli.execute("wait-node-online",s.getNodeName())==0);
+        assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
+        assertThat(new CLICommandInvoker(j, "wait-node-online").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());
 
-            s.toComputer().disconnect().get();
+        s.toComputer().disconnect(null).get();
 
-            assertTrue(cli.execute("wait-node-offline",s.getNodeName())==0);
-        } finally {
-            cli.close();
-        }
+        assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());
+    }
+
+    @Test
+    public void getComputerNames() throws Exception {
+        assertThat(ComputerSet.getComputerNames(), is(empty()));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
+        j.createSlave("anAnotherNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 }

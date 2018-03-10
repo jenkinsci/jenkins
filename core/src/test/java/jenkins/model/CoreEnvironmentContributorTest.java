@@ -14,7 +14,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
@@ -40,7 +40,7 @@ public class CoreEnvironmentContributorTest {
         instance = new CoreEnvironmentContributor();
     }
 
-    @Bug(19307)
+    @Issue("JENKINS-19307")
     @Test
     @PrepareForTest(fullyQualifiedNames={"hudson.model.Computer", "jenkins.model.Jenkins"})
     public void buildEnvironmentForJobShouldntUseCurrentComputer() throws IOException, InterruptedException {

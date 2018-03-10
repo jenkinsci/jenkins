@@ -23,7 +23,10 @@
  */
 package jenkins.model.lazy;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,7 +35,7 @@ import java.util.Arrays;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class SortedListTest extends Assert {
+public class SortedListTest {
     SortedList<String> l = new SortedList<String>(new ArrayList<String>(Arrays.asList("B","D","F")));
 
     @Test

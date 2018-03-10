@@ -1,0 +1,38 @@
+<div class="modal-header closeable">
+  <h4 class="modal-title">{{replace translations.installWizard_upgradePanel_title jenkinsVersion}}</h4>
+</div>
+<div class="modal-body">
+  <i class="water-mark icon-service"></i>
+  <div class="jumbotron welcome-panel upgrade-panel">
+    <h1>{{replace translations.installWizard_upgradePanel_banner jenkinsVersion}}</h1>
+    <p>
+      {{replace translations.installWizard_upgradePanel_message jenkinsVersion}}
+    </p>
+  <style type="text/css">
+    .upgrade-panel .plugin-selector,
+    .upgrade-panel .plugin-selector .plugins {
+      border: none !important;
+      font-size: initial;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .upgrade-panel .plugin-selector .plugins label {
+      margin-bottom: 20px;
+    }
+    .upgrade-panel .plugin-selector .plugins label * {
+      line-height: 1.4em !important;
+    }
+  </style>
+  <div class="plugin-selector"><div class="plugins"><div class="plugin-list">
+        {{> pluginSelectList}}
+  </div></div></div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-link skip-recommended-plugins">
+    {{translations.installWizard_upgradePanel_skipRecommendedPlugins}}
+  </button>
+  <button id="install-plugins-button" type="button" class="btn btn-primary install-selected" {{#unless selectedPlugins}}disabled="disabled"{{/unless}}>
+    {{translations.installWizard_continue}}
+  </button>
+</div>

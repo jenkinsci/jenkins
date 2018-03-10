@@ -23,14 +23,34 @@
  */
 package jenkins.model;
 
+import static hudson.init.InitMilestone.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
+import hudson.init.Initializer;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -38,41 +58,83 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.LegacySecurityRealm;
-import hudson.security.Permission;
+import hudson.slaves.ComputerListener;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 
-import org.junit.Assert;
+import jenkins.AgentProtocol;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+
+import javax.annotation.CheckForNull;
 
 /**
- * @author kingfai
- *
+ * Tests of the {@link Jenkins} class instance logic.
+ * @see Jenkins
+ * @see JenkinsRule
  */
-public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction {
+public class JenkinsTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Issue("SECURITY-406")
+    @Test
+    public void testUserCreationFromUrlForAdmins() throws Exception {
+        WebClient wc = j.createWebClient();
+
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        wc.assertFails("user/nonexistent", 404);
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+
+        try {
+            User.ALLOW_USER_CREATION_VIA_URL = true;
+
+            // expected to work
+            wc.goTo("user/nonexistent2");
+
+            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+
+        } finally {
+            User.ALLOW_USER_CREATION_VIA_URL = false;
+        }
+    }
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        Assert.assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
     }
 
     @Test
@@ -81,14 +143,14 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String jobName = "jobName";
         final String displayName = "displayName";
         
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
     
     @Test
@@ -96,62 +158,61 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String displayName = "currentProjectDisplayName";
         
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
         // should be true as we don't test against the current job
-        Assert.assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
-        
+        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
     
     @Test
     public void testIsNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
     }
 
     @Test
     public void testIsNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jobName, curJobName));
     }
 
     @Test
     public void testIsNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
         // true because we don't test against the current job
-        Assert.assertTrue(jenkins.isNameUnique(curJobName, curJobName));        
+        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
     }
     
     @Test
     public void testDoCheckDisplayNameUnique() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
-        Assert.assertEquals(FormValidation.ok(), v);
+        assertEquals(FormValidation.ok(), v);
     }
 
     @Test
@@ -159,15 +220,15 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
-        Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);        
+        assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
@@ -175,15 +236,15 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
-        Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);                
+        assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
@@ -195,7 +256,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         Jenkins jenkins = Jenkins.getInstance();
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
-            Assert.assertEquals(FormValidation.Kind.OK, v.kind);
+            assertEquals(FormValidation.Kind.OK, v.kind);
         }
     }
 
@@ -210,19 +271,19 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
-            Assert.assertEquals(FormValidation.Kind.ERROR, v.kind);
+            assertEquals(FormValidation.Kind.ERROR, v.kind);
         }
     }
     
-    @Bug(12251)
+    @Test @Issue("JENKINS-12251")
     public void testItemFullNameExpansion() throws Exception {
-        HtmlForm f = createWebClient().goTo("/configure").getFormByName("config");
+        HtmlForm f = j.createWebClient().goTo("configure").getFormByName("config");
         f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
         f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        submit(f);
+        j.submit(f);
 
         // build a dummy project
-        MavenModuleSet m = createMavenProject();
+        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
         m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
         MavenModuleSetBuild b = m.scheduleBuild2(0).get();
 
@@ -234,77 +295,72 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
-    @Bug(14113)
+    @Test @Issue("JENKINS-14113")
     public void testUnprotectedRootAction() throws Exception {
-        jenkins.setSecurityRealm(createDummySecurityRealm());
-        jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
-        WebClient wc = createWebClient();
-        wc.goTo("/foobar");
-        wc.goTo("/foobar/");
-        wc.goTo("/foobar/zot");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        WebClient wc = j.createWebClient();
+        wc.goTo("foobar");
+        wc.goTo("foobar/");
+        wc.goTo("foobar/zot");
 
         // and make sure this fails
-        wc.assertFails("/foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
+        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-        assertEquals(3,jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
+        assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
 
+    @Test
     public void testDoScript() throws Exception {
-        jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        jenkins.setAuthorizationStrategy(gmas);
-        WebClient wc = createWebClient();
-        wc.login("alice");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
+        WebClient wc = j.createWebClient();
+
+        wc.withBasicApiToken(User.getById("alice", true));
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
+        wc.getPage(req);
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        req = new WebRequestSettings(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
+        req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
+        wc.getPage(req);
         assertEquals("you", System.getProperty("huck"));
-        wc.login("bob");
+
+        wc.withBasicApiToken(User.getById("bob", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
-        wc.login("charlie");
+
+        wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
+    @Test
     public void testDoEval() throws Exception {
-        jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        jenkins.setAuthorizationStrategy(gmas);
-        // Otherwise get "RuntimeException: Trying to set the request parameters, but the request body has already been specified;the two are mutually exclusive!" from WebRequestSettings.setRequestParameters when POSTing content:
-        jenkins.setCrumbIssuer(null);
-        WebClient wc = createWebClient();
-        wc.login("alice");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
+
+        WebClient wc = j.createWebClient();
+
+        wc.withBasicApiToken(User.getById("alice", true));
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
         assertEquals("3", eval(wc));
-        wc.login("bob");
+
+        wc.withBasicApiToken(User.getById("bob", true));
         try {
             eval(wc);
             fail("bob has only READ");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
         }
-        wc.login("charlie");
+
+        wc.withBasicApiToken(User.getById("charlie", true));
         try {
             eval(wc);
             fail("charlie has ADMINISTER but not RUN_SCRIPTS");
@@ -313,9 +369,10 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
     private String eval(WebClient wc) throws Exception {
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
-        return wc.getPage(/*wc.addCrumb(*/req/*)*/).getWebResponse().getContentAsString();
+        return wc.getPage(req).getWebResponse().getContentAsString();
     }
 
     @TestExtension("testUnprotectedRootAction")
@@ -360,28 +417,281 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
 
-    @Bug(20866)
+    @Test @Issue("JENKINS-20866")
     public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
         HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
         User alice = s.createAccount("alice", "alice");
-        jenkins.setSecurityRealm(s);
+        j.jenkins.setSecurityRealm(s);
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
-        jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
-        assertTrue(!Jenkins.getInstance().getACL().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
+        assertTrue(!Jenkins.getInstance().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
 
-        WebClient wc = createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage p = wc.goTo("/self/reportError");
+        WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(400, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
-    public HttpResponse doReportError() {
-        return new Failure("My car is black");
+    @TestExtension("testErrorPageShouldBeAnonymousAccessible")
+    public static class ReportError implements UnprotectedRootAction {
+
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "error";
+        }
+
+        public HttpResponse doReportError() {
+            return new Failure("My car is black");
+        }
     }
 
+    @Test @Issue("JENKINS-23551")
+    public void testComputerListenerNotifiedOnRestart() {
+        // Simulate restart calling listeners
+        for (RestartListener listener : RestartListener.all())
+            listener.onRestart();
+
+        ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
+        Mockito.verify(listenerMock).onOffline(Mockito.eq(j.jenkins.toComputer()), captor.capture());
+        assertTrue(captor.getValue().toString().contains("restart"));
+    }
+
+    @TestExtension(value = "testComputerListenerNotifiedOnRestart")
+    public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
+
+    @Test
+    public void runScriptOnOfflineComputer() throws Exception {
+        DumbSlave slave = j.createSlave(true);
+        j.disconnectSlave(slave);
+
+        URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
+
+        WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        WebRequest req = new WebRequest(url, HttpMethod.POST);
+        Page page = wc.getPage(wc.addCrumb(req));
+        WebResponse rsp = page.getWebResponse();
+
+        assertThat(rsp.getContentAsString(), containsString("Node is offline"));
+        assertThat(rsp.getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    @Issue("JENKINS-38487")
+    public void startupShouldNotFailOnFailingOnlineListener() {
+        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+        // boot failure if the issue is not fixed.
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
+    public static final class FailingOnOnlineListener extends ComputerListener {
+        
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            throw new IOException("Something happened (the listener always throws this exception)");
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add(MockOptInProtocol1.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have additional enabled protocol", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        assertProtocolEnabled(MockOptOutProtocol1.NAME, "after startup");
+
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(MockOptOutProtocol1.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "before the roundtrip");
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled one protocol", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
+
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add(MockOptInProtocol1.NAME);
+        newProtocols.add(MockOptInProtocol2.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "before the roundtrip");
+
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("There should be two additional enabled protocols",
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        final String protocolToDisable1 = MockOptOutProtocol1.NAME;
+        final String protocolToDisable2 = MockOptOutProtocol2.NAME;
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable1);
+        newProtocols.remove(protocolToDisable2);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertProtocolDisabled(protocolToDisable1, "before the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "before the roundtrip");
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled two protocols", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
+        assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
+    }
+
+    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
+    }
+
+    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), hasItem(protocolName));
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol1 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol2 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptInProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return true;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol1 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol2 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptOutProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return false;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
+    }
+
+    @Issue("JENKINS-42577")
+    @Test
+    public void versionIsSavedInSave() throws Exception {
+        Jenkins.VERSION = "1.0";
+        j.jenkins.save();
+        VersionNumber storedVersion = Jenkins.getStoredVersion();
+        assertNotNull(storedVersion);
+        assertEquals(storedVersion.toString(), "1.0");
+
+        Jenkins.VERSION = null;
+        j.jenkins.save();
+        VersionNumber nullVersion = Jenkins.getStoredVersion();
+        assertNull(nullVersion);
+    }
+
+    @Issue("JENKINS-47406")
+    @Test
+    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
+    public void jobCreatedByInitializerIsRetained() {
+        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    }
 }

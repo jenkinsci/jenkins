@@ -29,14 +29,18 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
+import hudson.remoting.CommandTransport;
 import hudson.remoting.Launcher;
 import hudson.remoting.SocketChannelStream;
 import hudson.util.ClasspathBuilder;
 import hudson.util.JVMBuilder;
 import hudson.util.StreamCopyThread;
+import jenkins.security.ChannelConfigurator;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,6 +62,7 @@ public class Channels {
      * @deprecated since 2009-04-13.
      *      Use {@link #forProcess(String, ExecutorService, InputStream, OutputStream, OutputStream, Proc)}
      */
+    @Deprecated
     public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, Proc proc) throws IOException {
         return forProcess(name,execService,in,out,null,proc);
     }
@@ -67,66 +72,84 @@ public class Channels {
      * we kill the process.
      */
     public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, OutputStream header, final Proc proc) throws IOException {
-        return new Channel(name, execService, in, out, header) {
-            /**
-             * Kill the process when the channel is severed.
-             */
+        ChannelBuilder cb = new ChannelBuilder(name,execService) {
             @Override
-            public synchronized void terminate(IOException e) {
-                super.terminate(e);
-                try {
-                    proc.kill();
-                } catch (IOException x) {
-                    // we are already in the error recovery mode, so just record it and move on
-                    LOGGER.log(Level.INFO, "Failed to terminate the severed connection",x);
-                } catch (InterruptedException x) {
-                    // process the interrupt later
-                    Thread.currentThread().interrupt();
-                }
-            }
+            public Channel build(CommandTransport transport) throws IOException {
+                return new Channel(this,transport) {
+                    /**
+                     * Kill the process when the channel is severed.
+                     */
+                    @Override
+                    public synchronized void terminate(IOException e) {
+                        super.terminate(e);
+                        try {
+                            proc.kill();
+                        } catch (IOException x) {
+                            // we are already in the error recovery mode, so just record it and move on
+                            LOGGER.log(Level.INFO, "Failed to terminate the severed connection",x);
+                        } catch (InterruptedException x) {
+                            // process the interrupt later
+                            Thread.currentThread().interrupt();
+                        }
+                    }
 
-            @Override
-            public synchronized void close() throws IOException {
-                super.close();
-                // wait for the child process to complete
-                try {
-                    proc.join();
-                } catch (InterruptedException e) {
-                    // process the interrupt later
-                    Thread.currentThread().interrupt();
-                }
+                    @Override
+                    public synchronized void join() throws InterruptedException {
+                        super.join();
+                        // wait for the child process to complete, too
+                        try {
+                            proc.join();
+                        } catch (IOException e) {
+                            throw new IOError(e);
+                        }
+                    }
+                };
             }
         };
+        cb.withHeaderStream(header);
+
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+        }
+
+        return cb.build(in,out);
     }
 
     public static Channel forProcess(String name, ExecutorService execService, final Process proc, OutputStream header) throws IOException {
         final Thread thread = new StreamCopyThread(name + " stderr", proc.getErrorStream(), header);
         thread.start();
 
-        return new Channel(name, execService, proc.getInputStream(), proc.getOutputStream(), header) {
-            /**
-             * Kill the process when the channel is severed.
-             */
+        ChannelBuilder cb = new ChannelBuilder(name,execService) {
             @Override
-            public synchronized void terminate(IOException e) {
-                super.terminate(e);
-                proc.destroy();
-                // the stderr copier should exit by itself
-            }
+            public Channel build(CommandTransport transport) throws IOException {
+                return new Channel(this,transport) {
+                    /**
+                     * Kill the process when the channel is severed.
+                     */
+                    @Override
+                    public synchronized void terminate(IOException e) {
+                        super.terminate(e);
+                        proc.destroy();
+                        // the stderr copier should exit by itself
+                    }
 
-            @Override
-            public synchronized void close() throws IOException {
-                super.close();
-                // wait for Maven to complete
-                try {
-                    proc.waitFor();
-                    thread.join();
-                } catch (InterruptedException e) {
-                    // process the interrupt later
-                    Thread.currentThread().interrupt();
-                }
+                    @Override
+                    public synchronized void join() throws InterruptedException {
+                        super.join();
+                        // wait for the child process to complete, too
+                        proc.waitFor();
+                        thread.join();
+                    }
+                };
             }
         };
+        cb.withHeaderStream(header);
+
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
+        }
+
+        return cb.build(proc.getInputStream(),proc.getOutputStream());
     }
 
     /**
@@ -141,7 +164,7 @@ public class Channels {
      * @param workDir
      *      If non-null, the new JVM will have this directory as the working directory. This must be a local path.
      * @param classpath
-     *      The classpath of the new JVM. Can be null if you just need {@code slave.jar} (and everything else
+     *      The classpath of the new JVM. Can be null if you just need {@code agent.jar} (and everything else
      *      can be sent over the channel.) But if you have jars that are known to be necessary by the new JVM,
      *      setting it here will improve the classloading performance (by avoiding remote class file transfer.)
      *      Classes in this classpath will also take precedence over any other classes that's sent via the channel
@@ -172,7 +195,7 @@ public class Channels {
      * @param workDir
      *      If non-null, the new JVM will have this directory as the working directory. This must be a local path.
      * @param classpath
-     *      The classpath of the new JVM. Can be null if you just need {@code slave.jar} (and everything else
+     *      The classpath of the new JVM. Can be null if you just need {@code agent.jar} (and everything else
      *      can be sent over the channel.) But if you have jars that are known to be necessary by the new JVM,
      *      setting it here will improve the classloading performance (by avoiding remote class file transfer.)
      *      Classes in this classpath will also take precedence over any other classes that's sent via the channel

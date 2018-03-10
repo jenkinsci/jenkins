@@ -27,8 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
     <j:if test="${it.buildable}">
         <j:set var="id" value="${h.generateId()}"/>
-        <l:task icon="images/24x24/clock.png" href="${url}/build?delay=0sec" title="${it.buildNowText}"
-                  onclick="${it.parameterized?null:'return build_' + id + '(this)'}" post="${!it.parameterized}" permission="${it.BUILD}"/>
+        <l:task href="${url}/build?delay=0sec" icon="icon-clock icon-md" onclick="${it.parameterized?null:'return build_' + id + '(this)'}" permission="${it.BUILD}" post="${!it.parameterized}" title="${it.buildNowText}"/>
         <script>
             function build_${id}(a) {
                 new Ajax.Request(a.href);
@@ -37,13 +36,13 @@ THE SOFTWARE.
             }
         </script>
     </j:if>
-    <l:task icon="images/24x24/edit-delete.png" href="${url}/doDelete" title="${%delete(it.pronoun)}" permission="${it.DELETE}" post="true" requiresConfirmation="true" confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}"/>
+    <l:task confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}" href="${url}/doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" post="true" requiresConfirmation="true" title="${%delete(it.pronoun)}"/>
     <j:choose>
         <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-            <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%Configure}" />
+            <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%Configure}"/>
         </j:when>
         <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-            <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%View Configuration}" />
+            <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%View Configuration}"/>
         </j:when>
     </j:choose>
 </j:jelly>

@@ -1,10 +1,11 @@
 package jenkins;
 
+import com.google.common.collect.Lists;
+import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import hudson.util.Service;
 import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.Milestone;
@@ -15,6 +16,7 @@ import org.jvnet.hudson.reactor.Task;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -24,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Executes the {@link Reactor} for the purpose of bootup.
@@ -56,19 +60,19 @@ public class InitReactorRunner {
      * As such there's no way for plugins to participate into this process.
      */
     private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
+        List<ReactorListener> r = Lists.newArrayList(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()));
         r.add(new ReactorListener() {
             final Level level = Level.parse( Configuration.getStringConfigParameter("initLogLevel", "FINE") );
             public void onTaskStarted(Task t) {
-                LOGGER.log(level,"Started "+t.getDisplayName());
+                LOGGER.log(level, "Started {0}", getDisplayName(t));
             }
 
             public void onTaskCompleted(Task t) {
-                LOGGER.log(level,"Completed "+t.getDisplayName());
+                LOGGER.log(level, "Completed {0}", getDisplayName(t));
             }
 
             public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
+                LOGGER.log(SEVERE, "Failed " + getDisplayName(t), err);
             }
 
             public void onAttained(Milestone milestone) {
@@ -85,13 +89,24 @@ public class InitReactorRunner {
         return new ReactorListener.Aggregator(r);
     }
 
+    /** Like {@link Task#getDisplayName} but more robust. */
+    @Restricted(NoExternalUse.class)
+    public static String getDisplayName(Task t) {
+        try {
+            return t.getDisplayName();
+        } catch (RuntimeException | Error x) {
+            LOGGER.log(Level.WARNING, "failed to find displayName of " + t, x);
+            return t.toString();
+        }
+    }
+
     /**
      * Called when the init milestone is attained.
      */
     protected void onInitMilestoneAttained(InitMilestone milestone) {
     }
 
-    private static final int TWICE_CPU_NUM = Integer.getInteger(
+    private static final int TWICE_CPU_NUM = SystemProperties.getInteger(
             InitReactorRunner.class.getName()+".concurrency",
             Runtime.getRuntime().availableProcessors() * 2);
 

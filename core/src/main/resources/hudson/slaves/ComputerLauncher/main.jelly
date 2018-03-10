@@ -33,16 +33,16 @@ THE SOFTWARE.
         </p>
 
         <l:hasPermission permission="${it.CONNECT}">
-          <form method="get" action="launchSlaveAgent">
-            <f:submit value="${%Relaunch slave agent}" />
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Relaunch agent}" />
           </form>
         </l:hasPermission>
       </j:when>
 
       <j:otherwise>
         <l:hasPermission permission="${it.CONNECT}">
-          <form method="get" action="launchSlaveAgent">
-            <f:submit value="${%Launch slave agent}" />
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Launch agent}" />
           </form>
         </l:hasPermission>
       </j:otherwise>

@@ -33,15 +33,13 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
-import hudson.util.EditDistance;
+import hudson.util.*;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
-import hudson.util.DescribableList;
-import hudson.util.QuotedStringTokenizer;
-import hudson.util.VariableResolver;
-import hudson.util.XStream2;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -73,6 +71,8 @@ public class LabelAtom extends Label implements Saveable {
     @CopyOnWrite
     protected transient volatile List<Action> transientActions = new Vector<Action>();
 
+    private String description;
+
     public LabelAtom(String name) {
         super(name);
     }
@@ -84,6 +84,9 @@ public class LabelAtom extends Label implements Saveable {
     public String getExpression() {
         return escape(name);
     }
+
+    @Override
+    public boolean isAtom() { return true; }
 
     /**
      * {@inheritDoc}
@@ -103,34 +106,27 @@ public class LabelAtom extends Label implements Saveable {
         return Collections.unmodifiableList(actions);
     }
 
+    // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
+
     protected void updateTransientActions() {
         Vector<Action> ta = new Vector<Action>();
-
-        // add the config link
-        if (!getApplicablePropertyDescriptors().isEmpty()) {
-            // if there's no property descriptor, there's nothing interesting to configure.
-            ta.add(new Action() {
-                public String getIconFileName() {
-                    if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
-                        return "setting.png";
-                    else
-                        return null;
-                }
-
-                public String getDisplayName() {
-                    return "Configure";
-                }
-
-                public String getUrlName() {
-                    return "configure";
-                }
-            });
-        }
 
         for (LabelAtomProperty p : properties)
             ta.addAll(p.getActions(this));
 
         transientActions = ta;
+    }
+
+    /**
+     * @since 1.580
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) throws IOException {
+        this.description = description;
+        save();
     }
 
     /**
@@ -210,11 +206,25 @@ public class LabelAtom extends Label implements Saveable {
         app.checkPermission(Jenkins.ADMINISTER);
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+
+        this.description = req.getSubmittedForm().getString("description");
+
         updateTransientActions();
         save();
 
-        // take the user back to the label top page.
-        rsp.sendRedirect2(".");
+        FormApply.success(".").generateResponse(req, rsp, null);
+    }
+
+    /**
+     * Accepts the new description.
+     */
+    @RequirePOST
+    @Restricted(DoNotUse.class)
+    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        setDescription(req.getParameter("description"));
+        rsp.sendRedirect(".");  // go to the top page
     }
 
     /**

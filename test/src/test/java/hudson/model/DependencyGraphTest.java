@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -112,7 +112,7 @@ public class DependencyGraphTest extends HudsonTestCase {
     /**
      * Tests that all dependencies are found even when some projects have restricted visibility.
      */
-    @LocalData @Bug(5265)
+    @LocalData @Issue("JENKINS-5265")
     public void testItemReadPermission() throws Exception {
         // Rebuild dependency graph as anonymous user:
         jenkins.rebuildDependencyGraph();
@@ -129,7 +129,7 @@ public class DependencyGraphTest extends HudsonTestCase {
         }
     }
 
-    @Bug(17247)
+    @Issue("JENKINS-17247")
     public void testTopologicalSort() throws Exception {
         /*
             A-B---C-E

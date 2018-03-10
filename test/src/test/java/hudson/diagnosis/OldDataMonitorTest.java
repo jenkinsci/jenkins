@@ -24,20 +24,31 @@
 
 package hudson.diagnosis;
 
+import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
+import hudson.model.Saveable;
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import jenkins.model.lazy.BuildReference;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.Stapler;
 
 public class OldDataMonitorTest {
 
@@ -49,7 +60,7 @@ public class OldDataMonitorTest {
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Ignore("constantly failing on CI builders, makes problems for memory()")
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @LocalData
     @Test public void robustness() throws Exception {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
@@ -69,7 +80,7 @@ public class OldDataMonitorTest {
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
     }
 
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
         FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -82,6 +93,68 @@ public class OldDataMonitorTest {
         WeakReference<?> ref = new WeakReference<Object>(b);
         b = null;
         MemoryAssert.assertGC(ref);
+    }
+
+    /**
+     * Note that this doesn't actually run slowly, it just ensures that
+     * the {@link OldDataMonitor#changeListener's onChange()} can complete
+     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
+     * is still running.
+     *
+     */
+    // Test timeout indicates JENKINS-24763 exists
+    @Issue("JENKINS-24763")
+    @Test public void slowDiscard() throws InterruptedException, IOException, ExecutionException {
+        final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
+        final CountDownLatch ensureEntry= new CountDownLatch(1);
+        final CountDownLatch preventExit = new CountDownLatch(1);
+        Saveable slowSavable = new Saveable() {
+            @Override
+            public void save() throws IOException {
+                try {
+                    ensureEntry.countDown();
+                    preventExit.await();
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        OldDataMonitor.report(slowSavable,(String)null);
+        ExecutorService executors = Executors.newSingleThreadExecutor();
+
+        Future<Void> discardFuture = executors.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+                return null;
+            }
+        });
+
+        ensureEntry.await();
+        // test will hang here due to JENKINS-24763
+        File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
+        xml.deleteOnExit();
+        OldDataMonitor.changeListener
+                .onChange(new Saveable() {public void save() throws IOException {}},
+                        new XmlFile(xml));
+
+        preventExit.countDown();
+        discardFuture.get();
+
+    }
+
+    @Issue("JENKINS-26718")
+    @Test public void unlocatableRun() throws Exception {
+        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild build = r.buildAndAssertSuccess(p);
+        p.delete();
+        OldDataMonitor.report(build, (String) null);
+
+        assertEquals(Collections.singleton(build), odm.getData().keySet());
+        odm.doDiscard(null, null);
+        assertEquals(Collections.emptySet(), odm.getData().keySet());
+
     }
 
     public static final class BadAction extends InvisibleAction {

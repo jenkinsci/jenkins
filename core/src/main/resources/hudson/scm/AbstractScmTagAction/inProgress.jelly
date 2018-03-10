@@ -25,9 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout norefresh="true">
-    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Build ${it.build.displayName}</h1>
+      <h1>Build ${it.run.displayName}</h1>
       <p>
         ${%Tagging is in progress:}
       </p>

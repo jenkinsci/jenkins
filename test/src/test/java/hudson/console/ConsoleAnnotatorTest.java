@@ -2,7 +2,8 @@ package hudson.console;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -26,10 +27,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SingleFileSCM;
@@ -46,7 +48,7 @@ public class ConsoleAnnotatorTest {
     /**
      * Let the build complete, and see if stateless {@link ConsoleAnnotator} annotations happen as expected.
      */
-    @Bug(6031)
+    @Issue("JENKINS-6031")
     @Test public void completedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -62,7 +64,7 @@ public class ConsoleAnnotatorTest {
 
         // make sure we see the annotation
         HtmlPage rsp = r.createWebClient().getPage(b, "console");
-        assertEquals(1,rsp.selectNodes("//B[@class='demo']").size());
+        assertEquals(1, DomNodeUtil.selectNodes(rsp, "//B[@class='demo']").size());
 
         // make sure raw console output doesn't include the garbage
         TextPage raw = (TextPage)r.createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
@@ -97,7 +99,7 @@ public class ConsoleAnnotatorTest {
         }
     }
 
-    @Bug(6034)
+    @Issue("JENKINS-6034")
     @Test public void consoleAnnotationFilterOut() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -112,12 +114,11 @@ public class ConsoleAnnotatorTest {
 
         // make sure we see the annotation
         HtmlPage rsp = r.createWebClient().getPage(b, "console");
-        assertEquals(1,rsp.selectNodes("//A[@href='http://infradna.com/']").size());
+        assertEquals(1, DomNodeUtil.selectNodes(rsp, "//A[@href='http://infradna.com/']").size());
 
         // make sure raw console output doesn't include the garbage
         TextPage raw = (TextPage)r.createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
-        System.out.println(raw.getContent());
-        assertTrue(raw.getContent().contains("\nabc\ndef\n"));
+        assertThat(raw.getContent(), containsString("\nabc\ndef\n"));
     }
 
 
@@ -138,7 +139,8 @@ public class ConsoleAnnotatorTest {
         }
 
         String next() throws IOException {
-            WebRequestSettings req = new WebRequestSettings(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml"+(start!=null?"?start="+start:"")));
+            WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml"+(start!=null?"?start="+start:"")));
+            req.setEncodingType(null);
             Map headers = new HashMap();
             if (consoleAnnotator!=null)
                 headers.put("X-ConsoleAnnotator",consoleAnnotator);
@@ -270,11 +272,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @TestExtension
-        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
-            public String getDisplayName() {
-                return "Dollar mark";
-            }
-        }
+        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {}
     }
 
 
@@ -297,11 +295,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @TestExtension("scriptInclusion")
-        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
-            public String getDisplayName() {
-                return "just to include a script";
-            }
-        }
+        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {}
     }
 
     @TestExtension("scriptInclusion")
@@ -315,7 +309,7 @@ public class ConsoleAnnotatorTest {
     /**
      * Makes sure '<', '&', are escaped.
      */
-    @Bug(5952)
+    @Issue("JENKINS-5952")
     @Test public void escape() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -371,11 +365,6 @@ public class ConsoleAnnotatorTest {
         public static final class DescriptorImpl extends SCMDescriptor<PollingSCM> {
             public DescriptorImpl() {
                 super(PollingSCM.class, RepositoryBrowser.class);
-            }
-
-            @Override
-            public String getDisplayName() {
-                return "Test SCM";
             }
         }
     }

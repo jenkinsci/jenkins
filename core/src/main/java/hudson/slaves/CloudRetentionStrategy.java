@@ -23,11 +23,13 @@
  */
 package hudson.slaves;
 
-import hudson.model.Node;
+
+import jenkins.util.SystemProperties;
+import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static hudson.util.TimeUnit2.*;
+import static java.util.concurrent.TimeUnit.*;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 
@@ -46,18 +48,19 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
     }
 
     @Override
-    public synchronized long check(AbstractCloudComputer c) {
-        AbstractCloudSlave computerNode = c.getNode();
+    @GuardedBy("hudson.model.Queue.lock")
+    public long check(final AbstractCloudComputer c) {
+        final AbstractCloudSlave computerNode = c.getNode();
         if (c.isIdle() && !disabled && computerNode != null) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
-                LOGGER.log(Level.INFO, "Disconnecting {0}",c.getName());
+                LOGGER.log(Level.INFO, "Disconnecting {0}", c.getName());
                 try {
                     computerNode.terminate();
                 } catch (InterruptedException e) {
-                    LOGGER.log(WARNING,"Failed to terminate "+c.getName(),e);
+                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
                 } catch (IOException e) {
-                    LOGGER.log(WARNING,"Failed to terminate "+c.getName(),e);
+                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
                 }
             }
         }
@@ -74,5 +77,5 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
 
     private static final Logger LOGGER = Logger.getLogger(CloudRetentionStrategy.class.getName());
 
-    public static boolean disabled = Boolean.getBoolean(CloudRetentionStrategy.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(CloudRetentionStrategy.class.getName()+".disabled");
 }

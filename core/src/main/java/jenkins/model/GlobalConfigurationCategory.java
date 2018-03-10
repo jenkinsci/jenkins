@@ -6,6 +6,7 @@ import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
 import hudson.security.*;
 import hudson.security.Messages;
+import org.jenkinsci.Symbol;
 
 /**
  * Grouping of related {@link GlobalConfiguration}s.
@@ -37,7 +38,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
     public static ExtensionList<GlobalConfigurationCategory> all() {
-        return Jenkins.getInstance().getExtensionList(GlobalConfigurationCategory.class);
+        return ExtensionList.lookup(GlobalConfigurationCategory.class);
     }
 
     public static <T extends GlobalConfigurationCategory> T get(Class<T> type) {
@@ -54,7 +55,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
      *
      * In the current UI, this corresponds to the /configure link.
      */
-    @Extension
+    @Extension @Symbol("unclassified")
     public static class Unclassified extends GlobalConfigurationCategory {
         @Override
         public String getShortDescription() {
@@ -69,15 +70,16 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
     /**
      * Security related configurations.
      */
-    @Extension
+    @Extension @Symbol("security")
     public static class Security extends GlobalConfigurationCategory {
         @Override
         public String getShortDescription() {
-            return Messages.GlobalSecurityConfiguration_Description();
+            return hudson.security.Messages.GlobalSecurityConfiguration_Description();
         }
 
         public String getDisplayName() {
             return hudson.security.Messages.GlobalSecurityConfiguration_DisplayName();
         }
     }
+
 }

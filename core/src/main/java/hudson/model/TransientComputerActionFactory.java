@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,7 +56,7 @@ public abstract class TransientComputerActionFactory implements ExtensionPoint {
      * Returns all the registered {@link TransientComputerActionFactory}s.
      */
     public static ExtensionList<TransientComputerActionFactory> all() {
-        return Jenkins.getInstance().getExtensionList(TransientComputerActionFactory.class);
+        return ExtensionList.lookup(TransientComputerActionFactory.class);
     }
 
 

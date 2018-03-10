@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.model.Saveable;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -35,24 +36,9 @@ import java.io.IOException;
  * The usage of {@link BulkChange} needs to follow a specific closure-like pattern, namely:
  *
  * <pre>
- * BulkChange bc = new BulkChange(someObject);
- * try {
- *    ... make changes to 'someObject'
- * } finally {
- *    bc.commit();
- * }
- * </pre>
- *
- * <p>
- * ... or if you'd like to avoid saving when something bad happens:
- *
- * <pre>
- * BulkChange bc = new BulkChange(someObject);
- * try {
+ * try (BulkChange bc = new BulkChange(someObject)) {
  *    ... make changes to 'someObject'
  *    bc.commit();
- * } finally {
- *    bc.abort();
  * }
  * </pre>
  *
@@ -68,7 +54,7 @@ import java.io.IOException;
  *
  * <ol>
  * <li>
- * Mutater methods should invoke {@code this.save()} so that if the method is called outside
+ * Mutator methods should invoke {@code this.save()} so that if the method is called outside
  * a {@link BulkChange}, the result will be saved immediately.
  *
  * <li>
@@ -82,7 +68,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @since 1.249
  */
-public class BulkChange {
+public class BulkChange implements Closeable {
     private final Saveable saveable;
     public final Exception allocator;
     private final BulkChange parent;
@@ -92,7 +78,7 @@ public class BulkChange {
     public BulkChange(Saveable saveable) {
         this.parent = current();
         this.saveable = saveable;
-        // rememeber who allocated this object in case
+        // remember who allocated this object in case
         // someone forgot to call save() at the end.
         allocator = new Exception();
 
@@ -110,6 +96,14 @@ public class BulkChange {
         // move this object out of the scope first before save, or otherwise the save() method will do nothing.
         pop();
         saveable.save();
+    }
+
+    /**
+     * Alias for {@link #abort()} to make {@link BulkChange} auto-closeable.
+     */
+    @Override
+    public void close() {
+        abort();
     }
 
     /**

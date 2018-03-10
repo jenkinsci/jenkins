@@ -28,6 +28,7 @@ import hudson.model.Run.RunExecution;
 import java.util.Stack;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.annotation.CheckForNull;
 
 /**
  * Keeps track of {@link RunExecution}s that are currently executing on the given thread
@@ -53,8 +54,23 @@ final class RunnerStack {
         if(s.isEmpty()) stack.remove(e);
     }
 
-    synchronized RunExecution peek() {
-        return stack.get(Executor.currentExecutor()).peek();
+    /**
+     * Looks up the currently running build, if known.
+     * <p>While most {@link Run} implementations do add a {@link RunExecution} to the stack for the duration of the build,
+     * those which have a different implementation of {@link Run#run} (or which do additional work after {@link Run#execute} completes)
+     * may not consistently or ever keep an execution on the stack.
+     * In such cases this method will return null, meaning that {@link CheckPoint#block(BuildListener, String)} and {@link CheckPoint#report} will do nothing.
+     * @return a running build, or null if one has not been recorded
+     */
+    synchronized @CheckForNull RunExecution peek() {
+        Executor e = Executor.currentExecutor();
+        if (e != null) {
+            Stack<RunExecution> s = stack.get(e);
+            if (s != null && !s.isEmpty()) {
+                return s.peek();
+            }
+        }
+        return null;
     }
 
     static final RunnerStack INSTANCE = new RunnerStack();

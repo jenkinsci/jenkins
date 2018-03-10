@@ -30,6 +30,7 @@ import jenkins.triggers.SCMTriggerItem;
 /**
  * @deprecated Implement {@link SCMTriggerItem} instead.
  */
+@Deprecated
 public interface SCMedItem extends BuildableItem {
     /**
      * Gets the {@link SCM} for this item.
@@ -55,6 +56,7 @@ public interface SCMedItem extends BuildableItem {
      * @deprecated as of 1.346
      *      Use {@link #poll(TaskListener)} instead.
      */
+    @Deprecated
     boolean pollSCMChanges( TaskListener listener );
 
     /**

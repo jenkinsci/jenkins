@@ -25,11 +25,17 @@ package hudson.scheduler;
 
 import antlr.ANTLRException;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.Collection;
 import java.util.Vector;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link CronTab} list (logically OR-ed).
@@ -40,7 +46,7 @@ public final class CronTabList {
     private final Vector<CronTab> tabs;
 
     public CronTabList(Collection<CronTab> tabs) {
-        this.tabs = new Vector<CronTab>(tabs);
+        this.tabs = new Vector<>(tabs);
     }
 
     /**
@@ -71,24 +77,53 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(String format) throws ANTLRException {
+    /**
+     * Checks if given timezone string is supported by TimeZone and returns
+     * the same string if valid, null otherwise
+     * @since 1.615
+     */
+    public static @CheckForNull String getValidTimezone(String timezone) {
+        String[] validIDs = TimeZone.getAvailableIDs();
+        for (String str : validIDs) {
+              if (str != null && str.equals(timezone)) {
+                    return timezone;
+              }
+        }
+        return null;
+    }
+
+    public static CronTabList create(@Nonnull String format) throws ANTLRException {
         return create(format,null);
     }
 
-    public static CronTabList create(String format, Hash hash) throws ANTLRException {
-        Vector<CronTab> r = new Vector<CronTab>();
+    public static CronTabList create(@Nonnull String format, Hash hash) throws ANTLRException {
+        Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
+        String timezone = null;
+
         for (String line : format.split("\\r?\\n")) {
             lineNumber++;
             line = line.trim();
+            
+            if(lineNumber == 1 && line.startsWith("TZ=")) {
+                timezone = getValidTimezone(line.replace("TZ=",""));
+                if(timezone != null) {
+                    LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
+                } else {
+                    throw new ANTLRException("Invalid or unsupported timezone '" + timezone + "'");
+                }
+                continue;
+            }
+
             if(line.length()==0 || line.startsWith("#"))
                 continue;   // ignorable line
             try {
-                r.add(new CronTab(line,lineNumber,hash));
+                r.add(new CronTab(line,lineNumber,hash,timezone));
             } catch (ANTLRException e) {
                 throw new ANTLRException(Messages.CronTabList_InvalidInput(line,e.toString()),e);
             }
         }
+        
         return new CronTabList(r);
     }
 
@@ -96,7 +131,7 @@ public final class CronTabList {
     public @CheckForNull Calendar previous() {
         Calendar nearest = null;
         for (CronTab tab : tabs) {
-            Calendar scheduled = tab.floor(Calendar.getInstance());
+            Calendar scheduled = tab.floor(tab.getTimeZone() == null ? Calendar.getInstance() : Calendar.getInstance(tab.getTimeZone()));
             if (nearest == null || nearest.before(scheduled)) {
                 nearest = scheduled;
             }
@@ -108,12 +143,13 @@ public final class CronTabList {
     public @CheckForNull Calendar next() {
         Calendar nearest = null;
         for (CronTab tab : tabs) {
-            Calendar scheduled = tab.ceil(Calendar.getInstance());
+            Calendar scheduled = tab.ceil(tab.getTimeZone() == null ? Calendar.getInstance() : Calendar.getInstance(tab.getTimeZone()));
             if (nearest == null || nearest.after(scheduled)) {
                 nearest = scheduled;
             }
         }
         return nearest;
     }
-
+    
+    private static final Logger LOGGER = Logger.getLogger(CronTabList.class.getName());
 }

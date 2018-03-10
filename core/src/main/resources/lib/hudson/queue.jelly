@@ -28,7 +28,7 @@ THE SOFTWARE.
     Displays the build queue as &lt;l:pane>
 
     <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.approximateItemsQuickly},
+      Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
@@ -51,7 +51,7 @@ THE SOFTWARE.
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Jenkins is going to shut down. No further builds will be performed.}
           <j:if test="${h.hasPermission(app.ADMINISTER)}">
-            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
+            <f:link href="${rootURL}/cancelQuietDown" post="true">(${%cancel})</f:link>
           </j:if>
         </td>
       </tr>
@@ -79,8 +79,8 @@ THE SOFTWARE.
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
                   <j:if test="${stuck}">
                     &#160;
-                    <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
+                    <a href="https://jenkins.io/redirect/troubleshooting/executor-starvation">
+                      <l:icon class="icon-hourglass icon-sm"/>
                     </a>
                   </j:if>
                 </j:when>
@@ -91,7 +91,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="cancel this build"/>
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.task.fullDisplayName)}" alt="cancel this build"/>
               </j:if>
              </td>
           </tr>

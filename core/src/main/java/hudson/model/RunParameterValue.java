@@ -38,12 +38,20 @@ public class RunParameterValue extends ParameterValue {
     @DataBoundConstructor
     public RunParameterValue(String name, String runId, String description) {
         super(name, description);
-        this.runId = runId;
+        this.runId = check(runId);
     }
 
     public RunParameterValue(String name, String runId) {
         super(name, null);
-        this.runId = runId;
+        this.runId = check(runId);
+    }
+
+    private static String check(String runId) {
+        if (runId == null || runId.indexOf('#') == -1) {
+            throw new IllegalArgumentException(runId);
+        } else {
+            return runId;
+        }
     }
 
     /**
@@ -57,14 +65,27 @@ public class RunParameterValue extends ParameterValue {
         return runId;
     }
     
+    private String[] split() {
+        if (runId == null) {
+            return null;
+        }
+        String[] r = runId.split("#");
+        if (r.length != 2) {
+            return null;
+        }
+        return r;
+    }
+
     @Exported
     public String getJobName() {
-    	return runId.split("#")[0];
+        String[] r = split();
+    	return r == null ? null : r[0];
     }
     
     @Exported
     public String getNumber() {
-    	return runId.split("#")[1];
+        String[] r = split();
+    	return r == null ? null : r[1];
     }
 
     @Override

@@ -1,14 +1,19 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static hudson.Util.fileToPath;
 
 /**
  * Adds more to commons-io.
@@ -26,20 +31,18 @@ public class IOUtils {
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
-        FileInputStream in = new FileInputStream(src);
-        try {
+        try (InputStream in = Files.newInputStream(src.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, out);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(in);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
     public static void copy(InputStream in, File out) throws IOException {
-        FileOutputStream fos = new FileOutputStream(out);
-        try {
+        try (OutputStream fos = Files.newOutputStream(out.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, fos);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(fos);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -50,20 +53,11 @@ public class IOUtils {
      *      This method returns the 'dir' parameter so that the method call flows better.
      */
     public static File mkdirs(File dir) throws IOException {
-        if(dir.mkdirs() || dir.exists())
-            return dir;
-
-        // following Ant <mkdir> task to avoid possible race condition.
         try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            // ignore
+            return Files.createDirectories(fileToPath(dir)).toFile();
+        } catch (UnsupportedOperationException e) {
+            throw new IOException(e);
         }
-
-        if (dir.mkdirs() || dir.exists())
-            return dir;
-
-        throw new IOException("Failed to create a directory at "+dir);
     }
 
     /**
@@ -71,7 +65,7 @@ public class IOUtils {
      *
      * <p>
      * {@link InputStream#skip(long)} has two problems. One is that
-     * it doesn't let us reliably differentiate "hit EOF" case vs "inpustream just returning 0 since there's no data
+     * it doesn't let us reliably differentiate "hit EOF" case vs "inputstream just returning 0 since there's no data
      * currently available at hand", and some subtypes (such as {@link FileInputStream#skip(long)} returning -1.
      *
      * <p>
@@ -119,13 +113,27 @@ public class IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate.
+     * Gets the mode of a file/directory, if appropriate. Only includes read, write, and
+     * execute permissions for the owner, group, and others, i.e. the max return value
+     * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
+     * care about access permissions.
+     *
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
-        return PosixAPI.jnr().stat(f.getPath()).mode();
+        try {
+            if (Util.NATIVE_CHMOD_MODE) {
+                return PosixAPI.jnr().stat(f.getPath()).mode();
+            } else {
+                return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
+            }
+        } catch (IOException cause) {
+            PosixException e = new PosixException("Unable to get file permissions", null);
+            e.initCause(cause);
+            throw e;
+        }
     }
 
     /**
@@ -136,12 +144,9 @@ public class IOUtils {
      * @since 1.422
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
-        BufferedReader reader = new BufferedReader(
-                encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding));
-        try {
+        try (BufferedReader reader = new BufferedReader(
+                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
-        } finally {
-            reader.close();
         }
     }
 
@@ -149,31 +154,37 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_UNIX}
      */
+    @Deprecated
     public static final char DIR_SEPARATOR_UNIX       = org.apache.commons.io.IOUtils.DIR_SEPARATOR_UNIX;
 
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_WINDOWS}
      */
+    @Deprecated
     public static final char DIR_SEPARATOR_WINDOWS    = org.apache.commons.io.IOUtils.DIR_SEPARATOR_WINDOWS;
 
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR}
      */
+    @Deprecated
     public static final char DIR_SEPARATOR            = org.apache.commons.io.IOUtils.DIR_SEPARATOR;
 
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_UNIX}
      */
+    @Deprecated
     public static final String LINE_SEPARATOR_UNIX    = org.apache.commons.io.IOUtils.LINE_SEPARATOR_UNIX;
 
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_WINDOWS}
      */
+    @Deprecated
     public static final String LINE_SEPARATOR_WINDOWS = org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR}
      */
+    @Deprecated
     public static final String LINE_SEPARATOR;
 
     static {
@@ -185,29 +196,33 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Reader)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
+    @Deprecated
     public static void closeQuietly(Reader input) {
         org.apache.commons.io.IOUtils.closeQuietly(input);
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Writer)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
+    @Deprecated
     public static void closeQuietly(Writer output) {
         org.apache.commons.io.IOUtils.closeQuietly(output);
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.InputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
+    @Deprecated
     public static void closeQuietly(InputStream input) {
         org.apache.commons.io.IOUtils.closeQuietly(input);
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.OutputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
+    @Deprecated
     public static void closeQuietly(OutputStream output) {
         org.apache.commons.io.IOUtils.closeQuietly(output);
     }
@@ -215,6 +230,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toByteArray(java.io.InputStream)}
      */
+    @Deprecated
     public static byte[] toByteArray(InputStream input) throws IOException {
         return org.apache.commons.io.IOUtils.toByteArray(input);
     }
@@ -222,6 +238,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toByteArray(java.io.Reader)}
      */
+    @Deprecated
     public static byte[] toByteArray(Reader input) throws IOException {
         return org.apache.commons.io.IOUtils.toByteArray(input);
     }
@@ -229,6 +246,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toByteArray(java.io.Reader, String)}
      */
+    @Deprecated
     public static byte[] toByteArray(Reader input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.toByteArray(input, encoding);
     }
@@ -236,6 +254,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toByteArray(String)}
      */
+    @Deprecated
     public static byte[] toByteArray(String input) throws IOException {
         return org.apache.commons.io.IOUtils.toByteArray(input);
     }
@@ -243,6 +262,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toCharArray(java.io.InputStream)}
      */
+    @Deprecated
     public static char[] toCharArray(InputStream is) throws IOException {
         return org.apache.commons.io.IOUtils.toCharArray(is);
     }
@@ -250,6 +270,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toCharArray(java.io.InputStream, String)}
      */
+    @Deprecated
     public static char[] toCharArray(InputStream is, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.toCharArray(is, encoding);
     }
@@ -257,6 +278,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toCharArray(java.io.Reader)}
      */
+    @Deprecated
     public static char[] toCharArray(Reader input) throws IOException {
         return org.apache.commons.io.IOUtils.toCharArray(input);
     }
@@ -264,6 +286,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toString(java.io.InputStream)}
      */
+    @Deprecated
     public static String toString(InputStream input) throws IOException {
         return org.apache.commons.io.IOUtils.toString(input);
     }
@@ -271,6 +294,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toString(java.io.InputStream, String)}
      */
+    @Deprecated
     public static String toString(InputStream input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.toString(input, encoding);
     }
@@ -278,6 +302,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toString(java.io.Reader)}
      */
+    @Deprecated
     public static String toString(Reader input) throws IOException {
         return org.apache.commons.io.IOUtils.toString(input);
     }
@@ -285,6 +310,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toString(byte[])}
      */
+    @Deprecated
     public static String toString(byte[] input) throws IOException {
         return org.apache.commons.io.IOUtils.toString(input);
     }
@@ -292,6 +318,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toString(byte[], String)}
      */
+    @Deprecated
     public static String toString(byte[] input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.toString(input, encoding);
     }
@@ -299,6 +326,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#readLines(java.io.InputStream)}
      */
+    @Deprecated
     public static List readLines(InputStream input) throws IOException {
         return org.apache.commons.io.IOUtils.readLines(input);
     }
@@ -306,6 +334,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#readLines(java.io.InputStream, String)}
      */
+    @Deprecated
     public static List readLines(InputStream input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.readLines(input, encoding);
     }
@@ -313,6 +342,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#readLines(java.io.Reader)}
      */
+    @Deprecated
     public static List readLines(Reader input) throws IOException {
         return org.apache.commons.io.IOUtils.readLines(input);
     }
@@ -320,6 +350,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#lineIterator(java.io.Reader)}
      */
+    @Deprecated
     public static LineIterator lineIterator(Reader reader) {
         return org.apache.commons.io.IOUtils.lineIterator(reader);
     }
@@ -327,6 +358,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#lineIterator(java.io.InputStream, String)}
      */
+    @Deprecated
     public static LineIterator lineIterator(InputStream input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.lineIterator(input, encoding);
     }
@@ -334,6 +366,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toInputStream(String)}
      */
+    @Deprecated
     public static InputStream toInputStream(String input) {
         return org.apache.commons.io.IOUtils.toInputStream(input);
     }
@@ -341,6 +374,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#toInputStream(String, String)}
      */
+    @Deprecated
     public static InputStream toInputStream(String input, String encoding) throws IOException {
         return org.apache.commons.io.IOUtils.toInputStream(input, encoding);
     }
@@ -348,6 +382,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(byte[], java.io.OutputStream)}
      */
+    @Deprecated
     public static void write(byte[] data, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -355,6 +390,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(byte[], java.io.Writer)}
      */
+    @Deprecated
     public static void write(byte[] data, Writer output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -362,6 +398,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(byte[], java.io.Writer, String)}
      */
+    @Deprecated
     public static void write(byte[] data, Writer output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output, encoding);
     }
@@ -369,6 +406,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(char[], java.io.OutputStream)}
      */
+    @Deprecated
     public static void write(char[] data, Writer output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -376,6 +414,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(char[], java.io.OutputStream)}
      */
+    @Deprecated
     public static void write(char[] data, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -383,6 +422,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(char[], java.io.OutputStream, String)}
      */
+    @Deprecated
     public static void write(char[] data, OutputStream output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output, encoding);
     }
@@ -390,6 +430,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(char[], java.io.Writer)}
      */
+    @Deprecated
     public static void write(String data, Writer output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -397,6 +438,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(String, java.io.OutputStream)}
      */
+    @Deprecated
     public static void write(String data, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -404,6 +446,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(String, java.io.OutputStream, String)}
      */
+    @Deprecated
     public static void write(String data, OutputStream output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output, encoding);
     }
@@ -411,6 +454,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(StringBuffer, java.io.Writer)}
      */
+    @Deprecated
     public static void write(StringBuffer data, Writer output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -418,6 +462,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(StringBuffer, java.io.OutputStream)}
      */
+    @Deprecated
     public static void write(StringBuffer data, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output);
     }
@@ -425,6 +470,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#write(StringBuffer, java.io.OutputStream, String)}
      */
+    @Deprecated
     public static void write(StringBuffer data, OutputStream output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.write(data, output, encoding);
     }
@@ -432,6 +478,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#writeLines(java.util.Collection, String, java.io.OutputStream)}
      */
+    @Deprecated
     public static void writeLines(Collection lines, String lineEnding, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.writeLines(lines, lineEnding, output);
     }
@@ -439,6 +486,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#writeLines(java.util.Collection, String, java.io.OutputStream, String)}
      */
+    @Deprecated
     public static void writeLines(Collection lines, String lineEnding, OutputStream output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.writeLines(lines, lineEnding, output, encoding);
     }
@@ -446,6 +494,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#writeLines(java.util.Collection, String, java.io.Writer)}
      */
+    @Deprecated
     public static void writeLines(Collection lines, String lineEnding, Writer writer) throws IOException {
         org.apache.commons.io.IOUtils.writeLines(lines, lineEnding, writer);
     }
@@ -453,6 +502,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.InputStream, java.io.OutputStream)}
      */
+    @Deprecated
     public static int copy(InputStream input, OutputStream output) throws IOException {
         return org.apache.commons.io.IOUtils.copy(input, output);
     }
@@ -460,6 +510,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copyLarge(java.io.InputStream, java.io.OutputStream)}
      */
+    @Deprecated
     public static long copyLarge(InputStream input, OutputStream output) throws IOException {
         return org.apache.commons.io.IOUtils.copyLarge(input, output);
     }
@@ -467,6 +518,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.InputStream, java.io.Writer)}
      */
+    @Deprecated
     public static void copy(InputStream input, Writer output) throws IOException {
         org.apache.commons.io.IOUtils.copy(input, output);
     }
@@ -474,6 +526,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.InputStream, java.io.Writer, String)}
      */
+    @Deprecated
     public static void copy(InputStream input, Writer output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.copy(input, output, encoding);
     }
@@ -481,6 +534,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.Reader, java.io.Writer)}
      */
+    @Deprecated
     public static int copy(Reader input, Writer output) throws IOException {
         return org.apache.commons.io.IOUtils.copy(input, output);
     }
@@ -488,6 +542,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copyLarge(java.io.Reader, java.io.Writer)}
      */
+    @Deprecated
     public static long copyLarge(Reader input, Writer output) throws IOException {
         return org.apache.commons.io.IOUtils.copyLarge(input, output);
     }
@@ -495,6 +550,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.Reader, java.io.OutputStream)}
      */
+    @Deprecated
     public static void copy(Reader input, OutputStream output) throws IOException {
         org.apache.commons.io.IOUtils.copy(input, output);
     }
@@ -502,6 +558,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.Reader, java.io.OutputStream, String)}
      */
+    @Deprecated
     public static void copy(Reader input, OutputStream output, String encoding) throws IOException {
         org.apache.commons.io.IOUtils.copy(input, output, encoding);
     }
@@ -509,6 +566,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#contentEquals(java.io.InputStream, java.io.InputStream)}
      */
+    @Deprecated
     public static boolean contentEquals(InputStream input1, InputStream input2) throws IOException {
         return org.apache.commons.io.IOUtils.contentEquals(input1, input2);
     }
@@ -516,6 +574,7 @@ public class IOUtils {
     /**
      * @deprecated Use instead {@link org.apache.commons.io.IOUtils#contentEquals(java.io.Reader, java.io.Reader)}
      */
+    @Deprecated
     public static boolean contentEquals(Reader input1, Reader input2) throws IOException {
         return org.apache.commons.io.IOUtils.contentEquals(input1, input2);
     }

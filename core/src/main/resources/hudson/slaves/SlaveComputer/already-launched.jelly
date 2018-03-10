@@ -3,7 +3,7 @@
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      The slave has been already launched.
+      The agent has been already launched.
     </l:main-panel>
   </l:layout>
 </j:jelly>

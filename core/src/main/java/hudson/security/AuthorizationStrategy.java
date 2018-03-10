@@ -39,7 +39,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
-import org.acegisecurity.acls.sid.Sid;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -95,9 +95,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @since 1.220
      */
     public @Nonnull ACL getACL(final @Nonnull View item) {
-        return new ACL() {
-            @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
+        return ACL.lambda((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
                 boolean hasPermission = base.hasPermission(a, permission);
@@ -106,8 +104,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
                 }
 
                 return hasPermission;
-            }
-        };
+        });
     }
     
     /**
@@ -195,6 +192,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @deprecated since 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
     
     /**
@@ -224,14 +222,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             return Collections.emptySet();
         }
 
-        private static final ACL UNSECURED_ACL = new ACL() {
-            @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
-                return true;
-            }
-        };
+        private static final ACL UNSECURED_ACL = ACL.lambda((a, p) -> true);
 
-        @Extension
+        @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
             @Override
             public String getDisplayName() {
@@ -241,11 +234,6 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             @Override
             public @Nonnull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
-            }
-
-            @Override
-            public String getHelpFile() {
-                return "/help/security/no-authorization.html";
             }
         }
     }

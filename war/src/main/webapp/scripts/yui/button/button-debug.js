@@ -3731,8 +3731,14 @@ version: 2.9.0
 
 
 				if (UA.ie) {
-				
-					oYUISubmitButton.get("element").fireEvent("onclick");
+
+                    if (UA.ie < 9) {
+                        oYUISubmitButton.get("element").fireEvent("onclick");
+                    } else {
+                        oEvent = document.createEvent("HTMLEvents");
+                        oEvent.initEvent("click", true, true);
+                        oYUISubmitButton.get("element").dispatchEvent(oEvent);
+                    }
 				
 				}
 				else {

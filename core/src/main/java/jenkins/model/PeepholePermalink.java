@@ -32,7 +32,7 @@ import org.apache.commons.io.FileUtils;
  * <blockquote>
  *     Given a job J, permalink is a function F that computes a build B.
  *     A peephole permalink is a subset of this function that can be
- *     deduced to the "peep-hole" function G(B)->bool:
+ *     deduced to the "peep-hole" function G(B)→bool:
  *
  *     <pre>
  *         F(J) = { newest B | G(B)==true }
@@ -102,6 +102,9 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             }
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to read permalink cache:" + f, e);
+            // if we fail to read the cache, fall back to the re-computation
+        } catch (NumberFormatException e) { 
+            LOGGER.log(Level.WARNING, "Failed to parse the build number in the permalink cache:" + f, e);
             // if we fail to read the cache, fall back to the re-computation
         } catch (IOException e) {
             // this happens when the symlink doesn't exist

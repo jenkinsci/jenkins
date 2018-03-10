@@ -34,7 +34,7 @@ THE SOFTWARE.
   <j:if test="${it.due}">
     <script>
       Behaviour.addLoadEvent(function() {
-        loadScript("${app.isRootUrlSecure()?'https':'http'}://usage.jenkins-ci.org/usage-stats.js?${it.statData}");
+        loadScript("https://usage.jenkins.io/usage-stats.js?${it.statData}");
       });
     </script>
   </j:if>

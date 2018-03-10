@@ -27,6 +27,7 @@ import hudson.Extension;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -34,7 +35,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author Dominik Bartholdi (imod)
  */
-@Extension(ordinal = 250)
+@Extension(ordinal = 250) @Symbol("projectNamingStrategy")
 public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguration {
 
     @Override
@@ -44,7 +45,7 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
         final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");
         if (optJSONObject != null) {
             final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
-            final String className = strategyObject.getString("stapler-class");
+            final String className = strategyObject.getString("$class");
             try {
                 Class clazz = Class.forName(className, true, Jenkins.getInstance().getPluginManager().uberClassLoader);
                 final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);

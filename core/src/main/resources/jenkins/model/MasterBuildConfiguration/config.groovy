@@ -3,11 +3,9 @@ package jenkins.model.MasterBuildConfiguration
 def f=namespace(lib.FormTagLib)
 
 f.entry(title:_("# of executors"), field:"numExecutors") {
-    f.number(clazz:"number", min:0, step:1)
+    f.number(clazz:"non-negative-number-required", min:0, step:1)
 }
-if (!app.slaves.isEmpty() || !app.clouds.isEmpty()) {
-    f.entry(title:_("Labels"),field:"labelString") {
-        f.textbox()
-    }
-    f.slave_mode(name:"master.mode",node:app)
+f.entry(title:_("Labels"),field:"labelString") {
+    f.textbox()
 }
+f.slave_mode(name:"master.mode",node:app)

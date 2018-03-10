@@ -17,6 +17,7 @@
  */
 package jenkins.util;
 
+import java.nio.file.Files;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -582,6 +583,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @deprecated since 1.6.x.
      *             Use Class.forName with initialize=true instead.
      */
+    @Deprecated
     public static void initializeClass(Class theClass) {
         // ***HACK*** We ask the VM to create an instance
         // by voluntarily providing illegal arguments to force
@@ -789,7 +791,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             if (jarFile == null && file.isDirectory()) {
                 File resource = new File(file, resourceName);
                 if (resource.exists()) {
-                    return new FileInputStream(resource);
+                    return Files.newInputStream(resource.toPath());
                 }
             } else {
                 if (jarFile == null) {
@@ -834,7 +836,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // designated to use a specific loader first
         // (this one or the parent one)
 
-        // XXX - shouldn't this always return false in isolated mode?
+        // TODO shouldn't this always return false in isolated mode?
 
         boolean useParentFirst = parentFirst;
 
@@ -1351,31 +1353,25 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         throws ClassNotFoundException {
         // we need to search the components of the path to see if
         // we can find the class we want.
-        InputStream stream = null;
         String classFilename = getClassFilename(name);
-        try {
-            Enumeration e = pathComponents.elements();
-            while (e.hasMoreElements()) {
-                File pathComponent = (File) e.nextElement();
-                try {
-                    stream = getResourceStream(pathComponent, classFilename);
-                    if (stream != null) {
-                        log("Loaded from " + pathComponent + " "
-                            + classFilename, Project.MSG_DEBUG);
-                        return getClassFromStream(stream, name, pathComponent);
-                    }
-                } catch (SecurityException se) {
-                    throw se;
-                } catch (IOException ioe) {
-                    // ioe.printStackTrace();
-                    log("Exception reading component " + pathComponent + " (reason: "
-                            + ioe.getMessage() + ")", Project.MSG_VERBOSE);
+        Enumeration e = pathComponents.elements();
+        while (e.hasMoreElements()) {
+            File pathComponent = (File) e.nextElement();
+            try (final InputStream stream = getResourceStream(pathComponent, classFilename)) {
+                if (stream != null) {
+                    log("Loaded from " + pathComponent + " "
+                        + classFilename, Project.MSG_DEBUG);
+                    return getClassFromStream(stream, name, pathComponent);
                 }
+            } catch (SecurityException se) {
+                throw se;
+            } catch (IOException ioe) {
+                // ioe.printStackTrace();
+                log("Exception reading component " + pathComponent + " (reason: "
+                        + ioe.getMessage() + ")", Project.MSG_VERBOSE);
             }
-            throw new ClassNotFoundException(name);
-        } finally {
-            FileUtils.close(stream);
         }
+        throw new ClassNotFoundException(name);
     }
 
     /**

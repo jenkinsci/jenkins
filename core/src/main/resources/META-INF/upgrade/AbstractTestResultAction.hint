@@ -1,0 +1,2 @@
+$b.getTestResultAction() :: $b instanceof hudson.model.AbstractBuild => $b.getAction(hudson.tasks.test.AbstractTestResultAction.class);;
+$b.getAggregatedTestResultAction() :: $b instanceof hudson.model.AbstractBuild => $b.getAction(hudson.tasks.test.AggregatedTestResultAction.class);;

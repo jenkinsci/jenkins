@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>Tweak Launch Parameters</h1>
       <p>
-        This page allows you to tweak the JVM parameters when launching JNLP slave agents.
+        This page allows you to tweak the JVM parameters when launching JNLP agents.
         <!-- TODO: work from home for the rest -->
       </p>
     </l:main-panel>

@@ -8,15 +8,20 @@ package hudson.security.csrf;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import java.net.HttpURLConnection;
-import static org.junit.Assert.*;
+import jenkins.model.Jenkins;
+import junit.framework.Assert;
+import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.PresetData;
+
+import java.net.HttpURLConnection;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -38,7 +43,7 @@ public class DefaultCrumbIssuerTest {
     };
     private static final String HEADER_NAME = "X-Forwarded-For";
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void clientIPFromHeader() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -47,7 +52,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void headerChange() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -64,7 +69,7 @@ public class DefaultCrumbIssuerTest {
         }
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void proxyIPChanged() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -78,7 +83,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void proxyIPChain() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -87,7 +92,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(7518)
+    @Issue("JENKINS-7518")
     @Test public void proxyCompatibilityMode() throws Exception {
         CrumbIssuer issuer = new DefaultCrumbIssuer(true);
         assertNotNull(issuer);
@@ -126,8 +131,25 @@ public class DefaultCrumbIssuerTest {
     @Test public void apiJson() throws Exception {
         WebClient wc = r.createWebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
-        assertTrue(json, json.matches("\\Q{\"crumb\":\"\\E[0-9a-f]+\\Q\",\"crumbRequestField\":\"" + r.jenkins.getCrumbIssuer().getCrumbRequestField() + "\"}\\E"));
+        JSONObject jsonObject = JSONObject.fromObject(json);
+        assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(),jsonObject.getString("crumbRequestField"));
+        assertTrue(jsonObject.getString("crumb").matches("[0-9a-f]+"));
         wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    @Issue("JENKINS-34254")
+    @Test public void testRequirePostErrorPageCrumb() throws Exception {
+        Jenkins.getInstance().setCrumbIssuer(new DefaultCrumbIssuer(false));
+        WebClient wc = r.createWebClient();
+        try {
+            wc.goTo("quietDown");
+            fail("expected failure");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals("expect HTTP 405 method not allowed", 405, ex.getStatusCode());
+        }
+        HtmlPage retry = (HtmlPage) wc.getCurrentWindow().getEnclosedPage();
+        HtmlPage success = r.submit(retry.getFormByName("retry"));
+        Assert.assertTrue("quieting down", r.jenkins.isQuietingDown());
     }
 
 }

@@ -51,7 +51,7 @@ import jenkins.model.Jenkins;
  * This is an abstract class so that methods added in the future won't break existing listeners.
  *
  * <p>
- * Once instanciated, use the {@link #register()} method to start receiving events. 
+ * Once instantiated, use the {@link #register()} method to start receiving events. 
  *
  * @author Kohsuke Kawaguchi
  * @see jenkins.model.Jenkins#getSCMListeners()
@@ -60,7 +60,7 @@ import jenkins.model.Jenkins;
 public abstract class SCMListener implements ExtensionPoint {
 
     /**
-     * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} is called.
+     * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} is called.
      * @param pollingBaseline information about what actually was checked out, if that is available, and this checkout is intended to be included in the build’s polling (if it does any at all)
      * @throws Exception if the checkout should be considered failed
      * @since 1.568
@@ -116,7 +116,9 @@ public abstract class SCMListener implements ExtensionPoint {
 
     @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
-        onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
+        if (Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", Run.class, SCM.class, TaskListener.class, ChangeLogSet.class)) {
+            onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
+        }
     }
 
     /**
@@ -124,8 +126,8 @@ public abstract class SCMListener implements ExtensionPoint {
      */
     @SuppressWarnings("deprecation")
     public static Collection<? extends SCMListener> all() {
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) { // TODO use !Functions.isExtensionsAvailable() once JENKINS-33377
             return Collections.emptySet();
         }
         List<SCMListener> r = new ArrayList<SCMListener>(j.getExtensionList(SCMListener.class));
@@ -138,20 +140,12 @@ public abstract class SCMListener implements ExtensionPoint {
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final void register() {
-        Jenkins j = Jenkins.getInstance();
-        if (j != null) {
-            j.getSCMListeners().add(this);
-        }
+        Jenkins.getInstance().getSCMListeners().add(this);
     }
 
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final boolean unregister() {
-        Jenkins j = Jenkins.getInstance();
-        if (j != null) {
-            return j.getSCMListeners().remove(this);
-        } else {
-            return false;
-        }
+        return Jenkins.getInstance().getSCMListeners().remove(this);
     }
 }

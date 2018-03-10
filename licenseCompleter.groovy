@@ -1,5 +1,5 @@
 /*
-    This script auguments the missing license information in our dependencies.
+    This script augments the missing license information in our dependencies.
 */
 complete {
     // license constants
@@ -8,7 +8,8 @@ complete {
     def lgpl = license("LGPL 2.1","http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html")
     def mitLicense = license("MIT License","http://www.opensource.org/licenses/mit-license.php")
     def bsdLicense = license("BSD License","http://opensource.org/licenses/BSD-2-Clause")
-    def jenkinsLicense = license("MIT License","http://jenkins-ci.org/mit-license")
+    def jenkinsLicense = license("MIT License","https://jenkins.io/mit-license")
+    def ccby = license("Creative Commons Attribution License","http://creativecommons.org/licenses/by/2.5")
 
 
     match("asm:*") {
@@ -72,16 +73,6 @@ complete {
         rewriteLicense([],jenkinsLicense)
     }
 
-    match("*:jna") {
-        rewriteLicense([],lgpl)
-    }
-
-    match(["org.jvnet.localizer:localizer"]) {
-        // see http://java.net/projects/localizer
-        // see http://java.net/projects/trilead-putty-extension/
-        rewriteLicense([],mitLicense);
-    }
-
     match("org.codehaus.plexus:plexus-interactivity-api") {
         rewriteLicense([],mitLicense)
     }
@@ -95,6 +86,9 @@ complete {
         rewriteLicense([license("CDDL or GPL 2 with Classpath Exception",null)],cddl);
     }
            
+    match("net.jcip:jcip-annotations") {
+        rewriteLicense([],ccby)
+    }
 
     //
     // Choose from multi-licensed modules

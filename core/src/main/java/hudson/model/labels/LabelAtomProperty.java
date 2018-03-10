@@ -42,6 +42,7 @@ import java.util.Collections;
  * with the {@link LabelAtom} object.
  *
  * @author Kohsuke Kawaguchi
+ * @see hudson.model.labels.LabelAtomPropertyDescriptor
  * @since 1.373
  */
 @ExportedBean

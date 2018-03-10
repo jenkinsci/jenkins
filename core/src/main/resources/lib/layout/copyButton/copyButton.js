@@ -5,8 +5,7 @@ Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         var id = "copy-button"+(iota++);
         btn.id = id;
 
-        var clip = new ZeroClipboard.Client();
-        clip.setText(e.getAttribute("text"));
+        var clip = new ZeroClipboard(e);
         makeButton(btn);
         clip.setHandCursor(true);
 
@@ -14,24 +13,24 @@ Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         if (container) {
             container = $(e).up(container);
             container.style.position = "relative";
-            clip.glue(id,container);
-        } else {
-            clip.glue(id);
         }
 
-        clip.addEventListener('onComplete',function() {
+        clip.on('datarequested',function() {
+            clip.setText(e.getAttribute("text"));
+        });
+        clip.on('complete',function() {
             notificationBar.show(e.getAttribute("message"));
         });
-        clip.addEventListener('onMouseOver',function() {
+        clip.on('mouseOver',function() {
           $(id).addClassName('yui-button-hover')
         });
-        clip.addEventListener('onMouseOut',function() {
+        clip.on('mouseOut',function() {
             $(id).removeClassName('yui-button-hover')
         });
-        clip.addEventListener('onMouseDown',function() {
+        clip.on('mouseDown',function() {
             $(id).addClassName('yui-button-active')
         });
-        clip.addEventListener('onMouseUp',function() {
+        clip.on('mouseUp',function() {
             $(id).removeClassName('yui-button-active')
         });
 });

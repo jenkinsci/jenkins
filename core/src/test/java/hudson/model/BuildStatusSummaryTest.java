@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import hudson.model.Run.Summary;
-import hudson.tasks.test.AbstractTestResultAction;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -157,99 +156,6 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testBuildGotAFailingTest() {
-        // previous build has no tests at all
-        mockBuilds(AbstractBuild.class);
-        
-        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
-        
-        buildHasTestResult((AbstractBuild) this.build, 1);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestFailures(1), summary.message);
-        
-        
-        // same thing should happen if previous build has tests, but no failing ones:
-        buildHasTestResult((AbstractBuild) this.prevBuild, 0);
-        summary = this.build.getBuildStatusSummary();
-        assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestsStartedToFail(1), summary.message);
-    }
-
-    @Test
-    public void testBuildGotNoTests() {
-        // previous build has no tests at all
-        mockBuilds(AbstractBuild.class);
-
-        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
-        // Null test result action recorded
-        when(((AbstractBuild) this.build).getTestResultAction()).thenReturn(null);
-
-        Summary summary = this.build.getBuildStatusSummary();
-
-        assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_Unstable(), summary.message);
-
-        // same thing should happen if previous build has tests, but no failing ones:
-        buildHasTestResult((AbstractBuild) this.prevBuild, 0);
-        summary = this.build.getBuildStatusSummary();
-        assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_Unstable(), summary.message);
-    }
-    
-    @Test
-    public void testBuildEqualAmountOfTestsFailing() {
-        mockBuilds(AbstractBuild.class);
-        
-        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
-        
-        buildHasTestResult((AbstractBuild) this.prevBuild, 1);
-        buildHasTestResult((AbstractBuild) this.build, 1);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestsStillFailing(1), summary.message);
-    }
-    
-    @Test
-    public void testBuildGotMoreFailingTests() {
-        mockBuilds(AbstractBuild.class);
-        
-        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
-        
-        buildHasTestResult((AbstractBuild) this.prevBuild, 1);
-        buildHasTestResult((AbstractBuild) this.build, 2);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_MoreTestsFailing(1, 2), summary.message);
-    }
-    
-    @Test
-    public void testBuildGotLessFailingTests() {
-        mockBuilds(AbstractBuild.class);
-        
-        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
-        
-        buildHasTestResult((AbstractBuild) this.prevBuild, 2);
-        buildHasTestResult((AbstractBuild) this.build, 1);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_LessTestsFailing(1, 1), summary.message);
-    }
-    
-    @Test
     public void testNonTestRelatedUnstable() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
@@ -289,10 +195,4 @@ public class BuildStatusSummaryTest {
         assertEquals(Messages.Run_Summary_NotBuilt(), summary.message);
     }
     
-    private void buildHasTestResult(AbstractBuild build, int failedTests) {
-        AbstractTestResultAction testResult = mock(AbstractTestResultAction.class);
-        when(testResult.getFailCount()).thenReturn(failedTests);
-        
-        when(build.getTestResultAction()).thenReturn(testResult);
-    }
 }

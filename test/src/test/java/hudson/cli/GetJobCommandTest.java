@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.FreeStyleProject;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -34,21 +33,21 @@ import org.apache.commons.io.input.NullInputStream;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
-@SuppressWarnings("DM_DEFAULT_ENCODING")
 public class GetJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(20236)
+    @Issue("JENKINS-20236")
     @Test public void withFolders() throws Exception {
         MockFolder d = j.createFolder("d");
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintStream outS = new PrintStream(out);
+        // TODO switch to CLICommandInvoker
         int result = new GetJobCommand().main(Collections.singletonList("d/p"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
         outS.flush();
         String output = out.toString();

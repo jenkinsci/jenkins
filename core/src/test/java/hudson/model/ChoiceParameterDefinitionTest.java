@@ -1,7 +1,6 @@
 package hudson.model;
 
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -91,7 +91,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
             this.computationalData = new HashMap<Class<?>, Object>();
-            for( AbstractProject p : getAllProjects() )
+            for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);
@@ -145,10 +145,6 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         };
 
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
-    }
-
-    Collection<AbstractProject> getAllProjects() {
-        return Jenkins.getInstance().getAllItems(AbstractProject.class);
     }
 
     /**
@@ -451,6 +447,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             hash = 23 * hash + this.upstream.hashCode();
             hash = 23 * hash + this.downstream.hashCode();
             return hash;
+        }
+
+        @Override public String toString() {
+            return super.toString() + "[" + upstream + "->" + downstream + "]";
         }
     }
 

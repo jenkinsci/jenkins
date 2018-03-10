@@ -3,7 +3,6 @@ package jenkins.slaves.systemInfo;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
-import jenkins.model.Jenkins;
 
 /**
  * Extension point that contributes to the system information page of {@link Computer}.
@@ -23,6 +22,6 @@ public abstract class SlaveSystemInfo implements ExtensionPoint {
     public abstract String getDisplayName();
 
     public static ExtensionList<SlaveSystemInfo> all() {
-        return Jenkins.getInstance().getExtensionList(SlaveSystemInfo.class);
+        return ExtensionList.lookup(SlaveSystemInfo.class);
     }
 }

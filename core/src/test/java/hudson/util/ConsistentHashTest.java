@@ -23,7 +23,10 @@
  */
 package hudson.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
+import hudson.util.CopyOnWriteMap.Hash;
+import org.junit.Test;
 
 import java.util.Random;
 import java.util.Map;
@@ -36,11 +39,12 @@ import java.util.Map.Entry;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ConsistentHashTest extends TestCase {
+public class ConsistentHashTest {
     /**
      * Just some random tests to ensure that we have no silly NPE or that kind of error.
      */
-    public void testBasic() {
+    @Test
+    public void basic() {
         ConsistentHash<String> hash = new ConsistentHash<String>();
         hash.add("data1");
         hash.add("data2");
@@ -69,7 +73,8 @@ public class ConsistentHashTest extends TestCase {
     /**
      * Uneven distribution should result in uneven mapping.
      */
-    public void testUnevenDisribution() {
+    @Test
+    public void unevenDistribution() {
         ConsistentHash<String> hash = new ConsistentHash<String>();
         hash.add("even",10);
         hash.add("odd",100);
@@ -82,7 +87,7 @@ public class ConsistentHashTest extends TestCase {
             else                    odd++;
         }
 
-        // again, there's a small chance tha this test fails. 
+        // again, there's a small chance tha this test fails.
         System.out.printf("%d/%d\n",even,odd);
         assertTrue(even*8<odd);
     }
@@ -90,7 +95,8 @@ public class ConsistentHashTest extends TestCase {
     /**
      * Removal shouldn't affect existing nodes
      */
-    public void testRemoval() {
+    @Test
+    public void removal() {
         ConsistentHash<Integer> hash = new ConsistentHash<Integer>();
         for( int i=0; i<10; i++ )
             hash.add(i);
@@ -113,10 +119,77 @@ public class ConsistentHashTest extends TestCase {
         }
     }
 
-    public void testEmptyBehavior() {
+    @Test
+    public void emptyBehavior() {
         ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
         assertFalse(hash.list(0).iterator().hasNext());
         assertNull(hash.lookup(0));
         assertNull(hash.lookup(999));
+    }
+
+    @Test
+    public void countAllPoints() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo", 10);
+        assertEquals(10, hash.countAllPoints());
+        hash.add("bar", 5);
+        assertEquals(15, hash.countAllPoints());
+        hash.remove("foo");
+        assertEquals(5, hash.countAllPoints());
+    }
+
+    @Test
+    public void defaultReplicationIsOneHundred() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo");
+        assertEquals(100, hash.countAllPoints());
+    }
+
+    @Test
+    public void setCustomDefaultReplication() {
+        ConsistentHash<String> hash = new ConsistentHash<String>((ConsistentHash.Hash<String>) ConsistentHash.DEFAULT_HASH, 7);
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo");
+        assertEquals(7, hash.countAllPoints());
+    }
+
+    @Test
+    public void usesCustomHash() {
+        final RuntimeException exception = new RuntimeException();
+        ConsistentHash.Hash<String> hashFunction = new ConsistentHash.Hash<String>() {
+            public String hash(String str) {
+                throw exception;
+            }
+        };
+
+        try {
+            ConsistentHash<String> hash = new ConsistentHash<String>(hashFunction);
+            hash.add("foo");
+            fail("Didn't use custom hash function");
+        } catch (RuntimeException e) {
+            assertSame(exception, e);
+        }
+    }
+
+    /**
+     * This test doesn't fail but it's written to measure the performance of the consistent hash function with large data set.
+     */
+    @Test
+    public void speed() {
+        Map<String,Integer> data = new Hash<String, Integer>();
+        for (int i = 0; i < 1000; i++)
+            data.put("node" + i,100);
+        data.put("tail",100);
+
+        long start = System.currentTimeMillis();
+        for (int j=0; j<10; j++) {
+            ConsistentHash<String> b = new ConsistentHash<String>();
+            b.addAll(data);
+        }
+
+        System.out.println(System.currentTimeMillis()-start);
     }
 }

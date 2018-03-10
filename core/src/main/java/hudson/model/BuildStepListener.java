@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.tasks.BuildStep;
-import jenkins.model.Jenkins;
 
 /**
  * Receives events that happen as a build executes {@link BuildStep}s.
@@ -27,6 +26,6 @@ public abstract class BuildStepListener implements ExtensionPoint {
      */
     public static ExtensionList<BuildStepListener> all() {
         // TODO should have a null-safe version when Jenkins.getInstance() is null; would require changes in ExtensionList
-        return Jenkins.getInstance().getExtensionList(BuildStepListener.class);
+        return ExtensionList.lookup(BuildStepListener.class);
     }
 }

@@ -26,16 +26,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
 
-  <j:if test="${it.supportsMakeDisabled()}">
-    <st:include page="makeDisabled.jelly" />
-  </j:if>
+  <p:makeDisabled/>
 
   <p:projectActionFloatingBox />
 
   <table style="margin-top: 1em; margin-left:1em;">
 
     <j:forEach var="act" items="${it.prominentActions}">
-      <t:summary icon="${act.iconFileName}" href="${act.urlName}">
+      <j:set var="icon" value="${act.iconClassName != null ? act.iconClassName : act.iconFileName}"/>
+      <t:summary icon="${icon}" href="${act.urlName}">
         ${act.displayName}
       </t:summary>
     </j:forEach>
@@ -51,27 +50,6 @@ THE SOFTWARE.
       ${%Recent Changes}
     </t:summary>
 
-    <j:set var="tr" value="${it.lastCompletedBuild.testResultAction}"/>
-    <j:if test="${tr!=null}">
-      <j:if test="${tr.class.name != 'hudson.tasks.test.AggregatedTestResultPublisher$TestResultAction'}">
-        <t:summary icon="clipboard.png">
-          <a href="lastCompletedBuild/${tr.urlName}/" class="model-link inside">${%Latest Test Result}</a>
-          <t:test-result it="${tr}" />
-        </t:summary>
-      </j:if>
-    </j:if>
-
-    <j:forEach var="atr" items="${it.lastCompletedBuild.allActions}">
-      <j:if test="${atr!=null}">
-        <j:if test="${atr.class.name == 'hudson.tasks.test.AggregatedTestResultPublisher$TestResultAction'}">
-          <t:summary icon="clipboard.png">
-            <a href="lastCompletedBuild/${atr.urlName}/" class="model-link inside">${%Latest Aggregated Test Result}</a>
-            <t:test-result it="${atr}" />
-          </t:summary>
-        </j:if>
-      </j:if>
-    </j:forEach>
-    
   </table>
 
   <!-- merge fragments from the actions -->

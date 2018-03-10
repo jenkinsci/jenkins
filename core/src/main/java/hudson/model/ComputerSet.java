@@ -49,6 +49,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * @deprecated as of 1.301
      *      Use {@link #getMonitors()}.
      */
+    @Deprecated
     public static List<NodeMonitor> get_monitors() {
         return monitors.toList();
     }
@@ -136,7 +138,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * Gets all the slave names.
+     * Gets all the agent names.
      */
     public List<String> get_slaveNames() {
         return new AbstractList<String>() {
@@ -199,6 +201,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return Jenkins.getInstance().getComputer(token);
     }
 
+    @RequirePOST
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
@@ -214,6 +217,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      *
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
+    @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         
@@ -228,8 +232,9 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * First check point in creating a new slave.
+     * First check point in creating a new agent.
      */
+    @RequirePOST
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from ) throws IOException, ServletException {
@@ -277,8 +282,9 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * Really creates a new slave.
+     * Really creates a new agent.
      */
+    @RequirePOST
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
@@ -290,15 +296,16 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", fixedName);
         
+        // TODO type is probably NodeDescriptor.id but confirm
         Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
         app.addNode(result);
 
-        // take the user back to the slave list top page
+        // take the user back to the agent list top page
         rsp.sendRedirect2(".");
     }
 
     /**
-     * Makes sure that the given name is good as a slave name.
+     * Makes sure that the given name is good as an agent name.
      * @return trimmed name if valid; throws ParseException if not
      */
     public String checkName(String name) throws Failure {
@@ -316,7 +323,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * Makes sure that the given name is good as a slave name.
+     * Makes sure that the given name is good as an agent name.
      */
     public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Computer.CREATE);
@@ -378,11 +385,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     @Extension
     public static class DescriptorImpl extends Descriptor<ComputerSet> {
-        @Override
-        public String getDisplayName() {
-            return "";
-        }
-
         /**
          * Auto-completion for the "copy from" field in the new job page.
          */
@@ -411,6 +413,21 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 ComputerSet.initialize();
             }
         }, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * @return The list of strings of computer names (excluding master)
+     * @since 2.14
+     */
+    @Nonnull
+    public static List<String> getComputerNames() {
+        final ArrayList<String> names = new ArrayList<String>();
+        for (Computer c : Jenkins.getInstance().getComputers()) {
+            if (!c.getName().isEmpty()) {
+                names.add(c.getName());
+            }
+        }
+        return names;
     }
 
     private static final Logger LOGGER = Logger.getLogger(ComputerSet.class.getName());
@@ -455,10 +472,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             NodeMonitor nm = d.clazz.newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (InstantiationException e) {
-            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
-        } catch (IllegalAccessException e) {
-            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            LOGGER.log(Level.SEVERE, "Failed to instantiate "+d.clazz,e);
         }
         return null;
     }

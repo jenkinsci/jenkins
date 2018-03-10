@@ -23,7 +23,6 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Generates a listing of the build artifacts.
@@ -51,7 +50,7 @@ THE SOFTWARE.
               <j:forEach var="f" items="${artifacts}">
                 <tr>
                   <td>
-                    <img src="${imagesURL}/16x16/text.png" alt="" height="16" width="16"/>
+                    <l:icon class="icon-text icon-sm"/>
                   </td>
                   <td>
                     <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
@@ -62,7 +61,7 @@ THE SOFTWARE.
                   <td>
                     <j:if test="${app.fingerprintMap.ready}">
                       <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
-                        <img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16"/>
+                        <l:icon class="icon-fingerprint icon-sm"/>
                       </a>
                       <st:nbsp/>
                     </j:if>

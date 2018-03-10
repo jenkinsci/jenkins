@@ -44,7 +44,10 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Information about JDK installation.
@@ -52,6 +55,22 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+
+    /**
+     * Name of the “System JDK”, which is just the JDK on Jenkins' $PATH.
+     * @since 1.577
+     */
+    public static final String DEFAULT_NAME = "(System)";
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isDefaultName(String name) {
+        if ("(Default)".equals(name)) {
+            // DEFAULT_NAME took this value prior to 1.598.
+            return true;
+        }
+        return DEFAULT_NAME.equals(name) || name == null;
+    }
+
     /**
      * @deprecated since 2009-02-25
      */
@@ -73,6 +92,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated as of 1.304
      *      Use {@link #getHome()}
      */
+    @Deprecated
     public String getJavaHome() {
         return getHome();
     }
@@ -101,6 +121,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     /**
      * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
+    @Deprecated
     public void buildEnvVars(Map<String,String> env) {
         String home = getHome();
         if (home == null) {
@@ -146,7 +167,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
     }
 
-    @Extension
+    @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
@@ -157,11 +178,8 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
-        // this isn't really synchronized well since the list is Hudson.jdks :(
-        public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Jenkins.getInstance().getJDKs();
-            list.clear();
-            list.addAll(Arrays.asList(jdks));
+        public @Override void setInstallations(JDK... jdks) {
+            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
         }
 
         @Override
@@ -175,7 +193,11 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         @Override protected FormValidation checkHomeDirectory(File value) {
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");
-            if(!toolsJar.exists() && !mac.exists())
+
+            // JENKINS-25601: JDK 9+ no longer has tools.jar. Keep the existing dt.jar/tools.jar checks to be safe.
+            File javac = new File(value, "bin/javac");
+            File javacExe = new File(value, "bin/javac.exe");
+            if(!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();

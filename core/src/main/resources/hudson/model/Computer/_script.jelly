@@ -31,7 +31,7 @@ THE SOFTWARE.
     <pre>println System.getenv("PATH")</pre>
     <pre>println "uname -a".execute().text</pre>
     <p>
-      ${%This execution happens in the slave agent JVM.}
+      ${%This execution happens in the agent JVM.}
     </p>
   </t:scriptConsole>
 </j:jelly>

@@ -1,18 +1,25 @@
 package hudson.util;
 
-import hudson.ChannelTestCase;
-import hudson.remoting.Callable;
+import hudson.ChannelRule;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTree.ProcessCallable;
-
 import java.io.IOException;
 import java.io.Serializable;
+import jenkins.security.MasterToSlaveCallable;
+import static org.junit.Assert.*;
+
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ProcessTreeTest extends ChannelTestCase {
+public class ProcessTreeTest {
+
+    @Rule public ChannelRule channels = new ChannelRule();
+
     static class  Tag implements Serializable {
         ProcessTree tree;
         OSProcess p;
@@ -20,12 +27,10 @@ public class ProcessTreeTest extends ChannelTestCase {
         private static final long serialVersionUID = 1L;
     }
     
-    public void testRemoting() throws Exception {
-        // on some platforms where we fail to list any processes, this test will just not work
-        if (ProcessTree.get()==ProcessTree.DEFAULT)
-            return;
+    @Test public void remoting() throws Exception {
+        Assume.assumeFalse("on some platforms where we fail to list any processes", ProcessTree.get()==ProcessTree.DEFAULT);
 
-        Tag t = french.call(new MyCallable());
+        Tag t = channels.french.call(new MyCallable());
 
         // make sure the serialization preserved the reference graph
         assertSame(t.p.getTree(), t.tree);
@@ -39,7 +44,7 @@ public class ProcessTreeTest extends ChannelTestCase {
         t.p.act(new ProcessCallableImpl());
     }
 
-    private static class MyCallable implements Callable<Tag, IOException>, Serializable {
+    private static class MyCallable extends MasterToSlaveCallable<Tag, IOException> implements Serializable {
         public Tag call() throws IOException {
             Tag t = new Tag();
             t.tree = ProcessTree.get();

@@ -68,6 +68,9 @@ public final class Permission {
 
     public final @Nonnull PermissionGroup group;
 
+    // if some plugin serialized old version of this class using XStream, `id` can be null
+    private final @CheckForNull String id;
+
     /**
      * Human readable ID of the permission.
      *
@@ -144,10 +147,11 @@ public final class Permission {
      *      See {@link #description}.
      * @param impliedBy
      *      See {@link #impliedBy}.
+     * @throws IllegalStateException if this permission was already defined
      */
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
-            @Nonnull PermissionScope[] scopes) {
+            @Nonnull PermissionScope[] scopes) throws IllegalStateException {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -157,6 +161,7 @@ public final class Permission {
         this.impliedBy = impliedBy;
         this.enabled = enable;
         this.scopes = ImmutableSet.copyOf(scopes);
+        this.id = owner.getName() + '.' + name;
 
         group.add(this);
         ALL.add(this);
@@ -172,6 +177,7 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
         this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
     }
@@ -180,6 +186,7 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy) {
         this(group, name, description, impliedBy, PermissionScope.JENKINS);
     }
@@ -188,6 +195,7 @@ public final class Permission {
      * @deprecated since 1.257.
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Permission impliedBy) {
         this(group,name,null,impliedBy);
     }
@@ -218,7 +226,18 @@ public final class Permission {
      * @see #fromId(String)
      */
     public @Nonnull String getId() {
-        return owner.getName()+'.'+name;
+        if (id == null) {
+            return owner.getName() + '.' + name;
+        }
+        return id;
+    }
+
+    @Override public boolean equals(Object o) {
+        return o instanceof Permission && getId().equals(((Permission) o).getId());
+    }
+
+    @Override public int hashCode() {
+        return getId().hashCode();
     }
 
     /**
@@ -284,6 +303,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
+    @Deprecated
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
@@ -294,13 +314,14 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
+    @Deprecated
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
 //
 //
 // Root Permissions.
 //
-// These permisisons are meant to be used as the 'impliedBy' permission for other more specific permissions.
+// These permissions are meant to be used as the 'impliedBy' permission for other more specific permissions.
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
@@ -313,6 +334,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
+    @Deprecated
     public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**

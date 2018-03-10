@@ -33,6 +33,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.slaves.OfflineCause;
 import jenkins.util.Timer;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
@@ -48,7 +49,7 @@ import java.util.logging.Logger;
  * and taking some action based on its result.
  *
  * @param <T>
- *     represents the the result of the monitoring.
+ *     represents the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
@@ -56,6 +57,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
@@ -64,6 +66,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(long interval) {
         schedule(interval);
     }
@@ -72,6 +75,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
         this(clazz,HOUR);
     }
@@ -80,6 +84,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz, long interval) {
         super(clazz);
 
@@ -105,7 +110,14 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     /**
      * Represents the update activity in progress.
      */
-    private transient volatile Record inProgress = null;
+    @GuardedBy("this")
+    private transient Record inProgress = null;
+
+    /**
+     * Represents when an update activity was last started.
+     */
+    @GuardedBy("this")
+    private transient long inProgressStarted = Long.MIN_VALUE;
 
     /**
      * Performs monitoring of the given computer object.
@@ -157,12 +169,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     public T get(Computer c) {
         if(record==null || !record.data.containsKey(c)) {
             // if we don't have the data, schedule the check now
-            if(!isInProgress()) {
-                synchronized(this) {
-                    if(!isInProgress())
-                        new Record().start();
-                }
-            }
+            triggerUpdate();
             return null;
         }
         return record.data.get(c);
@@ -171,9 +178,8 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     /**
      * Is the monitoring activity currently in progress?
      */
-    private boolean isInProgress() {
-        Record r = inProgress;  // capture for atomicity
-        return r!=null && r.isAlive();
+    private synchronized boolean isInProgress() {
+        return inProgress !=null && inProgress.isAlive();
     }
 
     /**
@@ -235,6 +241,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.320
      *      Use {@link #markOffline(Computer, OfflineCause)} to specify the cause.
      */
+    @Deprecated
     protected boolean markOffline(Computer c) {
         return markOffline(c,null);
     }
@@ -242,10 +249,36 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     /**
      * @see NodeMonitor#triggerUpdate()
      */
-    /*package*/ Thread triggerUpdate() {
-        Record t = new Record();
+    /*package*/ synchronized Thread triggerUpdate() {
+        if (inProgress != null) {
+            if (!inProgress.isAlive()) {
+                LOGGER.log(Level.WARNING, "Previous {0} monitoring activity died without cleaning up after itself",
+                    getDisplayName());
+                inProgress = null;
+            } else if (System.currentTimeMillis() > inProgressStarted + getMonitoringTimeOut() + 1000) {
+                // maybe it got stuck?
+                LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting",
+                        getDisplayName());
+                inProgress.interrupt();
+                inProgress = null; // we interrupted the old one so it's now dead to us.
+            } else {
+                // return the in progress
+                return inProgress;
+            }
+        }
+        final Record t = new Record();
         t.start();
-        return t;
+        // only store the new thread if we started it
+        inProgress = t;
+        inProgressStarted = System.currentTimeMillis();
+        return inProgress;
+    }
+
+    /**
+     * Controls the time out of monitoring.
+     */
+    protected long getMonitoringTimeOut() {
+        return TimeUnit.SECONDS.toMillis(30);
     }
 
     /**
@@ -262,14 +295,6 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
         public Record() {
             super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
-            synchronized(AbstractNodeMonitorDescriptor.this) {
-                if(inProgress!=null) {
-                    // maybe it got stuck?
-                    LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting", getDisplayName());
-                    inProgress.interrupt();
-                }
-                inProgress = this;
-            }
         }
 
         @Override

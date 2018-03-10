@@ -23,11 +23,11 @@
  */
 package hudson.logging;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Computer;
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import java.util.List;
 
@@ -37,7 +37,7 @@ import java.util.logging.LogRecord;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -63,7 +63,7 @@ public class LogRecorderManagerTest {
         assertEquals(logger.getLevel(), Level.FINEST);
     }
 
-    @Bug(18274)
+    @Issue("JENKINS-18274")
     @Test public void loggingOnSlaves() throws Exception {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
@@ -109,7 +109,7 @@ public class LogRecorderManagerTest {
         assertFalse(text, text.contains("msg #4"));
     }
 
-    private static final class Log implements Callable<Boolean,Error> {
+    private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
         private final Level level;
         private final String logger;
         private final String message;

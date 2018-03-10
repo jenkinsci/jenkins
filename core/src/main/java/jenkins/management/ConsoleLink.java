@@ -28,11 +28,12 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 900)
+@Extension(ordinal = Integer.MAX_VALUE - 900) @Symbol("console")
 public class ConsoleLink extends ManagementLink {
 
     @Override

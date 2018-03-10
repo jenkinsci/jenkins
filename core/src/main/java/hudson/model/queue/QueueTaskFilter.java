@@ -33,6 +33,7 @@ import hudson.model.ResourceList;
 
 import java.io.IOException;
 import java.util.Collection;
+import javax.annotation.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.
@@ -55,10 +56,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getLastBuiltOn();
     }
 
+    @Deprecated
     public boolean isBuildBlocked() {
         return base.isBuildBlocked();
     }
 
+    @Deprecated
     public String getWhyBlocked() {
         return base.getWhyBlocked();
     }
@@ -79,7 +82,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getEstimatedDuration();
     }
 
-    public Executable createExecutable() throws IOException {
+    public @CheckForNull Executable createExecutable() throws IOException {
         return base.createExecutable();
     }
 
@@ -109,10 +112,6 @@ public abstract class QueueTaskFilter implements Queue.Task {
 
     public Collection<? extends SubTask> getSubTasks() {
         return base.getSubTasks();
-    }
-
-    public final Task getOwnerTask() {
-        return this;
     }
 
     public Object getSameNodeConstraint() {

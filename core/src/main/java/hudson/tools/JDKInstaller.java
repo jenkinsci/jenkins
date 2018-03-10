@@ -34,22 +34,28 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -59,7 +65,6 @@ import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,6 +74,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -76,6 +82,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static hudson.tools.JDKInstaller.Preference.*;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Install JDKs from java.sun.com.
@@ -170,6 +177,7 @@ public class JDKInstaller extends ToolInstaller {
         PrintStream out = log.getLogger();
 
         out.println("Installing "+ jdkBundle);
+        FilePath parent = new FilePath(launcher.getChannel(), expectedLocation).getParent();
         switch (p) {
         case LINUX:
         case SOLARIS:
@@ -177,11 +185,9 @@ public class JDKInstaller extends ToolInstaller {
             // so check if the file is gzipped, and if so, treat it accordingly
             byte[] header = new byte[2];
             {
-                DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                try {
+                try (InputStream is = fs.read(jdkBundle);
+                     DataInputStream in = new DataInputStream(is)) {
                     in.readFully(header);
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
             }
 
@@ -233,13 +239,15 @@ public class JDKInstaller extends ToolInstaller {
                 - http://java.sun.com/j2se/1.5.0/sdksilent.html
                 - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
              */
-            String logFile = jdkBundle+".install.log";
 
             expectedLocation = expectedLocation.trim();
             if (expectedLocation.endsWith("\\")) {
                 // Prevent a trailing slash from escaping quotes
                 expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
+            String logFile = parent.createTempFile("install", "log").getRemote();
+
+
             ArgumentListBuilder args = new ArgumentListBuilder();
             assert (new File(expectedLocation).exists()) : expectedLocation
                     + " must exist, otherwise /L will cause the installer to fail with error 1622";
@@ -247,37 +255,88 @@ public class JDKInstaller extends ToolInstaller {
                 // Installer uses InstallShield.
                 args.add("CMD.EXE", "/C");
 
+                // see http://docs.oracle.com/javase/1.5.0/docs/guide/deployment/deployment-guide/silent.html
                 // CMD.EXE /C must be followed by a single parameter (do not split it!)
                 args.add(jdkBundle + " /s /v\"/qn REBOOT=ReallySuppress INSTALLDIR=\\\""
-                        + expectedLocation + "\\\" /L \\\"" + expectedLocation
-                        + "\\jdk.exe.install.log\\\"\"");
+                        + expectedLocation + "\\\" /L \\\"" + logFile + "\\\"\"");
             } else {
                 // Installed uses Windows Installer (MSI)
                 args.add(jdkBundle, "/s");
 
                 // Create a private JRE by omitting "PublicjreFeature"
                 // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
-                args.add("ADDLOCAL=\"ToolsFeature\"");
-
-                args.add("REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
-                        "/L \\\"" + expectedLocation + "\\jdk.exe.install.log\\\"");
+                args.add("ADDLOCAL=\"ToolsFeature\"",
+                        "REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
+                        "/L",  logFile);
             }
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (r != 0) {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
-                InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
-                try {
-                    IOUtils.copy(in,new OutputStreamWriter(out));
-                } finally {
-                    in.close();
+                try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
+                    IOUtils.copy(in, new OutputStreamWriter(out));
                 }
                 throw new AbortException();
             }
 
             fs.delete(logFile);
 
+            break;
+
+        case OSX:
+            // Mount the DMG distribution bundle
+            FilePath dmg = parent.createTempDir("jdk", "dmg");
+            exit = launcher.launch()
+                    .cmds("hdiutil", "attach", "-puppetstrings", "-mountpoint", dmg.getRemote(), jdkBundle)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // expand the installation PKG
+            FilePath[] list = dmg.list("*.pkg");
+            if (list.length != 1) {
+                log.getLogger().println("JDK dmg bundle does not contain expected pkg installer");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String installer = list[0].getRemote();
+
+            FilePath pkg = parent.createTempDir("jdk", "pkg");
+            pkg.deleteRecursive(); // pkgutil fails if target directory exists
+            exit = launcher.launch()
+                    .cmds("pkgutil", "--expand", installer, pkg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            exit = launcher.launch()
+                    .cmds("umount", dmg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // We only want the actual JDK sub-package, which "Payload" is actually a tar.gz archive
+            list = pkg.list("jdk*.pkg/Payload");
+            if (list.length != 1) {
+                log.getLogger().println("JDK pkg installer does not contain expected JDK Payload archive");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String payload = list[0].getRemote();
+            exit = launcher.launch()
+                    .pwd(parent).cmds("tar", "xzf", payload)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            parent.child("Contents/Home").moveAllChildrenTo(new FilePath(launcher.getChannel(), expectedLocation));
+            parent.child("Contents").deleteRecursive();
+
+            pkg.deleteRecursive();
+            dmg.deleteRecursive();
             break;
         }
     }
@@ -297,7 +356,7 @@ public class JDKInstaller extends ToolInstaller {
     public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;
         void chmod(String file,int mode) throws IOException, InterruptedException;
-        InputStream read(String file) throws IOException;
+        InputStream read(String file) throws IOException, InterruptedException;
         /**
          * List sub-directories of the given directory and just return the file name portion.
          */
@@ -320,7 +379,7 @@ public class JDKInstaller extends ToolInstaller {
             $(file).chmod(mode);
         }
 
-        public InputStream read(String file) throws IOException {
+        public InputStream read(String file) throws IOException, InterruptedException {
             return $(file).read();
         }
 
@@ -388,8 +447,7 @@ public class JDKInstaller extends ToolInstaller {
 
         HttpClient hc = new HttpClient();
         hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
-        Jenkins j = Jenkins.getInstance();
-        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        ProxyConfiguration jpc = Jenkins.getInstance().proxy;
         if(jpc != null) {
             hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
             if(jpc.getUserName() != null)
@@ -419,16 +477,45 @@ public class JDKInstaller extends ToolInstaller {
                     throw new IOException("Failed to request " + m.getURI() +" exit code="+r);
 
                 if (m.getURI().getHost().equals("login.oracle.com")) {
+                    /* Oracle switched from old to new, and then back to old. This code should work for either.
+                     * Old Login flow:
+                     * 1. /mysso/signon.jsp: Form for username + password: Submit actions is:
+                     * 2. /oam/server/sso/auth_cred_submit: Returns a 302 to:
+                     * 3. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
+                     * New Login flow:
+                     * 1. /oaam_server/oamLoginPage.jsp: Form for username + password. Submit action is:
+                     * 2. /oaam_server/login.do: Returns a 302 to:
+                     * 3. /oaam_server/loginAuth.do: After 2 seconds, JS sets window.location to:
+                     * 4. /oaam_server/authJump.do: Contains a single form with hidden inputs and JS that submits the form to:
+                     * 5. /oam/server/dap/cred_submit: Returns a 302 to:
+                     * 6. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
+                     */
+                    if (m.getURI().getPath().contains("/loginAuth.do")) {
+                        try {
+                            Thread.sleep(2000);
+                            m.releaseConnection();
+                            m = new GetMethod(new URI(m.getURI(), "/oaam_server/authJump.do?jump=false", true).toString());
+                            continue;
+                        } catch (InterruptedException x) {
+                            throw new IOException("Interrupted while logging in", x);
+                        }
+                    }
+
                     LOGGER.fine("Appears to be a login page");
                     String resp = IOUtils.toString(m.getResponseBodyAsStream(), m.getResponseCharSet());
                     m.releaseConnection();
-                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\" .*?</form>", Pattern.DOTALL).matcher(resp);
+                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\".*?</form>", Pattern.DOTALL).matcher(resp);
                     if (!pm.find())
                         throw new IllegalStateException("Unable to find a form in the response:\n"+resp);
 
                     String form = pm.group();
                     PostMethod post = new PostMethod(
                             new URL(new URL(m.getURI().getURI()),pm.group(1)).toExternalForm());
+
+                    if (m.getURI().getPath().contains("/authJump.do")) {
+                        m = post;
+                        continue;
+                    }
 
                     String u = getDescriptor().getUsername();
                     Secret p = getDescriptor().getPassword();
@@ -441,9 +528,9 @@ public class JDKInstaller extends ToolInstaller {
                         String n = extractAttribute(fragment,"name");
                         String v = extractAttribute(fragment,"value");
                         if (n==null || v==null)     continue;
-                        if (n.equals("ssousername"))
+                        if (n.equals("userid") || n.equals("ssousername"))
                             v = u;
-                        if (n.equals("password")) {
+                        if (n.equals("pass") || n.equals("password")) {
                             v = p.getPlainText();
                             if (authCount++ > 3) {
                                 log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
@@ -455,17 +542,16 @@ public class JDKInstaller extends ToolInstaller {
 
                     m = post;
                 } else {
-                    log.getLogger().println("Downloading " + m.getResponseContentLength() + "bytes");
+                    log.getLogger().println("Downloading " + m.getResponseContentLength() + " bytes");
 
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
                     File tmp = new File(cache.getPath()+".tmp");
                     try {
                         tmp.getParentFile().mkdirs();
-                        FileOutputStream out = new FileOutputStream(tmp);
-                        try {
+                        try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
-                        } finally {
-                            out.close();
+                        } catch (InvalidPathException e) {
+                            throw new IOException(e);
                         }
 
                         tmp.renameTo(cache);
@@ -500,7 +586,7 @@ public class JDKInstaller extends ToolInstaller {
      * Supported platform.
      */
     public enum Platform {
-        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe");
+        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe"), OSX("jdk.dmg");
 
         /**
          * Choose the file name suitable for the downloaded JDK bundle.
@@ -527,10 +613,11 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("linux"))  return LINUX;
             if(arch.contains("windows"))   return WINDOWS;
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
+            if(arch.contains("mac")) return OSX;
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
 
-        static class GetCurrentPlatform implements Callable<Platform,DetectionFailedException> {
+        static class GetCurrentPlatform extends MasterToSlaveCallable<Platform,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public Platform call() throws DetectionFailedException {
                 return current();
@@ -592,7 +679,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
 
-        static class GetCurrentCPU implements Callable<CPU,DetectionFailedException> {
+        static class GetCurrentCPU extends MasterToSlaveCallable<CPU,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public CPU call() throws DetectionFailedException {
                 return current();
@@ -611,8 +698,8 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFamilyList {
-        public int version;
         public JDKFamily[] data = new JDKFamily[0];
+        public int version;
 
         public boolean isEmpty() {
             for (JDKFamily f : data) {
@@ -640,6 +727,18 @@ public class JDKInstaller extends ToolInstaller {
 
     public static final class JDKRelease {
         /**
+         * the list of {@link JDKFile}s
+         */
+        public JDKFile[] files;
+        /**
+         * the license path
+         */
+        public String licpath;
+        /**
+         * the license title
+         */
+        public String lictitle;
+        /**
          * This maps to the former product code, like "jdk-6u13-oth-JPR"
          */
         public String name;
@@ -647,7 +746,6 @@ public class JDKInstaller extends ToolInstaller {
          * This is human readable.
          */
         public String title;
-        public JDKFile[] files;
 
         /**
          * We used to use IDs like "jdk-6u13-oth-JPR@CDS-CDS_Developer", but Oracle switched to just "jdk-6u13-oth-JPR".
@@ -659,9 +757,9 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFile {
+        public String filepath;
         public String name;
         public String title;
-        public String filepath;
     }
 
     @Override
@@ -669,7 +767,7 @@ public class JDKInstaller extends ToolInstaller {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    @Extension
+    @Extension @Symbol("jdkInstaller")
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         private String username;
         private Secret password;
@@ -715,14 +813,16 @@ public class JDKInstaller extends ToolInstaller {
             if (value) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense());
             }
         }
 
         /**
          * Submits the Oracle account username/password.
          */
+        @RequirePOST
         public HttpResponse doPostCredential(@QueryParameter String username, @QueryParameter String password) throws IOException, ServletException {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             this.username = username;
             this.password = Secret.fromString(password);
             save();
@@ -733,7 +833,7 @@ public class JDKInstaller extends ToolInstaller {
     /**
      * JDK list.
      */
-    @Extension
+    @Extension @Symbol("jdk")
     public static final class JDKList extends Downloadable {
         public JDKList() {
             super(JDKInstaller.class);
@@ -743,6 +843,123 @@ public class JDKInstaller extends ToolInstaller {
             JSONObject d = getData();
             if(d==null) return new JDKFamilyList();
             return (JDKFamilyList)JSONObject.toBean(d,JDKFamilyList.class);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JSONObject reduce (List<JSONObject> jsonObjectList) {
+            List<JDKFamily> reducedFamilies = new LinkedList<>();
+            int version = 0;
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.registerPropertyExclusion(JDKFamilyList.class, "empty");
+            jsonConfig.setRootClass(JDKFamilyList.class);
+            //collect all JDKFamily objects from the multiple json objects
+            for (JSONObject jsonJdkFamilyList : jsonObjectList) {
+                JDKFamilyList jdkFamilyList = (JDKFamilyList)JSONObject.toBean(jsonJdkFamilyList, jsonConfig);
+                if (version == 0) {
+                    //we set as version the version of the first update center
+                    version = jdkFamilyList.version;
+                }
+                JDKFamily[] jdkFamilies = jdkFamilyList.data;
+                reducedFamilies.addAll(Arrays.asList(jdkFamilies));
+            }
+            //we  iterate on the list and reduce it until there are no more duplicates
+            //this could be made recursive
+            while (hasDuplicates(reducedFamilies, "name")) {
+                //create a temporary list to store the tmp result
+                List<JDKFamily> tmpReducedFamilies = new LinkedList<>();
+                //we need to skip the processed families
+                boolean processed [] = new boolean[reducedFamilies.size()];
+                for (int i = 0; i < reducedFamilies.size(); i ++ ) {
+                    if (processed [i] == true) {
+                        continue;
+                    }
+                    JDKFamily data1 = reducedFamilies.get(i);
+                    boolean hasDuplicate = false;
+                    for (int j = i + 1; j < reducedFamilies.size(); j ++ ) {
+                        JDKFamily data2 = reducedFamilies.get(j);
+                        //if we found a duplicate we need to merge the families
+                        if (data1.name.equals(data2.name)) {
+                            hasDuplicate = true;
+                            processed [j] = true;
+                            JDKFamily reducedData = reduceData(data1.name, new LinkedList<JDKRelease>(Arrays.asList(data1.releases)), new LinkedList<JDKRelease>(Arrays.asList(data2.releases)));
+                            tmpReducedFamilies.add(reducedData);
+                            //after the first duplicate has been found we break the loop since the duplicates are
+                            //processed two by two
+                            break;
+                        }
+                    }
+                    //if no duplicate has been found we just insert the whole family in the tmp list
+                    if (!hasDuplicate) {
+                        tmpReducedFamilies.add(data1);
+                    }
+                }
+                reducedFamilies = tmpReducedFamilies;
+            }
+            JDKFamilyList jdkFamilyList = new JDKFamilyList();
+            jdkFamilyList.version = version;
+            jdkFamilyList.data = new JDKFamily[reducedFamilies.size()];
+            reducedFamilies.toArray(jdkFamilyList.data);
+            JSONObject reducedJdkFamilyList = JSONObject.fromObject(jdkFamilyList, jsonConfig);
+            //return the list with no duplicates
+            return reducedJdkFamilyList;
+        }
+
+        private JDKFamily reduceData(String name, List<JDKRelease> releases1, List<JDKRelease> releases2) {
+            LinkedList<JDKRelease> reducedReleases = new LinkedList<>();
+            for (Iterator<JDKRelease> iterator = releases1.iterator(); iterator.hasNext(); ) {
+                JDKRelease release1 = iterator.next();
+                boolean hasDuplicate = false;
+                for (Iterator<JDKRelease> iterator2 = releases2.iterator(); iterator2.hasNext(); ) {
+                    JDKRelease release2 = iterator2.next();
+                    if (release1.name.equals(release2.name)) {
+                        hasDuplicate = true;
+                        JDKRelease reducedRelease = reduceReleases(release1, new LinkedList<JDKFile>(Arrays.asList(release1.files)), new LinkedList<JDKFile>(Arrays.asList(release2.files)));
+                        iterator2.remove();
+                        reducedReleases.add(reducedRelease);
+                        //we assume that in one release list there are no duplicates so we stop at the first one
+                        break;
+                    }
+                }
+                if (!hasDuplicate) {
+                    reducedReleases.add(release1);
+                }
+            }
+            reducedReleases.addAll(releases2);
+            JDKFamily reducedFamily = new JDKFamily();
+            reducedFamily.name = name;
+            reducedFamily.releases = new JDKRelease[reducedReleases.size()];
+            reducedReleases.toArray(reducedFamily.releases);
+            return reducedFamily;
+        }
+
+        private JDKRelease reduceReleases(JDKRelease release, List<JDKFile> files1, List<JDKFile> files2) {
+            LinkedList<JDKFile> reducedFiles = new LinkedList<>();
+            for (Iterator<JDKFile> iterator1 = files1.iterator(); iterator1.hasNext(); ) {
+                JDKFile file1 = iterator1.next();
+                for (Iterator<JDKFile> iterator2 = files2.iterator(); iterator2.hasNext(); ) {
+                    JDKFile file2 = iterator2.next();
+                    if (file1.name.equals(file2.name)) {
+                        iterator2.remove();
+                        //we assume the in one file list there are no duplicates so we break after we find the
+                        //first match
+                        break;
+                    }
+                }
+            }
+            reducedFiles.addAll(files1);
+            reducedFiles.addAll(files2);
+
+            JDKRelease jdkRelease = new JDKRelease();
+            jdkRelease.files = new JDKFile[reducedFiles.size()];
+            reducedFiles.toArray(jdkRelease.files);
+            jdkRelease.name = release.name;
+            jdkRelease.licpath = release.licpath;
+            jdkRelease.lictitle = release.lictitle;
+            jdkRelease.title = release.title;
+            return jdkRelease;
         }
     }
 

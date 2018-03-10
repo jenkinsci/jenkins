@@ -9,7 +9,6 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.LeftItem;
 import hudson.model.Queue.WaitingItem;
-import jenkins.model.Jenkins;
 
 import java.util.concurrent.Executor;
 
@@ -80,6 +79,6 @@ public abstract class QueueListener implements ExtensionPoint {
      * Returns all the registered {@link QueueListener}s.
      */
     public static ExtensionList<QueueListener> all() {
-        return Jenkins.getInstance().getExtensionList(QueueListener.class);
+        return ExtensionList.lookup(QueueListener.class);
     }
 }

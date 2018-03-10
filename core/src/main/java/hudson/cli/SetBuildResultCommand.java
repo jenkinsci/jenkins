@@ -25,7 +25,6 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.Run;
 import org.kohsuke.args4j.Argument;
@@ -34,7 +33,9 @@ import org.kohsuke.args4j.Argument;
  * Sets the result of the current build. Works only if invoked from within a build.
  * 
  * @author Kohsuke Kawaguchi
+ * @deprecated Limited to Remoting-based protocol.
  */
+@Deprecated
 @Extension
 public class SetBuildResultCommand extends CommandDuringBuild {
     @Argument(metaVar="RESULT",required=true)
@@ -48,7 +49,7 @@ public class SetBuildResultCommand extends CommandDuringBuild {
     @Override
     protected int run() throws Exception {
         Run r = getCurrentlyBuilding();
-        r.getParent().checkPermission(Item.BUILD);
+        r.checkPermission(Run.UPDATE);
         r.setResult(result);
         return 0;
     }

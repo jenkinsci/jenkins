@@ -48,7 +48,7 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  * and then we use MD5 to create random enough distribution.
  *
  * <p>
- * This consistent hash implementaiton is consistent both to the addition/removal of Ts, as well
+ * This consistent hash implementation is consistent both to the addition/removal of Ts, as well
  * as increase/decrease of the replicas.
  *
  * <p>
@@ -64,6 +64,7 @@ public class ConsistentHash<T> {
      * All the items in the hash, to their replication factors.
      */
     private final Map<T,Point[]> items = new HashMap<T,Point[]>();
+    private int numPoints;
 
     private final int defaultReplication;
     private final Hash<T> hash;
@@ -100,8 +101,13 @@ public class ConsistentHash<T> {
         private final Object[] owner; // really T[]
 
         private Table() {
+            int r=0;
+            for (Point[] v : items.values())
+                r+=v.length;
+            numPoints = r;
+
             // merge all points from all nodes and sort them into a single array
-            Point[] allPoints = new Point[countAllPoints()];
+            Point[] allPoints = new Point[numPoints];
             int p=0;
             for (Point[] v : items.values()) {
                 System.arraycopy(v,0,allPoints,p,v.length);
@@ -186,75 +192,85 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    private static final Hash DEFAULT_HASH = new Hash() {
+    static final Hash<?> DEFAULT_HASH = new Hash<Object>() {
         public String hash(Object o) {
             return o.toString();
         }
     };
 
     public ConsistentHash() {
-        this(DEFAULT_HASH);
+        this((Hash<T>) DEFAULT_HASH);
     }
 
     public ConsistentHash(int defaultReplication) {
-        this(DEFAULT_HASH,defaultReplication);
+        this((Hash<T>) DEFAULT_HASH,defaultReplication);
     }
 
     public ConsistentHash(Hash<T> hash) {
-        this(hash,100);
+        this(hash, 100);
     }
 
     public ConsistentHash(Hash<T> hash, int defaultReplication) {
         this.hash = hash;
         this.defaultReplication = defaultReplication;
-        this.table = new Table(); // initial empty table
+        refreshTable();
     }
 
     public int countAllPoints() {
-        int r=0;
-        for (Point[] v : items.values())
-            r+=v.length;
-        return r;
+        return numPoints;
     }
 
     /**
      * Adds a new node with the default number of replica.
      */
-    public void add(T node) {
+    public synchronized void add(T node) {
         add(node,defaultReplication);
     }
 
     /**
      * Calls {@link #add(Object)} with all the arguments.
      */
-    public void addAll(T... nodes) {
+    public synchronized void addAll(T... nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
     }
 
     /**
      * Calls {@link #add(Object)} with all the arguments.
      */
-    public void addAll(Collection<? extends T> nodes) {
+    public synchronized void addAll(Collection<? extends T> nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
+    }
+
+    /**
+     * Calls {@link #add(Object,int)} with all the arguments.
+     */
+    public synchronized void addAll(Map<? extends T,Integer> nodes) {
+        for (Map.Entry<? extends T,Integer> node : nodes.entrySet())
+            addInternal(node.getKey(),node.getValue());
+        refreshTable();
     }
 
     /**
      * Removes the node entirely. This is the same as {@code add(node,0)}
      */
-    public void remove(T node) {
-        add(node,0);
+    public synchronized void remove(T node) {
+        add(node, 0);
     }
 
     /**
      * Adds a new node with the given number of replica.
-     *
-     * <p>
-     * This is the only function that manipulates {@link #items}.
      */
     public synchronized void add(T node, int replica) {
-        if(replica==0) {
+        addInternal(node, replica);
+        refreshTable();
+    }
+
+    private synchronized void addInternal(T node, int replica) {
+        if (replica==0) {
             items.remove(node);
         } else {
             Point[] points = new Point[replica];
@@ -263,6 +279,9 @@ public class ConsistentHash<T> {
                 points[i] = new Point(md5(seed+':'+i),node);
             items.put(node,points);
         }
+    }
+
+    private synchronized void refreshTable() {
         table = new Table();
     }
 
@@ -314,8 +333,8 @@ public class ConsistentHash<T> {
      * Creates a permutation of all the nodes for the given data point.
      *
      * <p>
-     * The returned pemutation is consistent, in the sense that small change
-     * to the consitent hash (like addition/removal/change of replicas) only
+     * The returned permutation is consistent, in the sense that small change
+     * to the consistent hash (like addition/removal/change of replicas) only
      * creates a small change in the permutation.
      *
      * <p>

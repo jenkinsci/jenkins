@@ -47,7 +47,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CLI.class) // When mocking new operator caller has to be @PreparedForTest, not class itself
+@PrepareForTest({CLI.class, CLIConnectionFactory.class}) // When mocking new operator caller has to be @PreparedForTest, not class itself
 public class PrivateKeyProviderTest {
 
     @Test
@@ -57,7 +57,7 @@ public class PrivateKeyProviderTest {
         final File dsaKey = keyFile(".ssh/id_dsa");
         final File rsaKey = keyFile(".ssh/id_rsa");
 
-        run("-i", dsaKey.getAbsolutePath(), "-i", rsaKey.getAbsolutePath(), "-s", "http://example.com");
+        run("-remoting", "-i", dsaKey.getAbsolutePath(), "-i", rsaKey.getAbsolutePath(), "-s", "http://example.com");
 
         verify(cli).authenticate(withKeyPairs(
                 keyPair(dsaKey),
@@ -73,7 +73,7 @@ public class PrivateKeyProviderTest {
         final File dsaKey = keyFile(".ssh/id_dsa");
 
         fakeHome();
-        run("-s", "http://example.com");
+        run("-remoting", "-s", "http://example.com");
 
         verify(cli).authenticate(withKeyPairs(
                 keyPair(rsaKey),

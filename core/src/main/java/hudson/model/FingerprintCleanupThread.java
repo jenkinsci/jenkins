@@ -24,12 +24,14 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.Functions;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -42,7 +44,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("fingerprintCleanup")
 public final class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     public FingerprintCleanupThread() {
@@ -58,7 +60,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     private static FingerprintCleanupThread getInstance() {
-        return Jenkins.getInstance().getExtensionList(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
+        return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
     }
 
     public void execute(TaskListener listener) {
@@ -72,7 +74,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
                 for(File file2 : files2) {
                     File[] files3 = file2.listFiles(FINGERPRINTFILE_FILTER);
                     for(File file3 : files3) {
-                        if(check(file3))
+                        if(check(file3, listener))
                             numFiles++;
                     }
                     deleteIfEmpty(file2);
@@ -81,7 +83,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
             }
         }
 
-        logger.log(Level.INFO, "Cleaned up "+numFiles+" records");
+        listener.getLogger().println("Cleaned up "+numFiles+" records");
     }
 
     /**
@@ -97,22 +99,22 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     /**
      * Examines the file and returns true if a file was deleted.
      */
-    private boolean check(File fingerprintFile) {
+    private boolean check(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = Fingerprint.load(fingerprintFile);
             if (fp == null || !fp.isAlive()) {
-                logger.fine("deleting obsolete " + fingerprintFile);
+                listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
             } else {
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
-                logger.finer("possibly trimming " + fingerprintFile);
+                listener.getLogger().println("possibly trimming " + fingerprintFile);
                 fp = Jenkins.getInstance()._getFingerprint(fp.getHashString());
                 return fp.trim();
             }
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to process "+fingerprintFile, e);
+            Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
             return false;
         }
     }

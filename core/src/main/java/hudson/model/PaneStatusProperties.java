@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpSession;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.Stapler;
 
 public class PaneStatusProperties extends UserProperty implements Saveable {
@@ -43,7 +44,7 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 		return this;
 	}
 	
-	@Extension
+	@Extension @Symbol("paneStatus")
 	public static class DescriptorImpl extends UserPropertyDescriptor {
 
 		@Override
@@ -51,11 +52,6 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 			return new PaneStatusProperties();
 		}
 
-		@Override
-		public String getDisplayName() {
-			return null;
-		}
-		
 		@Override
 		public boolean isEnabled() {
 			return false;

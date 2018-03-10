@@ -25,17 +25,22 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.Main;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
+import hudson.model.DownloadService.Downloadable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
-import net.sf.json.JSONObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Lets user configure how metadata files should be downloaded.
@@ -43,21 +48,17 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see DownloadService
  */
 @Restricted(NoExternalUse.class) // no clear reason for this to be an API
-@Extension public final class DownloadSettings extends GlobalConfiguration {
+@Extension @Symbol("downloadSettings")
+public final class DownloadSettings extends GlobalConfiguration {
 
     public static DownloadSettings get() {
         return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
     }
 
-    private boolean useBrowser = true; // historical default, not necessarily recommended
+    private boolean useBrowser = false;
     
     public DownloadSettings() {
         load();
-    }
-
-    @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        return true;
     }
 
     public boolean isUseBrowser() {
@@ -69,7 +70,24 @@ import org.kohsuke.stapler.StaplerRequest;
         save();
     }
 
-    @Extension public static final class DailyCheck extends AsyncPeriodicWork {
+    @Override public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+    }
+
+    public static boolean usePostBack() {
+        return get().isUseBrowser() && Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+    }
+
+    public static void checkPostBackAccess() throws AccessDeniedException {
+        if (!get().isUseBrowser()) {
+            throw new AccessDeniedException("browser-based download disabled");
+        }
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+    }
+
+    @Extension @Symbol("updateCenterCheck")
+    public static final class DailyCheck extends AsyncPeriodicWork {
+        private static final Logger LOGGER = Logger.getLogger(DailyCheck.class.getName());
 
         public DailyCheck() {
             super("Download metadata");
@@ -79,14 +97,54 @@ import org.kohsuke.stapler.StaplerRequest;
             return DAY;
         }
 
+        @Override public long getInitialDelay() {
+            return Main.isUnitTest ? DAY : 0;
+        }
+
         @Override protected void execute(TaskListener listener) throws IOException, InterruptedException {
             if (get().isUseBrowser()) {
                 return;
             }
+            boolean due = false;
+            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+                if (site.isDue()) {
+                    due = true;
+                    break;
+                }
+            }
+            if (!due) {
+                // JENKINS-32886: downloadables like the tool installer data may have never been tried if the plugin
+                // was installed "after a restart", so let's give them a try here.
+                final long now = System.currentTimeMillis();
+                for (Downloadable d : Downloadable.all()) {
+                    if (d.getDue() <= now) {
+                        try {
+                            d.updateNow();
+                        } catch(Exception e) {
+                            LOGGER.log(Level.WARNING, String.format("Unable to update downloadable [%s]", d.getId()), e);
+                        }
+                    }
+                }
+                return;
+            }
+            // This checks updates of the update sites and downloadables.
             HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
             }
+        }
+
+    }
+
+    @Extension public static final class Warning extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.DownloadSettings_Warning_DisplayName();
+        }
+
+        @Override public boolean isActivated() {
+            return DownloadSettings.get().isUseBrowser();
         }
 
     }

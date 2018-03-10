@@ -28,9 +28,9 @@ THE SOFTWARE.
     Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
     arbitrary items from the given list of descriptors, and configure them independently.
 
-    The submission can be data-bound into List&lt;T> where T is the common base type for the describable instances.
+    The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
 
-    For databinding use, please use &lt;f:repeatableHeteroProperty />
+    For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
     
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
@@ -81,11 +81,7 @@ THE SOFTWARE.
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
-            <j:if test="${help!=null}">
-              <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
-              </td>
-            </j:if>
+            <f:helpLink url="${help}"/>
           </tr>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
@@ -95,14 +91,13 @@ THE SOFTWARE.
 
         <d:invokeBody/>
 
+        <f:class-entry descriptor="${descriptor}" />
         <f:block>
           <div align="right">
-            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
       </table>
-      <input type="hidden" name="kind" value="${descriptor.id}" />
     </d:tag>
   </d:taglib>
 

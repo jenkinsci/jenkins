@@ -37,8 +37,9 @@ THE SOFTWARE.
       the action object itself is available in the 'action' variable
     -->
     <st:include page="action.jelly" from="${action}" optional="true">
-      <j:if test="${action.iconFileName!=null}">
-        <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}"/>
+      <j:if test="${icon!=null}">
+        <l:task icon="${icon}" title="${action.displayName}"
                 href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
       </j:if>
     </st:include>

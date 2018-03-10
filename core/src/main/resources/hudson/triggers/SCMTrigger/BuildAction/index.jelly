@@ -33,7 +33,7 @@ THE SOFTWARE.
       <h1>${%Polling Log}</h1>
       <l:rightspace>
         <a href="pollingLog">
-          <img src="${imagesURL}/24x24/document.png" alt="" height="24" width="24" />${%View as plain text}
+          <l:icon class="icon-document icon-md"/>${%View as plain text}
         </a>
       </l:rightspace>
 

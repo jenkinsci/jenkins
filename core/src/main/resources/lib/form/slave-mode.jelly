@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    listbox for choosing the slave's usage.
+    listbox for choosing the agent's usage.
 
     <st:attribute name="name">
       Name of the &lt;select> element.

@@ -30,7 +30,7 @@ import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -38,7 +38,7 @@ public class ViewJobTest {
 
     @Rule public JenkinsRule rule = new JenkinsRule();
 
-    @Bug(19377)
+    @Issue("JENKINS-19377")
     @Test public void removeRun() throws Exception {
         J j = rule.jenkins.createProject(J.class, "j");
         R r1 = j.nue();
@@ -68,10 +68,6 @@ public class ViewJobTest {
         }
 
         @TestExtension public static final class DescriptorImpl extends TopLevelItemDescriptor {
-
-            @Override public String getDisplayName() {
-                return "J";
-            }
 
             @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new J(parent, name);

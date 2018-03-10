@@ -23,6 +23,8 @@
  */
 package hudson.cli;
 
+import hudson.remoting.ClassFilter;
+import hudson.remoting.ObjectInputStreamEx;
 import hudson.remoting.SocketChannelStream;
 import org.apache.commons.codec.binary.Base64;
 
@@ -54,6 +56,9 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
+/**
+ * Used by Jenkins core only in deprecated Remoting-based CLI.
+ */
 public class Connection {
     public final InputStream in;
     public final OutputStream out;
@@ -107,7 +112,8 @@ public class Connection {
      * Receives an object sent by {@link #writeObject(Object)}
      */
     public <T> T readObject() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(in);
+        ObjectInputStream ois = new ObjectInputStreamEx(in,
+                getClass().getClassLoader(), ClassFilter.DEFAULT);
         return (T)ois.readObject();
     }
 

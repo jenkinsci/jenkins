@@ -31,9 +31,12 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" contextMenu="false"/>
-      <l:task icon="images/24x24/attribute.png" href="${url}" title="${%Overview}" contextMenu="false"/>
-      <l:task icon="images/24x24/monitor.png" href="${url}/load-statistics" title="${%Load Statistics}" />
+      <l:task contextMenu="false" href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
+      <l:task contextMenu="false" href="${url}" icon="icon-attribute icon-md" title="${%Overview}"/>
+      <j:if test="${it.atom}">
+        <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%Configure}" permission="${app.ADMINISTER}" />
+      </j:if>
+      <l:task href="${url}/load-statistics" icon="icon-monitor icon-md" title="${%Load Statistics}"/>
       <st:include page="actions.jelly" />
     </l:tasks>
   </l:side-panel>

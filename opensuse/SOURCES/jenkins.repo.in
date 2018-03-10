@@ -1,7 +1,0 @@
-[jenkins]
-name=jenkins
-enabled=1
-autorefresh=0
-baseurl=@URL@
-type=rpm-md
-keeppackages=0

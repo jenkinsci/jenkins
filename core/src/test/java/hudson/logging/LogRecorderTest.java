@@ -29,11 +29,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class LogRecorderTest {
 
-    @Bug(17983)
+    @Issue("JENKINS-17983")
     @Test public void targetIncludes() {
         assertTrue(includes("hudson", "hudson"));
         assertFalse(includes("hudson", "hudsone"));

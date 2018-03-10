@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.TransientActionFactory;
@@ -37,6 +36,7 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
      * @deprecated as of 1.461
      *      Override and call {@link #createFor(Run)} instead.
      */
+    @Deprecated
     public Collection<? extends Action> createFor(AbstractBuild target) {
         return Collections.emptyList();
     }
@@ -45,6 +45,6 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
      * Returns all the registered {@link TransientBuildActionFactory}s.
      */
     public static ExtensionList<TransientBuildActionFactory> all() {
-        return Jenkins.getInstance().getExtensionList(TransientBuildActionFactory.class);
+        return ExtensionList.lookup(TransientBuildActionFactory.class);
     }
 }

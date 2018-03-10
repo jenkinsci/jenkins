@@ -39,7 +39,6 @@ import hudson.model.BuildListener;
 import hudson.model.Environment;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,8 +53,11 @@ import javax.annotation.Nonnull;
  * Extensible property of {@link Node}.
  *
  * <p>
- * Plugins can contribute this extension point to add additional data or UI actions to {@link Node}.
+ * Plugins can contribute this extension point to add additional data to {@link Node}.
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
+ * 
+ * <p>
+ * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page (<code>./computer/&lt;a node&gt;</code>), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
  *
  * <h2>Views</h2>
@@ -94,6 +96,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * @deprecated as of 1.413
      *      Use {@link #canTake(Queue.BuildableItem)}
      */
+    @Deprecated
     public CauseOfBlockage canTake(Task task) {
         return null;
     }
@@ -157,7 +160,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * @param env
      *      Manipulate this variable (normally by adding more entries.)
      *      Note that this is an override, so it doesn't contain environment variables that are
-     *      currently set for the slave process itself.
+     *      currently set for the agent process itself.
      * @param listener
      *      Can be used to send messages.
      *
