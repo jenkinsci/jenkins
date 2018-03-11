@@ -287,7 +287,7 @@ public class ArtifactArchiverTest {
 
         j.buildAndAssertSuccess(p);
         VirtualFile artifacts = p.getBuildByNumber(1).getArtifactManager().root();
-        assertTrue(artifacts.child("target").child("file").exists());
+        assertTrue("file was archived", artifacts.child("target").child("file").exists());
     }
 
     @Test
@@ -302,7 +302,7 @@ public class ArtifactArchiverTest {
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
         assertEquals(Result.FAILURE, build(p));
-        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertArrayEquals("artifacts list empty", new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -316,8 +316,8 @@ public class ArtifactArchiverTest {
         archiver.setBasePath("foo/../..");
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
-        assertEquals(Result.FAILURE, build(p));
-        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertEquals("build failed", Result.FAILURE, build(p));
+        assertArrayEquals("artifacts list empty", new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -332,8 +332,8 @@ public class ArtifactArchiverTest {
         archiver.setBasePath("/");
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
-        assertEquals(Result.FAILURE, build(p));
-        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertEquals("build failed", Result.FAILURE, build(p));
+        assertArrayEquals("artifacts list empty", new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -343,6 +343,7 @@ public class ArtifactArchiverTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
         assertEquals("no workspace", FormValidation.Kind.OK, desc.doCheckBasePath(p, "foo").kind);
+        assertEquals("explicit same directory", FormValidation.Kind.OK, desc.doCheckBasePath(p, ".").kind);
         assertEquals("relative path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
         assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
         assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "../workfoo").kind);
@@ -371,8 +372,8 @@ public class ArtifactArchiverTest {
         archiver.setAllowEmptyArchive(true);
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
-        assertEquals(Result.SUCCESS, build(p));
-        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertEquals("build succeeded", Result.SUCCESS, build(p));
+        Assert.assertArrayEquals("artifacts list empty", new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
 
     }
 
@@ -388,8 +389,8 @@ public class ArtifactArchiverTest {
         archiver.setAllowEmptyArchive(true);
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
-        assertEquals(Result.SUCCESS, build(p));
-        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertEquals("build succeeded", Result.SUCCESS, build(p));
+        Assert.assertArrayEquals("artifacts list empty", new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
 
     }
 

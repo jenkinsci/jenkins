@@ -60,6 +60,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -386,6 +387,38 @@ public class FilePathTest {
         tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
+    }
+
+    @Test public void descendantTest() throws Exception {
+        VirtualChannel channel = Mockito.mock(VirtualChannel.class);
+
+        { // tests for '.'
+            File reference = new File(".");
+            FilePath referencePath = new FilePath(reference);
+            assertFalse("same directory", referencePath.isDescendantOf(new FilePath(reference)));
+            assertTrue("child", new FilePath(referencePath, "child").isDescendantOf(referencePath));
+            assertFalse("sibling", new FilePath(referencePath, "../child").isDescendantOf(referencePath));
+            assertFalse("sibling", new FilePath(referencePath, "foo/../../child").isDescendantOf(referencePath));
+            assertTrue("child 2", new FilePath(referencePath, "child").isDescendantOf(new FilePath(reference)));
+            assertTrue("grandchild", new FilePath(referencePath, "child/grandchild").isDescendantOf(referencePath));
+            assertTrue("grandchild 2", new FilePath(referencePath, "child/grandchild").isDescendantOf(new FilePath(reference)));
+            assertFalse("reverse", referencePath.isDescendantOf(new FilePath(referencePath, "child")));
+            assertFalse("different channels", new FilePath(channel, "/somepath").equals(new FilePath((VirtualChannel) null, "/somepath")));
+        }
+
+        { // tests for normal dir name
+            File reference = new File(".");
+            FilePath referencePath = new FilePath(reference);
+            assertFalse("same directory", referencePath.isDescendantOf(new FilePath(reference)));
+            assertTrue("child", new FilePath(referencePath, "child").isDescendantOf(referencePath));
+            assertFalse("sibling", new FilePath(referencePath, "../child").isDescendantOf(referencePath));
+            assertFalse("sibling", new FilePath(referencePath, "foo/../../child").isDescendantOf(referencePath));
+            assertTrue("child 2", new FilePath(referencePath, "child").isDescendantOf(new FilePath(reference)));
+            assertTrue("grandchild", new FilePath(referencePath, "child/grandchild").isDescendantOf(referencePath));
+            assertTrue("grandchild 2", new FilePath(referencePath, "child/grandchild").isDescendantOf(new FilePath(reference)));
+            assertFalse("reverse", referencePath.isDescendantOf(new FilePath(referencePath, "child")));
+            assertFalse("different channels", new FilePath(channel, "/somepath").equals(new FilePath((VirtualChannel) null, "/somepath")));
+        }
     }
 
     @Test public void list() throws Exception {

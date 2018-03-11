@@ -683,6 +683,26 @@ public final class FilePath implements Serializable {
 
     }
 
+    /**
+     * Returns true iff the argument is an ancestor of the current file path.
+     * @param ancestor a file path
+     * @return true iff the argument is an ancestor of the current file path.
+     * @since TODO
+     */
+    public boolean isDescendantOf(FilePath ancestor) {
+        if (ancestor.getRemote().equals(".") && !isAbsolute(this.getRemote()) && !this.getRemote().startsWith("..") && !this.getRemote().equals(".")) {
+            // special case: if the ancestor is '.', any relative path not '.' and not starting with '..' is a child
+            return true;
+        }
+        FilePath current = this;
+        while ((current = current.getParent()) != null) {
+            if (current.equals(ancestor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public int hashCode() {
         return 31 * (channel != null ? channel.hashCode() : 0) + remote.hashCode();

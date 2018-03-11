@@ -248,12 +248,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 String path = build.getEnvironment(listener).expand(this.basePath);
                 dir = ws.child(path);
 
-                // add trailing slash so we don't allow '../workspacefoo' to escape the workspace
-                String wsPath = ws.getRemote();
-                wsPath = wsPath.endsWith("/") ? wsPath : wsPath + "/";
-                String dirPath = dir.getRemote() + '/';
-                dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
-                if (!dirPath.startsWith(wsPath)) {
+                if (!dir.equals(ws) && !dir.isDescendantOf(ws)) {
                     listener.error(Messages.ArtifactArchiver_BasePathOutsideWorkspace());
                     build.setResult(Result.FAILURE);
                     return;
@@ -401,7 +396,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 reference = ws;
             }
             FilePath filePath = reference.child(basePath);
-            if (!filePath.getRemote().startsWith(reference.getRemote())) {
+            if (!reference.equals(filePath) && !filePath.isDescendantOf(reference)) {
                 return FormValidation.error(Messages.ArtifactArchiver_BasePathOutsideWorkspace());
             }
 
