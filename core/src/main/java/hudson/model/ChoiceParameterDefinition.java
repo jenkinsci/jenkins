@@ -40,7 +40,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
-        this.choices = Arrays.asList(choices.split(CHOICES_DELIMITER));
+        setChoicesText(choices);
         defaultValue = null;
     }
 
@@ -57,9 +57,10 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
+     * Databound constructor for reflective instantiation.
      *
-     * @param name
-     * @param description
+     * @param name parameter name
+     * @param description parameter description
      *
      * @since TODO
      */
@@ -93,15 +94,16 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             return;
         }
         if (choices instanceof Collection) {
-            this.choices = new ArrayList<>();
+            ArrayList<String> newChoices = new ArrayList<>();
             for (Object o : (Collection) choices) {
                 if (o != null) {
-                    this.choices.add(o.toString());
+                    newChoices.add(o.toString());
                 }
             }
+            this.choices = newChoices;
             return;
         }
-        throw new IllegalArgumentException("expected String or Collection, but got " + choices);
+        throw new IllegalArgumentException("expected String or Collection, but got " + choices.getClass().getName());
     }
 
     private void setChoicesText(String choices) {
@@ -169,9 +171,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             String name = formData.getString("name");
             String desc = formData.getString("description");
             String choiceText = formData.getString("choices");
-            ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition(name, desc);
-            parameterDefinition.setChoicesText(choiceText);
-            return parameterDefinition;
+            return new ChoiceParameterDefinition(name, choiceText, desc);
         }
 
         /**
