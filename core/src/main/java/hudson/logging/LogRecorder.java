@@ -41,6 +41,7 @@ import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -87,14 +88,21 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Restricted(NoExternalUse.class)
     public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
-        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        List<String> candidateNames = new ArrayList<>();
         Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
+        String lowercaseValue = value.toLowerCase(Locale.ENGLISH);
         while (loggerNames.hasMoreElements()) {
             String loggerName = loggerNames.nextElement();
-            if (loggerName.toLowerCase(Locale.ENGLISH).contains(value.toLowerCase(Locale.ENGLISH))) {
-                candidates.add(loggerName);
+            String[] loggerNameParts = loggerName.split("[.]");
+            for (int i = 0 ; i < loggerNameParts.length ; i++) {
+                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i+1), ".");
+                if (loggerNamePrefix.toLowerCase(Locale.ENGLISH).contains(lowercaseValue) && !candidateNames.contains(loggerNamePrefix)) {
+                    candidateNames.add(loggerNamePrefix);
+                }
             }
         }
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        candidates.add(candidateNames.toArray(new String[0]));
         return candidates;
     }
 
