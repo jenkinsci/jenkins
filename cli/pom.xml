@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.111</version>
+    <version>2.112-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
