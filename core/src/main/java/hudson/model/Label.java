@@ -49,6 +49,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -215,7 +217,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         Set<Node> nodes = this.nodes;
         if(nodes!=null) return nodes;
 
-        Set<Node> r = new TreeSet<Node>(new NodeSorter());
+        Set<Node> r = new HashSet<>();
         Jenkins h = Jenkins.getInstance();
         if(this.matches(h))
             r.add(h);
@@ -224,6 +226,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public Set<Node> getSortedNodes() {
+        Set<Node> r = new TreeSet<>(new NodeSorter());
+        r.addAll(getNodes());
+        return r;
     }
 
     /**
