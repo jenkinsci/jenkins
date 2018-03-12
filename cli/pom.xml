@@ -4,8 +4,8 @@
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.111-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>2.112-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
