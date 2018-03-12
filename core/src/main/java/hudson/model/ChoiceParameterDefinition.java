@@ -16,7 +16,6 @@ import hudson.Extension;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
 
@@ -93,9 +92,9 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             setChoicesText((String) choices);
             return;
         }
-        if (choices instanceof Collection) {
+        if (choices instanceof List) {
             ArrayList<String> newChoices = new ArrayList<>();
-            for (Object o : (Collection) choices) {
+            for (Object o : (List) choices) {
                 if (o != null) {
                     newChoices.add(o.toString());
                 }
@@ -103,7 +102,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             this.choices = newChoices;
             return;
         }
-        throw new IllegalArgumentException("expected String or Collection, but got " + choices.getClass().getName());
+        throw new IllegalArgumentException("expected String or List, but got " + choices.getClass().getName());
     }
 
     private void setChoicesText(String choices) {
