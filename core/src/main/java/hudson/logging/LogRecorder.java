@@ -87,11 +87,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Restricted(NoExternalUse.class)
     public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
+        String lowerCasedValue = value.toLowerCase(Locale.ENGLISH);
         AutoCompletionCandidates candidates = new AutoCompletionCandidates();
         Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
         while (loggerNames.hasMoreElements()) {
             String loggerName = loggerNames.nextElement();
-            if (loggerName.toLowerCase(Locale.ENGLISH).contains(value.toLowerCase(Locale.ENGLISH))) {
+            if (loggerName.toLowerCase(Locale.ENGLISH).contains(lowerCasedValue)) {
                 candidates.add(loggerName);
             }
         }
