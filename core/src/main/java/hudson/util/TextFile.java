@@ -81,15 +81,30 @@ public class TextFile {
     }
 
     /**
+     * @throws RuntimeException in the case of {@link IOException} in {@link #linesStream()}
+     * @deprecated This method does not properly propagate errors and may lead to file descriptor leaks
+     *             if the collection is not fully iterated. Use {@link #linesStream()} instead.
+     */
+    @Deprecated
+    public @Nonnull Iterable<String> lines() {
+        try {
+            return linesStream();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * Creates a new {@link jenkins.util.io.LinesStream} of the file.
      * <p>
      * Note: The caller is responsible for closing the returned
      * <code>LinesStream</code>.
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
+     * @since TODO
      */
     @CreatesObligation
-    public @Nonnull LinesStream lines() throws IOException {
+    public @Nonnull LinesStream linesStream() throws IOException {
         return new LinesStream(Util.fileToPath(file));
     }
 
