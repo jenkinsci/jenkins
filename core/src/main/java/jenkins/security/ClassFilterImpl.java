@@ -134,13 +134,13 @@ public class ClassFilterImpl extends ClassFilter {
             }
         }
         return cache.computeIfAbsent(_c, c -> {
-            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true: only the name overload is overridden
-                return true;
-            }
             String name = c.getName();
             if (Main.isUnitTest && (name.contains("$$EnhancerByMockitoWithCGLIB$$") || name.contains("$$FastClassByMockitoWithCGLIB$$") || name.startsWith("org.mockito."))) {
                 mockOff();
                 return false;
+            }
+            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true, but may issue diagnostics
+                return true;
             }
             if (c.isArray()) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);
@@ -156,13 +156,6 @@ public class ClassFilterImpl extends ClassFilter {
             }
             String location = codeSource(c);
             if (location != null) {
-                if (c.isAnonymousClass()) { // e.g., pkg.Outer$1
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize anonymous " + c + " in " + location);
-                } else if (c.isLocalClass()) { // e.g., pkg.Outer$1Local
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize local " + c + " in " + location);
-                } else if (c.isSynthetic()) { // e.g., pkg.Outer$$Lambda$1/12345678
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize synthetic " + c + " in " + location);
-                }
                 if (isLocationWhitelisted(location)) {
                     LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
                     return false;
