@@ -408,14 +408,13 @@ THE SOFTWARE.
                   <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
-                <!-- TODO after split:
+                <!-- TODO: Update when 1.0 is released -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>1.0</version>
+                  <version>1.0-20180313.200227-1</version>
                   <type>hpi</type>
                 </artifactItem>
-                -->
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>
