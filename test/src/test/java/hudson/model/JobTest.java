@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.ProjectNamingStrategy;
 
@@ -209,13 +210,14 @@ public class JobTest {
     }
 
     @LocalData
-    @Test public void configDotXmlPermission() throws Exception {
+    @Test
+    public void configDotXmlPermission() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
-            wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
+            wc.assertFails("job/testJob/config.xml", HttpServletResponse.SC_TEMPORARY_REDIRECT);
 
             wc.withBasicApiToken(User.getById("alice", true));  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
