@@ -113,10 +113,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     /**
      * Gets a URI.
      * Should at least uniquely identify this virtual file within its root, but not necessarily globally.
-     * <p>When {@link #toExternalURL} is implemented, it is natural but not required to use that same value here.
+     * <p>When {@link #toExternalURL} is implemented, that same value could be used here,
+     * unless some sort of authentication is also embedded.
      * @return a URI (need not be absolute)
      */
-    public abstract URI toURI();
+    public abstract @Nonnull URI toURI();
 
     /**
      * Gets the parent file.
@@ -340,6 +341,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * <p>Any necessary authentication must be encoded somehow into the URL itself;
      * do not include any tokens or other authentication which might allow access to unrelated files
      * (for example {@link ArtifactManager} builds from a different job).
+     * The URL might be valid for only a limited amount of time or even only a single use;
+     * this method should be called anew every time an external URL is required.
      * <p>Generally this will be harder to implement than {@link #asRemotable},
      * which would have the opportunity to perform arbitrary preparation for {@link #open}
      * such as negotiating session authentication.
