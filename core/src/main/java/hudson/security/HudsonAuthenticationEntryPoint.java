@@ -35,7 +35,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -45,8 +44,10 @@ import java.text.MessageFormat;
 
 /**
  * For anonymous requests to pages that require authentication,
- * first respond with {@link HttpServletResponse#SC_FORBIDDEN},
+ * first respond with {@link HttpServletResponse#SC_TEMPORARY_REDIRECT},
  * then redirect browsers automatically to the login page.
+ * For AJAX resquests respond with {@link HttpServletResponse#SC_FORBIDDEN} and
+ * do not redirect.
  *
  * <p>
  * This is a compromise to handle programmatic access and
@@ -71,7 +72,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // often ends up sending users back to AJAX pages after successful login.
             // this is not desirable, so don't redirect AJAX requests to the user.
             // this header value is sent from Prototype.
-            rsp.sendError(SC_FORBIDDEN);
+            rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
@@ -80,7 +81,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
-            rsp.setStatus(SC_FORBIDDEN);
+            rsp.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
             rsp.setContentType("text/html;charset=UTF-8");
 
             Functions.advertiseHeaders(rsp);
