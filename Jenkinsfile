@@ -43,8 +43,6 @@ for(i = 0; i < buildTypes.size(); i++) {
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
-                                // Stash for ATH run
-                                stash name: "metadata", includes: "essentials.yml"
                             } else {
                                 bat mvnCmd
                             }
@@ -68,20 +66,26 @@ for(i = 0; i < buildTypes.size(); i++) {
     }
 }
 
-builds.failFast = failFast
-parallel builds
-
-if (buildTypes.contains("linux")) {
+builds.ath = {
     node("linux") {
-        unstash "metadata"
-        unarchive mapping: ['war/target/linux-jenkins.war': 'jenkins.war']
-        def fileUrl = "file://" + pwd() + "/jenkins.war"
-        def metadataPath = pwd() + "/essentials.yml"
+        def fileUri
+        def metadataPath
+        dir("sources") {
+            checkout scm
+            sh "mvn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+            dir("war/target") {
+                fileUri = "file://" + pwd() + "/jenkins.war"
+            }
+            metadataPath = pwd() + "/essentials.yml"
+        }
         dir("ath") {
-            runATH(jenkins: fileUrl, metadataFile: metadataPath)
+            runATH jenkins: fileUri, metadataFile: metadataPath
         }
     }
 }
+
+builds.failFast = failFast
+parallel builds
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
