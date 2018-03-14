@@ -66,6 +66,24 @@ for(i = 0; i < buildTypes.size(); i++) {
     }
 }
 
+builds.ath = {
+    node("linux") {
+        def fileUri
+        def metadataPath
+        dir("sources") {
+            checkout scm
+            sh "mvn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+            dir("war/target") {
+                fileUri = "file://" + pwd() + "/jenkins.war"
+            }
+            metadataPath = pwd() + "/essentials.yml"
+        }
+        dir("ath") {
+            runATH jenkins: fileUri, metadataFile: metadataPath
+        }
+    }
+}
+
 builds.failFast = failFast
 parallel builds
 
