@@ -72,7 +72,10 @@ builds.ath = {
         def metadataPath
         dir("sources") {
             checkout scm
-            sh "mvn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
+                          "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
+                sh "mvn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+            }
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"
             }
