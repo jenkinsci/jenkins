@@ -119,4 +119,31 @@ public class LauncherTest {
         assertEquals(true, decorated.isUnix());
     }
 
+    @Issue("JENKINS-50166")
+    @Test(expected = InterruptedException.class)
+    public void processLaunchedWithDontWillWhenInterruptedIsNotKilledOnInterrupt() throws Exception {
+        TaskListener listener = new StreamBuildListener(new ByteArrayOutputStream());
+        Launcher launcher = new Launcher.LocalLauncher(listener);
+        Launcher.ProcStarter procStarter = launcher.launch()
+                .cmdAsSingleString(Functions.isWindows() ? "ping -n 10 127.0.0.1" : "sleep 10")
+                .dontKillWhenInterrupted();
+        Thread interrupter = createInterrupter();
+        Proc process = procStarter.start();
+        assertEquals(true, process.dontKillWhenInterrupted);
+        interrupter.start();
+        process.join();
+        assertEquals(true, process.isAlive());
+    }
+
+    private Thread createInterrupter() {
+        Thread currentThread = Thread.currentThread();
+        return new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            currentThread.interrupt();
+        });
+    }
 }
