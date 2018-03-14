@@ -408,11 +408,10 @@ THE SOFTWARE.
                   <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
-                <!-- TODO: Update when 1.0 is released -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>1.0-20180313.200227-1</version>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
