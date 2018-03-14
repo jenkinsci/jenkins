@@ -246,6 +246,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Gets the file’s Unix mode, if meaningful.
+     * If the file is symlink (see {@link #readLink}), the mode is that of the link target, not the link itself.
      * @return for example, 0644 ~ {@code rw-r--r--}; -1 by default, meaning unknown or inapplicable
      * @throws IOException if checking the mode failed
      * @since FIXME
