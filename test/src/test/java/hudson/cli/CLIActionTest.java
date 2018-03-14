@@ -17,7 +17,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import jenkins.util.FullDuplexHttpService;
@@ -115,7 +115,7 @@ public class CLIActionTest {
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
-        wc.assertFails("cli", HttpURLConnection.HTTP_FORBIDDEN);
+        wc.assertFails("cli", HttpServletResponse.SC_TEMPORARY_REDIRECT);
     }
 
     @Test

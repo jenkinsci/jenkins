@@ -35,6 +35,7 @@ import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.AgentProtocolTest;
 import jenkins.slaves.DeprecatedAgentProtocolMonitor;
 import org.apache.commons.io.FileUtils;
@@ -113,9 +114,9 @@ public class SetupWizardTest {
     @Test
     public void shouldProhibitAccessToPluginListWithoutAuth() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.assertFails("setupWizard/platformPluginList", 307);
-        wc.assertFails("setupWizard/createAdminUser", 307);
-        wc.assertFails("setupWizard/completeInstall", 307);
+        wc.assertFails("setupWizard/platformPluginList", HttpServletResponse.SC_TEMPORARY_REDIRECT);
+        wc.assertFails("setupWizard/createAdminUser", HttpServletResponse.SC_TEMPORARY_REDIRECT);
+        wc.assertFails("setupWizard/completeInstall", HttpServletResponse.SC_TEMPORARY_REDIRECT);
     }
 
     //TODO: The test randomly fails on Jenkins CI

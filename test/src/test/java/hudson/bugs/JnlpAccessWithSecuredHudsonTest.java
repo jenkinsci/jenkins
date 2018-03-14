@@ -47,11 +47,11 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import static org.hamcrest.Matchers.*;
@@ -110,7 +110,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Test
     public void anonymousCannotGetSecrets() throws Exception {
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
-        r.createWebClient().assertFails("computer/test/slave-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
+        r.createWebClient().assertFails("computer/test/slave-agent.jnlp", HttpServletResponse.SC_TEMPORARY_REDIRECT);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)

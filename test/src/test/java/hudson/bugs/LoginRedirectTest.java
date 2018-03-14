@@ -26,9 +26,9 @@ package hudson.bugs;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import java.net.HttpURLConnection;
-import org.jvnet.hudson.test.Issue;
+import javax.servlet.http.HttpServletResponse;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
@@ -61,10 +61,10 @@ public class LoginRedirectTest extends HudsonTestCase {
     }
 
     /**
-     * Verifies that Hudson is sending 403 first. This is important for machine agents.
+     * Verifies that Hudson is sending 307 first (redirection to the login page). This is important for machine agents.
      */
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void testRedirect2() throws Exception {
-        new WebClient().assertFails("/", HttpURLConnection.HTTP_FORBIDDEN);
+        new WebClient().assertFails("/", HttpServletResponse.SC_TEMPORARY_REDIRECT);
     }
 }
