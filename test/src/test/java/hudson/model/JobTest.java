@@ -226,7 +226,7 @@ public class JobTest {
             tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
 
             wc.withBasicApiToken(User.getById("charlie", true));  // Has only EXTENDED_READ permission
-            tryConfigDotXml(wc, 307, "No permission, should get 307 (redirect to login page)"); // JENKINS-40872
+            tryConfigDotXml(wc, 403, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }
