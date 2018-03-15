@@ -88,18 +88,48 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Restricted(NoExternalUse.class)
     public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
+        if (value == null) {
+            return new AutoCompletionCandidates();
+        }
+
+        // get names of all actual loggers known to Jenkins
         Set<String> candidateNames = new LinkedHashSet<>();
-        Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
-        String lowercaseValue = value.toLowerCase(Locale.ENGLISH);
-        while (loggerNames.hasMoreElements()) {
-            String loggerName = loggerNames.nextElement();
+        Enumeration<String> loggerNamesEnumeration = LogManager.getLogManager().getLoggerNames();
+        SortedSet<String> loggerNames = new TreeSet<>();
+        while (loggerNamesEnumeration.hasMoreElements()) {
+            loggerNames.add(loggerNamesEnumeration.nextElement());
+        }
+
+        // now look for package prefixes that make sense to offer for autocompletion:
+        // Only prefixes that match multiple loggers will be shown.
+        // Example: 'org' will show 'org', because there's org.apache, org.jenkinsci, etc.
+        // 'io' might only show 'io.jenkins.plugins' rather than 'io' if all loggers starting with 'io' start with 'io.jenkins.plugins'.
+        HashSet<String> seenPrefixes = new HashSet<>();
+        HashSet<String> relevantPrefixes = new HashSet<>();
+        for (String loggerName : loggerNames) {
             String[] loggerNameParts = loggerName.split("[.]");
-            for (int i = 0 ; i < loggerNameParts.length ; i++) {
-                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i+1), ".");
-                if (loggerNamePrefix.toLowerCase(Locale.ENGLISH).contains(lowercaseValue)) {
-                    candidateNames.add(loggerNamePrefix);
+            int prefixLength = 0;
+            for (int i = loggerNameParts.length - 1; i > 0; i--) {
+                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i + 1), ".");
+                if (seenPrefixes.contains(loggerNamePrefix)) {
+                    relevantPrefixes.add(loggerNamePrefix);
+                } else {
+                    seenPrefixes.add(loggerNamePrefix);
                 }
             }
+        }
+        loggerNames.addAll(relevantPrefixes);
+        candidateNames.addAll(loggerNames);
+
+        for (String part : value.split("[ ]+")) {
+            HashSet<String> partCandidates = new HashSet<>();
+            String lowercaseValue = part.toLowerCase(Locale.ENGLISH);
+            for (String loggerName : loggerNames) {
+                if (loggerName.toLowerCase(Locale.ENGLISH).contains(lowercaseValue)) {
+                    partCandidates.add(loggerName);
+                }
+            }
+            candidateNames.retainAll(partCandidates);
         }
         AutoCompletionCandidates candidates = new AutoCompletionCandidates();
         candidates.add(candidateNames.toArray(new String[0]));
