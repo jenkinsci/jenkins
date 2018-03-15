@@ -550,9 +550,11 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
+            log.println(String.format("Error: Remoting version is older than a minimum required one (%s). ",
                     RemotingVersionInfo.getMinimumSupportedVersion()));
+            log.println("Aborting.");
+            
+            return;
         }
 
         boolean _isUnix = channel.call(new DetectOS());
