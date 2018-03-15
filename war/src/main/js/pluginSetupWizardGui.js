@@ -918,9 +918,35 @@ var createPluginSetupWizard = function(appendTarget) {
 		showConfigureInstance();
 	};
 	
+	var handleConfigureInstanceResponseSuccess = function (data) {
+		if (data.status === 'ok') {
+			showStatePanel();
+		} else {
+			setPanel(errorPanel, {errorMessage: 'Error trying to configure instance: ' + data.statusText});
+		}
+	};
+
+	var handleConfigureInstanceResponseError = function(res) {
+		// We're expecting a full HTML page to replace the form
+		// We can only replace the _whole_ iframe due to XSS rules
+		// https://stackoverflow.com/a/22913801/1117552
+		var responseText = res.responseText;
+		var $page = $(responseText);
+		var $main = $page.find('#main-panel').detach();
+		if($main.length > 0) {
+			responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+		}
+		var doc = $('iframe#setup-configure-instance').contents()[0];
+		doc.open();
+		doc.write(responseText);
+		doc.close();
+		$('button').prop({disabled:false});
+	};
+	
 	var saveConfigureInstance = function() {
 		$('button').prop({disabled:true});
-		securityConfig.saveConfigureInstance($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+		var $form = $('iframe#setup-configure-instance').contents().find('form:not(.no-json)');
+		securityConfig.saveConfigureInstance($form, handleConfigureInstanceResponseSuccess, handleConfigureInstanceResponseError);
 	};
 
 	var skipConfigureInstance = function() {
