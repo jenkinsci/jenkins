@@ -216,7 +216,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String rest = _rest.toString();
 
         // this is the base file/directory
-        VirtualFile baseFile = root.child(base);
+        VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
 
         if(baseFile.isDirectory()) {
             if(zip) {
