@@ -106,13 +106,41 @@ public abstract class AsynchronousExecution extends RuntimeException {
         return executor;
     }
 
-    @Restricted(NoExternalUse.class)
+    /**
+     * Use {@link #setExecutorWithoutCompleting(Executor)} and {@link #maybeComplete()}
+     * instead. For this method, locking behaviour is problematic.
+     */
+    @Restricted(NoExternalUse.class) @Deprecated()
     public synchronized final void setExecutor(@Nonnull Executor executor) {
         assert this.executor==null;
 
         this.executor = executor;
         if (result!=null) {
             executor.completedAsynchronous( result!=NULL ? result : null );
+            result = null;
+        }
+    }
+
+    /**
+     * Set the executor without notifying it about task completion.
+     * The caller <b>must</b> also call {@link #maybeComplete()}
+     * after releasing any problematic locks.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized final void setExecutorWithoutCompleting(@Nonnull Executor executor) {
+        assert this.executor == null;
+        this.executor = executor;
+    }
+
+    /**
+     * If there is a pending completion notification, deliver it to the executor.
+     * Must be called after {@link #setExecutorWithoutCompleting(Executor)}.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized final void maybeComplete() {
+        assert this.executor != null;
+        if (result != null) {
+            executor.completedAsynchronous(result != NULL ? result : null);
             result = null;
         }
     }
