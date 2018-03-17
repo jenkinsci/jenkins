@@ -616,6 +616,12 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         /* final */ String sha1;
 
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha256;
+
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha512;
+
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
         }
@@ -628,6 +634,8 @@ public class UpdateSite {
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
+            this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
+            this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -647,6 +655,24 @@ public class UpdateSite {
         // TODO @Exported assuming we want this in the API
         public String getSha1() {
             return sha1;
+        }
+
+        /**
+         * The hex string encoded SHA-256 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since TODO
+         */
+        public String getSha256() {
+            return sha256;
+        }
+
+        /**
+         * The hex string encoded SHA-512 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since TODO
+         */
+        public String getSha512() {
+            return sha512;
         }
 
         /**
