@@ -241,13 +241,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * null if no one objects killing the process.
          */
         protected @CheckForNull VetoCause getVeto() {
-            for (ProcessKillingVeto vetoExtension : ProcessKillingVeto.all()) {
-                VetoCause cause = vetoExtension.vetoProcessKilling(this);
-                if (cause != null) {
-                    if (LOGGER.isLoggable(FINEST))
-                        LOGGER.finest("Killing of pid " + getPid() + " vetoed by " + vetoExtension.getClass().getName() + ": " + cause.getMessage());
-                    return cause;
+            String causeMessage = null;
+            
+            try {
+                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                if (channelToMaster!=null) {
+                    CheckVetoes vetoCheck = new CheckVetoes(this);
+                    causeMessage = channelToMaster.call(vetoCheck);
                 }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING, "Interrupted Exception while checking for vetoes", e);
+            }
+            
+            if (causeMessage != null) {
+                return new VetoCause(causeMessage);
             }
             return null;
         }
@@ -299,6 +308,27 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         Object writeReplace() {
             return new SerializedProcess(pid);
+        }
+        
+        private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
+            private IOSProcess process;
+            
+            public CheckVetoes(IOSProcess processToCheck) {
+                process = processToCheck;
+            }
+        
+            @Override
+            public String call() throws IOException {
+                for (ProcessKillingVeto vetoExtension : ProcessKillingVeto.all()) {
+                    VetoCause cause = vetoExtension.vetoProcessKilling(process);
+                    if (cause != null) {
+                        if (LOGGER.isLoggable(FINEST))
+                            LOGGER.info("Killing of pid " + getPid() + " vetoed by " + vetoExtension.getClass().getName() + ": " + cause.getMessage());
+                        return cause.getMessage();
+                    }
+                }
+                return null;
+            }
         }
     }
 
