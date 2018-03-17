@@ -23,6 +23,7 @@
  */
 package hudson.logging;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.Extension;
@@ -41,6 +42,7 @@ import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -86,15 +88,59 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     @Restricted(NoExternalUse.class)
-    public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
-        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-        Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
-        while (loggerNames.hasMoreElements()) {
-            String loggerName = loggerNames.nextElement();
-            if (loggerName.toLowerCase(Locale.ENGLISH).contains(value.toLowerCase(Locale.ENGLISH))) {
-                candidates.add(loggerName);
+    @VisibleForTesting
+    public static Set<String> getAutoCompletionCandidates(List<String> loggerNamesList) {
+        Set<String> loggerNames = new HashSet<>(loggerNamesList);
+
+        // now look for package prefixes that make sense to offer for autocompletion:
+        // Only prefixes that match multiple loggers will be shown.
+        // Example: 'org' will show 'org', because there's org.apache, org.jenkinsci, etc.
+        // 'io' might only show 'io.jenkins.plugins' rather than 'io' if all loggers starting with 'io' start with 'io.jenkins.plugins'.
+        HashMap<String, Integer> seenPrefixes = new HashMap<>();
+        SortedSet<String> relevantPrefixes = new TreeSet<>();
+        for (String loggerName : loggerNames) {
+            String[] loggerNameParts = loggerName.split("[.]");
+
+            String longerPrefix = null;
+            for (int i = loggerNameParts.length; i > 0; i--) {
+                String loggerNamePrefix = StringUtils.join(Arrays.copyOf(loggerNameParts, i), ".");
+                seenPrefixes.put(loggerNamePrefix, seenPrefixes.getOrDefault(loggerNamePrefix, 0) + 1);
+                if (longerPrefix == null) {
+                    relevantPrefixes.add(loggerNamePrefix); // actual logger name
+                    longerPrefix = loggerNamePrefix;
+                    continue;
+                }
+
+                if (seenPrefixes.get(loggerNamePrefix) > seenPrefixes.get(longerPrefix)) {
+                    relevantPrefixes.add(loggerNamePrefix);
+                }
+                longerPrefix = loggerNamePrefix;
             }
         }
+        return relevantPrefixes;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
+        if (value == null) {
+            return new AutoCompletionCandidates();
+        }
+
+        // get names of all actual loggers known to Jenkins
+        Set<String> candidateNames = new LinkedHashSet<>(getAutoCompletionCandidates(Collections.list(LogManager.getLogManager().getLoggerNames())));
+
+        for (String part : value.split("[ ]+")) {
+            HashSet<String> partCandidates = new HashSet<>();
+            String lowercaseValue = part.toLowerCase(Locale.ENGLISH);
+            for (String loggerName : candidateNames) {
+                if (loggerName.toLowerCase(Locale.ENGLISH).contains(lowercaseValue)) {
+                    partCandidates.add(loggerName);
+                }
+            }
+            candidateNames.retainAll(partCandidates);
+        }
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        candidates.add(candidateNames.toArray(new String[0]));
         return candidates;
     }
 
