@@ -948,6 +948,11 @@ var createPluginSetupWizard = function(appendTarget) {
 		var $form = $('iframe#setup-configure-instance').contents().find('form:not(.no-json)');
 		securityConfig.saveConfigureInstance($form, handleConfigureInstanceResponseSuccess, handleConfigureInstanceResponseError);
 	};
+	
+	var skipFirstUserAndConfigureInstance = function(){
+		firstUserSkipped = true;
+		skipConfigureInstance();
+	};
 
 	var skipConfigureInstance = function() {
 		$('button').prop({disabled:true});
@@ -1066,7 +1071,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.plugin-select-recommended': function() { selectedPluginNames = pluginManager.recommendedPluginNames(); refreshPluginSelectionPanel(); },
 		'.plugin-show-selected': toggleSelectedSearch,
 		'.select-category': selectCategory,
-		'.close': skipConfigureInstance,
+		'.close': skipFirstUserAndConfigureInstance,
 		'.resume-installation': resumeInstallation,
 		'.install-done-restart': restartJenkins,
 		'.save-first-user:not([disabled])': saveFirstUser,

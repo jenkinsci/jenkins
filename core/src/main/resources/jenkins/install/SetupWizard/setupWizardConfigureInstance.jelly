@@ -7,7 +7,7 @@
       <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
       <style type="text/css">
         #configure-instance {
-          padding: 20px 20px 20px 100px;
+          padding: 20px 100px 20px 100px;
           margin: 8px;
         }
 
@@ -40,7 +40,6 @@
         #configure-instance tr td .help-text{
           color: #999;
           font-size: 12px;
-          margin-left: 12px
         }
       </style>
 
