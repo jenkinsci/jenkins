@@ -187,6 +187,7 @@ import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import jenkins.util.io.OnMaster;
@@ -399,14 +400,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getWorkspaceFor(TopLevelItem)
      */
-    private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
+    private String workspaceDir = SystemProperties.getString(Jenkins.class.getName() + ".WORKSPACES_DIR", DEFAULT_WORKSPACES_DIR);
 
     /**
      * Root directory for the builds.
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
+     *
      * @see #getBuildDirFor(Job)
      */
-    private String buildsDir = DEFAULT_BUILDS_DIR;
+    private String buildsDir = SystemProperties.getString(Jenkins.class.getName() + ".BUILDS_DIR", DEFAULT_BUILDS_DIR);
 
     /**
      * Message displayed in the top page.
@@ -844,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            if (!new File(root,"jobs").exists()) {
+            if (isDefaultWorspaceDir() && !new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
@@ -2404,6 +2406,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return DEFAULT_BUILDS_DIR.equals(buildsDir);
     }
 
+    private boolean isDefaultWorspaceDir() {
+        return DEFAULT_WORKSPACES_DIR.equals(workspaceDir);
+    }
+
     private File expandVariablesForDirectory(String base, Item item) {
         return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
     }
@@ -3634,9 +3640,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             checkPermission(ADMINISTER);
 
             JSONObject json = req.getSubmittedForm();
-
-            workspaceDir = json.getString("rawWorkspaceDir");
-            buildsDir = json.getString("rawBuildsDir");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
@@ -5054,6 +5057,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawBuildsDir()
      */
     private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
+    private static final String DEFAULT_WORKSPACES_DIR = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
