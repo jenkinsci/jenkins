@@ -68,6 +68,8 @@ for(i = 0; i < buildTypes.size(); i++) {
 
 builds.ath = {
     node("linux") {
+        // Just to be safe
+        deleteDir()
         def fileUri
         def metadataPath
         dir("sources") {
