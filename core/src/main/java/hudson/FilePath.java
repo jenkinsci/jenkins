@@ -120,6 +120,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -1827,11 +1828,14 @@ public final class FilePath implements Serializable {
     private static String[] glob(File dir, String includes, String excludes, boolean defaultExcludes) throws IOException {
         if(isAbsolute(includes))
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
-        FileSet fs = Util.createFileSet(dir,includes,excludes);
-        fs.setDefaultexcludes(defaultExcludes);
-        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-        String[] files = ds.getIncludedFiles();
-        return files;
+        try {
+            FileSet fs = Util.createFileSet(dir, includes, excludes);
+            fs.setDefaultexcludes(defaultExcludes);
+            DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+            return ds.getIncludedFiles();
+        } catch (BuildException ex) {
+            throw new IOException(String.format("Failed to scan directory %s with [excludes=%s. includes=%s]", dir, excludes, includes), ex);
+        }
     }
 
     /**
