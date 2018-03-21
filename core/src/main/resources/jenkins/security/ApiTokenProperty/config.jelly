@@ -89,6 +89,7 @@ THE SOFTWARE.
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}" 
                                        style="width: 40%; display: inline-block"/>
+                            <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value" style="width: 40%; margin-right: 2px; display: none"><!--will be filled by javascript--></span>
                             <span class="yui-button token-save" style="vertical-align: baseline;">
                                 <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>

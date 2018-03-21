@@ -96,7 +96,6 @@
 .token-list .token-list-new-item .token-name{
     width: 40%; 
     display: inline-block;
-    margin-right: 2px;
 }
 .token-list .token-list-new-item .new-token-value{
     width: 40%; 
