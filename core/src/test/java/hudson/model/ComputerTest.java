@@ -1,9 +1,18 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -27,5 +36,12 @@ public class ComputerTest {
         } finally {
             dir.deleteRecursive();
         }
+    }
+
+    @Issue("JENKINS-42556")
+    @Test
+    public void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
+        Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication);
+        assertThat(job.get(), is(ACL.SYSTEM));
     }
 }
