@@ -1,7 +1,13 @@
 <div>
+    <p><strong>This value is only modifiable using a system property.
+        To do so, pass <code>-Djenkins.model.Jenkins.WORKSPACES_DIR="the_value"</code>
+        to the Jenkins JVM options during startup.</strong>
+    </p>
+    <p>
     Specifies where Jenkins will store workspaces for builds that are executed
     on the master.<br>
     It has no effect on builds that are executed on agents.
+    </p>
     <p>
     This value may include the following variables:
     <ul>
