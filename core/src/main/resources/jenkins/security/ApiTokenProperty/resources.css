@@ -93,6 +93,17 @@
 .token-list .token-list-new-item .token-cancel .yui-button{
     vertical-align: baseline;
 }
+.token-list .token-list-new-item .token-name{
+    width: 40%; 
+    display: inline-block;
+    margin-right: 2px;
+}
+.token-list .token-list-new-item .new-token-value{
+    width: 40%; 
+    display: none;
+    font-family: monospace;
+    font-size: 14px;
+}
 .token-list .repeated-chunk {
     border-width: 0;
 }

@@ -87,11 +87,9 @@ THE SOFTWARE.
                     <j:otherwise>
                         <div class="token-list-item token-list-new-item">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
-                            <f:textbox name="tokenName" placeholder="${%Default name}" 
+                            <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}" 
                                        style="width: 40%; display: inline-block"/>
-                            <f:textbox name="newTokenValue" value="token-value-will-be-displayed-here" 
-                                       clazz="fixed-width json-ignore" readonly="readonly" 
-                                       style="width: 40%; display: none" />
+                            <span class="new-token-value" style="width: 40%; margin-right: 2px; display: none"><!--will be filled by javascript--></span>
                             <span class="yui-button token-save" style="vertical-align: baseline;">
                                 <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>
                             </span>

@@ -83,14 +83,15 @@ function saveApiToken(button){
                 nameInput.value = tokenName;
                 
                 var tokenValue = json.data.tokenValue;
-                var valueInput = repeatedChunk.querySelector('[name="newTokenValue"]');
-                valueInput.value = tokenValue;
+                var tokenValueSpan = repeatedChunk.querySelector('.new-token-value');
+                // add '&nbsp;' before the token to avoid double click that focus the input instead of the token
+                // because the html tags are glued without space by jelly
+                tokenValueSpan.innerText = '\xA0' + tokenValue;
+                tokenValueSpan.style.display = 'inline-block';
                 
                 var tokenUuid = json.data.tokenId;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
                 uuidInput.value = tokenUuid;
-                
-                valueInput.style.display = 'inline-block';
 
                 // we do not want to allow user to create twice a token using same name by mistake
                 button.remove();

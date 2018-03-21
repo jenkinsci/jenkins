@@ -2515,9 +2515,6 @@ function buildFormTree(form) {
                 jsonElement = e;
                 continue;
             }
-            if(e.hasClassName('json-ignore')){
-                continue;
-            }
             if(e.tagName=="FIELDSET")
                 continue;
             if(e.tagName=="SELECT" && e.multiple) {
