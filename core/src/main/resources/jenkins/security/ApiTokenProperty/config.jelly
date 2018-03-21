@@ -28,81 +28,96 @@ THE SOFTWARE.
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
     
     <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
-        <ul class="token-list">
-            <j:forEach var="token" items="${instance.tokenList}">
-                <j:set var="legacyClazz" value="" />
-                <j:if test="${token.isLegacy()}">
-                    <j:set var="legacyClazz" value="legacy-token" />
-                </j:if>
-                <li class="token-list-item ${legacyClazz}" name="tokenStore">
-                    <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
-                    <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
-    
-                    <j:if test="${token.isLegacy()}">
-                        <l:icon class="icon-warning icon-sm" title="${%LegacyToken}"/>
-                    </j:if>
-                    
-                    <j:set var="daysOld" value="${token.numDaysCreation}" />
-                    <j:set var="oldClazz" value="age-ok" />
-                    <j:if test="${daysOld > 180}">
-                        <j:set var="oldClazz" value="age-mmmh" />
-                        <j:if test="${daysOld > 360}">
-                            <j:set var="oldClazz" value="age-argh" />
-                        </j:if>
-                    </j:if>
-                    <span class="token-creation ${oldClazz}">${%TokenCreation(daysOld)}</span>
-                    
-                    <span class="to-right">
-                        <j:set var="useCounter" value="${token.useCounter}" />
-                        <j:choose>
-                            <j:when test="${useCounter > 0}">
-                                <span class="token-use-counter">
-                                    ${%TokenLastUse(useCounter, token.numDaysUse)}
-                                </span>
-                            </j:when>
-                            <j:otherwise>
-                                <span class="token-use-counter">
-                                    <strong title="${%TokenNeverUsed.Title}">
-                                        <l:icon class="icon-warning icon-sm"/>
-                                        ${%TokenNeverUsed}
-                                    </strong>
-                                </span>
-                            </j:otherwise>
-                        </j:choose>
-                        <a href="#" onclick="return revokeToken(this)" class="token-revoke"
-                                    data-confirm="${%ConfirmRevokeSingle}"
-                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                            <l:icon class="icon-text-error icon-sm"/>
-                        </a>
-                    </span>
-                </li>
-            </j:forEach>
-            <li class="token-list-item list-empty">
+        <div class="token-list ignore-confirm-panel">
+            <div class="token-list-item token-list-empty-item ${instance.tokenList.isEmpty() ? '' : 'hidden-message'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
-            </li>
-        </ul>
+            </div>
+            <f:repeatable name="tokenStore" var="token" items="${instance.tokenList}" minimum="0"
+                          noAddButton="${!descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
+                <j:choose>
+                    <j:when test="${token!=null}">
+                        <j:set var="legacyClazz" value="" />
+                        <j:if test="${token.isLegacy()}">
+                            <j:set var="legacyClazz" value="legacy-token" />
+                        </j:if>
+                        <div class="token-list-item token-list-existing-item ${legacyClazz}">
+                            <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
+                            <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
+                
+                            <j:if test="${token.isLegacy()}">
+                                <l:icon class="icon-warning icon-sm" title="${%LegacyToken}"/>
+                            </j:if>
+                
+                            <j:set var="daysOld" value="${token.numDaysCreation}" />
+                            <j:set var="oldClazz" value="age-ok" />
+                            <j:if test="${daysOld > 180}">
+                                <j:set var="oldClazz" value="age-mmmh" />
+                                <j:if test="${daysOld > 360}">
+                                    <j:set var="oldClazz" value="age-argh" />
+                                </j:if>
+                            </j:if>
+                            <span class="token-creation ${oldClazz}">${%TokenCreation(daysOld)}</span>
+                
+                            <span class="to-right">
+                                <j:set var="useCounter" value="${token.useCounter}" />
+                                <j:choose>
+                                    <j:when test="${useCounter > 0}">
+                                        <span class="token-use-counter">
+                                            ${%TokenLastUse(useCounter, token.numDaysUse)}
+                                        </span>
+                                    </j:when>
+                                    <j:otherwise>
+                                        <span class="token-use-counter">
+                                            <strong title="${%TokenNeverUsed.Title}">
+                                                <l:icon class="icon-warning icon-sm"/>
+                                                ${%TokenNeverUsed}
+                                            </strong>
+                                        </span>
+                                    </j:otherwise>
+                                </j:choose>
+                                <a href="#" onclick="return revokeToken(this)" class="token-revoke"
+                                   data-message-if-legacy-revoked="${%RevokedToken}"
+                                   data-confirm="${%ConfirmRevokeSingle}"
+                                   data-target-url="${descriptor.descriptorFullUrl}/revoke">
+                                    <l:icon class="icon-text-error icon-sm"/>
+                                </a>
+                            </span>
+                        </div>
+                    </j:when>
+                    <j:otherwise>
+                        <div class="token-list-item token-list-new-item">
+                            <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
+                            <f:textbox name="tokenName" placeholder="${%Default name}" 
+                                       style="width: 40%; display: inline-block"/>
+                            <f:textbox name="newTokenValue" value="token-value-will-be-displayed-here" 
+                                       clazz="fixed-width json-ignore" readonly="readonly" 
+                                       style="width: 40%; display: none" />
+                            <span class="yui-button token-save" style="vertical-align: baseline;">
+                                <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>
+                            </span>
+                            <span class="token-cancel">
+                                <f:repeatableDeleteButton value="${%Cancel}" />
+                            </span>
+                            <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
+                               data-confirm="${%ConfirmRevokeSingle}"
+                               data-target-url="${descriptor.descriptorFullUrl}/revoke">
+                                <l:icon class="icon-text-error icon-sm"/>
+                            </a>
+                            <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
+                            <div class="warning" style="margin-top: 5px;">${%TokenDisplayedOnce}</div>
+                        </div>
+                    </j:otherwise>
+                </j:choose>
+            </f:repeatable>
+        </div>
     </f:entry>
-
-    <j:if test="${descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
-        <f:advanced title="${%Generate new API Token}" align="left">
-            <f:entry title="New Token">
-                <f:textbox name="newTokenName" placeholder="${%Default name}" style="width: 40%; display: inline-block"/>
-                <f:textbox id="newTokenValue" value="token-value-will-be-displayed-here" clazz="fixed-width" readonly="readonly" style="width: 40%; display: none" />
-                <span class="yui-button token-save" style="vertical-align: baseline;">
-                    <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>
-                </span>
-                <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
-                <div class="warning" style="margin-top: 5px;">${%TokenDisplayedOnce}</div>
-            </f:entry>
-        </f:advanced>
-    </j:if>
     
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
         <f:advanced title="${%Show Legacy API Token}" align="left">
             <f:entry title="${%Legacy API Token}" field="apiToken">
                 <f:readOnlyTextbox id="apiToken" />
             </f:entry>
-            <f:validateButton title="${%Change API Token}" method="changeToken" />
+            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-confirm-panel"/>
         </f:advanced>
     </j:if>
 </j:jelly>

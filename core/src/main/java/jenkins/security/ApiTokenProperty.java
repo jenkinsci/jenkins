@@ -50,8 +50,10 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -144,7 +146,10 @@ public class ApiTokenProperty extends UserProperty {
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
-        LOGGER.log(Level.WARNING, "Deprecated usage of getApiToken");
+        LOGGER.log(Level.FINE, "Deprecated usage of getApiToken");
+        if(LOGGER.isLoggable(Level.FINER)){
+            LOGGER.log(Level.FINER, "Deprecated usage of getApiToken (trace)", new Exception());
+        }
         return hasPermissionToSeeToken()
                 ? getApiTokenInsecure()
                 : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
@@ -154,7 +159,7 @@ public class ApiTokenProperty extends UserProperty {
     @Restricted(NoExternalUse.class)
     /*package*/ String getApiTokenInsecure() {
         if(apiToken == null){
-            return "deprecated";
+            return Messages.ApiTokenProperty_NoLegacyToken();
         }
 
         String p = apiToken.getPlainText();
@@ -263,7 +268,7 @@ public class ApiTokenProperty extends UserProperty {
         // just to keep the same level of security
         user.checkPermission(Jenkins.ADMINISTER);
 
-        LOGGER.log(Level.WARNING, "Deprecated usage of changeApiToken");
+        LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
 
         _changeApiToken();
         tokenStore.generateTokenFromLegacy(apiToken);
@@ -288,9 +293,6 @@ public class ApiTokenProperty extends UserProperty {
             // support legacy configuration
             if (apiTokenProperty.apiToken != null) {
                 apiTokenProperty.tokenStore.generateTokenFromLegacy(apiTokenProperty.apiToken);
-                //TODO save will allow the save of the hash of the legacy token 
-                // addition of a message could be nice in that API to provide more feedback to administrators
-                OldDataMonitor.report(context, "@since TODO");
             }
         }
     }
@@ -373,7 +375,7 @@ public class ApiTokenProperty extends UserProperty {
             // you are the user or you have ADMINISTER permission
             u.checkPermission(Jenkins.ADMINISTER);
 
-            LOGGER.log(Level.WARNING, "Deprecated action /changeToken used, consider using /generateNewToken instead");
+            LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -396,8 +398,11 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.forbidden();
             }
             
+            final String tokenName;
             if (StringUtils.isBlank(newTokenName)) {
-                return HttpResponses.errorJSON("The name cannot be empty");
+                tokenName = String.format("Token created on %s", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date()));
+            }else{
+                tokenName = newTokenName;
             }
             
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
@@ -406,11 +411,12 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
             
-            ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(newTokenName);
+            ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(tokenName);
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
                 put("tokenId", tokenIdAndPlainValue.tokenId); 
+                put("tokenName", tokenName); 
                 put("tokenValue", tokenIdAndPlainValue.plainValue); 
             }});
         }

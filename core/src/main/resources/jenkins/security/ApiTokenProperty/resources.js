@@ -22,20 +22,29 @@
  * THE SOFTWARE.
  */
 function revokeToken(anchorRevoke){
-    var listItemParent = anchorRevoke.up('.token-list-item');
+    var repeatedChunk = anchorRevoke.up('.repeated-chunk');
+    var tokenList = repeatedChunk.up('.token-list');
     var confirmMessage = anchorRevoke.attributes['data-confirm'].value;
     var targetUrl = anchorRevoke.attributes['data-target-url'].value;
     
-    var inputUuid = listItemParent.querySelector('input.token-uuid-input');
+    var inputUuid = repeatedChunk.querySelector('input.token-uuid-input');
     var tokenId = inputUuid.value;
 
-    console.warn('revokeToken');
     if(confirm(confirmMessage)){
         new Ajax.Request(targetUrl, {
             method: "post",
             parameters: {tokenId: tokenId},
             onSuccess: function(rsp,_) {
-                listItemParent.remove();
+                if(repeatedChunk.querySelectorAll('.legacy-token').length > 0){
+                    // we are revoking the legacy token
+                    var messageIfLegacyRevoked = anchorRevoke.attributes['data-message-if-legacy-revoked'].value;
+                    
+                    var legacyInput = document.getElementById('apiToken');
+                    legacyInput.value = messageIfLegacyRevoked;
+                }
+                repeatedChunk.remove();
+                adjustTokenEmptyListMessage(tokenList);
+                
             }
         });
     }
@@ -50,8 +59,9 @@ function saveApiToken(button){
     }
     button.addClassName('request-pending');
     var targetUrl = button.attributes['data-target-url'].value;
-    var rowParent = button.up('tr');
-    var nameInput = rowParent.querySelector('[name="newTokenName"]');
+    var repeatedChunk = button.up('.repeated-chunk ');
+    var tokenList = repeatedChunk.up('.token-list');
+    var nameInput = repeatedChunk.querySelector('[name="tokenName"]');
     var tokenName = nameInput.value;
     
     new Ajax.Request(targetUrl, {
@@ -59,7 +69,7 @@ function saveApiToken(button){
         parameters: {"newTokenName": tokenName},
         onSuccess: function(rsp,_) {
             var json = rsp.responseJSON;
-            var errorSpan = rowParent.querySelector('.error');
+            var errorSpan = repeatedChunk.querySelector('.error');
             if(json.status === 'error'){
                 errorSpan.style.display = 'block';
                 errorSpan.innerHTML = json.message;
@@ -68,16 +78,49 @@ function saveApiToken(button){
             }else{
                 errorSpan.style.display = 'none';
                 
-                nameInput.setAttribute('readonly', 'readonly');
+                var tokenName = json.data.tokenName;
+                // in case the name was empty, the application will propose a default one
+                nameInput.value = tokenName;
                 
                 var tokenValue = json.data.tokenValue;
-                var valueInput = rowParent.querySelector('#newTokenValue');
+                var valueInput = repeatedChunk.querySelector('[name="newTokenValue"]');
                 valueInput.value = tokenValue;
+                
+                var tokenUuid = json.data.tokenId;
+                var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
+                uuidInput.value = tokenUuid;
+                
                 valueInput.style.display = 'inline-block';
 
                 // we do not want to allow user to create twice a token using same name by mistake
                 button.remove();
+                
+                var revokeButton = repeatedChunk.querySelector('.token-revoke');
+                revokeButton.removeClassName('hidden-button');
+                
+                var cancelButton = repeatedChunk.querySelector('.token-cancel');
+                cancelButton.addClassName('hidden-button')
+                
+                repeatedChunk.addClassName('token-list-fresh-item');
+                
+                adjustTokenEmptyListMessage(tokenList);
             }
         }
     });
+}
+
+function adjustTokenEmptyListMessage(tokenList){
+    var emptyListMessage = tokenList.querySelector('.token-list-empty-item');
+
+    // number of token that are already existing or freshly created
+    var numOfToken = tokenList.querySelectorAll('.token-list-existing-item, .token-list-fresh-item').length;
+    if(numOfToken >= 1){
+        if(!emptyListMessage.hasClassName('hidden-message')){
+            emptyListMessage.addClassName('hidden-message');
+        }
+    }else{
+        if(emptyListMessage.hasClassName('hidden-message')){
+            emptyListMessage.removeClassName('hidden-message');
+        }
+    }
 }

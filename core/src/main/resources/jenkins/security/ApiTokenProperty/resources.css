@@ -21,69 +21,81 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-ul.token-list{
+.token-list{
     /* reset to get rid of browser default */
     margin: 0;
     padding: 0;
     
     max-width: 700px;
-    list-style: none;
     border: 1px solid #cccccc;
     border-radius: 3px;
 } 
 
-ul.token-list li.token-list-item {
+.token-list .token-list-item {
     min-height: inherit;
-    padding: 10px;
+    padding: 8px 10px;
     font-size: 13px;
     line-height: 26px;
 }
-ul.token-list li.token-list-item.legacy-token {
-    padding: 8px 5px 8px 5px;
+.token-list .token-list-item.legacy-token {
+    padding: 6px 5px 6px 5px;
     border: 2px solid #ffe262;
     border-left-width: 5px;
     border-right-width: 5px;
 }
-ul.token-list li.token-list-item.list-empty {
-    display: none;
-}
-ul.token-list li.token-list-item.list-empty:first-child {
+
+.token-list .token-list-empty-item {
     display: block;
 }
-ul.token-list li.token-list-item.list-empty .list-empty-message {
-    padding: 0 10px;
+.token-list .token-list-empty-item.hidden-message {
+    display: none;
 }
 
-/* 
- * trick to display the "empty list" message when the list is directly empty
- * or even after removing the last element 
- */
-ul.token-list li.token-list-item .token-name-input{
+.token-list .token-list-item .token-name-input{
     font-weight: bold;
 }
-ul.token-list li.token-list-item .token-creation{
+.token-list .token-list-item .token-creation{
     margin-left: 5px;
     font-size: 90%;
 }
-ul.token-list li.token-list-item .token-creation.age-ok{
+.token-list .token-list-item .token-creation.age-ok{
     color: #6d7680;
 }
-ul.token-list li.token-list-item .token-creation.age-mmmh{
+.token-list .token-list-item .token-creation.age-mmmh{
     color: #e09307;
 }
-ul.token-list li.token-list-item .token-creation.age-argh{
+.token-list .token-list-item .token-creation.age-argh{
     color: #de6868;
 }
-ul.token-list li.token-list-item .token-hide{
+.token-list .token-list-item .token-hide{
     display: none;
 }
-ul.token-list li.token-list-item .to-right{
+.token-list .token-list-item .to-right{
     float: right;
 }
-ul.token-list li.token-list-item .token-use-counter{
+.token-list .token-list-item .token-use-counter{
     font-size: 90%;
     color: #6d7680;
 }
-ul.token-list li.token-list-item .token-revoke{
+.token-list .token-list-item .token-revoke{
     margin-left: 10px;
+}
+.token-list .token-list-new-item .token-revoke{
+    float: right;
+    line-height: 32px;
+}
+.token-list .token-list-new-item .token-revoke.hidden-button{
+    display: none;
+}
+.token-list .token-list-new-item .token-cancel.hidden-button{
+    display: none;
+}
+.token-list .token-list-new-item .token-cancel .yui-button{
+    vertical-align: baseline;
+}
+.token-list .repeated-chunk {
+    border-width: 0;
+}
+.token-list .repeatable-add{
+    margin: 6px 6px 3px 6px;
 }
