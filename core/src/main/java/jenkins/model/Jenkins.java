@@ -846,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            if (isDefaultWorspaceDir() && !new File(root,"jobs").exists()) {
+            if (isDefaultWorkspaceDir() && !new File(root, "jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
@@ -2406,7 +2406,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return DEFAULT_BUILDS_DIR.equals(buildsDir);
     }
 
-    private boolean isDefaultWorspaceDir() {
+    private boolean isDefaultWorkspaceDir() {
         return DEFAULT_WORKSPACES_DIR.equals(workspaceDir);
     }
 
