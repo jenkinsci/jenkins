@@ -399,7 +399,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getWorkspaceFor(TopLevelItem)
      */
-    private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
+    private String workspaceDir = OLD_DEFAULT_WORKSPACES_DIR;
 
     /**
      * Root directory for the builds.
@@ -846,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
+                workspaceDir = DEFAULT_WORKSPACES_DIR;
             }
 
             // doing this early allows InitStrategy to set environment upfront
@@ -2402,6 +2402,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public boolean isDefaultBuildDir() {
         return DEFAULT_BUILDS_DIR.equals(buildsDir);
+    }
+
+    @Restricted(NoExternalUse.class)
+    boolean isDefaultWorkspaceDir() {
+        return OLD_DEFAULT_WORKSPACES_DIR.equals(workspaceDir) || DEFAULT_WORKSPACES_DIR.equals(workspaceDir);
     }
 
     private File expandVariablesForDirectory(String base, Item item) {
@@ -5054,6 +5059,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawBuildsDir()
      */
     private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
+    /**
+     * Old layout for workspaces.
+     * @see #DEFAULT_WORKSPACES_DIR
+     */
+    private static final String OLD_DEFAULT_WORKSPACES_DIR = "${ITEM_ROOTDIR}/" + WORKSPACE_DIRNAME;
+
+    /**
+     * Default value for the workspace's directories layout.
+     */
+    private static final String DEFAULT_WORKSPACES_DIR = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
+
+    /**
+     * System property name to set {@link #buildsDir}.
+     * @see #getRawBuildsDir()
+     */
+    public static final String BUILDS_DIR_PROP = Jenkins.class.getName() + ".BUILDS_DIR";
+
+    /**
+     * System property name to set {@link #workspaceDir}.
+     * @see #getRawWorkspaceDir()
+     */
+    public static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".WORKSPACES_DIR";
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
