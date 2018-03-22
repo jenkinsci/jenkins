@@ -259,7 +259,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 extensionAnnotations.put(gea.annotationType,gea);
             }
 
-            sezpozIndex = loadSezpozIndices(Jenkins.getInstance().getPluginManager().uberClassLoader);
+            SezpozModule extensions = new SezpozModule(loadSezpozIndices(Jenkins.getInstance().getPluginManager().uberClassLoader));
 
             List<Module> modules = new ArrayList<>();
             modules.add(new AbstractModule() {
@@ -270,7 +270,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     bind(PluginManager.class).toInstance(j.getPluginManager());
                 }
             });
-            modules.add(new SezpozModule(sezpozIndex));
+            modules.add(extensions);
 
             for (ExtensionComponent<Module> ec : moduleFinder.find(Module.class, Hudson.getInstance())) {
                 modules.add(ec.getInstance());
@@ -278,6 +278,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             try {
                 container = Guice.createInjector(modules);
+                sezpozIndex = extensions.getLoadedIndex();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
@@ -320,12 +321,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             for (Class<? extends Annotation> annotationType : extensionAnnotations.keySet()) {
                 delta.addAll(Sezpoz.listDelta(annotationType,sezpozIndex));
             }
-            List<IndexItem<?, Object>> l = Lists.newArrayList(sezpozIndex);
-            l.addAll(delta);
-            sezpozIndex = l;
+
+            SezpozModule deltaExtensions = new SezpozModule(delta);
 
             List<Module> modules = new ArrayList<>();
-            modules.add(new SezpozModule(delta));
+            modules.add(deltaExtensions);
             for (ExtensionComponent<Module> ec : moduleFinder.refresh().find(Module.class)) {
                 modules.add(ec.getInstance());
             }
@@ -333,6 +333,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             try {
                 final Injector child = container.createChildInjector(modules);
                 container = child;
+                List<IndexItem<?, Object>> l = Lists.newArrayList(sezpozIndex);
+                l.addAll(deltaExtensions.getLoadedIndex());
+                sezpozIndex = l;
 
                 return new ExtensionComponentSet() {
                     @Override
@@ -448,9 +451,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          */
         private class SezpozModule extends AbstractModule {
             private final List<IndexItem<?,Object>> index;
+            private final List<IndexItem<?,Object>> loadedIndex;
 
             public SezpozModule(List<IndexItem<?,Object>> index) {
                 this.index = index;
+                this.loadedIndex = new ArrayList<>();
             }
 
             /**
@@ -527,6 +532,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                                     }
                                 }).in(scope);
                         }
+                        loadedIndex.add(item);
                     } catch (Exception|LinkageError e) {
                         // sometimes the instantiation fails in an indirect classloading failure,
                         // which results in a LinkageError
@@ -534,6 +540,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                                    "Failed to load "+item.className(), e);
                     }
                 }
+            }
+
+            public List<IndexItem<?, Object>> getLoadedIndex() {
+                return Collections.unmodifiableList(loadedIndex);
             }
         }
     }

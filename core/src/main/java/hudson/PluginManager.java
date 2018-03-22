@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACLContext;
+import jenkins.ExtensionRefreshException;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -920,6 +921,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Redo who depends on who.
             resolveDependantPlugins();
 
+            try {
+                Jenkins.get().refreshExtensions();
+            } catch (ExtensionRefreshException e) {
+                throw new IOException("Failed to refresh extensions after installing " + sn + " plugin", e);
+            }
             LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
     }

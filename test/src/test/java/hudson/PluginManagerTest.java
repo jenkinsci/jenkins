@@ -342,8 +342,8 @@ public class PluginManagerTest {
         assertEquals("dependee", callDependerValue());
         
         // No extensions exist.
-        // extensions in depender is not loaded.
-        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        // extensions in depender are loaded.
+        assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
     @Issue("JENKINS-21486")
