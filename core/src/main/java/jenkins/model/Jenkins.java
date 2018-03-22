@@ -5083,6 +5083,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Default value for the workspace's directories layout.
+     * @see #workspaceDir
      */
     private static final String DEFAULT_WORKSPACES_DIR = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
 
