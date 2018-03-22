@@ -3050,13 +3050,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{buildsDir, newBuildsDir});
             buildsDir = newBuildsDir;
+        } else if (!isDefaultBuildDir()) {
+            LOGGER.log(Level.INFO, "Using non default builds directories: {0}.", buildsDir);
         }
 
         String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
-        if (newWorkspacesDir != null && !workspaceDir.equals(newBuildsDir)) {
+        if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
             LOGGER.log(Level.WARNING, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{workspaceDir, newWorkspacesDir});
             workspaceDir = newWorkspacesDir;
+        } else if (!isDefaultWorkspaceDir()) {
+            LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
         }
 
     }

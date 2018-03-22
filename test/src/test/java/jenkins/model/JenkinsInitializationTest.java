@@ -46,41 +46,68 @@ public class JenkinsInitializationTest {
 
     @Test
     public void buildsDir() throws Exception {
-        loggerRule.record(Jenkins.class, Level.WARNING).capture(10);
+        loggerRule.record(Jenkins.class, Level.WARNING)
+                .record(Jenkins.class, Level.INFO)
+                .capture(100);
+
+        story.then(step -> {
+                       assertFalse(logWasFound("Using non default builds directories"));
+                   }
+        );
+
         story.then(steps -> {
-            assertTrue(Jenkins.get().isDefaultBuildDir());
+            assertTrue(story.j.getInstance().isDefaultBuildDir());
             System.setProperty("jenkins.model.Jenkins.BUILDS_DIR", "blah");
             assertFalse(JenkinsInitializationTest.this.logWasFound("Changing builds directories from "));
         });
 
         story.then(step -> {
-                       assertFalse(Jenkins.get().isDefaultBuildDir());
+                       assertFalse(story.j.getInstance().isDefaultBuildDir());
                        assertEquals("blah", story.j.getInstance().getRawBuildsDir());
                        assertTrue(logWasFound("Changing builds directories from "));
+                   }
+        );
+
+        story.then(step -> {
+                       assertTrue(logWasFound("Using non default builds directories"));
                    }
         );
     }
 
     @Test
     public void workspacesDir() throws Exception {
-        loggerRule.record(Jenkins.class, Level.WARNING).capture(10);
+        loggerRule.record(Jenkins.class, Level.WARNING)
+                .record(Jenkins.class, Level.INFO)
+                .capture(1000);
+
         story.then(step -> {
-            assertTrue(Jenkins.get().isDefaultWorkspaceDir());
+                       assertFalse(logWasFound("Using non default workspaces directories"));
+                   }
+        );
+
+        story.then(step -> {
+            assertTrue(story.j.getInstance().isDefaultWorkspaceDir());
             System.setProperty("jenkins.model.Jenkins.WORKSPACES_DIR", "bluh");
             assertFalse(logWasFound("Changing workspaces directories from "));
         });
 
         story.then(step -> {
-            assertFalse(Jenkins.get().isDefaultBuildDir());
+            assertFalse(story.j.getInstance().isDefaultWorkspaceDir());
             assertEquals("bluh", story.j.getInstance().getRawWorkspaceDir());
             assertTrue(logWasFound("Changing workspaces directories from "));
         });
+
+
+        story.then(step -> {
+                       assertFalse(story.j.getInstance().isDefaultWorkspaceDir());
+                       assertTrue(logWasFound("Using non default workspaces directories"));
+                   }
+        );
+
     }
 
     private boolean logWasFound(String searched) {
         return loggerRule.getRecords().stream()
                 .anyMatch(record -> record.getMessage().contains(searched));
     }
-
-
 }
