@@ -104,7 +104,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.version>3.19-20180320.212209-2</remoting.version> <!-- TODO https://github.com/jenkinsci/remoting/pull/263 -->
+    <remoting.version>3.19</remoting.version>
     <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
