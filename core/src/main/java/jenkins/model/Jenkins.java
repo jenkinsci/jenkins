@@ -3044,12 +3044,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         setBuildsAndWorkspacesDir();
     }
 
-    private void setBuildsAndWorkspacesDir() {
+    private void setBuildsAndWorkspacesDir() throws IOException {
+        boolean mustSave = false;
         String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
         if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
             LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{buildsDir, newBuildsDir});
             buildsDir = newBuildsDir;
+            mustSave = true;
         } else if (!isDefaultBuildDir()) {
             LOGGER.log(Level.INFO, "Using non default builds directories: {0}.", buildsDir);
         }
@@ -3059,8 +3061,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(Level.WARNING, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{workspaceDir, newWorkspacesDir});
             workspaceDir = newWorkspacesDir;
+            mustSave = true;
         } else if (!isDefaultWorkspaceDir()) {
             LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
+        }
+
+        if (mustSave) {
+            save();
         }
 
     }
