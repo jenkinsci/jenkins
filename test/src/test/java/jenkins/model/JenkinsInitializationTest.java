@@ -4,7 +4,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
@@ -48,44 +47,33 @@ public class JenkinsInitializationTest {
     @Test
     public void buildsDir() throws Exception {
         loggerRule.record(Jenkins.class, Level.WARNING).capture(10);
-        story.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                assertTrue(Jenkins.get().isDefaultBuildDir());
-                System.setProperty("jenkins.model.Jenkins.BUILDS_DIR", "blah");
-                assertFalse(logWasFound("Changing builds directories from "));
-            }
+        story.then(steps -> {
+            assertTrue(Jenkins.get().isDefaultBuildDir());
+            System.setProperty("jenkins.model.Jenkins.BUILDS_DIR", "blah");
+            assertFalse(JenkinsInitializationTest.this.logWasFound("Changing builds directories from "));
         });
 
-        story.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                assertFalse(Jenkins.get().isDefaultBuildDir());
-                assertEquals("blah", story.j.getInstance().getRawBuildsDir());
-                assertTrue(logWasFound("Changing builds directories from "));
-            }
-        });
+        story.then(step -> {
+                       assertFalse(Jenkins.get().isDefaultBuildDir());
+                       assertEquals("blah", story.j.getInstance().getRawBuildsDir());
+                       assertTrue(logWasFound("Changing builds directories from "));
+                   }
+        );
     }
 
     @Test
     public void workspacesDir() throws Exception {
         loggerRule.record(Jenkins.class, Level.WARNING).capture(10);
-        story.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                assertTrue(Jenkins.get().isDefaultWorkspaceDir());
-                System.setProperty("jenkins.model.Jenkins.WORKSPACES_DIR", "bluh");
-                assertFalse(logWasFound("Changing workspaces directories from "));
-            }
+        story.then(step -> {
+            assertTrue(Jenkins.get().isDefaultWorkspaceDir());
+            System.setProperty("jenkins.model.Jenkins.WORKSPACES_DIR", "bluh");
+            assertFalse(logWasFound("Changing workspaces directories from "));
         });
 
-        story.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                assertFalse(Jenkins.get().isDefaultBuildDir());
-                assertEquals("bluh", story.j.getInstance().getRawWorkspaceDir());
-                assertTrue(logWasFound("Changing workspaces directories from "));
-            }
+        story.then(step -> {
+            assertFalse(Jenkins.get().isDefaultBuildDir());
+            assertEquals("bluh", story.j.getInstance().getRawWorkspaceDir());
+            assertTrue(logWasFound("Changing workspaces directories from "));
         });
     }
 
