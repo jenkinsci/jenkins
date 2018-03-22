@@ -5093,13 +5093,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * System property name to set {@link #buildsDir}.
      * @see #getRawBuildsDir()
      */
-    public static final String BUILDS_DIR_PROP = Jenkins.class.getName() + ".BUILDS_DIR";
+    static final String BUILDS_DIR_PROP = Jenkins.class.getName() + ".BUILDS_DIR";
 
     /**
      * System property name to set {@link #workspaceDir}.
      * @see #getRawWorkspaceDir()
      */
-    public static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".WORKSPACES_DIR";
+    static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".WORKSPACES_DIR";
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
