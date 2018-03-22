@@ -367,7 +367,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
-         * @deprecated use {@link #doGenerateNewToken(User, StaplerResponse, String)} instead
+         * @deprecated use {@link #doGenerateNewToken(User, String)} instead
          */
         @Deprecated
         @RequirePOST
@@ -376,6 +376,11 @@ public class ApiTokenProperty extends UserProperty {
             u.checkPermission(Jenkins.ADMINISTER);
 
             LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
+
+            if(!mustDisplayLegacyApiToken(u)){
+                // user does not have legacy token and the capability to create one without an existing one is disabled
+                return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed());
+            }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -393,7 +398,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         @RequirePOST
-        public HttpResponse doGenerateNewToken(@AncestorInPath User u, StaplerResponse rsp, @QueryParameter String newTokenName) throws IOException {
+        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName) throws IOException {
             if(!hasCurrentUserRightToGenerateNewToken(u)){
                 return HttpResponses.forbidden();
             }

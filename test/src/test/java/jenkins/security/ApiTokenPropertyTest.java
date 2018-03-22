@@ -1,14 +1,23 @@
 package jenkins.security;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -18,15 +27,21 @@ import hudson.security.ACLContext;
 import java.net.URL;
 
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -164,4 +179,288 @@ public class ApiTokenPropertyTest {
         wc.withBasicApiToken(u);
         return wc;
     }
+    
+    @Test
+    @Issue("JENKINS-32776")
+    public void generateNewTokenWithoutName() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+    
+        // user is still able to connect with legacy token
+        User admin = User.getById("admin", true);
+    
+        WebClient wc = j.createWebClient();
+        wc.withBasicCredentials("admin", "admin");
+        
+        GenerateNewTokenResponse token1 = generateNewToken(wc, "admin", "");
+        assertNotEquals("", token1.tokenName.trim());
+        
+        GenerateNewTokenResponse token2 = generateNewToken(wc, "admin", "New Token");
+        assertEquals("New Token", token2.tokenName);
+    }
+    
+    @Test
+    @LocalData
+    @Issue("JENKINS-32776")
+    public void migrationFromLegacyToken() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        
+        // user is still able to connect with legacy token
+        User admin = User.getById("admin", false);
+        assertNotNull("Admin user not configured correctly in local data", admin);
+        ApiTokenProperty apiTokenProperty = admin.getProperty(ApiTokenProperty.class);
+        
+        WebClient wc = j.createWebClient();
+        wc.withBasicCredentials("admin", "admin");
+        checkUserIsConnected(wc);
+        
+        // 7be8e81ad5a350fa3f3e2acfae4adb14
+        String localLegacyToken = apiTokenProperty.getApiTokenInsecure();
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", localLegacyToken);
+        checkUserIsConnected(wc);
+        
+        // can still renew it after (using API)
+        assertEquals(1, apiTokenProperty.getTokenList().size());
+        apiTokenProperty.changeApiToken();
+        assertEquals(1, apiTokenProperty.getTokenList().size());
+        String newLegacyToken = apiTokenProperty.getApiTokenInsecure();
+        
+        // use the new legacy api token
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", newLegacyToken);
+        checkUserIsConnected(wc);
+        
+        // but previous one is not more usable
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", localLegacyToken);
+        checkUserIsNotConnected(wc);
+        
+        // ===== new system =====
+        
+        // revoke the legacy
+        Collection<ApiTokenStore.HashedToken> tokenList = apiTokenProperty.getTokenList();
+        List<ApiTokenStore.HashedToken> legacyTokenList = tokenList.stream()
+                .filter(ApiTokenStore.HashedToken::isLegacy)
+                .collect(Collectors.toList());
+        assertEquals(1, legacyTokenList.size());
+        ApiTokenStore.HashedToken legacyToken = legacyTokenList.get(0);
+        String legacyUuid = legacyToken.getUuid();
+    
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", newLegacyToken);
+        revokeToken(wc, "admin", legacyUuid);
+        
+        assertEquals(0, apiTokenProperty.getTokenList().size());
+        
+        // check it does not work any more
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", newLegacyToken);
+        checkUserIsNotConnected(wc);
+    
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", localLegacyToken);
+        checkUserIsNotConnected(wc);
+    
+        // ensure the user can still connect using its username / password
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", "admin");
+        checkUserIsConnected(wc);
+        
+        // generate new token with the new system
+        wc = j.createWebClient();
+        wc.login("admin", "admin");
+        GenerateNewTokenResponse newToken = generateNewToken(wc, "admin", "New Token");
+        
+        // use the new one
+        wc = j.createWebClient();
+        wc.withBasicCredentials("admin", newToken.tokenValue);
+        checkUserIsConnected(wc);
+    }
+    
+    private void checkUserIsConnected(WebClient wc) throws Exception {
+        XmlPage xmlPage = wc.goToXml("whoAmI/api/xml");
+        assertThat(xmlPage, hasXPath("//name", is("admin")));
+        assertThat(xmlPage, hasXPath("//anonymous", is("false")));
+        assertThat(xmlPage, hasXPath("//authenticated", is("true")));
+        assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
+    }
+    
+    private void checkUserIsNotConnected(WebClient wc) throws Exception {
+        try{
+            wc.goToXml("whoAmI/api/xml");
+            fail();
+        }
+        catch(FailingHttpStatusCodeException e){
+            assertEquals(401, e.getStatusCode());
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-32776")
+    public void legacyTokenChange() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        
+        config.setTokenGenerationOnCreationEnabled(true);
+        
+        User user = User.getById("user", true);
+        WebClient wc = j.createWebClient();
+        wc.withBasicCredentials("user", "user");
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        
+        { // with one legacy token, we can change it using web UI or direct internal call
+            String currentLegacyToken = apiTokenProperty.getApiToken();
+            assertEquals(1, apiTokenProperty.getTokenList().size());
+            
+            config.setCreationOfLegacyTokenEnabled(true);
+            {
+                // change using web UI
+                changeLegacyToken(wc, "user", true);
+                String newLegacyToken = apiTokenProperty.getApiToken();
+                assertNotEquals(newLegacyToken, currentLegacyToken);
+                
+                // change using internal call
+                apiTokenProperty.changeApiToken();
+                String newLegacyToken2 = apiTokenProperty.getApiToken();
+                assertNotEquals(newLegacyToken2, newLegacyToken);
+                assertNotEquals(newLegacyToken2, currentLegacyToken);
+                
+                currentLegacyToken = newLegacyToken2;
+            }
+            
+            config.setCreationOfLegacyTokenEnabled(false);
+            {
+                // change using web UI
+                changeLegacyToken(wc, "user", true);
+                String newLegacyToken = apiTokenProperty.getApiToken();
+                assertNotEquals(newLegacyToken, currentLegacyToken);
+                
+                // change using internal call
+                apiTokenProperty.changeApiToken();
+                String newLegacyToken2 = apiTokenProperty.getApiToken();
+                assertNotEquals(newLegacyToken2, newLegacyToken);
+                assertNotEquals(newLegacyToken2, currentLegacyToken);
+            }
+        }
+        { // but without any legacy token, the direct internal call remains but web UI depends on config
+            revokeAllToken(wc, user);
+    
+            checkCombinationWithConfigAndMethodForLegacyTokenCreation(config, wc, user);
+        }
+        {// only the legacy token have impact on that capability
+            generateNewToken(wc, "user", "New token");
+    
+            checkCombinationWithConfigAndMethodForLegacyTokenCreation(config, wc, user);
+        }
+    }
+    
+    private void checkCombinationWithConfigAndMethodForLegacyTokenCreation(
+            ApiTokenPropertyConfiguration config, WebClient wc, User user
+    ) throws Exception {
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        
+        config.setCreationOfLegacyTokenEnabled(true);
+        {
+            {// change using web UI
+                changeLegacyToken(wc, "user", true);
+                String newLegacyToken = apiTokenProperty.getApiToken();
+                assertNotEquals(newLegacyToken, Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed());
+            }
+            revokeLegacyToken(wc, user);
+        
+            // always possible
+            changeTokenByDirectCall(apiTokenProperty);
+            revokeLegacyToken(wc, user);
+        }
+    
+        revokeAllToken(wc, user);
+    
+        config.setCreationOfLegacyTokenEnabled(false);
+        {
+            {// change not possible using web UI
+                changeLegacyToken(wc, "user", false);
+                String newLegacyToken = apiTokenProperty.getApiToken();
+                assertEquals(newLegacyToken, Messages.ApiTokenProperty_NoLegacyToken());
+            }
+            revokeLegacyToken(wc, user);
+        
+            // always possible
+            changeTokenByDirectCall(apiTokenProperty);
+            revokeLegacyToken(wc, user);
+        }
+    }
+    
+    private void changeTokenByDirectCall(ApiTokenProperty apiTokenProperty) throws Exception {
+        apiTokenProperty.changeApiToken();
+        String newLegacyToken = apiTokenProperty.getApiToken();
+        assertNotEquals(newLegacyToken, Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed());
+    }
+    
+    private void revokeAllToken(WebClient wc, User user) throws Exception {
+        revokeAllTokenUsingFilter(wc, user, it -> true);
+    }
+    
+    private void revokeLegacyToken(WebClient wc, User user) throws Exception {
+        revokeAllTokenUsingFilter(wc, user, ApiTokenStore.HashedToken::isLegacy);
+    }
+    
+    private void revokeAllTokenUsingFilter(WebClient wc, User user, Predicate<ApiTokenStore.HashedToken> filter) throws Exception {
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        List<String> uuidList = apiTokenProperty.getTokenList().stream()
+                .filter(filter)
+                .map(ApiTokenStore.HashedToken::getUuid)
+                .collect(Collectors.toList());
+        for(String uuid : uuidList){
+            revokeToken(wc, user.getId(), uuid);
+        }
+    }
+    
+    private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
+        WebRequest request = new WebRequest(
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenId=" + tokenUuid),
+                HttpMethod.POST
+        );
+        Page p = wc.getPage(request);
+        assertEquals(200, p.getWebResponse().getStatusCode());
+    }
+    
+    private void changeLegacyToken(WebClient wc, String login, boolean success) throws Exception {
+        WebRequest request = new WebRequest(
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/changeToken/"),
+                HttpMethod.POST
+        );
+        Page p = wc.getPage(request);
+        assertEquals(200, p.getWebResponse().getStatusCode());
+        if(success){
+            assertFalse(p.getWebResponse().getContentAsString().contains(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
+        }else{
+            assertTrue(p.getWebResponse().getContentAsString().contains(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
+        }
+    }
+    
+    public static class GenerateNewTokenResponse {
+        public String tokenId;
+        public String tokenName;
+        public String tokenValue;
+    }
+    
+    private GenerateNewTokenResponse generateNewToken(WebClient wc, String login, String tokenName) throws Exception {
+        WebRequest request = new WebRequest(
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken/?newTokenName=" + tokenName),
+                HttpMethod.POST
+        );
+        Page p = wc.getPage(request);
+        assertEquals(200, p.getWebResponse().getStatusCode());
+        
+        String response = p.getWebResponse().getContentAsString();
+        JSONObject responseJson = JSONObject.fromObject(response);
+        Object result = responseJson.getJSONObject("data").toBean(GenerateNewTokenResponse.class);
+        return (GenerateNewTokenResponse) result;
+    }
+    
+    
+    // test no token are generated for new user with the global configuration set to false
 }
