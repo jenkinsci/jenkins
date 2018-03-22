@@ -3040,6 +3040,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
+
+        setBuildsAndWorkspacesDir();
+    }
+
+    private void setBuildsAndWorkspacesDir() {
+        String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
+        if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
+            LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
+                       new String[]{buildsDir, newBuildsDir});
+            buildsDir = newBuildsDir;
+        }
+
+        String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
+        if (newWorkspacesDir != null && !workspaceDir.equals(newBuildsDir)) {
+            LOGGER.log(Level.WARNING, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
+                       new String[]{workspaceDir, newWorkspacesDir});
+            workspaceDir = newWorkspacesDir;
+        }
+
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
