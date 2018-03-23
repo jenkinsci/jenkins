@@ -38,7 +38,7 @@ public class ComputerTest {
         }
     }
 
-    @Issue("JENKINS-42556")
+    @Issue("JENKINS-50296")
     @Test
     public void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
         Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication);
