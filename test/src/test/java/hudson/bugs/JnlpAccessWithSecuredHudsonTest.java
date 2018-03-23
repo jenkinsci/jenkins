@@ -37,7 +37,7 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;

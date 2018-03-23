@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017, CloudBees, Inc.
+Copyright (c) 2018, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core">
     <div class="alert alert-warning">
-        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%Disable legacy generation by default}"/>
-            <f:submit name="no" value="${%Dismiss}"/>
-        </form>
-        ${%warningMessage(rootURL)}
+        ${%warningMessage(rootURL, it.url)}
     </div>
 </j:jelly>

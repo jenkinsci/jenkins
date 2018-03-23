@@ -34,7 +34,7 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
-import hudson.util.Scrambler;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

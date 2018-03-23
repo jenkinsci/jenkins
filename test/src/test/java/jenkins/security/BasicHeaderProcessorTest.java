@@ -7,6 +7,7 @@ import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -21,9 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security;
+package jenkins.security.apitoken;
 
 import hudson.model.User;
+import jenkins.security.ApiTokenProperty;
+import jenkins.security.Messages;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -50,7 +54,7 @@ public class ApiTokenPropertyConfigurationTest {
             assertEquals(1, withToken.getTokenList().size());
             
             String withTokenValue = withToken.getApiToken();
-            assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), withTokenValue);
+            Assert.assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), withTokenValue);
         }
         
         config.setTokenGenerationOnCreationEnabled(false);

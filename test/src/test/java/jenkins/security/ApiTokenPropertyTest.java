@@ -27,6 +27,8 @@ import hudson.security.ACLContext;
 import java.net.URL;
 
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenStore;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;

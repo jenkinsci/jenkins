@@ -34,14 +34,13 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
-import hudson.security.csrf.CrumbIssuer;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;

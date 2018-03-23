@@ -27,8 +27,9 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -155,6 +156,14 @@ public class ApiTokenProperty extends UserProperty {
                 : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
     }
     
+    /**
+     * Determine if the legacy token is still present
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean hasLegacyToken(){
+        return apiToken != null;
+    }
+    
     @Nonnull
     @Restricted(NoExternalUse.class)
     /*package*/ String getApiTokenInsecure() {
@@ -271,7 +280,7 @@ public class ApiTokenProperty extends UserProperty {
         LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
 
         _changeApiToken();
-        tokenStore.generateTokenFromLegacy(apiToken);
+        tokenStore.regenerateTokenFromLegacy(apiToken);
         
         user.save();
     }
@@ -282,7 +291,20 @@ public class ApiTokenProperty extends UserProperty {
         RANDOM.nextBytes(random);
         apiToken = Secret.fromString(Util.toHexString(random));
     }
-
+    
+    /**
+     * Does not revoke the token stored in the store
+     */
+    @Restricted(NoExternalUse.class)
+    public void deleteApiToken(){
+        this.apiToken = null;
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public ApiTokenStore getTokenStore() {
+        return tokenStore;
+    }
+    
     public static class ConverterImpl extends XStream2.PassthruConverter<ApiTokenProperty> {
         public ConverterImpl(XStream2 xstream) {
             super(xstream);
@@ -302,6 +324,10 @@ public class ApiTokenProperty extends UserProperty {
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
+        }
+        
+        public String getNoLegacyToken(){
+            return Messages.ApiTokenProperty_NoLegacyToken();
         }
 
         /**

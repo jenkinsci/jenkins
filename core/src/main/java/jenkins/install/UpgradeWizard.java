@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 import javax.servlet.http.HttpSession;
 
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

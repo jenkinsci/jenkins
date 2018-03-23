@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
@@ -36,7 +36,7 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.codehaus.groovy.runtime.Security218;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

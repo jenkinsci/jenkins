@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017, CloudBees, Inc.
+Copyright (c) 2018, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,6 @@ THE SOFTWARE.
             <f:submit name="yes" value="${%Disable that capability}"/>
             <f:submit name="no" value="${%Dismiss}"/>
         </form>
-        ${%warningMessage(rootURL)}
+        ${%warningMessage}
     </div>
 </j:jelly>

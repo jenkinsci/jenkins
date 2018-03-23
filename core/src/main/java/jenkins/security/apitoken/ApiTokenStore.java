@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security;
+package jenkins.security.apitoken;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.Secret;
-import jenkins.util.SystemProperties;
+import jenkins.security.Messages;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
@@ -44,9 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -63,9 +61,9 @@ public class ApiTokenStore {
             Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase(Locale.ENGLISH));
     
     private static final int TOKEN_LENGTH_V2 = 34;
-    /** two hex-characters */
-    private static final String LEGACY_VERSION = "01";
-    private static final String HASH_VERSION = "02";
+    /** two hex-characters, avoid starting with 0 to avoid troubles */
+    private static final String LEGACY_VERSION = "10";
+    private static final String HASH_VERSION = "11";
     
     private static final String HASH_ALGORITHM = "SHA-256";
     
@@ -120,6 +118,12 @@ public class ApiTokenStore {
     }
     
     public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
+        if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
+            regenerateTokenFromLegacy(newLegacyApiToken);
+        }
+    }
+    
+    public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken);
     }
@@ -326,23 +330,38 @@ public class ApiTokenStore {
             return MessageDigest.isEqual(hashFromHex, hashedBytes);
         }
         
+        // used by Jelly view
         public String getName() {
             return name;
         }
-        
+    
+        // used by Jelly view
         public int getUseCounter() {
             return useCounter == null ? 0 : useCounter;
         }
-        
+    
+        // used by Jelly view
+        public Date getLastUseDate() {
+            return lastUseDate;
+        }
+    
+        // used by Jelly view
         public long getNumDaysUse() {
             return lastUseDate == null ? 0 : computeDeltaDays(lastUseDate.toInstant(), Instant.now());
         }
-        
+    
+        // used by Jelly view
+        public Date getCreationDate() {
+            return creationDate;
+        }
+    
+        // used by Jelly view
         public long getNumDaysCreation() {
             // should not happen but just in case
             return creationDate == null ? 0 : computeDeltaDays(creationDate.toInstant(), Instant.now());
         }
-        
+    
+        // used by Jelly view
         public String getUuid() {
             return this.uuid;
         }

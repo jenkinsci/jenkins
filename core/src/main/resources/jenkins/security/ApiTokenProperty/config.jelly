@@ -24,15 +24,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
-    
     <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
         <div class="token-list ignore-confirm-panel">
-            <div class="token-list-item token-list-empty-item ${instance.tokenList.isEmpty() ? '' : 'hidden-message'}">
+            <j:set var="tokenList" value="${instance.tokenList}" />
+            <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'hidden-message'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
             </div>
-            <f:repeatable name="tokenStore" var="token" items="${instance.tokenList}" minimum="0"
+            <f:repeatable name="tokenStore" var="token" items="${tokenList}" minimum="0"
                           noAddButton="${!descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
                 <j:choose>
                     <j:when test="${token!=null}">
@@ -56,13 +56,21 @@ THE SOFTWARE.
                                     <j:set var="oldClazz" value="age-argh" />
                                 </j:if>
                             </j:if>
-                            <span class="token-creation ${oldClazz}">${%TokenCreation(daysOld)}</span>
+                            <j:set var="creationDateFormat" value="${%NoLastUse}" />
+                            <j:if test="${token.creationDate != null}">
+                                <i:formatDate var="creationDateFormat" value="${token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                            </j:if>
+                            <span class="token-creation ${oldClazz}" title="${creationDateFormat}">${%TokenCreation(daysOld)}</span>
                 
                             <span class="to-right">
                                 <j:set var="useCounter" value="${token.useCounter}" />
                                 <j:choose>
                                     <j:when test="${useCounter > 0}">
-                                        <span class="token-use-counter">
+                                        <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
+                                        <j:if test="${token.lastUseDate != null}">
+                                            <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                        </j:if>
+                                        <span class="token-use-counter" title="${lastUseDateFormat}">
                                             ${%TokenLastUse(useCounter, token.numDaysUse)}
                                         </span>
                                     </j:when>
@@ -110,11 +118,10 @@ THE SOFTWARE.
             </f:repeatable>
         </div>
     </f:entry>
-    
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
         <f:advanced title="${%Show Legacy API Token}" align="left">
             <f:entry title="${%Legacy API Token}" field="apiToken">
-                <f:readOnlyTextbox id="apiToken" />
+                <f:readOnlyTextbox id="apiToken" value="${descriptor.noLegacyToken}"/>
             </f:entry>
             <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-confirm-panel"/>
         </f:advanced>

@@ -50,7 +50,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.*;
 
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.SecurityListener;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;

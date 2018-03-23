@@ -24,8 +24,8 @@
 function revokeToken(anchorRevoke){
     var repeatedChunk = anchorRevoke.up('.repeated-chunk');
     var tokenList = repeatedChunk.up('.token-list');
-    var confirmMessage = anchorRevoke.attributes['data-confirm'].value;
-    var targetUrl = anchorRevoke.attributes['data-target-url'].value;
+    var confirmMessage = anchorRevoke.getAttribute('data-confirm');
+    var targetUrl = anchorRevoke.getAttribute('data-target-url');
     
     var inputUuid = repeatedChunk.querySelector('input.token-uuid-input');
     var tokenId = inputUuid.value;
@@ -37,7 +37,7 @@ function revokeToken(anchorRevoke){
             onSuccess: function(rsp,_) {
                 if(repeatedChunk.querySelectorAll('.legacy-token').length > 0){
                     // we are revoking the legacy token
-                    var messageIfLegacyRevoked = anchorRevoke.attributes['data-message-if-legacy-revoked'].value;
+                    var messageIfLegacyRevoked = anchorRevoke.getAttribute('data-message-if-legacy-revoked');
                     
                     var legacyInput = document.getElementById('apiToken');
                     legacyInput.value = messageIfLegacyRevoked;
@@ -58,7 +58,7 @@ function saveApiToken(button){
         return;
     }
     button.addClassName('request-pending');
-    var targetUrl = button.attributes['data-target-url'].value;
+    var targetUrl = button.getAttribute('data-target-url');
     var repeatedChunk = button.up('.repeated-chunk ');
     var tokenList = repeatedChunk.up('.token-list');
     var nameInput = repeatedChunk.querySelector('[name="tokenName"]');

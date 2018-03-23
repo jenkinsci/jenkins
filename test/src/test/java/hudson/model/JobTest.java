@@ -52,7 +52,7 @@ import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

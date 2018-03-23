@@ -45,7 +45,7 @@ import java.util.Map;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
 
-import jenkins.security.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
