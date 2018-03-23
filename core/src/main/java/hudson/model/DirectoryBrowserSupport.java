@@ -366,6 +366,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            // TODO consider using run(Callable) here
             for (String n : dir.list(glob.isEmpty() ? "**" : glob, null, /* TODO what is the user expectation? */true)) {
                 String relativePath;
                 if (glob.length() == 0) {
