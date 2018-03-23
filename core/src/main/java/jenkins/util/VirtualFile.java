@@ -56,6 +56,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -177,7 +178,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Lists recursive files of this directory with pattern matching.
-     * <p>The default implementation calls {@link #list()} recursively and applies filtering to the result.
+     * <p>The default implementation calls {@link #list()} recursively inside {@link #run} and applies filtering to the result.
      * Implementations may wish to override this more efficiently.
      * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
      *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
@@ -188,8 +189,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @since FIXME
      */
     public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
-        List<String> r = new ArrayList<>();
-        collectFiles(r, "");
+        Collection<String> r = run(new CollectFiles(this));
         List<TokenizedPattern> includePatterns = patterns(includes);
         List<TokenizedPattern> excludePatterns = patterns(excludes);
         if (useDefaultExcludes) {
@@ -202,12 +202,25 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && !excludePatterns.stream().anyMatch(patt -> patt.matchPath(path, true));
         }).collect(Collectors.toSet());
     }
-    private void collectFiles(Collection<String> names, String prefix) throws IOException {
-        for (VirtualFile child : list()) {
-            if (child.isFile()) {
-                names.add(prefix + child.getName());
-            } else if (child.isDirectory()) {
-                child.collectFiles(names, prefix + child.getName() + "/");
+    private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
+        private static final long serialVersionUID = 1;
+        private final VirtualFile root;
+        CollectFiles(VirtualFile root) {
+            this.root = root;
+        }
+        @Override
+        public Collection<String> call() throws IOException {
+            List<String> r = new ArrayList<>();
+            collectFiles(root, r, "");
+            return r;
+        }
+        private static void collectFiles(VirtualFile d, Collection<String> names, String prefix) throws IOException {
+            for (VirtualFile child : d.list()) {
+                if (child.isFile()) {
+                    names.add(prefix + child.getName());
+                } else if (child.isDirectory()) {
+                    collectFiles(child, names, prefix + child.getName() + "/");
+                }
             }
         }
     }
