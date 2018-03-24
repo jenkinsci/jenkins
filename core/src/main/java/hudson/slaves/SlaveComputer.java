@@ -28,14 +28,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.Computer;
-import hudson.model.Executor;
-import hudson.model.ExecutorListener;
-import hudson.model.Node;
-import hudson.model.Queue;
-import hudson.model.Slave;
-import hudson.model.TaskListener;
-import hudson.model.User;
+import hudson.model.*;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
@@ -50,6 +43,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
@@ -549,12 +543,20 @@ public class SlaveComputer extends Computer {
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
+
+        boolean rejectConn = GlobalConfiguration.all().get(SlaveComputerConfiguration.class).isRejectConn();
+
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("Error: Remoting version is older than a minimum required one (%s). ",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
-            log.println("Aborting.");
-            
-            return;
+            if(!rejectConn)
+                log.println(String.format("Remoting version is older than a minimum required one (%s) " +
+                                "still trying to connect. ",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+            else {
+                log.println(String.format("Remoting version is older than a minimum required one (%s) ",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+                log.print(String.format("Aborting"));
+                return;
+            }
         }
 
         boolean _isUnix = channel.call(new DetectOS());
