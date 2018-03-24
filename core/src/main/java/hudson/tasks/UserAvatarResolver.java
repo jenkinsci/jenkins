@@ -33,6 +33,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.model.User;
+import hudson.Util;
 import javax.annotation.CheckForNull;
 
 /**
@@ -87,7 +88,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      */
     public static String resolve(User u, String avatarSize) {
         String avatar = resolveOrNull(u, avatarSize);
-        return avatar != null ? avatar : Jenkins.getInstance().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
+        return avatar != null ? avatar : Util.removeTrailingSlash(Jenkins.getInstance().getRootUrl()) + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
     }
 
     /**
