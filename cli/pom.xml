@@ -5,13 +5,18 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.112-SNAPSHOT</version>
+    <version>2.113-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
 
   <name>Jenkins cli</name>
   <description>Command line interface for Jenkins</description>
+
+  <properties>
+    <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
+    <findbugs.threshold>Medium</findbugs.threshold>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -66,6 +71,11 @@
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
       <version>build214-jenkins-1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

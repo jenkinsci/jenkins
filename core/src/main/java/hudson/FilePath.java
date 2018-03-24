@@ -138,6 +138,7 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
 
 import java.util.Collections;
+import org.apache.tools.ant.BuildException;
         
 /**
  * {@link File} like object with remoting support.
@@ -1829,7 +1830,12 @@ public final class FilePath implements Serializable {
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes,excludes);
         fs.setDefaultexcludes(defaultExcludes);
-        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+        DirectoryScanner ds;
+        try {
+            ds = fs.getDirectoryScanner(new Project());
+        } catch (BuildException x) {
+            throw new IOException(x.getMessage());
+        }
         String[] files = ds.getIncludedFiles();
         return files;
     }
