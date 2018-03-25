@@ -27,20 +27,10 @@ package jenkins.model;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.model.Action;
-import hudson.model.BuildableItem;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.Item;
+import hudson.model.*;
+
 import static hudson.model.Item.CONFIGURE;
-import hudson.model.Items;
-import hudson.model.Job;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Queue;
-import hudson.model.Run;
+
 import hudson.model.listeners.ItemListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.search.SearchIndexBuilder;
@@ -215,6 +205,8 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTimeInSeconds(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
+            AbstractProject pro = ((AbstractProject) ((Queue.WaitingItem) item).task);
+            rsp.setIntHeader("buildId", pro.getNextBuildNumber());
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
             rsp.sendRedirect(".");
