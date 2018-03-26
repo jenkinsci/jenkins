@@ -7,7 +7,7 @@
       <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
       <style type="text/css">
         #configure-instance {
-          padding: 20px 20px 20px 100px;
+          padding: 20px 100px 20px 100px;
           margin: 8px;
         }
 
@@ -36,16 +36,26 @@
           border-radius: 2px;
           padding: 1px 8px;
         }
+        
+        #configure-instance tr td .help-text{
+          color: #999;
+          font-size: 12px;
+        }
       </style>
 
      <div id="configure-instance">
        <form action="${rootURL}/setupWizard/configureRootUrl" method="post">
-          <h1>${%Instance configuration}</h1>
+          <h1>${%Instance Configuration}</h1>
           <div style="margin: 2em;">
             <table>
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td><input type="text" name="rootUrl" id="root-url" class="root-url" value="" /></td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <div class="help-text">${%jenkinsURL_help}</div>
+              </td>
             </tr>
             </table>
           </div>

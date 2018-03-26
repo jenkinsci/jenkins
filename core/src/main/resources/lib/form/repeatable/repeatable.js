@@ -13,6 +13,9 @@ var repeatableSupport = {
     // block name for structured HTML
     name : null,
 
+    // enable to display add button on top
+    enableTopButton : false,
+
     withDragDrop: false,
 
     // do the initialization
@@ -24,12 +27,21 @@ var repeatableSupport = {
         master.parentNode.removeChild(master);
         this.insertionPoint = $(insertionPoint);
         this.name = master.getAttribute("name");
+        if (this.container.getAttribute("enableTopButton") == "true") {
+            this.enableTopButton = true;
+        } else {
+            this.enableTopButton = false;
+        }
         this.update();
         this.withDragDrop = initContainerDD(container);
     },
 
     // insert one more block at the insertion position
-    expand : function() {
+    expand : function(addOnTop) {
+        if (addOnTop == null) {
+            addOnTop = false;
+        }
+
         // importNode isn't supported in IE.
         // nc = document.importNode(node,true);
         var nc = $(document.createElement("div"));
@@ -37,7 +49,14 @@ var repeatableSupport = {
         nc.setOpacity(0);
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
-        this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
+        if (!addOnTop) {
+            this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
+        } else if (this.enableTopButton) {
+            var children = $(this.container).childElements().findAll(function (n) {
+                return n.hasClassName("repeated-chunk");
+            });
+            this.container.insertBefore(nc, children[0]);
+        }
         if (this.withDragDrop) prepareDD(nc);
 
         new YAHOO.util.Anim(nc, {
@@ -55,15 +74,38 @@ var repeatableSupport = {
         });
 
         if(children.length==0) {
-            // noop
-        } else
-        if(children.length==1) {
-            children[0].className = "repeated-chunk first last only";
+            var addButtonElements = $(this.container).childElements().findAll(function (b) {
+                return b.hasClassName("repeatable-add");
+            });
+
+            if (addButtonElements.length == 2) {
+                var buttonElement = addButtonElements[0];
+                var parentOfButton = buttonElement.parentNode;
+                parentOfButton.removeChild(buttonElement);
+            }
         } else {
-            children[0].className = "repeated-chunk first";
-            for(var i=1; i<children.length-1; i++)
-                children[i].className = "repeated-chunk middle";
-            children[children.length-1].className = "repeated-chunk last";
+            if (children.length == 1) {
+                var addButtonElements = $(this.container).childElements().findAll(function (b) {
+                    return b.hasClassName("repeatable-add");
+                });
+
+                if (addButtonElements.length == 1 && this.enableTopButton) {
+                    var buttonElement = addButtonElements[0];
+                    var parentOfButton = buttonElement.parentNode;
+                    var addTopButton = document.createElement('input');
+                    addTopButton.type = 'button';
+                    addTopButton.value = buttonElement.textContent || buttonElement.innerText;
+                    addTopButton.className = 'repeatable-add repeatable-add-top';
+                    parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
+                    Behaviour.applySubtree(addTopButton, true);
+                }
+                children[0].className = "repeated-chunk first last only";
+            } else {
+                children[0].className = "repeated-chunk first";
+                for (var i = 1; i < children.length - 1; i++)
+                    children[i].className = "repeated-chunk middle";
+                children[children.length - 1].className = "repeated-chunk last";
+            }
         }
     },
 
@@ -87,9 +129,14 @@ var repeatableSupport = {
 
     // called when 'add' button is clicked
     onAdd : function(n) {
-        while(n.tag==null)
+        var addOnTop = false;
+        while (n.tag == null) {
             n = n.parentNode;
-        n.tag.expand();
+            if (n.hasClassName("repeatable-add-top")) {
+                addOnTop = true;
+            }
+        }
+        n.tag.expand(addOnTop);
         // Hack to hide tool home when a new tool has some installers.
         var inputs = n.getElementsByTagName('INPUT');
         for (var i = 0; i < inputs.length; i++) {

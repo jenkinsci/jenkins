@@ -878,45 +878,37 @@ var createPluginSetupWizard = function(appendTarget) {
 			$c.slideDown();
 		}
 	};
-	
-	var handleStaplerSubmit = function(data) {
-		if(data.status && data.status > 200) {
-			// Nothing we can really do here
-			setPanel(errorPanel, { errorMessage: data.statusText });
-			return;
-		}
-		
-		try {
-			if(JSON.parse(data).status === 'ok') {
-				showStatePanel();
-				return;
-			}
-		} catch(e) {
-			// ignore JSON parsing issues, this may be HTML
-		}
-		// we get 200 OK
-		var responseText = data.responseText;
-		var $page = $(responseText);
-		var $errors = $page.find('.error');
-		if($errors.length > 0) {
-			var $main = $page.find('#main-panel').detach();
-			if($main.length > 0) {
-				responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
-			}
-			var doc = $('iframe[src]').contents()[0];
-			doc.open();
-			doc.write(responseText);
-			doc.close();
-		}
-		else {
+
+	var handleFirstUserResponseSuccess = function (data) {
+		if (data.status === 'ok') {
 			showStatePanel();
+		} else {
+			setPanel(errorPanel, {errorMessage: 'Error trying to create first user: ' + data.statusText});
 		}
+	};
+
+	var handleFirstUserResponseError = function(res) {
+		// We're expecting a full HTML page to replace the form
+		// We can only replace the _whole_ iframe due to XSS rules
+		// https://stackoverflow.com/a/22913801/1117552
+		var responseText = res.responseText;
+		var $page = $(responseText);
+		var $main = $page.find('#main-panel').detach();
+		if($main.length > 0) {
+			responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+		}
+		var doc = $('iframe#setup-first-user').contents()[0];
+		doc.open();
+		doc.write(responseText);
+		doc.close();
+		$('button').prop({disabled:false});
 	};
 
 	// call to submit the first user
 	var saveFirstUser = function() {
 		$('button').prop({disabled:true});
-		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+		var $form = $('iframe#setup-first-user').contents().find('form:not(.no-json)');
+		securityConfig.saveFirstUser($form, handleFirstUserResponseSuccess, handleFirstUserResponseError);
 	};
 
     var firstUserSkipped = false;
@@ -926,9 +918,40 @@ var createPluginSetupWizard = function(appendTarget) {
 		showConfigureInstance();
 	};
 	
+	var handleConfigureInstanceResponseSuccess = function (data) {
+		if (data.status === 'ok') {
+			showStatePanel();
+		} else {
+			setPanel(errorPanel, {errorMessage: 'Error trying to configure instance: ' + data.statusText});
+		}
+	};
+
+	var handleConfigureInstanceResponseError = function(res) {
+		// We're expecting a full HTML page to replace the form
+		// We can only replace the _whole_ iframe due to XSS rules
+		// https://stackoverflow.com/a/22913801/1117552
+		var responseText = res.responseText;
+		var $page = $(responseText);
+		var $main = $page.find('#main-panel').detach();
+		if($main.length > 0) {
+			responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+		}
+		var doc = $('iframe#setup-configure-instance').contents()[0];
+		doc.open();
+		doc.write(responseText);
+		doc.close();
+		$('button').prop({disabled:false});
+	};
+	
 	var saveConfigureInstance = function() {
 		$('button').prop({disabled:true});
-		securityConfig.saveConfigureInstance($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+		var $form = $('iframe#setup-configure-instance').contents().find('form:not(.no-json)');
+		securityConfig.saveConfigureInstance($form, handleConfigureInstanceResponseSuccess, handleConfigureInstanceResponseError);
+	};
+	
+	var skipFirstUserAndConfigureInstance = function(){
+		firstUserSkipped = true;
+		skipConfigureInstance();
 	};
 
 	var skipConfigureInstance = function() {
@@ -1048,7 +1071,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.plugin-select-recommended': function() { selectedPluginNames = pluginManager.recommendedPluginNames(); refreshPluginSelectionPanel(); },
 		'.plugin-show-selected': toggleSelectedSearch,
 		'.select-category': selectCategory,
-		'.close': skipFirstUser,
+		'.close': skipFirstUserAndConfigureInstance,
 		'.resume-installation': resumeInstallation,
 		'.install-done-restart': restartJenkins,
 		'.save-first-user:not([disabled])': saveFirstUser,
