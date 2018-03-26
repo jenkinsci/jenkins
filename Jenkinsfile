@@ -67,7 +67,7 @@ for(i = 0; i < buildTypes.size(); i++) {
 }
 
 builds.ath = {
-    node("linux") {
+    node("docker&&highmem") {
         // Just to be safe
         deleteDir()
         def fileUri
