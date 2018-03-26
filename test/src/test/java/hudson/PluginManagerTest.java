@@ -46,6 +46,8 @@ import java.util.concurrent.Future;
 
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
+import jenkins.model.GlobalConfiguration;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -532,5 +534,21 @@ public class PluginManagerTest {
         URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
 
         assertEquals(fromPlugin, fromToolkit);
+    }
+
+    // Sources for jenkins-50336.hpi are available at https://github.com/Vlatombe/jenkins-50336
+    //
+    // package io.jenkins.plugins;
+    // import org.jenkinsci.plugins.variant.OptionalExtension;
+    // import jenkins.model.GlobalConfiguration;
+    // @OptionalExtension public class MyGlobalConfiguration extends GlobalConfiguration {}
+    //
+    @Issue("JENKINS-50336")
+    @Test
+    public void optionalExtensionCanBeFoundAfterDynamicLoadOfVariant() throws Exception {
+        dynamicLoad("variant.hpi");
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
+        dynamicLoad("jenkins-50336.hpi");
+        assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
     }
 }

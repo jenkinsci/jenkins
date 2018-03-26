@@ -254,10 +254,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = Maps.newHashMap();
 
         public GuiceFinder() {
-            for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Hudson.getInstance())) {
-                GuiceExtensionAnnotation gea = ec.getInstance();
-                extensionAnnotations.put(gea.annotationType,gea);
-            }
+            refreshExtensionAnnotations();
 
             SezpozModule extensions = new SezpozModule(loadSezpozIndices(Jenkins.getInstance().getPluginManager().uberClassLoader));
 
@@ -294,6 +291,13 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             });
         }
 
+        private void refreshExtensionAnnotations() {
+            for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Hudson.getInstance())) {
+                GuiceExtensionAnnotation gea = ec.getInstance();
+                extensionAnnotations.put(gea.annotationType,gea);
+            }
+        }
+
         private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
             List<IndexItem<?,Object>> indices = Lists.newArrayList();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
@@ -316,6 +320,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          */
         @Override
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
+            refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
             List<IndexItem<?, Object>> delta = Lists.newArrayList();
             for (Class<? extends Annotation> annotationType : extensionAnnotations.keySet()) {
