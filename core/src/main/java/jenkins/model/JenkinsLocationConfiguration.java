@@ -57,7 +57,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public static @Nonnull JenkinsLocationConfiguration getOrDie(){
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         if (config == null) {
-            throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is fully loaded at that time.");
+            throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
         }
         return config;
     }
