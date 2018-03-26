@@ -93,9 +93,10 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <access-modifier.version>1.13</access-modifier.version>
-    <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
-    <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
+    <access-modifier.version>1.14-SNAPSHOT</access-modifier.version> <!-- TODO https://github.com/kohsuke/access-modifier/pull/11 -->
+    <!-- After release, would just be ${access-modifier.version}: -->
+    <access-modifier-annotation.version>1.14-20180326.221427-2</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.14-20180326.221430-2</access-modifier-checker.version>
 
     <java.level>8</java.level>
 
