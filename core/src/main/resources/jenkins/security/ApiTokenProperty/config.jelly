@@ -121,7 +121,7 @@ THE SOFTWARE.
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
         <f:advanced title="${%Show Legacy API Token}" align="left">
             <f:entry title="${%Legacy API Token}" field="apiToken">
-                <f:readOnlyTextbox id="apiToken" value="${descriptor.noLegacyToken}"/>
+                <f:readOnlyTextbox id="apiToken" default="${descriptor.noLegacyToken}"/>
             </f:entry>
             <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-confirm-panel"/>
         </f:advanced>

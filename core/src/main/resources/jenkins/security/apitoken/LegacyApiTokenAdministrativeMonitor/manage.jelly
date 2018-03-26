@@ -24,8 +24,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <st:adjunct includes="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor.resources"/>
     <l:layout title="${%title}">
+        <st:adjunct includes="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor.resources"/>
         <st:include page="sidepanel.jelly" it="${app}"/>
         <l:main-panel>
             <div class="legacy-token-usage">
@@ -104,20 +104,20 @@ THE SOFTWARE.
                                         <td>
                                             <j:choose>
                                                 <j:when test="${hasFreshToken}">
-                                                    <l:icon class="icon-accept icon-sm"/>
+                                                    <l:icon class="icon-accept icon-sm" alt="${%Fresh token}"/>
                                                 </j:when>
                                                 <j:otherwise>
-                                                    <l:icon class="icon-warning icon-sm"/>
+                                                    <l:icon class="icon-warning icon-sm" alt="${%No fresh token}"/>
                                                 </j:otherwise>
                                             </j:choose>
                                         </td>
                                         <td>
                                             <j:choose>
                                                 <j:when test="${hasMoreRecentlyUsedToken}">
-                                                    <l:icon class="icon-accept icon-sm"/>
+                                                    <l:icon class="icon-accept icon-sm" alt="${%Recently used token}"/>
                                                 </j:when>
                                                 <j:otherwise>
-                                                    <l:icon class="icon-warning icon-sm"/>
+                                                    <l:icon class="icon-warning icon-sm" alt="${%No recently used token}"/>
                                                 </j:otherwise>
                                             </j:choose>
                                         </td>
@@ -127,7 +127,7 @@ THE SOFTWARE.
                             </j:forEach>
                         </j:when>
                         <j:otherwise>
-                            <tr>
+                            <tr class="no-token-line">
                                 <td colspan="9">
                                     <div class="no-token">
                                         ${%NoImpactedUser}

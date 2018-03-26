@@ -47,21 +47,27 @@ function selectRecent(anchor){
 
 function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes){
     var mustCheck = false;
-    concernedCheckBoxes.forEach(function(checkbox){
-        if(!checkbox.checked){
+    for(var i = 0; i < concernedCheckBoxes.length ; i++){
+        var checkBox = concernedCheckBoxes[i];
+        if(!checkBox.checked){
             mustCheck = true;
         }
-    });
+    }
     
-    allCheckBoxes.forEach(function(checkbox){
-        checkbox.checked = false;
-    });
+    for(var i = 0; i < allCheckBoxes.length ; i++){
+        var checkBox = allCheckBoxes[i];
+        checkBox.checked = false;
+    }
     
-    concernedCheckBoxes.forEach(function(checkbox){
-        checkbox.checked = mustCheck;
-    });
+    for(var i = 0; i < concernedCheckBoxes.length ; i++){
+        var checkBox = concernedCheckBoxes[i];
+        checkBox.checked = mustCheck;
+    }
     
-    allCheckBoxes.forEach(onCheckChanged);
+    for(var i = 0; i < allCheckBoxes.length ; i++){
+        var checkBox = allCheckBoxes[i];
+        onCheckChanged(checkBox);
+    }
 }
 
 function confirmAndRevokeAllSelected(button){
@@ -84,11 +90,14 @@ function confirmAndRevokeAllSelected(button){
         if(confirm(confirmMessage)){
             var url = button.getAttribute('data-url');
             var selectedValues = [];
-            allCheckedCheckBoxes.forEach(function(c){
-                var userId = c.getAttribute('data-user-id');
-                var uuid = c.getAttribute('data-uuid');
+            
+            for(var i = 0; i < allCheckedCheckBoxes.length ; i++){
+                var checkBox = allCheckedCheckBoxes[i];
+                var userId = checkBox.getAttribute('data-user-id');
+                var uuid = checkBox.getAttribute('data-uuid');
                 selectedValues.push({userId: userId, uuid: uuid});
-            });
+            }
+            
             var params = {values: selectedValues}
             new Ajax.Request(url, {
                 postBody: Object.toJSON(params),
@@ -125,13 +134,17 @@ function onCheckChanged(checkBox){
 (function(){
     document.addEventListener("DOMContentLoaded", function() {
         var allLines = document.querySelectorAll('.legacy-token-usage table tr');
-        allLines.forEach(function(line){
-            line.onclick = onLineClicked;
-        });
+        for(var i = 0; i < allLines.length; i++){
+            var line = allLines[i];
+            if(!line.hasClassName('no-token-line')){
+                line.onclick = onLineClicked;
+            }
+        }
         
         var allCheckBoxes = document.querySelectorAll('.token-to-revoke');
-        allCheckBoxes.forEach(function(checkBox){
+        for(var i = 0; i < allCheckBoxes.length; i++){
+            var checkBox = allCheckBoxes[i];
             checkBox.onchange = function(){ onCheckChanged(checkBox); };
-        });
+        }
     });
 })()

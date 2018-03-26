@@ -346,8 +346,7 @@ public class ApiTokenProperty extends UserProperty {
          */
         public ApiTokenProperty newInstance(User user) {
             if (!ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationEnabled()) {
-                // recommended way
-                return null;
+                return forceNewInstance(user, false);
             }
 
             return forceNewInstance(user, true);
