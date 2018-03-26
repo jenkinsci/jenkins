@@ -469,12 +469,9 @@ public class SlaveComputer extends Computer {
     @Exported
     @Restricted(DoNotUse.class)
     public String getAbsoluteRemotePath() {
-        try {
-            return getAbsoluteRemoteFs();
-        } catch (AccessDeniedException e) {
-        }
+        checkPermission(CONNECT);
 
-        return null;
+        return getAbsoluteRemoteFs();
     }
 
     static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
