@@ -152,6 +152,7 @@ net.bull.javamelody.internal.model.TomcatInformations
 org.acegisecurity.userdetails.User
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
+org.apache.tools.ant.Location
 
 # TODO remove when git-client 2.7.1+ is widely adopted
 org.eclipse.jgit.lib.ObjectId
