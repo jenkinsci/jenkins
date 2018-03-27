@@ -764,6 +764,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @Override String toString() {
         return fullName;
     }
+    
+    public File getUserFolder(){
+        return getUserFolderFor(this.id);
+    }
 
     /**
      * The file we save our configuration.
@@ -773,7 +777,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
+        return new File(getUserFolderFor(id), "config.xml");
+    }
+    
+    private static File getUserFolderFor(String id){
+        return new File(getRootDir(), idStrategy().filenameOf(id));
     }
 
     private static File getUnsanitizedLegacyConfigFileFor(String id) {

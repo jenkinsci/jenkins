@@ -23,11 +23,9 @@
  */
 package jenkins.security;
 
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
-import hudson.util.XStream2;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.util.SystemProperties;
@@ -104,21 +102,22 @@ public class ApiTokenProperty extends UserProperty {
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
     private volatile Secret apiToken;
-    private ApiTokenStore tokenStore;
+    // stored aside
+    private transient ApiTokenStore tokenStore;
     
     @DataBoundConstructor
     public ApiTokenProperty() {
-        this.init();
     }
     
-    public ApiTokenProperty readResolve() {
-        this.init();
-        return this;
-    }
+    @Override 
+    protected void setUser(User u) {
+        super.setUser(u);
     
-    private void init() {
         if (this.tokenStore == null) {
-            this.tokenStore = new ApiTokenStore();
+            this.tokenStore = ApiTokenStore.load(user.getUserFolder());
+        }
+        if(this.apiToken != null){
+            this.tokenStore.generateTokenFromLegacy(this.apiToken);
         }
     }
     
@@ -129,10 +128,7 @@ public class ApiTokenProperty extends UserProperty {
     /*package*/ ApiTokenProperty(@CheckForNull String seed) {
         if(seed != null){
             apiToken = Secret.fromString(seed);
-            tokenStore = new ApiTokenStore();
-            tokenStore.generateTokenFromLegacy(apiToken);
         }
-        this.init();
     }
 
     /**
@@ -189,11 +185,7 @@ public class ApiTokenProperty extends UserProperty {
         // as the legacy token (if existing) are also stored there
         boolean matchFound = tokenStore.doesContainToken(token);
         if (matchFound) {
-            try {
-                user.save();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Error saving the user after token match", e);
-            }
+            tokenStore.save();
         }
         
         return matchFound;
@@ -236,6 +228,7 @@ public class ApiTokenProperty extends UserProperty {
         Object tokenStoreData = form.get("tokenStore");
         Map<String, JSONObject> tokenStoreTypedData = convertToTokenMap(tokenStoreData);
         this.tokenStore.reconfigure(tokenStoreTypedData);
+        this.tokenStore.save();
         return this;
     }
     
@@ -281,7 +274,8 @@ public class ApiTokenProperty extends UserProperty {
 
         _changeApiToken();
         tokenStore.regenerateTokenFromLegacy(apiToken);
-        
+    
+        tokenStore.save();
         user.save();
     }
     
@@ -303,20 +297,6 @@ public class ApiTokenProperty extends UserProperty {
     @Restricted(NoExternalUse.class)
     public ApiTokenStore getTokenStore() {
         return tokenStore;
-    }
-    
-    public static class ConverterImpl extends XStream2.PassthruConverter<ApiTokenProperty> {
-        public ConverterImpl(XStream2 xstream) {
-            super(xstream);
-        }
-        
-        @Override
-        protected void callback(ApiTokenProperty apiTokenProperty, UnmarshallingContext context) {
-            // support legacy configuration
-            if (apiTokenProperty.apiToken != null) {
-                apiTokenProperty.tokenStore.generateTokenFromLegacy(apiTokenProperty.apiToken);
-            }
-        }
     }
 
     @Extension
@@ -410,6 +390,8 @@ public class ApiTokenProperty extends UserProperty {
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, true);
+                p.setUser(u);
+                p.tokenStore.save();
                 u.addProperty(p);
             } else {
                 // even if the user does not have legacy token, this method let some legacy system to regenerate one
@@ -442,6 +424,7 @@ public class ApiTokenProperty extends UserProperty {
             }
             
             ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(tokenName);
+            p.tokenStore.save();
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
@@ -475,6 +458,7 @@ public class ApiTokenProperty extends UserProperty {
                 // that could potentially happens between instance restart, the uuid stored in the page are no more valid
                 return HttpResponses.errorJSON("No token found, try refreshing the page");
             }
+            p.tokenStore.save();
             u.save();
             
             return HttpResponses.ok();
@@ -501,6 +485,7 @@ public class ApiTokenProperty extends UserProperty {
                 // if the user revoked the API Token, we can delete it
                 p.apiToken = null;
             }
+            p.tokenStore.save();
             u.save();
             
             return HttpResponses.ok();

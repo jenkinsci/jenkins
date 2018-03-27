@@ -24,8 +24,11 @@
 package jenkins.security.apitoken;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.BulkChange;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
+import hudson.XmlFile;
+import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.Secret;
 import jenkins.security.Messages;
 import net.sf.json.JSONObject;
@@ -34,6 +37,8 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,8 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class ApiTokenStore {
-    private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
+public class ApiTokenStore implements Saveable {
+    private static final Logger LOGGER = Logger.getLogger(ApiTokenStore.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
     
     private static final Comparator<HashedToken> SORT_BY_LOWERCASED_NAME =
@@ -69,8 +74,14 @@ public class ApiTokenStore {
     
     private List<HashedToken> tokenList;
     
+    private transient File parent;
+    
     public ApiTokenStore() {
         this.init();
+    }
+    
+    public void setParent(File parent) {
+        this.parent = parent;
     }
     
     public ApiTokenStore readResolve() {
@@ -118,7 +129,7 @@ public class ApiTokenStore {
     }
     
     public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
-        if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
+        if (tokenList.stream().noneMatch(HashedToken::isLegacy)) {
             regenerateTokenFromLegacy(newLegacyApiToken);
         }
     }
@@ -158,7 +169,7 @@ public class ApiTokenStore {
         HashedToken token = HashedToken.buildNew(name, hashValue);
         
         this.addToken(token);
-    
+        
         return new TokenIdAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
     
@@ -172,7 +183,7 @@ public class ApiTokenStore {
         // ascii is sufficient for hex-format
         return hashedBytes(secretValueInPlainText.getBytes(StandardCharsets.US_ASCII));
     }
-
+    
     private @Nonnull byte[] hashedBytes(byte[] tokenBytes) {
         MessageDigest digest;
         try {
@@ -217,25 +228,25 @@ public class ApiTokenStore {
     private boolean searchMatch(String plainToken) {
         byte[] hashedBytes = plainSecretToHashBytes(plainToken);
         for (HashedToken token : tokenList) {
-            if(token.match(hashedBytes)){
+            if (token.match(hashedBytes)) {
                 token.incrementUse();
                 return true;
             }
         }
-
+        
         return false;
     }
     
     public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenUuid) {
-        for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext();) {
+        for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext(); ) {
             HashedToken token = iterator.next();
             if (token.uuid.equals(tokenUuid)) {
                 iterator.remove();
-
+                
                 return token;
             }
         }
-
+        
         return null;
     }
     
@@ -246,9 +257,56 @@ public class ApiTokenStore {
                 return true;
             }
         }
-
+        
         LOGGER.log(Level.FINER, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
         return false;
+    }
+    
+    /**
+     * Saves the configuration info to the disk.
+     */
+    @Override
+    public synchronized void save() {
+        if (BulkChange.contains(this))
+            return;
+        
+        XmlFile configFile = getConfigFile(parent);
+        try {
+            configFile.write(this);
+            SaveableListener.fireOnChange(this, configFile);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to save " + configFile, e);
+        }
+    }
+    
+    /**
+     * Loads the data from the disk into this object.
+     *
+     * <p>
+     * The constructor of the derived class must call this method.
+     * (If we do that in the base class, the derived class won't
+     * get a chance to set default values.)
+     */
+    public static synchronized ApiTokenStore load(File parent) {
+        XmlFile file = getConfigFile(parent);
+        ApiTokenStore apiTokenStore;
+        if (file.exists()) {
+            try {
+                apiTokenStore = (ApiTokenStore) file.unmarshal(ApiTokenStore.class);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to load " + file, e);
+                apiTokenStore = new ApiTokenStore();
+            }
+        } else {
+            apiTokenStore = new ApiTokenStore();
+        }
+        
+        apiTokenStore.setParent(parent);
+        return apiTokenStore;
+    }
+    
+    protected static XmlFile getConfigFile(File parent) {
+        return new XmlFile(new File(parent, "apiTokenStore.xml"));
     }
     
     /**
@@ -271,7 +329,7 @@ public class ApiTokenStore {
     public static class TokenIdAndPlainValue {
         public final String tokenId;
         public final String plainValue;
-    
+        
         public TokenIdAndPlainValue(String tokenId, String plainValue) {
             this.tokenId = tokenId;
             this.plainValue = plainValue;
@@ -318,14 +376,13 @@ public class ApiTokenStore {
         
         public boolean match(byte[] hashedBytes) {
             byte[] hashFromHex;
-            try{
+            try {
                 hashFromHex = Util.fromHexString(value.hash);
-            }
-            catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 LOGGER.log(Level.INFO, "The API token with name=[{0}] is not in hex-format and so cannot be used", name);
                 return false;
             }
-
+            
             // String.equals() is not constant-time but this method is. No link between correctness and time spent
             return MessageDigest.isEqual(hashFromHex, hashedBytes);
         }
@@ -334,33 +391,33 @@ public class ApiTokenStore {
         public String getName() {
             return name;
         }
-    
+        
         // used by Jelly view
         public int getUseCounter() {
             return useCounter == null ? 0 : useCounter;
         }
-    
+        
         // used by Jelly view
         public Date getLastUseDate() {
             return lastUseDate;
         }
-    
+        
         // used by Jelly view
         public long getNumDaysUse() {
             return lastUseDate == null ? 0 : computeDeltaDays(lastUseDate.toInstant(), Instant.now());
         }
-    
+        
         // used by Jelly view
         public Date getCreationDate() {
             return creationDate;
         }
-    
+        
         // used by Jelly view
         public long getNumDaysCreation() {
             // should not happen but just in case
             return creationDate == null ? 0 : computeDeltaDays(creationDate.toInstant(), Instant.now());
         }
-    
+        
         // used by Jelly view
         public String getUuid() {
             return this.uuid;

@@ -26,7 +26,6 @@ package jenkins.security.apitoken;
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.Messages;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,8 +33,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ApiTokenPropertyConfigurationTest {
     
@@ -51,17 +50,22 @@ public class ApiTokenPropertyConfigurationTest {
         {
             User userWith = User.getById("userWith", true);
             ApiTokenProperty withToken = userWith.getProperty(ApiTokenProperty.class);
+            assertTrue(withToken.hasLegacyToken());
             assertEquals(1, withToken.getTokenList().size());
             
-            String withTokenValue = withToken.getApiToken();
-            Assert.assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), withTokenValue);
+            String tokenValue = withToken.getApiToken();
+            Assert.assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }
         
         config.setTokenGenerationOnCreationEnabled(false);
         {
             User userWithout = User.getById("userWithout", true);
             ApiTokenProperty withoutToken = userWithout.getProperty(ApiTokenProperty.class);
-            assertNull(withoutToken);
+            assertFalse(withoutToken.hasLegacyToken());
+            assertEquals(0, withoutToken.getTokenList().size());
+            
+            String tokenValue = withoutToken.getApiToken();
+            Assert.assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }
     }
 }
