@@ -9,7 +9,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,9 +22,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -34,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * Since JENKINS-50164, Jenkins#workspacesDir and Jenkins#buildsDir had their associated UI deleted.
@@ -132,6 +130,9 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @LocalData
     @Test
     public void fromPreviousCustomSetup() {
+
+        assumeFalse(Functions.isWindows()); // Default Windows lifecycle does not support restart.
+
         // check starting point and change config for next run
         final String newBuildsDirValueBySysprop = "bling/${ITEM_ROOTDIR}/bluh";
         story.then(j -> {
@@ -242,7 +243,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Test
     @Issue("JENKINS-17137")
     public void externalBuildDirectorySymlinks() throws Exception {
-        Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
+        assumeFalse(Functions.isWindows()); // symlinks may not be available
 
         // Hack to get String builds usable in lambda below
         final List<String> builds = new ArrayList<>();
