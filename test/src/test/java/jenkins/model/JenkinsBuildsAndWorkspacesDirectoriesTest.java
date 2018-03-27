@@ -1,12 +1,13 @@
 package jenkins.model;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.Functions;
 import hudson.Util;
+import hudson.init.InitMilestone;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +29,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -42,7 +46,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
-    private static final Map<String, String> PROPS_TO_RESTORE = new LinkedHashMap<>();
     private static final String LOG_WHEN_CHANGING_BUILDS_DIR = "Changing builds directories from ";
 
     @Rule
@@ -53,12 +56,15 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Before
     public void before() {
-        Stream.of(Jenkins.BUILDS_DIR_PROP, Jenkins.WORKSPACES_DIR_PROP)
-                .forEach(System::clearProperty);
+        clearSystemProperties();
     }
 
     @After
     public void after() {
+        clearSystemProperties();
+    }
+
+    private void clearSystemProperties() {
         Stream.of(Jenkins.BUILDS_DIR_PROP, Jenkins.WORKSPACES_DIR_PROP)
                 .forEach(System::clearProperty);
     }
@@ -120,6 +126,43 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                        assertTrue(logWasFound("Using non default workspaces directories"));
                    }
         );
+    }
+
+    @Issue("JENKINS-50164")
+    @LocalData
+    @Test
+    public void fromPreviousCustomSetup() {
+        // check starting point and change config for next run
+        final String newBuildsDirValueBySysprop = "bling/${ITEM_ROOTDIR}/bluh";
+        story.then(j -> {
+            assertEquals("${ITEM_ROOTDIR}/ze-previous-custom-builds", j.jenkins.getRawBuildsDir());
+            setBuildsDirProperty(newBuildsDirValueBySysprop);
+        });
+
+        // Check the sysprop setting was taken in account
+        story.then(j -> {
+            assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
+
+            // ** HACK AROUND JENKINS-50422: manually restarting ** //
+            // Check the disk (cannot just restart normally with the rule, )
+            assertThat(FileUtils.readFileToString(new File(j.jenkins.getRootDir(), "config.xml")),
+                       containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
+
+            String rootDirBeforeRestart = j.jenkins.getRootDir().toString();
+            clearSystemProperties();
+            j.jenkins.restart();
+
+            int maxLoops = 50;
+            while (j.jenkins.getInitLevel() != InitMilestone.COMPLETED && maxLoops-- > 0) {
+                Thread.sleep(300);
+            }
+
+            assertEquals(rootDirBeforeRestart, j.jenkins.getRootDir().toString());
+            assertThat(FileUtils.readFileToString(new File(j.jenkins.getRootDir(), "config.xml")),
+                       containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
+            assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
+            // ** END HACK ** //
+        });
 
     }
 
@@ -204,7 +247,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
         // Hack to get String builds usable in lambda below
         final List<String> builds = new ArrayList<>();
 
-        story.then(steps ->  {
+        story.then(steps -> {
             builds.add(story.j.createTmpDir().toString());
             setBuildsDirProperty(builds.get(0) + "/${ITEM_FULL_NAME}");
         });
@@ -237,5 +280,4 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             link = f;
         }
     }
-
 }
