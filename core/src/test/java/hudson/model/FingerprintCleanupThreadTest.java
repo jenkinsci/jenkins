@@ -78,7 +78,7 @@ public class FingerprintCleanupThreadTest {
         FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint());
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
-        assertEquals("Should have done nothing.", "Cleaned up 0 records\n",logOutput);
+        assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
     }
 
     @Test
