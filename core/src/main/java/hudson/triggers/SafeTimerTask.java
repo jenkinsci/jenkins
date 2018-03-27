@@ -52,11 +52,11 @@ import org.acegisecurity.context.SecurityContextHolder;
 public abstract class SafeTimerTask extends TimerTask {
 
     /**
-     * System property to change the location where tasks logging should be sent.
+     * System property to change the location where (tasks) logging should be sent.
      * <p><strong>Beware: changing it while Jenkins is running gives no guarantee logs will be sent to the new location
      * until it is restarted.</strong></p>
      */
-    static final String TASKS_LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName()+".TASKS_LOGS_ROOT_PATH";
+    static final String LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName()+".logsTargetDir";
 
     public final void run() {
         // background activity gets system credential,
@@ -83,13 +83,13 @@ public abstract class SafeTimerTask extends TimerTask {
      * @since TODO
      */
     public static File getLogsRoot() {
-        String tagsLogsPath = SystemProperties.getString(TASKS_LOGS_ROOT_PATH_PROPERTY);
+        String tagsLogsPath = SystemProperties.getString(LOGS_ROOT_PATH_PROPERTY);
         if (tagsLogsPath == null) {
             return new File(Jenkins.get().getRootDir(), "logs");
         } else {
             LOGGER.log(Level.INFO,
                        "Using non default root path for tasks logging: {0}. (Beware: no automated migration if you change or remove it again)",
-                       TASKS_LOGS_ROOT_PATH_PROPERTY);
+                       LOGS_ROOT_PATH_PROPERTY);
             return new File(tagsLogsPath);
         }
     }

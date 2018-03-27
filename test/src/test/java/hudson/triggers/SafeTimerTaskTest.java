@@ -31,13 +31,13 @@ public class SafeTimerTaskTest {
 
     @After
     public void tearDown() throws Exception {
-        System.clearProperty(SafeTimerTask.TASKS_LOGS_ROOT_PATH_PROPERTY);
+        System.clearProperty(SafeTimerTask.LOGS_ROOT_PATH_PROPERTY);
     }
 
     @Issue("JENKINS-50291")
     @Test
     public void changeLogsRoot() throws Exception {
-        assertNull(System.getProperty(SafeTimerTask.TASKS_LOGS_ROOT_PATH_PROPERTY));
+        assertNull(System.getProperty(SafeTimerTask.LOGS_ROOT_PATH_PROPERTY));
 
         File temporaryFolder = folder.newFolder();
 
@@ -50,7 +50,7 @@ public class SafeTimerTaskTest {
         assertTrue(logsRoot.exists());
         assertTrue(logsRoot.isDirectory());
 
-        System.setProperty(SafeTimerTask.TASKS_LOGS_ROOT_PATH_PROPERTY, temporaryFolder.toString());
+        System.setProperty(SafeTimerTask.LOGS_ROOT_PATH_PROPERTY, temporaryFolder.toString());
         assertEquals(temporaryFolder.toString(), SafeTimerTask.getLogsRoot().toString());
     }
 
