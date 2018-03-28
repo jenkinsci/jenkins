@@ -24,11 +24,18 @@
 package hudson.triggers;
 
 import hudson.model.AperiodicWork;
+import hudson.model.AsyncAperiodicWork;
+import hudson.model.AsyncPeriodicWork;
 import hudson.model.PeriodicWork;
 import hudson.security.ACL;
+
+import java.io.File;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -43,6 +50,14 @@ import org.acegisecurity.context.SecurityContextHolder;
  * @since 1.124
  */
 public abstract class SafeTimerTask extends TimerTask {
+
+    /**
+     * System property to change the location where (tasks) logging should be sent.
+     * <p><strong>Beware: changing it while Jenkins is running gives no guarantee logs will be sent to the new location
+     * until it is restarted.</strong></p>
+     */
+    static final String LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName()+".logsTargetDir";
+
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
@@ -57,6 +72,27 @@ public abstract class SafeTimerTask extends TimerTask {
     }
 
     protected abstract void doRun() throws Exception;
+
+
+    /**
+     * The root path that should be used to put logs related to the tasks running in Jenkins.
+     *
+     * @see AsyncAperiodicWork#getLogFile()
+     * @see AsyncPeriodicWork#getLogFile()
+     * @return the path where the logs should be put.
+     * @since TODO
+     */
+    public static File getLogsRoot() {
+        String tagsLogsPath = SystemProperties.getString(LOGS_ROOT_PATH_PROPERTY);
+        if (tagsLogsPath == null) {
+            return new File(Jenkins.get().getRootDir(), "logs");
+        } else {
+            LOGGER.log(Level.INFO,
+                       "Using non default root path for tasks logging: {0}. (Beware: no automated migration if you change or remove it again)",
+                       LOGS_ROOT_PATH_PROPERTY);
+            return new File(tagsLogsPath);
+        }
+    }
 
     private static final Logger LOGGER = Logger.getLogger(SafeTimerTask.class.getName());
 }
