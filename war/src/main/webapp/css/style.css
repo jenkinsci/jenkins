@@ -446,6 +446,7 @@ table.pane {
   width: 100%;
   border-collapse: collapse;
   border: 1px #bbb solid;
+  hyphens: auto;
 }
 
 td.pane {
@@ -1897,6 +1898,7 @@ body.no-sticker #bottom-sticker {
 .icon-sm {
     width: 16px;
     height: 16px;
+    float: left;
 }
 
 .icon-md {
