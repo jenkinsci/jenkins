@@ -39,7 +39,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U javadoc:javadoc clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U javadoc:javadoc clean install -DskipTests -DfailIfNoTests=false -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
@@ -55,7 +55,10 @@ for(i = 0; i < buildTypes.size(); i++) {
                     def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
                     renameFiles(files, buildType.toLowerCase())
 
-                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
+                    if(isUnix()) {
+                        sh 'sha256sum war/target/*.war >  war/target/jenkins.war.sha512'
+                    }
+                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi, **/target/*.sha*',
                                 fingerprint: true
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
