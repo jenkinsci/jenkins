@@ -12,8 +12,8 @@ public class SlaveComputerTest {
     public void testGetAbsoluteRemotePath() throws Exception {
         DumbSlave slave = j.createSlave();
         SlaveComputer computer = slave.getComputer();
-
         String path = computer.getAbsoluteRemotePath();
-        System.out.println(path);
+
+        assert(path == null);
     }
 }

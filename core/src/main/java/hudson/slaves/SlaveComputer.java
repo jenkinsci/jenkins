@@ -462,9 +462,13 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Just for restFul api
+     * Just for restFul api.
+     * Returns the remote FS root absolute path or {@code null} if the agent is off-line. The absolute path may change
+     * between connections if the connection method does not provide a consistent working directory and the node's
+     * remote FS is specified as a relative path.
      * @see #getAbsoluteRemoteFs()
-     * @return
+     * @return the remote FS root absolute path or {@code null} if the agent is off-line or don't have connect permission.
+     * @since 2.114
      */
     @Exported
     @Restricted(DoNotUse.class)
