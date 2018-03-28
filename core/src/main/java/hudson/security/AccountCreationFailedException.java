@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2017 Jenkins contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,54 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
 
-import hudson.Extension;
-import hudson.model.Run;
+package hudson.security;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.List;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Deletes builds records in a bulk.
+ * Thrown if an account creation was attempted but failed due to invalid data being entered into a form.
  *
- * @author Kohsuke Kawaguchi
+ * @author Philipp Nowak
  */
-@Restricted(NoExternalUse.class) // command implementation only
-@Extension
-public class DeleteBuildsCommand extends RunRangeCommand {
-    @Override
-    public String getShortDescription() {
-        return Messages.DeleteBuildsCommand_ShortDescription();
+@Restricted(NoExternalUse.class)
+public class AccountCreationFailedException extends Exception {
+    public AccountCreationFailedException(String message) {
+        super(message);
     }
-
-    @Override
-    protected void printUsageSummary(PrintStream stderr) {
-        stderr.println(
-            "Delete build records of a specified job, possibly in a bulk. "
-        );
-    }
-
-    @Override
-    protected int act(List<Run<?, ?>> builds) throws IOException {
-        job.checkPermission(Run.DELETE);
-
-        final HashSet<Integer> hsBuilds = new HashSet<Integer>();
-
-        for (Run<?, ?> build : builds) {
-            if (!hsBuilds.contains(build.number)) {
-                build.delete();
-                hsBuilds.add(build.number);
-            }
-        }
-
-        stdout.println("Deleted "+hsBuilds.size()+" builds");
-
-        return 0;
-    }
-
 }

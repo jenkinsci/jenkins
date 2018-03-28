@@ -459,7 +459,6 @@ public class Executor extends Thread implements ModelObject {
             if (asynchronousExecution == null) {
                 finish2();
             }
-            executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         }
     }
 
@@ -490,6 +489,7 @@ public class Executor extends Thread implements ModelObject {
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
+        executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         queue.scheduleMaintenance();
     }
 

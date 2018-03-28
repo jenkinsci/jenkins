@@ -156,11 +156,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
                 if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new SlaveToMasterCallable<List<ProcessKiller>, IOException>() {
-                        public List<ProcessKiller> call() throws IOException {
-                            return new ArrayList<ProcessKiller>(ProcessKiller.all());
-                        }
-                    });
+                    killers = channelToMaster.call(new ListAll());
                 } else {
                     // used in an environment that doesn't support talk-back to the master.
                     // let's do with what we have.
@@ -171,6 +167,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 killers = Collections.emptyList();
             }
         return killers;
+    }
+    private static class ListAll extends SlaveToMasterCallable<List<ProcessKiller>, IOException> {
+        @Override
+        public List<ProcessKiller> call() throws IOException {
+            return new ArrayList<>(ProcessKiller.all());
+        }
     }
 
     /**

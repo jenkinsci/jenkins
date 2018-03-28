@@ -809,9 +809,14 @@ public class CLI implements AutoCloseable {
         return authenticate(Collections.singleton(key));
     }
 
+    /** For access from {@code HelpCommand}. */
+    static String usage() {
+        return Messages.CLI_Usage();
+    }
+
     private static void printUsage(String msg) {
         if(msg!=null)   System.out.println(msg);
-        System.err.println(Messages.CLI_Usage());
+        System.err.println(usage());
     }
 
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());

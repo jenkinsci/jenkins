@@ -51,6 +51,8 @@ import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.apache.sshd.common.util.security.SecurityUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Implements SSH connection mode of {@link CLI}.
  * In a separate class to avoid any class loading of {@code sshd-core} when not using {@code -ssh} mode.
@@ -59,6 +61,7 @@ import org.apache.sshd.common.util.security.SecurityUtils;
  */
 class SSHCLI {
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE", justification = "Due to whatever reason FindBugs reports it fot try-with-resources")
     static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
         URL url = new URL(jenkinsUrl + "login");
