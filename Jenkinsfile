@@ -55,7 +55,10 @@ for(i = 0; i < buildTypes.size(); i++) {
                     def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
                     renameFiles(files, buildType.toLowerCase())
 
-                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
+                    if(isUnix()) {
+                        sh 'sha256sum war/target/*.war >  war/target/jenkins.war.sha512'
+                    }
+                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi, **/target/*.sha*',
                                 fingerprint: true
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
