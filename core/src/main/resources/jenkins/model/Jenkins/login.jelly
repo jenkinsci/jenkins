@@ -24,111 +24,128 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
-  <j:choose>
-    <j:when test="${it.isLegacyLoginEnabled()}">
-      <st:include it="${it}" page="login.legacy.jelly"/>
-    </j:when>
-    <j:otherwise>
-      <!-- deactivate all caching -->
-      <st:setHeader name="Expires" value="0" />
-      <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-      <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-      <!-- needed for cli -->
-      <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
-      <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-        ${h.advertiseHeaders(response)}
-        <j:if test="${extensionsAvailable}">
-          <j:forEach var="pd" items="${h.pageDecorators}">
-            <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
-          </j:forEach>
-        </j:if>
-      </j:if>
-      <st:contentType value="text/html;charset=UTF-8" />
-      <!-- needed to generate a session if non exists, without it we would add ";jsessionid=" to the url which will result in a 404 -->
-      <j:set var="_" value="${request.getSession()}"/>
-      ${h.initPageVariables(context)}
-      <x:doctype name="html" />
-      <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
-      <j:set var="url" value="${request.getRequestURI()}"/>
-      <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-      <html>
-        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-          <title>${h.appendIfNotNull('Login', ' [Jenkins]', 'Jenkins')}</title>
-          <meta name="ROBOTS" content="NOFOLLOW" />
-          <link rel="stylesheet" href="${resURL}/css/login.css" type="text/css" />
-          <link rel="stylesheet" href="${resURL}/css/login.theme.css" type="text/css" />
-        </head>
-        <body>
-          <j:choose>
-            <j:when test="${it.setupWizard.isUsingSecurityToken()}">
-              <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
-            </j:when>
-            <j:otherwise>
-              <div class="absolute-center">
-                <div class="modal">
-                  <div class="logo"> </div>
-                  <h1>${%loginWelcome}</h1>
-                  <!-- login form -->
-                  <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
-                    <j:if test="${it.securityRealm.allowsSignup()}">
-                      <div style="margin-top:2em">
-                        ${%signUp}
-                      </div>
-                    </j:if>
-                    <j:if test="${error}">
-                      <div class="alert alert-danger">
-                        ${%Invalid username or password}
-                      </div>
-                    </j:if>
-                    <div>
-                      <input
-                        class="${inputClass}"
-                        type="text"
-                        name="j_username"
-                        id="j_username"
-                        autocorrect="off"
-                        autocapitalize="off"
-                        placeholder="${%User}"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        class="${inputClass}"
-                        type="password"
-                        name="j_password"
-                        placeholder="${%Password}"
-                      />
-                    </div>
-                    <input type="hidden" name="from" value="${from}" />
-                    <div class="submit"><f:submit value="${%signIn}" /></div>
-                    <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
-                      <!-- remember me service only available for Acegi -->
-                      <div class="checkboxWrapper">
-                        <div class="checkbox">
-                          <input type="checkbox" id="remember_me" name="remember_me" />
-                          <label for="remember_me"> </label>
-                        </div>
-                        <span>${%Keep me signed in}</span>
-                      </div>
-                    </j:if>
-                    <!-- focus the username field -->
-                    <script type="text/javascript">
-                      document.getElementById('j_username').focus();
-                    </script>
-                  </form>
-
-                  <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
-                    <div>
-                      <st:include page="loginFragment.jelly" it="${fls}"/>
-                    </div>
-                  </j:forEach>
-
+<!-- deactivate all caching -->
+<st:setHeader name="Expires" value="0" />
+<st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+<j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<!-- needed for cli -->
+<j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
+<j:if test="${request.servletPath=='/' || request.servletPath==''}">
+  ${h.advertiseHeaders(response)}
+  <j:if test="${extensionsAvailable}">
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
+  </j:if>
+</j:if>
+<st:contentType value="text/html;charset=UTF-8" />
+<!-- needed to generate a session if non exists, without it we would add ";jsessionid=" to the url which will result in a 404 -->
+<j:set var="_" value="${request.getSession()}"/>
+${h.initPageVariables(context)}
+<x:doctype name="html" />
+<j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
+<j:set var="url" value="${request.getRequestURI()}"/>
+<j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
+<html>
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+    <title>${h.appendIfNotNull('Login', ' [Jenkins]', 'Jenkins')}</title>
+    <meta name="ROBOTS" content="NOFOLLOW" />
+    <link rel="stylesheet" href="${resURL}/css/login.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/login.theme.css" type="text/css" />
+    <j:if test="${extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="login-css.jelly" optional="true"/>
+      </j:forEach>
+    </j:if>
+  </head>
+  <body>
+    <j:choose>
+      <j:when test="${it.setupWizard.isUsingSecurityToken()}">
+        <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
+      </j:when>
+      <j:otherwise>
+        <div class="absolute-center">
+          <div class="modal">
+            <j:if test="${extensionsAvailable}">
+              <!-- variables cannot be named "includeHeader" -->
+              <j:set var="include" value="true"/>
+              <j:forEach var="pd" items="${h.pageDecorators}">
+                <j:if test="${pd.getClass().getName().startsWith('jenkins.model.LoginHeaderDecorator')}">
+                  <j:if test="${include}">
+                    <st:include it="${pd}" page="login-header.jelly" optional="true"/>
+                    <!-- we only want one-->
+                    <j:break/>
+                  </j:if>
+                </j:if>
+              </j:forEach>
+            </j:if>
+            <!-- login form -->
+            <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
+              <j:if test="${it.securityRealm.allowsSignup()}">
+                <div style="margin-top:2em">
+                  ${%signUp}
                 </div>
+              </j:if>
+              <j:if test="${error}">
+                <div class="alert alert-danger">
+                  ${%Invalid username or password}
+                </div>
+              </j:if>
+              <div>
+                <input
+                  class="${inputClass}"
+                  type="text"
+                  name="j_username"
+                  id="j_username"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  placeholder="${%User}"
+                />
               </div>
-            </j:otherwise>
-          </j:choose>
-        </body>
-      </html>
-    </j:otherwise>
-  </j:choose>
+              <div>
+                <input
+                  class="${inputClass}"
+                  type="password"
+                  name="j_password"
+                  placeholder="${%Password}"
+                />
+              </div>
+              <input type="hidden" name="from" value="${from}" />
+              <div class="submit"><f:submit value="${%signIn}" /></div>
+              <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
+                <!-- remember me service only available for Acegi -->
+                <div class="checkboxWrapper">
+                  <div class="checkbox">
+                    <input type="checkbox" id="remember_me" name="remember_me" />
+                    <label for="remember_me"> </label>
+                  </div>
+                  <span>${%Keep me signed in}</span>
+                </div>
+              </j:if>
+              <!-- focus the username field -->
+              <script type="text/javascript">
+                document.getElementById('j_username').focus();
+              </script>
+            </form>
+
+            <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
+              <div>
+                <st:include page="loginFragment.jelly" it="${fls}"/>
+              </div>
+            </j:forEach>
+
+            <div class="footer">
+              <j:if test="${extensionsAvailable}">
+                <j:forEach var="pd" items="${h.pageDecorators}">
+                  <st:include it="${pd}" page="login-footer.jelly" optional="true"/>
+                </j:forEach>
+              </j:if>
+            </div>
+
+          </div>
+        </div>
+      </j:otherwise>
+    </j:choose>
+  </body>
+</html>
 </j:jelly>
