@@ -269,6 +269,32 @@ public class CLIActionTest {
         assertEquals(0, proc.join());
     }
 
+    @Test
+    @Issue("JENKINS-50324")
+    public void userWithoutReadCanLogout() throws Exception {
+        String userWithRead = "userWithRead";
+        String userWithoutRead = "userWithoutRead";
+        
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+                .grant(Jenkins.READ).everywhere().to(userWithRead)
+                // nothing to userWithoutRead
+        );
+    
+        checkCanLogout(jar, ADMIN);
+        checkCanLogout(jar, userWithRead);
+        checkCanLogout(jar, userWithoutRead);
+    }
+    
+    private void checkCanLogout(File cliJar, String userLoginAndPassword) throws Exception {
+        assertExitCode(0, false, cliJar, "-remoting", "login", "--username", userLoginAndPassword, "--password", userLoginAndPassword);
+        assertExitCode(0, false, cliJar, "-remoting", "who-am-i");
+        assertExitCode(0, false, cliJar, "-remoting", "logout");
+    }
+    
     @TestExtension("encodingAndLocale")
     public static class TestDiagnosticCommand extends CLICommand {
 
