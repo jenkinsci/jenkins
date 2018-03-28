@@ -911,7 +911,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		securityConfig.saveFirstUser($form, handleFirstUserResponseSuccess, handleFirstUserResponseError);
 	};
 
-    var firstUserSkipped = false;
+	var firstUserSkipped = false;
 	var skipFirstUser = function() {
 		$('button').prop({disabled:true});
 		firstUserSkipped = true;
@@ -920,7 +920,12 @@ var createPluginSetupWizard = function(appendTarget) {
 	
 	var handleConfigureInstanceResponseSuccess = function (data) {
 		if (data.status === 'ok') {
-			showStatePanel();
+			if(firstUserSkipped){
+				var message = translations.installWizard_firstUserSkippedMessage;
+				showSetupCompletePanel({message: message});
+			}else{
+				showStatePanel();
+			}
 		} else {
 			setPanel(errorPanel, {errorMessage: 'Error trying to configure instance: ' + data.statusText});
 		}
