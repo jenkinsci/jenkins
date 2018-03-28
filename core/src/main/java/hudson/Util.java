@@ -87,6 +87,9 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+
 /**
  * Various utility methods that don't have more proper home.
  *
@@ -179,43 +182,54 @@ public class Util {
     }
 
     /**
-     * Loads the contents of a file into a string.
+     * Reads the entire contents of the text file at <code>logfile</code> into a
+     * string using the {@link Charset#defaultCharset() default charset} for
+     * decoding. If no such file exists, an empty string is returned.
+     * @param logfile The text file to read in its entirety.
+     * @return The entire text content of <code>logfile</code>.
+     * @throws IOException If an error occurs while reading the file.
+     * @deprecated call {@link #loadFile(java.io.File, java.nio.charset.Charset)}
+     * instead to specify the charset to use for decoding (preferably
+     * {@link java.nio.charset.StandardCharsets#UTF_8}).
      */
     @Nonnull
+    @Deprecated
     public static String loadFile(@Nonnull File logfile) throws IOException {
         return loadFile(logfile, Charset.defaultCharset());
     }
 
+    /**
+     * Reads the entire contents of the text file at <code>logfile</code> into a
+     * string using <code>charset</code> for decoding. If no such file exists,
+     * an empty string is returned.
+     * @param logfile The text file to read in its entirety.
+     * @param charset The charset to use for decoding the bytes in <code>logfile</code>.
+     * @return The entire text content of <code>logfile</code>.
+     * @throws IOException If an error occurs while reading the file.
+     */
     @Nonnull
     public static String loadFile(@Nonnull File logfile, @Nonnull Charset charset) throws IOException {
-        if(!logfile.exists())
-            return "";
-
-        StringBuilder str = new StringBuilder((int)logfile.length());
-
-        // We're not using Files.newBufferedReader() here because there is a
-        // difference in how an InputStreamReader constructed from a Charset and
-        // the reader returned by Files.newBufferedReader() handle malformed and
-        // unmappable byte sequences for the specified encoding; the latter is
-        // more picky and will throw a CharacterCodingException. See:
-        // https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        // Note: Until charset handling is resolved (e.g. by implementing
+        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
+        // must be able to handle character encoding errors. As reported at
+        // https://issues.jenkins-ci.org/browse/JENKINS-49112 Run.getLog() calls
+        // loadFile() to fully read the generated log file. This file might
+        // contain unmappable and/or malformed byte sequences. We need to make
+        // sure that in such cases, no CharacterCodingException is thrown.
         //
-        // As reported at https://issues.jenkins-ci.org/browse/JENKINS-49112
-        // Run.getLog() calls loadFile() to fully read the generated log file.
-        // Until charset handling is resolved (e.g. by implementing
-        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), malformed
-        // bytes will need to be tolerated.
-        try (InputStream rawIn = Files.newInputStream(fileToPath(logfile));
-             Reader r = new BufferedReader(new InputStreamReader(rawIn, charset))) {
-            char[] buf = new char[1024];
-            int len;
-            while ((len = r.read(buf, 0, buf.length)) > 0)
-                str.append(buf, 0, len);
+        // One approach that cannot be used is to call Files.newBufferedReader()
+        // because there is a difference in how an InputStreamReader constructed
+        // from a Charset and the reader returned by Files.newBufferedReader()
+        // handle malformed and unmappable byte sequences for the specified
+        // encoding; the latter is more picky and will throw an exception.
+        // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        try {
+            return FileUtils.readFileToString(logfile, charset);
+        } catch (FileNotFoundException e) {
+            return "";
         } catch (Exception e) {
-            throw new IOException("Failed to fully read " + logfile + " using charset " + charset.name(), e);
+            throw new IOException("Failed to fully read " + logfile, e);
         }
-
-        return str.toString();
     }
 
     /**
