@@ -168,11 +168,11 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     }
 
     private void setWorkspacesDirProperty(String workspacesDir) {
-        System.setProperty("jenkins.model.Jenkins.WORKSPACES_DIR", workspacesDir);
+        System.setProperty(Jenkins.WORKSPACES_DIR_PROP, workspacesDir);
     }
 
     private void setBuildsDirProperty(String buildsDir) {
-        System.setProperty("jenkins.model.Jenkins.BUILDS_DIR", buildsDir);
+        System.setProperty(Jenkins.BUILDS_DIR_PROP, buildsDir);
     }
 
     private boolean logWasFound(String searched) {
