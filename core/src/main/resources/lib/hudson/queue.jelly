@@ -46,6 +46,7 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
   <l:pane title="${title}" width="2" id="buildQueue">
+    <st:adjunct includes="lib.form.link.link"/>
     <j:if test="${app.quietingDown}">
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
