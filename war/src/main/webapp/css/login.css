@@ -1,0 +1,108 @@
+html {
+    height: 100vh;
+    font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+}
+h1 {
+    font-size: 24px;
+}
+.absolute-center {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    min-height: 90vh;
+}
+form {
+    min-width: 300px;
+    max-width: 300px;
+    width: 300px;
+}
+input {
+    width: 100%;
+    padding: 6px 8px;
+    display: inline-block;
+    text-align: left;
+    text-decoration: none;
+    font-size: 18px;
+}
+input[type=text],
+input[type=password],
+input[type=submit] {
+    box-sizing: border-box;
+}
+input[type=submit] {
+    text-align: center;
+}
+form div {
+    margin-top: 16px;
+}
+form .submit input{
+    border-radius: 3px;
+    color: #fff;
+    cursor: pointer;
+}
+/**
+ * Checkbox
+ */
+.checkbox {
+	width: 20px;
+	margin: 0 13px;
+	position: relative;
+}
+.checkbox label {
+	cursor: pointer;
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	top: 0;
+  	left: 0;
+}
+/**
+ * Display the tick inside the checkbox
+ */
+.checkbox label:after {
+	opacity: 0;
+	content: '';
+	position: absolute;
+	width: 9px;
+	height: 5px;
+	top: 4px;
+	left: 5px;
+}
+/**
+ * Create the hover event of the tick
+ */
+.checkbox label:hover::after {
+	opacity: 0.3;
+}
+.alert {
+    text-align: center;
+    font-size: 14px;
+    line-height: 18px;
+}
+/**
+ * Create the checkbox state for the tick
+ */
+.checkbox input[type=checkbox]:checked + label:after {
+	opacity: 1;
+}
+.checkboxWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
