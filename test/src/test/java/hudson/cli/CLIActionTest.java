@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
+import hudson.model.AllView;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.remoting.Channel;
@@ -134,17 +135,17 @@ public class CLIActionTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
         j.createFreeStyleProject("p");
         // CLICommand with @Argument:
-        assertExitCode(3, false, jar, "-remoting", "get-job", "p"); // IllegalArgumentException from GenericItemOptionHandler
-        assertExitCode(3, false, jar, "get-job", "p"); // ditto under new protocol
-        assertExitCode(3, false, jar, "-remoting", "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // JENKINS-12543: too late
-        assertExitCode(3, false, jar, "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // same
+        assertExitCode(6, false, jar, "-remoting", "get-job", "p"); // SECURITY-754 requires Overall/Read for nearly all CLICommands.
+        assertExitCode(6, false, jar, "get-job", "p"); // ditto under new protocol
+        assertExitCode(6, false, jar, "-remoting", "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // SECURITY-754 and JENKINS-12543: too late
+        assertExitCode(6, false, jar, "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // same
         assertExitCode(0, false, jar, "-remoting", "login", "--username", ADMIN, "--password", ADMIN);
         try {
-            assertExitCode(3, false, jar, "-remoting", "get-job", "p"); // ClientAuthenticationCache also used too late
+            assertExitCode(6, false, jar, "-remoting", "get-job", "p"); // SECURITY-754: ClientAuthenticationCache also used too late
         } finally {
             assertExitCode(0, false, jar, "-remoting", "logout");
         }
-        assertExitCode(3, true, jar, "-remoting", "get-job", "p"); // does not work with API tokens
+        assertExitCode(6, true, jar, "-remoting", "get-job", "p"); // SECURITY-754: does not work with API tokens
         assertExitCode(0, true, jar, "get-job", "p"); // but does under new protocol
         // @CLIMethod:
         assertExitCode(6, false, jar, "-remoting", "disable-job", "p"); // AccessDeniedException from CLIRegisterer?
@@ -267,6 +268,31 @@ public class CLIActionTest {
         }
         pw.println(":q");
         assertEquals(0, proc.join());
+    }
+
+    @Issue("SECURITY-754")
+    @Test
+    public void noPreAuthOptionHandlerInfoLeak() throws Exception {
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.addView(new AllView("v1"));
+        j.jenkins.addNode(j.createSlave("n1", null, null));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
+        // No anonymous read access
+        assertExitCode(6, false, jar, "get-view", "v1");
+        assertExitCode(6, false, jar, "get-view", "v2"); // Error code 3 before SECURITY-754
+        assertExitCode(6, false, jar, "get-node", "n1");
+        assertExitCode(6, false, jar, "get-node", "n2"); // Error code 3 before SECURITY-754
+        // Authenticated with no read access
+        assertExitCode(6, false, jar, "-auth", "user:user", "get-view", "v1");
+        assertExitCode(6, false, jar, "-auth", "user:user", "get-view", "v2"); // Error code 3 before SECURITY-754
+        assertExitCode(6, false, jar, "-auth", "user:user", "get-node", "n1");
+        assertExitCode(6, false, jar, "-auth", "user:user", "get-node", "n2"); // Error code 3 before SECURITY-754
+        // Anonymous read access
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN).grant(Jenkins.READ, Item.READ).everywhere().toEveryone());
+        assertExitCode(6, false, jar, "get-view", "v1");
+        assertExitCode(6, false, jar, "get-view", "v2"); // Error code 3 before SECURITY-754
     }
 
     @TestExtension("encodingAndLocale")
