@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
-    public static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+    private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -90,7 +90,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
         listener.getLogger().println("Cleaned up "+numFiles+" records");
     }
-    
+
     /**
      * Deletes a directory if it's empty.
      */
