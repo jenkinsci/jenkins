@@ -26,6 +26,7 @@ package jenkins.diagnostics;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -50,6 +51,15 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
+        JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
+        return loc != null && (
+                loc.getUrl() == null || !UrlHelper.isValid(loc.getUrl())
+        );
+    }
+    
+    // used by jelly to determined if it's a null url or invalid one
+    @Restricted(NoExternalUse.class)
+    public boolean isUrlNull(){
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc != null && loc.getUrl() == null;
     }

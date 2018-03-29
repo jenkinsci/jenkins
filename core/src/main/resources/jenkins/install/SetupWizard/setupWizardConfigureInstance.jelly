@@ -31,26 +31,47 @@
           margin-bottom: 6px;
         }
 
-        #configure-instance input[type=text], input[type=password] {
+        #configure-instance input[type=text], #configure-instance input[type=password] {
           border: 1px solid #ddd;
           border-radius: 2px;
           padding: 1px 8px;
+        }
+
+        #configure-instance tr.has-error label{
+          color: #CC0000;
+        }
+        
+        #configure-instance tr.has-error td input[type=text], 
+        #configure-instance tr.has-error td input[type=password],
+        #configure-instance tr.has-error td textarea {
+          border-color: #CC0000;
+          background-color: #fdeaea;
         }
         
         #configure-instance tr td .help-text{
           color: #999;
           font-size: 12px;
         }
+  
+        #configure-instance tr td .error-panel{
+          display: none;
+        }
+        #configure-instance tr.has-error td .error-panel{
+          display: block;
+        }
       </style>
 
      <div id="configure-instance">
-       <form action="${rootURL}/setupWizard/configureRootUrl" method="post">
+       <form action="${rootURL}/setupWizard/configureInstance" method="post">
           <h1>${%Instance Configuration}</h1>
           <div style="margin: 2em;">
             <table>
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
-              <td><input type="text" name="rootUrl" id="root-url" class="root-url" value="" /></td>
+              <td>
+                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <div class="error-panel error" />
+              </td>
             </tr>
             <tr>
               <td colspan="2">

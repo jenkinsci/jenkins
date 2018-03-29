@@ -48,7 +48,13 @@ import org.apache.commons.lang.StringUtils;
 public class InstallState implements ExtensionPoint {
 
     /**
-     * Only here for XStream compatibility.
+     * Only here for XStream compatibility. <p>
+     * 
+     * Please DO NOT ADD ITEM TO THIS LIST. <p>
+     * If you add an item here, the deserialization process will break 
+     * because it is used for serialized state like "jenkins.install.InstallState$4" 
+     * before the change from anonymous class to named class. If you need to add a new InstallState, you can just add a new inner named class but nothing to change in this list.
+     * 
      * @see #readResolve
      */
     @Deprecated
@@ -57,7 +63,6 @@ public class InstallState implements ExtensionPoint {
         new InstallState("UNKNOWN", false) {},
         new InstallState("INITIAL_SETUP_COMPLETED", false) {},
         new InstallState("CREATE_ADMIN_USER", false) {},
-        new InstallState("CONFIGURE_INSTANCE", false) {},
         new InstallState("INITIAL_SECURITY_SETUP", false) {},
         new InstallState("RESTART", false) {},
         new InstallState("DOWNGRADE", false) {},

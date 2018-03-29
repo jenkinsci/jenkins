@@ -24,7 +24,7 @@ exports.saveFirstUser = function($form, success, error) {
 
 exports.saveConfigureInstance = function($form, success, error){
 	jenkins.staplerPost(
-		'/setupWizard/configureRootUrl',
+		'/setupWizard/configureInstance',
 		$form,
 		function(response) {
 			var crumbRequestField = response.data.crumbRequestField;

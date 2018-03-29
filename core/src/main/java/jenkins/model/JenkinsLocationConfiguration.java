@@ -6,6 +6,8 @@ import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.mail.internet.AddressException;
@@ -54,6 +56,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
      * Gets local configuration. For explanation when it could die, see {@link #get()}
      */
+    @Restricted(NoExternalUse.class)
     public static @Nonnull JenkinsLocationConfiguration getOrDie(){
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         if (config == null) {

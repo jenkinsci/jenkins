@@ -4,7 +4,9 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.SystemProperties;
+import jenkins.util.UrlHelper;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -298,12 +301,24 @@ public class SetupWizard extends PageDecorator {
     }
     
     @RequirePOST
-    public HttpResponse doConfigureRootUrl(StaplerRequest req, @QueryParameter String rootUrl) {
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         
-        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
+        Map<String, String> errors = new HashMap<>();
+        // pre-check data
+        checkRootUrl(errors, rootUrl);
         
-        JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
+        if(!errors.isEmpty()){
+            return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
+        }
+        
+        // use the parameters to configure the instance
+        useRootUrl(errors, rootUrl);
+        
+        if(!errors.isEmpty()){
+            return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ProcessingErrors(), errors);
+        }
         
         InstallUtil.proceedToNextStateFrom(InstallState.CONFIGURE_INSTANCE);
 
@@ -313,6 +328,21 @@ public class SetupWizard extends PageDecorator {
             data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
         }
         return HttpResponses.okJSON(data);
+    }
+    
+    private void checkRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
+        if(rootUrl == null){
+            errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Empty());
+            return;
+        }
+        if(!UrlHelper.isValid(rootUrl)){
+            errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Invalid());
+        }
+    }
+    
+    private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
+        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
+        JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
     }
 
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {

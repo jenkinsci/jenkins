@@ -21,10 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
   <div class="alert alert-warning">
-    ${%blurb(rootURL)}
+    <j:choose>
+      <j:when test="${it.isUrlNull()}">
+        ${%urlIsNull(rootURL)}
+      </j:when>
+      <j:otherwise>
+        ${%urlIsInvalid(rootURL)}
+      </j:otherwise>
+    </j:choose>
   </div>
 </j:jelly>

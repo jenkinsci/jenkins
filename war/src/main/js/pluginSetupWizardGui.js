@@ -419,6 +419,31 @@ var createPluginSetupWizard = function(appendTarget) {
 		});
 	};
 	
+	var enableButtonsImmediately = function() {
+		$('button').prop({disabled:false});
+	};
+	
+	// errors: Map of nameOfField to errorMessage
+	var displayErrors = function(iframe, errors) {
+		if(!errors){
+			return;
+		}
+		var errorKeys = Object.keys(errors);
+		if(!errorKeys.length){
+			return;
+		}
+		var $iframeDoc = $(iframe).contents();
+		for(var i = 0; i < errorKeys.length; i++){
+			var name = errorKeys[i];
+			var message = errors[name];
+			var $inputField = $iframeDoc.find('[name="' + name +'"]');
+			var $tr = $inputField.parentsUntil('tr').parent();
+			var $errorPanel = $tr.find('.error-panel');
+			$tr.addClass('has-error');
+			$errorPanel.text(message);
+		}
+	};
+	
 	var setupFirstUser = function() {
 		setPanel(firstUserPanel, {}, enableButtonsAfterFrameLoad);
 	};
@@ -927,7 +952,11 @@ var createPluginSetupWizard = function(appendTarget) {
 				showStatePanel();
 			}
 		} else {
-			setPanel(errorPanel, {errorMessage: 'Error trying to configure instance: ' + data.statusText});
+			var errors = data.data;
+			setPanel(configureInstancePanel, {}, function(){
+				enableButtonsImmediately();
+				displayErrors($('iframe#setup-configure-instance'), errors);
+			});
 		}
 	};
 
