@@ -45,12 +45,20 @@ public class RootUrlNotSetMonitorTest {
         // test relies on the default JTH behavior
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         assertTrue(StringUtils.isNotBlank(config.getUrl()));
-
+        
         RootUrlNotSetMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(RootUrlNotSetMonitor.class);
         assertFalse("Monitor must not be activated", monitor.isActivated());
-
+    
         config.setUrl(null);
-
+    
         assertTrue("Monitor must be activated", monitor.isActivated());
+    
+        config.setUrl("ftp://localhost:8080/jenkins");
+    
+        assertTrue("Monitor must be activated", monitor.isActivated());
+    
+        config.setUrl("http://localhost:8080/jenkins");
+        
+        assertFalse("Monitor must be activated", monitor.isActivated());
     }
 }
