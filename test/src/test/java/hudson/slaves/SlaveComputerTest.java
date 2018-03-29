@@ -31,6 +31,7 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -50,12 +51,12 @@ public class SlaveComputerTest {
     public void testGetAbsoluteRemotePath() throws Exception {
         Node nodeA = j.createOnlineSlave();
         String path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
-        assert(path != null);
+        Assert.assertNotNull(path);
 
         setAsAnonymous();
         nodeA = j.createOnlineSlave();
         path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
-        assert(path == null);
+        Assert.assertNull(path);
     }
 
     private void setAsAnonymous() {
