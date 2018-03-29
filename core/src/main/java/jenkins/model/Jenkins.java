@@ -27,6 +27,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -2137,46 +2138,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return FormValidation.validateNonNegativeInteger(value);
         }
 
-        public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
-            // do essentially what expandVariablesForDirectory does, without an Item
-            String replacedValue = expandVariablesForDirectory(value,
-                    "doCheckRawBuildsDir-Marker:foo",
-                    Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
-
-            File replacedFile = new File(replacedValue);
-            if (!replacedFile.isAbsolute()) {
-                return FormValidation.error(value + " does not resolve to an absolute path");
-            }
-
-            if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
-                return FormValidation.error(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
-            }
-
-            if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
-                // make sure platform can handle colon
-                try {
-                    File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
-                    tmp.delete();
-                } catch (IOException e) {
-                    return FormValidation.error(value + " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
-                }
-            }
-
-            File d = new File(replacedValue);
-            if (!d.isDirectory()) {
-                // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
-                d = d.getParentFile();
-                while (!d.exists()) {
-                    d = d.getParentFile();
-                }
-                if (!d.canWrite()) {
-                    return FormValidation.error(value + " does not exist and probably cannot be created");
-                }
-            }
-
-            return FormValidation.ok();
-        }
-
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
             return Jenkins.getInstance().getDescriptor(token);
@@ -3041,13 +3002,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cfg.unmarshal(Jenkins.this);
         }
 
-        setBuildsAndWorkspacesDir();
+        try {
+            checkRawBuildsDir(buildsDir);
+            setBuildsAndWorkspacesDir();
+        } catch (InvalidBuildsDir invalidBuildsDir) {
+            throw new IOException(invalidBuildsDir);
+        }
+
     }
 
-    private void setBuildsAndWorkspacesDir() throws IOException {
+    private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
         boolean mustSave = false;
         String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
         if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
+
+            checkRawBuildsDir(newBuildsDir);
             LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{buildsDir, newBuildsDir});
             buildsDir = newBuildsDir;
@@ -3069,7 +3038,49 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (mustSave) {
             save();
         }
+    }
 
+    /**
+     * @param value
+     */
+    @VisibleForTesting
+    /*private*/ static void checkRawBuildsDir(String value) throws InvalidBuildsDir {
+
+        // do essentially what expandVariablesForDirectory does, without an Item
+        String replacedValue = expandVariablesForDirectory(value,
+                                                           "doCheckRawBuildsDir-Marker:foo",
+                                                           Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
+
+        File replacedFile = new File(replacedValue);
+        if (!replacedFile.isAbsolute()) {
+            throw new InvalidBuildsDir(value + " does not resolve to an absolute path");
+        }
+
+        if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
+            throw new InvalidBuildsDir(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
+        }
+
+        if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
+            // make sure platform can handle colon
+            try {
+                File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
+                tmp.delete();
+            } catch (IOException e) {
+                throw new InvalidBuildsDir(value +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+            }
+        }
+
+        File d = new File(replacedValue);
+        if (!d.isDirectory()) {
+            // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
+            d = d.getParentFile();
+            while (!d.exists()) {
+                d = d.getParentFile();
+            }
+            if (!d.canWrite()) {
+                throw new InvalidBuildsDir(value +  " does not exist and probably cannot be created");
+            }
+        }
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
