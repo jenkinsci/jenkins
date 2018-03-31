@@ -100,7 +100,7 @@ public class RobustReflectionConverterTest {
             return ACCEPT_KEYWORD.equals(keyword);
         }
         
-        public Object readResolve() throws Exception {
+        private Object readResolve() throws Exception {
             if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
