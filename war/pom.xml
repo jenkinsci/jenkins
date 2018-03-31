@@ -89,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>4.1.2</version>
+      <version>4.2-20180331.194722-1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
