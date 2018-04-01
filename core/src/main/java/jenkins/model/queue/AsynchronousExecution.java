@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -110,15 +111,10 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * Use {@link #setExecutorWithoutCompleting(Executor)} and {@link #maybeComplete()}
      * instead. For this method, locking behaviour is problematic.
      */
-    @Restricted(NoExternalUse.class) @Deprecated()
+    @Restricted(DoNotUse.class) @Deprecated()
     public synchronized final void setExecutor(@Nonnull Executor executor) {
-        assert this.executor==null;
-
-        this.executor = executor;
-        if (result!=null) {
-            executor.completedAsynchronous( result!=NULL ? result : null );
-            result = null;
-        }
+        setExecutorWithoutCompleting(executor);
+        maybeComplete();
     }
 
     /**
