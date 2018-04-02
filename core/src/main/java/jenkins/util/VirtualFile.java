@@ -95,8 +95,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * would wind up transferring the file from the service to the Jenkins master and then on to an agent.
  * Similarly, if {@link DirectoryBrowserSupport} rendered a link to an in-Jenkins URL,
  * a large file could be transferred from the service to the Jenkins master and then on to the browser.
- * To avoid this overhead, callers may check whether an implementation
- * supports {@link #asRemotable} and/or {@link #toExternalURL}.
+ * To avoid this overhead, callers may check whether an implementation supports {@link #toExternalURL}.
  *
  * @see DirectoryBrowserSupport
  * @see FilePath
@@ -335,24 +334,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     /**
-     * Optionally produces a variant of this handle which may be safely passed over a Remoting {@link Channel}.
-     * This would allow remote nodes such as agents to make calls such as {@link #open}
-     * and be assured of the most efficient possible access.
-     * Otherwise, all calls must be made on the node originally producing this object,
-     * and the caller must arrange for transport of the result.
-     * <p>Note that the result of {@link #forFilePath} does <em>not</em> implement this method,
-     * since a {@link FilePath} may only be transferred over the channel on which it was created.
-     * It cannot, for example, be used to represent a workspace file from one agent on another agent.
-     * @return this object or a variant which may be passed over a {@link Channel}, or null if there is no such support
-     * @since FIXME
-     * @see #toExternalURL
-     */
-    @Restricted(Beta.class)
-    public @CheckForNull VirtualFile asRemotable() {
-        return null;
-    }
-
-    /**
      * Optionally obtains a URL which may be used to retrieve file contents from any process on any node.
      * For example, given cloud storage this might produce a permalink to the file.
      * <p>This is only meaningful for {@link #isFile}:
@@ -360,15 +341,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * <p>Any necessary authentication must be encoded somehow into the URL itself;
      * do not include any tokens or other authentication which might allow access to unrelated files
      * (for example {@link ArtifactManager} builds from a different job).
-     * The URL might be valid for only a limited amount of time or even only a single use;
+     * Authentication should be limited to download, not upload or any other modifications.
+     * <p>The URL might be valid for only a limited amount of time or even only a single use;
      * this method should be called anew every time an external URL is required.
-     * <p>Generally this will be harder to implement than {@link #asRemotable},
-     * which would have the opportunity to perform arbitrary preparation for {@link #open}
-     * such as negotiating session authentication.
      * @return an externally usable URL like {@code https://gist.githubusercontent.com/ACCT/GISTID/raw/COMMITHASH/FILE}, or null if there is no such support
      * @since FIXME
      * @see #toURI
-     * @see #asRemotable
      */
     @Restricted(Beta.class)
     public @CheckForNull URL toExternalURL() throws IOException {
