@@ -71,7 +71,7 @@ public class TriggerTest {
 
         // Override Trigger#readResolve so this one is not called
         @Override
-        public Object readResolve() {
+        protected Object readResolve() {
             return this;
         }
 

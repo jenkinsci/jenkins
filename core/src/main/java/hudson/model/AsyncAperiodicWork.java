@@ -200,7 +200,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Determines the log file that records the result of this task.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(),"logs/tasks/"+name+".log");
+        return new File(getLogsRoot(), "/tasks/" + name + ".log");
     }
 
     /**
