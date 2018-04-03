@@ -317,7 +317,7 @@ public class SetupWizard extends PageDecorator {
         useRootUrl(errors, rootUrl);
         
         if(!errors.isEmpty()){
-            return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ProcessingErrors(), errors);
+            return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
         }
         
         InstallUtil.proceedToNextStateFrom(InstallState.CONFIGURE_INSTANCE);

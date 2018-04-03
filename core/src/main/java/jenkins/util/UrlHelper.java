@@ -24,23 +24,26 @@
 package jenkins.util;
 
 import org.apache.commons.validator.routines.UrlValidator;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlHelper {
-    public static boolean isValid(String url){
-        String[] schemes = {"http","https"};
+    @Restricted(NoExternalUse.class)
+    public static boolean isValid(String url) {
+        String[] schemes = {"http", "https"};
         // option to accept url like http://localhost or http://SERVER_JENKINS that are often used inside company's network
         UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
         boolean isValid = validator.isValid(url);
-        if(!isValid){
+        if (!isValid) {
             // potentially it contains _'s in hostname which seems accepted but not by the UrlValidator
             // https://issues.apache.org/jira/browse/VALIDATOR-358
             try {
                 URL urlObject = new URL(url);
                 String host = urlObject.getHost();
-                if(host.contains("_")){
+                if (host.contains("_")) {
                     String hostWithoutUnderscore = host.replace("_", "");
                     String modifiedUrl = url.replace(host, hostWithoutUnderscore);
                     isValid = validator.isValid(modifiedUrl);

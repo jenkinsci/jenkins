@@ -23,10 +23,19 @@ public class UrlHelperTest {
         
         assertFalse(UrlHelper.isValid("http://jenkins::"));
         assertFalse(UrlHelper.isValid("http://jenkins::80"));
-        assertFalse(UrlHelper.isValid("http://jenkins//context"));
-        assertFalse(UrlHelper.isValid("http:/jenkins"));
         assertFalse(UrlHelper.isValid("http//jenkins"));
         
+        assertFalse(UrlHelper.isValid("com."));
+        assertFalse(UrlHelper.isValid("http:// "));
+        
+        // examples not passing with a simple `new URL(url).toURI()` check
+        assertFalse(UrlHelper.isValid("http://jenkins//context"));
+        assertFalse(UrlHelper.isValid("http:/jenkins"));
+        assertFalse(UrlHelper.isValid("http://.com"));
+        assertFalse(UrlHelper.isValid("http://com."));
+        assertFalse(UrlHelper.isValid("http:/:"));
+        assertFalse(UrlHelper.isValid("http://..."));
+        assertFalse(UrlHelper.isValid("http://::::@example.com"));
         assertFalse(UrlHelper.isValid("ftp://jenkins"));
     }
 
