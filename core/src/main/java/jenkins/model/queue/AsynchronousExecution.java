@@ -108,16 +108,6 @@ public abstract class AsynchronousExecution extends RuntimeException {
     }
 
     /**
-     * Use {@link #setExecutorWithoutCompleting(Executor)} and {@link #maybeComplete()}
-     * instead. For this method, locking behaviour is problematic.
-     */
-    @Restricted(DoNotUse.class) @Deprecated()
-    public synchronized final void setExecutor(@Nonnull Executor executor) {
-        setExecutorWithoutCompleting(executor);
-        maybeComplete();
-    }
-
-    /**
      * Set the executor without notifying it about task completion.
      * The caller <b>must</b> also call {@link #maybeComplete()}
      * after releasing any problematic locks.
