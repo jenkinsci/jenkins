@@ -33,6 +33,7 @@ THE SOFTWARE.
       <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
       <st:setHeader name="X-Hudson-Theme" value="default" />
       <st:contentType value="text/html;charset=UTF-8" />
+      <j:set var="_" value="${request.getSession()}"/>
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
       ${h.initPageVariables(context)}
       <x:doctype name="html" />
