@@ -101,6 +101,30 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     }
 
     /**
+     * Set the response as an error response plus some data.
+     * @param message The error "message" set on the response.
+     * @param data The data.
+     * @return {@code this} object.
+     *
+     * @since TODO
+     */
+    public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONObject data) {
+        return new JSONObjectResponse(data).error(message);
+    }
+
+    /**
+     * Set the response as an error response plus some data.
+     * @param message The error "message" set on the response.
+     * @param data The data.
+     * @return {@code this} object.
+     *
+     * @since TODO
+     */
+    public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONArray data) {
+        return new JSONObjectResponse(data).error(message);
+    }
+
+    /**
      * {@link net.sf.json.JSONObject} response.
      *
      * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
