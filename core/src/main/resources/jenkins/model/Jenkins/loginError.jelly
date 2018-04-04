@@ -26,14 +26,22 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <j:choose>
+    <j:new var="h" className="hudson.Functions" />
     <j:set var="legacy" value="${request.getHeader('referer').contains('legacy=true')}" />
     <j:when test="${legacy}">
       <st:include it="${it}" page="loginError.legacy.jelly"/>
     </j:when>
-    <j:otherwise>
+    <j:when test="${app.setupWizard.isUsingSecurityToken()}">
+      <j:set var="error" value="true"/>
+      <st:include it="${app.setupWizard}" page="authenticate-security-token"/>
+    </j:when>
+    <j:when test="${app.isUseSecurity() and h.isAnonymous()}">
       <st:statusCode value="401" />
       <j:set var="error" value="true"/>
       <st:include it="${it}" page="login.jelly"/>
+    </j:when>
+    <j:otherwise>
+      <st:redirect url="." />
     </j:otherwise>
   </j:choose>
 </j:jelly>
