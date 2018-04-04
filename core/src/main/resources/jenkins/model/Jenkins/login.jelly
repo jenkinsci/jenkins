@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
   <j:choose>
-    <j:when test="${request.getParameter('legacy')=='true'}">
+    <j:when test="${it.isLegacyLoginEnabled()}">
       <st:include it="${it}" page="login.legacy.jelly"/>
     </j:when>
     <j:otherwise>
@@ -99,10 +99,6 @@ THE SOFTWARE.
                         <span>${%Keep me signed in}</span>
                       </div>
                     </j:if>
-                    <div>
-                      <a href="${url}?from=${from}&amp;legacy=true">${%Legacy login}</a>
-                    </div>
-
                     <script type="text/javascript">
                       document.getElementById('j_username').focus();
                     </script>

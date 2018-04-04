@@ -27,8 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <j:choose>
     <j:new var="h" className="hudson.Functions" />
-    <j:set var="legacy" value="${request.getHeader('referer').contains('legacy=true')}" />
-    <j:when test="${legacy}">
+    <j:when test="${it.isLegacyLoginEnabled()}">
       <st:include it="${it}" page="loginError.legacy.jelly"/>
     </j:when>
     <j:when test="${app.setupWizard.isUsingSecurityToken()}">

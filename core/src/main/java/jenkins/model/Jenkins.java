@@ -473,6 +473,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     protected transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<Node,Computer>();
 
     /**
+     * This property is to enable the old login in case it is needed for backward compatibility
+     */
+    private static boolean LEGACY_LOGIN_ENABLED = SystemProperties.getBoolean(Jenkins.class.getName()+".legacyLogin", false);
+
+    /**
+     * @since TODO
+     */
+    public boolean isLegacyLoginEnabled() {
+        return Jenkins.LEGACY_LOGIN_ENABLED;
+    }
+
+    /**
      * Active {@link Cloud}s.
      */
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
