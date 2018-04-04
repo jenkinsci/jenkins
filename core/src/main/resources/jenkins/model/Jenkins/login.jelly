@@ -29,12 +29,23 @@ THE SOFTWARE.
       <st:include it="${it}" page="login.legacy.jelly"/>
     </j:when>
     <j:otherwise>
+      <!-- deactivate all caching -->
       <st:setHeader name="Expires" value="0" />
       <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-      <st:setHeader name="X-Hudson-Theme" value="default" />
-      <st:contentType value="text/html;charset=UTF-8" />
-      <j:set var="_" value="${request.getSession()}"/>
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+      <!-- needed for cli -->
+      <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
+      <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+        ${h.advertiseHeaders(response)}
+        <j:if test="${extensionsAvailable}">
+          <j:forEach var="pd" items="${h.pageDecorators}">
+            <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+          </j:forEach>
+        </j:if>
+      </j:if>
+      <st:contentType value="text/html;charset=UTF-8" />
+      <!-- needed to generate a session if non exists, without it we would add ";jsessionid=" to the url which will result in a 404 -->
+      <j:set var="_" value="${request.getSession()}"/>
       ${h.initPageVariables(context)}
       <x:doctype name="html" />
       <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
@@ -46,6 +57,12 @@ THE SOFTWARE.
           <meta name="ROBOTS" content="NOFOLLOW" />
           <link rel="stylesheet" href="${resURL}/css/login.css" type="text/css" />
           <link rel="stylesheet" href="${resURL}/css/login.theme.css" type="text/css" />
+          <!-- Allow plugins to extends the login page via pageDecorators -->
+          <j:if test="${extensionsAvailable}">
+            <j:forEach var="pd" items="${h.pageDecorators}">
+              <st:include it="${pd}" page="header.jelly" optional="true" />
+            </j:forEach>
+          </j:if>
         </head>
         <body>
           <j:choose>
@@ -100,6 +117,7 @@ THE SOFTWARE.
                         <span>${%Keep me signed in}</span>
                       </div>
                     </j:if>
+                    <!-- focus the username field -->
                     <script type="text/javascript">
                       document.getElementById('j_username').focus();
                     </script>
@@ -110,6 +128,14 @@ THE SOFTWARE.
                       <st:include page="loginFragment.jelly" it="${fls}"/>
                     </div>
                   </j:forEach>
+                  <!-- Allow plugins to extends the login page via pageDecorators -->
+                  <j:if test="${extensionsAvailable}">
+                    <div>
+                      <j:forEach var="pd" items="${h.pageDecorators}">
+                        <st:include it="${pd}" page="footer.jelly" optional="true" />
+                      </j:forEach>
+                    </div>
+                  </j:if>
 
                 </div>
               </div>
