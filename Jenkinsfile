@@ -43,6 +43,10 @@ for(i = 0; i < buildTypes.size(); i++) {
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
+                                // Stash for ATH run
+                                dir ("war/target") {
+                                    stash name: "jenkins.war", includes: "jenkins.war"
+                                }
                             } else {
                                 bat mvnCmd
                             }
@@ -91,6 +95,35 @@ builds.ath = {
 
 builds.failFast = failFast
 parallel builds
+
+stage("Acceptance Tests") {
+    node('docker && highmem') {
+        timestamps {
+            dir("ath") {
+                git url: "https://github.com/jenkinsci/acceptance-test-harness.git"
+
+                // Build container to run ATH
+                def uid = sh returnStdout: true, script: "id -u | tr -d '\n'"
+                def gid = sh returnStdout: true, script: "id -g | tr -d '\n'"
+                def buildArgs = "--build-arg=uid=${uid} --build-arg=gid=${gid} src/main/resources/ath-container"
+                def containerArgs = '-v /var/run/docker.sock:/var/run/docker.sock'
+                def image = docker.build('jenkins/ath', buildArgs)
+
+                unstash "jenkins.war"
+                // Run ATH inside container
+                image.inside(containerArgs) {
+                    sh '''
+                        eval $(./vnc.sh)
+                        env BROWSER=firefox JENKINS_WAR=./jenkins.war mvn clean package -PrunSmokeTests -Dmaven.test.failure.ignore=true -DforkCount=1 -B
+                    '''
+                }
+                // Archive test results and diagnostics for eventual failures
+                junit "target/surefire-reports/*.xml"
+                archiveArtifacts artifacts: 'target/diagnostics/', fingerprint: false, allowEmptyArchive: true
+            }
+        }
+    }
+}
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
