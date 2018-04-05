@@ -459,6 +459,9 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void save() {
         if(BulkChange.contains(this))  return;
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
 
         XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
         lock.lock();
@@ -504,11 +507,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private File getQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.txt");
+        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.xml");
+        return new File(Jenkins.get().getRootDir(), "queue.xml");
     }
 
     /**
@@ -1450,6 +1453,10 @@ public class Queue extends ResourceController implements Saveable {
      * and it also gets invoked periodically (see {@link Queue.MaintainTask}.)
      */
     public void maintain() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return;
+        }
         lock.lock();
         try { try {
 
@@ -1460,7 +1467,7 @@ public class Queue extends ResourceController implements Saveable {
 
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
-                for (Computer c : Jenkins.getInstance().getComputers()) {
+                for (Computer c : jenkins.getComputers()) {
                     for (Executor e : c.getExecutors()) {
                         if (e.isInterrupted()) {
                             // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set

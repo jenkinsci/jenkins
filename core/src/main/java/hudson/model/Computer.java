@@ -905,6 +905,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private void addNewExecutorIfNecessary() {
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
         Set<Integer> availableNumbers  = new HashSet<Integer>();
         for (int i = 0; i < numExecutors; i++)
             availableNumbers.add(i);
