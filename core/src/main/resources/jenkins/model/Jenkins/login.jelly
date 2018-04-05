@@ -57,12 +57,6 @@ THE SOFTWARE.
           <meta name="ROBOTS" content="NOFOLLOW" />
           <link rel="stylesheet" href="${resURL}/css/login.css" type="text/css" />
           <link rel="stylesheet" href="${resURL}/css/login.theme.css" type="text/css" />
-          <!-- Allow plugins to extends the login page via pageDecorators -->
-          <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="header.jelly" optional="true" />
-            </j:forEach>
-          </j:if>
         </head>
         <body>
           <j:choose>
@@ -124,18 +118,10 @@ THE SOFTWARE.
                   </form>
 
                   <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
-                   <div>
+                    <div>
                       <st:include page="loginFragment.jelly" it="${fls}"/>
                     </div>
                   </j:forEach>
-                  <!-- Allow plugins to extends the login page via pageDecorators -->
-                  <j:if test="${extensionsAvailable}">
-                    <div>
-                      <j:forEach var="pd" items="${h.pageDecorators}">
-                        <st:include it="${pd}" page="footer.jelly" optional="true" />
-                      </j:forEach>
-                    </div>
-                  </j:if>
 
                 </div>
               </div>
