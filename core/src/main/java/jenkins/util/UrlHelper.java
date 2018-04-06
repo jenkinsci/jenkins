@@ -23,7 +23,7 @@
  */
 package jenkins.util;
 
-import jenkins.util.urlvalidator.UrlValidator;
+import jenkins.org.apache.commons.validator.routines.UrlValidator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

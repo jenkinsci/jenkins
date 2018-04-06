@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
-package jenkins.util.urlvalidator;
+package jenkins.org.apache.commons.validator.routines;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
