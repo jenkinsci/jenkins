@@ -28,7 +28,15 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.ExecutorListener;
+import hudson.model.Node;
+import hudson.model.Queue;
+import hudson.model.Slave;
+import hudson.model.SlaveComputerConfiguration;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
@@ -544,7 +552,7 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
 
-        boolean rejectConn = GlobalConfiguration.all().get(SlaveComputerConfiguration.class).isRejectConn();
+        boolean rejectConn = GlobalConfiguration.all().get(SlaveComputerConfiguration.class).isRejectConnection();
 
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
             if(!rejectConn)
@@ -552,9 +560,8 @@ public class SlaveComputer extends Computer {
                                 "still trying to connect. ",
                         RemotingVersionInfo.getMinimumSupportedVersion()));
             else {
-                log.println(String.format("Remoting version is older than a minimum required one (%s) ",
+                log.println(String.format("ERROR: Remoting version is older than a minimum required one (%s). Aborting.",
                         RemotingVersionInfo.getMinimumSupportedVersion()));
-                log.print(String.format("Aborting"));
                 return;
             }
         }

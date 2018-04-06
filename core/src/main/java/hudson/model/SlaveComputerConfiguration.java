@@ -8,7 +8,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 @Extension @Symbol("slaveComputer")
 public class SlaveComputerConfiguration extends GlobalConfiguration {
-    private boolean rejectConn;
+    private boolean rejectConnection;
 
     public static SlaveComputerConfiguration get() {
         return GlobalConfiguration.all().get(SlaveComputerConfiguration.class);
@@ -21,12 +21,12 @@ public class SlaveComputerConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         json = json.getJSONObject("remoting");
-        rejectConn = json.getBoolean("rejectConn");
+        rejectConnection = json.getBoolean("rejectConnection");
         save();
         return true;
     }
 
-    public boolean isRejectConn() {
-        return rejectConn;
+    public boolean isRejectConnection() {
+        return rejectConnection;
     }
 }
