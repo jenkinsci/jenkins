@@ -17,12 +17,12 @@
     }
     
     function isIgnoringConfirm(element){
-      if(element.hasClassName('ignore-confirm')){
+      if(element.hasClassName('ignore-dirty')){
         return true;
       }
       // to allow sub-section of the form to ignore confirm
       // especially useful for "pure" JavaScript area
-      var ignorePanel = element.up('.ignore-confirm-panel');
+      var ignorePanel = element.up('.ignore-dirty-panel');
       if(ignorePanel){
         return true;
       }

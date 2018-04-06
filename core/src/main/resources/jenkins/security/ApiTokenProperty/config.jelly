@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
     <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
-        <div class="token-list ignore-confirm-panel">
+        <div class="token-list ignore-dirty-panel">
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'hidden-message'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
@@ -123,7 +123,7 @@ THE SOFTWARE.
             <f:entry title="${%Legacy API Token}" field="apiToken">
                 <f:readOnlyTextbox id="apiToken" default="${descriptor.noLegacyToken}"/>
             </f:entry>
-            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-confirm-panel"/>
+            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
         </f:advanced>
     </j:if>
 </j:jelly>
