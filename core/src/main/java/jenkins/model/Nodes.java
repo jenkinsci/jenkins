@@ -148,11 +148,7 @@ public class Nodes implements Saveable {
                 Queue.withLock(new Runnable() {
                     @Override
                     public void run() {
-                        if (oldNode == null) {
-                            nodes.remove(node.getNodeName());
-                        } else {
-                            nodes.put(node.getNodeName(), oldNode);
-                        }
+                        nodes.compute(node.getNodeName(), (nodeName, node) -> oldNode);
                         jenkins.updateComputerList();
                         jenkins.trimLabels();
                     }

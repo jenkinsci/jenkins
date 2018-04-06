@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.model.Descriptor;
+import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.slaves.ComputerLauncher;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -59,12 +61,39 @@ public class NodesTest {
                 r.jenkins.getNode("foo"), nullValue());
     }
 
+    @Test
+    @Issue("JENKINS-50599")
+    public void addNodeShouldFailAtomicallyWhenReplacingNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "", null);
+        r.jenkins.addNode(oldNode);
+        InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
+        try {
+            r.jenkins.addNode(newNode);
+            fail("Adding the node should have thrown an exception during serialization");
+        } catch (IOException e) {
+            String className = InvalidNode.class.getName();
+            assertThat("The exception should be from failing to serialize the node",
+                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
+        }
+        assertThat("The old node should still exist since #addNode threw an exception",
+                r.jenkins.getNode("foo"), sameInstance(oldNode));
+    }
+
+    @Test
+    public void addNodeShouldReplaceExistingNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "", null);
+        r.jenkins.addNode(oldNode);
+        Node newNode = r.createSlave("foo", "", null);
+        r.jenkins.addNode(newNode);
+        assertThat(r.jenkins.getNode("foo"), sameInstance(newNode));
+    }
+
     private static class InvalidNode extends Slave {
-        private ClassLoader cl; // JEP-200 whitelist changes prevent this field from being serialized.
+        // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
+        private ClassLoader cl = InvalidNode.class.getClassLoader();
 
         public InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
-            cl = InvalidNode.class.getClassLoader();
         }
     }
 }
