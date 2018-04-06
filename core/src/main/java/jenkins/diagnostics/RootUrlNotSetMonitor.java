@@ -53,7 +53,7 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
     public boolean isActivated() {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc != null && (
-                loc.getUrl() == null || !UrlHelper.isValid(loc.getUrl())
+                loc.getUrl() == null || !UrlHelper.isValidRootUrl(loc.getUrl())
         );
     }
     

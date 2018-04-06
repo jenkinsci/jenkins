@@ -23,19 +23,19 @@
  */
 package jenkins.util;
 
-import org.apache.commons.validator.routines.UrlValidator;
+import jenkins.util.urlvalidator.UrlValidator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
+@Restricted(NoExternalUse.class)
 public class UrlHelper {
-    @Restricted(NoExternalUse.class)
-    public static boolean isValid(String url) {
+    public static boolean isValidRootUrl(String url) {
         String[] schemes = {"http", "https"};
         // option to accept url like http://localhost or http://SERVER_JENKINS that are often used inside company's network
-        UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+        UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS);
         boolean isValid = validator.isValid(url);
         if (!isValid) {
             // potentially it contains _'s in hostname which seems accepted but not by the UrlValidator
