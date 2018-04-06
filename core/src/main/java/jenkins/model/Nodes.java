@@ -127,7 +127,8 @@ public class Nodes implements Saveable {
      * @throws IOException if the list of nodes could not be persisted.
      */
     public void addNode(final @Nonnull Node node) throws IOException {
-        if (node != nodes.get(node.getNodeName())) {
+        Node oldNode = nodes.get(node.getNodeName());
+        if (node != oldNode) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
             // computer list for just the new node
             Queue.withLock(new Runnable() {
@@ -139,7 +140,25 @@ public class Nodes implements Saveable {
                 }
             });
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
-            persistNode(node);
+            try {
+                persistNode(node);
+            } catch (IOException e) {
+                // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
+                // memory before propogating the exception.
+                Queue.withLock(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (oldNode == null) {
+                            nodes.remove(node.getNodeName());
+                        } else {
+                            nodes.put(node.getNodeName(), oldNode);
+                        }
+                        jenkins.updateComputerList();
+                        jenkins.trimLabels();
+                    }
+                });
+                throw e;
+            }
             NodeListener.fireOnCreated(node);
         }
     }
