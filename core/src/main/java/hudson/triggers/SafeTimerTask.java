@@ -58,6 +58,12 @@ public abstract class SafeTimerTask extends TimerTask {
      */
     static final String LOGS_ROOT_PATH_PROPERTY = SafeTimerTask.class.getName()+".logsTargetDir";
 
+    /**
+     * Local marker to know if the information about using non default root directory for logs has already been logged at least once.
+     * @see #LOGS_ROOT_PATH_PROPERTY
+     */
+    private static boolean ALREADY_LOGGED = false;
+
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
@@ -87,9 +93,14 @@ public abstract class SafeTimerTask extends TimerTask {
         if (tagsLogsPath == null) {
             return new File(Jenkins.get().getRootDir(), "logs");
         } else {
-            LOGGER.log(Level.INFO,
+            Level logLevel = Level.INFO;
+            if (ALREADY_LOGGED) {
+                logLevel = Level.FINE;
+            }
+            LOGGER.log(logLevel,
                        "Using non default root path for tasks logging: {0}. (Beware: no automated migration if you change or remove it again)",
                        LOGS_ROOT_PATH_PROPERTY);
+            ALREADY_LOGGED = true;
             return new File(tagsLogsPath);
         }
     }
