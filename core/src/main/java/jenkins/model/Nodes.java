@@ -144,7 +144,7 @@ public class Nodes implements Saveable {
                 persistNode(node);
             } catch (IOException e) {
                 // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
-                // memory before propogating the exception.
+                // memory before propagating the exception.
                 Queue.withLock(new Runnable() {
                     @Override
                     public void run() {
