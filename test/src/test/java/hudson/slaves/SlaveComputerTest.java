@@ -23,20 +23,24 @@
  */
 package hudson.slaves;
 
+import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.security.ACL;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.xml.sax.SAXException;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -52,11 +56,28 @@ public class SlaveComputerTest {
         Node nodeA = j.createOnlineSlave();
         String path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
         Assert.assertNotNull(path);
+        Assert.assertEquals(getRemoteFS(nodeA), path);
 
         setAsAnonymous();
         nodeA = j.createOnlineSlave();
         path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
         Assert.assertNull(path);
+        Assert.assertEquals(getRemoteFS(nodeA), "null");
+    }
+
+    /**
+     * Get remote path through json api
+     * @param node
+     * @return remote path
+     * @throws IOException
+     * @throws SAXException
+     */
+    private String getRemoteFS(Node node) throws IOException, SAXException {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        WebResponse response = wc.goTo("computer/" + node.getNodeName() + "/api/json",
+                "application/json").getWebResponse();
+        JSONObject json = JSONObject.fromObject(response.getContentAsString());
+        return json.getString("absoluteRemotePath");
     }
 
     private void setAsAnonymous() {
@@ -80,8 +101,11 @@ public class SlaveComputerTest {
             public ACL getACL(@Nonnull Computer computer) {
                 return new ACL(){
                     @Override
-                    public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission)
-                    {
+                    public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+                        if(permission == Computer.CONFIGURE) {
+                            return true;
+                        }
+
                         return false;
                     }
                 };
