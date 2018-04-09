@@ -1,6 +1,6 @@
 /*
-IE11 prevents of the usage of variable,
-but to show the color theme we left it here
+ * IE11 prevents of the usage of variable,
+ * but to show the color theme we left it here
  */
 :root {
   --main-bg-color-focus: #2171ce;

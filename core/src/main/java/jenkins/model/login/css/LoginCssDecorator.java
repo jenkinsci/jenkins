@@ -1,8 +1,8 @@
-package jenkins.model;
+package jenkins.model.login.css;
 
 import hudson.Extension;
 import hudson.model.PageDecorator;
 
-@Extension
+@Extension(ordinal=-9999)
 public class LoginCssDecorator extends PageDecorator {
 }
