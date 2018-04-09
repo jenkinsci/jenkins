@@ -47,6 +47,8 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -87,6 +89,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         this(null);
     }
 
+    @Restricted(NoExternalUse.class)
     public Object readResolve() {
         if (views == null)
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
