@@ -29,6 +29,10 @@ form .submit input {
   border: solid 1px #4A90E2; /*var(--main-bg-color-focus);*/
 }
 
+input.normal:focus {
+  border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
+}
+
 .checkbox label {
   background: #ffffff;
   border: 1px solid rgba(73, 73, 73, 0.5);
