@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.116-SNAPSHOT</version>
+    <version>2.116</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
