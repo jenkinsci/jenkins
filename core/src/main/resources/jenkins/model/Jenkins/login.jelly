@@ -52,6 +52,7 @@ THE SOFTWARE.
   <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
   <!-- in case of error we want to surround the form elements with an error hint -->
   <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
+  <j:set var="loginDecorator" value="${h.loginPageDecorator}"/>
   <!-- real deal starting here -->
   <html>
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
@@ -59,19 +60,7 @@ THE SOFTWARE.
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
-      <j:if test="${extensionsAvailable}">
-        <j:forEach var="pd" items="${h.pageDecorators}">
-          <!--
-            to allow custom css style we see whether we have a pageDecorator in the
-            *magic* package 'jenkins.model.login.css'
-          -->
-          <j:if test="${pd.getClass().getName().startsWith('jenkins.model.login.css')}">
-            <st:include it="${pd}" page="login-css.jelly" optional="true"/>
-            <!-- we only want one and the default Extension(ordinal=-9999) will come last -->
-            <j:break/>
-          </j:if>
-        </j:forEach>
-      </j:if>
+      <st:include it="${loginDecorator}" page="login-css.jelly" optional="true"/>
     </head>
     <body>
       <j:choose>
@@ -81,19 +70,7 @@ THE SOFTWARE.
         <j:otherwise>
           <div class="absolute-center">
             <div class="modal">
-              <j:if test="${extensionsAvailable}">
-                <j:forEach var="pd" items="${h.pageDecorators}">
-                  <!--
-                    to allow custom login header (logo and greeting) we see whether we have
-                    a pageDecorator in the *magic* package 'jenkins.model.login.header'
-                  -->
-                  <j:if test="${pd.getClass().getName().startsWith('jenkins.model.login.header')}">
-                    <st:include it="${pd}" page="login-header.jelly" optional="true"/>
-                    <!-- we only want one and the default Extension(ordinal=-9999) will come last -->
-                    <j:break/>
-                  </j:if>
-                </j:forEach>
-              </j:if>
+              <st:include it="${loginDecorator}" page="login-header.jelly" optional="true"/>
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
                 <j:if test="${it.securityRealm.allowsSignup()}">
@@ -152,11 +129,7 @@ THE SOFTWARE.
               </j:forEach>
 
               <div class="footer">
-                <j:if test="${extensionsAvailable}">
-                  <j:forEach var="pd" items="${h.pageDecorators}">
-                    <st:include it="${pd}" page="login-footer.jelly" optional="true"/>
-                  </j:forEach>
-                </j:if>
+                <st:include it="${loginDecorator}" page="login-footer.jelly" optional="true"/>
               </div>
 
             </div>

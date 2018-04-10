@@ -47,6 +47,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import jenkins.model.LoginPageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
@@ -133,8 +134,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -1771,7 +1770,15 @@ public class Functions {
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
-    
+    /**
+     * Gets all the {@link LoginPageDecorator}s.
+     */
+    public static LoginPageDecorator getLoginPageDecorator() {
+        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608
+        if(Jenkins.getInstanceOrNull()==null)  return null;
+        return LoginPageDecorator.first();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
