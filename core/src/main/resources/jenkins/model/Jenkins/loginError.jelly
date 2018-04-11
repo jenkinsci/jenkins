@@ -27,9 +27,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <j:choose>
     <j:new var="h" className="hudson.Functions" />
-    <j:when test="${it.isLegacyLoginEnabled()}">
-      <st:include it="${it}" page="loginError.legacy.jelly"/>
-    </j:when>
     <j:when test="${app.setupWizard.isUsingSecurityToken()}">
       <j:set var="error" value="true"/>
       <st:include it="${app.setupWizard}" page="authenticate-security-token"/>

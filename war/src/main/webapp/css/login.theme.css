@@ -12,34 +12,34 @@ html {
   color: #4A4A4A;
 }
 
-.logo {
+.login-main .logo {
   background-image: url('../images/jenkins.svg');
   background-repeat: no-repeat;
   background-position: 100px 0;
   height: 130px;
 }
 
-form .submit input:focus {
+.login-main form .submit input:focus {
   background-color: #2171ce; /*var(--main-bg-color-focus);*/
   border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
 }
 
-form .submit input {
+.login-main form .submit input {
   background-color: #4A90E2; /*var(--main-bg-color);*/
   border: solid 1px #4A90E2; /*var(--main-bg-color-focus);*/
 }
 
-input.normal:focus {
+.login-main input.normal:focus {
   border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
 }
 
-.checkbox label {
+.login-main .checkbox label {
   background: #ffffff;
   border: 1px solid rgba(73, 73, 73, 0.5);
   border-radius: 3px;
 }
 
-.checkbox label:after {
+.login-main .checkbox label:after {
   background: transparent;
   border: 2px solid #ffffff;
   border-top: none;
@@ -47,20 +47,20 @@ input.normal:focus {
   transform: rotate(-45deg);
 }
 
-.checkbox input[type=checkbox]:checked + label:after {
+.login-main .checkbox input[type=checkbox]:checked + label:after {
   color: #ffffff;
 }
 
-.checkbox input[type=checkbox]:checked + label {
+.login-main .checkbox input[type=checkbox]:checked + label {
   background-color: #4A90E2; /*var(--main-bg-color);*/
   border-color: #2171ce; /*var(--main-bg-color-focus);*/
 }
 
-.danger {
+.login-main .danger {
   border: 1px solid #C4000A; /*var(--danger-color);*/
   box-shadow: 0 0 1px #C4000A; /*var(--danger-color);*/
 }
 
-.alert {
+.login-main .alert {
   color: #C4000A; /*var(--danger-color);*/
 }

@@ -1771,11 +1771,9 @@ public class Functions {
         return PageDecorator.all();
     }
     /**
-     * Gets all the {@link LoginPageDecorator}s.
+     * Gets only one {@link LoginPageDecorator}.
      */
     public static LoginPageDecorator getLoginPageDecorator() {
-        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608
-        if(Jenkins.getInstanceOrNull()==null)  return null;
         return LoginPageDecorator.first();
     }
 

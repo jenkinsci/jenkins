@@ -6,11 +6,11 @@ html {
   text-align: center;
 }
 
-h1 {
+.login-main h1 {
   font-size: 24px;
 }
 
-.absolute-center {
+.login-main {
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
@@ -29,13 +29,13 @@ h1 {
   min-height: 90vh;
 }
 
-form {
+.login-main form {
   min-width: 300px;
   max-width: 300px;
   width: 300px;
 }
 
-input {
+.login-main input {
   width: 100%;
   padding: 6px 8px;
   display: inline-block;
@@ -46,21 +46,21 @@ input {
   border: 1px solid rgba(74,74,74,0.25);
 }
 
-input[type=text],
-input[type=password],
-input[type=submit] {
+.login-main input[type=text],
+.login-main input[type=password],
+.login-main input[type=submit] {
   box-sizing: border-box;
 }
 
-input[type=submit] {
+.login-main input[type=submit] {
   text-align: center;
 }
 
-form div {
+.login-main form div {
   margin-top: 16px;
 }
 
-form .submit input {
+.login-main form .submit input {
   border-radius: 3px;
   color: #fff;
   cursor: pointer;
@@ -69,13 +69,13 @@ form .submit input {
 /**
  * Checkbox
  */
-.checkbox {
+.login-main .checkbox {
   width: 20px;
   margin: 0 13px;
   position: relative;
 }
 
-.checkbox label {
+.login-main .checkbox label {
   cursor: pointer;
   position: absolute;
   width: 20px;
@@ -87,7 +87,7 @@ form .submit input {
 /**
  * Display the tick inside the checkbox
  */
-.checkbox label:after {
+.login-main .checkbox label:after {
   opacity: 0;
   content: '';
   position: absolute;
@@ -100,11 +100,11 @@ form .submit input {
 /**
  * Create the hover event of the tick
  */
-.checkbox label:hover::after {
+.login-main .checkbox label:hover::after {
   opacity: 0.3;
 }
 
-.alert {
+.login-main .alert {
   text-align: center;
   font-size: 14px;
   line-height: 18px;
@@ -113,11 +113,11 @@ form .submit input {
 /**
  * Create the checkbox state for the tick
  */
-.checkbox input[type=checkbox]:checked + label:after {
+.login-main .checkbox input[type=checkbox]:checked + label:after {
   opacity: 1;
 }
 
-.checkboxWrapper {
+.login-main .checkboxWrapper {
   display: flex;
   justify-content: center;
   align-items: center;

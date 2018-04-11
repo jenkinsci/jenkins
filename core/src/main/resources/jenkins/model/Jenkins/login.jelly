@@ -29,14 +29,11 @@ THE SOFTWARE.
   <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
   <!-- needed for cli -->
-  <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     ${h.advertiseHeaders(response)}
-    <j:if test="${extensionsAvailable}">
-      <j:forEach var="pd" items="${h.pageDecorators}">
-        <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
-      </j:forEach>
-    </j:if>
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
   </j:if>
   <!-- response contentType header -->
   <st:contentType value="text/html;charset=UTF-8" />
@@ -68,11 +65,11 @@ THE SOFTWARE.
           <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
         </j:when>
         <j:otherwise>
-          <div class="absolute-center">
+          <div class="login-main">
             <div class="modal">
               <st:include it="${loginDecorator}" page="login-header.jelly" optional="true"/>
               <!-- login form -->
-              <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
+              <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
                   <div style="margin-top:2em">
                     ${%signUp}
@@ -129,6 +126,7 @@ THE SOFTWARE.
               </j:forEach>
 
               <div class="footer">
+
                 <st:include it="${loginDecorator}" page="login-footer.jelly" optional="true"/>
               </div>
 
