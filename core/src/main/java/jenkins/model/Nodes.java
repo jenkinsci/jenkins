@@ -142,7 +142,7 @@ public class Nodes implements Saveable {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
                 // memory before propagating the exception.
                 Queue.withLock(new Runnable() {
