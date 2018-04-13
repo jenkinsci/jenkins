@@ -144,7 +144,7 @@ public class Executor extends Thread implements ModelObject {
     public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
-        this.queue = Jenkins.getInstance().getQueue();
+        this.queue = Jenkins.get().getQueue();
         this.number = n;
     }
 
