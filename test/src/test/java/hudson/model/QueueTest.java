@@ -32,7 +32,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.XmlFile;
+import hudson.Storage;
+import hudson.XmlFileStorage;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
@@ -218,7 +219,7 @@ public class QueueTest {
      */
     private void resetQueueState() throws IOException {
         File queueFile = r.jenkins.getQueue().getXMLQueueFile();
-        XmlFile xmlFile = new XmlFile(Queue.XSTREAM, queueFile);
+        Storage xmlFile = new XmlFileStorage(Queue.XSTREAM, queueFile);
         xmlFile.write(new Queue.State());
         r.jenkins.getQueue().load();
     }
@@ -379,7 +380,7 @@ public class QueueTest {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
-        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
+        System.out.println(new XmlFileStorage(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")
@@ -1031,7 +1032,7 @@ public class QueueTest {
     @TestExtension("load_queue_xml")
     public static final class QueueSaveSniffer extends SaveableListener {
         private static int count = 0;
-        @Override public void onChange(Saveable o, XmlFile file) {
+        @Override public void onChange(Saveable o, Storage file) {
             if (o instanceof Queue) {
                 count++;
             }

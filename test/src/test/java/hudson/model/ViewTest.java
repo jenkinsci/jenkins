@@ -35,7 +35,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixProject;
@@ -239,7 +239,7 @@ public class ViewTest {
         req.setEncodingType(null);
         wc.getPage(req);
         assertEquals("two", view.getDescription());
-        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        xml = new XmlFileStorage(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertTrue(xml, xml.contains("<description>two</description>"));
     }
     
@@ -256,7 +256,7 @@ public class ViewTest {
         req.setEncodingType(null);
         wc.getPage(req);
         assertEquals(null, view.getDescription()); // did not work
-        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        xml = new XmlFileStorage(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertThat(xml, not(containsString("<description>"))); // did not work
         assertEquals(j.jenkins, view.getOwner());
     }

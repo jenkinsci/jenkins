@@ -25,13 +25,14 @@ package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 
+import hudson.FileStorage;
 import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;
 import hudson.model.TopLevelItem;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.Launcher;
 import hudson.FilePath;
 import hudson.model.labels.LabelAtom;
@@ -128,7 +129,7 @@ public class NodeListTest {
 
         File tmp = File.createTempFile("test","test");
         try {
-            XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
+            FileStorage x = new XmlFileStorage(Jenkins.XSTREAM, tmp);
             x.write(nl);
 
             String xml = FileUtils.readFileToString(tmp);

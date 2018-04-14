@@ -28,7 +28,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionList;
 import hudson.Launcher;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -36,7 +36,6 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.Saveable;
-import hudson.remoting.ClassFilter;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
@@ -166,7 +165,7 @@ public class ClassFilterImplTest {
         LinkedListMultimap<?, ?> obj;
         String unrelated;
         @Override
-        protected XmlFile getConfigFile() {
+        protected XmlFileStorage getConfigFile() {
             return super.getConfigFile();
         }
     }

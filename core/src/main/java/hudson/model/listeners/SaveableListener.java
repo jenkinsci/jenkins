@@ -27,7 +27,8 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.XmlFile;
+import hudson.Storage;
+import hudson.XmlFileStorage;
 import hudson.model.Saveable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,9 +50,9 @@ public abstract class SaveableListener implements ExtensionPoint {
      * @param o
      *      The saveable object.
      * @param file
-     *      The {@link XmlFile} for this saveable object.
+     *      The {@link XmlFileStorage} for this saveable object.
      */
-    public void onChange(Saveable o, XmlFile file) {}
+    public void onChange(Saveable o, Storage file) {}
 
     /**
      * Registers this object as an active listener so that it can start getting
@@ -75,7 +76,7 @@ public abstract class SaveableListener implements ExtensionPoint {
     /**
      * Fires the {@link #onChange} event.
      */
-    public static void fireOnChange(Saveable o, XmlFile file) {
+    public static void fireOnChange(Saveable o, Storage file) {
         for (SaveableListener l : all()) {
             try {
                 l.onChange(o,file);

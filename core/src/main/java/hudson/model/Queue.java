@@ -32,8 +32,9 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Storage;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.util.Iterators.reverse;
@@ -394,7 +395,7 @@ public class Queue extends ResourceController implements Saveable {
             } else {
                 queueFile = getXMLQueueFile();
                 if (queueFile.exists()) {
-                    Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
+                    Object unmarshaledObj = new XmlFileStorage(XSTREAM, queueFile).read();
                     List items;
 
                     if (unmarshaledObj instanceof State) {
@@ -463,7 +464,7 @@ public class Queue extends ResourceController implements Saveable {
             return;
         }
 
-        XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
+        Storage queueFile = new XmlFileStorage(XSTREAM, getXMLQueueFile());
         lock.lock();
         try {
             // write out the queue state we want to save

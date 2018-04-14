@@ -26,7 +26,7 @@ package hudson.model;
 import hudson.DescriptorExtensionList;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -885,7 +885,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * get a chance to set default values.)
      */
     public synchronized void load() {
-        XmlFile file = getConfigFile();
+        XmlFileStorage file = getConfigFile();
         if(!file.exists())
             return;
 
@@ -896,8 +896,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         }
     }
 
-    protected XmlFile getConfigFile() {
-        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
+    protected XmlFileStorage getConfigFile() {
+        return new XmlFileStorage(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
     }
 
     /**

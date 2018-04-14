@@ -26,7 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.security.ACL;
@@ -376,14 +376,14 @@ public class Items {
     /**
      * The file we save our configuration.
      */
-    public static XmlFile getConfigFile(File dir) {
-        return new XmlFile(XSTREAM,new File(dir,"config.xml"));
+    public static XmlFileStorage getConfigFile(File dir) {
+        return new XmlFileStorage(XSTREAM,new File(dir,"config.xml"));
     }
 
     /**
      * The file we save our configuration.
      */
-    public static XmlFile getConfigFile(Item item) {
+    public static XmlFileStorage getConfigFile(Item item) {
         return getConfigFile(item.getRootDir());
     }
     

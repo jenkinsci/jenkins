@@ -258,7 +258,7 @@ public abstract class Plugin implements Saveable {
      * @since 1.245
      */
     protected void load() throws IOException {
-        XmlFile xml = getConfigXml();
+        XmlFileStorage xml = getConfigXml();
         if(xml.exists())
             xml.unmarshal(this);
     }
@@ -270,7 +270,7 @@ public abstract class Plugin implements Saveable {
      */
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        XmlFile config = getConfigXml();
+        Storage config = getConfigXml();
         config.write(this);
         SaveableListener.fireOnChange(this, config);
     }
@@ -284,8 +284,8 @@ public abstract class Plugin implements Saveable {
      *
      * @since 1.245
      */
-    protected XmlFile getConfigXml() {
-        return new XmlFile(Jenkins.XSTREAM,
+    protected XmlFileStorage getConfigXml() {
+        return new XmlFileStorage(Jenkins.XSTREAM,
                 new File(Jenkins.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 

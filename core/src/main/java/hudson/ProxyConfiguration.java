@@ -199,7 +199,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        XmlFile config = getXmlFile();
+        Storage config = getXmlFile();
         config.write(this);
         SaveableListener.fireOnChange(this, config);
     }
@@ -212,12 +212,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return this;
     }
 
-    public static XmlFile getXmlFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(), "proxy.xml"));
+    public static XmlFileStorage getXmlFile() {
+        return new XmlFileStorage(XSTREAM, new File(Jenkins.getInstance().getRootDir(), "proxy.xml"));
     }
 
     public static ProxyConfiguration load() throws IOException {
-        XmlFile f = getXmlFile();
+        FileStorage f = getXmlFile();
         if(f.exists())
             return (ProxyConfiguration) f.read();
         else

@@ -24,7 +24,7 @@
 
 package hudson.model;
 
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import java.io.File;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -50,7 +50,7 @@ public class RunActionTest {
                 FreeStyleBuild b2 = rr.j.buildAndAssertSuccess(p);
                 b2.addAction(new BadAction(b1));
                 b2.save();
-                String text = new XmlFile(new File(b2.getRootDir(), "build.xml")).asString();
+                String text = new XmlFileStorage(new File(b2.getRootDir(), "build.xml")).asString();
                 assertThat(text, not(containsString("<owner class=\"build\">")));
                 assertThat(text, containsString("<id>p#1</id>"));
             }

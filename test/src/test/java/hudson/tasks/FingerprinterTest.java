@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -310,7 +310,7 @@ public class FingerprinterTest {
         job._getRuns().purgeCache(); // force build records to be reloaded
         build = job.getBuildByNumber(3);
         assertNotNull(build);
-        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
+        System.out.println(new XmlFileStorage(new File(build.getRootDir(), "build.xml")).asString());
         action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         assertEquals(build, action.getBuild());

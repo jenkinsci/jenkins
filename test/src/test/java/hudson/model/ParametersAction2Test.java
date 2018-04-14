@@ -2,7 +2,7 @@ package hudson.model;
 
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
@@ -317,7 +317,7 @@ public class ParametersAction2Test {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", "sensible-default")));
         FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("key", "value"))));
-        assertThat(new XmlFile(Run.XSTREAM, new File(b.getRootDir(), "build.xml")).asString(), not(containsString("sensible-default")));
+        assertThat(new XmlFileStorage(Run.XSTREAM, new File(b.getRootDir(), "build.xml")).asString(), not(containsString("sensible-default")));
         assertEquals(Collections.emptyList(), logs.getMessages());
     }
 

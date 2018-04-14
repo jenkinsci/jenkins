@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import java.util.logging.Level;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -41,7 +41,7 @@ public class AbstractItem2Test {
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
     @Rule
-    public LoggerRule logging = new LoggerRule().record(XmlFile.class, Level.WARNING).capture(100);
+    public LoggerRule logging = new LoggerRule().record(XmlFileStorage.class, Level.WARNING).capture(100);
 
     @Issue("JENKINS-45892")
     @Test

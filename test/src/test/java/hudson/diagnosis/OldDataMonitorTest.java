@@ -24,7 +24,7 @@
 
 package hudson.diagnosis;
 
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
@@ -136,7 +136,7 @@ public class OldDataMonitorTest {
         xml.deleteOnExit();
         OldDataMonitor.changeListener
                 .onChange(new Saveable() {public void save() throws IOException {}},
-                        new XmlFile(xml));
+                        new XmlFileStorage(xml));
 
         preventExit.countDown();
         discardFuture.get();

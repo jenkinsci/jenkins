@@ -113,17 +113,17 @@ import org.apache.commons.io.IOUtils;
  * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Architecture#Architecture-Persistence">Architecture » Persistence</a>
  * @author Kohsuke Kawaguchi
  */
-public final class XmlFile {
+public final class XmlFileStorage implements FileStorage {
     private final XStream xs;
     private final File file;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
-    public XmlFile(File file) {
+    public XmlFileStorage(File file) {
         this(DEFAULT_XSTREAM,file);
     }
 
-    public XmlFile(XStream xs, File file) {
+    public XmlFileStorage(XStream xs, File file) {
         this.xs = xs;
         this.file = file;
     }
@@ -182,7 +182,8 @@ public final class XmlFile {
         }
     }
 
-    public void write( Object o ) throws IOException {
+    @Override
+    public void write(Object o) throws IOException {
         mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
         try {
@@ -352,7 +353,7 @@ public final class XmlFile {
      * {@link XStream} instance is supposed to be thread-safe.
      */
 
-    private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(XmlFileStorage.class.getName());
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 

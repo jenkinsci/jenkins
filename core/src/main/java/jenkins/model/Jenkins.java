@@ -2984,8 +2984,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The file we save our configuration.
      */
-    private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(root,"config.xml"));
+    private XmlFileStorage getConfigFile() {
+        return new XmlFileStorage(XSTREAM, new File(root,"config.xml"));
     }
 
     public int getNumExecutors() {
@@ -3023,7 +3023,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void loadConfig() throws IOException {
-        XmlFile cfg = getConfigFile();
+        XmlFileStorage cfg = getConfigFile();
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
             // so that we can take a proper compensation action later.

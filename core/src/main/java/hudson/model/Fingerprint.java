@@ -32,8 +32,10 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+
+import hudson.FileStorage;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
@@ -1335,8 +1337,9 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * The file we save our configuration.
      */
-    private static @Nonnull XmlFile getConfigFile(@Nonnull File file) {
-        return new XmlFile(XSTREAM,file);
+    private static @Nonnull
+    XmlFileStorage getConfigFile(@Nonnull File file) {
+        return new XmlFileStorage(XSTREAM,file);
     }
 
     /**
@@ -1357,7 +1360,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return load(getFingerprintFile(md5sum));
     }
     /*package*/ static @CheckForNull Fingerprint load(@Nonnull File file) throws IOException {
-        XmlFile configFile = getConfigFile(file);
+        FileStorage configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
 

@@ -2,7 +2,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
@@ -59,11 +59,11 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public synchronized void load() {
         // for backward compatibility, if we don't have our own data yet, then
         // load from Mailer.
-        XmlFile file = getConfigFile();
+        XmlFileStorage file = getConfigFile();
         if(!file.exists()) {
             XStream2 xs = new XStream2();
             xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
+            file = new XmlFileStorage(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);

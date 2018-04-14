@@ -29,7 +29,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
@@ -161,8 +161,8 @@ public class LabelAtom extends Label implements Saveable {
         return LabelOperatorPrecedence.ATOM;
     }
 
-    /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
+    /*package*/ XmlFileStorage getConfigFile() {
+        return new XmlFileStorage(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -176,7 +176,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     public void load() {
-        XmlFile file = getConfigFile();
+        XmlFileStorage file = getConfigFile();
         if(file.exists()) {
             try {
                 file.unmarshal(this);

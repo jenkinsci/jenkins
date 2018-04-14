@@ -49,7 +49,7 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
@@ -143,7 +143,7 @@ public class XStream2 extends XStream {
      * which it expects to be {@link Nonnull} unless you are prepared to restore default values for those fields.
      * @param nullOut whether to perform this special behavior;
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
-     * @see XmlFile#unmarshalNullingOut
+     * @see XmlFileStorage#unmarshalNullingOut
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
      * @since 2.99
      */

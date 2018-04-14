@@ -29,7 +29,7 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.model.*;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
@@ -330,7 +330,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
-        XmlFile oldFile = null;
+        XmlFileStorage oldFile = null;
         if(!name.equals(newName)) {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
@@ -402,8 +402,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * The file we save our configuration.
      */
-    private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(LogRecorderManager.configDir(), name + ".xml"));
+    private XmlFileStorage getConfigFile() {
+        return new XmlFileStorage(XSTREAM, new File(LogRecorderManager.configDir(), name + ".xml"));
     }
 
     /**

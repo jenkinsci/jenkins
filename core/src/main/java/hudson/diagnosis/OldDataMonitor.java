@@ -26,7 +26,7 @@ package hudson.diagnosis;
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
-import hudson.XmlFile;
+import hudson.Storage;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -127,7 +127,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     @Extension
     public static final SaveableListener changeListener = new SaveableListener() {
         @Override
-        public void onChange(Saveable obj, XmlFile file) {
+        public void onChange(Saveable obj, Storage file) {
             remove(obj, false);
         }
     };

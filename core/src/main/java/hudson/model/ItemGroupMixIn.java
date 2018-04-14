@@ -24,7 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
@@ -111,7 +111,7 @@ public abstract class ItemGroupMixIn {
                 // Try to retain the identity of an existing child object if we can.
                 V item = (V) parent.getItem(subdir.getName());
                 if (item == null) {
-                    XmlFile xmlFile = Items.getConfigFile(subdir);
+                    XmlFileStorage xmlFile = Items.getConfigFile(subdir);
                     if (xmlFile.exists()) {
                         item = (V) Items.load(parent, subdir);
                     } else {
@@ -222,7 +222,7 @@ public abstract class ItemGroupMixIn {
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
         acl.checkPermission(Item.CREATE);
         src.checkPermission(Item.EXTENDED_READ);
-        XmlFile srcConfigFile = Items.getConfigFile(src);
+        XmlFileStorage srcConfigFile = Items.getConfigFile(src);
         if (!src.hasPermission(Item.CONFIGURE)) {
             Matcher matcher = AbstractItem.SECRET_PATTERN.matcher(srcConfigFile.asString());
             while (matcher.find()) {

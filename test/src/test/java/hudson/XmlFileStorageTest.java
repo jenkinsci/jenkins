@@ -11,7 +11,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class XMLFileTest {
+public class XmlFileStorageTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();

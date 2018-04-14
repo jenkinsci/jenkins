@@ -46,7 +46,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
@@ -1924,12 +1924,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         SaveableListener.fireOnChange(this, getDataFile());
     }
 
-    private @Nonnull XmlFile getDataFile() {
-        return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
+    private @Nonnull
+    XmlFileStorage getDataFile() {
+        return new XmlFileStorage(XSTREAM,new File(getRootDir(),"build.xml"));
     }
 
     private Object writeReplace() {
-        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+        return XmlFileStorage.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {
         private final String id;

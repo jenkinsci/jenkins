@@ -26,7 +26,7 @@ package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
@@ -38,7 +38,6 @@ import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
@@ -598,12 +597,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
-    public final XmlFile getConfigFile() {
+    public final XmlFileStorage getConfigFile() {
         return Items.getConfigFile(this);
     }
 
     private Object writeReplace() {
-        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+        return XmlFileStorage.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {
         private final String fullName;
@@ -819,7 +818,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Restricted(NoExternalUse.class)
     public void writeConfigDotXml(OutputStream os) throws IOException {
         checkPermission(EXTENDED_READ);
-        XmlFile configFile = getConfigFile();
+        XmlFileStorage configFile = getConfigFile();
         if (hasPermission(CONFIGURE)) {
             IOUtils.copy(configFile.getFile(), os);
         } else {
@@ -855,7 +854,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
-        XmlFile configXmlFile = getConfigFile();
+        XmlFileStorage configXmlFile = getConfigFile();
         final AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
         try {
             try {
@@ -866,7 +865,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
+            Object o = new XmlFileStorage(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
             if (o!=this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type

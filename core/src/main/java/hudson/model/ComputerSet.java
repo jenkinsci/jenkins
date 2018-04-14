@@ -26,8 +26,9 @@ package hudson.model;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.FileStorage;
 import hudson.Util;
-import hudson.XmlFile;
+import hudson.XmlFileStorage;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
@@ -371,8 +372,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * {@link NodeMonitor}s are persisted in this file.
      */
-    private static XmlFile getConfigFile() {
-        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),"nodeMonitors.xml"));
+    private static XmlFileStorage getConfigFile() {
+        return new XmlFileStorage(new File(Jenkins.getInstance().getRootDir(),"nodeMonitors.xml"));
     }
 
     public Api getApi() {
@@ -438,7 +439,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                     = new DescribableList<NodeMonitor, Descriptor<NodeMonitor>>(Saveable.NOOP);
 
             // load persisted monitors
-            XmlFile xf = getConfigFile();
+            FileStorage xf = getConfigFile();
             if(xf.exists()) {
                 DescribableList<NodeMonitor,Descriptor<NodeMonitor>> persisted =
                         (DescribableList<NodeMonitor,Descriptor<NodeMonitor>>) xf.read();

@@ -9,13 +9,12 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.xml.sax.SAXParseException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class XmlFileTest {
+public class XmlFileStorageTest {
 
     @Test
     public void canReadXml1_0Test() throws IOException {
@@ -23,7 +22,7 @@ public class XmlFileTest {
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
+        XmlFileStorage xmlFile =  new XmlFileStorage(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -40,7 +39,7 @@ public class XmlFileTest {
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
+        XmlFileStorage xmlFile =  new XmlFileStorage(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -54,7 +53,7 @@ public class XmlFileTest {
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
+        XmlFileStorage xmlFile =  new XmlFileStorage(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -68,7 +67,7 @@ public class XmlFileTest {
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
+        XmlFileStorage xmlFile =  new XmlFileStorage(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
