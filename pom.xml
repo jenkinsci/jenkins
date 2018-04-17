@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.42-20180417.145557-3</version> <!-- TODO https://github.com/jenkinsci/pom/pull/20 -->
+    <version>1.42-20180417.222903-4</version> <!-- TODO https://github.com/jenkinsci/pom/pull/20 -->
     <relativePath />
   </parent>
 
@@ -512,10 +512,6 @@ THE SOFTWARE.
           <groupId>org.jvnet.updatecenter2</groupId>
           <artifactId>maven-makepkgs-plugin</artifactId>
           <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
