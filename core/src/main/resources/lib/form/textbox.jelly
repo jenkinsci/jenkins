@@ -64,6 +64,9 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="checkMethod">
+      If specified, the HTTP method to use for input field will be checked (via AJAX)
+    </st:attribute>
     <st:attribute name="autoCompleteDelimChar">
       A single character that can be used as a delimiter for autocompletion. Normal
       autocomplete will replace the entire content of the text box with the autocomplete
