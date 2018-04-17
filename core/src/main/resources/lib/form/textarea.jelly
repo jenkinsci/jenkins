@@ -51,8 +51,10 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
-    <st:attribute name="checkMethod">
-      If specified, the HTTP method to use for input field will be checked (via AJAX)
+    <st:attribute name="checkMethod" use="optional" type="String">
+      If specified, the HTTP method to use for input field will be checked (via AJAX).
+    
+      'post' is the only value (in lowercase) that is supported to change the default GET method into a POST
     </st:attribute>
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
