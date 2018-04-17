@@ -39,7 +39,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U javadoc:javadoc clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
