@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.42-20180417.134140-2</version> <!-- TODO https://github.com/jenkinsci/pom/pull/20 -->
+    <version>1.42-20180417.145557-3</version> <!-- TODO https://github.com/jenkinsci/pom/pull/20 -->
     <relativePath />
   </parent>
 
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>HEAD</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <distributionManagement>
