@@ -52,9 +52,8 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      If specified, the HTTP method to use for input field will be checked (via AJAX).
-    
-      'post' is the only value (in lowercase) that is supported to change the default GET method into a POST
+      Specify 'post' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a GET to a POST.
+      If any other value is specified then requests will use GET.
     </st:attribute>
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
