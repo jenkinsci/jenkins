@@ -515,7 +515,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.25</version>
+      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
