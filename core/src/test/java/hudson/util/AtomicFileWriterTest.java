@@ -1,5 +1,6 @@
 package hudson.util;
 
+import hudson.Functions;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -75,6 +76,7 @@ public class AtomicFileWriterTest {
 
     @Test
     public void symlinkToDirectory() throws Exception {
+        assumeThat(Functions.isWindows(), is(false));
         final File folder = tmp.newFolder();
         final File containingSymlink = tmp.newFolder();
         final Path zeSymlink = Files.createSymbolicLink(Paths.get(containingSymlink.getAbsolutePath(), "ze_symlink"),
