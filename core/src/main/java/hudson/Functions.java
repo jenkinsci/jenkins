@@ -1772,6 +1772,7 @@ public class Functions {
     }
     /**
      * Gets only one {@link LoginPageDecorator}.
+     * @since FIXME
      */
     public static LoginPageDecorator getLoginPageDecorator() {
         return LoginPageDecorator.first();
