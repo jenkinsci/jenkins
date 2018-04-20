@@ -241,7 +241,7 @@ public abstract class ItemGroupMixIn {
         T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
-        Files.copy(srcConfigFile.getFile().toPath(), Items.getConfigFile(result).getFile().toPath(),
+        Files.copy(Util.fileToPath(srcConfigFile.getFile()), Util.fileToPath(Items.getConfigFile(result).getFile()),
                 StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
         // reload from the new config
