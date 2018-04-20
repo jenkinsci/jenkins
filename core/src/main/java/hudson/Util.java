@@ -377,7 +377,7 @@ public class Util {
      * @param dir
      * What to delete. If a directory, the contents will be deleted
      * too.
-     * @throws The first exception encountered.
+     * @throws IOException The first exception encountered.
      */
     private static void tryOnceDeleteRecursive(File dir) throws IOException {
         if(!isSymlink(dir))
@@ -392,7 +392,7 @@ public class Util {
      *
      * @param directory
      * The directory whose contents will be deleted.
-     * @throws The first exception encountered.
+     * @throws IOException The first exception encountered.
      */
     private static void tryOnceDeleteContentsRecursive(File directory) throws IOException {
         File[] directoryContents = directory.listFiles();
@@ -1176,14 +1176,14 @@ public class Util {
     }
 
     /**
-     * Copies a single file by using Ant.
+     * Copies a single file and preserves its attributes.
      *
      * @deprecated use {@link Files#copy(Path, Path, CopyOption...)}
      */
     @Deprecated
     public static void copyFile(@Nonnull File src, @Nonnull File dst) throws BuildException {
         try {
-            Files.copy(src.toPath(), dst.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(fileToPath(src), fileToPath(dst), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new BuildException(e);
         }

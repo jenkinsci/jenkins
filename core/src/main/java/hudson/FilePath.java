@@ -2259,8 +2259,9 @@ public final class FilePath implements Serializable {
                         public void visit(File f, String relativePath) throws IOException {
                             if (f.isFile()) {
                                 File target = new File(dest, relativePath);
-                                Files.createDirectories(target.getParentFile().toPath());
-                                Files.copy(f.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                                mkdirsE(target.getParentFile());
+                                Files.copy(fileToPath(f), fileToPath(writing(target)),
+                                        StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                                 count.incrementAndGet();
                             }
                         }
