@@ -211,7 +211,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Test
     public void fromPreviousCustomSetup() {
 
-        assumeFalse(Functions.isWindows()); // Default Windows lifecycle does not support restart.
+        assumeFalse("Default Windows lifecycle does not support restart.", Functions.isWindows());
 
         // check starting point and change config for next run
         final String newBuildsDirValueBySysprop = "/tmp/${ITEM_ROOTDIR}/bluh";
