@@ -117,7 +117,7 @@ public class IOUtils {
      * execute permissions for the owner, group, and others, i.e. the max return value
      * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
      * care about access permissions.
-     *
+     * <p>If the file is symlink, the mode is that of the link target, not the link itself.
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */

@@ -29,9 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -51,6 +53,7 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -213,7 +216,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String rest = _rest.toString();
 
         // this is the base file/directory
-        VirtualFile baseFile = root.child(base);
+        VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
 
         if(baseFile.isDirectory()) {
             if(zip) {
@@ -295,6 +298,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return;
         }
 
+        URL external = baseFile.toExternalURL();
+        if (external != null) {
+            // or this URL could be emitted directly from dir.jelly
+            // though we would prefer to delay toExternalURL calls unless and until needed
+            rsp.sendRedirect2(external.toExternalForm());
+            return;
+        }
+
         long lastModified = baseFile.lastModified();
         long length = baseFile.length();
 
@@ -355,7 +366,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
-            for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
+            // TODO consider using run(Callable) here
+            for (String n : dir.list(glob.isEmpty() ? "**" : glob, null, /* TODO what is the user expectation? */true)) {
                 String relativePath;
                 if (glob.length() == 0) {
                     // JENKINS-19947: traditional behavior is to prepend the directory name
@@ -535,10 +547,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param baseRef String like "../../../" that cancels the 'rest' portion. Can be "./"
      */
     private static List<List<Path>> patternScan(VirtualFile baseDir, String pattern, String baseRef) throws IOException {
-            String[] files = baseDir.list(pattern);
+            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true);
 
-            if (files.length > 0) {
-                List<List<Path>> r = new ArrayList<List<Path>>(files.length);
+            if (!files.isEmpty()) {
+                List<List<Path>> r = new ArrayList<List<Path>>(files.size());
                 for (String match : files) {
                     List<Path> file = buildPathList(baseDir, baseDir.child(match), baseRef);
                     r.add(file);
