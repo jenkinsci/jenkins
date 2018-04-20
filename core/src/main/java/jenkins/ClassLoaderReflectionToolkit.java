@@ -34,7 +34,7 @@ public class ClassLoaderReflectionToolkit {
             gCLL = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
             gCLL.setAccessible(true);
         } catch (NoSuchMethodException x) {
-            // OK, Java 6
+            throw new AssertionError(x);
         }
         GET_CLASS_LOADING_LOCK = gCLL;
     }
@@ -59,12 +59,7 @@ public class ClassLoaderReflectionToolkit {
     }
 
     private static Object getClassLoadingLock(ClassLoader cl, String name) {
-        if (GET_CLASS_LOADING_LOCK != null) {
-            return invoke(GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
-        } else {
-            // Java 6 expects you to always synchronize on this.
-            return cl;
-        }
+        return invoke(GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
     }
 
     /**

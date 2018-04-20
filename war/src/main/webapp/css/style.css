@@ -22,92 +22,6 @@
  * THE SOFTWARE.
  */
 
-/* General page layout */
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: white;
-  margin-right: auto;
-  margin-left: auto;
-}
-
-#header {
-  background-color: #000000;
-  height: 40px;
-}
-
-#header div {
-  display: inline-block;
-  height: inherit;
-}
-#header .logo {
-  margin-left: 16px;
-}
-
-#jenkins-home-link {
-  position: absolute;
-  height: 40px;
-}
-
-#jenkins-head-icon {
-  position: absolute;
-  bottom: 0px;
-}
-#jenkins-name-icon {
-  position: absolute;
-  bottom: 3px;
-  left: 32px;
-}
-
-#header .searchbox, #header .login {
-  float: right;
-  padding: 6px 11px;
-}
-
-#breadcrumbBar, #footer-container, .top-sticker-inner {
-  background-color: #f6faf2;
-}
-
-#side-panel {
-  padding: 15px 15px 80px 15px;
-  float: left;
-  width: 320px;
-}
-
-#main-panel {
-  padding: 15px 15px 80px 15px;
-  margin-left: 320px;
-}
-
-@media (max-width: 750px) {
-  #side-panel {
-    width: 100%;
-    float: none;
-    padding-bottom: 20px;
-  }
-
-  #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (min-width: 1170px) {
-  #side-panel {
-    width: 360px;
-  }
-
-  #main-panel {
-    margin-left: 360px;
-  }
-}
-
 /* task */
 
 #tasks {
@@ -147,34 +61,27 @@ body {
   margin-bottom: 20px;
 }
 
-/* footer */
-
-footer {
-  padding: 10px 0;
-  background-color: #f6faf2;
-  border-top: 1px solid #d3d7cf;
-  width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: 12px;
-  text-align: right;
-}
-
-footer span {
-  margin-left: 15px;
-  line-height: 14px;
-}
-
-
 /* Fonts etc */
 
 body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
@@ -371,7 +278,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;  
 }
 
 pre.console {
@@ -576,6 +483,9 @@ table.stripped-even tr:nth-child(even) {
 table.stripped-odd tr:nth-child(odd) {
   background: #fbfbfb;
 }
+table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+  background: #e8e8e8 !important;
+}
 
 div.pane-header {
   font-weight: bold;
@@ -583,7 +493,7 @@ div.pane-header {
 }
 
 div.pane-header .collapse {
-	float: right;
+  float: right;
   margin-left: 3px;
 }
 
@@ -719,11 +629,68 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 div.behavior-loading {
-    position: absolute; width: 80%; height:100%;
+    position: absolute;
+    left:0; right:0;
+    width:100%;
+    height:100%;
     background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
+}
+
+.config div.behavior-loading{
+    background: rgba(255,255,255,.85);
+    left: 0;
+    width:100%;
+    right: 0;
+    top: 15px;
+    bottom: 0px;
+    height: 100%;
+    width: auto;
+    min-height: 100%;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    font-size: 1.5em;
+    z-index: 99;
+    opacity: 1;
+    color: #999;
+    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+}
+
+.behavior-loading:before {
+  content:' ';
+  display:block;
+  width: 100px;
+  height: 100px;
+  margin: 200px auto 25px;
+  background-color: rgba(0,0,0,.15);
+  border:5px solid rgba(0,0,0,.33);
+  position:relative;
+  z-index:2;
+  border-radius: 100%;
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+  box-shadow:#fff 0 0 0 10px
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
 }
 
 LABEL.attach-previous {
@@ -788,6 +755,7 @@ LABEL.attach-previous {
     min-height: 16px;
     line-height: 16px;
     background-image: url( "../images/16x16/warning.png" );
+    background-size: 16px 16px;
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -1078,7 +1046,7 @@ table.parameters > tbody:hover {
   padding: 3px 4px 3px 4px;
 }
 
-.build-row:hover, .build-row.model-link-active {
+.build-row.model-link-active {
   background: #e8e8e8 !important;
 }
 
@@ -1140,14 +1108,25 @@ table.parameters > tbody:hover {
 }
 .build-row-cell .build-badge {
   display: inline-block;
-  padding: 2px;
-  width: 70%;
   text-align: right;
+  width: 70%;
+  padding: 2px 0;
 }
-.build-row-cell .build-badge span:after {
-    content: " ";
-    font-size: 0%;
+.build-row-cell .build-badge > span {
+  display: inline-block;
+  max-width: 256px;
+  padding: 0 1px;
+  overflow: hidden;
 }
+.build-row-cell .build-badge > span + span {
+  margin: 0 0 0 2px !important;
+}
+@media (min-width: 1170px) {
+  .build-row-cell .build-badge > span {
+    max-width: 296px;
+  }
+}
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
@@ -1206,8 +1185,8 @@ table.parameters > tbody:hover {
 .comboBoxList {
   border: 1px solid #000;
   overflow: visible;
-  color: MenuText;
-  background-color: Menu;
+  background-color: white;
+  color: black;
 }
 .comboBoxSelectedItem {
   background-color: Highlight;
@@ -1354,6 +1333,12 @@ TABLE.fingerprint-in-build TD {
   opacity: 0.2;
 }
 
+#plugins tr.has-dependants-but-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
 #plugins tr.has-disabled-dependency .enable input {
   opacity: 0.4;
 }
@@ -1425,7 +1410,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 2 deep == */
+/* == nested repeatable elements / 2 deep == */
 .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1435,7 +1420,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 3 deep == */
+/* == nested repeatable elements / 3 deep == */
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1446,7 +1431,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /*
-    <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly
+    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
@@ -1458,7 +1443,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-	color: inherit;
+  color: inherit;
 }
 
 DIV.yahooTree td {
@@ -1529,7 +1514,7 @@ DIV.yahooTree td {
 
 #search-box-completion .yui-ac-content {
   border: 1px solid black;
-  width:25em;
+  width:35em;
   background-color: white;
   overflow: hidden;
 }
@@ -1611,6 +1596,13 @@ TEXTAREA.rich-editor {
 }
 
 #plugins .compatWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
+#plugins .securityWarning {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
@@ -1706,7 +1698,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    // TODO does not work: font-size: 70%;
+    font-size: 70%;
 }
 
 .logrecord-metadata-new {
@@ -1719,38 +1711,52 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
-	border-collapse: collapse;
+  border: 1px #BBBBBB solid;
+  border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
-	font-weight: bold;
+  background: #f0f0f0;
+  font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  padding: 3px;
 }
 td#matrix-title {
-	padding: 3px;
+  padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
-	font-weight: bold;
-	background: #f0f0f0;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  font-weight: bold;
+  background: #f0f0f0;
+  padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
-	text-align: center;
+  border: 1px #BBBBBB solid;
+  text-align: center;
 }
 
 /* ========================= legend.jelly ================== */
 table#legend-table td {
-	vertical-align: middle;
+  vertical-align: middle;
+}
+
+/* ========================= select.jelly ================== */
+select.select-ajax-pending {
+  padding-left: 1.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: transparent;
+  background-image: url(../images/spinner.gif); /* this is why here and not in an adjunct */
+  background-repeat: no-repeat;
+  background-position: 2px;
 }
 
 /* ========================= Button styles ================= */
-
+.btn-box {
+  display:block; 
+  margin-top:2em
+}
 #disable-project {
     margin-top: 6px;
 }
@@ -1774,7 +1780,7 @@ table#legend-table td {
     border-style: none;
     border-color: transparent;
 }
-
+#jenkins .yui-button .btn,
 #jenkins .yui-button button {
   font-size: 12px;
   padding: 3px 20px;
@@ -1793,6 +1799,7 @@ table#legend-table td {
     padding-right: 35px;
 }
 
+#jenkins .yui-button .btn:hover,
 #jenkins .yui-button button:hover,
 #jenkins .yui-button .hover
 {
@@ -1800,6 +1807,7 @@ table#legend-table td {
     border: 1px solid #c0c0c0;
 }
 
+#jenkins .yui-button .btn:active,
 #jenkins .yui-button button:active,
 #jenkins .yui-button .active {
     background-color: #bbb;
@@ -1807,6 +1815,7 @@ table#legend-table td {
     border: 1px solid #bbb;
 }
 
+#jenkins .yui-button .btn.disabled,
 #jenkins .yui-button button[disabled],
 #jenkins .yui-button button[disabled]:hover,
 #jenkins .yui-button button[disabled]:active,
@@ -1817,19 +1826,20 @@ table#legend-table td {
 }
 
 /* Color overrides */
+#jenkins .yui-button.primary .btn,
 #jenkins .yui-button.primary button {
     background-color: #4b758b;
     color: #eee;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:hover,
 #jenkins .yui-button.primary button:hover,
 #jenkins .yui-button.primary .hover
 {
     background-color: #3f6275;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:active,
 #jenkins .yui-button.primary button:active,
 #jenkins .yui-button.primary .active
 {
@@ -1891,3 +1901,159 @@ table#legend-table td {
     background-color: #fcf8e3;
     border-color: #faebcc;
 }
+
+body.no-decoration #main-panel {
+    margin: 0 auto !important;
+}
+body.no-decoration #page-head,
+body.no-decoration #side-panel,
+body.no-decoration footer {
+    display: none;
+}
+body.no-sticker #bottom-sticker {
+    display: none;
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xlg {
+    width: 48px;
+    height: 48px;
+}
+
+/* ----------- Manage Jenkins ----------- */
+
+.manage-messages {
+    margin-bottom: 20px;
+}
+
+.manage-messages a, .manage-messages a:visited {
+    color: inherit !important;
+    text-decoration: none;
+}
+
+.manage-messages a:hover, .manage-messages a:focus {
+    text-decoration: underline;
+}
+
+.manage-messages dl:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt {
+    margin-top: 10px;
+    font-weight: normal;
+}
+
+.manage-messages dl dd {
+    margin-left: 15px;
+}
+
+.manage-messages dl:last-child {
+    margin-bottom: 0;
+}
+
+.manage-messages dl dt::after {
+    content: ": ";
+}
+
+.manage-messages .alert a {
+    text-decoration: underline;
+}
+
+.manage-messages .alert a:hover {
+    text-decoration: none;
+}
+
+.manage-messages .alert form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 0 !important;
+}
+
+.manage-messages .alert form span {
+    margin: 0 0 0 4px !important;
+}
+
+.manage-option {
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+}
+
+.manage-option:hover {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #fafafa;
+}
+
+.manage-option dl {
+    padding: 0;
+    margin: 0 0 0 62px;
+    min-height: 48px;
+}
+
+.manage-option dl dt {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.manage-option dl dd {
+    margin-left: 0;
+    line-height: 20px;
+    color: #333;
+    font-size: 14px;
+}
+
+.manage-option a {
+    display: block;
+    padding: 8px;
+    margin: 0;
+    text-decoration: none !important;
+    color: #000;
+    outline: 0;
+}
+
+.manage-option .icon {
+    display: block;
+    float: left;
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+/* -------------------------------------- */
+
+/* --------------- RSS bar -------------- */
+
+#rss-bar {
+    margin: 1em;
+    text-align: right;
+}
+
+#rss-bar .icon-rss {
+    border: 0;
+}
+
+#rss-bar .rss-bar-item {
+    padding-left: 1em;
+}
+
+/* -------------------------------------- */

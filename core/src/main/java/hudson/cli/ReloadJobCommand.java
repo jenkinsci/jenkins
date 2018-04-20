@@ -23,14 +23,14 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
-import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
-import hudson.model.ViewGroup;
-import hudson.model.View;
 
+import hudson.model.Items;
+import hudson.model.TopLevelItem;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -40,8 +40,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Reloads job from the disk.
  * @author pjanouse
- * @since TODO
+ * @since 1.633
  */
 @Extension
 public class ReloadJobCommand extends CLICommand {
@@ -61,12 +62,7 @@ public class ReloadJobCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getInstance();
-
-        if (jenkins == null) {
-            stderr.println("The Jenkins instance has not been started, or was already shut down!");
-            return -1;
-        }
+        final Jenkins jenkins = Jenkins.getActiveInstance();
 
         final HashSet<String> hs = new HashSet<String>();
         hs.addAll(jobs);
@@ -75,7 +71,6 @@ public class ReloadJobCommand extends CLICommand {
             AbstractItem job = null;
 
             try {
-                // TODO: JENKINS-30786
                 Item item = jenkins.getItemByFullName(job_s);
                 if (item instanceof AbstractItem) {
                     job = (AbstractItem) item;
@@ -84,37 +79,30 @@ public class ReloadJobCommand extends CLICommand {
                 }
 
                 if(job == null) {
-                    // TODO: JENKINS-30785
-                    AbstractProject project = AbstractProject.findNearest(job_s);
-                    if(project == null) {
-                        stderr.format("No such job \u2018%s\u2019 exists.\n", job_s);
-                    } else {
-                        stderr.format("No such job \u2018%s\u2019 exists. Perhaps you meant \u2018%s\u2019?", job_s, project.getFullName());
-                    }
-                    errorOccurred = true;
-                    continue;
+                    AbstractItem project = Items.findNearest(AbstractItem.class, job_s, jenkins);
+                    throw new IllegalArgumentException(project == null ?
+                        "No such item \u2018" + job_s + "\u2019 exists." :
+                        String.format("No such item \u2018%s\u2019 exists. Perhaps you meant \u2018%s\u2019?",
+                                job_s, project.getFullName()));
                 }
 
-                try {
-                    job.checkPermission(AbstractItem.CONFIGURE);
-                } catch (Exception e) {
-                    stderr.println(e.getMessage());
-                    errorOccurred = true;
-                    continue;
-                }
-
+                job.checkPermission(AbstractItem.CONFIGURE);
                 job.doReload();
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during reloading of job '%s': %s",
-                        job == null ? "(null)" : job.getFullName(),
-                        e.getMessage());
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = String.format(job_s + ": " + e.getMessage());
                 stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
                 errorOccurred = true;
-                //noinspection UnnecessaryContinue
                 continue;
             }
         }
-        return errorOccurred ? 1 : 0;
+
+        if (errorOccurred) {
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
+        }
+        return 0;
     }
 }

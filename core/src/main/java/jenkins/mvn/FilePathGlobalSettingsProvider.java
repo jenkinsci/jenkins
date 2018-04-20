@@ -9,7 +9,6 @@ import hudson.model.TaskListener;
 import hudson.util.IOUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;

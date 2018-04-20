@@ -1,6 +1,7 @@
 package jenkins.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -24,6 +25,6 @@ public class JenkinsLocationConfigurationTest {
         HtmlPage p = j.createWebClient().goTo("configure");
         HtmlInput url = p.getFormByName("config").getInputByName("_.url");
         url.setValueAttribute("http://localhost:1234/");
-        assertTrue(p.getDocumentElement().getTextContent().contains("instead of localhost"));
+        assertThat(p.getDocumentElement().getTextContent(), containsString("instead of localhost"));
     }
 }

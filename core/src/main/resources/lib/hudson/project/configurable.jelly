@@ -39,10 +39,10 @@ THE SOFTWARE.
     <l:task confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}" href="${url}/doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" post="true" requiresConfirmation="true" title="${%delete(it.pronoun)}"/>
     <j:choose>
         <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-            <l:task href="${url}/configure" icon="icon-setting icon-md" title="${%Configure}"/>
+            <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%Configure}"/>
         </j:when>
         <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-            <l:task href="${url}/configure" icon="icon-setting icon-md" title="${%View Configuration}"/>
+            <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%View Configuration}"/>
         </j:when>
     </j:choose>
 </j:jelly>

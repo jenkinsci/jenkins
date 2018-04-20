@@ -10,12 +10,14 @@ import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.util.DescriptorList;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Collection;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 
@@ -140,7 +142,7 @@ public class ExtensionListTest {
         assertEquals(3,list.size());
         assertNotNull(list.get(Sishamo.DescriptorImpl.class));
 
-        // all 3 should be visisble from LIST, too
+        // all 3 should be visible from LIST, too
         assertEquals(3,LIST.size());
         assertNotNull(LIST.findByName(Tai.class.getName()));
         assertNotNull(LIST.findByName(Sishamo.class.getName()));
@@ -204,4 +206,15 @@ public class ExtensionListTest {
         assertEquals("mazda",list.get(1).name);
         assertEquals("toyota",list.get(2).name);
     }
+
+    @Issue("JENKINS-39520")
+    @Test
+    public void removeAll() {
+        ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
+        assertTrue(list.removeAll(new ArrayList<>(list)));
+        assertEquals(0, list.size());
+        assertFalse(list.removeAll(new ArrayList<>(list)));
+        assertEquals(0, list.size());
+    }
+
 }

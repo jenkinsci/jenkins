@@ -3,6 +3,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.MarkupText.SubText;
+import org.jenkinsci.Symbol;
 
 import java.util.regex.Pattern;
 
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("url")
 public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
     @Override
     public ConsoleAnnotator newInstance(Object context) {

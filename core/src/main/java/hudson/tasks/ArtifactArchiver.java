@@ -23,11 +23,15 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -38,6 +42,7 @@ import hudson.util.FormValidation;
 import java.io.File;
 
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
@@ -48,6 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
@@ -74,7 +80,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Possibly null 'excludes' pattern as in Ant.
      */
-    private String excludes = "";
+    private String excludes;
 
     @Deprecated
     private Boolean latestOnly;
@@ -135,9 +141,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     // Backwards compatibility for older builds
-    public Object readResolve() {
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
+    protected Object readResolve() {
         if (allowEmptyArchive == null) {
-            this.allowEmptyArchive = Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+            this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
         }
         if (defaultExcludes == null){
             defaultExcludes = true;
@@ -152,11 +160,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return artifacts;
     }
 
-    public String getExcludes() {
+    public @CheckForNull String getExcludes() {
         return excludes;
     }
 
-    @DataBoundSetter public final void setExcludes(String excludes) {
+    @DataBoundSetter public final void setExcludes(@CheckForNull String excludes) {
         this.excludes = Util.fixEmptyAndTrim(excludes);
     }
 
@@ -206,23 +214,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
-    private void listenerWarnOrError(TaskListener listener, String message) {
-    	if (allowEmptyArchive) {
-    		listener.getLogger().println(String.format("WARN: %s", message));
-    	} else {
-    		listener.error(message);
-    	}
-    }
-
     @Override
-    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if(artifacts.length()==0) {
-            listener.error(Messages.ArtifactArchiver_NoIncludes());
-            build.setResult(Result.FAILURE);
-            return;
+            throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
 
-        if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
+        Result result = build.getResult();
+        if (onlyIfSuccessful && result != null && result.isWorseThan(Result.UNSTABLE)) {
             listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return;
         }
@@ -238,31 +237,31 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }
             } else {
-                Result result = build.getResult();
-                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
-                    // If the build failed, don't complain that there was no matching artifact.
-                    // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                    String msg = null;
+                result = build.getResult();
+                if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     try {
-                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                    	String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                        if (msg != null) {
+                            listener.getLogger().println(msg);
+                        }
                     } catch (Exception e) {
-                    	listenerWarnOrError(listener, e.getMessage());
+                        Functions.printStackTrace(e, listener.getLogger());
                     }
-                    if(msg!=null)
-                        listenerWarnOrError(listener, msg);
+                    if (allowEmptyArchive) {
+                        listener.getLogger().println(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    } else {
+                        throw new AbortException(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    }
+                } else {
+                    // If a freestyle build failed, do not complain that there was no matching artifact:
+                    // the build probably did not even get to the point where it produces artifacts.
+                    // For Pipeline, the program ought not be *trying* to archive anything after a failure,
+                    // but anyway most likely result == null above so we would not be here.
                 }
-                if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
-                }
-                return;
             }
-        } catch (IOException e) {
-            Util.displayIOException(e,listener);
-            e.printStackTrace(listener.error(
-                    Messages.ArtifactArchiver_FailedToArchive(artifacts)));
-            build.setResult(Result.FAILURE);
-            return;
+        } catch (java.nio.file.AccessDeniedException e) {
+            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
+            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         }
     }
 
@@ -306,7 +305,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Deprecated
     public static volatile DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("archiveArtifacts")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             DESCRIPTOR = this; // backward compatibility
@@ -345,7 +344,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

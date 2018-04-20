@@ -7,7 +7,6 @@ package hudson.security.csrf;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

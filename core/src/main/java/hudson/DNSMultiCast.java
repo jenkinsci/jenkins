@@ -1,5 +1,6 @@
 package hudson;
 
+import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
 
@@ -66,7 +67,8 @@ public class DNSMultiCast implements Closeable {
                     jmdns.registerService(ServiceInfo.create("_http._tcp.local.","Jenkins",
                             jenkins_port,0,0,props));
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING,"Failed to advertise the service to DNS multi-cast",e);
+                    LOGGER.log(Level.INFO, "Cannot advertise service to DNS multi-cast, skipping: {0}", e);
+                    LOGGER.log(Level.FINE, null, e);
                 }
                 return null;
             }
@@ -86,5 +88,5 @@ public class DNSMultiCast implements Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
-    public static boolean disabled = Boolean.getBoolean(DNSMultiCast.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled");
 }

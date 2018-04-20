@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +164,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Does case-insensitive comparison.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int compareTo(VirtualFile o) {
         return getName().compareToIgnoreCase(o.getName());
@@ -170,7 +172,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Compares according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final boolean equals(Object obj) {
         return obj instanceof VirtualFile && toURI().equals(((VirtualFile) obj).toURI());
@@ -178,7 +180,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Hashes according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int hashCode() {
         return toURI().hashCode();
@@ -186,7 +188,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Displays {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final String toString() {
         return toURI().toString();
@@ -197,7 +199,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * For a remote file, this can be much faster than doing the corresponding operations one by one as separate requests.
      * The default implementation just calls the block directly.
      * @param <V> a value type
-     * @param <T> the exception type
      * @param callable something to run all at once (only helpful if any mentioned files are on the same system)
      * @return the callable result
      * @throws IOException if remote communication failed
@@ -294,7 +295,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 if (isIllegalSymlink()) {
                     throw new FileNotFoundException(f.getPath());
                 }
-                return new FileInputStream(f);
+                try {
+                    return Files.newInputStream(f.toPath());
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
+                }
             }
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {
@@ -305,6 +310,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
+            } catch (InvalidPathException x2) {
+                // if this cannot be converted to a path, it cannot be an illegal symlink, as it cannot exist
+                Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "Could not convert " + f + " to path", x2);
             }
             return false;
         }
@@ -357,9 +365,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public VirtualFile[] list() throws IOException {
                 try {
                     List<FilePath> kids = f.list();
-                    if (kids == null) {
-                        return new VirtualFile[0];
-                    }
                     VirtualFile[] vfs = new VirtualFile[kids.size()];
                     for (int i = 0; i < vfs.length; i++) {
                         vfs[i] = forFilePath(kids.get(i));

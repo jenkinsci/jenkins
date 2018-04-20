@@ -1,6 +1,7 @@
 package jenkins.management;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.TaskListener;
@@ -8,7 +9,6 @@ import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import jenkins.security.RekeySecretAdminMonitor;
-import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -126,7 +126,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
             } catch (AbortException e) {
                 listener.error(e.getMessage());
             } catch (Throwable e) {
-                e.printStackTrace(listener.error(getName() + " failed"));
+                Functions.printStackTrace(e, listener.error(getName() + " failed"));
                 LOGGER.log(Level.WARNING, getName() + " failed", e);
             }
         }

@@ -42,7 +42,7 @@ public class GroovyshCommandTest {
     @Test public void authentication() throws Exception {
         CLICommandInvoker.Result result = new CLICommandInvoker(r, new GroovyshCommand())
             .authorizedTo(Jenkins.READ, Jenkins.RUN_SCRIPTS)
-            .withStdin(new StringInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\nquit\n"))
+            .withStdin(new StringInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\n:quit\n"))
             .invoke();
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());

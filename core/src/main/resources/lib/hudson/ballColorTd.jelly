@@ -44,8 +44,15 @@ THE SOFTWARE.
         <j:set var="iconClassName" value="${icons.toNormalizedIconNameClass(it.image)}"/>
       </j:if>
       <!-- convert legacy @iconSize specification to @iconSizeClass -->
-      <j:if test="${iconSizeClass==null and attrs.iconSize!=null}">
-        <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
+      <j:if test="${iconSizeClass==null}">
+        <j:choose>
+          <j:when test="${attrs.iconSize!=null}">
+            <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
+          </j:when>
+          <j:when test="${iconSize!=null}">
+            <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}" />
+          </j:when>
+        </j:choose>
       </j:if>
 
       <j:choose>
@@ -71,7 +78,7 @@ THE SOFTWARE.
             <j:otherwise>
               <!-- We don't seem to have this icon in the IconSet... fallback again... -->
               <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-              <l:icon src="${iconUrl}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
+              <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
             </j:otherwise>
           </j:choose>
         </j:otherwise>

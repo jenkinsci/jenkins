@@ -24,8 +24,6 @@
 package hudson.security;
 
 import hudson.Functions;
-import jenkins.model.Jenkins;
-import hudson.TcpSlaveAgentListener;
 
 import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;

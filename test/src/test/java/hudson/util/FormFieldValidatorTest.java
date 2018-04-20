@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.WebResponseListener;
 import hudson.model.FreeStyleProject;

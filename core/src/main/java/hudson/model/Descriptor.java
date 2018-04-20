@@ -36,7 +36,10 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
@@ -72,8 +75,10 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import java.util.IdentityHashMap;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Metadata about a configurable instance.
@@ -122,7 +127,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable {
+public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -196,11 +201,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         public Descriptor getItemTypeDescriptorOrDie() {
             Class it = getItemType();
             if (it == null) {
-                throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://wiki.jenkins-ci.org/display/JENKINS/My+class+is+missing+descriptor");
+                throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
             }
             Descriptor d = Jenkins.getInstance().getDescriptor(it);
             if (d==null)
-                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://wiki.jenkins-ci.org/display/JENKINS/My+class+is+missing+descriptor");
+                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
             return d;
         }
 
@@ -452,7 +457,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
+     * Used by Jelly to abstract away the handling of global.jelly vs config.jelly databinding difference.
      */
     public @CheckForNull PropertyType getPropertyType(@Nonnull Object instance, @Nonnull String field) {
         // in global.jelly, instance==descriptor
@@ -559,7 +564,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+    public T newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -574,17 +579,104 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 }
 
                 // new behavior as of 1.206
-                return verifyNewInstance(req.bindJSON(clazz,formData));
+                BindInterceptor oldInterceptor = req.getBindInterceptor();
+                try {
+                    NewInstanceBindInterceptor interceptor;
+                    if (oldInterceptor instanceof NewInstanceBindInterceptor) {
+                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+                    } else {
+                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                        req.setBindInterceptor(interceptor);
+                    }
+                    interceptor.processed.put(formData, true);
+                    return verifyNewInstance(req.bindJSON(clazz, formData));
+                } finally {
+                    req.setBindInterceptor(oldInterceptor);
+                }
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
             throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (IllegalAccessException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
+    }
+
+    /**
+     * Ensures that calls to {@link StaplerRequest#bindJSON(Class, JSONObject)} from {@link #newInstance(StaplerRequest, JSONObject)} recurse properly.
+     * {@code doConfigSubmit}-like methods will wind up calling {@code newInstance} directly
+     * or via {@link #newInstancesFromHeteroList(StaplerRequest, Object, Collection)},
+     * which consult any custom {@code newInstance} overrides for top-level {@link Describable} objects.
+     * But for nested describable objects Stapler would know nothing about {@code newInstance} without this trick.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static class NewInstanceBindInterceptor extends BindInterceptor {
+
+        private final BindInterceptor oldInterceptor;
+        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
+
+        NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
+            LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
+            this.oldInterceptor = oldInterceptor;
+        }
+
+        private boolean isApplicable(Class type, JSONObject json) {
+            if (Modifier.isAbstract(type.getModifiers())) {
+                LOGGER.log(Level.FINER, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (!Describable.class.isAssignableFrom(type)) {
+                LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (Boolean.TRUE.equals(processed.put(json, true))) {
+                LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public Object instantiate(Class actualType, JSONObject json) {
+            if (isApplicable(actualType, json)) {
+                LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
+                try {
+                    final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
+                    if (descriptor != null) {
+                        return descriptor.newInstance(Stapler.getCurrentRequest(), json);
+                    } else {
+                        LOGGER.log(Level.WARNING, "Descriptor not found. Falling back to default instantiation "
+                                + actualType.getName() + " " + json);
+                    }
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
+                    // so logging above will result in a duplicated stack trace.
+                    // However if they *are* then this is the only way to find errors in that newInstance.
+                    // Normally oldInterceptor.instantiate will just return DEFAULT, not actually do anything,
+                    // so we cannot try calling the default instantiation and then decide which problem to report.
+                }
+            }
+            return oldInterceptor.instantiate(actualType, json);
+        }
+
+        @Override
+        public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
+            if (jsonSource instanceof JSONObject) {
+                JSONObject json = (JSONObject) jsonSource;
+                if (isApplicable(targetTypeErasure, json)) {
+                    LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
+                    try {
+                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
+                    }
+                }
+            } else {
+                LOGGER.log(Level.FINER, "ignoring non-object {0}", jsonSource);
+            }
+            return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
+        }
+
     }
 
     /**
@@ -701,7 +793,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Invoked when the global configuration page is submitted.
      *
-     * Can be overriden to store descriptor-specific information.
+     * Can be overridden to store descriptor-specific information.
      *
      * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
@@ -721,7 +813,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public String getGlobalConfigPage() {
         return getViewPage(clazz, getPossibleViewNames("global"), null);
     }
-    
+
+    /**
+     * Define the global configuration category the global config of this Descriptor is in.
+     *
+     * @return never null, always the same value for a given instance of {@link Descriptor}.
+     *
+     * @since 2.0, used to be in {@link GlobalConfiguration} before that.
+     */
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
+    }
+
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
@@ -835,12 +938,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(url!=null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
-                InputStream in = url.openStream();
-                try {
+                try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in,"UTF-8");
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
                 return;
             }
@@ -884,13 +984,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
-            m.put(d.getDescriptor(),d);
+            Descriptor<T> descriptor;
+            try {
+                descriptor = d.getDescriptor();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                continue;
+            }
+            m.put(descriptor, d);
         }
         return m;
     }
 
     /**
-     * Used to build {@link Describable} instance list from &lt;f:hetero-list> tag.
+     * Used to build {@link Describable} instance list from {@code <f:hetero-list>} tag.
      *
      * @param req
      *      Request that represents the form submission.
@@ -1043,7 +1150,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.
-                new Failure(getMessage()).generateResponse(req,rsp,node);
+                new Failure(getMessage()).generateResponse(req,rsp,node,getCause());
             }
         }
     }

@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="Remote API">
-		<l:main-panel>
+  <l:layout title="Remote API" type="one-column">
+    <l:main-panel>
       <h1>REST API</h1>
 
       <p>
@@ -100,7 +100,7 @@ THE SOFTWARE.
 
       <p>
         For more information about remote API in Jenkins, see
-        <a href="http://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API">the documentation</a>.
+        <a href="https://jenkins.io/redirect/remote-api">the documentation</a>.
       </p>
 
       <h2>Controlling the amount of data you fetch</h2>
@@ -151,5 +151,5 @@ THE SOFTWARE.
 
       <st:include it="${it.bean}" page="_api.jelly" optional="true" />
     </l:main-panel>
-	</l:layout>
+  </l:layout>
 </j:jelly>

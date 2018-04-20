@@ -50,7 +50,7 @@ public class ListJobsCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         final Collection<TopLevelItem> jobs;
 
         // If name is given retrieve jobs for the given view.
@@ -66,12 +66,11 @@ public class ListJobsCommand extends CLICommand {
 
                 // If item group was found use it's jobs.
                 if (item instanceof ModifiableTopLevelItemGroup) {
-                    jobs = Items.getAllItems((ModifiableTopLevelItemGroup) item, TopLevelItem.class);
+                    jobs = ((ModifiableTopLevelItemGroup) item).getAllItems(TopLevelItem.class);
                 }
                 // No view and no item group with the given name found.
                 else {
-                    stderr.println("No view or item group with the given name found");
-                    return -1;
+                    throw new IllegalArgumentException("No view or item group with the given name '" + name + "' found.");
                 }
             }
         }

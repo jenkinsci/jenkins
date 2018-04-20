@@ -32,19 +32,26 @@ import hudson.EnvVars;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
-import hudson.tools.JDKInstaller;
 import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Information about JDK installation.
@@ -54,10 +61,19 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
 
     /**
-     * Name of the “default JDK”, meaning no specific JDK selected.
+     * Name of the “System JDK”, which is just the JDK on Jenkins' $PATH.
      * @since 1.577
      */
-    public static final String DEFAULT_NAME = "(Default)";
+    public static final String DEFAULT_NAME = "(System)";
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isDefaultName(String name) {
+        if ("(Default)".equals(name)) {
+            // DEFAULT_NAME took this value prior to 1.598.
+            return true;
+        }
+        return DEFAULT_NAME.equals(name) || name == null;
+    }
 
     /**
      * @deprecated since 2009-02-25
@@ -155,7 +171,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
     }
 
-    @Extension
+    @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
@@ -171,8 +187,18 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
 
         @Override
-        public List<JDKInstaller> getDefaultInstallers() {
-            return Collections.singletonList(new JDKInstaller(null,false));
+        public List<? extends ToolInstaller> getDefaultInstallers() {
+            try {
+                Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.getInstance().getPluginManager()
+                        .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
+                Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
+                return Collections.singletonList(constructor.newInstance(null, false));
+            } catch (ClassNotFoundException e) {
+                return Collections.emptyList();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to get default installer", e);
+                return Collections.emptyList();
+            }
         }
 
         /**
@@ -199,4 +225,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return ((JDK)obj).javaHome;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(JDK.class.getName());
 }

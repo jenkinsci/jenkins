@@ -30,7 +30,6 @@ import jenkins.ExtensionComponentSet;
 import jenkins.model.Jenkins;
 import hudson.util.AdaptedIterator;
 import hudson.util.DescriptorList;
-import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 
@@ -40,12 +39,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.util.io.OnMaster;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -68,7 +70,7 @@ import javax.annotation.Nonnull;
  * @see jenkins.model.Jenkins#getExtensionList(Class)
  * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
-public class ExtensionList<T> extends AbstractList<T> {
+public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
      * @deprecated as of 1.417
      *      Use {@link #jenkins}
@@ -198,6 +200,21 @@ public class ExtensionList<T> extends AbstractList<T> {
             return removeSync(o);
         } finally {
             if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean removed = false;
+        try {
+            for (Object o : c) {
+                removed |= removeSync(o);
+            }
+            return removed;
+        } finally {
+            if (extensions != null && removed) {
                 fireOnChangeListeners();
             }
         }
@@ -379,36 +396,53 @@ public class ExtensionList<T> extends AbstractList<T> {
         return create((Jenkins)hudson,type);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> ExtensionList<T> create(Jenkins jenkins, Class<T> type) {
         if(type.getAnnotation(LegacyInstancesAreScopedToHudson.class)!=null)
             return new ExtensionList<T>(jenkins,type);
         else {
-            return new ExtensionList<T>(jenkins,type,staticLegacyInstances.get(type));
+            return new ExtensionList(jenkins, type, staticLegacyInstances.computeIfAbsent(type, key -> new CopyOnWriteArrayList()));
         }
     }
 
     /**
      * Gets the extension list for a given type.
      * Normally calls {@link Jenkins#getExtensionList(Class)} but falls back to an empty list
-     * in case {@link Jenkins#getInstance} is null.
+     * in case {@link Jenkins#getInstanceOrNull()} is null.
      * Thus it is useful to call from {@code all()} methods which need to behave gracefully during startup or shutdown.
      * @param type the extension point type
      * @return some list
      * @since 1.572
      */
     public static @Nonnull <T> ExtensionList<T> lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j == null ? create((Jenkins) null, type) : j.getExtensionList(type);
+    }
+
+    /**
+     * Convenience method allowing lookup of the only instance of a given type.
+     * Equivalent to {@code ExtensionList.lookup(Class).get(Class)} if there is one instance,
+     * and throws an {@code IllegalStateException} otherwise.
+     *
+     * @param type The type to look up.
+     * @return the singleton instance of the given type in its list.
+     * @throws IllegalStateException if there are no instances, or more than one
+     *
+     * @since 2.87
+     */
+    public static @Nonnull <U> U lookupSingleton(Class<U> type) {
+        ExtensionList<U> all = lookup(type);
+        if (all.size() != 1) {
+            throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
+        }
+        return all.get(0);
     }
 
     /**
      * Places to store static-scope legacy instances.
      */
-    private static final Memoizer<Class,CopyOnWriteArrayList> staticLegacyInstances = new Memoizer<Class,CopyOnWriteArrayList>() {
-        public CopyOnWriteArrayList compute(Class key) {
-            return new CopyOnWriteArrayList();
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private static final Map<Class, CopyOnWriteArrayList> staticLegacyInstances = new ConcurrentHashMap<>();
 
     /**
      * Exposed for the test harness to clear all legacy extension instances.

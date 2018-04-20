@@ -24,14 +24,15 @@
 package hudson.diagnosis;
 
 import hudson.model.AdministrativeMonitor;
-import jenkins.model.Jenkins;
 import hudson.model.AbstractModelObject;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("diskUsageCheck")
 public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     /**
      * Value updated by {@link HudsonHomeDiskUsageChecker}.
@@ -64,6 +65,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if(no!=null) {
             disable(true);

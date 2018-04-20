@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
-import jenkins.model.Jenkins;
 
 public abstract class WorkspaceListener implements ExtensionPoint {
     

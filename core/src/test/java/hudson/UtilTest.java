@@ -36,11 +36,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
@@ -259,6 +266,19 @@ public class UtilTest {
     }
 
     @Test
+    public void testIsSymlink_onWindows_junction() throws Exception {
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        tmp.newFolder("targetDir");
+        File d = tmp.newFolder("dir");
+        Process p = new ProcessBuilder()
+                .directory(d)
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
+        assertTrue(Util.isSymlink(new File(d, "junction")));
+    }
+
+    @Test
     public void testDeleteFile() throws Exception {
         File f = tmp.newFile();
         // Test: File is deleted
@@ -270,25 +290,101 @@ public class UtilTest {
     @Test
     public void testDeleteFile_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
-        Class<?> c;
-        try {
-            c = Class.forName("java.nio.file.FileSystemException");
-        } catch (ClassNotFoundException x) {
-            throw new AssumptionViolatedException("prior to JDK 7", x);
-        }
+        final int defaultDeletionMax = Util.DELETION_MAX;
         try {
             File f = tmp.newFile();
             // Test: If we cannot delete a file, we throw explaining why
             mkfiles(f);
             lockFileForDeletion(f);
+            Util.DELETION_MAX = 1;
             try {
                 Util.deleteFile(f);
                 fail("should not have been deletable");
             } catch (IOException x) {
-                assertThat(calcExceptionHierarchy(x), hasItem(c));
+                assertThat(calcExceptionHierarchy(x), hasItem(FileSystemException.class));
                 assertThat(x.getMessage(), containsString(f.getPath()));
             }
         } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            unlockFilesForDeletion();
+        }
+    }
+
+    @Test
+    public void testDeleteFileReadOnly() throws Exception {
+        // Removing the calls to Util#makeWritable in Util#tryOnceDeleteFile should cause this test to fail.
+        Path file = tmp.newFolder().toPath().resolve("file.tmp");
+        Files.createDirectories(file.getParent());
+        Files.createFile(file);
+        // Using old IO so the test can run on Windows.
+        file.getParent().toFile().setWritable(false);
+        file.toFile().setWritable(false);
+        Util.deleteFile(file.toFile());
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    public void testDeleteFileDoesNotExist() throws Exception {
+        Path file = tmp.newFolder().toPath().resolve("file.tmp");
+        assertFalse(Files.exists(file));
+        // Should not throw an exception.
+        Util.deleteFile(file.toFile());
+    }
+
+    @Test
+    public void testDeleteContentsRecursive() throws Exception {
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        // Test: Files and directories are deleted
+        mkdirs(dir, d1, d2);
+        mkfiles(f1, d1f1, d2f2);
+        Util.deleteContentsRecursive(dir);
+        assertTrue("dir exists", dir.exists());
+        assertFalse("d1 exists", d1.exists());
+        assertFalse("d2 exists", d2.exists());
+        assertFalse("f1 exists", f1.exists());
+    }
+
+    @Test
+    public void testDeleteContentsRecursive_onWindows() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        final int defaultDeletionMax = Util.DELETION_MAX;
+        final int defaultDeletionWait = Util.WAIT_BETWEEN_DELETION_RETRIES;
+        final boolean defaultDeletionGC = Util.GC_AFTER_FAILED_DELETE;
+        try {
+            // Test: If we cannot delete a file, we throw
+            // but still deletes everything it can
+            // even if we are not retrying deletes.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d1f1);
+            Util.GC_AFTER_FAILED_DELETE = false;
+            Util.DELETION_MAX = 2;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 0;
+            try {
+                Util.deleteContentsRecursive(dir);
+                fail("Expected IOException");
+            } catch (IOException x) {
+                assertFalse("d2 should not exist", d2.exists());
+                assertFalse("f1 should not exist", f1.exists());
+                assertFalse("d1f2 should not exist", d2f2.exists());
+                assertThat(x.getMessage(), containsString(dir.getPath()));
+                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), containsString("Tried 2 times (of a maximum of 2)."), not(containsString("garbage-collecting")), not(containsString("wait"))));
+            }
+        } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = defaultDeletionWait;
+            Util.GC_AFTER_FAILED_DELETE = defaultDeletionGC;
             unlockFilesForDeletion();
         }
     }
@@ -317,21 +413,87 @@ public class UtilTest {
         final File f1 = new File(dir, "f1");
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
+        final int defaultDeletionMax = Util.DELETION_MAX;
+        final int defaultDeletionWait = Util.WAIT_BETWEEN_DELETION_RETRIES;
+        final boolean defaultDeletionGC = Util.GC_AFTER_FAILED_DELETE;
         try {
             // Test: If we cannot delete a file, we throw
+            // but still deletes everything it can
+            // even if we are not retrying deletes.
+        	// (And when we are not retrying deletes,
+        	// we do not do the "between retries" delay)
             mkdirs(dir, d1, d2);
             mkfiles(f1, d1f1, d2f2);
             lockFileForDeletion(d1f1);
+            Util.GC_AFTER_FAILED_DELETE = false;
+            Util.DELETION_MAX = 1;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 10000; // long enough to notice
+            long timeWhenDeletionStarted = System.currentTimeMillis();
             try {
                 Util.deleteRecursive(dir);
                 fail("Expected IOException");
             } catch (IOException x) {
+                long timeWhenDeletionEnded = System.currentTimeMillis();
                 assertTrue("dir exists", dir.exists());
                 assertTrue("d1 exists", d1.exists());
                 assertTrue("d1f1 exists", d1f1.exists());
+                assertFalse("d2 should not exist", d2.exists());
+                assertFalse("f1 should not exist", f1.exists());
+                assertFalse("d1f2 should not exist", d2f2.exists());
                 assertThat(x.getMessage(), containsString(dir.getPath()));
+                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), not(containsString("maximum of")), not(containsString("garbage-collecting"))));
+                long actualTimeSpentDeleting = timeWhenDeletionEnded - timeWhenDeletionStarted;
+                assertTrue("did not wait - took " + actualTimeSpentDeleting + "ms", actualTimeSpentDeleting<1000L);
             }
+            unlockFileForDeletion(d1f1);
+            // Deletes get retried if they fail 1st time around,
+            // allowing the operation to succeed on subsequent attempts.
+            // Note: This is what bug JENKINS-15331 is all about.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d2f2);
+            Util.DELETION_MAX=4;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 100;
+            Thread unlockAfterDelay = new Thread("unlockFileAfterDelay") {
+                public void run() {
+                    try {
+                        Thread.sleep(Util.WAIT_BETWEEN_DELETION_RETRIES);
+                        unlockFileForDeletion(d2f2);
+                    } catch( Exception x ) { /* ignored */ }
+                }
+            };
+            unlockAfterDelay.start();
+            Util.deleteRecursive(dir);
+            assertFalse("dir should have been deleted", dir.exists());
+            unlockAfterDelay.join();
+            // An interrupt aborts the delete and makes it fail, even
+            // if we had been told to retry a lot.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d1f1);
+            Util.DELETION_MAX=10;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = -1000;
+            Util.GC_AFTER_FAILED_DELETE = true;
+            final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+            Thread deleteToBeInterrupted = new Thread("deleteToBeInterrupted") {
+                public void run() {
+                    try { Util.deleteRecursive(dir); }
+                    catch( Throwable x ) { thrown.set(x); }
+                }
+            };
+            deleteToBeInterrupted.start();
+            deleteToBeInterrupted.interrupt();
+            deleteToBeInterrupted.join(500);
+            assertFalse("deletion stopped", deleteToBeInterrupted.isAlive());
+            assertTrue("d1f1 still exists", d1f1.exists());
+            unlockFileForDeletion(d1f1);
+            Throwable deletionInterruptedEx = thrown.get();
+            assertThat(deletionInterruptedEx, instanceOf(IOException.class));
+            assertThat(deletionInterruptedEx.getMessage(), allOf(containsString("interrupted"), containsString("maximum of " + Util.DELETION_MAX), containsString("garbage-collecting")));
         } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = defaultDeletionWait;
+            Util.GC_AFTER_FAILED_DELETE = defaultDeletionGC;
             unlockFilesForDeletion();
         }
     }
@@ -360,9 +522,13 @@ public class UtilTest {
         // On unix, can't use "chmod a-w" on the dir as the code-under-test undoes that.
         // On unix, can't use "chattr +i" because that needs root.
         // On unix, can't use "chattr +u" because ext fs ignores it.
+        // On Windows, can't use FileChannel.lock() because that doesn't block deletion
         // On Windows, we can't delete files that are open for reading, so we use that.
+        // NOTE: This is a hack in any case as there is no guarantee that all Windows filesystems
+        // will enforce blocking deletion on open files... just that the ones we normally
+        // test with seem to block.
         assert Functions.isWindows();
-        final InputStream s = new FileInputStream(f);
+        final InputStream s = new FileInputStream(f); // intentional use of FileInputStream
         unlockFileCallables.put(f, new Callable<Void>() {
             public Void call() throws IOException { s.close(); return null; };
         });
@@ -460,6 +626,26 @@ public class UtilTest {
     }
 
     @Test
+    @Issue("SECURITY-276")
+    public void testIsSafeToRedirectTo() {
+        assertFalse(Util.isSafeToRedirectTo("http://foobar/"));
+        assertFalse(Util.isSafeToRedirectTo("mailto:kk@kohsuke.org"));
+        assertFalse(Util.isSafeToRedirectTo("d123://test/"));
+        assertFalse(Util.isSafeToRedirectTo("//google.com"));
+
+        assertTrue(Util.isSafeToRedirectTo("foo/bar/abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo?abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo#abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo/bar"));
+        assertTrue(Util.isSafeToRedirectTo("/"));
+        assertTrue(Util.isSafeToRedirectTo("/foo"));
+        assertTrue(Util.isSafeToRedirectTo(".."));
+        assertTrue(Util.isSafeToRedirectTo("../.."));
+        assertTrue(Util.isSafeToRedirectTo("/#foo"));
+        assertTrue(Util.isSafeToRedirectTo("/?foo"));
+    }
+
+    @Test
     public void loadProperties() throws IOException {
 
         assertEquals(0, Util.loadProperties("").size());
@@ -518,6 +704,81 @@ public class UtilTest {
         public void describeTo(Description description) {
             description.appendText("a relative path");
         }
+    }
+
+    @Test
+    public void testIsDescendant() throws IOException {
+        File root;
+        File other;
+        if (Functions.isWindows()) {
+            root = new File("C:\\Temp");
+            other = new File("C:\\Windows");
+        } else {
+            root = new File("/tmp");
+            other = new File("/usr");
+
+        }
+        assertTrue(Util.isDescendant(root, new File(root,"child")));
+        assertTrue(Util.isDescendant(root, new File(new File(root,"child"), "grandchild")));
+        assertFalse(Util.isDescendant(root, other));
+        assertFalse(Util.isDescendant(root, new File(other, "child")));
+
+        assertFalse(Util.isDescendant(new File(root,"child"), root));
+        assertFalse(Util.isDescendant(new File(new File(root,"child"), "grandchild"), root));
+
+        //.. whithin root
+        File convoluted = new File(root, "child");
+        convoluted = new File(convoluted, "..");
+        convoluted = new File(convoluted, "child");
+        assertTrue(Util.isDescendant(root, convoluted));
+
+        //.. going outside of root
+        convoluted = new File(root, "..");
+        convoluted = new File(convoluted, other.getName());
+        convoluted = new File(convoluted, "child");
+        assertFalse(Util.isDescendant(root, convoluted));
+
+        //. on root
+        assertTrue(Util.isDescendant(new File(root, "."), new File(root, "child")));
+        //. on both
+        assertTrue(Util.isDescendant(new File(root, "."), new File(new File(root, "child"), ".")));
+    }
+
+    @Test
+    public void testModeToPermissions() throws Exception {
+        assertEquals(PosixFilePermissions.fromString("rwxrwxrwx"), Util.modeToPermissions(0777));
+        assertEquals(PosixFilePermissions.fromString("rwxr-xrwx"), Util.modeToPermissions(0757));
+        assertEquals(PosixFilePermissions.fromString("rwxr-x---"), Util.modeToPermissions(0750));
+        assertEquals(PosixFilePermissions.fromString("r-xr-x---"), Util.modeToPermissions(0550));
+        assertEquals(PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0540));
+        assertEquals(PosixFilePermissions.fromString("--xr-----"), Util.modeToPermissions(0140));
+        assertEquals(PosixFilePermissions.fromString("--xr---w-"), Util.modeToPermissions(0142));
+        assertEquals(PosixFilePermissions.fromString("--xr--rw-"), Util.modeToPermissions(0146));
+        assertEquals(PosixFilePermissions.fromString("-wxr--rw-"), Util.modeToPermissions(0346));
+        assertEquals(PosixFilePermissions.fromString("---------"), Util.modeToPermissions(0000));
+
+        assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
+
+        try {
+            Util.modeToPermissions(01777);
+            fail("Did not detect invalid mode");
+        } catch (IOException e) {
+            assertThat(e.getMessage(), startsWith("Invalid mode"));
+        }
+    }
+
+    @Test
+    public void testPermissionsToMode() throws Exception {
+        assertEquals(0777, Util.permissionsToMode(PosixFilePermissions.fromString("rwxrwxrwx")));
+        assertEquals(0757, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-xrwx")));
+        assertEquals(0750, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-x---")));
+        assertEquals(0550, Util.permissionsToMode(PosixFilePermissions.fromString("r-xr-x---")));
+        assertEquals(0540, Util.permissionsToMode(PosixFilePermissions.fromString("r-xr-----")));
+        assertEquals(0140, Util.permissionsToMode(PosixFilePermissions.fromString("--xr-----")));
+        assertEquals(0142, Util.permissionsToMode(PosixFilePermissions.fromString("--xr---w-")));
+        assertEquals(0146, Util.permissionsToMode(PosixFilePermissions.fromString("--xr--rw-")));
+        assertEquals(0346, Util.permissionsToMode(PosixFilePermissions.fromString("-wxr--rw-")));
+        assertEquals(0000, Util.permissionsToMode(PosixFilePermissions.fromString("---------")));
     }
 
 }

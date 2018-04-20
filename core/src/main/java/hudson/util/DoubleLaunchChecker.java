@@ -28,9 +28,9 @@ import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletContext;
@@ -62,7 +62,7 @@ import java.lang.reflect.Method;
  *
  * <p>
  * More traditional way of doing this is to use a lock file with PID in it, but unfortunately in Java,
- * there's no reliabe way to obtain PID.
+ * there's no reliable way to obtain PID.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.178
@@ -175,6 +175,7 @@ public class DoubleLaunchChecker {
     /**
      * Ignore the problem and go back to using Hudson.
      */
+    @RequirePOST
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
         Jenkins.getInstance().servletContext.setAttribute("app", Jenkins.getInstance());

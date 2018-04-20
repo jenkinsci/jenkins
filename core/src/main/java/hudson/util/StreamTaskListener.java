@@ -24,28 +24,28 @@
 package hudson.util;
 
 import hudson.CloseProofOutputStream;
-import hudson.console.ConsoleNote;
-import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
-
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
+// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
+// The change needs API deprecation policy or external usages cleanup.
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener extends AbstractTaskListener implements Serializable, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     private PrintStream out;
     private Charset charset;
 
@@ -95,7 +95,36 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        this(new FileOutputStream(out),charset);
+        this(Files.newOutputStream(asPath(out)), charset);
+    }
+
+    private static Path asPath(File out) throws IOException {
+        try {
+            return out.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Constructs a {@link StreamTaskListener} that sends the output to a specified file.
+     *
+     * @param out     the file.
+     * @param append  if {@code true}, then output will be written to the end of the file rather than the beginning.
+     * @param charset if non-{@code null} then the charset to use when writing.
+     * @throws IOException if the file could not be opened.
+     * @since 1.651
+     */
+    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        this(Files.newOutputStream(
+                asPath(out),
+                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND: StandardOpenOption.TRUNCATE_EXISTING
+                ),
+                charset
+        );
     }
 
     public StreamTaskListener(Writer w) throws IOException {
@@ -119,44 +148,14 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         return new StreamTaskListener(System.err,Charset.defaultCharset());
     }
 
+    @Override
     public PrintStream getLogger() {
         return out;
     }
 
-    private PrintWriter _error(String prefix, String msg) {
-        out.print(prefix);
-        out.println(msg);
-
-        // the idiom in Hudson is to use the returned writer for writing stack trace,
-        // so put the marker here to indicate an exception. if the stack trace isn't actually written,
-        // HudsonExceptionNote.annotate recovers gracefully.
-        try {
-            annotate(new HudsonExceptionNote());
-        } catch (IOException e) {
-            // for signature compatibility, we have to swallow this error
-        }
-        return new PrintWriter(
-            charset!=null ? new OutputStreamWriter(out,charset) : new OutputStreamWriter(out),true);
-    }
-
-    public PrintWriter error(String msg) {
-        return _error("ERROR: ",msg);
-    }
-
-    public PrintWriter error(String format, Object... args) {
-        return error(String.format(format,args));
-    }
-
-    public PrintWriter fatalError(String msg) {
-        return _error("FATAL: ",msg);
-    }
-
-    public PrintWriter fatalError(String format, Object... args) {
-        return fatalError(String.format(format,args));
-    }
-
-    public void annotate(ConsoleNote ann) throws IOException {
-        ann.encodeTo(out);
+    @Override
+    public Charset getCharset() {
+        return charset;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -170,6 +169,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         charset = name==null ? null : Charset.forName(name);
     }
 
+    @Override
     public void close() throws IOException {
         out.close();
     }

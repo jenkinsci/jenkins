@@ -31,7 +31,6 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import jenkins.model.Jenkins;
 
 /**
  * Filters out {@link ExtensionComponent}s discovered by {@link ExtensionFinder}s,

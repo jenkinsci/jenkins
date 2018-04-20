@@ -28,7 +28,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.annotation.Nonnull;
 
 import com.gargoylesoftware.htmlunit.WebRequest;
 import org.hamcrest.Matchers;

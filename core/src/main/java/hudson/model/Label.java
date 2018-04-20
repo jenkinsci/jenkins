@@ -49,6 +49,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -56,11 +58,12 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Collection;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -127,7 +130,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Alias for {@link #getDisplayName()}.
      */
-    @Exported
+    @Exported(visibility=2)
     public final String getName() {
         return getDisplayName();
     }
@@ -196,6 +199,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
+    private static class NodeSorter implements Comparator<Node> {
+        @Override
+        public int compare(Node o1, Node o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+            return o1 instanceof Jenkins ? -1 : (o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName()));
+        }
+    }
+
     /**
      * Gets all {@link Node}s that belong to this label.
      */
@@ -204,7 +217,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         Set<Node> nodes = this.nodes;
         if(nodes!=null) return nodes;
 
-        Set<Node> r = new HashSet<Node>();
+        Set<Node> r = new HashSet<>();
         Jenkins h = Jenkins.getInstance();
         if(this.matches(h))
             r.add(h);
@@ -213,6 +226,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public Set<Node> getSortedNodes() {
+        Set<Node> r = new TreeSet<>(new NodeSorter());
+        r.addAll(getNodes());
+        return r;
     }
 
     /**
@@ -237,8 +257,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * <p>
      * The answer is yes if there is a reasonable basis to believe that Hudson can have
      * an executor under this label, given the current configuration. This includes
-     * situations such as (1) there are offline slaves that have this label (2) clouds exist
-     * that can provision slaves that have this label.
+     * situations such as (1) there are offline agents that have this label (2) clouds exist
+     * that can provision agents that have this label.
      */
     public boolean isAssignable() {
         for (Node n : getNodes())
@@ -362,10 +382,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
             if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
+        Collections.sort(r, Items.BY_FULL_NAME);
         return r;
     }
 
@@ -465,42 +486,42 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns the label that represents "this&amp;rhs"
+     * Returns the label that represents {@code this&rhs}
      */
     public Label and(Label rhs) {
         return new LabelExpression.And(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this|rhs"
+     * Returns the label that represents {@code this|rhs}
      */
     public Label or(Label rhs) {
         return new LabelExpression.Or(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this&lt;->rhs"
+     * Returns the label that represents {@code this<->rhs}
      */
     public Label iff(Label rhs) {
         return new LabelExpression.Iff(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this->rhs"
+     * Returns the label that represents {@code this->rhs}
      */
     public Label implies(Label rhs) {
         return new LabelExpression.Implies(this,rhs);
     }
 
     /**
-     * Returns the label that represents "!this"
+     * Returns the label that represents {@code !this}
      */
     public Label not() {
         return new LabelExpression.Not(this);
     }
 
     /**
-     * Returns the label that represents "(this)"
+     * Returns the label that represents {@code (this)}
      * This is a pointless operation for machines, but useful
      * for humans who find the additional parenthesis often useful
      */
@@ -573,7 +594,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     * Convert a whitespace-separate list of tokens into a set of {@link Label}s.
      *
      * @param labels
      *      Strings like "abc def ghi". Can be empty or null.
@@ -583,11 +604,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * @since 1.308
      */
     public static Set<LabelAtom> parse(String labels) {
-        Set<LabelAtom> r = new TreeSet<LabelAtom>();
+        final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if(labels.length()>0)
-            for( String l : new QuotedStringTokenizer(labels).toArray())
-                r.add(Jenkins.getInstance().getLabelAtom(l));
+        if(labels.length()>0) {
+            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+            while (tokenizer.hasMoreTokens())
+                r.add(Jenkins.getInstance().getLabelAtom(tokenizer.nextToken()));
+            }
         return r;
     }
 

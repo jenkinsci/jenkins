@@ -40,6 +40,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -47,12 +48,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static hudson.Util.fixEmpty;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 public class Hudson extends Jenkins {
 
@@ -70,10 +69,11 @@ public class Hudson extends Jenkins {
     @Deprecated
     private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
-    /** @deprecated Here only for compatibility. Use {@link Jenkins#getInstance} instead. */
+    /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated
     @CLIResolver
-    public static @CheckForNull Hudson getInstance() {
+    @Nullable
+    public static Hudson getInstance() {
         return (Hudson)Jenkins.getInstance();
     }
 
@@ -108,7 +108,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Gets the slave node of the give name, hooked under this Hudson.
+     * Gets the agent of the give name, hooked under this Hudson.
      *
      * @deprecated
      *      Use {@link #getNode(String)}. Since 1.252.
@@ -131,7 +131,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Updates the slave list.
+     * Updates the agent list.
      *
      * @deprecated
      *      Use {@link #setNodes(List)}. Since 1.252.
@@ -171,6 +171,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #doQuietDown()} instead.
      */
     @Deprecated
+    @RequirePOST
     public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
         doQuietDown().generateResponse(null, rsp, this);
     }

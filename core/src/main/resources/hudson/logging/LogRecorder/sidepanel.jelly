@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:tasks>
       <l:task href=".." icon="icon-up icon-md" title="${%Back to Loggers}"/>
       <l:task href="." icon="icon-notepad icon-md" title="${%Log records}"/>
-      <l:task href="configure" icon="icon-setting icon-md" title="${%Configure}"/>
+      <l:task href="configure" icon="icon-gear2 icon-md" title="${%Configure}"/>
       <l:task href="delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
     </l:tasks>
   </l:side-panel>

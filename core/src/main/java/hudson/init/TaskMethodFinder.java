@@ -56,9 +56,6 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
         for (Method e : Index.list(type, cl, Method.class)) {
             if (filter(e)) continue;   // already reported once
 
-            if (!Modifier.isStatic(e.getModifiers()))
-                throw new IOException(e+" is not a static method");
-
             T i = e.getAnnotation(type);
             if (i==null)        continue; // stale index
 
@@ -103,7 +100,10 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
             Object[] args = new Object[pt.length];
             for (int i=0; i<args.length; i++)
                 args[i] = lookUp(pt[i]);
-            e.invoke(null,args);
+
+            e.invoke(
+                Modifier.isStatic(e.getModifiers()) ? null : lookUp(e.getDeclaringClass()),
+                args);
         } catch (IllegalAccessException x) {
             throw (Error)new IllegalAccessError().initCause(x);
         } catch (InvocationTargetException x) {
@@ -115,14 +115,13 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        if (type==Jenkins.class || type==Hudson.class)
-            return Jenkins.getInstance();
         Jenkins j = Jenkins.getInstance();
-        if (j!=null) {
-            Injector i = j.getInjector();
-            if (i!=null)
-                return i.getInstance(type);
-        }
+        assert j != null : "This method is only invoked after the Jenkins singleton instance has been set";
+        if (type==Jenkins.class || type==Hudson.class)
+            return j;
+        Injector i = j.getInjector();
+        if (i!=null)
+            return i.getInstance(type);
         throw new IllegalArgumentException("Unable to inject "+type);
     }
 
@@ -150,7 +149,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
         }
 
         /**
-         * Static method that runs the initialization, that this task wraps.
+         * Method that runs the initialization, that this task wraps.
          */
         public Method getMethod() {
             return e;

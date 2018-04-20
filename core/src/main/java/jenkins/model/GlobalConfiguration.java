@@ -4,6 +4,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Convenient base class for extensions that contributes to the system configuration page but nothing
@@ -12,8 +14,8 @@ import hudson.model.Descriptor;
  * <p>
  * All {@link Descriptor}s are capable of contributing fragment to the system config page. If you are
  * implementing other extension points that need to expose some global configuration, you can do so
- * with <tt>global.groovy</tt> or <tt>global.jelly</tt> from your {@link Descriptor} instance. However
- * each <tt>global.*</tt> file will appear as its own section in the global configuration page.
+ * with {@code global.groovy} or {@code global.jelly} from your {@link Descriptor} instance. However
+ * each {@code global.*} file will appear as its own section in the global configuration page.
  * 
  * <p>
  * An option to present a single section for your plugin in the Jenkins global configuration page is
@@ -21,14 +23,20 @@ import hudson.model.Descriptor;
  * properties defined in your GlobalConfiguration subclass, here are two possibilities:
  * <ul><li>@{@link javax.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
  * for classes not annotated with {@link hudson.Extension})</li>
- * <li>access it via a call to <code>GlobalConfiguration.all().get(&lt;your GlobalConfiguration subclass&gt;.class)
- * </code></li></ul>
+ * <li>access it via a call to {@code GlobalConfiguration.all().get(<your GlobalConfiguration subclass>.class)}</li></ul>
+ *
+ * <p>
+ * While an implementation might store its actual configuration data in various ways,
+ * meaning {@link #configure(StaplerRequest, JSONObject)} must be overridden,
+ * in the normal case you would simply define persistable fields with getters and setters.
+ * The {@code config} view would use data-bound controls like {@code f:entry}.
+ * Then make sure your constructor calls {@link #load} and your setters call {@link #save}.
  *
  * <h2>Views</h2>
  * <p>
- * Subtypes of this class should define a <tt>config.groovy</tt> file or <tt>config.jelly</tt> file
+ * Subtypes of this class should define a {@code config.groovy} file or {@code config.jelly} file
  * that gets pulled into the system configuration page.
- * 
+ * Typically its contents should be wrapped in an {@code f:section}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.425
@@ -42,18 +50,20 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
         return this;
     }
 
-    /**
-     * Every {@link GlobalConfiguration} belongs to a specific category.
-     *
-     * @return never null, always the same value for a given instance of {@link GlobalConfiguration}.
-     */
-    public GlobalConfigurationCategory getCategory() {
-        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
-    }
-
     @Override
     public String getGlobalConfigPage() {
         return getConfigPage();
+    }
+
+    /**
+     * By default, calls {@link StaplerRequest#bindJSON(Object, JSONObject)},
+     * appropriate when your implementation has getters and setters for all fields.
+     * <p>{@inheritDoc}
+     */
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        req.bindJSON(this, json);
+        return true;
     }
 
     /**

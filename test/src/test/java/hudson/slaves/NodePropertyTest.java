@@ -9,12 +9,15 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
+import java.util.logging.Level;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -27,8 +30,12 @@ public class NodePropertyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Rule
+    public LoggerRule logs = new LoggerRule();
+
     @Test
     public void invisibleProperty() throws Exception {
+        logs.record(Descriptor.class, Level.ALL);
         DumbSlave s = j.createSlave();
         InvisibleProperty before = new InvisibleProperty();
         s.getNodeProperties().add(before);

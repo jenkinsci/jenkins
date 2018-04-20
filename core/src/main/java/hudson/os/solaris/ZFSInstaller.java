@@ -28,11 +28,12 @@ import com.sun.akuma.JavaVMArguments;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
@@ -228,7 +229,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         try {
             datasetName = createZfsFileSystem(listener,username,password);
         } catch (Exception e) {
-            e.printStackTrace(listener.error(e.getMessage()));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
 
             if (e instanceof ZFSException) {
                 ZFSException ze = (ZFSException) e;
@@ -272,9 +273,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     JavaVMArguments args = JavaVMArguments.current();
                     args.setSystemProperty(ZFSInstaller.class.getName()+".migrate",datasetName);
                     Daemon.selfExec(args);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.SEVERE, "Restart failed",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.SEVERE, "Restart failed",e);
                 }
             }
@@ -283,7 +282,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
     @Extension
     public static AdministrativeMonitor init() {
-        String migrationTarget = System.getProperty(ZFSInstaller.class.getName() + ".migrate");
+        String migrationTarget = SystemProperties.getString(ZFSInstaller.class.getName() + ".migrate");
         if(migrationTarget!=null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             StreamTaskListener listener = new StreamTaskListener(new ForkOutputStream(System.out, out));
@@ -294,7 +293,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 }
             } catch (Exception e) {
                 // if we let any exception from here, it will prevent Hudson from starting.
-                e.printStackTrace(listener.error("Migration failed"));
+                Functions.printStackTrace(e, listener.error("Migration failed"));
             }
             // migration failed
             return new MigrationFailedNotice(out);
@@ -437,5 +436,5 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Escape hatch in case JNI calls fatally crash, like in HUDSON-3733.
      */
-    public static boolean disabled = Boolean.getBoolean(ZFSInstaller.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(ZFSInstaller.class.getName()+".disabled");
 }

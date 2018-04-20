@@ -31,8 +31,9 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.416
+ * @deprecated due to risk for file leak. Prefer {@link RewindableRotatingFileOutputStream}
  */
-public class ReopenableRotatingFileOutputStream extends ReopenableFileOutputStream {
+@Deprecated public class ReopenableRotatingFileOutputStream extends ReopenableFileOutputStream {
     /**
      * Number of log files to keep.
      */

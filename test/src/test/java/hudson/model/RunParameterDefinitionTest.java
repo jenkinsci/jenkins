@@ -49,6 +49,16 @@ public class RunParameterDefinitionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Issue("JENKINS-31954")
+    @Test public void configRoundtrip() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new RunParameterDefinition("build", "p", "", RunParameterFilter.COMPLETED)));
+        j.configRoundtrip(p);
+        RunParameterDefinition rpd = (RunParameterDefinition) p.getProperty(ParametersDefinitionProperty.class).getParameterDefinition("build");
+        assertEquals("p", rpd.getProjectName());
+        assertEquals(RunParameterFilter.COMPLETED, rpd.getFilter());
+    }
+
     @Issue("JENKINS-16462")
     @Test public void inFolders() throws Exception {
         MockFolder dir = j.createFolder("dir");

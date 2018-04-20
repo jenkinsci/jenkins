@@ -23,19 +23,20 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.model.Descriptor.FormException;
+import java.util.logging.Level;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,6 +45,9 @@ public class JobPropertyTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logs = new LoggerRule();
 
     @Test
     @Issue("JENKINS-2398")
@@ -97,6 +101,7 @@ public class JobPropertyTest {
      */
     @Test
     public void configRoundtrip() throws Exception {
+        logs.record(Descriptor.class, Level.ALL);
         FreeStyleProject p = j.createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
         p.addProperty(before);
@@ -104,6 +109,11 @@ public class JobPropertyTest {
         JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
         assertNotSame(after,before);
         j.assertEqualDataBoundBeans(before, after);
+        p.removeProperty(after);
+        JobPropertyWithConfigImpl empty = new JobPropertyWithConfigImpl("");
+        p.addProperty(empty);
+        j.configRoundtrip((Item)p);
+        assertNull(p.getProperty(JobPropertyWithConfigImpl.class));
     }
 
     public static class JobPropertyWithConfigImpl extends JobProperty<Job<?,?>> {
@@ -115,7 +125,13 @@ public class JobPropertyTest {
         }
 
         @TestExtension("configRoundtrip")
-        public static class DescriptorImpl extends JobPropertyDescriptor {}
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
+            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                JobPropertyWithConfigImpl prop = (JobPropertyWithConfigImpl) super.newInstance(req, formData);
+                return prop.name.isEmpty() ? null : prop;
+            }
+        }
     }
 
     @Test

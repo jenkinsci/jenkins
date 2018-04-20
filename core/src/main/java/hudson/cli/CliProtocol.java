@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Mode;
@@ -8,6 +9,7 @@ import hudson.remoting.ChannelBuilder;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.slaves.NioChannelSelector;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.inject.Inject;
@@ -24,15 +26,38 @@ import java.net.Socket;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
-@Extension
+@Deprecated
+@Extension @Symbol("cli")
 public class CliProtocol extends AgentProtocol {
     @Inject
     NioChannelSelector nio;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return OPT_IN;
+    }
+
     @Override
     public String getName() {
-        return "CLI-connect";
+        return jenkins.CLI.get().isEnabled() ? "CLI-connect" : null;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return "Jenkins CLI Protocol/1 (deprecated, unencrypted)";
     }
 
     @Override
@@ -77,11 +102,21 @@ public class CliProtocol extends AgentProtocol {
             Channel channel = cb
                     .withMode(Mode.BINARY)
                     .withRestricted(true)
-                    .withBaseLoader(Jenkins.getInstance().pluginManager.uberClassLoader)
+                    .withBaseLoader(Jenkins.getActiveInstance().pluginManager.uberClassLoader)
                     .build(new BufferedInputStream(c.in), new BufferedOutputStream(c.out));
 
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
+    }
+
+    /**
+     * A/B test turning off this protocol by default.
+     */
+    private static final boolean OPT_IN;
+
+    static {
+        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
+        OPT_IN = (hash % 10) == 0;
     }
 }

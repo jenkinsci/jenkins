@@ -48,6 +48,9 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -62,6 +65,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -185,7 +189,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null. By default, this method returns a no-op authenticator that always authenticates
      *      the session as authenticated by the transport (which is often just {@link jenkins.model.Jenkins#ANONYMOUS}.)
+     * @deprecated See {@link CliAuthenticator}.
      */
+    @Deprecated
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
             public Authentication authenticate() {
@@ -202,6 +208,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * it's always configured through <tt>config.jelly</tt> and never with
      * <tt>global.jelly</tt>. 
      */
+    @Override
     public Descriptor<SecurityRealm> getDescriptor() {
         return super.getDescriptor();
     }
@@ -312,9 +319,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * If the implementation needs to redirect the user to a different URL
      * for signing up, use the following jelly script as <tt>signup.jelly</tt>
      *
-     * <pre><xmp>
+     * <pre>{@code <xmp>
      * <st:redirect url="http://www.sun.com/" xmlns:st="jelly:stapler"/>
-     * </xmp></pre>
+     * </xmp>}</pre>
      */
     public boolean allowsSignup() {
         Class clz = getClass();
@@ -348,8 +355,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
      * to provide the look up.
-     * <p/>
-     * <p/>
+     * <p>
      * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
      * error diagnostics for the user.
      *
@@ -396,7 +402,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (captchaSupport != null) {
             String id = req.getSession().getId();
             rsp.setContentType("image/png");
-            rsp.addHeader("Cache-Control", "no-cache");
+            // source: https://stackoverflow.com/a/3414217
+            rsp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            rsp.setHeader("Pragma", "no-cache");
+            rsp.setHeader("Expires", "0");
             captchaSupport.generateImage(id, rsp.getOutputStream());
         }
     }
@@ -482,6 +491,53 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Singleton constant that represents "no authentication."
      */
     public static final SecurityRealm NO_AUTHENTICATION = new None();
+
+    /**
+     * Perform a calculation where we should go back after successful login
+     *
+     * @return Encoded URI where we should go back after successful login
+     *         or "/" if no way back or an issue occurred
+     *
+     * @since 2.4
+     */
+    @Restricted(DoNotUse.class)
+    public static String getFrom() {
+        String from = null, returnValue = null;
+        final StaplerRequest request = Stapler.getCurrentRequest();
+
+        // Try to obtain a return point either from the Session
+        // or from the QueryParameter in this order
+        if (request != null
+                && request.getSession(false) != null) {
+            from = (String) request.getSession().getAttribute("from");
+        } else if (request != null) {
+            from = request.getParameter("from");
+        }
+
+        // If entry point was not found, try to deduce it from the request URI
+        // except pages related to login process
+        if (from == null
+                && request != null
+                && request.getRequestURI() != null
+                && !request.getRequestURI().equals("/loginError")
+                && !request.getRequestURI().equals("/login")) {
+
+                from = request.getRequestURI();
+        }
+
+        // If deduced entry point isn't deduced yet or the content is a blank value
+        // use the root web point "/" as a fallback
+        from = StringUtils.defaultIfBlank(from, "/").trim();
+        
+        // Encode the return value
+        try {
+            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
+        } catch (UnsupportedEncodingException e) { }
+
+        // Return encoded value or at least "/" in the case exception occurred during encode()
+        // or if the encoded content is blank value
+        return StringUtils.isBlank(returnValue) ? "/" : returnValue;
+    }
 
     private static class None extends SecurityRealm {
         public SecurityComponents createSecurityComponents() {

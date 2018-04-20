@@ -4,8 +4,13 @@ function updateListBox(listBox,url,config) {
     config = config || {};
     config = object(config);
     var originalOnSuccess = config.onSuccess;
-    config.onSuccess = function(rsp) {
-        var l = $(listBox);
+    var l = $(listBox);
+    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+    if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
+        status.innerHTML = "";
+    }
+    config.onSuccess = function (rsp) {
+        l.removeClassName("select-ajax-pending");
         var currentSelection = l.value;
 
         // clear the contents
@@ -30,19 +35,33 @@ function updateListBox(listBox,url,config) {
 
         if (originalOnSuccess!=undefined)
             originalOnSuccess(rsp);
-    },
-    config.onFailure = function(rsp) {
-        // deleting values can result in the data loss, so let's not do that
-//        var l = $(listBox);
-//        l.options[0] = null;
-    }
+    };
+    config.onFailure = function (rsp) {
+        l.removeClassName("select-ajax-pending");
+        status.innerHTML = rsp.responseText;
+        if (status.firstChild) {
+            status.firstChild.setAttribute('data-select-ajax-error', 'true')
+        }
+        Behaviour.applySubtree(status);
+        // deleting values can result in the data loss, so let's not do that unless instructed
+        var header = rsp.getResponseHeader('X-Jenkins-Select-Error');
+        if (header && "clear" === header.toLowerCase()) {
+            // clear the contents
+            while (l.length > 0)   l.options[0] = null;
+        }
 
+    };
+
+    l.addClassName("select-ajax-pending");
     new Ajax.Request(url, config);
 }
 
 Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
+            // seems like a race condition allows this to fire before the 'selectEl' is defined. If that happens, exit..
+            if(!selectEl || !selectEl.options || !selectEl.options.length > 0)
+              return false;
             var firstValue = selectEl.options[0].value;
             var selectedValue = selectEl.value;
             if (originalValue == "" && selectedValue == firstValue) {

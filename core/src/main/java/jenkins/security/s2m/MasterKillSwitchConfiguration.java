@@ -1,19 +1,18 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
+import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.inject.Inject;
-
 /**
  * Exposes {@link AdminWhitelistRule#masterKillSwitch} to the admin.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 @Extension
 public class MasterKillSwitchConfiguration extends GlobalConfiguration {
@@ -47,9 +46,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.getComputers().length>1  // if there's no slave, there's no point
-            && jenkins.isUseSecurity()          // if security is off, likewise this is pointless
-        ;
+        return jenkins.hasPermission(Jenkins.RUN_SCRIPTS) && jenkins.isUseSecurity();
     }
 }
 

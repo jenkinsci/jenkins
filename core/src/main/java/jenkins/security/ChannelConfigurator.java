@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
  * Intercepts the new creation of {@link Channel} and tweak its configuration.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class ChannelConfigurator implements ExtensionPoint {
     /**
@@ -30,7 +30,7 @@ public abstract class ChannelConfigurator implements ExtensionPoint {
      *
      *      <dl>
      *          <dt>{@link SlaveComputer}
-     *          <dd>When a channel is being established to talk to a slave.
+     *          <dd>When a channel is being established to talk to a agent.
      *      </dl>
      */
     public void onChannelBuilding(ChannelBuilder builder, @Nullable Object context) {}
