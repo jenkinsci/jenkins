@@ -3041,23 +3041,24 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * @param value
+     * Checks the correctness of the newBuildsDirValue for use as {@link #buildsDir}.
+     * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #buildsDir}.
      */
     @VisibleForTesting
-    /*private*/ static void checkRawBuildsDir(String value) throws InvalidBuildsDir {
+    /*private*/ static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
 
         // do essentially what expandVariablesForDirectory does, without an Item
-        String replacedValue = expandVariablesForDirectory(value,
+        String replacedValue = expandVariablesForDirectory(newBuildsDirValue,
                                                            "doCheckRawBuildsDir-Marker:foo",
                                                            Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
 
         File replacedFile = new File(replacedValue);
         if (!replacedFile.isAbsolute()) {
-            throw new InvalidBuildsDir(value + " does not resolve to an absolute path");
+            throw new InvalidBuildsDir(newBuildsDirValue + " does not resolve to an absolute path");
         }
 
         if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
-            throw new InvalidBuildsDir(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
+            throw new InvalidBuildsDir(newBuildsDirValue + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
         }
 
         if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
@@ -3066,7 +3067,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
                 tmp.delete();
             } catch (IOException e) {
-                throw new InvalidBuildsDir(value +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+                throw new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
             }
         }
 
@@ -3078,7 +3079,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 d = d.getParentFile();
             }
             if (!d.canWrite()) {
-                throw new InvalidBuildsDir(value +  " does not exist and probably cannot be created");
+                throw new InvalidBuildsDir(newBuildsDirValue +  " does not exist and probably cannot be created");
             }
         }
     }
