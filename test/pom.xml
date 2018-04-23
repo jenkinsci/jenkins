@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.118-SNAPSHOT</version>
+    <version>2.118</version>
   </parent>
 
   <artifactId>jenkins-test</artifactId>
