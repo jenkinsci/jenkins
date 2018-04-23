@@ -137,7 +137,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setAgentProtocols(newProtocols);
                     
                     // require a crumb issuer
-                    jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+                    jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
     
                     // set master -> slave security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
