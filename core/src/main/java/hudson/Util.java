@@ -36,6 +36,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
 import org.kohsuke.accmod.Restricted;
@@ -54,7 +55,6 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -64,7 +64,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
@@ -90,6 +89,10 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -377,7 +380,7 @@ public class Util {
      * @param dir
      * What to delete. If a directory, the contents will be deleted
      * too.
-     * @throws IOException The first exception encountered.
+     * @throws The first exception encountered.
      */
     private static void tryOnceDeleteRecursive(File dir) throws IOException {
         if(!isSymlink(dir))
@@ -392,7 +395,7 @@ public class Util {
      *
      * @param directory
      * The directory whose contents will be deleted.
-     * @throws IOException The first exception encountered.
+     * @throws The first exception encountered.
      */
     private static void tryOnceDeleteContentsRecursive(File directory) throws IOException {
         File[] directoryContents = directory.listFiles();
@@ -1176,17 +1179,15 @@ public class Util {
     }
 
     /**
-     * Copies a single file and preserves its attributes.
-     *
-     * @deprecated use {@link Files#copy(Path, Path, CopyOption...)}
+     * Copies a single file by using Ant.
      */
-    @Deprecated
     public static void copyFile(@Nonnull File src, @Nonnull File dst) throws BuildException {
-        try {
-            Files.copy(fileToPath(src), fileToPath(dst), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new BuildException(e);
-        }
+        Copy cp = new Copy();
+        cp.setProject(new org.apache.tools.ant.Project());
+        cp.setTofile(dst);
+        cp.setFile(src);
+        cp.setOverwrite(true);
+        cp.execute();
     }
 
     /**
