@@ -179,7 +179,7 @@ org.jenkinsci.lib.xtrigger.XTriggerCauseAction
 #   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/5,
 #   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/6
 #
-# oleg:nenashev in PR#6 we are trying to get help from last maintainers due to the plugin codebase splitbrain.
+# oleg-nenashev in PR#6 we are trying to get help from last maintainers due to the plugin codebase splitbrain.
 #               It is required to fix JENKINS-50616 in a proper way for 2.107.x
 org.jruby.RubyArray
 org.jruby.RubyBignum
