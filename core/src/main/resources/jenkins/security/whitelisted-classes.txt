@@ -102,6 +102,7 @@ java.util.Collections$UnmodifiableSortedSet
 
 java.util.Date
 java.util.EnumMap
+java.util.EnumSet
 java.util.GregorianCalendar
 java.util.HashMap
 java.util.HashSet
