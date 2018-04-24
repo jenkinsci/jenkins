@@ -3,7 +3,6 @@ html {
   font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
-  text-align: center;
 }
 
 .login-main h1 {
@@ -11,6 +10,7 @@ html {
 }
 
 .login-main {
+  text-align: center;
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;

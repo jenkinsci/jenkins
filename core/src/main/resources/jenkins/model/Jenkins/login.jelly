@@ -57,7 +57,7 @@ THE SOFTWARE.
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
-      <st:include it="${loginDecorator}" page="login-css.jelly" optional="true"/>
+      <st:include it="${loginDecorator}" page="login-head.jelly" optional="true"/>
     </head>
     <body>
       <j:choose>

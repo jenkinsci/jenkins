@@ -26,6 +26,78 @@ THE SOFTWARE.
   User self sign up page.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:_entryFormPage host="${app}" title="${%Sign up}" action="createAccount" captcha="${it.isEnableCaptcha()}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
+
+    <st:setHeader name="Expires" value="0"/>
+    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <j:new var="h" className="hudson.Functions"/><!-- instead of JSP functions -->
+    <!-- response contentType header -->
+    <st:contentType value="text/html;charset=UTF-8"/>
+    <!--
+    needed to generate a session if non exists,
+    without it we would add ";jsessionid=" to the url which will result in a 404
+  -->
+    <j:set var="_" value="${request.getSession()}"/>
+    <!-- get default/commong page variable -->
+    ${h.initPageVariables(context)}
+    <x:doctype name="html"/>
+    <!-- in case of error we want to surround the form elements with an error hint -->
+    <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
+    <j:set var="loginDecorator" value="${h.loginPageDecorator}"/>
+    <html>
+        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+            <title>${h.appendIfNotNull('Create an account!', ' [Jenkins]', 'Jenkins')}</title>
+            <!-- we do not want bots on this page -->
+            <meta name="ROBOTS" content="NOFOLLOW"/>
+            <!-- css styling, will fallback to default implementation -->
+            <st:include it="${loginDecorator}" page="login-head.jelly" optional="true"/>
+            <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css" />
+        </head>
+        <body>
+            <div class="login-main">
+                <div class="modal signup">
+                    <div class="signupIntroDefault">
+                        <div class="logo"></div>
+                        <h1>${%Create an account!}</h1>
+                        <div>If you already have a Jenkins account, <a href="${rootURL}/login">please sign in</a></div>
+                    </div>
+                    <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
+                        <div>
+                            <label for="fullname">${%Full name}</label>
+                            <input type="text" name="fullname"/>
+                        </div>
+                        <j:if test="${it.mailerPluginPresent}">
+                            <div>
+                                <label for="email">${%Email}</label>
+                                <input type="text" name="email"/>
+                            </div>
+                        </j:if>
+                        <div>
+                            <label for="username">${%Username}</label>
+                            <input type="text" name="username" id="username"/>
+                        </div>
+                        <j:if test="${it.isEnableCaptcha()}">
+                            <div>
+                                <label for="captcha">${%Enter text as shown}</label>
+                                <input type="text" name="captcha" id="captcha" autocomplete="off"/>
+                                <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
+                            </div>
+                        </j:if>
+                        <div>
+                            <label for="password1">${%Password}</label>
+                            <input type="password" name="password1" id="password1"/>
+                        </div>
+                        <div>
+                            <label for="password2">${%Confirm password}</label>
+                            <input type="password" name="password2" id="password2"/>
+                        </div>
+                        <div class="submit">
+                            <f:submit value="${%Create account}"/>
+                        </div>
+                        <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}" />
+                    </form>
+                </div>
+            </div>
+        </body>
+    </html>
 </j:jelly>

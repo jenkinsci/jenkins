@@ -15,7 +15,7 @@ html {
 .login-main .logo {
   background-image: url('../images/jenkins.svg');
   background-repeat: no-repeat;
-  background-position: 100px 0;
+  background-position: 50% 0;
   height: 130px;
 }
 
