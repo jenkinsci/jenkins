@@ -49,15 +49,15 @@ THE SOFTWARE.
   <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
   <!-- in case of error we want to surround the form elements with an error hint -->
   <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-  <j:set var="loginDecorator" value="${h.loginPageDecorator}"/>
+  <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
   <!-- real deal starting here -->
   <html>
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-      <title>${h.appendIfNotNull('Login', ' [Jenkins]', 'Jenkins')}</title>
+      <title>${h.appendIfNotNull('simple', ' [Jenkins]', 'Jenkins')}</title>
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
-      <st:include it="${loginDecorator}" page="login-head.jelly" optional="true"/>
+      <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
     </head>
     <body>
       <j:choose>
@@ -65,9 +65,9 @@ THE SOFTWARE.
           <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
         </j:when>
         <j:otherwise>
-          <div class="login-main">
+          <div class="simple-page">
             <div class="modal">
-              <st:include it="${loginDecorator}" page="login-header.jelly" optional="true"/>
+              <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
@@ -130,7 +130,7 @@ THE SOFTWARE.
 
               <div class="footer">
 
-                <st:include it="${loginDecorator}" page="login-footer.jelly" optional="true"/>
+                <st:include it="${simpleDecorator}" page="simple-footer.jelly" optional="true"/>
               </div>
 
             </div>

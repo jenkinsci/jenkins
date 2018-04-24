@@ -1,7 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-    <div id="loginIntroDefault">
-        <div class="logo"> </div>
-        <h1>${%Welcome to Jenkins!}</h1>
-    </div>
-</j:jelly>

@@ -42,59 +42,126 @@ THE SOFTWARE.
     ${h.initPageVariables(context)}
     <x:doctype name="html"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
-    <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-    <j:set var="loginDecorator" value="${h.loginPageDecorator}"/>
+    <j:set var="inputClass" value="${data.errorMessage!=null ? 'danger' : 'normal'}"/>
+    <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <html>
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
             <title>${h.appendIfNotNull('Create an account!', ' [Jenkins]', 'Jenkins')}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
             <!-- css styling, will fallback to default implementation -->
-            <st:include it="${loginDecorator}" page="login-head.jelly" optional="true"/>
-            <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css" />
+            <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+            <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css"/>
         </head>
         <body>
-            <div class="login-main">
+            <div class="simple-page">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <div class="logo"></div>
                         <h1>${%Create an account!}</h1>
-                        <div>If you already have a Jenkins account, <a href="${rootURL}/login">please sign in</a></div>
+                        <div>If you already have a Jenkins account,
+                            <a href="${rootURL}/login">please sign in</a>
+                        </div>
                     </div>
                     <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
                         <div>
-                            <label for="fullname">${%Full name}</label>
-                            <input type="text" name="fullname"/>
+                            <label
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? 'alert' : 'normal'}"
+                                for="fullname"
+                            >
+                                ${%Full name}${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? ' - ' + data.errorMessage : ''}
+                            </label>
+                            <input
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? 'danger' : 'normal'}"
+                                value="${data.fullname}"
+                                type="text"
+                                name="fullname"
+                            />
                         </div>
                         <j:if test="${it.mailerPluginPresent}">
                             <div>
-                                <label for="email">${%Email}</label>
-                                <input type="text" name="email"/>
+                                <label
+                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? 'alert' : 'normal'}"
+                                    for="email"
+                                >
+                                    ${%Email}${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? ' - ' + data.errorMessage : ''}
+                                </label>
+                                <input
+                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? 'danger' : 'normal'}"
+                                    value="${data.email}"
+                                    type="text"
+                                    name="email"
+                                />
                             </div>
                         </j:if>
                         <div>
-                            <label for="username">${%Username}</label>
-                            <input type="text" name="username" id="username"/>
+                            <label
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? 'alert' : 'normal'}"
+                                for="username"
+                            >
+                                ${%Username}${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? ' - ' + data.errorMessage : ''}
+                            </label>
+                            <input
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? 'danger' : 'normal'}"
+                                value="${data.username}"
+                                type="text"
+                                name="username"
+                                id="username"
+                            />
                         </div>
                         <j:if test="${it.isEnableCaptcha()}">
                             <div>
-                                <label for="captcha">${%Enter text as shown}</label>
-                                <input type="text" name="captcha" id="captcha" autocomplete="off"/>
+                                <label
+                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'captcha' ? 'alert' : 'normal'}"
+                                    for="captcha"
+                                >${%Enter text as shown}</label>
+                                <input
+                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'captcha' ? 'danger' : 'normal'}"
+                                    type="text"
+                                    name="captcha"
+                                    id="captcha"
+                                    autocomplete="off"
+                                />
                                 <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
                             </div>
                         </j:if>
                         <div>
-                            <label for="password1">${%Password}</label>
-                            <input type="password" name="password1" id="password1"/>
+                            <label
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'alert' : 'normal'}"
+                                for="password1"
+                            >
+                                ${%Password}${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? ' - ' + data.errorMessage : ''}
+                            </label>
+                            <input
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'danger' : 'normal'}"
+                                value="${data.password1}"
+                                type="password"
+                                name="password1"
+                                id="password1"
+                            />
                         </div>
                         <div>
-                            <label for="password2">${%Confirm password}</label>
-                            <input type="password" name="password2" id="password2"/>
+                            <label
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'alert' : 'normal'}"
+                                for="password2"
+                            >${%Confirm password}</label>
+                            <input
+                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'danger' : 'normal'}"
+                                value="${data.password2}"
+                                type="password"
+                                name="password2"
+                                id="password2"
+                            />
                         </div>
                         <div class="submit">
                             <f:submit value="${%Create account}"/>
                         </div>
-                        <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}" />
+                        <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
+                        <j:if test="${data.errorField != null}">
+                            <script type="text/javascript">
+                              document.getElementById('${data.errorField}').focus();
+                            </script>
+                        </j:if>
                     </form>
                 </div>
             </div>

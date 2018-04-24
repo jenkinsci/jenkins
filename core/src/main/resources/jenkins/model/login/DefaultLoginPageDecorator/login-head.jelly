@@ -1,5 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  <link rel="stylesheet" href="${resURL}/css/login.css" type="text/css" />
-  <link rel="stylesheet" href="${resURL}/css/login.theme.css" type="text/css" />
-</j:jelly>

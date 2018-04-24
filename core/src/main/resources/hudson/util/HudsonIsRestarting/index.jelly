@@ -35,19 +35,19 @@ THE SOFTWARE.
     <x:doctype name="html"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-    <j:set var="loginDecorator" value="${h.loginPageDecorator}"/>
+    <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <html>
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
             <title>${h.appendIfNotNull('Create an account!', ' [Jenkins]', 'Jenkins')}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
             <!-- css styling, will fallback to default implementation -->
-            <st:include it="${loginDecorator}" page="login-head.jelly" optional="true"/>
+            <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
             <script src="${resURL}/scripts/loading.js" type="text/javascript"></script>
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
         </head>
         <body>
-            <div class="login-main">
+            <div class="simple-main">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <div class="logo"></div>

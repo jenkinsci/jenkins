@@ -376,18 +376,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         if (validateCaptcha && !validateCaptcha(si.captcha)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
-        }
-
-        if (si.password1 != null && !si.password1.equals(si.password2)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
-        }
-
-        if (!(si.password1 != null && si.password1.length() != 0)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
+            si.errorField = "captcha";
         }
 
         if (si.username == null || si.username.length() == 0) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
+            si.errorField = "username";
         } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
             User user = User.getById(si.username, false);
@@ -395,6 +389,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
                     si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
+                    si.errorField = "username";
+        }
+
+        if (si.password1 != null && !si.password1.equals(si.password2)) {
+            si.errorField = "password1";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
+        }
+
+        if (!(si.password1 != null && si.password1.length() != 0)) {
+            si.errorField = "password1";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
         }
 
         if (si.fullname == null || si.fullname.length() == 0) {
@@ -403,14 +408,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
+            si.errorField = "email";
         }
 
         if (!User.isIdOrFullnameAllowed(si.username)) {
             si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
+            si.errorField = "username";
         }
 
         if (!User.isIdOrFullnameAllowed(si.fullname)) {
             si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
+            si.errorField = "fullname";
         }
         req.setAttribute("data", si); // for error messages in the view
         return si;
@@ -516,6 +524,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display an error message, set it here.
          */
         public String errorMessage;
+        /**
+         * To display an error message, set it here.
+         */
+        public String errorField;
 
         public SignupInfo() {
         }

@@ -35,21 +35,21 @@ import hudson.model.Descriptor;
  *
  * @since TODO
  */
-public class LoginPageDecorator extends Descriptor<LoginPageDecorator> implements ExtensionPoint, Describable<LoginPageDecorator> {
+public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator> {
 
-    protected LoginPageDecorator()  {
+    protected SimplePageDecorator()  {
         super(self());
     }
 
     @Override
-    public final Descriptor<LoginPageDecorator> getDescriptor() {
+    public final Descriptor<SimplePageDecorator> getDescriptor() {
         return this;
     }
     /**
      * Obtains the URL of this object, excluding the context path.
      *
      * <p>
-     * Every {@link LoginPageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
+     * Every {@link SimplePageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
      * This method returns such an URL.
      */
     public final String getUrl() {
@@ -58,10 +58,10 @@ public class LoginPageDecorator extends Descriptor<LoginPageDecorator> implement
 
     /**
      * The first found LoginDecarator, there can only be one.
-     * @return the first found {@link LoginPageDecorator}
+     * @return the first found {@link SimplePageDecorator}
      */
-    public static LoginPageDecorator first(){
-        DescriptorExtensionList<LoginPageDecorator, LoginPageDecorator> descriptorList = Jenkins.getInstanceOrNull().<LoginPageDecorator, LoginPageDecorator>getDescriptorList(LoginPageDecorator.class);
+    public static SimplePageDecorator first(){
+        DescriptorExtensionList<SimplePageDecorator, SimplePageDecorator> descriptorList = Jenkins.getInstanceOrNull().<SimplePageDecorator, SimplePageDecorator>getDescriptorList(SimplePageDecorator.class);
         return descriptorList.get(0);
     }
 

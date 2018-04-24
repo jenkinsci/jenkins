@@ -21,10 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model.login;
+package jenkins.model;
 
 import hudson.Extension;
-import jenkins.model.LoginPageDecorator;
 
 /**
  * In case there are no other implementations we will fallback to this implementation.
@@ -33,5 +32,5 @@ import jenkins.model.LoginPageDecorator;
  * This allows custom implementation to be "first"
  */
 @Extension(ordinal=-9999)
-public class DefaultLoginPageDecorator extends LoginPageDecorator {
+public class DefaultSimplePageDecorator extends SimplePageDecorator {
 }

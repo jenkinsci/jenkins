@@ -47,7 +47,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
-import jenkins.model.LoginPageDecorator;
+import jenkins.model.SimplePageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
@@ -1771,11 +1771,11 @@ public class Functions {
         return PageDecorator.all();
     }
     /**
-     * Gets only one {@link LoginPageDecorator}.
+     * Gets only one {@link SimplePageDecorator}.
      * @since FIXME
      */
-    public static LoginPageDecorator getLoginPageDecorator() {
-        return LoginPageDecorator.first();
+    public static SimplePageDecorator getSimplePageDecorator() {
+        return SimplePageDecorator.first();
     }
 
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
