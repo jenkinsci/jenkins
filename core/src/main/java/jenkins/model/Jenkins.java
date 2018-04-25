@@ -918,9 +918,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(KILL_AFTER_LOAD)
                 // TODO cleanUp?
                 System.exit(0);
-
-            setupWizard = new SetupWizard();
-            getInstallState().initializeState();
+            save();
 
             launchTcpSlaveAgentListener();
 
@@ -3146,6 +3144,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // auto register root actions
                 for (Action a : getExtensionList(RootAction.class))
                     if (!actions.contains(a)) actions.add(a);
+
+                setupWizard = new SetupWizard();
+                getInstallState().initializeState();
             }
         });
 
