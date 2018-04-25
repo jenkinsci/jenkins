@@ -57,52 +57,53 @@ THE SOFTWARE.
             <div class="simple-page">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
-                        <div class="logo"></div>
                         <h1>${%Create an account!}</h1>
                         <div>If you already have a Jenkins account,
                             <a href="${rootURL}/login">please sign in</a>
                         </div>
                     </div>
-                    <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
+                    <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
                         <div>
                             <label
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? 'alert' : 'normal'}"
+                                class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
                                 for="fullname"
                             >
-                                ${%Full name}${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? ' - ' + data.errorMessage : ''}
+                                ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
                             </label>
                             <input
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'fullname' ? 'danger' : 'normal'}"
+                                class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
                                 value="${data.fullname}"
                                 type="text"
                                 name="fullname"
+                                id="fullname"
                             />
                         </div>
                         <j:if test="${it.mailerPluginPresent}">
                             <div>
                                 <label
-                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? 'alert' : 'normal'}"
+                                    class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
                                     for="email"
                                 >
-                                    ${%Email}${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? ' - ' + data.errorMessage : ''}
+                                    ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
                                 </label>
                                 <input
-                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'email' ? 'danger' : 'normal'}"
+                                    class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
                                     value="${data.email}"
                                     type="text"
                                     name="email"
+                                    id="email"
                                 />
                             </div>
                         </j:if>
                         <div>
                             <label
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? 'alert' : 'normal'}"
+                                class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
                                 for="username"
                             >
-                                ${%Username}${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? ' - ' + data.errorMessage : ''}
+                                ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
                             </label>
                             <input
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'username' ? 'danger' : 'normal'}"
+                                class="${data.errors.containsKey('username') ? 'danger' : 'normal'}"
                                 value="${data.username}"
                                 type="text"
                                 name="username"
@@ -112,11 +113,11 @@ THE SOFTWARE.
                         <j:if test="${it.isEnableCaptcha()}">
                             <div>
                                 <label
-                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'captcha' ? 'alert' : 'normal'}"
+                                    class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
                                     for="captcha"
                                 >${%Enter text as shown}</label>
                                 <input
-                                    class="${data.errorMessage!=null &amp;&amp; data.errorField == 'captcha' ? 'danger' : 'normal'}"
+                                    class="${data.errors.containsKey('captcha') ? 'danger' : 'normal'}"
                                     type="text"
                                     name="captcha"
                                     id="captcha"
@@ -127,13 +128,13 @@ THE SOFTWARE.
                         </j:if>
                         <div>
                             <label
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'alert' : 'normal'}"
+                                class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
                                 for="password1"
                             >
-                                ${%Password}${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? ' - ' + data.errorMessage : ''}
+                                ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
                             </label>
                             <input
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'danger' : 'normal'}"
+                                class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                                 value="${data.password1}"
                                 type="password"
                                 name="password1"
@@ -142,11 +143,11 @@ THE SOFTWARE.
                         </div>
                         <div>
                             <label
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'alert' : 'normal'}"
+                                class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
                                 for="password2"
                             >${%Confirm password}</label>
                             <input
-                                class="${data.errorMessage!=null &amp;&amp; data.errorField == 'password1' ? 'danger' : 'normal'}"
+                                class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                                 value="${data.password2}"
                                 type="password"
                                 name="password2"
@@ -159,7 +160,10 @@ THE SOFTWARE.
                         <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
                         <j:if test="${data.errorField != null}">
                             <script type="text/javascript">
-                              document.getElementById('${data.errorField}').focus();
+                                const errorField = document.getElementById('${data.errorField}');
+                                if(errorField &amp;&amp; errorField.focus) {
+                                    errorField.focus();
+                                }
                             </script>
                         </j:if>
                     </form>

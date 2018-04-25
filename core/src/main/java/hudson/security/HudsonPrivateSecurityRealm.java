@@ -77,11 +77,7 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -377,11 +373,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if (validateCaptcha && !validateCaptcha(si.captcha)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
             si.errorField = "captcha";
+            si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (si.username == null || si.username.length() == 0) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
             si.errorField = "username";
+            si.errors.put(si.errorField, si.errorMessage);
         } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
             User user = User.getById(si.username, false);
@@ -390,16 +388,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if (user.getProperty(Details.class) != null)
                     si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
                     si.errorField = "username";
+                    si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (si.password1 != null && !si.password1.equals(si.password2)) {
             si.errorField = "password1";
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
+            si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (!(si.password1 != null && si.password1.length() != 0)) {
             si.errorField = "password1";
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
+            si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (si.fullname == null || si.fullname.length() == 0) {
@@ -409,16 +410,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
             si.errorField = "email";
+            si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (!User.isIdOrFullnameAllowed(si.username)) {
             si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
             si.errorField = "username";
+            si.errors.put(si.errorField, si.errorMessage);
         }
 
         if (!User.isIdOrFullnameAllowed(si.fullname)) {
             si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
             si.errorField = "fullname";
+            si.errors.put(si.errorField, si.errorMessage);
         }
         req.setAttribute("data", si); // for error messages in the view
         return si;
@@ -528,6 +532,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display an error message, set it here.
          */
         public String errorField;
+
+        public HashMap<String, String> errors = new HashMap<String, String>();
 
         public SignupInfo() {
         }

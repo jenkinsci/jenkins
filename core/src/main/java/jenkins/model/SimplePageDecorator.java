@@ -62,7 +62,11 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      */
     public static SimplePageDecorator first(){
         DescriptorExtensionList<SimplePageDecorator, SimplePageDecorator> descriptorList = Jenkins.getInstanceOrNull().<SimplePageDecorator, SimplePageDecorator>getDescriptorList(SimplePageDecorator.class);
-        return descriptorList.get(0);
+        if (descriptorList.size() >= 1) {
+            return descriptorList.get(0);
+        } else {
+            return null;
+        }
     }
 
 }
