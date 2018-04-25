@@ -298,11 +298,20 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccountFromSetupWizard(StaplerRequest req) throws IOException, AccountCreationFailedException {
         checkPermission(Jenkins.ADMINISTER);
         SignupInfo si = validateAccountCreationForm(req, false);
-        if (si.errorMessage != null) {
-            throw new AccountCreationFailedException(si.errorMessage);
+        if (!si.errors.isEmpty()) {
+            String messages = getErrorMessages(si);
+            throw new AccountCreationFailedException(messages);
         } else {
             return createAccount(si);
         }
+    }
+
+    private String getErrorMessages(SignupInfo si) {
+        StringBuilder messages = new StringBuilder();
+        for (String message : si.errors.values()) {
+            messages.append(message).append(" | ");
+        }
+        return messages.toString();
     }
 
     /**
@@ -349,7 +358,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
         SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
 
-        if (si.errorMessage != null) {
+        if (!si.errors.isEmpty()) {
             // failed. ask the user to try again.
             req.getView(this, formView).forward(req, rsp);
             return null;
@@ -363,7 +372,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
      * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
-     * SignupInfo#errorMessage} set to a non-null value if any of the supported fields are invalid
+     * SignupInfo#errors} set to a non-null value if any of the supported fields are invalid
      */
     private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
@@ -371,36 +380,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         SignupInfo si = new SignupInfo(req);
 
         if (validateCaptcha && !validateCaptcha(si.captcha)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
-            si.errorField = "captcha";
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("captcha", Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage());
         }
 
         if (si.username == null || si.username.length() == 0) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
-            si.errorField = "username";
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired());
         } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
             User user = User.getById(si.username, false);
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
-                    si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
-                    si.errorField = "username";
-                    si.errors.put(si.errorField, si.errorMessage);
+                    si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken());
         }
 
         if (si.password1 != null && !si.password1.equals(si.password2)) {
-            si.errorField = "password1";
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch());
         }
 
         if (!(si.password1 != null && si.password1.length() != 0)) {
-            si.errorField = "password1";
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 
         if (si.fullname == null || si.fullname.length() == 0) {
@@ -408,37 +407,32 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
-            si.errorField = "email";
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("email", Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress());
         }
 
         if (!User.isIdOrFullnameAllowed(si.username)) {
-            si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
-            si.errorField = "username";
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("username", hudson.model.Messages.User_IllegalUsername(si.username));
         }
 
         if (!User.isIdOrFullnameAllowed(si.fullname)) {
-            si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
-            si.errorField = "fullname";
-            si.errors.put(si.errorField, si.errorMessage);
+            si.errors.put("fullname", hudson.model.Messages.User_IllegalFullname(si.fullname));
         }
         req.setAttribute("data", si); // for error messages in the view
         return si;
     }
 
     /**
-     * Creates a new account from a valid signup info. A signup info is valid if its {@link SignupInfo#errorMessage}
-     * field is null.
+     * Creates a new account from a valid signup info. A signup info is valid if its {@link SignupInfo#errors}
+     * field is empty.
      *
      * @param si the valid signup info to create an account from
      * @return a valid {@link User} object created from given signup info
      * @throws IllegalArgumentException if an invalid signup info is passed
      */
     private User createAccount(SignupInfo si) throws IOException {
-        if (si.errorMessage != null) {
-            throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + si.errorMessage);
+        if (!si.errors.isEmpty()) {
+            String messages = getErrorMessages(si);
+            throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + messages);
         }
         // register the user
         User user = createAccount(si.username, si.password1);
@@ -528,10 +522,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display an error message, set it here.
          */
         public String errorMessage;
-        /**
-         * To display an error message, set it here.
-         */
-        public String errorField;
 
         public HashMap<String, String> errors = new HashMap<String, String>();
 

@@ -36,3 +36,16 @@ form.signup{
   text-align: left;
   margin-top: 50px;
 }
+.inputHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#showPassword {
+  width: unset;
+  margin-right: 5px;
+}
+.combinedElement{
+  display: flex;
+  align-items: center;
+}

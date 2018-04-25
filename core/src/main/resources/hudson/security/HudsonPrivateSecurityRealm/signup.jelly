@@ -127,33 +127,124 @@ THE SOFTWARE.
                             </div>
                         </j:if>
                         <div>
-                            <label
-                                class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
-                                for="password1"
-                            >
-                                ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
-                            </label>
+                            <div class="inputHeader">
+                                <label
+                                        class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
+                                        for="password1"
+                                >
+                                    ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
+                                </label>
+                                <script type="text/javascript">
+                                    const togglePasswordType = function() {
+                                        const passwordField = document.getElementById('password1');
+                                        const showPass = document.getElementById('showPassword');
+                                        if (showPass.checked) {
+                                            passwordField.type = 'text';
+                                        } else {
+                                            passwordField.type = 'password';
+                                        }
+                                    };
+
+                                    const passwordScore = function(password) {
+                                        var score = 0;
+                                        if (!password) {
+                                            return score
+                                        }
+                                        // award every unique letter until 5 repetitions
+                                        var letters = new Object();
+                                        for (var i = 0; i &lt; password.length; i++) {
+                                            letters[password[i]] = (letters[password[i]] || 0) + 1
+                                            score += 5.0 / letters[password[i]]
+                                        }
+
+                                        // bonus points for mixing it up
+                                        var variations = {
+                                            digits: /\d/.test(password),
+                                            lower: /[a-z]/.test(password),
+                                            upper: /[A-Z]/.test(password),
+                                            nonWords: /\W/.test(password)
+                                        };
+
+                                        var variationCount = 0;
+                                        for (var check in variations) {
+                                            variationCount += variations[check] === true ? 1 : 0;
+                                        }
+                                        score += (variationCount - 1) * 10;
+                                        return parseInt(score);
+                                    };
+
+                                    const passwordStrength = function(score) {
+                                        if (score > 80) {
+                                            return "Strong";
+                                        }
+                                        if (score > 60) {
+                                            return "Moderate";
+                                        }
+                                        if (score >= 30) {
+                                            return "Weak";
+                                        }
+                                        return "Poor";
+                                    };
+
+                                    const passwordStrengthColor = function(score) {
+                                        if (score > 80) {
+                                            return "#3a7911"
+                                        }
+                                        if (score > 60) {
+                                            return "#c6810e"
+                                        }
+                                        if (score >= 30) {
+                                            return "#de5912"
+                                        }
+                                        return "#c4000a"
+                                    };
+
+                                    const validatePassword = function() {
+                                        const password = document.getElementById('password1');
+                                        if (password) {
+                                            const passwordStrengthWrapper =
+                                                    document.getElementById('passwordStrengthWrapper');
+                                            passwordStrengthWrapper.hidden = false;
+                                            const score = passwordScore(password.value);
+                                            const passwordStrengthIndicator = document.getElementById('passwordStrength');
+                                            passwordStrengthIndicator.innerText = passwordStrength(score);
+                                            passwordStrengthIndicator.setAttribute('style', 'color: ' +
+                                                passwordStrengthColor(score));
+                                            document.getElementById('password2').value = password.value;
+                                        }
+                                    }
+                                </script>
+                                <label class="combinedElement">
+                                    <input id="showPassword" type="checkbox" class="FormField-PasswordToggle mr-half" onClick="togglePasswordType()"/>
+                                    <span class="FormField-PasswordToggle-Label">Show</span>
+                                </label>
+                            </div>
                             <input
+                                onKeyUp="validatePassword()"
                                 class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                                 value="${data.password1}"
                                 type="password"
                                 name="password1"
                                 id="password1"
                             />
+                            <div id="passwordStrengthWrapper">Strength: <span id="passwordStrength">&#160;</span> </div>
+                            <script type="text/javascript">
+                                if (document.getElementById('passwordStrengthWrapper')) {
+                                    document.getElementById('passwordStrengthWrapper').hidden = true;
+                                }
+                            </script>
+
                         </div>
                         <div>
-                            <label
-                                class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
-                                for="password2"
-                            >${%Confirm password}</label>
-                            <input
-                                class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
-                                value="${data.password2}"
-                                type="password"
-                                name="password2"
-                                id="password2"
-                            />
+                            A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.
                         </div>
+                        <input
+                            class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
+                            value="${data.password2}"
+                            type="hidden"
+                            name="password2"
+                            id="password2"
+                        />
                         <div class="submit">
                             <f:submit value="${%Create account}"/>
                         </div>
