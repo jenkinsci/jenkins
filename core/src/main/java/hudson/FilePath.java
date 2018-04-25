@@ -214,9 +214,14 @@ public final class FilePath implements Serializable {
      * This is used to determine whether we are running on the master or the agent.
      */
     private transient VirtualChannel channel;
-
-    // since the platform of the agent might be different, can't use java.io.File
-    private final String remote;
+    
+    /**
+     * Represent the path to the file in the master or the agent
+     * Since the platform of the agent might be different, can't use java.io.File
+     *
+     * The field could not be final since it's modified in {@link #readResolve()}
+     */
+    private /*final*/ String remote;
 
     /**
      * If this {@link FilePath} is deserialized to handle file access request from a remote computer,
@@ -264,6 +269,11 @@ public final class FilePath implements Serializable {
         this.remote = normalize(resolvePathIfRelative(base, rel));
     }
 
+    private Object readResolve() {
+        this.remote = normalize(this.remote);
+        return this;
+    }
+
     private String resolvePathIfRelative(@Nonnull FilePath base, @Nonnull String rel) {
         if(isAbsolute(rel)) return rel;
         if(base.isUnix()) {
@@ -291,7 +301,8 @@ public final class FilePath implements Serializable {
      * {@link File#getParent()} etc cannot handle ".." and "." in the path component very well,
      * so remove them.
      */
-    private static String normalize(@Nonnull String path) {
+    @Restricted(NoExternalUse.class)
+    public static String normalize(@Nonnull String path) {
         StringBuilder buf = new StringBuilder();
         // Check for prefix designating absolute path
         Matcher m = ABSOLUTE_PREFIX_PATTERN.matcher(path);
