@@ -1420,7 +1420,7 @@ public class Util {
      *      The relative path is meant to be resolved from the location of the symlink.
      */
     @CheckForNull
-    public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
+    public static String resolveSymlink(@Nonnull File link) throws IOException {
         try {
             Path path = fileToPath(link);
             return Files.readSymbolicLink(path).toString();
