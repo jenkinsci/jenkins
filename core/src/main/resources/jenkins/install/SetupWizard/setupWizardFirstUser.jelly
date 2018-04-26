@@ -7,7 +7,7 @@
       <style type="text/css">
 
         #create-admin-user {
-          padding: 20px 20px 20px 100px;
+          padding: 20px 100px 20px 100px;
           margin: 8px;
         }
 
@@ -44,7 +44,7 @@
           <script>
             $('username').focus();
           </script>
-        </form>
+       </form>
      </div>
     </l:main-panel>
   </l:layout>
