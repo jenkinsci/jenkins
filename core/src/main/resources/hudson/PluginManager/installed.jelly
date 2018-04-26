@@ -167,7 +167,6 @@ THE SOFTWARE.
         </form>
       </div>
 
-
       <script>
         <!-- function to toggle the enable/disable state -->
         function flip(o) {

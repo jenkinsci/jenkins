@@ -1,0 +1,33 @@
+<div class="snapshot-diff">
+    <button type="button" class="btn btn-warning rollback" data-snapshot-id="{{this.snapshotId}}">Rollback</button>
+    <p>
+        <strong>Rolling back to this Snapshot will result in the following plugin changes.</strong>
+    </p>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Plugin</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each this.changes}}
+            <tr>
+                <td>{{this.pluginId}}</td>
+                <td>
+                    {{#each this.changes}}
+                        <span class="change {{this.type}}" title="Rolling back will result in this plugin being {{this.type}}.">{{this.type}}
+                            {{#if this.from}}
+                                (<span class="from">{{this.from}}</span> <span class="glyphicon glyphicon-arrow-right"></span>
+                            {{/if}}
+                            {{#if this.to}}
+                                <span class="to">{{this.to}}</span>)
+                            {{/if}}
+                        </span>
+                    {{/each}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

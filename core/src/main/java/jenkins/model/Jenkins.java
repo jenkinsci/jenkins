@@ -889,6 +889,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (pluginManager==null)
                 pluginManager = PluginManager.createDefault(this);
+
+            // Apply plugin rollbacks before we init the plugin system.
+            pluginManager.getTimeMachine().doRollback();
+
             this.pluginManager = pluginManager;
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
