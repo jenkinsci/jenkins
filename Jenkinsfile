@@ -100,6 +100,7 @@ builds.ath = {
 
 builds.failFast = failFast
 parallel builds
+infra.maybePublishIncrementals()
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
