@@ -57,7 +57,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
     protected ToolDescriptor() { }
 
     /**
-     * @since FIXME
+     * @since 2.102
      */
     protected ToolDescriptor(Class<T> clazz) {
         super(clazz);

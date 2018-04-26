@@ -106,7 +106,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      * @param data The data.
      * @return {@code this} object.
      *
-     * @since TODO
+     * @since 2.115
      */
     public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONObject data) {
         return new JSONObjectResponse(data).error(message);
@@ -118,7 +118,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      * @param data The data.
      * @return {@code this} object.
      *
-     * @since TODO
+     * @since 2.115
      */
     public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONArray data) {
         return new JSONObjectResponse(data).error(message);
