@@ -49,3 +49,6 @@ form.signup{
   display: flex;
   align-items: center;
 }
+label {
+  margin-bottom: 7px;
+}

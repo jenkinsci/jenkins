@@ -46,7 +46,7 @@ THE SOFTWARE.
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <html>
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-            <title>${h.appendIfNotNull('Create an account!', ' [Jenkins]', 'Jenkins')}</title>
+            <title>${%Create an account!}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
             <!-- css styling, will fallback to default implementation -->
@@ -58,18 +58,20 @@ THE SOFTWARE.
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <h1>${%Create an account!}</h1>
-                        <div>If you already have a Jenkins account,
-                            <a href="${rootURL}/login">please sign in</a>
+                        <div>
+                            ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login">${%please sign in.}</a>
                         </div>
                     </div>
                     <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
                         <div>
-                            <label
-                                class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
-                                for="fullname"
-                            >
-                                ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
-                            </label>
+                            <div class="inputHeader">
+                                <label
+                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
+                                    for="fullname"
+                                >
+                                    ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
+                                </label>
+                            </div>
                             <input
                                 class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
                                 value="${data.fullname}"
@@ -80,12 +82,14 @@ THE SOFTWARE.
                         </div>
                         <j:if test="${it.mailerPluginPresent}">
                             <div>
-                                <label
-                                    class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
-                                    for="email"
-                                >
-                                    ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
-                                </label>
+                                <div class="inputHeader">
+                                    <label
+                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
+                                        for="email"
+                                    >
+                                        ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
+                                    </label>
+                                </div>
                                 <input
                                     class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
                                     value="${data.email}"
@@ -96,12 +100,14 @@ THE SOFTWARE.
                             </div>
                         </j:if>
                         <div>
-                            <label
-                                class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
-                                for="username"
-                            >
-                                ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
-                            </label>
+                            <div class="inputHeader">
+                                <label
+                                    class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
+                                    for="username"
+                                >
+                                    ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
+                                </label>
+                            </div>
                             <input
                                 class="${data.errors.containsKey('username') ? 'danger' : 'normal'}"
                                 value="${data.username}"
@@ -112,10 +118,13 @@ THE SOFTWARE.
                         </div>
                         <j:if test="${it.isEnableCaptcha()}">
                             <div>
-                                <label
-                                    class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
-                                    for="captcha"
-                                >${%Enter text as shown}</label>
+                                <div class="inputHeader">
+                                    <label
+                                        class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
+                                        for="captcha"
+                                    >${%Enter text as shown}</label>
+                                </div>
+
                                 <input
                                     class="${data.errors.containsKey('captcha') ? 'danger' : 'normal'}"
                                     type="text"
@@ -151,7 +160,7 @@ THE SOFTWARE.
                                             return score
                                         }
                                         // award every unique letter until 5 repetitions
-                                        var letters = new Object();
+                                        var letters = {};
                                         for (var i = 0; i &lt; password.length; i++) {
                                             letters[password[i]] = (letters[password[i]] || 0) + 1
                                             score += 5.0 / letters[password[i]]

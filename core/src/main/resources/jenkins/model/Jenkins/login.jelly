@@ -53,7 +53,7 @@ THE SOFTWARE.
   <!-- real deal starting here -->
   <html>
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-      <title>${h.appendIfNotNull('simple', ' [Jenkins]', 'Jenkins')}</title>
+      <title>${%signIn}</title>
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
