@@ -1,0 +1,15 @@
+<div>
+    当从节点通过JNLP启动后，节点会尝试与Jenkins指定的TCP端口连接，作为通讯通道。
+    但某些对安全敏感的网络可能会阻止该连接。
+    当Jenkins在一个负载均衡环境中运行时，也是有可能发生的，通过
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">apache 反向代理</a>
+    到 <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a> 等等。
+
+    <p>
+    该通道选项，允许你指定其他的主机（或者端口），这对以上情况是很有用的。该字段的格式可以是"<tt>HOST:PORT</tt>"， "<tt>:PORT</tt>"，
+    或者"<tt>HOST:</tt>"。第一种格式下，JNLP 代理会连接指定的主机和端口，并且假设已经配置好了网络。
+
+    <p>
+    后面的两种格式，使用默认的主机名和端口号（主机名是Jenkins所运行的主机，TCP端口是Jenkins打开的端口）。在特殊情况下，<tt>HOST:</tt> format
+    这种格式是当Jenkins运行在反向代理环境下。
+</div>

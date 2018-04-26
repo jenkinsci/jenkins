@@ -41,7 +41,7 @@ public class NullChangeLogParser extends ChangeLogParser {
         return ChangeLogSet.createEmpty(build);
     }
     
-    public Object readResolve() {
+    protected Object readResolve() {
         return INSTANCE;
     }
 }

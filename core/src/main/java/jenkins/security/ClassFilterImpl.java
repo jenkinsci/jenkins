@@ -134,13 +134,13 @@ public class ClassFilterImpl extends ClassFilter {
             }
         }
         return cache.computeIfAbsent(_c, c -> {
-            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true: only the name overload is overridden
-                return true;
-            }
             String name = c.getName();
             if (Main.isUnitTest && (name.contains("$$EnhancerByMockitoWithCGLIB$$") || name.contains("$$FastClassByMockitoWithCGLIB$$") || name.startsWith("org.mockito."))) {
                 mockOff();
                 return false;
+            }
+            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true, but may issue diagnostics
+                return true;
             }
             if (c.isArray()) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);

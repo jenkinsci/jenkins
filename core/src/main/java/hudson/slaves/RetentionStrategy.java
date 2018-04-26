@@ -97,12 +97,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @since 1.275
      */
     public void start(final @Nonnull T c) {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                check(c);
-            }
-        });
+        Queue.withLock((Runnable) () -> check(c));
     }
 
     /**
@@ -123,26 +118,27 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     /**
      * Dummy instance that doesn't do any attempt to retention.
      */
-    public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+    public static final RetentionStrategy<Computer> NOOP = new NoOp();
+    private static final class NoOp extends RetentionStrategy<Computer> {
         @GuardedBy("hudson.model.Queue.lock")
+        @Override
         public long check(Computer c) {
             return 60;
         }
-
         @Override
         public void start(Computer c) {
             c.connect(false);
         }
-
         @Override
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
-
-        private final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-        class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
-    };
+        private Object readResolve() {
+            return NOOP;
+        }
+        private static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+        private static final class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
+    }
 
     /**
      * Convenient singleton instance, since this {@link RetentionStrategy} is stateless.

@@ -66,6 +66,29 @@ for(i = 0; i < buildTypes.size(); i++) {
     }
 }
 
+builds.ath = {
+    node("docker&&highmem") {
+        // Just to be safe
+        deleteDir()
+        def fileUri
+        def metadataPath
+        dir("sources") {
+            checkout scm
+            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
+                          "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
+                sh "mvn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+            }
+            dir("war/target") {
+                fileUri = "file://" + pwd() + "/jenkins.war"
+            }
+            metadataPath = pwd() + "/essentials.yml"
+        }
+        dir("ath") {
+            runATH jenkins: fileUri, metadataFile: metadataPath
+        }
+    }
+}
+
 builds.failFast = failFast
 parallel builds
 

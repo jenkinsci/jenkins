@@ -1379,6 +1379,7 @@ public class Functions {
     }
 
     public static String jsStringEscape(String s) {
+        if (s == null) return null;
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<s.length(); i++ ) {
             char ch = s.charAt(i);

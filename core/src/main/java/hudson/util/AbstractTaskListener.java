@@ -13,4 +13,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @RestrictedSince("2.91")
 public abstract class AbstractTaskListener implements TaskListener {
+
+    private static final long serialVersionUID = 7217626701881006422L;
+
 }
