@@ -147,11 +147,6 @@ THE SOFTWARE.
       </dependency>
 
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-      </dependency>
-
-      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
