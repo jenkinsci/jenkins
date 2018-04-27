@@ -1,0 +1,18 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{translations.installWizard_addFirstUser_title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="jumbotron welcome-panel security-panel">
+		{{{message}}}
+
+		<iframe src="{{baseUrl}}/setupWizard/setupWizardConfigureInstance" id="setup-configure-instance"></iframe>
+	</div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link skip-configure-instance" disabled>
+        {{translations.installWizard_skipConfigureInstance}}
+    </button>
+	<button type="button" class="btn btn-primary save-configure-instance" disabled>
+		{{translations.installWizard_saveConfigureInstance}}
+	</button>
+</div>

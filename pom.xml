@@ -28,13 +28,13 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.40</version>
+    <version>1.41</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.118-SNAPSHOT</version>
+  <version>2.119-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <access-modifier.version>1.13</access-modifier.version>
+    <access-modifier.version>1.14</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
@@ -103,8 +103,9 @@ THE SOFTWARE.
 
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
+    <!-- Bundled Remoting version -->
+    <remoting.version>3.20</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.version>3.19</remoting.version>
     <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
@@ -143,12 +144,6 @@ THE SOFTWARE.
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
       </dependency>
 
       <dependency>
