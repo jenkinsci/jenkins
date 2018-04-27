@@ -148,7 +148,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * Some implementations may not support symlinks under any conditions.
      * @return a target (typically a relative path in some format), or null if this is not a link
      * @throws IOException if reading the link, or even determining whether this file is a link, failed
-     * @since FIXME
+     * @since 2.118
      */
     @Restricted(Beta.class)
     public @CheckForNull String readLink() throws IOException {
@@ -188,7 +188,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
      * @return a list of {@code /}-separated relative names of children (files directly inside or in subdirectories)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
-     * @since FIXME
+     * @since 2.118
      */
     @Restricted(Beta.class)
     public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
@@ -266,7 +266,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * If the file is symlink (see {@link #readLink}), the mode is that of the link target, not the link itself.
      * @return for example, 0644 ~ {@code rw-r--r--}; -1 by default, meaning unknown or inapplicable
      * @throws IOException if checking the mode failed
-     * @since FIXME
+     * @since 2.118
      */
     @Restricted(Beta.class)
     public int mode() throws IOException {
@@ -345,7 +345,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * <p>The URL might be valid for only a limited amount of time or even only a single use;
      * this method should be called anew every time an external URL is required.
      * @return an externally usable URL like {@code https://gist.githubusercontent.com/ACCT/GISTID/raw/COMMITHASH/FILE}, or null if there is no such support
-     * @since FIXME
+     * @since 2.118
      * @see #toURI
      */
     @Restricted(Beta.class)
