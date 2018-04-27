@@ -658,7 +658,7 @@ public class UpdateSite {
         }
 
         /**
-         * The hex string encoded SHA-256 checksum of the file.
+         * The base64 encoded SHA-256 checksum of the file.
          * Can be null if not provided by the update site.
          * @since TODO
          */
@@ -667,7 +667,7 @@ public class UpdateSite {
         }
 
         /**
-         * The hex string encoded SHA-512 checksum of the file.
+         * The base64 encoded SHA-512 checksum of the file.
          * Can be null if not provided by the update site.
          * @since TODO
          */

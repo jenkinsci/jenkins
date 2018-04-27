@@ -65,7 +65,6 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jenkinsci.Symbol;
@@ -1169,11 +1168,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
                 if (sha256 != null) {
                     byte[] digest = sha256.digest();
-                    job.computedSHA256 = Hex.encodeHexString(digest);
+                    job.computedSHA256 = Base64.encodeBase64String(digest);
                 }
                 if (sha512 != null) {
                     byte[] digest = sha512.digest();
-                    job.computedSHA512 = Hex.encodeHexString(digest);
+                    job.computedSHA512 = Base64.encodeBase64String(digest);
                 }
                 return tmp;
             } catch (IOException e) {
@@ -1655,7 +1654,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private String computedSHA1;
 
         /**
-         * Hex encoded SHA-256 checksum of the downloaded file, if it could be computed.
+         * Base64 encoded SHA-256 checksum of the downloaded file, if it could be computed.
          *
          * @since TODO
          */
@@ -1667,7 +1666,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private String computedSHA256;
 
         /**
-         *Hex encoded SHA-512 checksum of the downloaded file, if it could be computed.
+         * Base64 encoded SHA-512 checksum of the downloaded file, if it could be computed.
          *
          * @since TODO
          */
