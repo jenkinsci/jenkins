@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.42-20180419.173508-6</version> <!-- TODO https://github.com/jenkinsci/pom/pull/20 -->
+    <version>1.43</version>
     <relativePath />
   </parent>
 
@@ -147,12 +147,6 @@ THE SOFTWARE.
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
       </dependency>
 
       <dependency>
