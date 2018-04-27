@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) suren
+ * Copyright (c) 2018, suren <zxjlwt@126.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
@@ -41,13 +42,14 @@ import org.xml.sax.SAXException;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
 /**
  * @author suren
  */
-public class SlaveComputerTest {
+public class SlaveComputerTest implements Serializable {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -58,19 +60,21 @@ public class SlaveComputerTest {
         Assert.assertNotNull(path);
         Assert.assertEquals(getRemoteFS(nodeA), path);
 
-        setAsAnonymous();
-        nodeA = j.createOnlineSlave();
-        path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
-        Assert.assertNull(path);
-        Assert.assertEquals(getRemoteFS(nodeA), "null");
+        try(ACLContext context = ACL.as(Jenkins.ANONYMOUS)) {
+            setAsAnonymous();
+            nodeA = j.createOnlineSlave();
+            path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
+            Assert.assertNull(path);
+            Assert.assertEquals(getRemoteFS(nodeA), "null");
+        }
     }
 
     /**
      * Get remote path through json api
-     * @param node
+     * @param node slave node
      * @return remote path
-     * @throws IOException
-     * @throws SAXException
+     * @throws IOException in case of communication problem.
+     * @throws SAXException in case of config format problem.
      */
     private String getRemoteFS(Node node) throws IOException, SAXException {
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -111,6 +115,5 @@ public class SlaveComputerTest {
                 };
             }
         });
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
     }
 }
