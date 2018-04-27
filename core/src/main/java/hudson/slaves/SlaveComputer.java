@@ -483,10 +483,11 @@ public class SlaveComputer extends Computer {
      * remote FS is specified as a relative path.
      * @see #getAbsoluteRemoteFs()
      * @return the remote FS root absolute path or {@code null} if the agent is off-line or don't have connect permission.
-     * @since 2.114
+     * @since TODO
      */
     @Exported
     @Restricted(DoNotUse.class)
+    @CheckForNull
     public String getAbsoluteRemotePath() {
         if(hasPermission(CONNECT)) {
             return getAbsoluteRemoteFs();
