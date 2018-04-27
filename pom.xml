@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.40</version>
+    <version>1.41</version>
     <relativePath />
   </parent>
 
@@ -149,7 +149,6 @@ THE SOFTWARE.
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
       </dependency>
 
       <dependency>
