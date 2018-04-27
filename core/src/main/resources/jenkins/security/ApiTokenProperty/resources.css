@@ -77,6 +77,10 @@
     font-size: 90%;
     color: #6d7680;
 }
+.token-list .token-list-item .no-statistics{
+    font-size: 90%;
+    color: #6d7680;
+}
 .token-list .token-list-item .token-revoke{
     margin-left: 10px;
 }

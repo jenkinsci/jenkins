@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
@@ -57,8 +58,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -102,8 +105,14 @@ public class ApiTokenProperty extends UserProperty {
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
     private volatile Secret apiToken;
-    // stored aside
-    private transient ApiTokenStore tokenStore;
+    private ApiTokenStore tokenStore;
+    
+    /**
+     * Store the usage information of the different token for this user
+     * The save operation can be toggled by using {@link ApiTokenPropertyConfiguration#usageStatisticsEnabled}
+     * The information are stored in a separate file to avoid problem with some configuration synchronization tools
+     */
+    private transient ApiTokenStats tokenStats;
     
     @DataBoundConstructor
     public ApiTokenProperty() {
@@ -114,10 +123,13 @@ public class ApiTokenProperty extends UserProperty {
         super.setUser(u);
     
         if (this.tokenStore == null) {
-            this.tokenStore = ApiTokenStore.load(user.getUserFolder());
+            this.tokenStore = new ApiTokenStore();
+        }
+        if(this.tokenStats == null){
+            this.tokenStats = ApiTokenStats.load(user.getUserFolder());
         }
         if(this.apiToken != null){
-            this.tokenStore.generateTokenFromLegacy(this.apiToken);
+            this.tokenStore.regenerateTokenFromLegacy(this.apiToken);
         }
     }
     
@@ -180,15 +192,15 @@ public class ApiTokenProperty extends UserProperty {
         if(StringUtils.isBlank(token)){
             return false;
         }
-        
-        // use the new way to find a match in order to trigger the counter / lastUseDate logic
-        // as the legacy token (if existing) are also stored there
-        boolean matchFound = tokenStore.doesContainToken(token);
-        if (matchFound) {
-            tokenStore.save();
+    
+        ApiTokenStore.HashedToken matchingToken = tokenStore.findMatchingToken(token);
+        if(matchingToken == null){
+            return false;
         }
         
-        return matchFound;
+        tokenStats.updateUsageForId(matchingToken.getUuid());
+        
+        return true;
     }
     
     /**
@@ -215,10 +227,46 @@ public class ApiTokenProperty extends UserProperty {
     
     // only for Jelly
     @Restricted(NoExternalUse.class)
-    public Collection<ApiTokenStore.HashedToken> getTokenList() {
-        return tokenStore.getTokenListSortedByName();
+    public Collection<TokenInfoAndStats> getTokenList() {
+        return tokenStore.getTokenListSortedByName()
+                .stream()
+                .map(token -> {
+                    ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(token.getUuid());
+                    return new TokenInfoAndStats(token, stats);
+                })
+                .collect(Collectors.toList());
     }
     
+    // only for Jelly
+    @Immutable
+    @Restricted(NoExternalUse.class)
+    public static class TokenInfoAndStats {
+        public final String uuid;
+        public final String name;
+        public final Date creationDate;
+        public final long numDaysCreation;
+        public final boolean isLegacy;
+        
+        public final int useCounter;
+        public final Date lastUseDate;
+        public final long numDaysUse;
+        
+        public TokenInfoAndStats(@Nonnull ApiTokenStore.HashedToken token, @Nonnull ApiTokenStats.SingleTokenStats stats) {
+            this.uuid = token.getUuid();
+            this.name = token.getName();
+            this.creationDate = token.getCreationDate();
+            this.numDaysCreation = token.getNumDaysCreation();
+            this.isLegacy = token.isLegacy();
+            
+            this.useCounter = stats.getUseCounter();
+            this.lastUseDate = stats.getLastUseDate();
+            this.numDaysUse = stats.getNumDaysUse();
+        }
+    }
+    
+    /**
+     * Allow user to rename tokens
+     */
     @Override
     public UserProperty reconfigure(StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
         if(form == null){
@@ -228,7 +276,6 @@ public class ApiTokenProperty extends UserProperty {
         Object tokenStoreData = form.get("tokenStore");
         Map<String, JSONObject> tokenStoreTypedData = convertToTokenMap(tokenStoreData);
         this.tokenStore.reconfigure(tokenStoreTypedData);
-        this.tokenStore.save();
         return this;
     }
     
@@ -272,10 +319,13 @@ public class ApiTokenProperty extends UserProperty {
 
         LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
 
+        ApiTokenStore.HashedToken existingLegacyToken = tokenStore.getLegacyToken();
         _changeApiToken();
         tokenStore.regenerateTokenFromLegacy(apiToken);
     
-        tokenStore.save();
+        if(existingLegacyToken != null){
+            tokenStats.removeId(existingLegacyToken.getUuid());
+        }
         user.save();
     }
     
@@ -297,6 +347,11 @@ public class ApiTokenProperty extends UserProperty {
     @Restricted(NoExternalUse.class)
     public ApiTokenStore getTokenStore() {
         return tokenStore;
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public ApiTokenStats getTokenStats() {
+        return tokenStats;
     }
 
     @Extension
@@ -338,6 +393,12 @@ public class ApiTokenProperty extends UserProperty {
             }else{
                 return new ApiTokenProperty(null);
             }
+        }
+    
+        // for Jelly view
+        @Restricted(NoExternalUse.class)
+        public boolean isStatisticsEnabled(){
+            return ApiTokenPropertyConfiguration.get().isUsageStatisticsEnabled();
         }
     
         // for Jelly view
@@ -391,7 +452,6 @@ public class ApiTokenProperty extends UserProperty {
             if (p == null) {
                 p = forceNewInstance(u, true);
                 p.setUser(u);
-                p.tokenStore.save();
                 u.addProperty(p);
             } else {
                 // even if the user does not have legacy token, this method let some legacy system to regenerate one
@@ -424,7 +484,6 @@ public class ApiTokenProperty extends UserProperty {
             }
             
             ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(tokenName);
-            p.tokenStore.save();
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
@@ -455,10 +514,11 @@ public class ApiTokenProperty extends UserProperty {
             
             boolean renameOk = p.tokenStore.renameToken(tokenId, newName);
             if(!renameOk){
-                // that could potentially happens between instance restart, the uuid stored in the page are no more valid
+                // that could potentially happen if the token is removed from another page
+                // between your page loaded and your action
                 return HttpResponses.errorJSON("No token found, try refreshing the page");
             }
-            p.tokenStore.save();
+            
             u.save();
             
             return HttpResponses.ok();
@@ -481,11 +541,13 @@ public class ApiTokenProperty extends UserProperty {
             }
             
             ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenId);
-            if(revoked != null && revoked.isLegacy()){
-                // if the user revoked the API Token, we can delete it
-                p.apiToken = null;
+            if(revoked != null){
+                if(revoked.isLegacy()){
+                    // if the user revoked the API Token, we can delete it
+                    p.apiToken = null;
+                }
+                p.tokenStats.removeId(revoked.getUuid());
             }
-            p.tokenStore.save();
             u.save();
             
             return HttpResponses.ok();

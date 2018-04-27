@@ -48,6 +48,12 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
      */
     private boolean creationOfLegacyTokenEnabled = false;
     
+    /**
+     * Each time an API Token is used, its usage counter is incremented and the last usage date is updated. 
+     * You can disable this feature using this property.
+     */
+    private boolean usageStatisticsEnabled = true;
+    
     public static ApiTokenPropertyConfiguration get() {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
     }
@@ -77,7 +83,16 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
         this.creationOfLegacyTokenEnabled = creationOfLegacyTokenEnabled;
         save();
     }
-
+    
+    public boolean isUsageStatisticsEnabled() {
+        return usageStatisticsEnabled;
+    }
+    
+    public void setUsageStatisticsEnabled(boolean usageStatisticsEnabled) {
+        this.usageStatisticsEnabled = usageStatisticsEnabled;
+        save();
+    }
+    
     @Override 
     public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);

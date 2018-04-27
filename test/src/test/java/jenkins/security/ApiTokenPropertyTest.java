@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
@@ -241,12 +240,8 @@ public class ApiTokenPropertyTest {
         // ===== new system =====
         
         // revoke the legacy
-        Collection<ApiTokenStore.HashedToken> tokenList = apiTokenProperty.getTokenList();
-        List<ApiTokenStore.HashedToken> legacyTokenList = tokenList.stream()
-                .filter(ApiTokenStore.HashedToken::isLegacy)
-                .collect(Collectors.toList());
-        assertEquals(1, legacyTokenList.size());
-        ApiTokenStore.HashedToken legacyToken = legacyTokenList.get(0);
+        ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenStore().getLegacyToken();
+        assertNotNull(legacyToken);
         String legacyUuid = legacyToken.getUuid();
     
         wc = j.createWebClient();
@@ -411,7 +406,7 @@ public class ApiTokenPropertyTest {
     
     private void revokeAllTokenUsingFilter(WebClient wc, User user, Predicate<ApiTokenStore.HashedToken> filter) throws Exception {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        List<String> uuidList = apiTokenProperty.getTokenList().stream()
+        List<String> uuidList = apiTokenProperty.getTokenStore().getTokenListSortedByName().stream()
                 .filter(filter)
                 .map(ApiTokenStore.HashedToken::getUuid)
                 .collect(Collectors.toList());

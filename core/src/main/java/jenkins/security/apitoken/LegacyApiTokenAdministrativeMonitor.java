@@ -25,7 +25,6 @@ package jenkins.security.apitoken;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Api;
 import hudson.model.User;
 import hudson.node_monitors.AbstractAsyncNodeMonitorDescriptor;
 import hudson.util.HttpResponses;
@@ -35,11 +34,10 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
 
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -89,12 +87,9 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     }
     
     @Restricted(NoExternalUse.class)
-    public @CheckForNull ApiTokenStore.HashedToken getLegacyTokenOf(User user) {
+    public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenList().stream()
-                .filter(ApiTokenStore.HashedToken::isLegacy)
-                .findFirst()
-                .orElse(null);
+        ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenStore().getLegacyToken();
         return legacyToken;
     }
     
@@ -103,12 +98,18 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     @Restricted(NoExternalUse.class)
     public boolean hasFreshToken(User user, ApiTokenStore.HashedToken legacyToken) {
+        if(legacyToken == null){
+            return false;
+        }
+        
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        ApiTokenStats.SingleTokenStats legacyTokenStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
+        
         return apiTokenProperty.getTokenList().stream()
-                .filter(token -> !token.isLegacy())
+                .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
-                    Date creationDate = token.getCreationDate();
-                    Date lastUseDate = legacyToken.getLastUseDate();
+                    Date creationDate = token.creationDate;
+                    Date lastUseDate = legacyTokenStats.getLastUseDate();
                     if (lastUseDate == null) {
                         lastUseDate = legacyToken.getCreationDate();
                     }
@@ -124,12 +125,15 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         if(legacyToken == null){
             return false;
         }
+        
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        ApiTokenStats.SingleTokenStats legacyTokenStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
+    
         return apiTokenProperty.getTokenList().stream()
-                .filter(token -> !token.isLegacy())
+                .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
-                    Date currentLastUseDate = token.getLastUseDate();
-                    Date legacyLastUseDate = legacyToken.getLastUseDate();
+                    Date currentLastUseDate = token.lastUseDate;
+                    Date legacyLastUseDate = legacyTokenStats.getLastUseDate();
                     if (legacyLastUseDate == null) {
                         legacyLastUseDate = legacyToken.getCreationDate();
                     }

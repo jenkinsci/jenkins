@@ -32,5 +32,8 @@ THE SOFTWARE.
         <f:entry field="creationOfLegacyTokenEnabled">
             <f:checkbox title="${%Enable capability of user without Legacy API Token to create new one}"/>
         </f:entry>
+        <f:entry field="usageStatisticsEnabled">
+            <f:checkbox title="${%Enable usage statistics on the API Token to help users knowing if they have unused / old token}"/>
+        </f:entry>
     </f:section>
 </j:jelly>

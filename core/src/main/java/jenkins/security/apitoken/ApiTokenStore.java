@@ -24,11 +24,7 @@
 package jenkins.security.apitoken;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.BulkChange;
 import hudson.Util;
-import hudson.XmlFile;
-import hudson.model.Saveable;
-import hudson.model.listeners.SaveableListener;
 import hudson.util.Secret;
 import jenkins.security.Messages;
 import net.sf.json.JSONObject;
@@ -36,9 +32,8 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -58,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class ApiTokenStore implements Saveable {
+public class ApiTokenStore {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenStore.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
     
@@ -74,14 +69,8 @@ public class ApiTokenStore implements Saveable {
     
     private List<HashedToken> tokenList;
     
-    private transient File parent;
-    
     public ApiTokenStore() {
         this.init();
-    }
-    
-    public void setParent(File parent) {
-        this.parent = parent;
     }
     
     public ApiTokenStore readResolve() {
@@ -128,12 +117,6 @@ public class ApiTokenStore implements Saveable {
         });
     }
     
-    public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
-        if (tokenList.stream().noneMatch(HashedToken::isLegacy)) {
-            regenerateTokenFromLegacy(newLegacyApiToken);
-        }
-    }
-    
     public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken);
@@ -153,6 +136,16 @@ public class ApiTokenStore implements Saveable {
         HashedToken token = HashedToken.buildNew(Messages.ApiTokenProperty_LegacyTokenName(), hashValue);
         
         this.addToken(token);
+    }
+    
+    /**
+     * @return null iff there is no legacy token in the store, otherwise the legacy token is returned
+     */
+    public synchronized @Nullable HashedToken getLegacyToken(){
+        return tokenList.stream()
+                .filter(HashedToken::isLegacy)
+                .findFirst()
+                .orElse(null);
     }
     
     public synchronized @Nonnull TokenIdAndPlainValue generateNewToken(@Nonnull String name) {
@@ -194,7 +187,7 @@ public class ApiTokenStore implements Saveable {
         return digest.digest(tokenBytes);
     }
     
-    public synchronized boolean doesContainToken(@Nonnull String token) {
+    public synchronized @CheckForNull HashedToken findMatchingToken(@Nonnull String token) {
         String plainToken;
         if (isLegacyToken(token)) {
             plainToken = token;
@@ -205,7 +198,7 @@ public class ApiTokenStore implements Saveable {
         return searchMatch(plainToken);
     }
     
-    private boolean isLegacyToken(String token) {
+    private boolean isLegacyToken(@Nonnull String token) {
         return token.length() != TOKEN_LENGTH_V2;
     }
     
@@ -213,7 +206,7 @@ public class ApiTokenStore implements Saveable {
      * [2: version][32: real token]
      * ^^^^^^^^^^^^----------------
      */
-    private String getVersionOfToken(String token) {
+    private @Nonnull String getVersionOfToken(@Nonnull String token) {
         return token.substring(0, 2);
     }
     
@@ -221,20 +214,19 @@ public class ApiTokenStore implements Saveable {
      * [2: version][32: real token]
      * ------------^^^^^^^^^^^^^^^^
      */
-    private String getHashOfToken(String token) {
+    private @Nonnull String getHashOfToken(@Nonnull String token) {
         return token.substring(2);
     }
     
-    private boolean searchMatch(String plainToken) {
+    private @CheckForNull HashedToken searchMatch(@Nonnull String plainToken) {
         byte[] hashedBytes = plainSecretToHashBytes(plainToken);
         for (HashedToken token : tokenList) {
             if (token.match(hashedBytes)) {
-                token.incrementUse();
-                return true;
+                return token;
             }
         }
         
-        return false;
+        return null;
     }
     
     public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenUuid) {
@@ -260,53 +252,6 @@ public class ApiTokenStore implements Saveable {
         
         LOGGER.log(Level.FINER, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
         return false;
-    }
-    
-    /**
-     * Saves the configuration info to the disk.
-     */
-    @Override
-    public synchronized void save() {
-        if (BulkChange.contains(this))
-            return;
-        
-        XmlFile configFile = getConfigFile(parent);
-        try {
-            configFile.write(this);
-            SaveableListener.fireOnChange(this, configFile);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to save " + configFile, e);
-        }
-    }
-    
-    /**
-     * Loads the data from the disk into this object.
-     *
-     * <p>
-     * The constructor of the derived class must call this method.
-     * (If we do that in the base class, the derived class won't
-     * get a chance to set default values.)
-     */
-    public static synchronized ApiTokenStore load(File parent) {
-        XmlFile file = getConfigFile(parent);
-        ApiTokenStore apiTokenStore;
-        if (file.exists()) {
-            try {
-                apiTokenStore = (ApiTokenStore) file.unmarshal(ApiTokenStore.class);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load " + file, e);
-                apiTokenStore = new ApiTokenStore();
-            }
-        } else {
-            apiTokenStore = new ApiTokenStore();
-        }
-        
-        apiTokenStore.setParent(parent);
-        return apiTokenStore;
-    }
-    
-    protected static XmlFile getConfigFile(File parent) {
-        return new XmlFile(new File(parent, "apiTokenStore.xml"));
     }
     
     /**
@@ -337,17 +282,14 @@ public class ApiTokenStore implements Saveable {
     }
     
     public static class HashedToken {
-        // to ease the modification of the token through the UI
-        private transient String uuid;
+        // allow us to rename the token and link the statistics
+        private String uuid;
         private String name;
         private Date creationDate;
         
         private HashValue value;
         
-        private Date lastUseDate;
-        private Integer useCounter;
-        
-        public HashedToken() {
+        private HashedToken() {
             this.init();
         }
         
@@ -357,7 +299,9 @@ public class ApiTokenStore implements Saveable {
         }
         
         private void init() {
-            this.uuid = UUID.randomUUID().toString();
+            if(this.uuid == null){
+                this.uuid = UUID.randomUUID().toString();
+            }
         }
         
         public static @Nonnull HashedToken buildNew(@Nonnull String name, @Nonnull HashValue value) {
@@ -393,28 +337,15 @@ public class ApiTokenStore implements Saveable {
         }
         
         // used by Jelly view
-        public int getUseCounter() {
-            return useCounter == null ? 0 : useCounter;
-        }
-        
-        // used by Jelly view
-        public Date getLastUseDate() {
-            return lastUseDate;
-        }
-        
-        // used by Jelly view
-        public long getNumDaysUse() {
-            return lastUseDate == null ? 0 : computeDeltaDays(lastUseDate.toInstant(), Instant.now());
-        }
-        
-        // used by Jelly view
         public Date getCreationDate() {
             return creationDate;
         }
         
         // used by Jelly view
+        /**
+         * Relevant only if the lastUseDate is not null
+         */
         public long getNumDaysCreation() {
-            // should not happen but just in case
             return creationDate == null ? 0 : computeDeltaDays(creationDate.toInstant(), Instant.now());
         }
         
@@ -431,11 +362,6 @@ public class ApiTokenStore implements Saveable {
         
         public boolean isLegacy() {
             return this.value.version.equals(LEGACY_VERSION);
-        }
-        
-        public void incrementUse() {
-            this.useCounter = useCounter == null ? 1 : useCounter + 1;
-            this.lastUseDate = new Date();
         }
         
         public void setName(String name) {

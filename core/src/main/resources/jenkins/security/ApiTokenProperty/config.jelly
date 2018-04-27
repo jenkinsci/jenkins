@@ -28,6 +28,7 @@ THE SOFTWARE.
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
     <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
         <div class="token-list ignore-dirty-panel">
+            <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'hidden-message'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
@@ -37,17 +38,17 @@ THE SOFTWARE.
                 <j:choose>
                     <j:when test="${token!=null}">
                         <j:set var="legacyClazz" value="" />
-                        <j:if test="${token.isLegacy()}">
+                        <j:if test="${token.isLegacy}">
                             <j:set var="legacyClazz" value="legacy-token" />
                         </j:if>
                         <div class="token-list-item token-list-existing-item ${legacyClazz}">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
-                
-                            <j:if test="${token.isLegacy()}">
+                            
+                            <j:if test="${token.isLegacy}">
                                 <l:icon class="icon-warning icon-sm" title="${%LegacyToken}"/>
                             </j:if>
-                
+                            
                             <j:set var="daysOld" value="${token.numDaysCreation}" />
                             <j:set var="oldClazz" value="age-ok" />
                             <j:if test="${daysOld > 180}">
@@ -61,28 +62,38 @@ THE SOFTWARE.
                                 <i:formatDate var="creationDateFormat" value="${token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
                             </j:if>
                             <span class="token-creation ${oldClazz}" title="${creationDateFormat}">${%TokenCreation(daysOld)}</span>
-                
+                            
                             <span class="to-right">
-                                <j:set var="useCounter" value="${token.useCounter}" />
                                 <j:choose>
-                                    <j:when test="${useCounter > 0}">
-                                        <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
-                                        <j:if test="${token.lastUseDate != null}">
-                                            <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
-                                        </j:if>
-                                        <span class="token-use-counter" title="${lastUseDateFormat}">
-                                            ${%TokenLastUse(useCounter, token.numDaysUse)}
-                                        </span>
+                                    <j:when test="${isStatisticsEnabled}">
+                                        <j:set var="useCounter" value="${token.useCounter}" />
+                                        <j:choose>
+                                            <j:when test="${useCounter > 0}">
+                                                <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
+                                                <j:if test="${token.lastUseDate != null}">
+                                                    <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                                </j:if>
+                                                <span class="token-use-counter" title="${lastUseDateFormat}">
+                                                    ${%TokenLastUse(useCounter, token.numDaysUse)}
+                                                </span>
+                                            </j:when>
+                                            <j:otherwise>
+                                                <span class="token-use-counter">
+                                                    <strong title="${%TokenNeverUsed.Title}">
+                                                        <l:icon class="icon-warning icon-sm"/>
+                                                        ${%TokenNeverUsed}
+                                                    </strong>
+                                                </span>
+                                            </j:otherwise>
+                                        </j:choose>
                                     </j:when>
                                     <j:otherwise>
-                                        <span class="token-use-counter">
-                                            <strong title="${%TokenNeverUsed.Title}">
-                                                <l:icon class="icon-warning icon-sm"/>
-                                                ${%TokenNeverUsed}
-                                            </strong>
+                                        <span class="no-statistics" title="${%StatisticsDisabled.Title}">
+                                            ${%StatisticsDisabled}
                                         </span>
                                     </j:otherwise>
                                 </j:choose>
+                                    
                                 <a href="#" onclick="return revokeToken(this)" class="token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
