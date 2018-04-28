@@ -86,7 +86,7 @@ public abstract class SafeTimerTask extends TimerTask {
      * @see AsyncAperiodicWork#getLogFile()
      * @see AsyncPeriodicWork#getLogFile()
      * @return the path where the logs should be put.
-     * @since TODO
+     * @since 2.114
      */
     public static File getLogsRoot() {
         String tagsLogsPath = SystemProperties.getString(LOGS_ROOT_PATH_PROPERTY);
