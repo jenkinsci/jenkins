@@ -44,6 +44,8 @@ import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
+
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
  *
@@ -109,12 +111,12 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Lists up {@link ToolPropertyDescriptor}s that are applicable to this {@link ToolInstallation}.
      */
     public List<ToolPropertyDescriptor> getPropertyDescriptors() {
-        return PropertyDescriptor.<ToolPropertyDescriptor, ToolInstallation>for_(ToolProperty.all(), clazz);
+        return PropertyDescriptor.for_(ToolProperty.all(), clazz);
     }
 
 
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 

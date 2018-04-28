@@ -41,13 +41,13 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");
         if (optJSONObject != null) {
             final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
             final String className = strategyObject.getString("$class");
             try {
-                Class clazz = Class.forName(className, true, Jenkins.getInstance().getPluginManager().uberClassLoader);
+                Class clazz = Class.forName(className, true, j.getPluginManager().uberClassLoader);
                 final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);
                 j.setProjectNamingStrategy(strategy);
             } catch (ClassNotFoundException e) {
