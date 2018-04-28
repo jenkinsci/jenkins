@@ -66,9 +66,6 @@ for(i = 0; i < buildTypes.size(); i++) {
                                              fingerprint: true
                         }
                     }
-                    if (buildType == 'Linux' && currentBuild.result == 'SUCCESS') {
-                        // TODO INFRA-1571 ping webhook with BUILD_URL
-                    }
                 }
             }
         }
