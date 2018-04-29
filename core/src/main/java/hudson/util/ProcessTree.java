@@ -94,9 +94,20 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Lazily obtained {@link ProcessKiller}s to be applied on this process tree.
      */
     private transient volatile List<ProcessKiller> killers;
+    
+    /**
+     * Flag to skip the veto check since there aren't any.
+     */
+    private boolean skipVetoes;
 
     // instantiation only allowed for subtypes in this class
-    private ProcessTree() {}
+    private ProcessTree() {
+       skipVetoes = false;
+    }
+    
+    private ProcessTree(boolean vetoesExist) {
+        skipVetoes = !vetoesExist;
+    }
 
     /**
      * Gets the process given a specific ID, or null if no such process exists.
@@ -243,16 +254,19 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         protected @CheckForNull VetoCause getVeto() {
             String causeMessage = null;
             
-            try {
-                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
-                if (channelToMaster!=null) {
-                    CheckVetoes vetoCheck = new CheckVetoes(this);
-                    causeMessage = channelToMaster.call(vetoCheck);
+            // Quick check, does anything exist to check against
+            if (!skipVetoes) {
+                try {
+                    VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                    if (channelToMaster!=null) {
+                        CheckVetoes vetoCheck = new CheckVetoes(this);
+                        causeMessage = channelToMaster.call(vetoCheck);
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Interrupted Exception while checking for vetoes", e);
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, "Interrupted Exception while checking for vetoes", e);
             }
             
             if (causeMessage != null) {
@@ -368,6 +382,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
 
+    private static Boolean vetoersExist;
+    
     /**
      * Gets the {@link ProcessTree} of the current system
      * that JVM runs in, or in the worst case return the default one
@@ -377,23 +393,43 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         if(!enabled)
             return DEFAULT;
 
+        // Check for the existance of vetoers if I don't know already
+        if (vetoersExist == null) {
+            try {
+                vetoersExist = SlaveComputer.getChannelToMaster().call(new DoVetoersExist());
+            }
+            catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
+            }
+        }
+        
+        // Null-check in case the previous call worked
+        boolean vetoes = (vetoersExist == null ? true : vetoersExist);
+        
         try {
             if(File.pathSeparatorChar==';')
-                return new Windows();
+                return new Windows(vetoes);
 
             String os = Util.fixNull(System.getProperty("os.name"));
             if(os.equals("Linux"))
-                return new Linux();
+                return new Linux(vetoes);
             if(os.equals("SunOS"))
-                return new Solaris();
+                return new Solaris(vetoes);
             if(os.equals("Mac OS X"))
-                return new Darwin();
+                return new Darwin(vetoes);
         } catch (LinkageError e) {
             LOGGER.log(Level.WARNING,"Failed to load winp. Reverting to the default",e);
             enabled = false;
         }
 
         return DEFAULT;
+    }
+    
+    private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
+        @Override
+        public Boolean call() throws IOException {
+            return ProcessKillingVeto.all().size() > 0;
+        }
     }
 
 //
@@ -542,7 +578,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     private static final class Windows extends Local {
-        Windows() {
+        Windows(boolean vetoesExist) {
+            super(vetoesExist);
+            
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
                 if(pid == 0 || pid == 4) continue; // skip the System Idle and System processes
@@ -604,6 +642,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     static abstract class Unix extends Local {
+        public Unix(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         @Override
         public OSProcess get(Process proc) {
             try {
@@ -625,7 +667,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * {@link ProcessTree} based on /proc.
      */
     static abstract class ProcfsUnix extends Unix {
-        ProcfsUnix() {
+        ProcfsUnix(boolean vetoersExist) {
+            super(vetoersExist);
+            
             File[] processes = new File("/proc").listFiles(new FileFilter() {
                 public boolean accept(File f) {
                     return f.isDirectory();
@@ -769,6 +813,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
     static class Linux extends ProcfsUnix {
+        public Linux(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         protected LinuxProcess createProcess(int pid) throws IOException {
             return new LinuxProcess(pid);
         }
@@ -883,6 +931,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
+        public Solaris(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         protected OSProcess createProcess(final int pid) throws IOException {
             return new SolarisProcess(pid);
         }
@@ -1123,7 +1175,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Implementation for Mac OS X based on sysctl(3).
      */
     private static class Darwin extends Unix {
-        Darwin() {
+        Darwin(boolean vetoersExist) {
+            super(vetoersExist);
+
             String arch = System.getProperty("sun.arch.data.model");
             if ("64".equals(arch)) {
                 sizeOf_kinfo_proc = sizeOf_kinfo_proc_64;
@@ -1342,7 +1396,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * (The opposite of {@link Remote}.)
      */
     public static abstract class Local extends ProcessTree {
+        @Deprecated
         Local() {
+        }
+        
+        Local(boolean vetoesExist) {
+            super(vetoesExist);
         }
     }
 
@@ -1352,7 +1411,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     public static class Remote extends ProcessTree implements Serializable {
         private final IProcessTree proxy;
 
+        @Deprecated
         public Remote(ProcessTree proxy, Channel ch) {
+            this.proxy = ch.export(IProcessTree.class,proxy);
+            for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
+                processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
+        }
+        
+        public Remote(ProcessTree proxy, Channel ch, boolean vetoersExist) {
+            super(vetoersExist);
+            
             this.proxy = ch.export(IProcessTree.class,proxy);
             for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
                 processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
