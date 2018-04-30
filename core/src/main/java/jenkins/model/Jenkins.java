@@ -27,6 +27,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -399,7 +400,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getWorkspaceFor(TopLevelItem)
      */
-    private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
+    private String workspaceDir = OLD_DEFAULT_WORKSPACES_DIR;
 
     /**
      * Root directory for the builds.
@@ -846,7 +847,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
+                workspaceDir = DEFAULT_WORKSPACES_DIR;
             }
 
             // doing this early allows InitStrategy to set environment upfront
@@ -918,9 +919,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(KILL_AFTER_LOAD)
                 // TODO cleanUp?
                 System.exit(0);
-
-            setupWizard = new SetupWizard();
-            getInstallState().initializeState();
+            save();
 
             launchTcpSlaveAgentListener();
 
@@ -2137,46 +2136,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return FormValidation.validateNonNegativeInteger(value);
         }
 
-        public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
-            // do essentially what expandVariablesForDirectory does, without an Item
-            String replacedValue = expandVariablesForDirectory(value,
-                    "doCheckRawBuildsDir-Marker:foo",
-                    Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
-
-            File replacedFile = new File(replacedValue);
-            if (!replacedFile.isAbsolute()) {
-                return FormValidation.error(value + " does not resolve to an absolute path");
-            }
-
-            if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
-                return FormValidation.error(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
-            }
-
-            if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
-                // make sure platform can handle colon
-                try {
-                    File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
-                    tmp.delete();
-                } catch (IOException e) {
-                    return FormValidation.error(value + " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
-                }
-            }
-
-            File d = new File(replacedValue);
-            if (!d.isDirectory()) {
-                // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
-                d = d.getParentFile();
-                while (!d.exists()) {
-                    d = d.getParentFile();
-                }
-                if (!d.canWrite()) {
-                    return FormValidation.error(value + " does not exist and probably cannot be created");
-                }
-            }
-
-            return FormValidation.ok();
-        }
-
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
             return Jenkins.getInstance().getDescriptor(token);
@@ -2404,6 +2363,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return DEFAULT_BUILDS_DIR.equals(buildsDir);
     }
 
+    @Restricted(NoExternalUse.class)
+    boolean isDefaultWorkspaceDir() {
+        return OLD_DEFAULT_WORKSPACES_DIR.equals(workspaceDir) || DEFAULT_WORKSPACES_DIR.equals(workspaceDir);
+    }
+
     private File expandVariablesForDirectory(String base, Item item) {
         return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
     }
@@ -2575,7 +2539,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.433
      */
-    public Injector getInjector() {
+    public @CheckForNull Injector getInjector() {
         return lookup(Injector.class);
     }
 
@@ -2612,7 +2576,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      */
     @SuppressWarnings({"unchecked"})
-    public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
+    public @Nonnull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 
@@ -3035,6 +2999,87 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
+
+        try {
+            checkRawBuildsDir(buildsDir);
+            setBuildsAndWorkspacesDir();
+        } catch (InvalidBuildsDir invalidBuildsDir) {
+            throw new IOException(invalidBuildsDir);
+        }
+
+    }
+
+    private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
+        boolean mustSave = false;
+        String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
+        if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
+
+            checkRawBuildsDir(newBuildsDir);
+            LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
+                       new String[]{buildsDir, newBuildsDir});
+            buildsDir = newBuildsDir;
+            mustSave = true;
+        } else if (!isDefaultBuildDir()) {
+            LOGGER.log(Level.INFO, "Using non default builds directories: {0}.", buildsDir);
+        }
+
+        String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
+        if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
+            LOGGER.log(Level.WARNING, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
+                       new String[]{workspaceDir, newWorkspacesDir});
+            workspaceDir = newWorkspacesDir;
+            mustSave = true;
+        } else if (!isDefaultWorkspaceDir()) {
+            LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
+        }
+
+        if (mustSave) {
+            save();
+        }
+    }
+
+    /**
+     * Checks the correctness of the newBuildsDirValue for use as {@link #buildsDir}.
+     * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #buildsDir}.
+     */
+    @VisibleForTesting
+    /*private*/ static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
+
+        // do essentially what expandVariablesForDirectory does, without an Item
+        String replacedValue = expandVariablesForDirectory(newBuildsDirValue,
+                                                           "doCheckRawBuildsDir-Marker:foo",
+                                                           Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
+
+        File replacedFile = new File(replacedValue);
+        if (!replacedFile.isAbsolute()) {
+            throw new InvalidBuildsDir(newBuildsDirValue + " does not resolve to an absolute path");
+        }
+
+        if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
+            throw new InvalidBuildsDir(newBuildsDirValue + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
+        }
+
+        if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
+            // make sure platform can handle colon
+            try {
+                File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
+                tmp.delete();
+            } catch (IOException e) {
+                throw new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+            }
+        }
+
+        File d = new File(replacedValue);
+        if (!d.isDirectory()) {
+            // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
+            d = d.getParentFile();
+            while (!d.exists()) {
+                d = d.getParentFile();
+            }
+            if (!d.canWrite()) {
+                throw new InvalidBuildsDir(newBuildsDirValue +  " does not exist and probably cannot be created");
+            }
+        }
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
@@ -3146,6 +3191,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // auto register root actions
                 for (Action a : getExtensionList(RootAction.class))
                     if (!actions.contains(a)) actions.add(a);
+
+                setupWizard = new SetupWizard();
+                getInstallState().initializeState();
             }
         });
 
@@ -3634,9 +3682,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             checkPermission(ADMINISTER);
 
             JSONObject json = req.getSubmittedForm();
-
-            workspaceDir = json.getString("rawWorkspaceDir");
-            buildsDir = json.getString("rawBuildsDir");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
@@ -5054,6 +5099,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawBuildsDir()
      */
     private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
+    /**
+     * Old layout for workspaces.
+     * @see #DEFAULT_WORKSPACES_DIR
+     */
+    private static final String OLD_DEFAULT_WORKSPACES_DIR = "${ITEM_ROOTDIR}/" + WORKSPACE_DIRNAME;
+
+    /**
+     * Default value for the workspace's directories layout.
+     * @see #workspaceDir
+     */
+    private static final String DEFAULT_WORKSPACES_DIR = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
+
+    /**
+     * System property name to set {@link #buildsDir}.
+     * @see #getRawBuildsDir()
+     */
+    static final String BUILDS_DIR_PROP = Jenkins.class.getName() + ".buildsDir";
+
+    /**
+     * System property name to set {@link #workspaceDir}.
+     * @see #getRawWorkspaceDir()
+     */
+    static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".workspacesDir";
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.

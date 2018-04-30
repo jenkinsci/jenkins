@@ -96,13 +96,13 @@ public class Security232Test {
 
             Class<?> reqClass = Class.forName("hudson.remoting.RemoteInvocationHandler$RPCRequest");
 
-            Constructor<?> reqCons = reqClass.getDeclaredConstructor(int.class, Method.class, Object[].class);
+            Constructor<?> reqCons = reqClass.getDeclaredConstructor(int.class, Method.class, Object[].class, ClassLoader.class, boolean.class);
             reqCons.setAccessible(true);
 
             Object getJarLoader = reqCons
                     .newInstance(1, Class.forName("hudson.remoting.IChannel").getMethod("getProperty", Object.class), new Object[] {
                         JarLoader.class.getName() + ".ours"
-            });
+            }, null, true);
 
             Object call = c.call((Callable<Object,Exception>) getJarLoader);
             InvocationHandler remote = Proxy.getInvocationHandler(call);
@@ -130,7 +130,7 @@ public class Security232Test {
             Object o = reqCons
                     .newInstance(oid, JarLoader.class.getMethod("isPresentOnRemote", Class.forName("hudson.remoting.Checksum")), new Object[] {
                         uro,
-            });
+            }, null, true);
 
             try {
                 c.call((Callable<Object,Exception>) o);

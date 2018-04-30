@@ -44,11 +44,6 @@ THE SOFTWARE.
             <j:set var="descriptor" value="${it.descriptor}" />
             <j:set var="instance" value="${it}" />
 
-            <j:if test="${it.isNameEditable()}">
-              <f:entry title="${%name(it.pronoun)}">
-                <f:textbox name="name" value="${it.name}" autocomplete="on"/>
-              </f:entry>
-            </j:if>
             <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
               <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
             </f:entry>

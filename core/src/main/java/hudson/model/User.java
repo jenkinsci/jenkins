@@ -1100,6 +1100,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (subdirs != null) {
                 for (File subdir : subdirs) {
+                    if (subdir.equals(getRootDir())) {
+                        continue; // ignore the parent directory in case of stray config.xml
+                    }
                     File configFile = new File(subdir, "config.xml");
                     if (configFile.exists()) {
                         String name = strategy.idFromFilename(subdir.getName());
