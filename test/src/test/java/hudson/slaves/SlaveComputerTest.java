@@ -24,27 +24,20 @@
 package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
-import hudson.model.Computer;
-import hudson.model.Node;
+import hudson.model.*;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.xml.sax.SAXException;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author suren
@@ -58,62 +51,39 @@ public class SlaveComputerTest implements Serializable {
         Node nodeA = j.createOnlineSlave();
         String path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
         Assert.assertNotNull(path);
-        Assert.assertEquals(getRemoteFS(nodeA), path);
+        Assert.assertEquals(getRemoteFS(nodeA, null), path);
 
-        try(ACLContext context = ACL.as(Jenkins.ANONYMOUS)) {
-            setAsAnonymous();
+        String userAlice = "alice";
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+        authStrategy.grant(Computer.CONFIGURE, Jenkins.READ).everywhere().to(userAlice);
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+        try(ACLContext context = ACL.as(User.getById(userAlice, true))) {
             nodeA = j.createOnlineSlave();
             path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
             Assert.assertNull(path);
-            Assert.assertEquals(getRemoteFS(nodeA), "null");
+            Assert.assertEquals(getRemoteFS(nodeA, userAlice), "null");
         }
     }
 
     /**
      * Get remote path through json api
      * @param node slave node
+     * @param user the user for webClient
      * @return remote path
      * @throws IOException in case of communication problem.
      * @throws SAXException in case of config format problem.
      */
-    private String getRemoteFS(Node node) throws IOException, SAXException {
+    private String getRemoteFS(Node node, String user) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
+        if(user != null) {
+            wc.login(user);
+        }
+
         WebResponse response = wc.goTo("computer/" + node.getNodeName() + "/api/json",
                 "application/json").getWebResponse();
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
         return json.getString("absoluteRemotePath");
-    }
-
-    private void setAsAnonymous() {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new AuthorizationStrategy(){
-
-            @Nonnull
-            @Override
-            public ACL getRootACL() {
-                return UNSECURED.getRootACL();
-            }
-
-            @Nonnull
-            @Override
-            public Collection<String> getGroups() {
-                return Collections.emptyList();
-            }
-
-            @Nonnull
-            @Override
-            public ACL getACL(@Nonnull Computer computer) {
-                return new ACL(){
-                    @Override
-                    public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
-                        if(permission == Computer.CONFIGURE) {
-                            return true;
-                        }
-
-                        return false;
-                    }
-                };
-            }
-        });
     }
 }
