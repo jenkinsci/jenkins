@@ -37,12 +37,11 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author suren
  */
-public class SlaveComputerTest implements Serializable {
+public class SlaveComputerTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
