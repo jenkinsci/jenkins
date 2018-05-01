@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,15 +119,12 @@ public class ApiTokenStats implements Saveable {
             return new SingleTokenStats(tokenUuid);
         }
         
-        SingleTokenStats stats = tokenStats.stream()
-                .filter(s -> s.tokenUuid.equals(tokenUuid))
-                .findFirst()
-                .orElse(null);
-        
-        if (stats == null) {
-            stats = new SingleTokenStats(tokenUuid);
-            tokenStats.add(stats);
-        }
+        SingleTokenStats stats = findById(tokenUuid)
+                .orElseGet(() -> {
+                    SingleTokenStats result = new SingleTokenStats(tokenUuid);
+                    tokenStats.add(result);
+                    return result;
+                });
         
         stats.notifyUse();
         save();
@@ -139,20 +137,15 @@ public class ApiTokenStats implements Saveable {
             return new SingleTokenStats(tokenUuid);
         }
         
-        SingleTokenStats stats = findById(tokenUuid);
-        if (stats == null) {
-            // empty stats object, no need to add it to the list
-            stats = new SingleTokenStats(tokenUuid);
-        }
-        
-        return stats;
+        // if we create a new empty stats object, no need to add it to the list
+        return findById(tokenUuid)
+                .orElse(new SingleTokenStats(tokenUuid));
     }
     
-    private @Nullable SingleTokenStats findById(@Nonnull String tokenUuid) {
+    private @Nonnull Optional<SingleTokenStats> findById(@Nonnull String tokenUuid) {
         return tokenStats.stream()
                 .filter(s -> s.tokenUuid.equals(tokenUuid))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
     
     /**
