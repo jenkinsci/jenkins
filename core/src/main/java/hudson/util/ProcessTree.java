@@ -144,6 +144,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      */
     public abstract void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
 
+    private final int softkillWaitSeconds = 2 * 60; // processes get at most 2 minutes to respond to SIGTERM (JENKINS-17116)
+
     /**
      * Convenience method that does {@link #killAll(Map)} and {@link OSProcess#killRecursively()}.
      * This is necessary to reliably kill the process and its descendants, as some OS
@@ -501,6 +503,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return;
 
             LOGGER.log(FINER, "Killing recursively {0}", getPid());
+            // Firstly try to kill the root process gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
+            killSoftly();
             p.killRecursively();
             killByKiller();
         }
@@ -512,8 +516,37 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
             
             LOGGER.log(FINER, "Killing {0}", getPid());
+            // Firstly try to kill it gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
+            killSoftly();
             p.kill();
             killByKiller();
+        }
+
+        private void killSoftly() throws InterruptedException {
+            // send Ctrl+C to the process
+            try {
+                if (!p.sendCtrlC()) {
+                    return;
+                }
+            }
+            catch (WinpException e) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Failed to send CTRL+C to pid=" + getPid(), e);
+                }
+                return;
+            }
+
+            // after that wait for it to cease to exist
+            long deadline = System.nanoTime() + softkillWaitSeconds * 1000000000;
+            int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
+            do {
+                if (!p.isRunning()) {
+                    break;
+                }
+
+                Thread.sleep(sleepTime);
+                sleepTime = Math.min(sleepTime * 2, 1000);
+            } while (System.nanoTime() < deadline);
         }
 
         @Override
@@ -724,6 +757,18 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
                 UnixReflection.destroy(pid);
+                // after sending SIGTERM, wait for the process to cease to exist
+                long deadline = System.nanoTime() + softkillWaitSeconds * 1000000000;
+                int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
+                do {
+                    File f = getFile("status");
+                    if (!f.exists()) {
+                        break; // status is gone, process therefore as well
+                    }
+
+                    Thread.sleep(sleepTime);
+                    sleepTime = Math.min(sleepTime * 2, 1000);
+                } while (System.nanoTime() < deadline);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
