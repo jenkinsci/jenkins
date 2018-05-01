@@ -30,7 +30,7 @@ import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * Blocks agents from writing to files on the master by default (and also provide the kill switch.)
  */
-@Restricted(DoNotUse.class) // impl
+@Restricted(NoExternalUse.class) // impl
 @Extension public class DefaultFilePathFilter extends ChannelConfigurator {
 
     /**

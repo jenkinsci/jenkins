@@ -31,6 +31,8 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
+
 /**
  * Show the crumb configuration to the system config page.
  *
@@ -39,14 +41,14 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension(ordinal=195) @Symbol("crumb") // immediately after the security setting
 public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         if (json.has("csrf")) {
             JSONObject csrf = json.getJSONObject("csrf");
             j.setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));

@@ -73,6 +73,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -108,6 +109,7 @@ import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -1090,12 +1092,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return The list can be empty but never null
      */ 
     public @Nonnull List<Artifact> getArtifactsUpTo(int artifactsNumber) {
-        ArtifactList r = new ArtifactList();
+        SerializableArtifactList sal;
+        VirtualFile root = getArtifactManager().root();
         try {
-            addArtifacts(getArtifactManager().root(), "", "", r, null, artifactsNumber);
+            sal = root.run(new AddArtifacts(root, artifactsNumber));
         } catch (IOException x) {
             LOGGER.log(Level.WARNING, null, x);
+            sal = new SerializableArtifactList();
         }
+        ArtifactList r = new ArtifactList();
+        r.updateFrom(sal);
         r.computeDisplayName();
         return r;
     }
@@ -1109,9 +1115,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return !getArtifactsUpTo(1).isEmpty();
     }
 
-    private int addArtifacts(@Nonnull VirtualFile dir, 
+    private static final class AddArtifacts extends MasterToSlaveCallable<SerializableArtifactList, IOException> {
+        private static final long serialVersionUID = 1L;
+        private final VirtualFile root;
+        private final int artifactsNumber;
+        AddArtifacts(VirtualFile root, int artifactsNumber) {
+            this.root = root;
+            this.artifactsNumber = artifactsNumber;
+        }
+        @Override
+        public SerializableArtifactList call() throws IOException {
+            SerializableArtifactList sal = new SerializableArtifactList();
+            addArtifacts(root, "", "", sal, null, artifactsNumber);
+            return sal;
+        }
+    }
+
+    private static int addArtifacts(@Nonnull VirtualFile dir,
             @Nonnull String path, @Nonnull String pathHref, 
-            @Nonnull ArtifactList r, @Nonnull Artifact parent, int upTo) throws IOException {
+            @Nonnull SerializableArtifactList r, @CheckForNull SerializableArtifact parent, int upTo) throws IOException {
         VirtualFile[] kids = dir.list();
         Arrays.sort(kids);
 
@@ -1122,26 +1144,26 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childHref = pathHref + Util.rawEncode(child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (kids.length==1 && parent!=null);
-            Artifact a;
+            SerializableArtifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
-                a = new Artifact(parent.getFileName() + '/' + child, childPath,
+                a = new SerializableArtifact(parent.name + '/' + child, childPath,
                                  sub.isDirectory() ? null : childHref, length,
-                                 parent.getTreeNodeId());
+                                 parent.treeNodeId);
                 r.tree.put(a, r.tree.remove(parent));
             } else {
                 // Use null href for a directory:
-                a = new Artifact(child, childPath,
+                a = new SerializableArtifact(child, childPath,
                                  sub.isDirectory() ? null : childHref, length,
                                  "n" + ++r.idSeq);
-                r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
+                r.tree.put(a, parent!=null ? parent.treeNodeId : null);
             }
             if (sub.isDirectory()) {
                 n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
                 if (n>=upTo) break;
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
+                r.add(collapsed ? new SerializableArtifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
                 if (++n>=upTo) break;
             }
         }
@@ -1159,6 +1181,30 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
 
     // ..and then "too many"
+    
+    /** {@link Run.Artifact} without the implicit link to {@link Run} */
+    private static final class SerializableArtifact implements Serializable {
+        private static final long serialVersionUID = 1L;
+        final String name;
+        final String relativePath;
+        final String href;
+        final String length;
+        final String treeNodeId;
+        SerializableArtifact(String name, String relativePath, String href, String length, String treeNodeId) {
+            this.name = name;
+            this.relativePath = relativePath;
+            this.href = href;
+            this.length = length;
+            this.treeNodeId = treeNodeId;
+        }
+    }
+
+    /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
+        private static final long serialVersionUID = 1L;
+        private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
+        private int idSeq = 0;
+    }
 
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
@@ -1167,7 +1213,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
         private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
-        private int idSeq = 0;
+
+        void updateFrom(SerializableArtifactList clone) {
+            Map<String, Artifact> artifacts = new HashMap<>(); // need to share objects between tree and list, since computeDisplayName mutates displayPath
+            for (SerializableArtifact sa : clone) {
+                Artifact a = new Artifact(sa);
+                artifacts.put(a.relativePath, a);
+                add(a);
+            }
+            tree = new LinkedHashMap<>();
+            for (Map.Entry<SerializableArtifact, String> entry : clone.tree.entrySet()) {
+                SerializableArtifact sa = entry.getKey();
+                Artifact a = artifacts.get(sa.relativePath);
+                if (a == null) {
+                    a = new Artifact(sa);
+                }
+                tree.put(a, entry.getValue());
+            }
+        }
 
         public Map<Artifact,String> getTree() {
             return tree;
@@ -1281,6 +1344,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          *length of this artifact for files.
          */
         private String length;
+
+        Artifact(SerializableArtifact clone) {
+            this(clone.name, clone.relativePath, clone.href, clone.length, clone.treeNodeId);
+        }
 
         /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;

@@ -134,13 +134,13 @@ public class ClassFilterImpl extends ClassFilter {
             }
         }
         return cache.computeIfAbsent(_c, c -> {
-            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true: only the name overload is overridden
-                return true;
-            }
             String name = c.getName();
             if (Main.isUnitTest && (name.contains("$$EnhancerByMockitoWithCGLIB$$") || name.contains("$$FastClassByMockitoWithCGLIB$$") || name.startsWith("org.mockito."))) {
                 mockOff();
                 return false;
+            }
+            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true, but may issue diagnostics
+                return true;
             }
             if (c.isArray()) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);
@@ -272,6 +272,10 @@ public class ClassFilterImpl extends ClassFilter {
             if (r.endsWith(suffix)) {
                 r = r.substring(0, r.length() - suffix.length());
             }
+        }
+        if (r.startsWith("jar:file:/") && r.endsWith(".jar!/")) {
+            // JENKINS-49543: also an old behavior of Tomcat. Legal enough, but unexpected by isLocationWhitelisted.
+            r = r.substring(4, r.length() - 2);
         }
         return r;
     }

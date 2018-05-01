@@ -268,12 +268,14 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(getTransportAuthentication());
             new ClassParser().parse(authenticator,p);
 
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
-            if (!(this instanceof LoginCommand || this instanceof HelpCommand))
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {

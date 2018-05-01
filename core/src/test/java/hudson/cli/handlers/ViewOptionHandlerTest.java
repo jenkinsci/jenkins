@@ -31,10 +31,12 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import hudson.model.ViewGroup;
 import hudson.model.View;
-
+import hudson.security.ACL;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,6 +85,12 @@ public class ViewOptionHandlerTest {
         PowerMockito.when(Jenkins.getActiveInstance()).thenReturn(jenkins);
         when(jenkins.getView("outer")).thenReturn(outer);
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
+        when(jenkins.getACL()).thenReturn(new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission p) {
+                return true;
+            }
+        });
     }
 
     @Test public void resolveTopLevelView() throws Exception {

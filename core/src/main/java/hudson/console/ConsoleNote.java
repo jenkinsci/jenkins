@@ -54,6 +54,7 @@ import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.remoting.ClassFilter;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
  * Data that hangs off from a console output.
@@ -180,7 +181,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf))) {
+        try (ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(buf))) {
             oos.writeObject(this);
         }
 

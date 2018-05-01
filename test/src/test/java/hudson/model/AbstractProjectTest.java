@@ -331,60 +331,6 @@ public class AbstractProjectTest {
         assert job.lastBuild != null;
     }
      */
-    @Test
-    @Issue("JENKINS-17137")
-    public void externalBuildDirectorySymlinks() throws Exception {
-        Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
-        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        File builds = j.createTmpDir();
-        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds.toString() + "/${ITEM_FULL_NAME}");
-        j.submit(form);
-        assertEquals(builds.toString() + "/${ITEM_FULL_NAME}", j.jenkins.getRawBuildsDir());
-        FreeStyleProject p = j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
-        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
-        File link = new File(p.getRootDir(), "lastStable");
-        assertTrue(link.exists());
-        assertEquals(resolveAll(link).getAbsolutePath(), b1.getRootDir().getAbsolutePath());
-        FreeStyleBuild b2 = p.scheduleBuild2(0).get();
-        assertTrue(link.exists());
-        assertEquals(resolveAll(link).getAbsolutePath(), b2.getRootDir().getAbsolutePath());
-        b2.delete();
-        assertTrue(link.exists());
-        assertEquals(resolveAll(link).getAbsolutePath(), b1.getRootDir().getAbsolutePath());
-        b1.delete();
-        assertFalse(link.exists());
-    }
-
-    private File resolveAll(File link) throws InterruptedException, IOException {
-        while (true) {
-            File f = Util.resolveSymlinkToFile(link);
-            if (f == null) {
-                return link;
-            }
-            link = f;
-        }
-    }
-
-    @Test
-    @Issue("JENKINS-17138")
-    public void externalBuildDirectoryRenameDelete() throws Exception {
-        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        File builds = j.createTmpDir();
-        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds.toString() + "/${ITEM_FULL_NAME}");
-        j.submit(form);
-        assertEquals(builds.toString() + "/${ITEM_FULL_NAME}", j.jenkins.getRawBuildsDir());
-        FreeStyleProject p = j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-        File oldBuildDir = new File(builds, "d/prj");
-        assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
-        assertTrue(b.getRootDir().isDirectory());
-        p.renameTo("proj");
-        File newBuildDir = new File(builds, "d/proj");
-        assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
-        assertTrue(b.getRootDir().isDirectory());
-        p.delete();
-        assertFalse(b.getRootDir().isDirectory());
-    }
 
     @Test
     @Issue("JENKINS-18678")
