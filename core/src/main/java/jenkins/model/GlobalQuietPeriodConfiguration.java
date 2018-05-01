@@ -38,7 +38,7 @@ import java.io.IOException;
 @Extension(ordinal=400) @Symbol("quietPeriod")
 public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
     public int getQuietPeriod() {
-        return Jenkins.getInstance().getQuietPeriod();
+        return Jenkins.get().getQuietPeriod();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
         }
         try {
             // for compatibility reasons, this value is stored in Jenkins
-            Jenkins.getInstance().setQuietPeriod(i);
+            Jenkins.get().setQuietPeriod(i);
             return true;
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");
