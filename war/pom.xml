@@ -429,7 +429,6 @@ THE SOFTWARE.
         <artifactId>maven-license-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <!-- TODO does not correctly set resolved ${project.version} for jenkins-* artifacts in Incrementals mode -->
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
           <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
           <attach>true</attach>
