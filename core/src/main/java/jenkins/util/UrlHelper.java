@@ -33,7 +33,7 @@ public class UrlHelper {
     /**
      * Authorize the {@code _} and {@code -} characters in domain
      * <p>
-     * Avoid {@code -} and {@code .} and {@code -} to be first or last
+     * Avoid {@code -} and {@code .} to be first or last
      */
     private static String DOMAIN_REGEX = System.getProperty(
             UrlHelper.class.getName() + ".DOMAIN_REGEX", 
