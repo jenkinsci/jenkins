@@ -1021,11 +1021,6 @@ public final class FilePath implements Serializable {
                 return channel.call(wrapper);
             } catch (TunneledInterruptedException e) {
                 throw (InterruptedException)new InterruptedException(e.getMessage()).initCause(e);
-            } catch (AbortException e) {
-                throw e;    // pass through so that the caller can catch it as AbortException
-            } catch (IOException e) {
-                // wrap it into a new IOException so that we get the caller's stack trace as well.
-                throw new IOException("remote file operation failed: " + remote + " at " + channel + ": " + e, e);
             }
         } else {
             // the file is on the local machine.
