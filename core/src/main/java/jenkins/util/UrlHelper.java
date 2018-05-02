@@ -31,7 +31,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class UrlHelper {
     /**
-     * Authorize the _ and - characters, avoid them to be first or last
+     * Authorize the {@code _} and {@code -} characters in domain
+     * <p>
+     * Avoid {@code -} and {@code .} and {@code -} to be first or last
      */
     private static String DOMAIN_REGEX = System.getProperty(
             UrlHelper.class.getName() + ".DOMAIN_REGEX", 
