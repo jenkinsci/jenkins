@@ -2002,6 +2002,9 @@ public class DomainValidator implements Serializable {
      * @return converted input, or original input if conversion fails
      */
     // Needed by UrlValidator
+    //[PATCH]
+    public
+    // end of [PATCH]
     static String unicodeToASCII(String input) {
         if (isOnlyASCII(input)) { // skip possibly expensive processing
             return input;
