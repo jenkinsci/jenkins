@@ -30,6 +30,9 @@ for(i = 0; i < buildTypes.size(); i++) {
                     checkout scm
                 }
 
+                def changelistF = "${pwd tmp: true}/changelist"
+                def m2repo = "${pwd tmp: true}/m2repo"
+
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 180, unit: 'MINUTES') {
@@ -39,7 +42,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U javadoc:javadoc clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
@@ -52,13 +55,16 @@ for(i = 0; i < buildTypes.size(); i++) {
 
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
-                    def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
-                    renameFiles(files, buildType.toLowerCase())
-
-                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
-                                fingerprint: true
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                    }
+                    if (buildType == 'Linux') {
+                        def changelist = readFile(changelistF)
+                        dir(m2repo) {
+                            archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
+                                             excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             fingerprint: true
+                        }
                     }
                 }
             }
@@ -91,6 +97,7 @@ builds.ath = {
 
 builds.failFast = failFast
 parallel builds
+infra.maybePublishIncrementals()
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
@@ -113,17 +120,5 @@ void withMavenEnv(List envVars = [], def body) {
     // Invoke the body closure we're passed within the environment we've created.
     withEnv(mvnEnv) {
         body.call()
-    }
-}
-
-void renameFiles(def files, String prefix) {
-    for(i = 0; i < files.length; i++) {
-        def newPath = files[i].path.replace(files[i].name, "${prefix}-${files[i].name}")
-        def rename = "${files[i].path} ${newPath}"
-        if(isUnix()) {
-            sh "mv ${rename}"
-        } else {
-            bat "move ${rename}"
-        }
     }
 }
