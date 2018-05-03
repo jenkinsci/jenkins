@@ -821,7 +821,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @since 2.0, used to be in {@link GlobalConfiguration} before that.
      */
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 

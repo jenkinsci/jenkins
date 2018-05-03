@@ -2544,7 +2544,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.433
      */
-    public Injector getInjector() {
+    public @CheckForNull Injector getInjector() {
         return lookup(Injector.class);
     }
 
@@ -2581,7 +2581,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      */
     @SuppressWarnings({"unchecked"})
-    public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
+    public @Nonnull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 

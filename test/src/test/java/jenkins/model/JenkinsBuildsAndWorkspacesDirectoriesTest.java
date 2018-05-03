@@ -41,8 +41,6 @@ import static org.junit.Assume.assumeFalse;
  * <p>
  * So this test class uses a {@link RestartableJenkinsRule} to check the behaviour of this sysprop being
  * present or not between two restarts.
- *
- * @since TODO
  */
 public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
