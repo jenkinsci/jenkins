@@ -28,6 +28,7 @@ import hudson.model.*;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -62,7 +63,7 @@ public class SlaveComputerTest {
             nodeA = j.createOnlineSlave();
             path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
             Assert.assertNull(path);
-            Assert.assertEquals(getRemoteFS(nodeA, userAlice), "null");
+            Assert.assertNull(getRemoteFS(nodeA, userAlice));
         }
     }
 
@@ -83,6 +84,12 @@ public class SlaveComputerTest {
         WebResponse response = wc.goTo("computer/" + node.getNodeName() + "/api/json",
                 "application/json").getWebResponse();
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
-        return json.getString("absoluteRemotePath");
+
+        Object pathObj = json.get("absoluteRemotePath");
+        if(pathObj instanceof JSONNull) {
+            return null; // the value is null in here
+        } else {
+            return pathObj.toString();
+        }
     }
 }
