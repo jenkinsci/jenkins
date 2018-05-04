@@ -23,36 +23,42 @@
  */
 package jenkins.util;
 
+import jenkins.org.apache.commons.validator.routines.DomainValidator;
 import jenkins.org.apache.commons.validator.routines.UrlValidator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 @Restricted(NoExternalUse.class)
 public class UrlHelper {
+    /**
+     * Authorize the {@code _} and {@code -} characters in domain
+     * <p>
+     * Avoid {@code -} and {@code .} to be first or last
+     */
+    private static String DOMAIN_REGEX = System.getProperty(
+            UrlHelper.class.getName() + ".DOMAIN_REGEX", 
+            "(\\w(\\.?-?\\w+)*)(:\\d{1,5})?"
+    );
+    
     public static boolean isValidRootUrl(String url) {
-        String[] schemes = {"http", "https"};
-        // option to accept url like http://localhost or http://SERVER_JENKINS that are often used inside company's network
-        UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS);
-        boolean isValid = validator.isValid(url);
-        if (!isValid) {
-            // potentially it contains _'s in hostname which seems accepted but not by the UrlValidator
-            // https://issues.apache.org/jira/browse/VALIDATOR-358
-            try {
-                URL urlObject = new URL(url);
-                String host = urlObject.getHost();
-                if (host.contains("_")) {
-                    String hostWithoutUnderscore = host.replace("_", "");
-                    String modifiedUrl = url.replace(host, hostWithoutUnderscore);
-                    isValid = validator.isValid(modifiedUrl);
-                }
-            } catch (MalformedURLException e) {
-                return false;
-            }
+        UrlValidator validator = new CustomUrlValidator();
+        return validator.isValid(url);
+    }
+    
+    private static class CustomUrlValidator extends UrlValidator {
+        private CustomUrlValidator() {
+            super(new String[]{"http", "https"}, UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS);
         }
         
-        return isValid;
+        @Override 
+        protected boolean isValidAuthority(String authority) {
+            // to support ipv6
+            boolean superResult = super.isValidAuthority(authority);
+            if(!superResult && authority == null){
+                return false;
+            }
+            String authorityASCII = DomainValidator.unicodeToASCII(authority);
+            return authorityASCII.matches(DOMAIN_REGEX);
+        }
     }
 }
