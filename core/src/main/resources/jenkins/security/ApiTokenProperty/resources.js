@@ -91,6 +91,9 @@ function saveApiToken(button){
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
                 uuidInput.value = tokenUuid;
 
+                var warningMessage = repeatedChunk.querySelector('.display-after-generation');
+                warningMessage.style.display = 'block';
+                
                 // we do not want to allow user to create twice a token using same name by mistake
                 button.remove();
                 

@@ -27,13 +27,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
     <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
+        <!-- ignore the whole div to prevent the "Add new token" button to trigger the confirm -->
         <div class="token-list ignore-dirty-panel">
             <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'hidden-message'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
             </div>
-            <f:repeatable name="tokenStore" var="token" items="${tokenList}" minimum="0"
+            <f:repeatable name="tokenStore" var="token" items="${tokenList}" minimum="0" add="${%AddNewToken}"
                           noAddButton="${!descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
                 <j:choose>
                     <j:when test="${token!=null}">
@@ -41,7 +42,8 @@ THE SOFTWARE.
                         <j:if test="${token.isLegacy}">
                             <j:set var="legacyClazz" value="legacy-token" />
                         </j:if>
-                        <div class="token-list-item token-list-existing-item ${legacyClazz}">
+                        <!-- force the confirm in case those inputs are changed, to override the parent ignore, for existing token -->
+                        <div class="token-list-item token-list-existing-item force-dirty-panel ${legacyClazz}">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
                             
@@ -106,12 +108,14 @@ THE SOFTWARE.
                     <j:otherwise>
                         <div class="token-list-item token-list-new-item">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
-                            <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}" 
+                            <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"
                                        style="width: 40%; display: inline-block"/>
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value" style="width: 40%; margin-right: 2px; display: none"><!--will be filled by javascript--></span>
                             <span class="yui-button token-save" style="vertical-align: baseline;">
-                                <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>
+                                <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
+                                    ${%GenerateNewToken}
+                                </button>
                             </span>
                             <span class="token-cancel">
                                 <f:repeatableDeleteButton value="${%Cancel}" />
@@ -122,7 +126,7 @@ THE SOFTWARE.
                                 <l:icon class="icon-text-error icon-sm"/>
                             </a>
                             <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
-                            <div class="warning" style="margin-top: 5px;">${%TokenDisplayedOnce}</div>
+                            <div class="warning display-after-generation" style="margin-top: 5px; display: none;">${%TokenDisplayedOnce}</div>
                         </div>
                     </j:otherwise>
                 </j:choose>

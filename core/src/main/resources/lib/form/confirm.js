@@ -17,13 +17,24 @@
     }
     
     function isIgnoringConfirm(element){
+      if(element.hasClassName('force-dirty')){
+        return false;
+      }
       if(element.hasClassName('ignore-dirty')){
         return true;
       }
       // to allow sub-section of the form to ignore confirm
       // especially useful for "pure" JavaScript area
-      var ignorePanel = element.up('.ignore-dirty-panel');
-      if(ignorePanel){
+      // we try to gather the first parent with a marker, 
+      var dirtyPanel = element.up('.ignore-dirty-panel,.force-dirty-panel');
+      if(!dirtyPanel){
+        return false;
+      }
+      
+      if(dirtyPanel.hasClassName('force-dirty-panel')){
+        return false;
+      }
+      if(dirtyPanel.hasClassName('ignore-dirty-panel')){
         return true;
       }
       
