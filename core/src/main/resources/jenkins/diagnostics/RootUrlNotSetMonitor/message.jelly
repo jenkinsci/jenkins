@@ -22,15 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <div class="alert alert-warning">
+    <form method="post" action="${rootURL}/${it.url}/disable">
+      <f:submit value="${%Dismiss}"/>
+    </form>
+    <j:set var="actionAnchor">
+      <a href="${rootURL}/configure">${%actionUrlContent}</a>
+    </j:set>
+  
     <j:choose>
       <j:when test="${it.isUrlNull()}">
-        ${%urlIsNull(rootURL)}
+        ${%urlIsNull}
       </j:when>
       <j:otherwise>
-        ${%urlIsInvalid(rootURL)}
+        ${%urlIsInvalid}
       </j:otherwise>
     </j:choose>
+    <p />
+    <j:out value="${%actionToTake(actionAnchor)}"/>
   </div>
 </j:jelly>

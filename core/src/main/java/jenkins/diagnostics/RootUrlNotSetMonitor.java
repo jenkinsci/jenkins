@@ -38,7 +38,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Potential exceptions are the dev environment, if someone disable the wizard or
  * the administrator put an empty string on the configuration page.
  *
- * @since TODO
+ * @since 2.119
  */
 @Extension
 @Symbol("rootUrlNotSet")
@@ -52,15 +52,13 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
-        return loc != null && (
-                loc.getUrl() == null || !UrlHelper.isValidRootUrl(loc.getUrl())
-        );
+        return loc.getUrl() == null || !UrlHelper.isValidRootUrl(loc.getUrl());
     }
     
     // used by jelly to determined if it's a null url or invalid one
     @Restricted(NoExternalUse.class)
     public boolean isUrlNull(){
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
-        return loc != null && loc.getUrl() == null;
+        return loc.getUrl() == null;
     }
 }
