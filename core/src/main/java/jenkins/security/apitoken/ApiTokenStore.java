@@ -118,6 +118,16 @@ public class ApiTokenStore {
     }
     
     public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
+        deleteAllLegacyAndGenerateNewOne(newLegacyApiToken);
+    }
+    
+    public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
+        if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
+            deleteAllLegacyAndGenerateNewOne(newLegacyApiToken);
+        }
+    }
+    
+    private void deleteAllLegacyAndGenerateNewOne(@Nonnull Secret newLegacyApiToken) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken);
     }

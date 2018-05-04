@@ -37,6 +37,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Date;
@@ -76,6 +77,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         return new HttpRedirect("manage");
     }
     
+    // used by Jelly view
     @Restricted(NoExternalUse.class)
     public List<User> getImpactedUserList() {
         return User.getAll().stream()
@@ -86,32 +88,47 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                 .collect(Collectors.toList());
     }
     
+    // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(User user) {
+    public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenStore().getLegacyToken();
         return legacyToken;
     }
     
+    // used by Jelly view
+    @Restricted(NoExternalUse.class)
+    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @Nullable ApiTokenStore.HashedToken legacyToken) {
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        if(legacyToken != null){
+            ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
+            ApiTokenProperty.TokenInfoAndStats tokenInfoAndStats = new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
+            return tokenInfoAndStats;
+        }
+        
+        // in case the legacy token was revoked during the request
+        return null;
+    }
+    
     /**
      * Determine if the user has at least one "new" token that was created after the last use of the legacy token
      */
+    // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasFreshToken(User user, ApiTokenStore.HashedToken legacyToken) {
-        if(legacyToken == null){
+    public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+        if(legacyStats == null){
             return false;
         }
         
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStats.SingleTokenStats legacyTokenStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
         
         return apiTokenProperty.getTokenList().stream()
                 .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
                     Date creationDate = token.creationDate;
-                    Date lastUseDate = legacyTokenStats.getLastUseDate();
+                    Date lastUseDate = legacyStats.lastUseDate;
                     if (lastUseDate == null) {
-                        lastUseDate = legacyToken.getCreationDate();
+                        lastUseDate = legacyStats.creationDate;
                     }
                     return creationDate != null && lastUseDate != null && creationDate.after(lastUseDate);
                 });
@@ -120,22 +137,22 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     /**
      * Determine if the user has at least one "new" token that was used after the last use of the legacy token
      */
+    // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasMoreRecentlyUsedToken(User user, ApiTokenStore.HashedToken legacyToken) {
-        if(legacyToken == null){
+    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+        if(legacyStats == null){
             return false;
         }
         
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStats.SingleTokenStats legacyTokenStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
     
         return apiTokenProperty.getTokenList().stream()
                 .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
                     Date currentLastUseDate = token.lastUseDate;
-                    Date legacyLastUseDate = legacyTokenStats.getLastUseDate();
+                    Date legacyLastUseDate = legacyStats.lastUseDate;
                     if (legacyLastUseDate == null) {
-                        legacyLastUseDate = legacyToken.getCreationDate();
+                        legacyLastUseDate = legacyStats.creationDate;
                     }
                     return currentLastUseDate != null && legacyLastUseDate != null && currentLastUseDate.after(legacyLastUseDate);
                 });

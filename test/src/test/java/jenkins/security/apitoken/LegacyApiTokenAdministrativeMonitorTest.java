@@ -37,7 +37,10 @@ import jenkins.security.ApiTokenProperty;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -324,22 +327,22 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicApiToken(user);
         
-        wc.goTo("whoAmI");
+        wc.goTo("whoAmI/api/xml", null);
     }
     
     private void simulateUseOfToken(User user, String tokenPlainValue) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), tokenPlainValue);
         
-        wc.goTo("whoAmI");
+        wc.goTo("whoAmI/api/xml", null);
     }
     
     private int nextId = 0;
     
-    private User createUserWithToken(boolean legacy, boolean fresh, boolean recent) throws Exception {
+    private void createUserWithToken(boolean legacy, boolean fresh, boolean recent) throws Exception {
         User user = User.getById(String.format("user %b %b %b %d", legacy, fresh, recent, nextId++), true);
         if (!legacy) {
-            return user;
+            return ;
         }
         
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -370,7 +373,5 @@ public class LegacyApiTokenAdministrativeMonitorTest {
             }
             //else: no other token to generate
         }
-        
-        return user;
     }
 }

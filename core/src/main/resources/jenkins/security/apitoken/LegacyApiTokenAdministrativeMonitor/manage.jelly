@@ -57,6 +57,7 @@ THE SOFTWARE.
                         <j:when test="${!userList.isEmpty()}">
                             <j:forEach var="user" items="${userList}">
                                 <j:set var="legacyToken" value="${it.getLegacyTokenOf(user)}"/>
+                                <j:set var="legacyStats" value="${it.getLegacyStatsOf(user, legacyToken)}"/>
         
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
                                 <j:if test="${legacyToken.creationDate != null}">
@@ -64,15 +65,15 @@ THE SOFTWARE.
                                 </j:if>
                                 
                                 <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
-                                <j:if test="${legacyToken.lastUseDate != null}">
-                                    <i:formatDate var="lastUseDateFormat" value="${legacyToken.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                <j:if test="${legacyStats.lastUseDate != null}">
+                                    <i:formatDate var="lastUseDateFormat" value="${legacyStats.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
                                 </j:if>
         
                                 <j:set var="hasFreshToken"
-                                       value="${it.hasFreshToken(user, legacyToken)}"/>
+                                       value="${it.hasFreshToken(user, legacyStats)}"/>
         
                                 <j:set var="hasMoreRecentlyUsedToken"
-                                       value="${it.hasMoreRecentlyUsedToken(user, legacyToken)}"/>
+                                       value="${it.hasMoreRecentlyUsedToken(user, legacyStats)}"/>
                                 
                                 <j:if test="${legacyToken != null}">
                                     <tr>
@@ -84,7 +85,7 @@ THE SOFTWARE.
                                                    class="token-to-revoke ${hasFreshToken ? 'fresh-token' : ''} ${hasMoreRecentlyUsedToken ? 'recent-token' : ''}" />
                                         </td>
                                         <td>
-                                            ${user.id}
+                                            ${user.id}asdfasdf
                                         </td>
                                         <td>
                                             ${user.fullName}
@@ -93,13 +94,13 @@ THE SOFTWARE.
                                             ${legacyToken.name}
                                         </td>
                                         <td title="${creationDateFormat}">
-                                            ${legacyToken.numDaysCreation}
+                                            ${legacyStats.numDaysCreation}
                                         </td>
                                         <td>
-                                            ${legacyToken.useCounter}
+                                            ${legacyStats.useCounter}
                                         </td>
                                         <td title="${lastUseDateFormat}">
-                                            ${legacyToken.numDaysUse}
+                                            ${legacyStats.numDaysUse}
                                         </td>
                                         <td>
                                             <j:choose>
