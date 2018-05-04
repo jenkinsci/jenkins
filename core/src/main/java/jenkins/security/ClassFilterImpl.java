@@ -229,12 +229,12 @@ public class ClassFilterImpl extends ClassFilter {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
                 }
             }
-            if (loc.endsWith("/target/classes/")) {
+            if (loc.endsWith("/target/classes/") || loc.matches(".+/build/classes/[^/]+/main/")) {
                 LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
                 return true;
             }
             if (Main.isUnitTest) {
-                if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar")) {
+                if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar") || loc.matches(".+/build/classes/[^/]+/test/")) {
                     LOGGER.log(Level.FINE, "{0} seems to be test classes, OK", loc);
                     return true;
                 }
