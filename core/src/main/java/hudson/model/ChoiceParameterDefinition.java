@@ -61,7 +61,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
      * @param name parameter name
      * @param description parameter description
      *
-     * @since TODO
+     * @since 2.112
      */
     @DataBoundConstructor
     @Restricted(NoExternalUse.class) // there are specific constructors with String and List arguments for 'choices'
@@ -82,7 +82,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
      *
      * @param choices String or Collection representing this parameter definition's possible values.
      *
-     * @since TODO
+     * @since 2.112
      *
      */
     @DataBoundSetter

@@ -328,6 +328,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
+    private String installStateName;
+
+    @Deprecated
     private InstallState installState;
     
     /**
@@ -1014,10 +1017,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Nonnull
     @Restricted(NoExternalUse.class)
     public InstallState getInstallState() {
-        if (installState == null || installState.name() == null) {
-            return InstallState.UNKNOWN;
+        if (installState != null) {
+            installStateName = installState.name();
+            installState = null;
         }
-        return installState;
+        InstallState is = installStateName != null ? InstallState.valueOf(installStateName) : InstallState.UNKNOWN;
+        return is != null ? is : InstallState.UNKNOWN;
     }
 
     /**
@@ -1026,10 +1031,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public void setInstallState(@Nonnull InstallState newState) {
-        InstallState prior = installState;
-        installState = newState;
-        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installState });
-        if (!newState.equals(prior)) {
+        String prior = installStateName;
+        installStateName = newState.name();
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installStateName });
+        if (!installStateName.equals(prior)) {
             getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
         }
@@ -2539,7 +2544,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.433
      */
-    public Injector getInjector() {
+    public @CheckForNull Injector getInjector() {
         return lookup(Injector.class);
     }
 
@@ -2576,7 +2581,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      */
     @SuppressWarnings({"unchecked"})
-    public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
+    public @Nonnull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 

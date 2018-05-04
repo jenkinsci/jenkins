@@ -907,7 +907,7 @@ public final class FilePath implements Serializable {
     /**
      * Copies the content of a URL to a remote file.
      * Unlike {@link #copyFrom} this will not transfer content over a Remoting channel.
-     * @since FIXME
+     * @since 2.119
      */
     @Restricted(Beta.class)
     public void copyFromRemotely(URL url) throws IOException, InterruptedException {
