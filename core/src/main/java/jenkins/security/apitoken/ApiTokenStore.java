@@ -61,7 +61,7 @@ public class ApiTokenStore {
             Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase(Locale.ENGLISH));
     
     private static final int TOKEN_LENGTH_V2 = 34;
-    /** two hex-characters, avoid starting with 0 to avoid troubles */
+    /** two hex characters, avoid starting with 0 to avoid troubles */
     private static final String LEGACY_VERSION = "10";
     private static final String HASH_VERSION = "11";
     
