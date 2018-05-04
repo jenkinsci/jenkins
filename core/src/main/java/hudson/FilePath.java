@@ -2283,7 +2283,8 @@ public final class FilePath implements Serializable {
                             if (f.isFile()) {
                                 File target = new File(dest, relativePath);
                                 mkdirsE(target.getParentFile());
-                                Util.copyFile(f, writing(target));
+                                Files.copy(fileToPath(f), fileToPath(writing(target)),
+                                        StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                                 count.incrementAndGet();
                             }
                         }
