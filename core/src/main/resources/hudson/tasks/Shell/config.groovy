@@ -25,5 +25,12 @@ package hudson.tasks.Shell;
 f=namespace(lib.FormTagLib)
 
 f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name:"command",value:instance?.command,class:"fixed-width")
+    f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': "mode: 'text/x-sh'")
+}
+
+f.advanced() {
+    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
+        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
+    }
+
 }

@@ -36,6 +36,7 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.CheckForNull;
 
 /**
  * List of {@link Descriptor}s.
@@ -53,7 +54,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>
  * The other mode is the new mode, where the {@link Descriptor}s are actually stored in {@link ExtensionList}
  * (see {@link jenkins.model.Jenkins#getDescriptorList(Class)}) and this class acts as a view to it. This enables
- * bi-directional interoperability &mdash; both descriptors registred automatically and descriptors registered
+ * bi-directional interoperability &mdash; both descriptors registered automatically and descriptors registered
  * manually are visible from both {@link DescriptorList} and {@link ExtensionList}. In this mode,
  * {@link #legacy} is null but {@link #type} is non-null.
  *
@@ -78,6 +79,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * @deprecated
      *      As of 1.286. Use {@link #DescriptorList(Class)} instead.
      */
+    @Deprecated
     public DescriptorList(Descriptor<T>... descriptors) {
         this.type = null;
         this.legacy = new CopyOnWriteArrayList<Descriptor<T>>(descriptors);
@@ -114,6 +116,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      *      instead of registering a descriptor manually.
      */
     @Override
+    @Deprecated
     public boolean add(Descriptor<T> d) {
         return store().add(d);
     }
@@ -126,6 +129,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      *      instead of registering a descriptor manually.
      */
     @Override
+    @Deprecated
     public void add(int index, Descriptor<T> element) {
         add(element); // order is ignored
     }
@@ -149,7 +153,11 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * Creates a new instance of a {@link Describable}
      * from the structured form submission data posted
      * by a radio button group. 
+     * @param config Submitted configuration for Radio List
+     * @return new instance or {@code null} if none was selected in the radio list
+     * @throws FormException Data submission error
      */
+    @CheckForNull
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
         if(config.isNullObject())
             return null;    // none was selected
@@ -157,15 +165,26 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         return get(idx).newInstance(Stapler.getCurrentRequest(),config);
     }
 
+    /**
+     * Creates a new instance of a {@link Describable}
+     * from the structured form submission data posted
+     * by a radio button group. 
+     * @param parent JSON, which contains the configuration entry for the radio list
+     * @param name Name of the configuration entry for the radio list
+     * @return new instance or {@code null} if none was selected in the radio list
+     * @throws FormException Data submission error
+     */
+    @CheckForNull
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
         return newInstanceFromRadioList(parent.getJSONObject(name));
     }
 
     /**
      * Finds a descriptor by their {@link Descriptor#getId()}.
-     *
-     * If none is found, null is returned.
+     * @param id Descriptor ID
+     * @return If none is found, {@code null} is returned.
      */
+    @CheckForNull
     public Descriptor<T> findByName(String id) {
         for (Descriptor<T> d : this)
             if(d.getId().equals(id))
@@ -196,7 +215,9 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
 
     /**
      * Finds the descriptor that has the matching fully-qualified class name.
+     * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @CheckForNull
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);
     }

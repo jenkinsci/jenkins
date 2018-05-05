@@ -28,7 +28,7 @@ THE SOFTWARE.
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <form method="post" action="doDelete">
-		    ${%Are you sure about deleting the slave?}
+		    ${%Are you sure about deleting the agent?}
         <f:submit value="${%Yes}" />
 		  </form>
 		</l:main-panel>

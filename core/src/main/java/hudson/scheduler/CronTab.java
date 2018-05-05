@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 
 import java.io.StringReader;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -58,6 +59,11 @@ public final class CronTab {
      */
     private String spec;
 
+    /**
+     * Optional timezone string for calendar 
+     */
+    private @CheckForNull String specTimezone;
+
     public CronTab(String format) throws ANTLRException {
         this(format,null);
     }
@@ -70,6 +76,7 @@ public final class CronTab {
      * @deprecated as of 1.448
      *      Use {@link #CronTab(String, int, Hash)}
      */
+    @Deprecated
     public CronTab(String format, int line) throws ANTLRException {
         set(format, line, null);
     }
@@ -80,15 +87,33 @@ public final class CronTab {
      *      of not spreading it out at all.
      */
     public CronTab(String format, int line, Hash hash) throws ANTLRException {
-        set(format, line, hash);
+        this(format, line, hash, null);
+    }
+
+    /**
+     * @param timezone
+     *      Used to schedule cron in a different timezone. Null to use the default system 
+     *      timezone
+     * @since 1.615
+     */
+    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) throws ANTLRException {
+        set(format, line, hash, timezone);
     }
     
     private void set(String format, int line, Hash hash) throws ANTLRException {
+        set(format, line, hash, null);
+    }
+
+    /**
+     * @since 1.615
+     */
+    private void set(String format, int line, Hash hash, String timezone) throws ANTLRException {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(lexer);
         parser.setHash(hash);
         spec = format;
+        specTimezone = timezone;
 
         parser.startRule(this);
         if((dayOfWeek&(1<<7))!=0) {
@@ -102,15 +127,24 @@ public final class CronTab {
      * Returns true if the given calendar matches
      */
     boolean check(Calendar cal) {
-        if(!checkBits(bits[0],cal.get(MINUTE)))
+
+        Calendar checkCal = cal;
+
+        if(specTimezone != null && !specTimezone.isEmpty()) {
+            Calendar tzCal = Calendar.getInstance(TimeZone.getTimeZone(specTimezone));
+            tzCal.setTime(cal.getTime());
+            checkCal = tzCal;
+        }
+
+        if(!checkBits(bits[0],checkCal.get(MINUTE)))
             return false;
-        if(!checkBits(bits[1],cal.get(HOUR_OF_DAY)))
+        if(!checkBits(bits[1],checkCal.get(HOUR_OF_DAY)))
             return false;
-        if(!checkBits(bits[2],cal.get(DAY_OF_MONTH)))
+        if(!checkBits(bits[2],checkCal.get(DAY_OF_MONTH)))
             return false;
-        if(!checkBits(bits[3],cal.get(MONTH)+1))
+        if(!checkBits(bits[3],checkCal.get(MONTH)+1))
             return false;
-        if(!checkBits(dayOfWeek,cal.get(Calendar.DAY_OF_WEEK)-1))
+        if(!checkBits(dayOfWeek,checkCal.get(Calendar.DAY_OF_WEEK)-1))
             return false;
 
         return true;
@@ -275,7 +309,7 @@ public final class CronTab {
      * More precisely, given the time 't', computes another smallest time x such that:
      *
      * <ul>
-     * <li>x >= t (inclusive)
+     * <li>x ≥ t (inclusive)
      * <li>x matches this crontab
      * </ul>
      *
@@ -292,10 +326,19 @@ public final class CronTab {
      * See {@link #ceil(long)}.
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years after it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar ceil(Calendar cal) {
+        Calendar twoYearsFuture = (Calendar) cal.clone();
+        twoYearsFuture.add(Calendar.YEAR, 2);
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsFuture) > 0) {
+                // we went too far into the future
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.ceil(this,cur);
@@ -344,10 +387,20 @@ public final class CronTab {
      * See {@link #floor(long)}
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years before it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar floor(Calendar cal) {
+        Calendar twoYearsAgo = (Calendar) cal.clone();
+        twoYearsAgo.add(Calendar.YEAR, -2);
+
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsAgo) < 0) {
+                // we went too far into the past
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.floor(this,cur);
@@ -430,6 +483,16 @@ public final class CronTab {
             }
         }
 
+        int daysOfMonth = 0;
+        for (int i = 1; i < 31; i++) {
+            if (checkBits(bits[2], i)) {
+                daysOfMonth++;
+            }
+        }
+        if (daysOfMonth > 5 && daysOfMonth < 28) { // a bit arbitrary
+            return Messages.CronTab_short_cycles_in_the_day_of_month_field_w();
+        }
+
         String hashified = hashify(spec);
         if (hashified != null) {
             return Messages.CronTab_spread_load_evenly_by_using_rather_than_(hashified, spec);
@@ -468,5 +531,18 @@ public final class CronTab {
             }
             return null;
         }
+    }
+
+    /**
+     * Returns the configured time zone, or null if none is configured
+     *
+     * @return the configured time zone, or null if none is configured
+     * @since 2.54
+     */
+    @CheckForNull public TimeZone getTimeZone() {
+        if (this.specTimezone == null) {
+            return null;
+        }
+        return TimeZone.getTimeZone(this.specTimezone);
     }
 }

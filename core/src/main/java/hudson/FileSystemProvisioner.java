@@ -24,18 +24,19 @@
 package hudson;
 
 import hudson.FilePath.TarCompression;
-import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
-import hudson.util.DirScanner.Glob;
 import hudson.util.io.ArchiverFactory;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
+import org.jenkinsci.Symbol;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -53,7 +54,7 @@ import java.io.OutputStream;
  * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
- *   -> probably per slave.
+ *   → probably per agent.
  *
  * <h2>Design Problems</h2>
  * <ol>
@@ -73,7 +74,7 @@ import java.io.OutputStream;
  * one more configuration option. It's especially tricky because
  * during the configuration we don't know the OS type.
  *
- * OTOH special slave type like the ones for network.com grid can
+ * OTOH special agent type like the ones for network.com grid can
  * hide this.
  * </ol>
  *
@@ -82,8 +83,8 @@ import java.io.OutputStream;
  *
  * To recap,
  *
- * - when a slave connects, we auto-detect the file system provisioner.
- *   (for example, ZFS FSP would check the slave root user prop
+ * - when an agent connects, we auto-detect the file system provisioner.
+ *   (for example, ZFS FSP would check the agent root user prop
  *   and/or attempt to "pfexec zfs create" and take over.)
  *
  * - the user may configure jobs for snapshot collection, along with
@@ -158,7 +159,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * <p>
      * The state of the build when this method is invoked depends on
      * the project type. Most would call this at the end of the build,
-     * but for example {@link MatrixBuild} would call this after
+     * but for example {@code MatrixBuild} would call this after
      * SCM check out so that the state of the fresh workspace
      * can be then propagated to elsewhere.
      *
@@ -206,6 +207,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         /**
          * @deprecated as of 1.350
          */
+        @Deprecated
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             return snapshot(build, ws, "**/*", listener);
         }
@@ -215,11 +217,10 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             File wss = new File(build.getRootDir(),"workspace.tgz");
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
-            try {
-                ws.archive(ArchiverFactory.TARGZ,os,glob);
-            } finally {
-                os.close();
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(wss.toPath()))) {
+                ws.archive(ArchiverFactory.TARGZ, os, glob);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
             return new WorkspaceSnapshotImpl();
         }
@@ -236,10 +237,10 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             }
         }
 
-        @Extension
+        @Extension @Symbol("standard")
         public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
             public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
-                // the default provisioner doens't do anything special,
+                // the default provisioner does not do anything special,
                 // so allow other types to manage it
                 return false;
             }

@@ -27,11 +27,9 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 
 import java.util.Random;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -105,7 +103,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
      * Returns all the registered {@link AperiodicWork}s.
      */
     public static ExtensionList<AperiodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(AperiodicWork.class);
+        return ExtensionList.lookup(AperiodicWork.class);
     }
 
     private static final Random RANDOM = new Random();

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 Red Hat, Inc.
+ * Copyright 2013-5 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,13 @@ package hudson.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.notNullValue;
 
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 
+import hudson.model.AllView;
 import java.io.IOException;
 
 import hudson.model.ListView;
@@ -44,6 +45,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+/**
+ * @author ogondza, pjanouse
+ */
 public class DeleteViewCommandTest {
 
     private CLICommandInvoker command;
@@ -64,9 +68,23 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Delete permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Delete permission"));
+    }
+
+    @Test public void deleteViewShouldFailWithoutViewReadPermission() throws IOException {
+
+        j.jenkins.addView(new ListView("aView"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView")
+                ;
+
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
 
     @Test public void deleteViewShouldSucceed() throws Exception {
@@ -78,9 +96,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aView"), nullValue());
     }
 
@@ -91,9 +107,9 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("never_created")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: No view named never_created inside view Jenkins"));
     }
 
     // ViewGroup.canDelete()
@@ -101,11 +117,161 @@ public class DeleteViewCommandTest {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
-                .invokeWithArgs("All")
+                .invokeWithArgs(AllView.DEFAULT_VIEW_NAME)
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("Jenkins does not allow to delete 'All' view"));
+        assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
+        assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete '"+AllView.DEFAULT_VIEW_NAME+"' view"));
+    }
+
+    @Test public void deleteViewShouldFailIfViewNameIsEmpty() {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("")
+                ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: View name is empty"));
+    }
+
+    @Test public void deleteViewShouldFailIfViewNameIsSpace() {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs(" ")
+                ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: No view named   inside view Jenkins"));
+    }
+
+    @Test public void deleteViewManyShouldSucceed() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+        j.jenkins.addView(new ListView("aView3"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "aView2", "aView3");
+
+        assertThat(result, succeededSilently());
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("aView3"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfFirstViewDoesNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("never_created", "aView1", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfMiddleViewDoesNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "never_created", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfLastViewDoesNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "aView2", "never_created");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfMoreViewsDoNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "never_created1", "never_created2", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created1: No view named never_created1 inside view Jenkins"));
+        assertThat(result.stderr(), containsString("never_created2: No view named never_created2 inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created1"), nullValue());
+        assertThat(j.jenkins.getView("never_created2"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldSucceedEvenAViewSpecifiedTwice() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "aView2", "aView1");
+
+        assertThat(result, succeededSilently());
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailWithoutViewDeletePermissionButOthersShouldBeDeleted() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "aView2", AllView.DEFAULT_VIEW_NAME);
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString(AllView.DEFAULT_VIEW_NAME+": Jenkins does not allow to delete '"+ AllView.DEFAULT_VIEW_NAME+"' view"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
     }
 }

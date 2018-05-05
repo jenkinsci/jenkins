@@ -23,14 +23,13 @@
  */
 package hudson;
 
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
-import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -39,16 +38,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.File;
-import java.net.URL;
 
 import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
+import java.net.URL;
+import java.util.Locale;
+import java.util.logging.Logger;
+import jenkins.model.GlobalConfiguration;
 
 /**
  * Base class of Hudson plugin.
  *
  * <p>
- * A plugin needs to derive from this class.
+ * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
+ * points annotated with {@link hudson.Extension}. For a list of extension
+ * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
+ * https://jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -74,6 +81,24 @@ import com.thoughtworks.xstream.XStream;
  * @since 1.42
  */
 public abstract class Plugin implements Saveable {
+
+    private static final Logger LOGGER = Logger.getLogger(Plugin.class.getName());
+
+    /**
+     * You do not need to create custom subtypes:
+     * <ul>
+     * <li>{@code config.jelly}, {@link #configure(StaplerRequest, JSONObject)}, {@link #load}, and {@link #save}
+     *      can be replaced by {@link GlobalConfiguration}
+     * <li>{@link #start} and {@link #postInitialize} can be replaced by {@link Initializer} (or {@link ItemListener#onLoaded})
+     * <li>{@link #stop} can be replaced by {@link Terminator}
+     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#servletContext}
+     * </ul>
+     * Note that every plugin gets a {@link DummyImpl} by default,
+     * which will still route the URL space, serve {@link #getWrapper}, and so on.
+     * @deprecated Use more modern APIs rather than subclassing.
+     */
+    @Deprecated
+    protected Plugin() {}
 
     /**
      * Set by the {@link PluginManager}, before the {@link #start()} method is called.
@@ -161,6 +186,7 @@ public abstract class Plugin implements Saveable {
      * @since 1.233
      * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
      */
+    @Deprecated
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
 
@@ -173,7 +199,7 @@ public abstract class Plugin implements Saveable {
      *
      * <p>
      * The following is a sample <tt>config.jelly</tt> that you can start yours with:
-     * <pre><xmp>
+     * <pre>{@code <xmp>
      * <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
      *   <f:section title="Locale">
      *     <f:entry title="${%Default Language}" help="/plugin/locale/help/default-language.html">
@@ -181,7 +207,7 @@ public abstract class Plugin implements Saveable {
      *     </f:entry>
      *   </f:section>
      * </j:jelly>
-     * </xmp></pre>
+     * </xmp>}</pre>
      *
      * <p>
      * This allows you to access data as {@code formData.getString("systemLocale")}
@@ -201,11 +227,9 @@ public abstract class Plugin implements Saveable {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
-        if(path.length()==0)
-            path = "/";
-
-        if(path.indexOf("..")!=-1 || path.length()<1) {
-            // don't serve anything other than files in the sub directory.
+        String pathUC = path.toUpperCase(Locale.ENGLISH);
+        if (path.isEmpty() || path.contains("..") || path.startsWith(".") || path.contains("%") || pathUC.contains("META-INF") || pathUC.contains("WEB-INF")) {
+            LOGGER.warning("rejecting possibly malicious " + req.getRequestURIWithQueryString());
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -216,10 +240,10 @@ public abstract class Plugin implements Saveable {
         String requestPath = req.getRequestURI().substring(req.getContextPath().length());
         boolean staticLink = requestPath.startsWith("/static/");
 
-        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
+        long expires = staticLink ? TimeUnit.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path),expires);
+        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL, '.' + path), expires);
     }
 
 //
@@ -255,7 +279,7 @@ public abstract class Plugin implements Saveable {
      * Controls the file where {@link #load()} and {@link #save()}
      * persists data.
      *
-     * This method can be also overriden if the plugin wants to
+     * This method can be also overridden if the plugin wants to
      * use a custom {@link XStream} instance to persist data.
      *
      * @since 1.245

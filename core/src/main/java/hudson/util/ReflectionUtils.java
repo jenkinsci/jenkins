@@ -28,6 +28,7 @@ import org.kohsuke.stapler.ClassDescriptor;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,6 +37,7 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * Utility code for reflection.
@@ -122,7 +124,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
         }
     }
 
-    public static final class Parameter {
+    public static final class Parameter implements AnnotatedElement {
         private final MethodInfo parent;
         private final int index;
 
@@ -180,19 +182,47 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                 return names[index];
             return null;
         }
+
+        @Override
+        public boolean isAnnotationPresent(Class<? extends Annotation> type) {
+            return annotation(type)!=null;
+        }
+
+        @Override
+        public <T extends Annotation> T getAnnotation(Class<T> type) {
+            return annotation(type);
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            return annotations();
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            return annotations();
+        }
     }
 
     /**
      * Given the primitive type, returns the VM default value for that type in a boxed form.
+     * @return null unless {@link Class#isPrimitive}
      */
-    public static Object getVmDefaultValueForPrimitiveType(Class<?> type) {
+    public static @CheckForNull Object getVmDefaultValueForPrimitiveType(Class<?> type) {
         return defaultPrimitiveValue.get(type);
     }
 
-    private static final Map<Class,Object> defaultPrimitiveValue = new HashMap<Class, Object>();
+    // TODO the version in org.kohsuke.stapler is incomplete
+    private static final Map<Class<?>, Object> defaultPrimitiveValue = new HashMap<>();
     static {
-        defaultPrimitiveValue.put(boolean.class,false);
-        defaultPrimitiveValue.put(int.class,0);
-        defaultPrimitiveValue.put(long.class,0L);
+        defaultPrimitiveValue.put(boolean.class, false);
+        defaultPrimitiveValue.put(char.class, '\0');
+        defaultPrimitiveValue.put(byte.class, (byte) 0);
+        defaultPrimitiveValue.put(short.class, (short) 0);
+        defaultPrimitiveValue.put(int.class, 0);
+        defaultPrimitiveValue.put(long.class, 0L);
+        defaultPrimitiveValue.put(float.class, (float) 0);
+        defaultPrimitiveValue.put(double.class, (double) 0);
+        defaultPrimitiveValue.put(void.class, null); // FWIW
     }
 }

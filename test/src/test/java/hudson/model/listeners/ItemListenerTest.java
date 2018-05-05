@@ -23,26 +23,29 @@
  */
 package hudson.model.listeners;
 
-import hudson.cli.CLI;
+import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
-import org.jvnet.hudson.test.HudsonTestCase;
-
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Tests for ItemListener events.
  * @author Alan.Harder@sun.com
  */
-public class ItemListenerTest extends HudsonTestCase {
-    private ItemListener listener;
+public class ItemListenerTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     private StringBuffer events = new StringBuffer();
 
-    @Override protected void setUp() throws Exception {
-        super.setUp();
-        listener = new ItemListener() {
+    @Before
+    public void setUp() throws Exception {
+        ItemListener listener = new ItemListener() {
             @Override public void onCreated(Item item) {
                 events.append('C');
             }
@@ -53,20 +56,13 @@ public class ItemListenerTest extends HudsonTestCase {
         ItemListener.all().add(0, listener);
     }
 
-    public void testOnCreatedViaCLI() throws Exception {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(buf);
-        CLI cli = new CLI(getURL());
-        try {
-            cli.execute(Arrays.asList("create-job", "testJob"),
-                    new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
-                            + "<buildWrappers/></project>").getBytes()),
-                    out, out);
-            out.flush();
-            assertNotNull("job should be created: " + buf, jenkins.getItem("testJob"));
-            assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
-        } finally {
-            cli.close();
-        }
+    @Test
+    public void onCreatedViaCLI() throws Exception {
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
+                withStdin(new ByteArrayInputStream(("<project><actions/><builders/><publishers/><buildWrappers/></project>").getBytes())).
+                invokeWithArgs("testJob");
+        assertThat(result, CLICommandInvoker.Matcher.succeeded());
+        assertNotNull("job should be created: " + result, j.jenkins.getItem("testJob"));
+        assertEquals("onCreated event should be triggered: " + result, "C", events.toString());
     }
 }

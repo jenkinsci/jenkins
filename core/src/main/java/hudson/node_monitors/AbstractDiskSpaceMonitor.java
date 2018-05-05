@@ -5,7 +5,6 @@ import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.text.ParseException;
 import java.util.logging.Logger;
@@ -21,7 +20,6 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
      */
     public final String freeSpaceThreshold;
 
-    @DataBoundConstructor
     public AbstractDiskSpaceMonitor(String threshold) throws ParseException {
         this.freeSpaceThreshold = threshold;
         DiskSpace.parse(threshold); // make sure it parses

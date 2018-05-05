@@ -23,11 +23,13 @@
  */
 package hudson.model;
 
+import hudson.slaves.SlaveComputer;
+
 /**
- * A listener for task related events from Executors
-*
+ * A listener for task related events from executors.
+ * A {@link Computer#getRetentionStrategy} or {@link SlaveComputer#getLauncher} may implement this interface.
 * @author Stephen Connolly
-* @since 17-Jun-2008 18:58:12
+* @since 1.312
 */
 public interface ExecutorListener {
 
@@ -47,7 +49,7 @@ public interface ExecutorListener {
     void taskCompleted(Executor executor, Queue.Task task, long durationMS);
 
     /**
-     * Called whenever a task is completed without any problems by an executor.
+     * Called whenever a task is completed with some problems by an executor.
      * @param executor The executor.
      * @param task The task.
      * @param durationMS The number of milliseconds that the task took to complete.

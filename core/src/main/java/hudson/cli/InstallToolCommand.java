@@ -31,10 +31,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.Executor;
 import hudson.model.Node;
-import hudson.model.EnvironmentSpecific;
 import hudson.model.Item;
-import hudson.remoting.Callable;
-import hudson.slaves.NodeSpecific;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
 import hudson.tools.ToolDescriptor;
@@ -44,13 +41,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.Argument;
 
 /**
  * Performs automatic tool installation on demand.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Limited to Remoting-based protocol.
  */
+@Deprecated
 @Extension
 public class InstallToolCommand extends CLICommand {
     @Argument(index=0,metaVar="KIND",usage="The type of the tool to install, such as 'Ant'")
@@ -64,18 +64,18 @@ public class InstallToolCommand extends CLICommand {
     }
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         h.checkPermission(Jenkins.READ);
 
         // where is this build running?
         BuildIDs id = checkChannel().call(new BuildIDs());
 
         if (!id.isComplete())
-            throw new AbortException("This command can be only invoked from a build executing inside Hudson");
+            throw new IllegalStateException("This command can be only invoked from a build executing inside Hudson");
 
-        AbstractProject p = Jenkins.getInstance().getItemByFullName(id.job, AbstractProject.class);
+        AbstractProject p = h.getItemByFullName(id.job, AbstractProject.class);
         if (p==null)
-            throw new AbortException("No such job found: "+id.job);
+            throw new IllegalStateException("No such job found: "+id.job);
         p.checkPermission(Item.CONFIGURE);
 
         List<String> toolTypes = new ArrayList<String>();
@@ -103,9 +103,9 @@ public class InstallToolCommand extends CLICommand {
 
     private int error(List<String> candidates, String given, String noun) throws AbortException {
         if (given ==null)
-            throw new AbortException("No tool "+ noun +" was specified. Valid values are "+candidates.toString());
+            throw new IllegalArgumentException("No tool "+ noun +" was specified. Valid values are "+candidates.toString());
         else
-            throw new AbortException("Unrecognized tool "+noun+". Perhaps you meant '"+ EditDistance.findNearest(given,candidates)+"'?");
+            throw new IllegalArgumentException("Unrecognized tool "+noun+". Perhaps you meant '"+ EditDistance.findNearest(given,candidates)+"'?");
     }
 
     /**
@@ -115,20 +115,23 @@ public class InstallToolCommand extends CLICommand {
 
         Run b = p.getBuildByNumber(Integer.parseInt(id.number));
         if (b==null)
-            throw new AbortException("No such build: "+id.number);
+            throw new IllegalStateException("No such build: "+id.number);
 
         Executor exec = b.getExecutor();
         if (exec==null)
-            throw new AbortException(b.getFullDisplayName()+" is not building");
+            throw new IllegalStateException(b.getFullDisplayName()+" is not building");
 
         Node node = exec.getOwner().getNode();
+        if (node == null) {
+            throw new IllegalStateException("The node " + exec.getOwner().getDisplayName() + " has been deleted");
+        }
 
         t = t.translate(node, EnvVars.getRemote(checkChannel()), new StreamTaskListener(stderr));
         stdout.println(t.getHome());
         return 0;
     }
 
-    private static final class BuildIDs implements Callable<BuildIDs, IOException> {
+    private static final class BuildIDs extends MasterToSlaveCallable<BuildIDs, IOException> {
         String job,number,id;
 
         public BuildIDs call() throws IOException {

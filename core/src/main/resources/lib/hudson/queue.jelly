@@ -28,19 +28,31 @@ THE SOFTWARE.
     Displays the build queue as &lt;l:pane>
 
     <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.approximateItemsQuickly},
+      Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
+    <st:attribute name="filtered" use="optional">
+      Indicates that the queue has been filtered, i.e. might not show all items.
+    </st:attribute>
   </st:documentation>
   <t:setIconSize/>
-  <l:pane title="${%Build Queue(items.size())}" width="2" id="buildQueue">
+  <j:choose>
+    <j:when test="${filtered}">
+      <j:set var="title" value="${%Filtered Build Queue(items.size())}" />
+    </j:when>
+    <j:otherwise>
+      <j:set var="title" value="${%Build Queue(items.size())}" />
+    </j:otherwise>
+  </j:choose>
+  <l:pane title="${title}" width="2" id="buildQueue">
+    <st:adjunct includes="lib.form.link.link"/>
     <j:if test="${app.quietingDown}">
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Jenkins is going to shut down. No further builds will be performed.}
           <j:if test="${h.hasPermission(app.ADMINISTER)}">
-            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
+            <f:link href="${rootURL}/cancelQuietDown" post="true">(${%cancel})</f:link>
           </j:if>
         </td>
       </tr>
@@ -62,14 +74,14 @@ THE SOFTWARE.
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
-                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr" tooltip="${item.why}${h.escape(item.params)}&lt;br&gt;${%WaitingFor(item.inQueueForString)}">
+                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr" tooltip="${h.escape(item.causesDescription)}${item.why}${h.escape(item.params)}&lt;br&gt;${%WaitingFor(item.inQueueForString)}">
                     <l:breakable value="${item.task.fullDisplayName}"/>
                   </a>
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
                   <j:if test="${stuck}">
                     &#160;
-                    <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
+                    <a href="https://jenkins.io/redirect/troubleshooting/executor-starvation">
+                      <l:icon class="icon-hourglass icon-sm"/>
                     </a>
                   </j:if>
                 </j:when>
@@ -80,7 +92,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="cancel this build"/>
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.task.fullDisplayName)}" alt="cancel this build"/>
               </j:if>
              </td>
           </tr>

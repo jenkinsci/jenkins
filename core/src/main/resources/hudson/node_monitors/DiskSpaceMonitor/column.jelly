@@ -29,7 +29,7 @@ THE SOFTWARE.
       <td align="right" data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${data}"><j:out value="${data.toHtml()}"/></td>
+      <td align="right" data="${data.freeSize}"><j:out value="${data.toHtml()}"/></td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

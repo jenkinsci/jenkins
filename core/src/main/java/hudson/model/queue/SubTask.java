@@ -23,17 +23,17 @@
  */
 package hudson.model.queue;
 
+import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
-import hudson.security.ACL;
-import org.acegisecurity.Authentication;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import javax.annotation.CheckForNull;
 
 /**
  * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
@@ -52,38 +52,55 @@ public interface SubTask extends ResourceActivity {
      * If this task needs to be run on a node with a particular label,
      * return that {@link Label}. Otherwise null, indicating
      * it can run on anywhere.
+     * @return by default, null
      */
-    Label getAssignedLabel();
+    default Label getAssignedLabel() {
+        return null;
+    }
 
     /**
      * If the previous execution of this task run on a certain node
      * and this task prefers to run on the same node, return that.
      * Otherwise null.
+     * @return by default, null
      */
-    Node getLastBuiltOn();
+    default Node getLastBuiltOn() {
+        return null;
+    }
 
     /**
      * Estimate of how long will it take to execute this task.
      * Measured in milliseconds.
      *
-     * @return -1 if it's impossible to estimate.
+     * @return -1 if it's impossible to estimate (the default)
      */
-    long getEstimatedDuration();
+    default long getEstimatedDuration() {
+        return -1;
+    }
 
     /**
      * Creates {@link Executable}, which performs the actual execution of the task.
+     * @return {@link Executable} to be launched or null if the executable cannot be
+     * created (e.g. {@link AbstractProject} is disabled)
+     * @exception IOException {@link Executable} cannot be created
      */
-    Executable createExecutable() throws IOException;
+    @CheckForNull Executable createExecutable() throws IOException;
 
     /**
      * Gets the {@link Task} that this subtask belongs to.
+     * @return by default, {@code this}
      */
-    Task getOwnerTask();
+    default @Nonnull Task getOwnerTask() {
+        return (Task) this;
+    }
 
     /**
      * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
      * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
+     * @return by default, null
      */
-    Object getSameNodeConstraint();
+    default Object getSameNodeConstraint() {
+        return null;
+    }
 }

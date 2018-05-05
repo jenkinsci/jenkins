@@ -39,14 +39,6 @@ THE SOFTWARE.
       <f:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
         ${it.rootDir}
       </f:entry>
-      <f:advanced>
-        <f:entry field="rawWorkspaceDir" title="${%Workspace Root Directory}">
-          <f:textbox/>
-        </f:entry>
-        <f:entry field="rawBuildsDir" title="${%Build Record Root Directory}">
-          <f:textbox/>
-        </f:entry>
-      </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
@@ -65,6 +57,7 @@ THE SOFTWARE.
         <f:apply />
       </f:bottomButtonBar>
     </f:form>
+    <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

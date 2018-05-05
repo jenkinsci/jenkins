@@ -33,10 +33,8 @@ import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
-import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -46,14 +44,10 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
+import hudson.model.queue.Tasks;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -65,6 +59,19 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
+import jenkins.triggers.ReverseBuildTrigger;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Triggers builds of other projects.
@@ -78,6 +85,8 @@ import javax.annotation.CheckForNull;
  * <p>
  * This class, however, does provide the {@link #execute(AbstractBuild, BuildListener, BuildTrigger)}
  * method as a convenience method to invoke downstream builds.
+ *
+ * <p>Its counterpart is {@link ReverseBuildTrigger}.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -135,16 +144,26 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #getChildProjects(ItemGroup)}
      */
+    @Deprecated
     public List<AbstractProject> getChildProjects() {
         return getChildProjects(Jenkins.getInstance());
     }
 
+    /** @deprecated use {@link #getChildJobs} */
+    @Deprecated
     public List<AbstractProject> getChildProjects(AbstractProject owner) {
         return getChildProjects(owner==null?null:owner.getParent());
     }
 
+    @Deprecated
     public List<AbstractProject> getChildProjects(ItemGroup base) {
         return Items.fromNameList(base,childProjects,AbstractProject.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public List<Job<?, ?>> getChildJobs(@Nonnull AbstractProject<?, ?> owner) {
+        return Items.fromNameList(owner.getParent(), childProjects, (Class<Job<?, ?>>) (Class) Job.class);
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -152,8 +171,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     /**
-     * Checks if this trigger has the exact same set of children as the given list.
+     * @deprecated apparently unused
      */
+    @Deprecated
     public boolean hasSame(AbstractProject owner, Collection<? extends AbstractProject> projects) {
         List<AbstractProject> children = getChildProjects(owner);
         return children.size()==projects.size() && children.containsAll(projects);
@@ -163,12 +183,55 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #hasSame(AbstractProject, Collection)}
      */
+    @Deprecated
     public boolean hasSame(Collection<? extends AbstractProject> projects) {
         return hasSame(null,projects);
     }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+        List<Job<?, ?>> jobs = new ArrayList<>();
+        for (Job<?, ?> job : getChildJobs(build.getProject())) {
+            if (job instanceof AbstractProject) {
+                continue; // taken care of by DependencyGraph
+            }
+            jobs.add(job);
+        }
+        if (!jobs.isEmpty() && build.getResult().isBetterOrEqualTo(threshold)) {
+            PrintStream logger = listener.getLogger();
+            for (Job<?, ?> downstream : jobs) {
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) {
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    continue;
+                }
+                if (!downstream.hasPermission(Item.BUILD)) {
+                    listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!(downstream instanceof ParameterizedJobMixIn.ParameterizedJob)) {
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                ParameterizedJobMixIn.ParameterizedJob<?, ?> pj = (ParameterizedJobMixIn.ParameterizedJob) downstream;
+                if (pj.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!downstream.isBuildable()) { // some other reason; no API to retrieve cause
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                boolean scheduled = pj.scheduleBuild(pj.getQuietPeriod(), new UpstreamCause((Run) build));
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) == downstream) {
+                    String name = ModelHyperlinkNote.encodeTo(downstream);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -204,22 +267,23 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         });
 
         for (Dependency dep : downstreamProjects) {
-            AbstractProject p = dep.getDownstreamProject();
-            if (p.isDisabled()) {
-                logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                continue;
-            }
             List<Action> buildActions = new ArrayList<Action>();
             if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                // this is not completely accurate, as a new build might be triggered
-                // between these calls
-                String name = ModelHyperlinkNote.encodeTo(p)+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build),
-                                   buildActions.toArray(new Action[buildActions.size()]))) {
-                    logger.println(Messages.BuildTrigger_Triggering(name));
-                } else {
-                    logger.println(Messages.BuildTrigger_InQueue(name));
+                AbstractProject p = dep.getDownstreamProject();
+                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                if (p.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                    continue;
                 }
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                    String name = ModelHyperlinkNote.encodeTo(p);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                } // otherwise upstream users should not know that it happened
             }
         }
 
@@ -227,11 +291,20 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-        for (AbstractProject p : getChildProjects(owner))
+        for (AbstractProject p : getChildProjects(owner)) // only care about AbstractProject here
             graph.addDependency(new Dependency(owner, p) {
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
+                    AbstractProject downstream = getDownstreamProject();
+                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        return false; // do not even issue a warning to build log
+                    }
+                    if (!downstream.hasPermission(Item.BUILD)) {
+                        listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                        return false;
+                    }
                     return build.getResult().isBetterOrEqualTo(threshold);
                 }
             });
@@ -281,7 +354,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return this;
     }
 
-    @Extension
+    @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
@@ -316,7 +389,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         /**
          * Form validation method.
          */
-        public FormValidation doCheck(@AncestorInPath Item project, @QueryParameter String value, @QueryParameter boolean upstream) {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
+            // JENKINS-32525: Check that it behaves gracefully for an unknown context
+            if (project == null) return FormValidation.ok(Messages.BuildTrigger_ok_ancestor_is_null());
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
@@ -326,12 +401,16 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
                     Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
-                    if(item==null)
-                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,
-                                AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
-                    if(!(item instanceof AbstractProject))
+                    if (item == null) {
+                        Job<?, ?> nearest = Items.findNearest(Job.class, projectName, project.getParent());
+                        String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
+                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName, alternative));
+                    }
+                    if(!(item instanceof ParameterizedJobMixIn.ParameterizedJob))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
-                    if (!upstream && !item.hasPermission(Item.BUILD)) {
+                    // check whether the supposed user is expected to be able to build
+                    Authentication auth = Tasks.getAuthenticationOf(project);
+                    if (!item.hasPermission(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }
                     hasProjects = true;
@@ -351,10 +430,15 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         @Extension
         public static class ItemListenerImpl extends ItemListener {
             @Override
-            public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+                try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                    locationChanged(item, oldFullName, newFullName);
+                }
+            }
+            private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
+                for( Project<?,?> p : Jenkins.getInstance().allItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
                         String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());

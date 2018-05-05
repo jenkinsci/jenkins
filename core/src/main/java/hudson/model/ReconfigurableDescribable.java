@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.model.Descriptor.FormException;
 import hudson.slaves.NodeProperty;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -41,8 +43,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <h2>Invisible Property</h2>
  * <p>
  * This mechanism can be used to create an entirely invisible {@link Describable}, which is handy
- * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define a descriptor with null
- * {@linkplain Descriptor#getDisplayName() display name} and empty config.jelly to prevent it from
+ * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define an empty config.jelly to prevent it from
  * showing up in the config UI, then implement {@link #reconfigure(StaplerRequest, JSONObject)}
  * and simply return {@code this}.
  *
@@ -77,5 +78,5 @@ public interface ReconfigurableDescribable<T extends ReconfigurableDescribable<T
      * @return
      *      The new instance. To not to create an instance of a describable, return null.
      */
-    T reconfigure(StaplerRequest req, JSONObject form) throws FormException;
+    @CheckForNull T reconfigure(@Nonnull StaplerRequest req, @CheckForNull JSONObject form) throws FormException;
 }

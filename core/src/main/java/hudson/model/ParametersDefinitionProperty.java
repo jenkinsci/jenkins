@@ -24,58 +24,72 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+import hudson.Util;
+import hudson.model.Queue.WaitingItem;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.AbstractList;
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
-
-import hudson.Util;
-import hudson.model.Queue.WaitingItem;
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
+import jenkins.model.OptionalJobProperty;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import hudson.Extension;
-import javax.annotation.CheckForNull;
-import org.kohsuke.stapler.export.Flavor;
-
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
-
 /**
  * Keeps a list of the parameters defined for a project.
  *
  * <p>
  * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
- * a form to enter build parameters. 
+ * a form to enter build parameters.
+ * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
+ * The builds also need a {@code sidepanel.jelly}.
  */
 @ExportedBean(defaultVisibility=2)
-public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?, ?>>
+public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
     private final List<ParameterDefinition> parameterDefinitions;
 
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
-        this.parameterDefinitions = parameterDefinitions;
+    @DataBoundConstructor
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        this.parameterDefinitions = parameterDefinitions != null ? parameterDefinitions : new ArrayList<>();
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        this.parameterDefinitions = parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : new ArrayList<>();
     }
-    
+
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
+    }
+
+    @Deprecated
     public AbstractProject<?,?> getOwner() {
-        return owner;
+        return (AbstractProject) owner;
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly
+    public ParameterizedJobMixIn.ParameterizedJob getJob() {
+        return (ParameterizedJobMixIn.ParameterizedJob) owner;
     }
 
     @Exported
@@ -98,11 +112,18 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         };
     }
 
+    @Nonnull
     @Override
-    public Collection<Action> getJobActions(AbstractProject<?, ?> job) {
+    public Collection<Action> getJobActions(Job<?, ?> job) {
         return Collections.<Action>singleton(this);
     }
 
+    @Deprecated
+    public Collection<Action> getJobActions(AbstractProject<?, ?> job) {
+        return getJobActions((Job) job);
+    }
+
+    @Deprecated
     public AbstractProject<?, ?> getProject() {
         return (AbstractProject<?, ?>) owner;
     }
@@ -110,17 +131,17 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     /** @deprecated use {@link #_doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+        _doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     /**
      * Interprets the form submission and schedules a build for a parameterized job.
      *
      * <p>
-     * This method is supposed to be invoked from {@link AbstractProject#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
+     * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
+        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -136,14 +157,18 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             if(d==null)
                 throw new IllegalArgumentException("No such parameter definition: " + name);
             ParameterValue parameterValue = d.createValue(req, jo);
-            values.add(parameterValue);
+            if (parameterValue != null) {
+                values.add(parameterValue);
+            } else {
+                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+            }
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
-            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
                 url = req.getContextPath()+'/'+item.getUrl();
             rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
         } else
@@ -165,24 +190,16 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         		values.add(value);
         	}
         }
-        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
+        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
-        Jenkins.getInstance().getQueue().schedule(
-                owner, delay.getTime(), new ParametersAction(values), owner.getBuildCause(req));
+        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
-        if (requestWantsJson(req)) {
-            rsp.setContentType("application/json");
-            rsp.serveExposedBean(req, owner, Flavor.JSON);
+        if (item != null) {
+            rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
-            // send the user back to the job top page.
             rsp.sendRedirect(".");
         }
-    }
-
-    private boolean requestWantsJson(StaplerRequest req) {
-        String a = req.getHeader("Accept");
-        if (a==null)    return false;
-        return !a.contains("text/html") && a.contains("application/json");
     }
 
     /**
@@ -196,31 +213,20 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     }
 
     @Extension
-    public static class DescriptorImpl extends JobPropertyDescriptor {
+    @Symbol("parameters")
+    public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
-        public boolean isApplicable(Class<? extends Job> jobType) {
-            return AbstractProject.class.isAssignableFrom(jobType);
+        public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            if (prop != null && prop.parameterDefinitions.isEmpty()) {
+                return null;
+            }
+            return prop;
         }
 
         @Override
-        public JobProperty<?> newInstance(StaplerRequest req,
-                                          JSONObject formData) throws FormException {
-            if (formData.isNullObject()) {
-                return null;
-            }
-
-            JSONObject parameterized = formData.getJSONObject("parameterized");
-
-            if (parameterized.isNullObject()) {
-            	return null;
-            }
-            
-            List<ParameterDefinition> parameterDefinitions = Descriptor.newInstancesFromHeteroList(
-                    req, parameterized, "parameter", ParameterDefinition.all());
-            if(parameterDefinitions.isEmpty())
-                return null;
-
-            return new ParametersDefinitionProperty(parameterDefinitions);
+        public boolean isApplicable(Class<? extends Job> jobType) {
+            return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);
         }
 
         @Override

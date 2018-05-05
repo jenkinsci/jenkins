@@ -24,20 +24,20 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout norefresh="true">
+  <l:layout norefresh="true" permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/terminal.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-terminal icon-xlg"/>
         Command ${command.name}
       </h1>
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>
       <st:include page="example.jelly"/>
-      <p>${command.longDescription}</p>
-      <j:set var="usage" value="${command.usage}"/>
-      <j:if test="${!empty usage}">
-        <pre>${command.usage}</pre>
-      </j:if>
+      <pre>
+        <j:out value="${h.escape(command.longDescription)}"/>
+        <j:set var="usage" value="${command.usage}"/>
+        <j:if test="${!empty usage}"><br/>${command.usage}</j:if>
+      </pre>
     </l:main-panel>
   </l:layout>
 </j:jelly>

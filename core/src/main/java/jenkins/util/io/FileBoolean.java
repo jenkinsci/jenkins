@@ -1,5 +1,7 @@
 package jenkins.util.io;
 
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -21,6 +23,7 @@ import java.util.logging.Logger;
  */
 public class FileBoolean {
     private final File file;
+    private volatile Boolean state;
 
     public FileBoolean(File file) {
         this.file = file;
@@ -34,7 +37,15 @@ public class FileBoolean {
      * Gets the current state. True if the file exists, false if it doesn't.
      */
     public boolean get() {
-        return file.exists();
+        return state=file.exists();
+    }
+
+    /**
+     * Like {@link #get()} except instead of checking the actual file, use the result from the last {@link #get()} call.
+     */
+    public boolean fastGet() {
+        if (state==null)    return get();
+        return state;
     }
 
     public boolean isOn() { return get(); }
@@ -47,14 +58,16 @@ public class FileBoolean {
     public void on() {
         try {
             file.getParentFile().mkdirs();
-            new FileOutputStream(file).close();
-        } catch (IOException e) {
+            Files.newOutputStream(file.toPath()).close();
+            get();  // update state
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to touch "+file);
         }
     }
 
     public void off() {
         file.delete();
+        get();  // update state
     }
 
     private static final Logger LOGGER = Logger.getLogger(FileBoolean.class.getName());

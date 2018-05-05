@@ -47,10 +47,22 @@ import jenkins.model.RunAction2;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
+
+    private transient /*final*/ Run<?,?> run;
+    @Deprecated
     protected transient /*final*/ AbstractBuild build;
 
+    /**
+     * @since 1.568
+     */
+    protected AbstractScmTagAction(Run<?,?> run) {
+        this.run = run;
+        this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+    }
+
+    @Deprecated
     protected AbstractScmTagAction(AbstractBuild build) {
-        this.build = build;
+        this((Run) build);
     }
 
     public final String getUrlName() {
@@ -65,6 +77,14 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
+    /**
+     * @since 1.568
+     */
+    public Run<?,?> getRun() {
+        return run;
+    }
+
+    @Deprecated
     public AbstractBuild getBuild() {
         return build;
     }
@@ -82,7 +102,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     public abstract boolean isTagged();
 
     protected ACL getACL() {
-        return build.getACL();
+        return run.getACL();
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -100,7 +120,8 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     }
 
     @Override public void onLoad(Run<?, ?> r) {
-        build = (AbstractBuild) r;
+        run = r;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
 
 }

@@ -34,9 +34,9 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
-
 import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,7 +44,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -53,6 +55,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -196,7 +199,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             " <a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
-            + Functions.printThrowable(e) +
+            + Util.escape(Functions.printThrowable(e)) +
             "</pre>",kind
         );
     }
@@ -209,7 +212,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return warning(e,String.format(format,args));
     }
 
+    /**
+     * Aggregate multiple validations into one.
+     *
+     * @return Validation of the least successful kind aggregating all child messages.
+     * @since 1.590
+     */
+    public static @Nonnull FormValidation aggregate(@Nonnull Collection<FormValidation> validations) {
+        if (validations == null || validations.isEmpty()) return FormValidation.ok();
 
+        if (validations.size() == 1) return validations.iterator().next();
+
+        final StringBuilder sb = new StringBuilder("<ul style='list-style-type: none; padding-left: 0; margin: 0'>");
+        FormValidation.Kind worst = Kind.OK;
+        for (FormValidation validation: validations) {
+            sb.append("<li>").append(validation.renderHtml()).append("</li>");
+
+            if (validation.kind.ordinal() > worst.ordinal()) {
+                worst = validation.kind;
+            }
+        }
+        sb.append("</ul>");
+
+        return respond(worst, sb.toString());
+    }
 
     /**
      * Sends out an HTML fragment that indicates an error.
@@ -239,9 +265,13 @@ public abstract class FormValidation extends IOException implements HttpResponse
             return ok();
         return new FormValidation(kind, message) {
             public String renderHtml() {
+                StaplerRequest req = Stapler.getCurrentRequest();
+                if (req == null) { // being called from some other context
+                    return message;
+                }
                 // 1x16 spacer needed for IE since it doesn't support min-height
                 return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
-                        Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        req.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
             @Override public String toString() {
@@ -357,6 +387,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
         try {
             if(Integer.parseInt(value)<0)
                 return error(hudson.model.Messages.Hudson_NotANonNegativeNumber());
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
+     * Make sure that the given string is an integer in the range specified by the lower and upper bounds (both inclusive)
+     *
+     * @param value the value to check
+     * @param lower the lower bound (inclusive)
+     * @param upper the upper bound (inclusive)
+     *
+     * @since 2.104
+     */
+    public static FormValidation validateIntegerInRange(String value, int lower, int upper) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (intValue < lower) {
+                return error(hudson.model.Messages.Hudson_MustBeAtLeast(lower));
+            }
+            if (intValue > upper) {
+                return error(hudson.model.Messages.Hudson_MustBeAtMost(upper));
+            }
             return ok();
         } catch (NumberFormatException e) {
             return error(hudson.model.Messages.Hudson_NotANumber());
@@ -481,7 +535,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
-         * Implement the actual form validation logic, by using other convenience methosd defined in this class.
+         * Implement the actual form validation logic, by using other convenience methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
         protected abstract FormValidation check() throws IOException, ServletException;
@@ -608,7 +662,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         public String toStemUrl() {
             if (names==null)    return null;
-            return jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + '/' + relativePath();
+            return Descriptor.getCurrentDescriptorByNameUrl() + '/' + relativePath();
         }
 
         public String getDependsOn() {

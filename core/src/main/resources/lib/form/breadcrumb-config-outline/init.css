@@ -5,7 +5,3 @@ A.section-anchor {
     display: inline-block;
     width: 0px;
 }
-
-#breadcrumbs #inpage-nav A {
-    background: none;
-}

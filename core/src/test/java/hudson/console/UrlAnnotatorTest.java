@@ -28,7 +28,7 @@ import hudson.MarkupText;
 
 import org.junit.Test;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Alan Harder
@@ -39,14 +39,14 @@ public class UrlAnnotatorTest {
 
     @Test
     public void testAnnotate() {
-        assertEquals("Hello &lt;foo><a href='http://foo/'>http://foo/</a>&lt;/foo> Bye",
+        assertEquals("Hello &lt;foo&gt;<a href='http://foo/'>http://foo/</a>&lt;/foo&gt; Bye",
                      annotate("Hello <foo>http://foo/</foo> Bye"));
 
         assertEquals("Hello [foo]<a href='http://foo/bar.txt'>http://foo/bar.txt</a>[/foo] Bye",
                      annotate("Hello [foo]http://foo/bar.txt[/foo] Bye"));
 
         assertEquals("Hello '<a href='http://foo'>http://foo</a>' or \"<a href='ftp://bar'>"
-                + "ftp://bar</a>\" or &lt;<a href='https://baz/'>https://baz/</a>> or (<a "
+                + "ftp://bar</a>\" or &lt;<a href='https://baz/'>https://baz/</a>&gt; or (<a "
                 + "href='http://a.b.c/x.y'>http://a.b.c/x.y</a>) Bye",
                 annotate("Hello 'http://foo' or \"ftp://bar\" or <https://baz/> or (http://a.b.c/x.y) Bye"));
 
@@ -59,7 +59,7 @@ public class UrlAnnotatorTest {
     }
 
     @Test
-    @Bug(19866)
+    @Issue("JENKINS-19866")
     public void annotateFileScheme() {
         assertEquals(
                 "Get this <a href='file://here/in/this/folder/'>file://here/in/this/folder/</a>.",

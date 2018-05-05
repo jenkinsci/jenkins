@@ -31,6 +31,8 @@ import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Convenient base class for implementing data storage.
@@ -69,10 +71,10 @@ public abstract class KeyedDataStorage<T,P> {
      * but do so without having a single lock.
      */
     private static class Loading<T> {
-        private T value;
+        private @CheckForNull T value;
         private boolean set;
 
-        public synchronized void set(T value) {
+        public synchronized void set(@CheckForNull T value) {
             this.set = true;
             this.value = value;
             notifyAll();
@@ -82,7 +84,7 @@ public abstract class KeyedDataStorage<T,P> {
          * Blocks until the value is {@link #set(Object)} by another thread
          * and returns the value.
          */
-        public synchronized T get() {
+        public synchronized @CheckForNull T get() {
             try {
                 while(!set)
                     wait();
@@ -100,26 +102,31 @@ public abstract class KeyedDataStorage<T,P> {
      * {@link #create(String,Object) create} it and return it.
      *
      * @return
-     *      Never null.
+     *      Item with the specified {@code key}.
      * @param createParams
      *      Additional parameters needed to create a new data object. Can be null.
+     * @throws IOException Loading error
      */
-    public T getOrCreate(String key, P createParams) throws IOException {
+    public @Nonnull T getOrCreate(String key, P createParams) throws IOException {
         return get(key,true,createParams);
     }
 
     /**
      * Finds the data object that matches the given key if available, or null
      * if not found.
+     * @return Item with the specified {@code key}
+     * @throws IOException Loading error
      */
-    public T get(String key) throws IOException {
+    public @CheckForNull T get(String key) throws IOException {
         return get(key,false,null);
     }
 
     /**
      * Implementation of get/getOrCreate.
+     * @return Item with the specified {@code key}
+     * @throws IOException Loading error
      */
-    protected T get(String key, boolean createIfNotExist, P createParams) throws IOException {
+    protected @CheckForNull T get(@Nonnull String key, boolean createIfNotExist, P createParams) throws IOException {
         while(true) {
             totalQuery.incrementAndGet();
             Object value = core.get(key);
@@ -155,7 +162,7 @@ public abstract class KeyedDataStorage<T,P> {
                 if(t==null && createIfNotExist) {
                     t = create(key,createParams);    // create the new data
                     if(t==null)
-                        throw new IllegalStateException(); // bug in the derived classes
+                        throw new IllegalStateException("Bug in the derived class"); // bug in the derived classes
                 }
             } catch(IOException e) {
                 loadFailure.incrementAndGet();
@@ -192,7 +199,7 @@ public abstract class KeyedDataStorage<T,P> {
      *      if load operation fails. This exception will be
      *      propagated to the caller.
      */
-    protected abstract T load(String key) throws IOException;
+    protected abstract @CheckForNull T load(String key) throws IOException;
 
     /**
      * Creates a new data object.
@@ -206,13 +213,13 @@ public abstract class KeyedDataStorage<T,P> {
      * this method returns a properly initialized "valid" object.
      *
      * @return
-     *      never null. If construction fails, abort with an exception.
+     *      Created item. If construction fails, abort with an exception.
      * @throws IOException
      *      if the method fails to create a new data object, it can throw
      *      {@link IOException} (or any other exception) and that will be
      *      propagated to the caller.
      */
-    protected abstract T create(String key, P createParams) throws IOException;
+    protected abstract @Nonnull T create(@Nonnull String key, @Nonnull P createParams) throws IOException;
 
     public void resetPerformanceStats() {
         totalQuery.set(0);

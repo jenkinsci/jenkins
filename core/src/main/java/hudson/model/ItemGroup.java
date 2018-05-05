@@ -27,7 +27,9 @@ import hudson.model.listeners.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.io.File;
+import java.util.List;
 import javax.annotation.CheckForNull;
+import org.acegisecurity.AccessDeniedException;
 
 /**
  * Represents a grouping inherent to a kind of {@link Item}s.
@@ -67,8 +69,10 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Gets the {@link Item} inside this group that has a given name, or null if it does not exist.
+     * @throws AccessDeniedException if the current user has {@link Item#DISCOVER} but not {@link Item#READ} on this item
+     * @return an item whose {@link Item#getName} is {@code name} and whose {@link Item#getParent} is {@code this}, or null if there is no such item, or there is but the current user lacks both {@link Item#DISCOVER} and {@link Item#READ} on it
      */
-    @CheckForNull T getItem(String name);
+    @CheckForNull T getItem(String name) throws AccessDeniedException;
 
     /**
      * Assigns the {@link Item#getRootDir() root directory} for children.
@@ -79,10 +83,48 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Internal method. Called by {@link Item}s when they are renamed by users.
      * This is <em>not</em> expected to call {@link ItemListener#onRenamed}, inconsistent with {@link #onDeleted}.
      */
-    void onRenamed(T item, String oldName, String newName) throws IOException;
+    default void onRenamed(T item, String oldName, String newName) throws IOException {}
 
     /**
      * Internal method. Called by {@link Item}s when they are deleted by users.
      */
     void onDeleted(T item) throws IOException;
+
+    /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     * @since 2.93
+     */
+    default <T extends Item> List<T> getAllItems(Class<T> type) {
+        return Items.getAllItems(this, type);
+    }
+
+    /**
+     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     * @since 2.93
+     */
+    default <T extends Item> Iterable<T> allItems(Class<T> type) {
+        return Items.allItems(this, type);
+    }
+
+    /**
+     * Gets all the items recursively.
+     * @since 2.93
+     */
+    default List<Item> getAllItems() {
+        return getAllItems(Item.class);
+    }
+
+    /**
+     * Gets all the items unordered, lazily and recursively.
+     * @since 2.93
+     */
+    default Iterable<Item> allItems() {
+        return allItems(Item.class);
+    }
+
+    // TODO could delegate to allItems overload taking Authentication, but perhaps more useful to introduce a variant to perform preauth filtering using Predicate and check Item.READ afterwards
+    // or return a Stream<Item> and provide a Predicate<Item> public static Items.readable(), and see https://stackoverflow.com/q/22694884/12916 if you are looking for just one result
+
 }

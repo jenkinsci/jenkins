@@ -107,12 +107,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<RepeatablePropertyTest> {
-        @Override
-        public String getDisplayName() {
-            return "RepeatablePropertyTest";
-        }
-    }
+    public static final class DescriptorImpl extends Descriptor<RepeatablePropertyTest> {}
         
     public static final class ExcitingObject implements Describable<ExcitingObject> {
         private final String greatProperty;
@@ -148,10 +143,6 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         public static final class ExcitingDescriptor extends Descriptor<ExcitingObject> {
             public ExcitingDescriptor() {
                 super(ExcitingObject.class);
-            }
-            @Override
-            public String getDisplayName() {
-                return "This is an awesome thing!";
             }
         }
     }

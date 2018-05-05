@@ -44,6 +44,9 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
 
+    @Restricted(NoExternalUse.class)
+    public static final String DEFAULT_CRUMB_NAME = "Jenkins-Crumb";
+
     /**
      * Get the name of the request parameter the crumb will be stored in. Exposed
      * here for the remote API.
@@ -190,6 +193,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
         }
 
         @Override public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter String xpath, @QueryParameter String wrapper, @QueryParameter String tree, @QueryParameter int depth) throws IOException, ServletException {
+            setHeaders(rsp);
             String text;
             CrumbIssuer ci = (CrumbIssuer) bean;
             if ("/*/crumbRequestField/text()".equals(xpath)) { // old FullDuplexHttpStream
@@ -199,7 +203,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             } else if ("concat(//crumbRequestField,\":\",//crumb)".equals(xpath)) { // new FullDuplexHttpStream; Main
                 text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
             } else if ("concat(//crumbRequestField,'=',//crumb)".equals(xpath)) { // NetBeans
-                if (ci.getCrumbRequestField().startsWith(".")) {
+                if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {
                     text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
                 } else {
                     text = null;
@@ -208,12 +212,9 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
                 text = null;
             }
             if (text != null) {
-                OutputStream o = rsp.getCompressedOutputStream(req);
-                try {
+                try (OutputStream o = rsp.getCompressedOutputStream(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
                     o.write(text.getBytes("UTF-8"));
-                } finally {
-                    o.close();
                 }
             } else {
                 super.doXml(req, rsp, xpath, wrapper, tree, depth);

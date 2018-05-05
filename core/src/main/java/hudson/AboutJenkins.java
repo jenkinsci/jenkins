@@ -2,6 +2,8 @@ package hudson;
 
 import hudson.model.ManagementLink;
 import java.net.URL;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -10,7 +12,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * 
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("about")
 public class AboutJenkins extends ManagementLink {
     @Override
     public String getIconFileName() {

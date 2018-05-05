@@ -24,23 +24,39 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="warning">
+  <div class="alert alert-info">
     <j:set var="ucData" value="${it.data}" />
     <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
     <j:choose>
       <j:when test="${upJob.status.success}">
-        ${%UpgradeComplete(ucData.core.version,rootURL)}
+        <j:invokeStatic var="lifecycle" className="hudson.lifecycle.Lifecycle" method="get" />
+        <j:choose>
+          <j:when test="${lifecycle.canRestart()}">
+            ${%UpgradeComplete(ucData.core.version,rootURL)}
+          </j:when>
+          <j:otherwise>
+            ${%UpgradeCompleteRestartNotSupported(ucData.core.version)}
+          </j:otherwise>
+        </j:choose>
+      </j:when>
+      <j:when test="${upJob!=null and upJob.error != null}">
+        ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
+        <j:if test="${ucData.canUpgrade()}">
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
+          <f:submit value="${%Retry}"/>
+        </form>
+        </j:if>
       </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
       <j:otherwise>
-        <form method="post" action="${rootURL}/updateCenter/upgrade">
         ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
-          <j:if test="${ucData.canUpgrade()}">
-            <f:submit value="${%Or Upgrade Automatically}"/>
-          </j:if>
+        <j:if test="${ucData.canUpgrade()}">
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
+          <f:submit value="${%Or Upgrade Automatically}"/>
         </form>
+        </j:if>
       </j:otherwise>
     </j:choose>
   </div>

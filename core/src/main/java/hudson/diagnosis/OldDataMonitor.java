@@ -23,36 +23,48 @@
  */
 package hudson.diagnosis;
 
+import com.google.common.base.Predicate;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.ManagementLink;
-import jenkins.model.Jenkins;
-import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.ManagementLink;
 import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.ACL;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+
+import jenkins.model.Jenkins;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Tracks whether any data structure changes were corrected when loading XML,
@@ -60,12 +72,15 @@ import org.kohsuke.stapler.HttpResponses;
  *
  * @author Alan.Harder@Sun.Com
  */
-@Extension
+@Extension @Symbol("oldData")
 public class OldDataMonitor extends AdministrativeMonitor {
-    private static Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
-    private HashMap<Saveable,VersionRange> data = new HashMap<Saveable,VersionRange>();
-    private boolean updating = false;
+    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
+
+    static OldDataMonitor get(Jenkins j) {
+        return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+    }
 
     public OldDataMonitor() {
         super("OldData");
@@ -80,18 +95,30 @@ public class OldDataMonitor extends AdministrativeMonitor {
         return !data.isEmpty();
     }
 
-    public synchronized Map<Saveable,VersionRange> getData() {
-        return Collections.unmodifiableMap(data);
+    public Map<Saveable,VersionRange> getData() {
+        Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
+        for (Map.Entry<SaveableReference,VersionRange> entry : this.data.entrySet()) {
+            Saveable s = entry.getKey().get();
+            if (s != null) {
+                r.put(s, entry.getValue());
+            }
+        }
+        return r;
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
-        synchronized (odm) {
-            if (odm.updating) return; // Skip during doUpgrade or doDiscard
-            odm.data.remove(obj);
-            if (isDelete && obj instanceof Job<?,?>)
-                for (Run r : ((Job<?,?>)obj).getBuilds())
-                    odm.data.remove(r);
+        Jenkins j = Jenkins.getInstance();
+        OldDataMonitor odm = get(j);
+        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+        try {
+            odm.data.remove(referTo(obj));
+            if (isDelete && obj instanceof Job<?, ?>) {
+                for (Run r : ((Job<?, ?>) obj).getBuilds()) {
+                    odm.data.remove(referTo(r));
+                }
+            }
+        } finally {
+            SecurityContextHolder.setContext(oldContext);
         }
     }
 
@@ -129,15 +156,19 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @param version Hudson release when the data structure changed.
      */
     public static void report(Saveable obj, String version) {
-        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
-        synchronized (odm) {
-            try {
-                VersionRange vr = odm.data.get(obj);
-                if (vr != null) vr.add(version);
-                else            odm.data.put(obj, new VersionRange(version, null));
-            } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.WARNING, "Bad parameter given to OldDataMonitor", ex);
+        OldDataMonitor odm = get(Jenkins.getInstance());
+        try {
+            SaveableReference ref = referTo(obj);
+            while (true) {
+                VersionRange vr = odm.data.get(ref);
+                if (vr != null && odm.data.replace(ref, vr, new VersionRange(vr, version, null))) {
+                    break;
+                } else if (odm.data.putIfAbsent(ref, new VersionRange(null, version, null)) == null) {
+                    break;
+                }
             }
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, "Bad parameter given to OldDataMonitor", ex);
         }
     }
 
@@ -175,40 +206,58 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
         if (buf.length() == 0) return;
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) { // Need this path, at least for unit tests, but also in case of very broken startup
             // Startup failed, something is very broken, so report what we can.
             for (Throwable t : errors) {
                 LOGGER.log(Level.WARNING, "could not read " + obj + " (and Jenkins did not start up)", t);
             }
             return;
         }
-        OldDataMonitor odm = (OldDataMonitor) j.getAdministrativeMonitor("OldData");
-        synchronized (odm) {
-            VersionRange vr = odm.data.get(obj);
-            if (vr != null) vr.extra = buf.toString();
-            else            odm.data.put(obj, new VersionRange(null, buf.toString()));
+        OldDataMonitor odm = get(j);
+        SaveableReference ref = referTo(obj);
+        while (true) {
+            VersionRange vr = odm.data.get(ref);
+            if (vr != null && odm.data.replace(ref, vr, new VersionRange(vr, null, buf.toString()))) {
+                break;
+            } else if (odm.data.putIfAbsent(ref, new VersionRange(null, null, buf.toString())) == null) {
+                break;
+            }
         }
     }
 
     public static class VersionRange {
         private static VersionNumber currentVersion = Jenkins.getVersion();
 
-        VersionNumber min, max;
-        boolean single = true;
-        public String extra;
+        final VersionNumber min;
+        final VersionNumber max;
+        final boolean single;
+        final public String extra;
 
-        public VersionRange(String version, String extra) {
-            min = max = version != null ? new VersionNumber(version) : null;
-            this.extra = extra;
-        }
-
-        public void add(String version) {
-            VersionNumber ver = new VersionNumber(version);
-            if (min==null) { min = max = ver; }
-            else {
-                if (ver.isOlderThan(min)) { min = ver; single = false; }
-                if (ver.isNewerThan(max)) { max = ver; single = false; }
+        public VersionRange(VersionRange previous, String version, String extra) {
+            if (previous == null) {
+                min = max = version != null ? new VersionNumber(version) : null;
+                this.single = true;
+                this.extra = extra;
+            } else if (version == null) {
+                min = previous.min;
+                max = previous.max;
+                single = previous.single;
+                this.extra = extra;
+            } else {
+                VersionNumber ver = new VersionNumber(version);
+                if (previous.min == null || ver.isOlderThan(previous.min)) {
+                    this.min = ver;
+                } else {
+                    this.min = previous.min;
+                }
+                if (previous.max == null || ver.isNewerThan(previous.max)) {
+                    this.max = ver;
+                } else {
+                    this.max = previous.max;
+                }
+                this.single = this.max.isNewerThan(this.min);
+                this.extra = extra;
             }
         }
 
@@ -220,28 +269,34 @@ public class OldDataMonitor extends AdministrativeMonitor {
         /**
          * Does this version range contain a version more than the given number of releases ago?
          * @param threshold Number of releases
-         * @return True if the major version# differs or the minor# differs by >= threshold
+         * @return True if the major version# differs or the minor# differs by ≥ threshold
          */
         public boolean isOld(int threshold) {
-            return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
-                    || (currentVersion.digit(0) == min.digit(0)
-                    && currentVersion.digit(1) - min.digit(1) >= threshold));
+            return currentVersion != null && min != null && (currentVersion.getDigitAt(0) > min.getDigitAt(0)
+                    || (currentVersion.getDigitAt(0) == min.getDigitAt(0)
+                    && currentVersion.getDigitAt(1) - min.getDigitAt(1) >= threshold));
         }
+
     }
 
     /**
      * Sorted list of unique max-versions in the data set.  For select list in jelly.
      */
-    public synchronized Iterator<VersionNumber> getVersionList() {
+    @Restricted(NoExternalUse.class)
+    public Iterator<VersionNumber> getVersionList() {
         TreeSet<VersionNumber> set = new TreeSet<VersionNumber>();
-        for (VersionRange vr : data.values())
-            if (vr.max!=null) set.add(vr.max);
+        for (VersionRange vr : data.values()) {
+            if (vr.max != null) {
+                set.add(vr.max);
+            }
+        }
         return set.iterator();
     }
 
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public HttpResponse doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (req.hasParameter("no")) {
             disable(true);
@@ -255,19 +310,19 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Save all or some of the files to persist data in the new forms.
      * Remove those items from the data map.
      */
-    public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        String thruVerParam = req.getParameter("thruVer");
-        VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
-        updating = true;
-        for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Saveable,VersionRange> entry = it.next();
-            VersionNumber version = entry.getValue().max;
-            if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
-                entry.getKey().save();
-                it.remove();
+    @RequirePOST
+    public HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
+        final String thruVerParam = req.getParameter("thruVer");
+        final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
+
+        saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
+                VersionNumber version = entry.getValue().max;
+                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
             }
-        }
-        updating = false;
+        });
+
         return HttpResponses.forwardToPreviousPage();
     }
 
@@ -275,24 +330,109 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Save all files containing only unreadable data (no data upgrades), which discards this data.
      * Remove those items from the data map.
      */
-    public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        updating = true;
-        for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Saveable,VersionRange> entry = it.next();
-            if (entry.getValue().max == null) {
-                entry.getKey().save();
-                it.remove();
+    @RequirePOST
+    public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
+        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
+                return entry.getValue().max == null;
+            }
+        });
+
+        return HttpResponses.forwardToPreviousPage();
+    }
+
+    private void saveAndRemoveEntries(Predicate<Map.Entry<SaveableReference, VersionRange>> matchingPredicate) {
+        /*
+         * Note that there a race condition here: we acquire the lock and get localCopy which includes some
+         * project (say); then we go through our loop and save that project; then someone POSTs a new
+         * config.xml for the project with some old data, causing remove to be called and the project to be
+         * added to data (in the new version); then we hit the end of this method and the project is removed
+         * from data again, even though it again has old data.
+         *
+         * In practice this condition is extremely unlikely, and not a major problem even if it
+         * does occur: just means the user will be prompted to discard less than they should have been (and
+         * would see the warning again after next restart).
+         */
+        List<SaveableReference> removed = new ArrayList<SaveableReference>();
+        for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
+            if (matchingPredicate.apply(entry)) {
+                Saveable s = entry.getKey().get();
+                if (s != null) {
+                    try {
+                        s.save();
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "failed to save " + s, x);
+                    }
+                }
+                removed.add(entry.getKey());
             }
         }
-        updating = false;
-        return HttpResponses.forwardToPreviousPage();
+
+        data.keySet().removeAll(removed);
     }
 
     public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
         return new HttpRedirect("manage");
     }
 
-    @Extension
+    /** Reference to a saveable object that need not actually hold it in heap. */
+    private interface SaveableReference {
+        @CheckForNull Saveable get();
+        // must also define equals, hashCode
+    }
+
+    private static SaveableReference referTo(Saveable s) {
+        if (s instanceof Run) {
+            Job parent = ((Run) s).getParent();
+            if (Jenkins.getInstance().getItemByFullName(parent.getFullName()) == parent) {
+                return new RunSaveableReference((Run) s);
+            }
+        }
+        return new SimpleSaveableReference(s);
+    }
+
+    private static final class SimpleSaveableReference implements SaveableReference {
+        private final Saveable instance;
+        SimpleSaveableReference(Saveable instance) {
+            this.instance = instance;
+        }
+        @Override public Saveable get() {
+            return instance;
+        }
+        @Override public int hashCode() {
+            return instance.hashCode();
+        }
+        @Override public boolean equals(Object obj) {
+            return obj instanceof SimpleSaveableReference && instance.equals(((SimpleSaveableReference) obj).instance);
+        }
+    }
+
+    // could easily make an ItemSaveableReference, but Jenkins holds all these strongly, so why bother
+
+    private static final class RunSaveableReference implements SaveableReference {
+        private final String id;
+        RunSaveableReference(Run<?,?> r) {
+            id = r.getExternalizableId();
+        }
+        @Override public Saveable get() {
+            try {
+                return Run.fromExternalizableId(id);
+            } catch (IllegalArgumentException x) {
+                // Typically meaning the job or build was since deleted.
+                LOGGER.log(Level.FINE, null, x);
+                return null;
+            }
+        }
+        @Override public int hashCode() {
+            return id.hashCode();
+        }
+        @Override public boolean equals(Object obj) {
+            return obj instanceof RunSaveableReference && id.equals(((RunSaveableReference) obj).id);
+        }
+    }
+
+    @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
         @Override
         public String getIconFileName() {

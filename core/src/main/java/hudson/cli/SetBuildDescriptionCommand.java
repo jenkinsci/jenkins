@@ -1,11 +1,9 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.Run;
-import hudson.remoting.Callable;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
@@ -20,7 +18,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
      }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
-    public transient AbstractProject<?,?> job;
+    public transient Job<?,?> job;
 
     @Argument(metaVar="BUILD#",usage="Number of the build",required=true,index=1)
     public int number;
@@ -30,6 +28,9 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
 
     protected int run() throws Exception {
     	Run run = job.getBuildByNumber(number);
+        if (run == null)
+            throw new IllegalArgumentException("No such build #"+number);
+
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {

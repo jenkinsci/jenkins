@@ -1,6 +1,8 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.Util;
+import hudson.Functions;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.TaskListener;
@@ -10,8 +12,8 @@ import hudson.util.VersionNumber;
 import jenkins.management.AsynchronousAdministrativeMonitor;
 import jenkins.model.Jenkins;
 import jenkins.util.io.FileBoolean;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -28,8 +30,8 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
-public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor implements StaplerProxy {
+@Extension @Symbol("rekeySecret")
+public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
 
     /**
      * Whether we detected a need to run the rewrite program.
@@ -51,6 +53,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
      */
     private final FileBoolean scanOnBoot = state("scanOnBoot");
 
+    @SuppressWarnings("OverridableMethodCallInConstructor") // should have been final
     public RekeySecretAdminMonitor() throws IOException {
         // if JENKINS_HOME existed <1.497, we need to offer rewrite
         // this computation needs to be done and the value be captured,
@@ -60,14 +63,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
         if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
         &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
             needed.on();
-    }
-
-    /**
-     * Requires ADMINISTER permission for any operation in here.
-     */
-    public Object getTarget() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        return this;
+        Util.deleteRecursive(new File(getBaseDir(), "backups")); // SECURITY-376: no longer used
     }
 
     @Override
@@ -113,13 +109,11 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
 
     @Initializer(fatal=false,after=InitMilestone.PLUGINS_STARTED,before=InitMilestone.EXTENSIONS_AUGMENTED)
     // as early as possible, but this needs to be late enough that the ConfidentialStore is available
-    public static void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
-        RekeySecretAdminMonitor m = new RekeySecretAdminMonitor();  // throw-away instance
-
-        FileBoolean flag = m.scanOnBoot;
+    public void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
+        FileBoolean flag = scanOnBoot;
         if (flag.isOn()) {
             flag.off();
-            m.start(false).join();
+            start(false).join();
             // block the boot until the rewrite process is complete
             // don't let the failure in RekeyThread block Jenkins boot.
         }
@@ -142,7 +136,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
     protected void fix(TaskListener listener) throws Exception {
         LOGGER.info("Initiating a re-keying of secrets. See "+getLogFile());
 
-        SecretRewriter rewriter = new SecretRewriter(new File(getBaseDir(),"backups"));
+        SecretRewriter rewriter = new SecretRewriter();
 
         try {
             PrintStream log = listener.getLogger();
@@ -153,7 +147,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
             LOGGER.info("Secret re-keying completed");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
-            e.printStackTrace(listener.error("Fatal failure in rewriting secrets"));
+            Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));
         }
     }
 

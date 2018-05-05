@@ -24,7 +24,8 @@
 package hudson.model;
 
 import hudson.Functions;
-import hudson.tasks.test.TestResultProjectAction;
+
+import javax.annotation.CheckForNull;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -46,7 +47,7 @@ import hudson.tasks.test.TestResultProjectAction;
  * it will be displayed as a floating box on the top page of
  * the target {@link ModelObject}. (For example, this is how
  * the JUnit test result trend shows up in the project top page.
- * See {@link TestResultProjectAction}.
+ * See {@code TestResultProjectAction}.)
  *
  * <p>
  * On the target {@link ModelObject} page, actions are rendered as an item in the side panel
@@ -55,11 +56,11 @@ import hudson.tasks.test.TestResultProjectAction;
  * tweak from there. One of the use cases of this is to show nested actions, like where
  * Jenkins show the option to wipe out the workspace inside the workspace link:
  *
- * <pre>
- * &lt;l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}">
- *   &lt;l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
- * &lt;/l:task>
- * </pre>
+ * <pre>{@code
+ * <l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
+ *   <l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
+ * </l:task>
+ * }</pre>
  *
  * <h2>Persistence</h2>
  * <p>
@@ -67,6 +68,11 @@ import hudson.tasks.test.TestResultProjectAction;
  * (for example with {@link Build}) via XStream. In some other cases,
  * {@link Action}s are transient and not persisted (such as
  * when it's used with {@link Job}).
+ * <p>
+ * The {@link Actionable#replaceAction(Action)}, {@link Actionable#addOrReplaceAction(Action)}, and
+ * {@link Actionable#removeAction(Action)} methods use {@link Object#equals} to determine whether to update
+ * or replace or remove an {@link Action}. As such, {@link Action} subclasses that provide a deep
+ * {@link Object#equals} will assist in reducing the need for unnecessary persistence.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -91,15 +97,17 @@ public interface Action extends ModelObject {
      * @see Functions#isAnonymous()
      * @see Functions#getIconFilePath(Action)
      */
-    String getIconFileName();
+    @CheckForNull String getIconFileName();
 
     /**
      * Gets the string to be displayed.
      *
      * The convention is to capitalize the first letter of each word,
-     * such as "Test Result". 
+     * such as "Test Result".
+     *
+     * @return Can be null in case the action is hidden.
      */
-    String getDisplayName();
+    @CheckForNull String getDisplayName();
 
     /**
      * Gets the URL path name.
@@ -125,5 +133,5 @@ public interface Action extends ModelObject {
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
      */
-    String getUrlName();
+    @CheckForNull String getUrlName();
 }

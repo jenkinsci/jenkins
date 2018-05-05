@@ -7,5 +7,12 @@
   "crumb", on any request that may cause a change on the Jenkins server. This
   includes any form submission and calls to the remote API.
   <p>
+  Enabling this option can result in some problems, like the following:
+  <ul>
+    <li>Some Jenkins features (like the remote API) are more difficult to use when this option is enabled.</li>
+    <li>Some features, especially in plugins not tested with this option enabled, may not work at all.</li>
+    <li>If you are accessing Jenkins through a reverse proxy, it may strip the CSRF HTTP header, resulting in some protected actions failing.</li>
+  </ul>
+  <p>
   More information about CSRF exploits can be found <a href="http://www.owasp.org/index.php/Cross-Site_Request_Forgery">here</a>.
 </div>

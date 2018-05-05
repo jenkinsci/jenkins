@@ -26,7 +26,7 @@ THE SOFTWARE.
   This view is used to render the project change list like /job/<jobname>/changes
 
   While this default implementation can work with any SCM,
-  subclass may provide diffent implementation to present implementation-specific
+  subclass may provide different implementation to present implementation-specific
   information.
 
   The 'builds' variable contains the collection of AbstractBuild objects
@@ -41,13 +41,14 @@ THE SOFTWARE.
     <j:otherwise>
       <j:set var="hadChanges" value="${false}"/>
       <j:forEach var="b" items="${builds}">
-        <j:if test="${b.changeSet.iterator().hasNext()}">
+        <j:forEach var="changeSet" items="${b.changeSets}">
+          <j:set var="browser" value="${changeSet.browser}"/>
           <j:set var="hadChanges" value="${true}"/>
           <h2><a href="${b.number}/changes">${b.displayName}
             (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
 
           <ol>
-            <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">
+            <j:forEach var="c" items="${changeSet.iterator()}" varStatus="loop">
               <li value="${c.revision.class.name == 'java.lang.Integer' ? c.revision : null}">
                 <j:out value="${c.msgAnnotated}"/>
 
@@ -61,13 +62,14 @@ THE SOFTWARE.
                     <a href="${cslink}">${browser.descriptor.displayName}</a>
                   </j:when>
                   <j:otherwise>
+                    <!-- This anchor is meaningless if there is >1 ChangeLogSet/index.jelly for the build; an SCM should rather use an actual commit ID for the anchor: -->
                     <a href="${b.number}/changes#detail${loop.index}">${%detail}</a>
                   </j:otherwise>
                 </j:choose>
               </li>
             </j:forEach>
           </ol>
-        </j:if>
+        </j:forEach>
       </j:forEach>
       <j:if test="${!hadChanges}">
         ${%No changes in any of the builds.}

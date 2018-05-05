@@ -19,9 +19,9 @@
 }
 
 #breadcrumbs {
-    list-style-type:none;
-    padding:0;
-    margin:0;
+    list-style-type: none;
+    padding: 0 0 0 8px;
+    margin: 0;
     height: 2em;
     border-bottom: 1px solid #d3d7cf;
 }
@@ -37,6 +37,10 @@
     display: block;
     padding-left: 0.75em;
     line-height: 2em;
+}
+
+#breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
+  background-color: #e0e4dc;
 }
 
 #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
@@ -79,7 +83,10 @@
   cursor: pointer;
   z-index: 2000;
 }
+#menuSelector.inverse {
+  background-image: url(menu_down_arrow2.png);
+}
 
-A.model-link.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
+A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
   padding-right: 16px;
 }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,29 @@
  */
 package hudson.model;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.List;
 import java.io.File;
@@ -38,23 +53,28 @@ import java.io.File;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FreeStyleProjectTest extends HudsonTestCase {
+public class FreeStyleProjectTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Tests a trivial configuration round-trip.
      *
      * The goal is to catch a P1-level issue that prevents all the form submissions to fail.
      */
-    public void testConfigSubmission() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Test
+    public void configSubmission() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
 
         // emulate the user behavior
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(project,"configure");
 
         HtmlForm form = page.getFormByName("config");
-        submit(form);
+        j.submit(form);
 
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
@@ -64,59 +84,27 @@ public class FreeStyleProjectTest extends HudsonTestCase {
     }
 
     /**
-     * Make sure that the pseudo trigger configuration works.
-     */
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger() throws Exception {
-        pseudoTriggerTest(createMavenProject(), createFreeStyleProject());
-    }
-
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger2() throws Exception {
-        pseudoTriggerTest(createFreeStyleProject(), createFreeStyleProject());
-    }
-
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger3() throws Exception {
-        pseudoTriggerTest(createMatrixProject(), createFreeStyleProject());
-    }
-
-    private void pseudoTriggerTest(AbstractProject up, AbstractProject down) throws Exception {
-        HtmlForm form = new WebClient().getPage(down, "configure").getFormByName("config");
-        form.getInputByName("pseudoUpstreamTrigger").setChecked(true);
-        form.getInputByName("upstreamProjects").setValueAttribute(up.getName());
-        submit(form);
-
-        // make sure this took effect
-        assertTrue(up.getDownstreamProjects().contains(down));
-        assertTrue(down.getUpstreamProjects().contains(up));
-
-        // round trip again and verify that the configuration is still intact.
-        submit(new WebClient().getPage(down, "configure").getFormByName("config"));
-        assertTrue(up.getDownstreamProjects().contains(down));
-        assertTrue(down.getUpstreamProjects().contains(up));
-    }
-
-    /**
      * Custom workspace and concurrent build had a bad interaction.
      */
-    @Bug(4206)
-    public void testCustomWorkspaceAllocation() throws Exception {
-        FreeStyleProject f = createFreeStyleProject();
-        File d = createTmpDir();
+    @Test
+    @Issue("JENKINS-4206")
+    public void customWorkspaceAllocation() throws Exception {
+        FreeStyleProject f = j.createFreeStyleProject();
+        File d = j.createTmpDir();
         f.setCustomWorkspace(d.getPath());
-        buildAndAssertSuccess(f);
+        j.buildAndAssertSuccess(f);
     }
 
     /**
      * Custom workspace and variable expansion.
      */
-    @Bug(3997)
-    public void testCustomWorkspaceVariableExpansion() throws Exception {
-        FreeStyleProject f = createFreeStyleProject();
-        File d = new File(createTmpDir(),"${JOB_NAME}");
+    @Test
+    @Issue("JENKINS-3997")
+    public void customWorkspaceVariableExpansion() throws Exception {
+        FreeStyleProject f = j.createFreeStyleProject();
+        File d = new File(j.createTmpDir(),"${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
-        FreeStyleBuild b = buildAndAssertSuccess(f);
+        FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
@@ -124,19 +112,19 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         assertEquals(b.getWorkspace().getName(),f.getName());
     }
 
-    @Bug(15817)
-    @SuppressWarnings("DM_DEFAULT_ENCODING")
-    public void testMinimalConfigXml() throws Exception {
+    @Test
+    @Issue("JENKINS-15817")
+    public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
-        FreeStyleProject project = (FreeStyleProject) jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(project,"configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
+        j.submit(form);
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
@@ -145,4 +133,25 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         System.out.println(project.getConfigFile().asString());
     }
 
+    @Test
+    @Issue("JENKINS-36629")
+    public void buildStabilityReports() throws Exception {
+        for (int i = 0; i <= 32; i++) {
+            FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
+            int expectedFails = 0;
+            for (int j = 32; j >= 1; j = j / 2) {
+                p.getBuildersList().clear();
+                if ((i & j) == j) {
+                    p.getBuildersList().add(new FailureBuilder());
+                    if (j <= 16) {
+                        expectedFails++;
+                    }
+                }
+                p.scheduleBuild2(0).get();
+            }
+            HealthReport health = p.getBuildHealth();
+
+            assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100*(5-expectedFails)/5));
+        }
+    }
 }

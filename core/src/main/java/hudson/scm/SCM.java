@@ -24,36 +24,43 @@
 package hudson.scm;
 
 import hudson.AbortException;
-import hudson.ExtensionPoint;
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
 import hudson.Util;
-import hudson.security.PermissionGroup;
-import hudson.security.Permission;
-import hudson.security.PermissionScope;
-import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.TaskListener;
-import hudson.model.Node;
-import hudson.model.WorkspaceCleanupThread;
-import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
-import hudson.model.Api;
-import hudson.model.Action;
-import hudson.model.AbstractProject.AbstractProjectDescriptor;
-
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItemDescriptor;
+import hudson.model.WorkspaceCleanupThread;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
+import hudson.tasks.Builder;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -80,8 +87,15 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(SCM.class.getName());
+
+    /** JENKINS-35098: discouraged */
+    @SuppressWarnings("FieldMayBeFinal")
+    private static boolean useAutoBrowserHolder = SystemProperties.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
     /**
      * Stores {@link AutoBrowserHolder}. Lazily created.
+     * @deprecated Unused by default.
      */
     private transient AutoBrowserHolder autoBrowserHolder;
 
@@ -102,7 +116,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @see #getEffectiveBrowser()
      */
-    public RepositoryBrowser<?> getBrowser() {
+    public @CheckForNull RepositoryBrowser<?> getBrowser() {
         return null;
     }
 
@@ -119,20 +133,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     /**
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
-     *
-     * <p>
-     * This method attempts to find applicable browser
-     * from other job configurations.
+     * @see #guessBrowser
      */
+    @SuppressWarnings("deprecation")
     @Exported(name="browser")
-    public final RepositoryBrowser<?> getEffectiveBrowser() {
+    public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
-        if(autoBrowserHolder==null)
-            autoBrowserHolder = new AutoBrowserHolder(this);
-        return autoBrowserHolder.get();
-
+        if (useAutoBrowserHolder) {
+            if (autoBrowserHolder == null) {
+                autoBrowserHolder = new AutoBrowserHolder(this);
+            }
+            return autoBrowserHolder.get();
+        } else {
+            try {
+                return guessBrowser();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return null;
+            }
+        }
     }
 
     /**
@@ -150,7 +171,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag affects the behavior of Hudson when a job lost its workspace
-     * (typically due to a slave outage.) If this method returns false and
+     * (typically due to a agent outage.) If this method returns false and
      * polling is configured, then that would immediately trigger a new build.
      *
      * <p>
@@ -175,9 +196,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
      *
      * <p>
-     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecessary.
+     * Hudson periodically scans through all the agents and removes old workspaces that are deemed unnecessary.
      * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
-     * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
+     * disk consumption on agents. If we don't do this, in a long run, all the agents will have workspaces
      * for all the projects, which will be prohibitive in big Hudson.
      *
      * <p>
@@ -189,7 +210,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * recursive directory deletion happens.
      *
      * <p>
-     * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
+     * Note that this method does not guarantee that such a clean up will happen. For example, agents can be
      * taken offline by being physically removed from the network, and in such a case there's no opportunity
      * to perform this clean up.
      *
@@ -200,7 +221,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      The project that owns this {@link SCM}. This is always the same object for a particular instance
      *      of {@link SCM}. Just passed in here so that {@link SCM} itself doesn't have to remember the value.
      * @param workspace
-     *      The workspace which is about to be deleted. Never null. This can be a remote file path.
+     *      The workspace which is about to be deleted. This can be a remote file path.
      * @param node
      *      The node that hosts the workspace. SCM can use this information to determine the course of action.
      *
@@ -208,17 +229,30 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      true if {@link SCM} is OK to let Hudson proceed with deleting the workspace.
      *      False to veto the workspace deletion.
      * 
-     * @since 1.246
+     * @since 1.568
      */
+    public boolean processWorkspaceBeforeDeletion(@Nonnull Job<?,?> project, @Nonnull FilePath workspace, @Nonnull Node node) throws IOException, InterruptedException {
+        if (project instanceof AbstractProject) {
+            return processWorkspaceBeforeDeletion((AbstractProject) project, workspace, node);
+        } else {
+            return true;
+        }
+    }
+
+    @Deprecated
     public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
-        return true;
+        if (Util.isOverridden(SCM.class, getClass(), "processWorkspaceBeforeDeletion", Job.class, FilePath.class, Node.class)) {
+            return processWorkspaceBeforeDeletion((Job) project, workspace, node);
+        } else {
+            return true;
+        }
     }
 
     /**
      * Checks if there has been any changes to this module in the repository.
      *
      * TODO: we need to figure out a better way to communicate an error back,
-     * so that we won't keep retrying the same node (for example a slave might be down.)
+     * so that we won't keep retrying the same node (for example an agent might be down.)
      *
      * <p>
      * If the SCM doesn't implement polling, have the {@link #supportsPolling()} method
@@ -253,13 +287,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
+    @Deprecated
     public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
         // new implementations that doesn't override this method.
-
-        // not sure if this can be implemented any better
-        return false;
+        throw new AbstractMethodError("you must override compareRemoteRevisionWith");
     }
 
     /**
@@ -272,7 +305,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method is called after source code is checked out for the given build (that is, after
-     * {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} has finished successfully.)
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} has finished successfully.)
      *
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
@@ -280,28 +313,35 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * during check out, in which case this method will not called. 
      *
      * @param build
-     *      The calculated {@link SCMRevisionState} is for the files checked out in this build. Never null.
+     *      The calculated {@link SCMRevisionState} is for the files checked out in this build.
      *      If {@link #requiresWorkspaceForPolling()} returns true, Hudson makes sure that the workspace of this
      *      build is available and accessible by the callee.
+     * @param workspace the location of the checkout; normally not null, since this will normally be called immediately after checkout,
+     *                  though could be null if data is being loaded from a very old version of Jenkins and the SCM declares that it does not require a workspace for polling
      * @param launcher
-     *      Abstraction of the machine where the polling will take place. If SCM declares
-     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace},
-     *      this parameter is null. Otherwise never null.
+     *      Abstraction of the machine where the polling will take place. Nullness matches that of {@code workspace}.
      * @param listener
      *      Logs during the polling should be sent here.
-     *
-     * @return can be null.
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up. 
+     * @since 1.568
      */
-    public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+    public @CheckForNull SCMRevisionState calcRevisionsFromBuild(@Nonnull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "calcRevisionsFromBuild", AbstractBuild.class, Launcher.class, TaskListener.class)) {
+            return calcRevisionsFromBuild((AbstractBuild) build, launcher, listener);
+        } else {
+            throw new AbstractMethodError("you must override the new calcRevisionsFromBuild overload");
+        }
+    }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
+    @Deprecated
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return calcRevisionsFromBuild(build, launcher != null ? build.getWorkspace() : null, launcher, listener);
+    }
+
+    @Deprecated
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
     }
@@ -345,15 +385,19 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
+     * @since 1.568
      */
-    protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
+    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nullable FilePath workspace, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
+        if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
+            return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
+        } else {
+            throw new AbstractMethodError("you must override the new overload of compareRemoteRevisionWith");
+        }
+    }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
-        return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+    @Deprecated
+    protected PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        return compareRemoteRevisionWith((Job) project, launcher, workspace, listener, baseline);
     }
 
     /**
@@ -367,10 +411,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             if (baseline!=SCMRevisionState.NONE) {
                 baseline2 = baseline;
             } else {
-                baseline2 = _calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
+                baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
-            return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+            return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
         } else {
             return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
@@ -381,9 +425,28 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             try {
                 c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
                 return true;
-            } catch (NoSuchMethodException e) { }
+            } catch (NoSuchMethodException e) {
+                try {
+                    c.getDeclaredMethod("compareRemoteRevisionWith", Job.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
+                    return true;
+                } catch (NoSuchMethodException e2) {}
+            }
         }
         return false;
+    }
+
+    /**
+     * Should create a key by which this SCM configuration might be distinguished from others in the same project.
+     * Should be invariable across builds but otherwise as distinctive as possible.
+     * <p>Could include information such as the relative paths used in {@link #getModuleRoots(FilePath, AbstractBuild)},
+     * and/or configured repository URLs and branch names, and/or labels set for this purpose by the user.
+     * <p>The result may be used for various purposes, but it may be long and/or include URL-unsafe characters,
+     * so to use in a URL path component you may need to first wrap it in {@link Util#getDigestOf(String)} or otherwise encode it.
+     * @return by default, just {@link #getType}
+     * @since 1.568
+     */
+    public @Nonnull String getKey() {
+        return getType();
     }
 
     /**
@@ -405,26 +468,58 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @param changelogFile
      *      Upon a successful return, this file should capture the changelog.
      *      When there's no change, this file should contain an empty entry.
-     *      See {@link #createEmptyChangeLog(File, BuildListener, String)}.
-     * @return
-     *      false if the operation fails. The error should be reported to the listener.
-     *      Otherwise return the changes included in this update (if this was an update.)
-     *      <p>
-     *      Using the return value to indicate success/failure should
-     *      be considered deprecated, and implementations are encouraged
-     *      to throw {@link AbortException} to indicate a failure.
-     *
+     *      See {@link #createEmptyChangeLog(File, TaskListener, String)}.
+     *      May be null, in which case no changelog was requested.
+     * @param  baseline version from the previous build to use for changelog creation, if requested and available
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
+     * @throws AbortException in case of a routine failure
+     * @since 1.568
      */
-    public abstract boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
+    public void checkout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
+            if (changelogFile == null) {
+                changelogFile = File.createTempFile("changelog", ".xml");
+                try {
+                    if (!checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile)) {
+                        throw new AbortException();
+                    }
+                } finally {
+                    Util.deleteFile(changelogFile);
+                }
+            } else {
+                if (!checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile)) {
+                    throw new AbortException();
+                }
+            }
+        } else {
+            throw new AbstractMethodError("you must override the new overload of checkout");
+        }
+    }
+
+    @Deprecated
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, @Nonnull File changelogFile) throws IOException, InterruptedException {
+        AbstractBuild<?,?> prev = build.getPreviousBuild();
+        checkout((Run) build, launcher, workspace, listener, changelogFile, prev != null ? prev.getAction(SCMRevisionState.class) : null);
+        return true;
+    }
 
     /**
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
-     * @since 1.534, 1.532.1
+     * @since 1.568
      */
+    public void postCheckout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && listener instanceof BuildListener) {
+            postCheckout((AbstractBuild) build, launcher, workspace, (BuildListener) listener);
+        }
+    }
+
+    @Deprecated
     public void postCheckout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
+        if (Util.isOverridden(SCM.class, getClass(), "postCheckout", Run.class, Launcher.class, FilePath.class, TaskListener.class)) {
+            postCheckout((Run) build, launcher, workspace, listener);
+        }
         /* Default implementation is noop */
     }
 
@@ -436,12 +531,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * (for example, SVN revision number.)
      *
      * <p>
-     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, which
-     * can be before/after your checkout method is invoked. So if you are going to provide information about
-     * check out (like SVN revision number that was checked out), be prepared for the possibility that the
-     * check out hasn't happened yet.
+     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, via
+     * {@link #buildEnvVars(AbstractBuild, Map)}, which can be before/after your checkout method is invoked. So if you
+     * are going to provide information about check out (like SVN revision number that was checked out), be prepared
+     * for the possibility that the check out hasn't happened yet.
+     *
+     * @since 2.60
      */
+    public void buildEnvironment(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild)build, env);
+        }
+    }
+
+    /**
+     * @deprecated in favor of {@link #buildEnvironment(Run, Map)}.
+     */
+    @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+        if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
+            buildEnvironment(build, env);
+        }
         // default implementation is noop.
     }
 
@@ -452,12 +562,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Often SCMs have to create a directory inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- CVS
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
@@ -492,6 +602,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @since 1.382
      */
+    // TODO perhaps deprecate all replace with a single getModuleRoots(FilePath, Run)
     public FilePath getModuleRoot(FilePath workspace, AbstractBuild build) {
         // For backwards compatibility, call the one argument version of the method.
         return getModuleRoot(workspace);
@@ -501,6 +612,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath getModuleRoot(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
             // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
@@ -516,7 +628,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Some SCMs support checking out multiple modules inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- .svn
@@ -524,7 +636,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *  +- abc    <- second module from different SCM root
      *      +- .svn
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * This method takes the workspace root as a parameter, and is expected to return
      * all the module roots that were checked out from SCM.
@@ -555,6 +667,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath[] getModuleRoots(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
             // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it
@@ -577,15 +690,23 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 // convenience methods
 //
 
+    @Deprecated
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
         try {
-            FileWriter w = new FileWriter(changelogFile);
-            w.write("<"+rootTag +"/>");
-            w.close();
+            createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
             return true;
         } catch (IOException e) {
-            e.printStackTrace(listener.error(e.getMessage()));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
             return false;
+        }
+    }
+
+    /**
+     * @since 1.568
+     */
+    protected final void createEmptyChangeLog(@Nonnull File changelogFile, @Nonnull TaskListener listener, @Nonnull String rootTag) throws IOException {
+        try (FileWriter w = new FileWriter(changelogFile)) {
+            w.write("<"+rootTag +"/>");
         }
     }
 
@@ -610,9 +731,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
+     * Determines which kinds of SCMs are applicable to a given project.
+     * @param project a project on which we might be configuring SCM, or null if unknown
+     * @return all descriptors which {@link SCMDescriptor#isApplicable(Job)} to it, also filtered by {@link TopLevelItemDescriptor#isApplicable};
+     *         or simply {@link #all} if there is no project
+     * @since 1.568
      */
-    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
+    public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
         
         final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
@@ -620,8 +745,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;
 
-            if (pd instanceof AbstractProjectDescriptor) {
-                AbstractProjectDescriptor apd = (AbstractProjectDescriptor) pd;
+            if (pd instanceof TopLevelItemDescriptor) {
+                TopLevelItemDescriptor apd = (TopLevelItemDescriptor) pd;
                 if(!apd.isApplicable(scmDescriptor))    continue;
             }
 
@@ -630,4 +755,20 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
         return r;
     }
+
+    @Deprecated
+    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
+        return _for((Job) project);
+    }
+
+    /**
+     * Try to guess how a repository browser should be configured, based on URLs and the like.
+     * Used when {@link #getBrowser} has not been explicitly configured.
+     * @return a reasonable default value for {@link #getEffectiveBrowser}, or null
+     * @since 1.568
+     */
+    public @CheckForNull RepositoryBrowser<?> guessBrowser() {
+        return null;
+    }
+
 }

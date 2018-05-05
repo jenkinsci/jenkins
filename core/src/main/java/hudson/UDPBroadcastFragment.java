@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
 
 import java.net.SocketAddress;
 
@@ -54,6 +53,6 @@ public abstract class UDPBroadcastFragment implements ExtensionPoint {
      * Returns all the registered {@link UDPBroadcastFragment}s.
      */
     public static ExtensionList<UDPBroadcastFragment> all() {
-        return Jenkins.getInstance().getExtensionList(UDPBroadcastFragment.class);
+        return ExtensionList.lookup(UDPBroadcastFragment.class);
     }
 }

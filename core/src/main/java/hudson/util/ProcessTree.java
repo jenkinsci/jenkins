@@ -25,30 +25,25 @@ package hudson.util;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Util;
-import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
+import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
-import org.apache.commons.io.FileUtils;
+import jenkins.security.SlaveToMasterCallable;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -65,11 +60,14 @@ import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
+import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -96,9 +94,20 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Lazily obtained {@link ProcessKiller}s to be applied on this process tree.
      */
     private transient volatile List<ProcessKiller> killers;
+    
+    /**
+     * Flag to skip the veto check since there aren't any.
+     */
+    private boolean skipVetoes;
 
     // instantiation only allowed for subtypes in this class
-    private ProcessTree() {}
+    private ProcessTree() {
+       skipVetoes = false;
+    }
+    
+    private ProcessTree(boolean vetoesExist) {
+        skipVetoes = !vetoesExist;
+    }
 
     /**
      * Gets the process given a specific ID, or null if no such process exists.
@@ -158,11 +167,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
                 if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new Callable<List<ProcessKiller>, IOException>() {
-                        public List<ProcessKiller> call() throws IOException {
-                            return new ArrayList<ProcessKiller>(ProcessKiller.all());
-                        }
-                    });
+                    killers = channelToMaster.call(new ListAll());
                 } else {
                     // used in an environment that doesn't support talk-back to the master.
                     // let's do with what we have.
@@ -173,6 +178,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 killers = Collections.emptyList();
             }
         return killers;
+    }
+    private static class ListAll extends SlaveToMasterCallable<List<ProcessKiller>, IOException> {
+        @Override
+        public List<ProcessKiller> call() throws IOException {
+            return new ArrayList<>(ProcessKiller.all());
+        }
     }
 
     /**
@@ -237,6 +248,34 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         public abstract void killRecursively() throws InterruptedException;
 
         /**
+         * @return The first non-null {@link VetoCause} provided by a process killing veto extension for this OSProcess. 
+         * null if no one objects killing the process.
+         */
+        protected @CheckForNull VetoCause getVeto() {
+            String causeMessage = null;
+            
+            // Quick check, does anything exist to check against
+            if (!skipVetoes) {
+                try {
+                    VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                    if (channelToMaster!=null) {
+                        CheckVetoes vetoCheck = new CheckVetoes(this);
+                        causeMessage = channelToMaster.call(vetoCheck);
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Interrupted Exception while checking for vetoes", e);
+                }
+            }
+            
+            if (causeMessage != null) {
+                return new VetoCause(causeMessage);
+            }
+            return null;
+        }
+
+        /**
          * Gets the command-line arguments of this process.
          *
          * <p>
@@ -278,11 +317,32 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Executes a chunk of code at the same machine where this process resides.
          */
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
-            return callable.invoke(this, Jenkins.MasterComputer.localChannel);
+            return callable.invoke(this, FilePath.localChannel);
         }
 
         Object writeReplace() {
             return new SerializedProcess(pid);
+        }
+        
+        private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
+            private IOSProcess process;
+            
+            public CheckVetoes(IOSProcess processToCheck) {
+                process = processToCheck;
+            }
+        
+            @Override
+            public String call() throws IOException {
+                for (ProcessKillingVeto vetoExtension : ProcessKillingVeto.all()) {
+                    VetoCause cause = vetoExtension.vetoProcessKilling(process);
+                    if (cause != null) {
+                        if (LOGGER.isLoggable(FINEST))
+                            LOGGER.info("Killing of pid " + getPid() + " vetoed by " + vetoExtension.getClass().getName() + ": " + cause.getMessage());
+                        return cause.getMessage();
+                    }
+                }
+                return null;
+            }
         }
     }
 
@@ -322,6 +382,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
 
+    /* package */ static Boolean vetoersExist;
+    
     /**
      * Gets the {@link ProcessTree} of the current system
      * that JVM runs in, or in the worst case return the default one
@@ -331,23 +393,43 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         if(!enabled)
             return DEFAULT;
 
+        // Check for the existance of vetoers if I don't know already
+        if (vetoersExist == null) {
+            try {
+                vetoersExist = SlaveComputer.getChannelToMaster().call(new DoVetoersExist());
+            }
+            catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
+            }
+        }
+        
+        // Null-check in case the previous call worked
+        boolean vetoes = (vetoersExist == null ? true : vetoersExist);
+        
         try {
             if(File.pathSeparatorChar==';')
-                return new Windows();
+                return new Windows(vetoes);
 
             String os = Util.fixNull(System.getProperty("os.name"));
             if(os.equals("Linux"))
-                return new Linux();
+                return new Linux(vetoes);
             if(os.equals("SunOS"))
-                return new Solaris();
+                return new Solaris(vetoes);
             if(os.equals("Mac OS X"))
-                return new Darwin();
+                return new Darwin(vetoes);
         } catch (LinkageError e) {
             LOGGER.log(Level.WARNING,"Failed to load winp. Reverting to the default",e);
             enabled = false;
         }
 
         return DEFAULT;
+    }
+    
+    private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
+        @Override
+        public Boolean call() throws IOException {
+            return ProcessKillingVeto.all().size() > 0;
+        }
     }
 
 //
@@ -359,7 +441,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Empty process list as a default value if the platform doesn't support it.
      */
-    private static final ProcessTree DEFAULT = new Local() {
+    /*package*/ static final ProcessTree DEFAULT = new Local() {
         public OSProcess get(final Process proc) {
             return new OSProcess(-1) {
                 public OSProcess getParent() {
@@ -372,6 +454,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 public void kill() throws InterruptedException {
+                    if (getVeto() != null) 
+                        return;
                     proc.destroy();
                     killByKiller();
                 }
@@ -391,56 +475,116 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     };
 
+    private class WindowsOSProcess extends OSProcess {
+        
+        private final WinProcess p;
+        private EnvVars env;
+        private List<String> args;
+        
+        WindowsOSProcess(WinProcess p) {
+            super(p.getPid());
+            this.p = p;
+        }
+
+        @Override
+        public OSProcess getParent() {
+            // Windows process doesn't have parent/child relationship
+            return null;
+        }
+
+        @Override
+        public void killRecursively() throws InterruptedException {
+            if (getVeto() != null) 
+                return;
+
+            LOGGER.log(FINER, "Killing recursively {0}", getPid());
+            p.killRecursively();
+            killByKiller();
+        }
+
+        @Override
+        public void kill() throws InterruptedException {
+            if (getVeto() != null) {
+                return;
+            }
+            
+            LOGGER.log(FINER, "Killing {0}", getPid());
+            p.kill();
+            killByKiller();
+        }
+
+        @Override
+        public synchronized List<String> getArguments() {
+            if(args==null) {
+                args = Arrays.asList(QuotedStringTokenizer.tokenize(p.getCommandLine()));
+            }
+            return args;
+        }
+
+        @Override
+        public synchronized EnvVars getEnvironmentVariables() {
+            try {
+               return getEnvironmentVariables2();
+            } catch (WindowsOSProcessException e) {
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
+                }
+            }
+            return null;
+        }
+        
+        private synchronized EnvVars getEnvironmentVariables2() throws WindowsOSProcessException {
+            if(env !=null) {
+              return env;
+            }
+            env = new EnvVars();
+
+            try {
+               env.putAll(p.getEnvironmentVariables());
+            } catch (WinpException e) {
+               throw new WindowsOSProcessException("Failed to get the environment variables", e);
+            }
+            return env;
+        }
+        
+        private boolean hasMatchingEnvVars2(Map<String,String> modelEnvVar) throws WindowsOSProcessException {
+            if(modelEnvVar.isEmpty())
+                // sanity check so that we don't start rampage.
+                return false;
+
+            SortedMap<String,String> envs = getEnvironmentVariables2();
+            for (Entry<String,String> e : modelEnvVar.entrySet()) {
+                String v = envs.get(e.getKey());
+                if(v==null || !v.equals(e.getValue()))
+                    return false;   // no match
+            }
+
+            return true;
+        }
+    }
+    
+    //TODO: Cleanup once Winp provides proper API 
+    /**
+     * Wrapper for runtime {@link WinpException}.
+     */
+    private static class WindowsOSProcessException extends Exception {
+        WindowsOSProcessException(WinpException ex) {
+            super(ex);
+        }
+        
+        WindowsOSProcessException(String message, WinpException ex) {
+            super(message, ex);
+        }
+    }
 
     private static final class Windows extends Local {
-        Windows() {
+        Windows(boolean vetoesExist) {
+            super(vetoesExist);
+            
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
                 if(pid == 0 || pid == 4) continue; // skip the System Idle and System processes
-                super.processes.put(pid,new OSProcess(pid) {
-                    private EnvVars env;
-                    private List<String> args;
-
-                    public OSProcess getParent() {
-                        // windows process doesn't have parent/child relationship
-                        return null;
-                    }
-
-                    public void killRecursively() throws InterruptedException {
-                        LOGGER.finer("Killing recursively "+getPid());
-                        p.killRecursively();
-                        killByKiller();
-                    }
-
-                    public void kill() throws InterruptedException {
-                        LOGGER.finer("Killing "+getPid());
-                        p.kill();
-                        killByKiller();
-                    }
-
-                    @Override
-                    public synchronized List<String> getArguments() {
-                        if(args==null)  args = Arrays.asList(QuotedStringTokenizer.tokenize(p.getCommandLine()));
-                        return args;
-                    }
-
-                    @Override
-                    public synchronized EnvVars getEnvironmentVariables() {
-                        if(env !=null)
-                          return env;
-                        env = new EnvVars();   
-                        
-                        try 
-                        {
-                           env.putAll(p.getEnvironmentVariables());
-                        } catch (WinpException e)
-                        {
-                           LOGGER.log(FINE, "Failed to get environment variable ", e);
-                        }                          
-                        return env;
-                    }
-                });
-
+                super.processes.put(pid, new WindowsOSProcess(p));
             }
         }
 
@@ -449,36 +593,59 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return get(new WinProcess(proc).getPid());
         }
 
+        @Override
         public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
             for( OSProcess p : this) {
                 if(p.getPid()<10)
                     continue;   // ignore system processes like "idle process"
 
-                LOGGER.finest("Considering to kill "+p.getPid());
+                LOGGER.log(FINEST, "Considering to kill {0}", p.getPid());
 
                 boolean matched;
                 try {
-                    matched = p.hasMatchingEnvVars(modelEnvVars);
-                } catch (WinpException e) {
+                    matched = hasMatchingEnvVars(p, modelEnvVars);
+                } catch (WindowsOSProcessException e) {
                     // likely a missing privilege
-                    LOGGER.log(FINEST,"  Failed to check environment variable match",e);
+                    // TODO: not a minor issue - causes process termination error in JENKINS-30782
+                    if (LOGGER.isLoggable(FINEST)) {
+                        LOGGER.log(FINEST, "Failed to check environment variable match for process with pid=" + p.getPid() ,e);
+                    }
                     continue;
                 }
 
-                if(matched)
+                if(matched) {
                     p.killRecursively();
-                else
-                    LOGGER.finest("Environment variable didn't match");
-
+                } else {
+                    LOGGER.log(Level.FINEST, "Environment variable didn't match for process with pid={0}", p.getPid());
+                }
             }
         }
 
         static {
             WinProcess.enableDebugPrivilege();
         }
+        
+        private static boolean hasMatchingEnvVars(@Nonnull OSProcess p, @Nonnull Map<String, String> modelEnvVars)
+                throws WindowsOSProcessException {
+            if (p instanceof WindowsOSProcess) {
+                return ((WindowsOSProcess)p).hasMatchingEnvVars2(modelEnvVars);
+            } else {
+                // Should never happen, but there is a risk of getting such class during deserialization
+                try {
+                    return p.hasMatchingEnvVars(modelEnvVars);
+                } catch (WinpException e) {
+                    // likely a missing privilege
+                    throw new WindowsOSProcessException(e);
+                }
+            }
+        }
     }
 
     static abstract class Unix extends Local {
+        public Unix(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         @Override
         public OSProcess get(Process proc) {
             try {
@@ -500,7 +667,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * {@link ProcessTree} based on /proc.
      */
     static abstract class ProcfsUnix extends Unix {
-        ProcfsUnix() {
+        ProcfsUnix(boolean vetoersExist) {
+            super(vetoersExist);
+            
             File[] processes = new File("/proc").listFiles(new FileFilter() {
                 public boolean accept(File f) {
                     return f.isDirectory();
@@ -546,10 +715,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Tries to kill this process.
          */
         public void kill() throws InterruptedException {
+            if (getVeto() != null) 
+                return;
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
-                UnixReflection.DESTROY_PROCESS.invoke(null, pid);
+                UnixReflection.destroy(pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
@@ -566,6 +737,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public void killRecursively() throws InterruptedException {
+            // We kill individual processes of a tree, so handling vetoes inside #kill() is enough for UnixProcess es
             LOGGER.fine("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren())
                 p.killRecursively();
@@ -604,7 +776,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 PID_FIELD = clazz.getDeclaredField("pid");
                 PID_FIELD.setAccessible(true);
 
-                DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                if (isPreJava8()) {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                } else {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
+                }
                 DESTROY_PROCESS.setAccessible(true);
             } catch (ClassNotFoundException e) {
                 LinkageError x = new LinkageError();
@@ -620,10 +796,27 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 throw x;
             }
         }
+
+        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
+            if (isPreJava8()) {
+                DESTROY_PROCESS.invoke(null, pid);
+            } else {
+                DESTROY_PROCESS.invoke(null, pid, false);
+            }
+        }
+
+        private static boolean isPreJava8() {
+            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
+            return javaVersionAsAnInteger < 18;
+        }
     }
 
 
     static class Linux extends ProcfsUnix {
+        public Linux(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         protected LinuxProcess createProcess(int pid) throws IOException {
             return new LinuxProcess(pid);
         }
@@ -662,7 +855,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
                 arguments = new ArrayList<String>();
                 try {
-                    byte[] cmdline = FileUtils.readFileToByteArray(getFile("cmdline"));
+                    byte[] cmdline = readFileToByteArray(getFile("cmdline"));
                     int pos=0;
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
@@ -684,7 +877,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
                 try {
-                    byte[] environ = FileUtils.readFileToByteArray(getFile("environ"));
+                    byte[] environ = readFileToByteArray(getFile("environ"));
                     int pos=0;
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
@@ -700,29 +893,78 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return envVars;
             }
         }
+
+        public byte[] readFileToByteArray(File file) throws IOException {
+            InputStream in = org.apache.commons.io.FileUtils.openInputStream(file);
+            try {
+                return org.apache.commons.io.IOUtils.toByteArray(in);
+            } finally {
+                    in.close();
+            }
+        }
     }
 
     /**
      * Implementation for Solaris that uses <tt>/proc</tt>.
      *
-     * Amazingly, this single code works for both 32bit and 64bit Solaris, despite the fact
-     * that does a lot of pointer manipulation and what not.
+     * /proc/PID/psinfo contains a psinfo_t struct. We use it to determine where the
+     *     process arguments and environment are located in PID's address space.
+     *     Note that the psinfo_t struct is different (different sized elements) for 32-bit
+     *     vs 64-bit processes and the kernel will provide the version of the struct that
+     *     matches the _reader_ (this Java process) regardless of whether PID is a
+     *     32-bit or 64-bit process.
+     *
+     *     Note that this means that if PID is a 64-bit process, then a 32-bit Java
+     *     process can not get meaningful values for envp and argv out of the psinfo_t. The
+     *     values will have been truncated to 32-bits.
+     *
+     * /proc/PID/as contains the address space of the process we are inspecting. We can
+     *     follow the envp and argv pointers from psinfo_t to find the environment variables
+     *     and process arguments. When following pointers in this address space we need to
+     *     make sure to use 32-bit or 64-bit pointers depending on what sized pointers
+     *     PID uses, regardless of what size pointers the Java process uses.
+     *
+     *     Note that the size of a 64-bit address space is larger than Long.MAX_VALUE (because
+     *     longs are signed). So normal Java utilities like RandomAccessFile and FileChannel
+     *     (which use signed longs as offsets) are not able to read from the end of the address
+     *     space, where envp and argv will be. Therefore we need to use LIBC.pread() directly.
+     *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
+        public Solaris(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
         protected OSProcess createProcess(final int pid) throws IOException {
             return new SolarisProcess(pid);
         }
 
         private class SolarisProcess extends UnixProcess {
+            private static final byte PR_MODEL_ILP32 = 1;
+            private static final byte PR_MODEL_LP64 = 2;
+
+            /*
+             * An arbitrary upper-limit on how many characters readLine() will
+             * try reading before giving up. This avoids having readLine() loop
+             * over the entire process address space if this class has bugs.
+             */
+            private final int LINE_LENGTH_LIMIT =
+                SystemProperties.getInteger(Solaris.class.getName()+".lineLimit", 10000);
+
+            /*
+             * True if target process is 64-bit (Java process may be different).
+             */
+            private final boolean b64;
+
             private final int ppid;
             /**
-                 * Address of the environment vector. Even on 64bit Solaris this is still 32bit pointer.
+             * Address of the environment vector.
              */
-            private final int envp;
+            private final long envp;
             /**
-                 * Similarly, address of the arguments vector.
+             * Similarly, address of the arguments vector.
              */
-            private final int argp;
+            private final long argp;
             private final int argc;
             private EnvVars envVars;
             private List<String> arguments;
@@ -774,10 +1016,23 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         throw new IOException("psinfo PID mismatch");   // sanity check
                     ppid = adjust(psinfo.readInt());
 
-                    psinfo.seek(188);  // now jump to pr_argc
-                    argc = adjust(psinfo.readInt());
-                    argp = adjust(psinfo.readInt());
-                    envp = adjust(psinfo.readInt());
+                    /*
+                     * Read the remainder of psinfo_t differently depending on whether the
+                     * Java process is 32-bit or 64-bit.
+                     */
+                    if (Pointer.SIZE == 8) {
+                        psinfo.seek(236);  // offset of pr_argc
+                        argc = adjust(psinfo.readInt());
+                        argp = adjustL(psinfo.readLong());
+                        envp = adjustL(psinfo.readLong());
+                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                    } else {
+                        psinfo.seek(188);  // offset of pr_argc
+                        argc = adjust(psinfo.readInt());
+                        argp = to64(adjust(psinfo.readInt()));
+                        envp = to64(adjust(psinfo.readInt()));
+                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                    }
                 } finally {
                     psinfo.close();
                 }
@@ -795,23 +1050,28 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
 
                 arguments = new ArrayList<String>(argc);
+		if (argc == 0) {
+		    return arguments;
+		}
 
+                int psize = b64 ? 8 : 4;
+                Memory m = new Memory(psize);
                 try {
-                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
                     if(LOGGER.isLoggable(FINER))
                         LOGGER.finer("Reading "+getFile("as"));
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
                     try {
                         for( int n=0; n<argc; n++ ) {
                             // read a pointer to one entry
-                            as.seek(to64(argp+n*4));
-                            int p = adjust(as.readInt());
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+n*psize));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
 
-                            arguments.add(readLine(as, p, "argv["+ n +"]"));
+                            arguments.add(readLine(fd, addr, "argv["+ n +"]"));
                         }
                     } finally {
-                        as.close();
+                        LIBC.close(fd);
                     }
-                } catch (IOException e) {
+                } catch (IOException | LastErrorException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
                     // so don't report this as an error.
                 }
@@ -825,44 +1085,57 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
 
+		if (envp == 0) {
+		    return envVars;
+		}
+
+                int psize = b64 ? 8 : 4;
+                Memory m = new Memory(psize);
                 try {
-                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
                     if(LOGGER.isLoggable(FINER))
                         LOGGER.finer("Reading "+getFile("as"));
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
                     try {
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
-                            as.seek(to64(envp+n*4));
-                            int p = adjust(as.readInt());
-                            if(p==0)
-                                break;  // completed the walk
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+n*psize));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
+                            if (addr == 0) // completed the walk
+                                break;
 
                             // now read the null-terminated string
-                            envVars.addLine(readLine(as, p, "env["+ n +"]"));
+                            envVars.addLine(readLine(fd, addr, "env["+ n +"]"));
                         }
                     } finally {
-                        as.close();
+                        LIBC.close(fd);
                     }
-                } catch (IOException e) {
+                } catch (IOException | LastErrorException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
                     // so don't report this as an error.
                 }
-
                 return envVars;
             }
 
-            private String readLine(RandomAccessFile as, int p, String prefix) throws IOException {
+            private String readLine(int fd, long addr, String prefix) throws IOException {
                 if(LOGGER.isLoggable(FINEST))
-                    LOGGER.finest("Reading "+prefix+" at "+p);
+                    LOGGER.finest("Reading "+prefix+" at "+addr);
 
-                as.seek(to64(p));
+                Memory m = new Memory(1);
+                byte ch = 1;
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                int ch,i=0;
-                while((ch=as.read())>0) {
-                    if((++i)%100==0 && LOGGER.isLoggable(FINEST))
-                        LOGGER.finest(prefix +" is so far "+buf.toString());
+                int i = 0;
+                while(true) {
+                    if (i++ > LINE_LENGTH_LIMIT) {
+                        LOGGER.finest("could not find end of line, giving up");
+                        throw new IOException("could not find end of line, giving up");
+                    }
 
+                    LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
+                    ch = m.getByte(0);
+                    if (ch == 0)
+                        break;
                     buf.write(ch);
+                    addr++;
                 }
                 String line = buf.toString();
                 if(LOGGER.isLoggable(FINEST))
@@ -889,13 +1162,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return i;
         }
 
+        public static long adjustL(long i) {
+            if(IS_LITTLE_ENDIAN) {
+                return Long.reverseBytes(i);
+            } else {
+                return i;
+            }
+        }
     }
 
     /**
      * Implementation for Mac OS X based on sysctl(3).
      */
     private static class Darwin extends Unix {
-        Darwin() {
+        Darwin(boolean vetoersExist) {
+            super(vetoersExist);
+
             String arch = System.getProperty("sun.arch.data.model");
             if ("64".equals(arch)) {
                 sizeOf_kinfo_proc = sizeOf_kinfo_proc_64;
@@ -986,7 +1268,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
                     if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
-                        throw new IOException("Failed to get kernl.argmax: "+LIBC.strerror(Native.getLastError()));
+                        throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
 
@@ -1077,7 +1359,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             arguments.add(m.readString());
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please run 'ps e "+pid+"' and report this to https://issues.jenkins-ci.org/browse/JENKINS-9634",e);
+                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please see https://jenkins.io/redirect/troubleshooting/darwin-failed-to-parse-arguments",e);
                     }
 
                     // read env vars that follow
@@ -1114,7 +1396,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * (The opposite of {@link Remote}.)
      */
     public static abstract class Local extends ProcessTree {
+        @Deprecated
         Local() {
+        }
+        
+        Local(boolean vetoesExist) {
+            super(vetoesExist);
         }
     }
 
@@ -1124,7 +1411,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     public static class Remote extends ProcessTree implements Serializable {
         private final IProcessTree proxy;
 
+        @Deprecated
         public Remote(ProcessTree proxy, Channel ch) {
+            this.proxy = ch.export(IProcessTree.class,proxy);
+            for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
+                processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
+        }
+        
+        public Remote(ProcessTree proxy, Channel ch, boolean vetoersExist) {
+            super(vetoersExist);
+            
             this.proxy = ch.export(IProcessTree.class,proxy);
             for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
                 processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
@@ -1238,6 +1534,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * <p>
      * This property supports two names for a compatibility reason.
      */
-    public static boolean enabled = !Boolean.getBoolean(ProcessTreeKiller.class.getName()+".disable")
-                                 && !Boolean.getBoolean(ProcessTree.class.getName()+".disable");
+    public static boolean enabled = !SystemProperties.getBoolean(ProcessTreeKiller.class.getName()+".disable")
+                                 && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

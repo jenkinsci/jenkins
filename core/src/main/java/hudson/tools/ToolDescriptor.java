@@ -24,19 +24,27 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import hudson.util.FormValidation;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.List;
+
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Jenkins;
+import jenkins.tools.ToolConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.Nonnull;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -48,12 +56,22 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     private T[] installations;
 
+    protected ToolDescriptor() { }
+
+    /**
+     * @since 2.102
+     */
+    protected ToolDescriptor(Class<T> clazz) {
+        super(clazz);
+    }
+
     /**
      * Configured instances of {@link ToolInstallation}s.
      *
      * @return read-only list of installations;
      *      can be empty but never null.
      */
+    @SuppressWarnings("unchecked")
     public T[] getInstallations() {
         if (installations != null)
             return installations.clone();
@@ -65,9 +83,18 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
             return (T[])Array.newInstance(t,0);
         } else {
-            // can't infer the type. fallacbk
-            return (T[])new Object[0];
+            // can't infer the type. Fallback
+            return emptyArray_unsafeCast();
         }
+    }
+    
+    //TODO: Get rid of it? 
+    //It's unsafe according to http://stackoverflow.com/questions/2927391/whats-the-reason-i-cant-create-generic-array-types-in-java
+    @SuppressWarnings("unchecked")
+    @SuppressFBWarnings(value = "BC_IMPOSSIBLE_DOWNCAST",
+            justification = "Such casting is generally unsafe, but we use it as a last resort.")
+    private T[] emptyArray_unsafeCast() {
+        return (T[])new Object[0];
     }
 
     /**
@@ -84,7 +111,13 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Lists up {@link ToolPropertyDescriptor}s that are applicable to this {@link ToolInstallation}.
      */
     public List<ToolPropertyDescriptor> getPropertyDescriptors() {
-        return PropertyDescriptor.for_(ToolProperty.all(),clazz);
+        return PropertyDescriptor.for_(ToolProperty.all(), clazz);
+    }
+
+
+    @Override
+    public @Nonnull GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
     /**
@@ -117,6 +150,43 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray((T[]) Array.newInstance(clazz, 0)));
         return true;
+    }
+
+    /**
+     * Checks if the home directory is valid.
+     * @since 1.563
+     */
+    public FormValidation doCheckHome(@QueryParameter File value) {
+        // this can be used to check the existence of a file on the server, so needs to be protected
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        if (value.getPath().isEmpty()) {
+            return FormValidation.ok();
+        }
+
+        if (!value.isDirectory()) {
+            return FormValidation.warning(Messages.ToolDescriptor_NotADirectory(value));
+        }
+
+        return checkHomeDirectory(value);
+    }
+
+    /**
+     * May be overridden to provide tool-specific validation of a tool home directory.
+     * @param home a possible value for {@link ToolInstallation#getHome}, known to already exist on the master
+     * @return by default, {@link FormValidation#ok()}
+     * @since 1.563
+     */
+    protected FormValidation checkHomeDirectory(File home) {
+        return FormValidation.ok();
+    }
+
+    /**
+     * Checks if the tool name is valid.
+     * @since 1.563
+     */
+    public FormValidation doCheckName(@QueryParameter String value) {
+        return FormValidation.validateRequired(value);
     }
 
 }

@@ -26,6 +26,7 @@ package hudson.node_monitors;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
@@ -66,7 +67,10 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
         @Override
         protected Callable<DiskSpace, IOException> createCallable(Computer c) {
-            FilePath p = c.getNode().getRootPath();
+            Node node = c.getNode();
+            if (node == null) return null;
+            
+            FilePath p = node.getRootPath();
             if(p==null) return null;
 
             return p.asCallableWith(new GetUsableSpace());

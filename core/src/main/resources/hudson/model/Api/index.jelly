@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="Remote API">
-		<l:main-panel>
+  <l:layout title="Remote API" type="one-column">
+    <l:main-panel>
       <h1>REST API</h1>
 
       <p>
@@ -100,25 +100,16 @@ THE SOFTWARE.
 
       <p>
         For more information about remote API in Jenkins, see
-        <a href="http://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API">the documentation</a>.
+        <a href="https://jenkins.io/redirect/remote-api">the documentation</a>.
       </p>
 
       <h2>Controlling the amount of data you fetch</h2>
       <p>
-        In all formats, the <tt>depth</tt> query parameter can be used to control the amount of data
-        you'll receive. The default is <tt>depth=0</tt>, but by increasing this value you can get
-        a lot of data by single remote API invocation (the downside is bigger bandwidth requirement.)
-        Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
-        is for yourself. Also note that data created by a smaller depth value is always a subset of
-        the data created by a bigger depth value.
-      </p>
-      <p>
-        <a name="tree">A newer alternative is the <tt>tree</tt> query parameter.</a> This works with any format, e.g. JSON;
-        is more efficient than using <tt>depth</tt> with <tt>exclude</tt> (since information
-        does not need to be generated on the server and then discarded); and may be easier to use,
-        since you need only know what elements you are looking for, rather than what you are <em>not</em> looking
-        for (which is anyway an open-ended list when plugins can contribute API elements).
-        The value should be a list of property names to include, with subproperties inside square braces.
+        <a name="tree" />
+        The <tt>tree</tt> query parameter allows you to explicitly specify and retrieve only
+        the information you are looking for, by using an XPath-ish path expression.
+
+        The value should be a list of property names to include, with sub-properties inside square braces.
         Try <a href="xml?tree=jobs[name],views[name,jobs[name]]">tree=jobs[name],views[name,jobs[name]]</a>
         to see just a list of jobs (only giving the name) and views (giving the name and jobs they contain).
         <strong>Note</strong>: for array-type properties (such as <tt>jobs</tt> in this example),
@@ -126,8 +117,39 @@ THE SOFTWARE.
         This will be more natural for e.g. <a href="json?tree=jobs[name]">json?tree=jobs[name]</a> anyway:
         the JSON writer does not do plural-to-singular mangling because arrays are represented explicitly.
       </p>
+      <p>
+        For array-type properties, a range specifier is supported. For example, <tt>tree=jobs[name]{0,10}</tt> would
+        retrieve the name of the first 10 jobs. The range specifier has the following variants:
+      </p>
+      <ul>
+        <li>
+          <b>{M,N}</b>: From the M-th element (inclusive) to the N-th element (exclusive).
+        </li>
+        <li>
+          <b>{M,}</b>: From the M-th element (inclusive) to the end.
+        </li>
+        <li>
+          <b>{,N}</b>: From the first element (inclusive) to the N-th element (exclusive). The same as {0,N}.
+        </li>
+        <li>
+          <b>{N}</b>: Just retrieve the N-th element. The same as {N,N+1}.
+        </li>
+      </ul>
+
+      <p>
+        Another way to retrieve more data is to use the <tt>depth=N</tt> query parameter .
+        This retrieves all the data up to the specified depth.
+        Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
+        is for yourself. Also note that data created by a smaller depth value is always a subset of
+        the data created by a bigger depth value.
+      </p>
+      <p>
+        Because of the size of the data, the <tt>depth</tt> parameter should really be only used to explore
+        what data Jenkins can return. Once you identify the data you want to retrieve, you can then come up with
+        the <tt>tree</tt> parameter to exactly specify the data you need.
+      </p>
 
       <st:include it="${it.bean}" page="_api.jelly" optional="true" />
     </l:main-panel>
-	</l:layout>
+  </l:layout>
 </j:jelly>

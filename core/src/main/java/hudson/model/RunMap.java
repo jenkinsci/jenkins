@@ -23,15 +23,8 @@
  */
 package hudson.model;
 
-import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import jenkins.model.lazy.BuildReference;
-import org.apache.commons.collections.comparators.ReverseComparator;
-
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -39,10 +32,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
+import java.util.logging.Logger;
+import jenkins.model.RunIdMigrator;
+import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
+import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
+import org.apache.commons.collections.comparators.ReverseComparator;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -54,8 +54,6 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
  *
  * @author Kohsuke Kawaguchi
  */
-// in practice R is always bound by AbstractBuild, but making that change causes all kinds of
-// signature breakage.
 public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
@@ -63,6 +61,10 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     private final SortedMap<Integer,R> view = Collections.unmodifiableSortedMap(this);
 
     private Constructor<R> cons;
+
+    /** Normally overwritten by {@link LazyBuildMixIn#onLoad} or {@link LazyBuildMixIn#onCreatedFromScratch}, in turn created during {@link Job#onLoad}. */
+    @Restricted(NoExternalUse.class)
+    public RunIdMigrator runIdMigrator = new RunIdMigrator();
 
     // TODO: before first complete build
     // patch up next/previous build link
@@ -72,6 +74,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}.
      */
+    @Deprecated
     public RunMap() {
         super(null); // will be set later
     }
@@ -121,6 +124,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     @Override
     public boolean removeValue(R run) {
         run.dropLinks();
+        runIdMigrator.delete(dir, run.getId());
         return super.removeValue(run);
     }
 
@@ -149,6 +153,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated  as of 1.485
      *      Use {@link ReverseComparator}
      */
+    @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return -o1.compareTo(o2);
@@ -172,9 +177,32 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         return r.getId();
     }
 
+    /**
+     * Add a <em>new</em> build to the map.
+     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     */
     @Override
     public R put(R r) {
+        // Defense against JENKINS-23152 and its ilk.
+        File rootDir = r.getRootDir();
+        if (rootDir.isDirectory()) {
+            throw new IllegalStateException("JENKINS-23152: " + rootDir + " already existed; will not overwrite with " + r);
+        }
+        if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
+            proposeNewNumber(r.getNumber());
+        }
+        rootDir.mkdirs();
         return super._put(r);
+    }
+
+    @Override public R getById(String id) {
+        int n;
+        try {
+            n = Integer.parseInt(id);
+        } catch (NumberFormatException x) {
+            n = runIdMigrator.findNumber(id);
+        }
+        return getByNumber(n);
     }
 
     /**
@@ -185,33 +213,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      */
     @Override
     protected BuildReference<R> createReference(R r) {
-        if (r instanceof AbstractBuild)     return ((AbstractBuild)r).selfReference;
-        else                                return super.createReference(r);
-    }
-
-    @Override
-    protected FilenameFilter createDirectoryFilter() {
-        final SimpleDateFormat formatter = Run.ID_FORMATTER.get();
-
-        return new FilenameFilter() {
-            @Override public boolean accept(File dir, String name) {
-                if (name.startsWith("0000")) {
-                    // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
-                    // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
-                    // Don't even bother trying.
-                    return false;
-                }
-                try {
-                    if (formatter.format(formatter.parse(name)).equals(name)) {
-                        return true;
-                    }
-                } catch (ParseException e) {
-                    // fall through
-                }
-                LOGGER.log(FINE, "Skipping {0} in {1}", new Object[] {name, dir});
-                return false;
-            }
-        };
+        return r.createReference();
     }
 
     @Override
@@ -221,23 +223,15 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
-                if (LOGGER.isLoggable(FINEST))
-                    LOGGER.log(FINEST,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
-                return b;
-            } catch (Run.InvalidDirectoryNameException x) {
-                Level lvl;
-                try {
-                    Integer.parseInt(d.getName());
-                    // JENKINS-15587: just an mangled symlink
-                    lvl = Level.FINE;
-                } catch (NumberFormatException x2) {
-                    // potentially a real build dir, maybe a bug
-                    lvl = Level.WARNING;
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "Loaded " + b.getFullDisplayName() + " in " + Thread.currentThread().getName(), new ThisIsHowItsLoaded());
                 }
-                LOGGER.log(lvl, "skipping non-build directory {0}", d);
+                return b;
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             } catch (InstantiationError e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
+            } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }
@@ -257,6 +251,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}
      */
+    @Deprecated
     public void load(Job job, Constructor<R> cons) {
         this.cons = cons;
         initBaseDir(job.getBuildDir());

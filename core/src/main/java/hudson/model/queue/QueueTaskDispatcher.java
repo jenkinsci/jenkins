@@ -27,13 +27,13 @@ package hudson.model.queue;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Queue.Item;
 import hudson.slaves.Cloud;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
+
+import javax.annotation.CheckForNull;
 
 /**
  * Vetos the execution of a task on a node
@@ -66,7 +66,8 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * @deprecated since 1.413
      *      Use {@link #canTake(Node, Queue.BuildableItem)}
      */
-    public CauseOfBlockage canTake(Node node, Task task) {
+    @Deprecated
+    public @CheckForNull CauseOfBlockage canTake(Node node, Task task) {
         return null;
     }
 
@@ -97,7 +98,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      *
      * @since 1.413
      */
-    public CauseOfBlockage canTake(Node node, BuildableItem item) {
+    public @CheckForNull CauseOfBlockage canTake(Node node, BuildableItem item) {
         return canTake(node,item.task); // backward compatible behaviour
     }
 
@@ -129,7 +130,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      *      the build is blocked.
      * @since 1.427
      */
-    public CauseOfBlockage canRun(Queue.Item item) {
+    public @CheckForNull CauseOfBlockage canRun(Queue.Item item) {
         return null;
     }
 
@@ -137,6 +138,6 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * All registered {@link QueueTaskDispatcher}s.
      */
     public static ExtensionList<QueueTaskDispatcher> all() {
-        return Jenkins.getInstance().getExtensionList(QueueTaskDispatcher.class);
+        return ExtensionList.lookup(QueueTaskDispatcher.class);
     }
 }

@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.util.DescribableList;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
@@ -61,7 +62,7 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
         return ToolInstallation.class;
     }
 
-    @Extension
+    @Extension @Symbol("installSource")
     public static class DescriptorImpl extends ToolPropertyDescriptor {
         public String getDisplayName() {
             return Messages.InstallSourceProperty_DescriptorImpl_displayName();

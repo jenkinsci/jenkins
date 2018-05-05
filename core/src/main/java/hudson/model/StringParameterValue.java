@@ -30,13 +30,16 @@ import org.kohsuke.stapler.export.Exported;
 import java.util.Locale;
 
 import hudson.util.VariableResolver;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
 public class StringParameterValue extends ParameterValue {
     @Exported(visibility=4)
-    public final String value;
+    @Restricted(NoExternalUse.class)
+    public String value;
 
     @DataBoundConstructor
     public StringParameterValue(String name, String value) {
@@ -52,7 +55,7 @@ public class StringParameterValue extends ParameterValue {
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
         env.put(name,value);
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
     }
@@ -65,9 +68,23 @@ public class StringParameterValue extends ParameterValue {
             }
         };
     }
-    
 
-	@Override
+    @Override
+    public Object getValue() {
+        return value;
+    }
+     
+    /**
+     * Trimming for value
+     * @since 2.90
+     */
+    public void doTrim() {
+        if (value != null) {
+           value = value.trim(); 
+        } 
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

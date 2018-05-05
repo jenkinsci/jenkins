@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.net.URL;
@@ -46,6 +45,6 @@ public abstract class URLConnectionDecorator implements ExtensionPoint {
      * Returns all the registered {@link URLConnectionDecorator}s.
      */
     public static ExtensionList<URLConnectionDecorator> all() {
-        return Jenkins.getInstance().getExtensionList(URLConnectionDecorator.class);
+        return ExtensionList.lookup(URLConnectionDecorator.class);
     }
 }

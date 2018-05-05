@@ -27,5 +27,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:task icon="images/32x32/folder.png" href="newView" title="${%New View}"  permission="${it.CONFIGURE}" />
+  <l:task href="newView" icon="icon-folder icon-lg" permission="${it.CONFIGURE}" title="${%New View}"/>
 </j:jelly>

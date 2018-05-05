@@ -1,0 +1,2 @@
+hudson.model.Items.getAllItems($root, $type) :: $root instanceof hudson.model.ItemGroup && $type instanceof java.lang.Class => $root.getAllItems($type);;
+hudson.model.Items.allItems($root, $type) :: $root instanceof hudson.model.ItemGroup && $type instanceof java.lang.Class => $root.allItems($type);;

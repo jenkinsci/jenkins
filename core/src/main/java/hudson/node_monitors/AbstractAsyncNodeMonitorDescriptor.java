@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
@@ -21,10 +20,10 @@ import static java.util.logging.Level.WARNING;
 
 /**
  * Sophisticated version of {@link AbstractNodeMonitorDescriptor} that
- * performs monitoring on all slaves concurrently and asynchronously.
+ * performs monitoring on all agents concurrently and asynchronously.
  *
  * @param <T>
- *     represents the the result of the monitoring.
+ *     represents the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNodeMonitorDescriptor<T> {
@@ -106,13 +105,6 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         }
 
         return data;
-    }
-
-    /**
-     * Controls the time out of monitoring.
-     */
-    protected long getMonitoringTimeOut() {
-        return TimeUnit.SECONDS.toMillis(30);
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());

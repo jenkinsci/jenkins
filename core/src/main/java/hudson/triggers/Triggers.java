@@ -36,12 +36,14 @@ import java.util.List;
  * @deprecated as of 1.286
  *      See each member for how to migrate your code.
  */
+@Deprecated
 public class Triggers {
     /**
      * All registered {@link TriggerDescriptor} implementations.
      * @deprecated as of 1.286
      *      Use {@link Trigger#all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<TriggerDescriptor> TRIGGERS = (List)new DescriptorList<Trigger<?>>((Class)Trigger.class);
 //    Descriptor.toList(
 //        SCMTrigger.DESCRIPTOR,
@@ -54,6 +56,7 @@ public class Triggers {
      * @deprecated as of 1.286
      *      Use {@link Trigger#for_(Item)}.
      */
+    @Deprecated
     public static List<TriggerDescriptor> getApplicableTriggers(Item i) {
         return Trigger.for_(i);
     }

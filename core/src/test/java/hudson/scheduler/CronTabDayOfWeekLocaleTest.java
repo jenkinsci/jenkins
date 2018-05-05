@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Url;
 
@@ -276,7 +276,7 @@ public class CronTabDayOfWeekLocaleTest {
     }
 
     @Test
-    @Bug(12357)
+    @Issue("JENKINS-12357")
     public void isSundayAndNextRunIsNextSunday7() throws Exception {
         final Calendar cal = Calendar.getInstance(locale);
         cal.set(2011, 0, 16, 1, 0, 0); // Sunday, Jan 16th 2011, 01:00

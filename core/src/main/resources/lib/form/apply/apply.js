@@ -42,8 +42,15 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     var error = doc.getElementById('error-description');
                     if (!error) {
                         // fallback if it's not a regular error dialog from oops.jelly: use the entire body
-                        error = doc.getElementsByTagName('body')[0];
+                        error = Element('div', {id: 'error-description'});
+                        error.appendChild(doc.getElementsByTagName('body')[0]);
                     }
+
+                    if (oldError = $('error-description')) {
+                        // Remove old error if there is any
+                        $(containerId).removeChild(oldError);
+                    }
+
                     $(containerId).appendChild(error);
                     var r = YAHOO.util.Dom.getClientRegion();
 
@@ -74,7 +81,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                 f.submit();
             } finally {
                 f.elements['core:apply'].value = null;
-                f.target = null;
+                f.target = '_self';
             }
         });
 });

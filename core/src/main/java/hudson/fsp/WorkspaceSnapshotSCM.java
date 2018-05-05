@@ -120,15 +120,15 @@ public class WorkspaceSnapshotSCM extends SCM {
         return new Snapshot(snapshot,b);
     }
 
-    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+    @Override public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return null;
     }
 
-    protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+    @Override protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         return PollingResult.NO_CHANGES;
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+    @Override public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         try {
             resolve().restoreTo(workspace,listener);
             return true;
@@ -139,11 +139,11 @@ public class WorkspaceSnapshotSCM extends SCM {
         }
     }
 
-    public ChangeLogParser createChangeLogParser() {
+    @Override public ChangeLogParser createChangeLogParser() {
         return null;
     }
 
-    public SCMDescriptor<?> getDescriptor() {
+    @Override public SCMDescriptor<?> getDescriptor() {
         return null;
     }
 }

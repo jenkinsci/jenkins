@@ -27,8 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <j:if test="${it.primaryView != null}">
-    <j:set var="it" value="${it.primaryView}"/>
+  <j:if test="${it.getPrimaryView() != null}">
+    <j:set var="it" value="${it.getPrimaryView()}"/>
   </j:if>
   <l:ajax>
     <form action="submitDescription" method="post">
@@ -39,7 +39,7 @@ THE SOFTWARE.
         </f:entry>
       </table>
       <div align="right">
-        <f:submit value="${%Submit}" />
+        <f:submit />
       </div>
     </form>
   </l:ajax>

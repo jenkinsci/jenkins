@@ -76,7 +76,23 @@ public class RunList<R extends Run> extends AbstractList<R> {
         this.base = combine(runLists);
     }
 
-    private Iterable<R> combine(Iterable<Iterable<R>> runLists) {
+    /**
+     * Creates a a {@link RunList} combining all the runs of the supplied jobs.
+     *
+     * @param jobs the supplied jobs.
+     * @param <J> the base class of job.
+     * @param <R> the base class of run.
+     * @return the run list.
+     * @since 2.37
+     */
+    public static <J extends Job<J,R>, R extends Run<J,R>> RunList<R> fromJobs(Iterable<? extends J> jobs) {
+        List<Iterable<R>> runLists = new ArrayList<>();
+        for (Job j : jobs)
+            runLists.add(j.getBuilds());
+        return new RunList<>(combine(runLists));
+    }
+
+    private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
         return Iterables.mergeSorted(runLists, new Comparator<R>() {
             public int compare(R o1, R o2) {
                 long lhs = o1.getTimeInMillis();
@@ -102,6 +118,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
+    @Deprecated
     public int size() {
         if (size==null) {
             int sz=0;
@@ -119,6 +136,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
+    @Deprecated
     public R get(int index) {
         return Iterators.get(iterator(),index);
     }
@@ -259,6 +277,19 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * Filter the list to completed builds.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.561
+     */
+    public RunList<R> completedOnly() {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return !r.isBuilding();
+            }
+        });
+    }
+
+    /**
      * Filter the list to builds on a single node only
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
@@ -291,13 +322,13 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public RunList<R> byTimestamp(final long start, final long end) {
         return
         limit(new CountingPredicate<R>() {
-            public boolean apply(int index,R r) {
-                return r.getTimeInMillis()<end;
-            }
-        }).filter(new Predicate<R>() {
-            public boolean apply(R r) {
+            public boolean apply(int index, R r) {
                 return start<=r.getTimeInMillis();
             }
+        }).filter(new Predicate<R>() {
+        	public boolean apply(R r) {
+        		return r.getTimeInMillis()<end;
+                    }
         });
     }
 

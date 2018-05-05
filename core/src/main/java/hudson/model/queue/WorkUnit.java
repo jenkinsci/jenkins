@@ -27,9 +27,10 @@ import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import javax.annotation.CheckForNull;
+import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
@@ -37,7 +38,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  * @since 1.377
  */
-@ExportedBean
 public final class WorkUnit {
     /**
      * Task to be executed.
@@ -63,17 +63,21 @@ public final class WorkUnit {
      * {@link Executor#getCurrentWorkUnit()} and {@link WorkUnit#getExecutor()}
      * form a bi-directional reachability between them.
      */
-    public Executor getExecutor() {
+    public @CheckForNull Executor getExecutor() {
         return executor;
     }
 
-    public void setExecutor(Executor e) {
+    public void setExecutor(@CheckForNull Executor e) {
         executor = e;
+        if (e != null) {
+            context.future.addExecutor(e);
+        }
     }
 
     /**
      * If the execution has already started, return the executable that was created.
      */
+    @CheckForNull
     public Executable getExecutable() {
         return executable;
     }
@@ -84,6 +88,9 @@ public final class WorkUnit {
     @Restricted(NoExternalUse.class)
     public void setExecutable(Executable executable) {
         this.executable = executable;
+        if (executable instanceof Run) {
+            ((Run) executable).setQueueId(context.item.getId());
+        }
     }
 
     /**

@@ -24,21 +24,20 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
-  <table cellpadding="0" cellspacing="0" id="viewList">
-    <j:set var="tab" value="${tabs}" />
-    <!-- dummy row to get spacing right -->
-    <tr style="height:3px;">
-      <td style="height:3px; padding:0px"></td>
-      <j:set var="tabIndex" value="0" />
-      <j:set var="tabPass" value="pass1" />
-      <d:invokeBody />
-    </tr>
-    <tr>
-      <td style="border: none; border-bottom: 1px solid #bbb;"><st:nbsp/></td>
-      <j:set var="tabIndex" value="0" />
-      <j:set var="tabPass" value="pass2" />
-      <d:invokeBody />
-      <td class="filler"><st:nbsp/></td>
-    </tr>
-  </table>
+
+  <st:documentation>
+    <st:attribute name="class">
+      'tabBarFrame' class specification.  This will allow styling.
+    </st:attribute>
+  </st:documentation>
+
+  <!-- Use the current millis time as an id for the tab group -->
+  <j:set scope="parent" var="tabBarId" value="${h.getCurrentTime().getTime()}" />
+  <div class="tabBarFrame ${attrs.class}">
+    <div class="tabBar">
+      <d:invokeBody/>
+    </div>
+    <div class="tabBarBaseline"></div>
+  </div>
+
 </j:jelly>

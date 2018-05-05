@@ -52,7 +52,7 @@ THE SOFTWARE.
       </div>
 
       <h1>
-        <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
+        <l:icon class="${it.iconClassName} icon-xlg" />
         ${it.caption}
         <j:if test="${!empty(it.node.nodeDescription)}">
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>
@@ -89,11 +89,12 @@ THE SOFTWARE.
 
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
-          ${%Labels:}
+          <h2>${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
               <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+              <wbr/>
             </j:if>
           </j:forEach>
         </div>

@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
+import org.jenkinsci.Symbol;
 
 import java.util.logging.Logger;
 
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("diskUsageCheck")
 public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     public long getRecurrencePeriod() {
         return HOUR;
@@ -63,10 +64,10 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     private static final Logger LOGGER = Logger.getLogger(HudsonHomeDiskUsageChecker.class.getName());
 
     /**
-     * Gets the minimum amount of space to check for, with a default of 1GB
+     * Gets the minimum amount of space to check for, with a default of 10GB
      */
     public static long FREE_SPACE_THRESHOLD = Long.getLong(
             HudsonHomeDiskUsageChecker.class.getName() + ".freeSpaceThreshold",
-            1024L*1024*1024);
+            1024L*1024*1024*10);
 
 }

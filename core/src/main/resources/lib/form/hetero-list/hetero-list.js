@@ -33,7 +33,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
 
         var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
 
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-") });
+        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-"), menuminscrollheight: 250 });
         $(menuButton._button).addClassName(btn.className);    // copy class names
         $(menuButton._button).setAttribute("suffix",btn.getAttribute("suffix"));
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
@@ -121,7 +121,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         });
 
         if (e.hasClassName("one-each")) {
-            // does this container already has a ocnfigured instance of the specified descriptor ID?
+            // does this container already has a configured instance of the specified descriptor ID?
             function has(id) {
                 return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
             }

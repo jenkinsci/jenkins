@@ -40,7 +40,7 @@ THE SOFTWARE.
       <div class="top-sticker noedge">
         <div class="top-sticker-inner">
           <div id="right-top-nav">
-            <j:if test="${norefresh==null}">
+            <j:if test="${norefresh==null or norefresh==false}">
               <div id="right-top-nav">
                 <div class="smallfont">
                   <j:choose>

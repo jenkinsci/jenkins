@@ -28,7 +28,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import hudson.model.Computer;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
@@ -36,6 +38,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateNodeCommandTest {
@@ -58,9 +61,9 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Configure permission"));
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
     }
 
     @Test public void updateNodeShouldModifyNodeConfiguration() throws Exception {
@@ -73,8 +76,7 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat("No error output expected", result.stderr(), isEmptyString());
-        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
+        assertThat(result, succeededSilently());
 
         assertThat("A slave with old name should not exist", j.jenkins.getNode("MySlave"), nullValue());
 
@@ -91,8 +93,22 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
     }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void updateNodeShouldFailForMaster() throws Exception {
+        CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
+        assertThat(result.stderr(), containsString("No such node ''"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("(master)");
+        assertThat(result.stderr(), containsString("No such node '(master)'"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+    }
+
 }

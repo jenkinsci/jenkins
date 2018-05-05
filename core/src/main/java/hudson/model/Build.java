@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -34,15 +35,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
-import static hudson.model.Result.ABORTED;
 import static hudson.model.Result.FAILURE;
+import javax.annotation.Nonnull;
 
 /**
  * A build of a {@link Project}.
@@ -115,10 +116,11 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * @deprecated as of 1.467
-     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      Override the {@link #run()} method by calling {@link #execute(hudson.model.Run.RunExecution)} with
      *      proper execution object.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     protected Runner createRunner() {
         return new BuildExecution();
     }
@@ -127,6 +129,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      * @deprecated as of 1.467
      *      Please use {@link BuildExecution}
      */
+    @Deprecated
     protected class RunnerImpl extends BuildExecution {
     }
 
@@ -136,7 +139,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             deprecated class here.
          */
 
-        protected Result doRun(BuildListener listener) throws Exception {
+        protected Result doRun(@Nonnull BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
             if(!preBuild(listener,project.getPublishersList()))
@@ -179,7 +182,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return r;
         }
 
-        public void post2(BuildListener listener) throws IOException, InterruptedException {
+        public void post2(@Nonnull BuildListener listener) throws IOException, InterruptedException {
             if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);
             if (!performAllBuildSteps(listener, project.getProperties(), true))
@@ -187,17 +190,21 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         @Override
-        public void cleanUp(BuildListener listener) throws Exception {
+        public void cleanUp(@Nonnull BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, project.getPublishersList(), false);
-            performAllBuildSteps(listener, project.getProperties(), false);
+            try {
+                performAllBuildSteps(listener, project.getPublishersList(), false);
+                performAllBuildSteps(listener, project.getProperties(), false);
+            } catch (Exception x) {
+                Functions.printStackTrace(x, listener.error(Messages.Build_post_build_steps_failed()));
+            }
             super.cleanUp(listener);
         }
 
-        private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
+        private boolean build(@Nonnull BuildListener listener, @Nonnull Collection<Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps ) {
                 if(!perform(bs,listener)) {
-                    LOGGER.fine(MessageFormat.format("{0} : {1} failed", Build.this.toString(), bs));
+                    LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {Build.this, bs});
                     return false;
                 }
                 

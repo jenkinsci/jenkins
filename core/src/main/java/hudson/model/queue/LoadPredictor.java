@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +72,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
      * @deprecated as of 1.380
      *      Use {@link #predict(MappingWorksheet, Computer, long, long)}
      */
+    @Deprecated
     public Iterable<FutureLoad> predict(Computer computer, long start, long end) {
         return Collections.emptyList();
     }
@@ -81,7 +81,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
      * All the registered instances.
      */
     public static ExtensionList<LoadPredictor> all() {
-        return Jenkins.getInstance().getExtensionList(LoadPredictor.class);
+        return ExtensionList.lookup(LoadPredictor.class);
     }
 
     /**

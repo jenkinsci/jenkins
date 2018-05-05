@@ -39,11 +39,13 @@ public interface ResourceActivity {
      *
      * <p>
      * If the activity doesn't lock any resources, just
-     * return {@code new ResourceList()}.
+     * return {@link ResourceList#EMPTY} (or decline to override).
      *
      * @return never null 
      */
-    ResourceList getResourceList();
+    default ResourceList getResourceList() {
+        return ResourceList.EMPTY;
+    }
     
     /**
      * Used for rendering HTML.

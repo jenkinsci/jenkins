@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import hudson.model.User;
 
 import java.util.List;
@@ -59,7 +58,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      *
      * <p>
      * When multiple resolvers are installed, they are consulted in order and
-     * the search will be over when a name is found by someoene.
+     * the search will be over when a name is found by someone.
      *
      * <p>
      * Since {@link UserNameResolver} is singleton, this method can be invoked concurrently
@@ -83,7 +82,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      * Returns all the registered {@link UserNameResolver} descriptors.
      */
     public static ExtensionList<UserNameResolver> all() {
-        return Jenkins.getInstance().getExtensionList(UserNameResolver.class);
+        return ExtensionList.lookup(UserNameResolver.class);
     }
 
     /**
@@ -92,5 +91,6 @@ public abstract class UserNameResolver implements ExtensionPoint {
      * @deprecated since 2009-02-24.
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<UserNameResolver> LIST = ExtensionListView.createList(UserNameResolver.class);
 }

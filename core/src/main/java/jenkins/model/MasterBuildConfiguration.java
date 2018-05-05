@@ -26,6 +26,7 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.Node.Mode;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -35,21 +36,26 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=500)
+@Extension(ordinal=500) @Symbol("masterBuild")
 public class MasterBuildConfiguration extends GlobalConfiguration {
     public int getNumExecutors() {
-        return Jenkins.getInstance().getNumExecutors();
+        return Jenkins.get().getNumExecutors();
     }
 
     public String getLabelString() {
-        return Jenkins.getInstance().getLabelString();
+        return Jenkins.get().getLabelString();
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         try {
             // for compatibility reasons, this value is stored in Jenkins
+            String num = json.getString("numExecutors");
+            if (!num.matches("\\d+")) {
+                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(),"numExecutors");
+            }
+            
             j.setNumExecutors(json.getInt("numExecutors"));
             if (req.hasParameter("master.mode"))
                 j.setMode(Mode.valueOf(req.getParameter("master.mode")));

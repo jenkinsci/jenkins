@@ -26,29 +26,53 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.Permission;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+
+import org.acegisecurity.Authentication;
+
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.junit.rules.TestName;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(15309)
+    @Rule public TestName testName = new TestName();
+
+    @Issue("JENKINS-15309")
     @LocalData
     @Test public void nullJobNames() throws Exception {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
@@ -98,9 +122,9 @@ public class ListViewTest {
       webClient.getPage(top, link.getHrefAttribute());
     }
 
-    @Bug(20415)
+    @Issue("JENKINS-20415")
     @Test public void nonTopLevelItemGroup() throws Exception {
-        MatrixProject mp = j.createMatrixProject();
+        MatrixProject mp = j.jenkins.createProject(MatrixProject.class, "mp");
         mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
         assertEquals(2, mp.getItems().size());
         ListView v = new ListView("v");
@@ -111,7 +135,7 @@ public class ListViewTest {
         assertEquals(Collections.singletonList(mp), v.getItems());
     }
 
-    @Bug(18680)
+    @Issue("JENKINS-18680")
     @Test public void renamesMovesAndDeletes() throws Exception {
         MockFolder top = j.createFolder("top");
         MockFolder sub = top.createProject(MockFolder.class, "sub");
@@ -119,6 +143,7 @@ public class ListViewTest {
         FreeStyleProject p2 = sub.createProject(FreeStyleProject.class, "p2");
         FreeStyleProject p3 = top.createProject(FreeStyleProject.class, "p3");
         ListView v = new ListView("v");
+        v.setRecurse(true);
         top.addView(v);
         v.add(p1);
         v.add(p2);
@@ -128,11 +153,177 @@ public class ListViewTest {
         MockFolder stuff = top.createProject(MockFolder.class, "stuff");
         Items.move(p1, stuff);
         p3.delete();
-        Thread.sleep(500); // TODO working around crappy JENKINS-19446 fix
         top.createProject(FreeStyleProject.class, "p3");
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
         top.renameTo("upper");
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+    }
+
+    @Issue("JENKINS-23893")
+    @Test public void renameJobContainedInTopLevelView() throws Exception {
+        ListView view = new ListView("view", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job = j.createFreeStyleProject("old_name");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.renameTo("new_name");
+
+        assertFalse("old job name is still contained: " + view.jobNames, view.jobNames.contains("old_name"));
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+    }
+
+    @Test public void renameContainedJob() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "old_name");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.renameTo("new_name");
+
+        assertFalse("old job name is still contained", view.jobNames.contains("old_name"));
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+    }
+
+    @Issue("JENKINS-23893")
+    @Test public void deleteJobContainedInTopLevelView() throws Exception {
+        ListView view = new ListView("view", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job = j.createFreeStyleProject("project");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.delete();
+
+        assertFalse(view.contains(job));
+        assertFalse(view.jobNamesContains(job));
+    }
+
+    @Test public void deleteContainedJob() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "project");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.delete();
+
+        assertFalse(view.contains(job));
+        assertFalse(view.jobNamesContains(job));
+    }
+
+    @Issue("JENKINS-22769")
+    @Test public void renameJobInViewYouCannotSee() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new AllButViewsAuthorizationStrategy());
+        final FreeStyleProject p = j.createFreeStyleProject("p1");
+        ListView v = new ListView("v", j.jenkins);
+        v.add(p);
+        j.jenkins.addView(v);
+        try (ACLContext _ = ACL.as(User.get("alice"))) {
+            p.renameTo("p2");
+        }
+        assertEquals(Collections.singletonList(p), v.getItems());
+    }
+
+    @Issue("JENKINS-41128")
+    @Test public void addJobUsingAPI() throws Exception {
+        ListView v = new ListView("view", j.jenkins);
+        j.jenkins.addView(v);
+        StaplerRequest req = mock(StaplerRequest.class);
+        StaplerResponse rsp = mock(StaplerResponse.class);
+
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), "UTF-8");
+
+        when(req.getMethod()).thenReturn("POST");
+        when(req.getParameter("name")).thenReturn("job1");
+        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml)));
+        when(req.getContentType()).thenReturn("application/xml");
+        v.doCreateItem(req, rsp);
+        List<TopLevelItem> items = v.getItems();
+        assertEquals(1, items.size());
+        assertEquals("job1", items.get(0).getName());
+    }
+
+    @Issue("JENKINS-23411")
+    @Test public void doRemoveJobFromViewNullItem() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
+        view.add(job);
+
+        List<TopLevelItem> items = view.getItems();
+        assertEquals(1, items.size());
+        assertEquals("job1", items.get(0).getName());
+
+        // remove a contained job
+        view.doRemoveJobFromView("job1");
+        List<TopLevelItem> itemsNow = view.getItems();
+        assertEquals(0, itemsNow.size());
+
+        // remove a not contained job
+        try {
+            view.doRemoveJobFromView("job2");
+            fail("Remove job2");
+        } catch(Failure e) {
+            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known and readable item");
+        }
+    }
+
+    private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {
+        @Override public ACL getRootACL() {
+            return UNSECURED.getRootACL();
+        }
+        @Override public Collection<String> getGroups() {
+            return Collections.emptyList();
+        }
+        @Override public ACL getACL(View item) {
+            return new ACL() {
+                @Override public boolean hasPermission(Authentication a, Permission permission) {
+                    return a.equals(SYSTEM);
+                }
+            };
+        }
+    }
+
+    private static class Stream extends ServletInputStream {
+        private final InputStream inner;
+
+        public Stream(final InputStream inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return inner.read();
+        }
+        @Override
+        public boolean isFinished() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isReady() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            throw new UnsupportedOperationException();
+        }
     }
 
 }

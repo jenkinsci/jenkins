@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -69,6 +71,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @deprecated since 2008-08-15.
      *      Use {@link #DescribableList(Saveable)} 
      */
+    @Deprecated
     public DescribableList(Owner owner) {
         setOwner(owner);
     }
@@ -86,6 +89,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @deprecated since 2008-08-15.
      *      Use {@link #setOwner(Saveable)}
      */
+    @Deprecated
     public void setOwner(Owner owner) {
         this.owner = owner;
     }
@@ -187,6 +191,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @deprecated as of 1.271
      *      Use {@link #rebuild(StaplerRequest, JSONObject, List)} instead.
      */
+    @Deprecated
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
         rebuild(req,json,descriptors);
     }
@@ -195,7 +200,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Rebuilds the list by creating a fresh instances from the submitted form.
      *
      * <p>
-     * This version works with the the &lt;f:hetero-list> UI tag, where the user
+     * This version works with the {@code <f:hetero-list>} UI tag, where the user
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
@@ -210,7 +215,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         for (Object o : this) {
             if (o instanceof DependencyDeclarer) {
                 DependencyDeclarer dd = (DependencyDeclarer) o;
-                dd.buildDependencyGraph(owner,graph);
+                try {
+                    dd.buildDependencyGraph(owner,graph);
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to build dependency graph for " + owner,e);
+                }
             }
         }
     }
@@ -233,13 +242,14 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @deprecated since 2008-08-15.
      *      Just implement {@link Saveable}.
      */
+    @Deprecated
     public interface Owner extends Saveable {
     }
 
     /**
      * {@link Converter} implementation for XStream.
      *
-     * Serializaion form is compatible with plain {@link List}.
+     * Serialization form is compatible with plain {@link List}.
      */
     public static class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
@@ -260,10 +270,9 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
-
             try {
-                DescribableList r = (DescribableList)context.getRequiredType().newInstance();
+                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
+                CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
                 r.data.replaceBy(core);
                 return r;
             } catch (InstantiationException e) {
@@ -277,4 +286,6 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             }
         }
     }
+
+    private final static Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
 }

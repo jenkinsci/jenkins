@@ -1,12 +1,14 @@
 package hudson.model.queue;
 
 import hudson.console.ModelHyperlinkNote;
+import hudson.model.Computer;
 import hudson.model.Queue.Task;
 import hudson.model.Node;
 import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
+import javax.annotation.Nonnull;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -42,8 +44,10 @@ public abstract class CauseOfBlockage {
     /**
      * Obtains a simple implementation backed by {@link Localizable}.
      */
-    public static CauseOfBlockage fromMessage(final Localizable l) {
+    public static CauseOfBlockage fromMessage(@Nonnull final Localizable l) {
+        l.getKey(); // null check
         return new CauseOfBlockage() {
+            @Override
             public String getShortDescription() {
                 return l.toString();
             }
@@ -92,7 +96,8 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_NodeOffline(node.getDisplayName());
+            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            return Messages.Queue_NodeOffline(name);
         }
         
         @Override
@@ -100,6 +105,33 @@ public abstract class CauseOfBlockage {
             listener.getLogger().println(
                 Messages.Queue_NodeOffline(ModelHyperlinkNote.encodeTo(node)));
         }
+    }
+
+    /**
+     * Build is blocked because a node (or its retention strategy) is not accepting tasks.
+     * @since 2.37
+     */
+    public static final class BecauseNodeIsNotAcceptingTasks extends CauseOfBlockage implements NeedsMoreExecutor {
+
+        public final Node node;
+
+        public BecauseNodeIsNotAcceptingTasks(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public String getShortDescription() {
+            Computer computer = node.toComputer();
+            String name = computer != null ? computer.getDisplayName() : node.getDisplayName();
+            return Messages.Node_BecauseNodeIsNotAcceptingTasks(name);
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(
+                Messages.Node_BecauseNodeIsNotAcceptingTasks(ModelHyperlinkNote.encodeTo(node)));
+        }
+
     }
 
     /**
@@ -113,7 +145,11 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_AllNodesOffline(label.getName());
+            if (label.isEmpty()) {
+                return Messages.Queue_LabelHasNoNodes(label.getName());
+            } else {
+                return Messages.Queue_AllNodesOffline(label.getName());
+            }
         }
     }
 
@@ -128,7 +164,8 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
+            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
         
         @Override

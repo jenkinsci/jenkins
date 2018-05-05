@@ -1,7 +1,9 @@
 package hudson.cli.util;
 
 import hudson.AbortException;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,15 +11,14 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
 /**
- * 
- * @author vjuranek
+ * Reads a file (either a path or URL) over a channel.
  *
+ * @author vjuranek
+ * @deprecated Specific to Remoting-based protocol.
  */
-public class ScriptLoader implements Callable<String,IOException> {
+@Deprecated
+public class ScriptLoader extends MasterToSlaveCallable<String,IOException> {
     
     private final String script;
     
@@ -36,12 +37,8 @@ public class ScriptLoader implements Callable<String,IOException> {
         } catch (MalformedURLException e) {
             throw new AbortException("Unable to find a script "+script);
         }
-        InputStream s = url.openStream();
-        try {
+        try (InputStream s = url.openStream()) {
             return IOUtils.toString(s);
-        } finally {
-            s.close();
         }
     }
-
 }

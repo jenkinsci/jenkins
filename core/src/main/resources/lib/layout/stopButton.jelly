@@ -24,7 +24,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <st:documentation>
         Creates a clickable "Stop" button.
         <st:attribute name="href" use="required">
@@ -33,8 +33,20 @@ THE SOFTWARE.
         <st:attribute name="alt" use="required">
             Alt text for image.
         </st:attribute>
+        <st:attribute name="confirm" use="optional">
+            If defined, the user will be asked for confirmation first, and the value will be used as question.
+        </st:attribute>
     </st:documentation>
-    <a class="stop-button-link" href="${href}" onclick="new Ajax.Request(this.href); return false">
-        <img class="stop-button-icon" src="${imagesURL}/16x16/stop.png" alt="${alt}" height="16" width="16"/>
-    </a>
+    <j:choose>
+      <j:when test="${confirm == null}">
+        <a class="stop-button-link" href="${href}" onclick='new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
+          <l:icon class="icon-stop icon-sm" alt="${alt}"/>
+        </a>
+      </j:when>
+      <j:otherwise>
+          <a class="stop-button-link" href="${href}" onclick='if(confirm("${h.jsStringEscape(confirm)}"))new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
+            <l:icon class="icon-stop icon-sm" alt="${alt}"/>
+          </a>
+      </j:otherwise>
+    </j:choose>
 </j:jelly>

@@ -41,6 +41,7 @@ import java.util.List;
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -52,8 +53,8 @@ import jenkins.model.Jenkins;
  * this class, but choosing this class as a base class has several benefits:
  *
  * <ul>
- * <li>Hudson allows admins to specify different locations for tools on some slaves.
- *     For example, JDK on the master might be on /usr/local/java but on a Windows slave
+ * <li>Hudson allows admins to specify different locations for tools on some agents.
+ *     For example, JDK on the master might be on /usr/local/java but on a Windows agent
  *     it could be at c:\Program Files\Java
  * <li>Hudson can verify the existence of tools and provide warnings and diagnostics for
  *     admins. (TBD)
@@ -89,6 +90,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @deprecated
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
+    @Deprecated
     public ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
@@ -163,7 +165,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @see EnvironmentSpecific
      * @since 1.460
      */
-    public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(@Nonnull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;

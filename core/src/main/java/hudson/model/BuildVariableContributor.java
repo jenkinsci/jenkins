@@ -27,7 +27,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import jenkins.model.Jenkins;
 
 import java.util.Map;
 
@@ -70,6 +69,6 @@ public abstract class BuildVariableContributor implements ExtensionPoint {
      * Returns all the registered {@link BuildVariableContributor}s.
      */
     public static ExtensionList<BuildVariableContributor> all() {
-        return Jenkins.getInstance().getExtensionList(BuildVariableContributor.class);
+        return ExtensionList.lookup(BuildVariableContributor.class);
     }
 }

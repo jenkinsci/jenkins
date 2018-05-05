@@ -23,8 +23,8 @@
   -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-    <j:if test="${!empty app.updateCenter.updates}">
-      <span style="color:red; font-weight:bold">&amp;nbsp;(${%updates available})</span>
-    </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:if test="${!empty app.updateCenter.updates}">
+    <i class="fa fa-bell" aria-hidden="true" style="color: red"></i> ${%updates available}
+  </j:if>
 </j:jelly>

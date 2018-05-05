@@ -33,8 +33,8 @@ import javax.annotation.CheckForNull;
 /**
  * Allows to access a workspace as an alternative to online build node.
  * <p>
- * Primary use case is {@link hudson.slaves.Cloud} implementations that don't keep the slave
- * node online to browse workspace, but maintain a copy of node workspace on master.
+ * Primary use case is {@link hudson.slaves.Cloud} implementations that don't keep the agent
+ * online to browse workspace, but maintain a copy of node workspace on master.
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @since 1.502

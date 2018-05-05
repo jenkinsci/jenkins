@@ -63,7 +63,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
             }
             JSONObject element = new JSONObject();
             calculate(build, element);
-            synchronized (results) {
+            synchronized (this) {
                 results.add(element);
             }
             decay *= (1 - 1 / MAX_LIKELY_RUNS);

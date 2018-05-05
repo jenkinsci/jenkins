@@ -32,12 +32,14 @@ import java.util.Collection;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A view that delegates to another.
@@ -90,6 +92,11 @@ public class ProxyView extends View implements StaplerFallback {
     }
 
     @Override
+    public TopLevelItem getItem(String name) {
+        return getProxiedView().getItem(name);
+    }
+
+    @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         String proxiedViewName = req.getSubmittedForm().getString("proxiedViewName");
         if (Jenkins.getInstance().getView(proxiedViewName) == null) {
@@ -98,6 +105,7 @@ public class ProxyView extends View implements StaplerFallback {
         this.proxiedViewName = proxiedViewName;
     }
 
+    @RequirePOST
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return getProxiedView().doCreateItem(req, rsp);
@@ -118,7 +126,7 @@ public class ProxyView extends View implements StaplerFallback {
             return FormValidation.error(Messages.ProxyView_NoSuchViewExists(value));
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends ViewDescriptor {
 
         @Override

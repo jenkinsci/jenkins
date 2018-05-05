@@ -60,20 +60,20 @@ public class WindowsServiceLifecycle extends Lifecycle {
      */
     private void updateJenkinsExeIfNeeded() {
         try {
-            File rootDir = Jenkins.getInstance().getRootDir();
+            File baseDir = getBaseDir();
 
             URL exe = getClass().getResource("/windows-service/jenkins.exe");
             String ourCopy = Util.getDigestOf(exe.openStream());
 
             for (String name : new String[]{"hudson.exe","jenkins.exe"}) {
                 try {
-                    File currentCopy = new File(rootDir,name);
+                    File currentCopy = new File(baseDir,name);
                     if(!currentCopy.exists())   continue;
                     String curCopy = new FilePath(currentCopy).digest();
 
                     if(ourCopy.equals(curCopy))     continue; // identical
 
-                    File stage = new File(rootDir,name+".new");
+                    File stage = new File(baseDir,name+".new");
                     FileUtils.copyURLToFile(exe,stage);
                     Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
                     LOGGER.info("Scheduled a replacement of "+name);
@@ -107,29 +107,55 @@ public class WindowsServiceLifecycle extends Lifecycle {
         String baseName = dest.getName();
         baseName = baseName.substring(0,baseName.indexOf('.'));
 
-        File rootDir = Jenkins.getInstance().getRootDir();
-        File copyFiles = new File(rootDir,baseName+".copies");
+        File baseDir = getBaseDir();
+        File copyFiles = new File(baseDir,baseName+".copies");
 
-        FileWriter w = new FileWriter(copyFiles, true);
-        w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
-        w.close();
+        try (FileWriter w = new FileWriter(copyFiles, true)) {
+            w.write(by.getAbsolutePath() + '>' + getHudsonWar().getAbsolutePath() + '\n');
+        }
     }
 
     @Override
     public void restart() throws IOException, InterruptedException {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        try {
+            if (jenkins != null) {
+                jenkins.cleanUp();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+        }
+
         File me = getHudsonWar();
         File home = me.getParentFile();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        File executable = new File(home, "hudson.exe");
+        String exe = System.getenv("WINSW_EXECUTABLE");
+        File executable;
+        if (exe!=null)   executable = new File(exe);
+        else            executable = new File(home, "hudson.exe");
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
-        int r = new LocalLauncher(task).launch().cmds(executable, "restart")
+        // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
+        int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());
+    }
+    
+    private static final File getBaseDir() {
+        File baseDir;
+        
+        String baseEnv = System.getenv("BASE");
+        if (baseEnv != null) {
+            baseDir = new File(baseEnv);
+        } else {
+            LOGGER.log(Level.WARNING, "Could not find environment variable 'BASE' for Jenkins base directory. Falling back to JENKINS_HOME");
+            baseDir = Jenkins.getInstance().getRootDir();
+        }
+        return baseDir;
     }
 
     private static final Logger LOGGER = Logger.getLogger(WindowsServiceLifecycle.class.getName());

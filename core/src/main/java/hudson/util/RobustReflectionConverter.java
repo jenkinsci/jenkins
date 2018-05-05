@@ -44,15 +44,20 @@ import hudson.model.Saveable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
+import jenkins.util.xstream.CriticalXStreamException;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -72,6 +77,15 @@ public class RobustReflectionConverter implements Converter {
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
     private final @Nonnull XStream2.ClassOwnership classOwnership;
+    /** {@code pkg.Clazz#fieldName} */
+    /** There are typically few critical fields around, but we end up looking up in this map a lot.
+        in addition, this map is really only written to during static initialization, so we should use
+        reader writer lock to avoid locking as much as possible.  In addition, to avoid looking up
+        the class name (which requires calling class.getName, which may not be cached, the map is inverted
+        with the fields as the keys.**/
+    private final ReadWriteLock criticalFieldsLock = new ReentrantReadWriteLock();
+    @GuardedBy("criticalFieldsLock")
+    private final Map<String, Set<String>> criticalFields = new HashMap<String, Set<String>>();
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
@@ -82,6 +96,41 @@ public class RobustReflectionConverter implements Converter {
         assert classOwnership != null;
         this.classOwnership = classOwnership;
         serializationMethodInvoker = new SerializationMethodInvoker();
+    }
+
+    void addCriticalField(Class<?> clazz, String field) {
+        // Lock the write lock
+        criticalFieldsLock.writeLock().lock();
+        try {
+            // If the class already exists, then add a new field, otherwise
+            // create the hash map field
+            if (!criticalFields.containsKey(field)) {
+                criticalFields.put(field, new HashSet<String>());
+            }
+            criticalFields.get(field).add(clazz.getName());
+        }
+        finally {
+            // Unlock
+            criticalFieldsLock.writeLock().unlock();
+        }
+    }
+    
+    private boolean hasCriticalField(Class<?> clazz, String field) {
+        // Lock the write lock
+        criticalFieldsLock.readLock().lock();
+        try {
+            Set<String> classesWithField = criticalFields.get(field);
+            if (classesWithField == null) {
+                return false;
+            }
+            if (!classesWithField.contains(clazz.getName())) {
+                return false;
+            }
+            return true;
+        }
+        finally {
+            criticalFieldsLock.readLock().unlock();
+        }
     }
 
     public boolean canConvert(Class type) {
@@ -260,8 +309,16 @@ public class RobustReflectionConverter implements Converter {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
+            boolean critical = false;
             try {
                 String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
+                for (Class<?> concrete = result.getClass(); concrete != null; concrete = concrete.getSuperclass()) {
+                    // Not quite right since a subclass could shadow a field, but probably suffices:
+                    if (hasCriticalField(concrete, fieldName)) {
+                        critical = true;
+                        break;
+                    }
+                }
                 boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
 
                 Class classDefiningField = determineWhichClassDefinesField(reader);
@@ -292,9 +349,17 @@ public class RobustReflectionConverter implements Converter {
                         implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
                     }
                 }
+            } catch (CriticalXStreamException e) {
+                throw e;
             } catch (XStreamException e) {
+                if (critical) {
+                    throw new CriticalXStreamException(e);
+                }
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
+                if (critical) {
+                    throw e;
+                }
                 addErrorInContext(context, e);
             }
 

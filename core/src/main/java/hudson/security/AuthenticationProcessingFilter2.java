@@ -53,7 +53,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         if (targetUrl == null)
             return getDefaultTargetUrl();
 
-        if (Util.isAbsoluteUri(targetUrl))
+        if (!Util.isSafeToRedirectTo(targetUrl))
             return "."; // avoid open redirect
 
         // URL returned from determineTargetUrl() is resolved against the context path,
@@ -86,6 +86,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
         // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
         // doFilter method.
+        request.getSession().invalidate();
         request.getSession();
         SecurityListener.fireLoggedIn(authResult.getName());
     }

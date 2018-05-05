@@ -25,12 +25,12 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -39,7 +39,7 @@ public class AsynchPeopleTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(18641)
+    @Issue("JENKINS-18641")
     @Test public void display() throws Exception {
         User.get("bob");
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -53,7 +53,7 @@ public class AsynchPeopleTest {
         }
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         boolean found = false;
-        for (HtmlElement table : page.getElementsByTagName("table")) {
+        for (DomElement table : page.getElementsByTagName("table")) {
             if (table.getAttribute("class").contains("progress-bar")) {
                 found = true;
                 assertEquals("display: none;", table.getAttribute("style"));

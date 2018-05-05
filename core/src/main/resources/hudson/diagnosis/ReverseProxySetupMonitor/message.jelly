@@ -27,7 +27,9 @@ THE SOFTWARE.
   <script>
     var checkAjax=new Ajax.Request('${rootURL}/${it.url}/test', {
         onComplete : function(transport) {
-          if (transport.status==0 || transport.status==404) {
+          if (transport.status != 200) {
+          
+            
             // redirect failed. Unfortunately, according to the spec http://www.w3.org/TR/XMLHttpRequest/
             // in case of error, we can either get 0 or a failure code
             $$('redirect-error').style.display = "block";
@@ -36,11 +38,11 @@ THE SOFTWARE.
       }
     );
   </script>
-  <div class="error" id="redirect-error" style="display:none">
+  <div id="redirect-error" class="alert alert-danger" style="display:none">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      ${%blurb}
       <f:submit name="yes" value="${%More Info}"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
+    ${%blurb}
   </div>
 </j:jelly>

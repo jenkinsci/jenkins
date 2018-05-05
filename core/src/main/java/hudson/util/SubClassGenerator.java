@@ -25,13 +25,13 @@ package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
 import jenkins.model.Jenkins;
-import org.kohsuke.asm3.ClassWriter;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.ClassWriter;
+import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.Type;
 
 import java.lang.reflect.Constructor;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.kohsuke.asm5.Opcodes.*;
 
 /**
  * Generates a new class that just defines constructors into the super types.
@@ -76,7 +76,7 @@ public class SubClassGenerator extends ClassLoader {
 
         Class<? extends T> c = defineClass(name, image, 0, image.length).asSubclass(base);
 
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         if (h!=null)    // null only during tests.
             ((UberClassLoader)h.pluginManager.uberClassLoader).addNamedClass(name,c); // can't change the field type as it breaks binary compatibility
         

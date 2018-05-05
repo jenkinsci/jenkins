@@ -29,6 +29,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Native;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
+import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import hudson.os.PosixAPI;
 import jnr.posix.POSIX;
@@ -55,7 +56,8 @@ public interface GNUCLibrary extends Library {
     int chdir(String dir);
     int getdtablesize();
 
-    int execv(String file, StringArray args);
+    int execv(String path, StringArray args);
+    int execvp(String file, StringArray args);
     int setenv(String name, String value,int replace);
     int unsetenv(String name);
     void perror(String msg);
@@ -74,8 +76,10 @@ public interface GNUCLibrary extends Library {
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
 
+    int open(String pathname, int flags) throws LastErrorException;
     int dup(int old);
     int dup2(int old, int _new);
+    long pread(int fd, Memory buffer, NativeLong size, NativeLong offset) throws LastErrorException;
     int close(int fd);
 
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html

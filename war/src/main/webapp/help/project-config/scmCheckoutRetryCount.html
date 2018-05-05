@@ -1,4 +1,20 @@
 <div>
-  If a build fails to checkout from the repository, Jenkins will retry the specified number of times before
-  giving up.
+  When this option is checked, and this project is configured to use a Source
+  Code Management system, then Jenkins will try multiple times to check out from
+  the specified SCM system until it succeeds.
+  <p>
+  The default behaviour, or if this value is set to <code>0</code> is to mark
+  a build as failed immediately if checking out from the SCM system fails.
+  <p>
+  Setting this to a higher number means Jenkins will attempt to check out from
+  the SCM system that many times, with a ten-second delay between retries.<br>
+  If the final attempt also fails, then the build will be marked as failed, and
+  execution will stop.
+  <p>
+  As plugins can contribute different Source Code Management implementations,
+  it's up to each individual implementation to define what constitutes a
+  checkout failure.
+  <p>
+  If this option is not checked, then the system-wide default value from the
+  <i>Configure System</i> screen will be used.
 </div>

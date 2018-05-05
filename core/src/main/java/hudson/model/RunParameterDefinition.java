@@ -26,6 +26,7 @@ package hudson.model;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -74,6 +75,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     /**
      * @deprecated as of 1.517
      */ 
+    @Deprecated
     public RunParameterDefinition(String name, String projectName, String description) {
     	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
     	this(name, projectName, description, RunParameterFilter.ALL);
@@ -122,17 +124,17 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         // use getFilter() method so we dont have to worry about null filter value.
         switch (getFilter()) {
             case COMPLETED:
-                return getProject().getBuilds().overThresholdOnly(Result.ABORTED);
+                return getProject().getBuilds().overThresholdOnly(Result.ABORTED).completedOnly();
             case SUCCESSFUL:
-                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE);
+                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE).completedOnly();
             case STABLE	:
-                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS);
+                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS).completedOnly();
             default:
                 return getProject().getBuilds();
         }
     }
 
-    @Extension
+    @Extension @Symbol({"run","runParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

@@ -26,17 +26,17 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
     <style type="text/css">
         #noJobDiv {
+            margin: 20px 0px;
             padding: 10px;
-            text-align: center;
-            border-width: 0px 1px 1px;
-            border-style: none solid solid;
             border-color: #BBBBBB;
         }
     </style>
-<div id="noJobDiv">
-  ${%description_1}
-  <j:if test="${it.hasPermission(it.CONFIGURE)}">
+<div class="pane-frame">
+  <div id="noJobDiv">
+    ${%description_1}
+    <j:if test="${it.hasPermission(it.CONFIGURE)}">
       ${%description_2}
-  </j:if>
+    </j:if>
+  </div>
 </div>
 </j:jelly>

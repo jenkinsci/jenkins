@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import org.jvnet.localizer.Localizable;
 
@@ -58,14 +59,17 @@ public final class Permission {
          */
         // break eclipse compilation 
         //Override
-        public int compare(Permission one, Permission two) {
+        public int compare(@Nonnull Permission one, @Nonnull Permission two) {
             return one.getId().compareTo(two.getId());
         }
     };
 
-    public final Class owner;
+    public final @Nonnull Class owner;
 
-    public final PermissionGroup group;
+    public final @Nonnull PermissionGroup group;
+
+    // if some plugin serialized old version of this class using XStream, `id` can be null
+    private final @CheckForNull String id;
 
     /**
      * Human readable ID of the permission.
@@ -76,7 +80,7 @@ public final class Permission {
      * <p>
      * The expected naming convention is something like "BrowseWorkspace".
      */
-    public final String name;
+    public final @Nonnull String name;
 
     /**
      * Human-readable description of this permission.
@@ -86,7 +90,7 @@ public final class Permission {
      * <p>
      * If null, there will be no description text.
      */
-    public final Localizable description;
+    public final @CheckForNull Localizable description;
 
     /**
      * Bundled {@link Permission} that also implies this permission.
@@ -101,7 +105,7 @@ public final class Permission {
      * such broad permission bundle is good enough, and those few
      * that need finer control can do so.
      */
-    public final Permission impliedBy;
+    public final @CheckForNull Permission impliedBy;
 
     /**
      * Whether this permission is available for use.
@@ -118,7 +122,7 @@ public final class Permission {
     /**
      * Scopes that this permission is directly contained by.
      */
-    private final Set<PermissionScope> scopes;
+    private final @Nonnull Set<PermissionScope> scopes;
 
     /**
      * Defines a new permission.
@@ -143,8 +147,11 @@ public final class Permission {
      *      See {@link #description}.
      * @param impliedBy
      *      See {@link #impliedBy}.
+     * @throws IllegalStateException if this permission was already defined
      */
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable, PermissionScope[] scopes) {
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
+            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
+            @Nonnull PermissionScope[] scopes) throws IllegalStateException {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -154,12 +161,14 @@ public final class Permission {
         this.impliedBy = impliedBy;
         this.enabled = enable;
         this.scopes = ImmutableSet.copyOf(scopes);
+        this.id = owner.getName() + '.' + name;
 
         group.add(this);
         ALL.add(this);
     }
 
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, PermissionScope scope) {
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
+            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, @Nonnull PermissionScope scope) {
         this(group,name,description,impliedBy,true,new PermissionScope[]{scope});
         assert scope!=null;
     }
@@ -168,7 +177,8 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
      */
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
+    @Deprecated
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
         this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
     }
 
@@ -176,7 +186,8 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
      */
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+    @Deprecated
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy) {
         this(group, name, description, impliedBy, PermissionScope.JENKINS);
     }
 
@@ -184,18 +195,19 @@ public final class Permission {
      * @deprecated since 1.257.
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
-    public Permission(PermissionGroup group, String name, Permission impliedBy) {
+    @Deprecated
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Permission impliedBy) {
         this(group,name,null,impliedBy);
     }
 
-    private Permission(PermissionGroup group, String name) {
+    private Permission(@Nonnull PermissionGroup group, @Nonnull String name) {
         this(group,name,null,null);
     }
 
     /**
      * Checks if this permission is contained in the specified scope, (either directly or indirectly.)
      */
-    public boolean isContainedBy(PermissionScope s) {
+    public boolean isContainedBy(@Nonnull PermissionScope s) {
         for (PermissionScope c : scopes) {
             if (c.isContainedBy(s))
                 return true;
@@ -210,11 +222,22 @@ public final class Permission {
      *
      * <p>
      * This string representation is suitable for persistence.
-     *
+     * @return ID with the following format: <i>permissionClass.permissionName</i> 
      * @see #fromId(String)
      */
-    public String getId() {
-        return owner.getName()+'.'+name;
+    public @Nonnull String getId() {
+        if (id == null) {
+            return owner.getName() + '.' + name;
+        }
+        return id;
+    }
+
+    @Override public boolean equals(Object o) {
+        return o instanceof Permission && getId().equals(((Permission) o).getId());
+    }
+
+    @Override public int hashCode() {
+        return getId().hashCode();
     }
 
     /**
@@ -224,7 +247,7 @@ public final class Permission {
      *      null if the conversion failed.
      * @see #getId()
      */
-    public static @CheckForNull Permission fromId(String id) {
+    public static @CheckForNull Permission fromId(@Nonnull String id) {
         int idx = id.lastIndexOf('.');
         if(idx<0)   return null;
 
@@ -257,7 +280,7 @@ public final class Permission {
      * @return
      *      always non-null. Read-only.
      */
-    public static List<Permission> getAll() {
+    public static @Nonnull List<Permission> getAll() {
         return ALL_VIEW;
     }
 
@@ -280,6 +303,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
+    @Deprecated
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
@@ -290,13 +314,14 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
+    @Deprecated
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
 //
 //
 // Root Permissions.
 //
-// These permisisons are meant to be used as the 'impliedBy' permission for other more specific permissions.
+// These permissions are meant to be used as the 'impliedBy' permission for other more specific permissions.
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
@@ -309,6 +334,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
+    @Deprecated
     public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**

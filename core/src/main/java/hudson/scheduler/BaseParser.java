@@ -31,12 +31,13 @@ import antlr.Token;
 import antlr.TokenBuffer;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 abstract class BaseParser extends LLkParser {
-    // lower/uppser bounds of fields (inclusive)
+    // lower/upper bounds of fields (inclusive)
     static final int[] LOWER_BOUNDS = new int[] {0,0,1,1,0};
     static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 
@@ -96,10 +97,12 @@ abstract class BaseParser extends LLkParser {
         int u = UPPER_BOUNDS[field];
         if (field==2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
         if (field==4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
-        return doHash(LOWER_BOUNDS[field], u, step);
+        return doHash(LOWER_BOUNDS[field], u, step, field);
     }
 
-    protected long doHash(int s, int e, int step) throws ANTLRException {
+    protected long doHash(int s, int e, int step, int field) throws ANTLRException {
+        rangeCheck(s, field);
+        rangeCheck(e, field);
         if (step > e - s + 1) {
             error(Messages.BaseParser_OutOfRange(step, 1, e - s + 1));
             throw new AssertionError();
@@ -143,7 +146,7 @@ abstract class BaseParser extends LLkParser {
     /**
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
      */
-    public static boolean HASH_TOKENS = !"false".equals(System.getProperty(BaseParser.class.getName()+".hash"));
+    public static boolean HASH_TOKENS = !"false".equals(SystemProperties.getString(BaseParser.class.getName()+".hash"));
 
     /**
      * Constant that indicates no step value.

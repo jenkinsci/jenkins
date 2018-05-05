@@ -54,6 +54,7 @@ import jenkins.security.NonSerializableSecurityContext;
  *      Starting 1.285, Hudson stops persisting {@link Authentication} altogether
  *      (see {@link NonSerializableSecurityContext}), so there's no need to use this mechanism.
  */
+@Deprecated
 public interface InvalidatableUserDetails extends UserDetails {
     boolean isInvalid();
 }

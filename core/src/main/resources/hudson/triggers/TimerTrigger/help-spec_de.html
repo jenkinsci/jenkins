@@ -29,30 +29,52 @@
     werden. In absteigender Priorität sind dies:
   </p>
   <ul>
-    <li>'*' entspricht allen gültigen Werten</li>
-    <li>'M-N' gibt einen Bereich an, z.B. "1-5"</li>
-    <li>'M-N/X' oder '*/X' gibt Schritte in X-er Schritten an durch den Bereich an, z.B.
-         "*/15" im Feld MINUTE für "0,15,30,45" und "1-6/2" für "1,3,5"</li>
-    <li>'A,B,...,Z' entspricht direkt den angegebenen Werten, z.B. "0,30" oder "1,3,5"</li>
+    <li><code>*</code> entspricht allen gültigen Werten</li>
+    <li><code>M-N</code> gibt einen Bereich an, z.B. "1-5"</li>
+    <li><code>M-N/X</code> oder <code>*/X</code> unterteilt den angegebenen Bereich
+      bzw. den gültigen Bereich in X-er Schritte, z.B. "*/15" im Feld MINUTE für 
+      "0,15,30,45" und "1-6/2" für "1,3,5"</li>
+    <li><code>A,B,...,Z</code> entspricht direkt den angegebenen Werten, z.B.
+      "0,30" oder "1,3,5"</li>
   </ul>
+
+  <p>
+    Damit periodisch gestartete Jobs eine gleichmäßig verteilte Systemlast erzeugen,
+    sollte das Symbol <code>H</code> (für "Hash") so oft wie möglich verwendet werden.
+    So wird z.B. die Einstellung <code>0 0 * * *</code> für ein Dutzend Jobs
+    zu einer großen Lastspitze um Mitternacht führen.
+    Im Gegensatz dazu werden die Jobs bei Verwendung von <code>H H * * *</code>
+    immer noch alle täglich ausgeführt, starten jedoch zeitversetzt, so dass beschränkte
+    Resourcen besser ausgenutzt werden. 
+  </p><p>
+    <code>H</code> kann auch mit Bereichsangaben kombiniert werden.
+    Zum Beispiel bedeutet <code>H H(0-7) * * *</code> einen Zeitpunkt zwischen 0:00 und 7:59.
+    Sie können <code>H</code> auch mit Schrittangaben verwenden, mit oder ohne Bereichsangaben.
+  </p><p>
+    Sie können sich das <code>H</code>-Symbol als einen zufälligen Wert in einem Bereich
+    vorstellen. Tatsächlich wird statt eines echten Zufallswertes ein Hash über den Jobnamen
+    verwendet, so dass der Wert für ein gegebenes Projekt konstant bleibt.
   <p>
     Leere Zeilen und Zeilen, die mit '#' beginnen, werden als Kommentarzeilen
     ignoriert.
   </p><p>
     Zusätzlich werden '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight'
     und '@hourly' unterstützt.
+    Diese verwenden das Hash-System zur automatischen Lastverteilung. 
+    Zum Beispiel bedeutet <code>@hourly</code> das selbe wie <code>H * * * *</code>
+    und steht für eine beliebige Zeit in der Stunde. 
+    <code>@midnight</code> bedeutet tatsächlich einen Zeitpunkt zwischen 00:00 und 2:59.
+  </p><p>
+  Beispiele:
   </p>
-  <table>
-    <tr>
-      <td>Beispiele</td>
-      <td>
 <pre>
-# Jede Minute
-* * * * *
-# Immer 5 Minuten nach der vollen Stunde 
-5 * * * *
+# Alle fünfzehn Minuten (z.B. um :07, :22, :37, :52)
+H/15 * * * *
+# Alle zehn Minuten in der ersten Hälfte jeder Stunde (drei mal, z.B. um :04, :14, :24)
+H(0-29)/10 * * * *
+# Alle zwei Stunden an jedem Wochentag (z.B. um 10:38, 12:38, 14:38, 16:38)
+H 9-16/2 * * 1-5
+# Einmal täglich am 1. und 15. Tag jeden Monats außer Dezember
+H H 1,15 1-11 *
 </pre>
-      </td>
-    </tr>
-  </table>
 </div>

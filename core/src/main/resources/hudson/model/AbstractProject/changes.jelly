@@ -32,14 +32,21 @@ THE SOFTWARE.
     <l:main-panel>
       <j:set var="from" value="${request.getParameter('from')}"/>
       <j:set var="to" value="${request.getParameter('to')}"/>
-      <j:set var="browser" value="${it.scm.effectiveBrowser}"/>
+      <j:set var="browser" value="${it.scm.effectiveBrowser}"/> <!-- for compatibility; newer project-changes.jelly override this -->
 
       <h1>
         ${%Changes}
-        <j:if test="${from!=null}">${%from.label(from)}</j:if>
-        <j:if test="${to!=null}">&#160;${%to.label(to)}</j:if>
+        <j:choose>
+          <j:when test="${from!=null and to!=null}">
+            ${%range.label(from, to)}
+          </j:when>
+          <j:otherwise>
+            <j:if test="${from!=null}">${%from.label(from)}</j:if>
+            <j:if test="${to!=null}">${%to.label(to)}</j:if>
+          </j:otherwise>
+        </j:choose>
       </h1>
-      <j:set var="builds" value="${h.filter(it.buildsAsMap,from,to).values()}" />
+      <j:set var="builds" value="${h.filterExcludingFrom(it.buildsAsMap,from,to).values()}" />
       <st:include it="${it.scm}" page="project-changes.jelly" />
     </l:main-panel>
   </l:layout>

@@ -24,12 +24,12 @@
 package hudson.util;
 
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class RingBufferLogHandlerTest {
 
     @Test
-    @Bug(9120)
+    @Issue("JENKINS-9120")
     public void tooMuchRecordsShouldNotCrashHandler() {
         final RingBufferLogHandler handler = new RingBufferLogHandler();
 

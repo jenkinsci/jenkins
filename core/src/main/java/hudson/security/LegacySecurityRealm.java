@@ -26,13 +26,15 @@ package hudson.security;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.web.context.WebApplicationContext;
-import org.kohsuke.stapler.StaplerRequest;
 import groovy.lang.Binding;
 import hudson.model.Descriptor;
 import hudson.util.spring.BeanBuilder;
 import hudson.Extension;
-import net.sf.json.JSONObject;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -45,6 +47,10 @@ import javax.servlet.FilterConfig;
  * @author Kohsuke Kawaguchi
  */
 public final class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {
+    @DataBoundConstructor
+    public LegacySecurityRealm() {
+    }
+
     public SecurityComponents createSecurityComponents() {
         return new SecurityComponents(this);
     }
@@ -88,18 +94,21 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return (Filter) context.getBean("legacy");
     }
 
-    @Extension
-    public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>() {
-        public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LegacySecurityRealm();
+    /**
+     * @deprecated as of 2.0
+     *      Don't use this field, use injection.
+     */
+    @Restricted(NoExternalUse.class)
+    public static /*almost final*/ Descriptor<SecurityRealm> DESCRIPTOR;
+
+    @Extension @Symbol("legacy")
+    public static class DescriptorImpl extends  Descriptor<SecurityRealm> {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
         }
 
         public String getDisplayName() {
             return Messages.LegacySecurityRealm_Displayname();
-        }
-
-        public String getHelpFile() {
-            return "/help/security/container-realm.html";
         }
     };
 }

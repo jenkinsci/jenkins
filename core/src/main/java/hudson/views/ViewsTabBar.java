@@ -29,10 +29,19 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.View;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.ListView;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -65,20 +74,41 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
     }
 
     /**
+     * Sorts the views by {@link View#getDisplayName()}.
+     *
+     * @param views the views.
+     * @return the sorted views
+     * @since 2.37
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // invoked from stapler view
+    public List<View> sort(@Nonnull List<? extends View> views) {
+        List<View> result = new ArrayList<View>(views);
+        Collections.sort(result, new Comparator<View>() {
+            @Override
+            public int compare(View o1, View o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        });
+        return result;
+    }
+
+    /**
      * Configures {@link ViewsTabBar} in the system configuration.
      *
      * @author Kohsuke Kawaguchi
      */
-    @Extension(ordinal=310)
+    @Extension(ordinal=310) @Symbol("viewsTabBar")
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public ViewsTabBar getViewsTabBar() {
-            return Jenkins.getInstance().getViewsTabBar();
+            return Jenkins.get().getViewsTabBar();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
 
             if (json.has("viewsTabBar")) {
                 j.setViewsTabBar(req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar")));

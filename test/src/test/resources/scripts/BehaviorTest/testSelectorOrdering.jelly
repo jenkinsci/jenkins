@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout title="">
     <l:main-panel>
       <script>
-        Behaviour.specify("DIV", 'generic', 0, function (e) {
+        Behaviour.specify("DIV.a", 'generic', 0, function (e) {
           e.innerHTML += ' generic';
         });
         Behaviour.specify(".a", 'early', -100, function (e) {
@@ -35,10 +35,10 @@ THE SOFTWARE.
         Behaviour.specify(".a", 'late', 100, function (e) {
           e.innerHTML += ' late';
         });
-        Behaviour.specify("DIV", 'zyzzyva', 0, function (e) {
+        Behaviour.specify("DIV.a", 'zyzzyva', 0, function (e) {
           e.innerHTML += ' weevils!';
         });
-        Behaviour.specify("DIV", 'abacus', 0, function (e) {
+        Behaviour.specify("DIV.a", 'abacus', 0, function (e) {
           e.innerHTML += ' counted!';
         });
       </script>

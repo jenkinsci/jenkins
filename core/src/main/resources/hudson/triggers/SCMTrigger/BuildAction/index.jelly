@@ -27,13 +27,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.build.parent.displayName} #${it.build.number} ${%Polling Log}" norefresh="true">
-    <st:include it="${it.build}" page="sidepanel.jelly" />
+  <l:layout title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}" norefresh="true">
+    <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Polling Log}</h1>
       <l:rightspace>
         <a href="pollingLog">
-          <img src="${imagesURL}/24x24/document.png" alt="" height="24" width="24" />${%View as plain text}
+          <l:icon class="icon-document icon-md"/>${%View as plain text}
         </a>
       </l:rightspace>
 

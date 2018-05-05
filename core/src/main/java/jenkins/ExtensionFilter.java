@@ -31,7 +31,6 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import jenkins.model.Jenkins;
 
 /**
  * Filters out {@link ExtensionComponent}s discovered by {@link ExtensionFinder}s,
@@ -86,6 +85,6 @@ public abstract class ExtensionFilter implements ExtensionPoint {
      * All registered {@link ExtensionFilter} instances.
      */
     public static ExtensionList<ExtensionFilter> all() {
-        return Jenkins.getInstance().getExtensionList(ExtensionFilter.class);
+        return ExtensionList.lookup(ExtensionFilter.class);
     }
 }

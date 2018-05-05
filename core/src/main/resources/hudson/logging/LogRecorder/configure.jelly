@@ -47,7 +47,7 @@ THE SOFTWARE.
                 ${%Logger}
               </th>
               <td width="60%">
-                <f:textbox field="name"/>
+                <f:textbox field="name" autoCompleteUrl="autoCompleteLoggerName" />
               </td>
               <th style="white-space:nowrap;">
                 ${%Log level}
@@ -71,6 +71,7 @@ THE SOFTWARE.
         <f:submit value="${%Save}" />
       </f:block>
     </f:form>
+    <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

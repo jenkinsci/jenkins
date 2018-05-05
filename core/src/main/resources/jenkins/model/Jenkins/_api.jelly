@@ -24,19 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <h2>Create Job</h2>
-  <p>
-    To create a new job, post <tt>config.xml</tt> to <a href="../createItem">this URL</a> with
-    query parameter <tt>name=<i>JOBNAME</i></tt>. You'll get 200 status code if the creation is successful,
-    or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Jenkins uses to store the project
-    in the file system, so you can see examples of them in <tt>${app.rootDir}</tt>.
-  </p>
 
-  <h2>Copy Job</h2>
-  <p>
-    To copy a job, send a POST request to <a href="../createItem">this URL</a> with
-    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></tt>
-  </p>
+  <st:include page="/hudson/model/ModifiableItemGroup/_api.jelly"/>
 
   <h2>Build Queue</h2>
   <p>

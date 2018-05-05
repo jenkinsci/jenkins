@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Current SCM Polling Activities}">
+  <l:layout title="${%Current SCM Polling Activities}" permission="${app.ADMINISTER}">
     <st:include it="${app}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Current SCM Polling Activities}</h1>
@@ -54,7 +54,7 @@ THE SOFTWARE.
             <j:forEach var="r" items="${it.runners}">
               <tr>
                 <td>
-                  <a href="${rootURL}/${r.target.url}scmPollLog/">${r.target.displayName}</a>
+                  <a href="${rootURL}/${r.target.asItem().url}scmPollLog/">${r.target.asItem().fullDisplayName}</a>
                 </td>
                 <td>
                   ${r.duration}

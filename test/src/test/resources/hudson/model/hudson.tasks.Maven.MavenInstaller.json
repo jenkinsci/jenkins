@@ -1,0 +1,137 @@
+downloadService.post('hudson.tasks.Maven.MavenInstaller',{"list": [
+    {
+    "id": "3.1.1",
+    "name": "3.1.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.1.1-bin.zip"
+  },
+    {
+    "id": "3.1.0",
+    "name": "3.1.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.1.0-bin.zip"
+  },
+    {
+    "id": "3.0.5",
+    "name": "3.0.5",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.5-bin.zip"
+  },
+    {
+    "id": "3.0.4",
+    "name": "3.0.4",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.4-bin.zip"
+  },
+    {
+    "id": "3.0.3",
+    "name": "3.0.3",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.3-bin.zip"
+  },
+    {
+    "id": "3.0.2",
+    "name": "3.0.2",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.2-bin.zip"
+  },
+    {
+    "id": "3.0.1",
+    "name": "3.0.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.1-bin.zip"
+  },
+    {
+    "id": "3.0",
+    "name": "3.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0-bin.zip"
+  },
+    {
+    "id": "2.2.1",
+    "name": "2.2.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.2.1-bin.zip"
+  },
+    {
+    "id": "2.2.0",
+    "name": "2.2.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.2.0-bin.zip"
+  },
+    {
+    "id": "2.1.0",
+    "name": "2.1.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.1.0-bin.zip"
+  },
+    {
+    "id": "2.0.11",
+    "name": "2.0.11",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.0.11-bin.zip"
+  },
+    {
+    "id": "2.0.10",
+    "name": "2.0.10",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.0.10-bin.zip"
+  },
+    {
+    "id": "2.0.9",
+    "name": "2.0.9",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.0.9-bin.zip"
+  },
+    {
+    "id": "2.0.8",
+    "name": "2.0.8",
+    "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-2.0.8-bin.zip"
+  },
+    {
+    "id": "2.0.7",
+    "name": "2.0.7",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.7-bin.zip"
+  },
+    {
+    "id": "2.0.6",
+    "name": "2.0.6",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.6-bin.zip"
+  },
+    {
+    "id": "2.0.5",
+    "name": "2.0.5",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.5-bin.zip"
+  },
+    {
+    "id": "2.0.4",
+    "name": "2.0.4",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.4-bin.zip"
+  },
+    {
+    "id": "2.0.3",
+    "name": "2.0.3",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.3-bin.zip"
+  },
+    {
+    "id": "2.0.2",
+    "name": "2.0.2",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.2-bin.zip"
+  },
+    {
+    "id": "2.0.1",
+    "name": "2.0.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0.1-bin.zip"
+  },
+    {
+    "id": "2.0",
+    "name": "2.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-2.0-bin.zip"
+  },
+    {
+    "id": "1.1",
+    "name": "1.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-1.1.zip"
+  },
+    {
+    "id": "1.0.2",
+    "name": "1.0.2",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-1.0.2.zip"
+  },
+    {
+    "id": "1.0.1",
+    "name": "1.0.1",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-1.0.1.zip"
+  },
+    {
+    "id": "1.0",
+    "name": "1.0",
+    "url": "http://archive.apache.org/dist/maven/binaries/maven-1.0.zip"
+  }
+]})

@@ -25,12 +25,14 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -60,26 +62,42 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
+    /**
+     * @deprecated as of 2.0
+     *      Use injection
+     */
+    public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
+
+    @Extension @Symbol("tmpSpace")
+    public static class DescriptorImpl extends DiskSpaceMonitorDescriptor {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         public String getDisplayName() {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
         @Override
         protected Callable<DiskSpace,IOException> createCallable(Computer c) {
-            FilePath p = c.getNode().getRootPath();
+            Node node = c.getNode();
+            if (node == null) return null;
+            
+            FilePath p = node.getRootPath();
             if(p==null) return null;
 
             return p.asCallableWith(new GetTempSpace());
         }
-    };
+    }
 
-    @Extension
+    /**
+     * @deprecated as of 2.0
+     */
     public static DiskSpaceMonitorDescriptor install() {
         return DESCRIPTOR;
     }
     
-    protected static final class GetTempSpace implements FileCallable<DiskSpace> {
+    protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 // if the disk is really filled up we can't even create a single file,
                 // so calling File.createTempFile and figuring out the directory won't reliably work.

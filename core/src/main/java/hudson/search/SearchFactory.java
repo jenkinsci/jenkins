@@ -3,7 +3,6 @@ package hudson.search;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 /**
  * Creates a {@link Search} instance for a {@link SearchableModelObject}.
@@ -40,6 +39,6 @@ public abstract class SearchFactory implements ExtensionPoint {
      * Returns all the registered {@link SearchFactory} instances.
      */
     public static ExtensionList<SearchFactory> all() {
-        return Jenkins.getInstance().getExtensionList(SearchFactory.class);
+        return ExtensionList.lookup(SearchFactory.class);
     }
 }

@@ -26,8 +26,7 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -63,9 +62,9 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Create permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Create permission"));
     }
 
     @Test public void createViewShouldSucceed() {
@@ -76,9 +75,7 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoErrorOutput());
-        assertThat(result, hasNoStandardOutput());
+        assertThat(result, succeededSilently());
 
         final View updatedView = j.jenkins.getView("ViewFromXML");
         assertThat(updatedView.getViewName(), equalTo("ViewFromXML"));
@@ -94,9 +91,7 @@ public class CreateViewCommandTest {
                 .invokeWithArgs("CustomViewName")
         ;
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoErrorOutput());
-        assertThat(result, hasNoStandardOutput());
+        assertThat(result, succeededSilently());
 
         assertThat("A view with original name should not exist", j.jenkins.getView("ViewFromXML"), nullValue());
 
@@ -116,9 +111,9 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("View 'ViewFromXML' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: View 'ViewFromXML' already exists"));
     }
 
     @Test public void createViewShouldFailUsingInvalidName() {
@@ -129,8 +124,8 @@ public class CreateViewCommandTest {
                 .invokeWithArgs("..")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("Invalid view name"));
+        assertThat(result.stderr(), containsString("ERROR: Invalid view name"));
     }
 }

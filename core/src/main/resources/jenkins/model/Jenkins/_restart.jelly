@@ -28,10 +28,17 @@ THE SOFTWARE.
 	<l:layout title="Restart Jenkins">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-		  <form method="post" action="restart">
-		    ${%Are you sure about restarting Jenkins?}
-		    <f:submit value="${%Yes}" />
-		  </form>
+			<j:choose>
+				<j:when test="${app.lifecycle.canRestart()}">
+					<form method="post" action="restart">
+						${%Are you sure about restarting Jenkins?}
+						<f:submit value="${%Yes}" />
+					</form>
+				</j:when>
+				<j:otherwise>
+					${%Jenkins cannot restart itself as currently configured.}
+				</j:otherwise>
+			</j:choose>
 		</l:main-panel>
 	</l:layout>
 </j:jelly>

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Configure build triggers
+  Configure build triggers, applicable to ParameterizedJobMixIn.ParameterizedJob
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">

@@ -49,16 +49,18 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
-      <form method="post" action="install">
-        <div id="filter-container">
-          ${%Filter}:
-          <input type="text" id="filter-box"/>
-        </div>
+      
+      <div id="filter-container">
+        ${%Filter}:
+        <input type="text" id="filter-box"/>
+      </div>
 
+      <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
-        <table id="plugins" class="sortable pane bigtable">
-            <tr style="border-top: 0px;">
+        <div class="pane-frame">
+          <table id="plugins" class="sortable pane bigtable stripped-odd">
+            <tr>
               <th initialSortDir="${isUpdates?null:'down'}"
                   tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
                   width="32" onclick="showhideCategories(this,1)">${%Install}</th>
@@ -83,7 +85,7 @@ THE SOFTWARE.
                   </j:if>
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
                   <j:set var="installedOk"
-                     value="${installJob.status.success and installJob.plugin.version==p.version}" />
+                         value="${installJob.status.success and installJob.plugin.version==p.version}" />
                   <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
                     <td class="pane" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
@@ -108,6 +110,15 @@ THE SOFTWARE.
                       </j:if>
                       <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
                         <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
+                      </j:if>
+                      <j:if test="${p.hasWarnings()}">
+                        <div class="securityWarning">${%securityWarning}
+                          <ul>
+                            <j:forEach var="warning" items="${p.getWarnings()}">
+                              <li><a href="${warning.url}" target="_blank">${warning.message}</a></li>
+                            </j:forEach>
+                          </ul>
+                        </div>
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
@@ -135,17 +146,21 @@ THE SOFTWARE.
                 </tr>
               </j:otherwise>
             </j:choose>
-        </table>
+          </table>
+        </div>
 
-        <j:if test="${!empty(list)}">
-          <div id="bottom-sticker" >
-            <div class="bottom-sticker-inner">
-              <f:submit value="${%Install without restart}" name="dynamicLoad" />
-              <span style="margin-left:2em;"></span>
+        <div id="bottom-sticker" >
+          <div class="bottom-sticker-inner">
+            <j:if test="${!empty(list)}">
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
               <f:submit value="${%Download now and install after restart}" />
+            </j:if>
+            <st:include page="check.jelly"/>
             </div>
           </div>
-        </j:if>
         <d:invokeBody />
       </form>
     </l:main-panel>

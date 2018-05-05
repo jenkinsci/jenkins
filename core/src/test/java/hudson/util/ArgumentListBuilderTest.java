@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.io.IOException;
@@ -30,23 +31,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Assert;
+
+import org.junit.Ignore;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
-public class ArgumentListBuilderTest extends Assert {
-
-    public static void assertArrayEquals(String msg, boolean[] expected, boolean[] actual) {
-        assertArrayEquals(msg,box(expected),box(actual));
-    }
-
-    private static Boolean[] box(boolean[] a) {
-        if(a==null)     return null;
-        Boolean[] r = new Boolean[a.length];
-        for (int i = 0; i < a.length; i++)
-            r[i] = a[i];
-        return r;
-    }
-
+public class ArgumentListBuilderTest {
 
     @Test
     public void assertEmptyMask() {
@@ -54,10 +44,10 @@ public class ArgumentListBuilderTest extends Assert {
         builder.add("arg");
         builder.add("other", "arguments");
 
-        assertFalse("There shouldnt be any masked arguments", builder.hasMaskedArguments());
+        assertFalse("There should not be any masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,false}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, false }));
     }
 
     @Test
@@ -69,7 +59,7 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,true}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, true }));
     }
 
     @Test
@@ -83,7 +73,7 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,true, false, true}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, true, false, true }));
     }
 
     @Test
@@ -96,7 +86,7 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,true,false}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, true, false }));
     }
 
     @Test
@@ -109,35 +99,56 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,true,false}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, true, false }));
     }
 
     @Test
     public void testToWindowsCommand() {
-        ArgumentListBuilder builder = new ArgumentListBuilder(
-                "ant.bat", "-Dfoo1=abc",  // nothing special, no quotes
-                "-Dfoo2=foo bar", "-Dfoo3=/u*r", "-Dfoo4=/us?",  // add quotes
-                                                 "-Dfoo10=bar,baz",
-                "-Dfoo5=foo;bar^baz", "-Dfoo6=<xml>&here;</xml>", // add quotes
-                "-Dfoo7=foo|bar\"baz", // add quotes and "" for "
-                "-Dfoo8=% %QED% %comspec% %-%(%.%", // add quotes, and extra quotes for %Q and %c
-                "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
+        ArgumentListBuilder builder = new ArgumentListBuilder().
+                add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+                add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
+                add("-Dfoo10=bar,baz").
+                add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
+                add("-Dfoo7=foo|bar\"baz"). // add quotes and "" for "
+                add("-Dfoo8=% %QED% %comspec% %-%(%.%"). // add quotes, and extra quotes for %Q and %c
+                add("-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
         // By default, does not escape %VAR%
-        assertArrayEquals(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
-                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
-                + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
-                + " \"-Dfoo8=% %QED% %comspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
-                builder.toWindowsCommand().toCommandArray());
+        assertThat(builder.toWindowsCommand().toCommandArray(), is(new String[] { "cmd.exe", "/C",
+                "\"ant.bat", "-Dfoo1=abc", "\"-Dfoo2=foo bar\"", "\"-Dfoo3=/u*r\"", "\"-Dfoo4=/us?\"", 
+                "\"-Dfoo10=bar,baz\"", "\"-Dfoo5=foo;bar^baz\"", "\"-Dfoo6=<xml>&here;</xml>\"", 
+                "\"-Dfoo7=foo|bar\"\"baz\"", "\"-Dfoo8=% %QED% %comspec% %-%(%.%\"", 
+                "-Dfoo9=%'''%%@%", "&&", "exit", "%%ERRORLEVEL%%\"" }));
         // Pass flag to escape %VAR%
-        assertArrayEquals(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
-                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
-                + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
-                + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
-                builder.toWindowsCommand(true).toCommandArray());
+        assertThat(builder.toWindowsCommand(true).toCommandArray(), is(new String[] { "cmd.exe", "/C",
+                "\"ant.bat", "-Dfoo1=abc", "\"-Dfoo2=foo bar\"", "\"-Dfoo3=/u*r\"", "\"-Dfoo4=/us?\"", 
+                "\"-Dfoo10=bar,baz\"", "\"-Dfoo5=foo;bar^baz\"", "\"-Dfoo6=<xml>&here;</xml>\"", 
+                "\"-Dfoo7=foo|bar\"\"baz\"", "\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"", 
+                "-Dfoo9=%'''%%@%", "&&", "exit", "%%ERRORLEVEL%%\"" }));
+        // Try to hide password
+        builder.add("-Dpassword=hidden", true);
+        // By default, does not escape %VAR%
+        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        // Pass flag to escape %VAR%
+        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
+    }
+    
+    @Test
+    @Ignore("It's only for reproduce JENKINS-28790 issue. It's added to testToWindowsCommand")
+    @Issue("JENKINS-28790")
+    public void testToWindowsCommandMasked() {
+        ArgumentListBuilder builder = new ArgumentListBuilder().
+                add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+                add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
+                add("-Dfoo10=bar,baz").
+                add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
+                add("-Dfoo7=foo|bar\"baz"). // add quotes and "" for "
+                add("-Dfoo8=% %QED% %comspec% %-%(%.%"). // add quotes, and extra quotes for %Q and %c
+                add("-Dfoo9=%'''%%@%"). // no quotes as none of the % are followed by a letter
+                add("-Dpassword=hidden", true);
+        // By default, does not escape %VAR%
+        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        // Pass flag to escape %VAR%
+        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
     }
 
     @Test
@@ -151,7 +162,7 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", clone.hasMaskedArguments());
         boolean[] array = clone.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", builder.toMaskArray(), array);
+        assertThat("The mask array was incorrect", array, is(builder.toMaskArray()));
     }
     
     private static final Map<String, String> KEY_VALUES = new HashMap<String, String>() {{
@@ -172,7 +183,7 @@ public class ArgumentListBuilderTest extends Assert {
         assertTrue("There should be masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,true,false}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, true, false }));
 
     }
 
@@ -181,10 +192,10 @@ public class ArgumentListBuilderTest extends Assert {
         ArgumentListBuilder builder = new ArgumentListBuilder();
         builder.addKeyValuePairs(null, KEY_VALUES);
 
-        assertFalse("There shouldnt be any masked arguments", builder.hasMaskedArguments());
+        assertFalse("There should not be any masked arguments", builder.hasMaskedArguments());
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
-        assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,false}, array);
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, false }));
     }
 
     @Test

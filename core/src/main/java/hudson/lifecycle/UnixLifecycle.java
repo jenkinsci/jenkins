@@ -24,11 +24,12 @@
 package hudson.lifecycle;
 
 import com.sun.akuma.JavaVMArguments;
-import com.sun.akuma.Daemon;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static hudson.util.jna.GNUCLibrary.*;
 
@@ -66,9 +67,14 @@ public class UnixLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstance();
-        if (h != null)
-            h.cleanUp();
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
+        try {
+            if (jenkins != null) {
+                jenkins.cleanUp();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+        }
 
         // close all files upon exec, except stdin, stdout, and stderr
         int sz = LIBC.getdtablesize();
@@ -79,8 +85,8 @@ public class UnixLifecycle extends Lifecycle {
         }
 
         // exec to self
-        String exe = Daemon.getCurrentExecutable();
-        LIBC.execv(exe, new StringArray(args.toArray(new String[args.size()])));
+        String exe = args.get(0);
+        LIBC.execvp(exe, new StringArray(args.toArray(new String[args.size()])));
         throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
 
@@ -97,4 +103,6 @@ public class UnixLifecycle extends Lifecycle {
         if (args==null)
             throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process",failedToObtainArgs);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(UnixLifecycle.class.getName());
 }

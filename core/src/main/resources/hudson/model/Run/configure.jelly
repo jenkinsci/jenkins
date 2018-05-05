@@ -43,6 +43,9 @@ THE SOFTWARE.
           </f:bottomButtonBar>
         </j:if>
       </f:form>
+      <j:if test="${h.hasPermission(it,it.UPDATE)}">
+        <st:adjunct includes="lib.form.confirm" />
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

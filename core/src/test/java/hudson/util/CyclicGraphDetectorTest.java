@@ -1,7 +1,10 @@
 package hudson.util;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +14,8 @@ import java.util.Set;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class CyclicGraphDetectorTest extends TestCase {
+public class CyclicGraphDetectorTest {
+
     private class Edge {
         String src,dst;
 
@@ -46,7 +50,7 @@ public class CyclicGraphDetectorTest extends TestCase {
         }
 
         /**
-         * Performs a cycle check. 
+         * Performs a cycle check.
          */
         void check() throws Exception {
             new CyclicGraphDetector<String>() {
@@ -68,16 +72,18 @@ public class CyclicGraphDetectorTest extends TestCase {
         }
     }
 
-    public void testCycle() throws Exception {
+    @Test
+    public void cycle1() throws Exception {
         new Graph().e("A","B").e("B","C").e("C","A").mustContainCycle("A","B","C");
     }
 
-    public void testCycle2() throws Exception {
+    @Test
+    public void cycle2() throws Exception {
         new Graph().e("A","B").e("B","C").e("C","C").mustContainCycle("C");
     }
 
-    public void testCycle3() throws Exception {
+    @Test
+    public void cycle3() throws Exception {
         new Graph().e("A","B").e("B","C").e("C","D").e("B","E").e("E","D").e("E","A").mustContainCycle("A","B","E");
     }
-
 }

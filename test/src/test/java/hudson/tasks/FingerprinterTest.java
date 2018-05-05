@@ -24,17 +24,16 @@
 
 package hudson.tasks;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import hudson.Functions;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.model.AbstractProject;
-import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.util.RunList;
 import java.io.File;
 
@@ -43,6 +42,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
@@ -50,10 +51,9 @@ import jenkins.model.Jenkins;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -109,6 +109,26 @@ public class FingerprinterTest {
         assertEquals(1, upstreamProjects.size());
         assertTrue(upstreamProjects.contains(upstream));
         assertTrue(downstreamProjects.contains(downstream));
+    }
+
+    private static class FingerprintAddingBuilder extends Builder {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            build.addAction(new Fingerprinter.FingerprintAction(build, ImmutableMap.of(singleFiles2[0], "fakefingerprint")));
+            return true;
+        }
+    }
+
+    @Test public void presentFingerprintActionIsReused() throws Exception {
+        FreeStyleProject project = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        project.getBuildersList().add(new FingerprintAddingBuilder());
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+
+        assertThat(build.getActions(Fingerprinter.FingerprintAction.class), hasSize(1));
+
+        Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertEquals(action.getRecords().keySet(), ImmutableSet.of(singleFiles2[0], singleFiles[0]));
     }
 
     @Test public void multipleUpstreamDependencies() throws Exception {
@@ -192,7 +212,7 @@ public class FingerprinterTest {
     }
     
     @Test public void matrixDependency() throws Exception {
-        MatrixProject matrixProject = j.createMatrixProject();
+        MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         addFingerprinterToProject(matrixProject, singleContents, singleFiles);
@@ -271,17 +291,21 @@ public class FingerprinterTest {
         }
     }
 
-    @Bug(17125)
+    @Issue("JENKINS-17125")
     @LocalData
     @Test public void actionSerialization() throws Exception {
-        FreeStyleProject job = j.jenkins.getItemByFullName("j", FreeStyleProject.class);
+        FreeStyleProject job = j.jenkins.getItemByFullName(Functions.isWindows() ? "j-windows" : "j", FreeStyleProject.class);
         assertNotNull(job);
         FreeStyleBuild build = job.getBuildByNumber(2);
         assertNotNull(build);
         Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         assertEquals(build, action.getBuild());
-        assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
+        if (Functions.isWindows()) {
+            assertEquals("{a=603bc9e16cc05bdbc5e595969f42e3b8}", action.getRecords().toString());
+        } else {
+            assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
+        }
         j.assertBuildStatusSuccess(job.scheduleBuild2(0));
         job._getRuns().purgeCache(); // force build records to be reloaded
         build = job.getBuildByNumber(3);
@@ -290,12 +314,16 @@ public class FingerprinterTest {
         action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         assertEquals(build, action.getBuild());
-        assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
+        if (Functions.isWindows()) {
+            assertEquals("{a=a97a39fb51de0eee9fd908174dccc304}", action.getRecords().toString());
+        } else {
+            assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
+        }
     }
 
     @SuppressWarnings("unchecked")
-    @RandomlyFails("for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>")
-    @Bug(18417)
+    // TODO randomly fails: for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>
+    @Issue("JENKINS-18417")
     @Test
     public void fingerprintCleanup() throws Exception {
         // file names shouldn't matter
@@ -307,7 +335,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
         j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
 
-        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+"\n"));
+        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+System.lineSeparator()));
+        assertNotNull(f);
         assertEquals(3,f.getUsages().size());
 
         j.jenkins.rebuildDependencyGraph();
@@ -354,9 +383,15 @@ public class FingerprinterTest {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
             if (project instanceof MatrixProject) {
-                ((MatrixProject)project).getBuildersList().add(new Shell("echo " + contents[i] + " > " + files[i]));
+                ((MatrixProject)project).getBuildersList().add(
+                        Functions.isWindows()
+                                ? new BatchFile("echo " + contents[i] + "> " + files[i])
+                                : new Shell("echo " + contents[i] + " > " + files[i]));
             } else {
-                ((FreeStyleProject)project).getBuildersList().add(new Shell("echo " + contents[i] + " > " + files[i]));                
+                ((FreeStyleProject)project).getBuildersList().add(
+                        Functions.isWindows()
+                                ? new BatchFile("echo " + contents[i] + "> " + files[i])
+                                : new Shell("echo " + contents[i] + " > " + files[i]));
             }
             
             targets.append(files[i]).append(',');

@@ -23,7 +23,9 @@
  */
 package hudson.security;
 
+import javax.annotation.Nonnull;
 import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 
 /**
  * Object that has an {@link ACL}
@@ -36,16 +38,31 @@ public interface AccessControlled {
      *
      * @return never null.
      */
-    ACL getACL();
+    @Nonnull ACL getACL();
 
     /**
      * Convenient short-cut for {@code getACL().checkPermission(permission)}
      */
-    void checkPermission(Permission permission) throws AccessDeniedException;
+    default void checkPermission(@Nonnull Permission permission) throws AccessDeniedException {
+        getACL().checkPermission(permission);
+    }
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
-    boolean hasPermission(Permission permission);
+    default boolean hasPermission(@Nonnull Permission permission) {
+        return getACL().hasPermission(permission);
+    }
+
+    /**
+     * Convenient short-cut for {@code getACL().hasPermission(a, permission)}
+     * @since 2.92
+     */
+    default boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        if (a == ACL.SYSTEM) {
+            return true;
+        }
+        return getACL().hasPermission(a, permission);
+    }
 
 }

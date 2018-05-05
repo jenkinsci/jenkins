@@ -23,18 +23,16 @@
  */
 package hudson.scm;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.TaskListener;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.File;
 import java.io.IOException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * No {@link SCM}.
@@ -42,35 +40,37 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class NullSCM extends SCM {
-    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+
+    @DataBoundConstructor
+    public NullSCM() {}
+
+    @Override public SCMRevisionState calcRevisionsFromBuild(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return null;
     }
 
-    protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+    @Override public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         return PollingResult.NO_CHANGES;
     }
 
-    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
-        return createEmptyChangeLog(changeLogFile, listener, "log");
+    @Override public void checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline) throws IOException, InterruptedException {
+        if (changelogFile != null) {
+            createEmptyChangeLog(changelogFile, listener, "log");
+        }
     }
 
-    public ChangeLogParser createChangeLogParser() {
+    @Override public ChangeLogParser createChangeLogParser() {
         return NullChangeLogParser.INSTANCE;
     }
 
-    @Extension
+    @Extension(ordinal = Integer.MAX_VALUE) @Symbol("none")
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
             super(null);
         }
 
-        public String getDisplayName() {
+        @Override public String getDisplayName() {
             return Messages.NullSCM_DisplayName();
         }
 
-        @Override
-        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new NullSCM();
-        }
     }
 }

@@ -24,11 +24,12 @@
 package hudson;
 
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.
@@ -49,6 +50,13 @@ public interface PluginStrategy extends ExtensionPoint {
 	 */
 	PluginWrapper createPluginWrapper(File archive)
 			throws IOException;
+
+    /**
+     * Finds the plugin name without actually unpacking anything {@link #createPluginWrapper} would.
+     * Needed by {@link PluginManager#dynamicLoad} to decide whether such a plugin is already installed.
+     * @return the {@link PluginWrapper#getShortName}
+     */
+    @Nonnull String getShortName(File archive) throws IOException;
 
 	/**
 	 * Loads the plugin and starts it.
@@ -77,4 +85,17 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * @since 1.400
 	 */
 	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
+    
+    /**
+     * Called when a plugin is installed, but there was already a plugin installed which optionally depended on that plugin.
+     * The class loader of the existing depending plugin should be updated
+     * to load classes from the newly installed plugin.
+     * @param depender plugin depending on dependee.
+     * @param dependee newly loaded plugin.
+     * @since 1.557
+     */
+    // TODO an @Abstract annotation with a matching processor could make it a compile-time error to neglect to override this, without breaking binary compatibility
+    default void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
+        Logger.getLogger(PluginStrategy.class.getName()).log(Level.WARNING, "{0} does not yet implement updateDependency", getClass());
+    }
 }

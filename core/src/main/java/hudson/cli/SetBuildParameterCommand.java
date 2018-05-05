@@ -15,7 +15,9 @@ import java.util.Collections;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.514
+ * @deprecated Limited to Remoting-based protocol.
  */
+@Deprecated
 @Extension
 public class SetBuildParameterCommand extends CommandDuringBuild {
     @Argument(index=0, metaVar="NAME", required=true, usage="Name of the build variable")
@@ -32,6 +34,7 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
     @Override
     protected int run() throws Exception {
         Run r = getCurrentlyBuilding();
+        r.checkPermission(Run.UPDATE);
 
         StringParameterValue p = new StringParameterValue(name, value);
 

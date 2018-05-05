@@ -42,9 +42,10 @@ import org.kohsuke.stapler.HttpResponses;
  * @author Kohsuke Kawaguchi
  * @see BuildableItem
  * @deprecated 2008-07-20
- *      Use {@link ACL} and {@link AbstractProject#BUILD}. This code is only here
+ *      Use {@link ACL} and {@link Item#BUILD}. This code is only here
  *      for the backward compatibility.
  */
+@Deprecated
 public final class BuildAuthorizationToken {
     private final String token;
 
@@ -62,7 +63,12 @@ public final class BuildAuthorizationToken {
         return null;
     }
 
-    public static void checkPermission(AbstractProject project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+    @Deprecated public static void checkPermission(AbstractProject<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Job<?,?> j = project;
+        checkPermission(j, token, req, rsp);
+    }
+
+    public static void checkPermission(Job<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (!Jenkins.getInstance().isUseSecurity())
             return;    // everyone is authorized
 

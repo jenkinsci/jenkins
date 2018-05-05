@@ -41,6 +41,7 @@ import java.nio.*;
  * @deprecated since 2008-05-28.
  *      Use the one in stapler.
  */
+@Deprecated
 public class WriterOutputStream extends OutputStream {
     private final Writer writer;
     private final CharsetDecoder decoder;

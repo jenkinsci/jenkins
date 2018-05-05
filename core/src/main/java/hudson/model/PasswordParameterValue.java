@@ -29,12 +29,14 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Locale;
+import javax.annotation.Nonnull;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class PasswordParameterValue extends ParameterValue {
 
+    @Nonnull
     private final Secret value;
 
     // kept for backward compatibility
@@ -49,7 +51,7 @@ public class PasswordParameterValue extends ParameterValue {
     }
 
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
         String v = Secret.toString(value);
         env.put(name, v);
         env.put(name.toUpperCase(Locale.ENGLISH),v); // backward compatibility pre 1.345
@@ -68,7 +70,8 @@ public class PasswordParameterValue extends ParameterValue {
     public boolean isSensitive() {
         return true;
     }
-    
+
+    @Nonnull
     public Secret getValue() {
         return value;
     }

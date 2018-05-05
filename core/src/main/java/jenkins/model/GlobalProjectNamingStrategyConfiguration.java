@@ -27,6 +27,7 @@ import hudson.Extension;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -34,19 +35,19 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author Dominik Bartholdi (imod)
  */
-@Extension(ordinal = 250)
+@Extension(ordinal = 250) @Symbol("projectNamingStrategy")
 public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");
         if (optJSONObject != null) {
             final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
-            final String className = strategyObject.getString("stapler-class");
+            final String className = strategyObject.getString("$class");
             try {
-                Class clazz = Class.forName(className);
+                Class clazz = Class.forName(className, true, j.getPluginManager().uberClassLoader);
                 final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);
                 j.setProjectNamingStrategy(strategy);
             } catch (ClassNotFoundException e) {

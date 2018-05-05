@@ -46,6 +46,7 @@ THE SOFTWARE.
           <f:submit value="${%Save}"/>
         </f:bottomButtonBar>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

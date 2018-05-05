@@ -37,14 +37,14 @@ THE SOFTWARE.
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <j:if test="${it.parent.hasAbortPermission()}">
-              <l:stopButton href="stop" alt="[${%cancel}]"/>
+              <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}" alt="[${%cancel}]"/>
             </j:if>
 	        </td>
 	      </tr></table>
 	    </div>
 	  </j:if>
 	  
-	  <img class="build-caption-status-icon" src="${imagesURL}/48x48/${it.buildStatusUrl}" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
+	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

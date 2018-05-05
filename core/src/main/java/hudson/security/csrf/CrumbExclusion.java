@@ -7,7 +7,6 @@ package hudson.security.csrf;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,6 +31,6 @@ public abstract class CrumbExclusion implements ExtensionPoint {
     public abstract boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException;
 
     public static ExtensionList<CrumbExclusion> all() {
-        return Jenkins.getInstance().getExtensionList(CrumbExclusion.class);
+        return ExtensionList.lookup(CrumbExclusion.class);
     }
 }

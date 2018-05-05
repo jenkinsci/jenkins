@@ -23,21 +23,23 @@
  */
 package hudson;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 import hudson.util.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.nio.charset.Charset;
@@ -51,6 +53,8 @@ import java.nio.charset.Charset;
  * @author Kohsuke Kawaguchi
  */
 public class Main {
+
+    /** @see #remotePost */
     public static void main(String[] args) {
         try {
             System.exit(run(args));
@@ -60,6 +64,7 @@ public class Main {
         }
     }
 
+    /** @see #remotePost */
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home==null) {
@@ -81,7 +86,8 @@ public class Main {
     }
 
     /**
-     * Run command and place the result to a remote Hudson installation
+     * Run command and send result to {@code ExternalJob} in the {@code external-monitor-job} plugin.
+     * Obsoleted by {@code SetExternalBuildResultCommand} but kept here for compatibility.
      */
     public static int remotePost(String[] args) throws Exception {
         String projectName = args[0];
@@ -104,14 +110,14 @@ public class Main {
             }
         }
 
-        String projectNameEnc = URLEncoder.encode(projectName,"UTF-8").replaceAll("\\+","%20");
+        URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
 
         {// check if the job name is correct
-            HttpURLConnection con = open(new URL(home+"job/"+projectNameEnc+"/acceptBuildResult"));
+            HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200) {
-                System.err.println(projectName+" is not a valid job name on "+home+" ("+con.getResponseMessage()+")");
+                System.err.println(jobURL + " is not a valid external job (" + con.getResponseCode() + " " + con.getResponseMessage() + ")");
                 return -1;
             }
         }
@@ -133,34 +139,36 @@ public class Main {
         }
 
         // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("hudson","log");
+        File tmpFile = File.createTempFile("jenkins","log");
         try {
-            FileOutputStream os = new FileOutputStream(tmpFile);
+            int ret;
+            try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
+                 Writer w = new OutputStreamWriter(os,"UTF-8")) {
+                w.write("<?xml version='1.1' encoding='UTF-8'?>");
+                w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
+                w.flush();
 
-            Writer w = new OutputStreamWriter(os,"UTF-8");
-            w.write("<?xml version='1.0' encoding='UTF-8'?>");
-            w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
-            w.flush();
+                // run the command
+                long start = System.currentTimeMillis();
 
-            // run the command
-            long start = System.currentTimeMillis();
+                List<String> cmd = new ArrayList<String>();
+                for( int i=1; i<args.length; i++ )
+                    cmd.add(args[i]);
+                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
+                    new DualOutputStream(System.out,new EncodingStream(os)));
 
-            List<String> cmd = new ArrayList<String>();
-            for( int i=1; i<args.length; i++ )
-                cmd.add(args[i]);
-            Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
-                new DualOutputStream(System.out,new EncodingStream(os)));
+                ret = proc.join();
 
-            int ret = proc.join();
+                w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
 
-            w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
-            w.close();
-
-            String location = home+"job/"+projectNameEnc+"/postBuildResult";
+            URL location = new URL(jobURL, "postBuildResult");
             while(true) {
                 try {
                     // start a remote connection
-                    HttpURLConnection con = open(new URL(location));
+                    HttpURLConnection con = open(location);
                     if (auth != null) con.setRequestProperty("Authorization", auth);
                     if (crumbField != null && crumbValue != null) {
                         con.setRequestProperty(crumbField, crumbValue);
@@ -170,19 +178,21 @@ public class Main {
                     con.setFixedLengthStreamingMode((int)tmpFile.length());
                     con.connect();
                     // send the data
-                    FileInputStream in = new FileInputStream(tmpFile);
-                    Util.copyStream(in,con.getOutputStream());
-                    in.close();
+                    try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
+                        org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
+                    } catch (InvalidPathException e) {
+                        throw new IOException(e);
+                    }
 
                     if(con.getResponseCode()!=200) {
-                        Util.copyStream(con.getErrorStream(),System.err);
+                        org.apache.commons.io.IOUtils.copy(con.getErrorStream(), System.err);
                     }
 
                     return ret;
                 } catch (HttpRetryException e) {
                     if(e.getLocation()!=null) {
                         // retry with the new location
-                        location = e.getLocation();
+                        location = new URL(e.getLocation());
                         continue;
                     }
                     // otherwise failed for reasons beyond us.
@@ -212,10 +222,10 @@ public class Main {
     /**
      * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
      */
-    public static boolean isDevelopmentMode = Boolean.getBoolean(Main.class.getName()+".development");
+    public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 
     /**
      * Time out for socket connection to Hudson.
      */
-    public static final int TIMEOUT = Integer.getInteger(Main.class.getName()+".timeout",15000);
+    public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName()+".timeout",15000);
 }

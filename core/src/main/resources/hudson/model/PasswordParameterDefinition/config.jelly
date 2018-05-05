@@ -30,9 +30,9 @@ THE SOFTWARE.
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
 	<f:entry title="${%Default Value}" help="/help/parameter/string-default.html">
-		<f:password name="parameter.defaultValue" value="${instance.defaultValue}" />
+		<f:password name="parameter.defaultValue" value="${instance.defaultValueAsSecret}" />
 	</f:entry>
     <f:entry title="${%Description}" help="/help/parameter/description.html">
-        <f:textarea name="parameter.description" value="${instance.description}" />
+        <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
 </j:jelly>

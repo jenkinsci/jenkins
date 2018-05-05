@@ -24,29 +24,30 @@
 
 package hudson.cli;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import static hudson.cli.CLICommandInvoker.Matcher.*;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.User;
+import jenkins.model.Jenkins;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-
-@SuppressWarnings("DM_DEFAULT_ENCODING")
 public class CopyJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    private CLICommand copyJobCommand;
     private CLICommandInvoker command;
 
     @Before public void setUp() {
-        command = new CLICommandInvoker(j, new CopyJobCommand());
+        copyJobCommand = new CopyJobCommand();
+        command = new CLICommandInvoker(j, copyJobCommand);
     }
 
     @Test public void copyBetweenFolders() throws Exception {
@@ -56,12 +57,33 @@ public class CopyJobCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs("dir1/p1", "dir2/p2");
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
 
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
         // TODO test copying from/to root, or into nonexistent folder
+    }
+
+    @Issue("JENKINS-22262")
+    @Test public void folderPermissions() throws Exception {
+        final MockFolder d1 = j.createFolder("d1");
+        final FreeStyleProject p = d1.createProject(FreeStyleProject.class, "p");
+        final MockFolder d2 = j.createFolder("d2");
+        // alice has no real permissions. bob has READ on everything but no more. charlie has CREATE on d2 but not EXTENDED_READ on p. debbie has both.
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.READ).everywhere().toAuthenticated(). // including alice
+            grant(Item.READ).onItems(d1, p, d2).to("bob", "charlie", "debbie").
+            grant(Item.CREATE).onItems(d2).to("charlie", "debbie").
+            grant(Item.EXTENDED_READ).onItems(p).to("debbie"));
+        copyJobCommand.setTransportAuth(User.get("alice").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
+        copyJobCommand.setTransportAuth(User.get("bob").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
+        copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
+        copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
+        assertNotNull(d2.getItem("p"));
     }
 
     // hold off build until saved only makes sense on the UI with config screen shown after copying;
@@ -72,9 +94,7 @@ public class CopyJobCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs(p1.getName(), copiedProjectName);
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
 
         FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
 

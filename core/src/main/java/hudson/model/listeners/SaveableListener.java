@@ -28,7 +28,6 @@ import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.XmlFile;
-import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +60,7 @@ public abstract class SaveableListener implements ExtensionPoint {
      * @deprecated as of 1.281
      *      Put {@link Extension} on your class to get it auto-registered.
      */
+    @Deprecated
     public void register() {
         all().add(this);
     }
@@ -91,6 +91,6 @@ public abstract class SaveableListener implements ExtensionPoint {
      * Returns all the registered {@link SaveableListener} descriptors.
      */
     public static ExtensionList<SaveableListener> all() {
-        return Jenkins.getInstance().getExtensionList(SaveableListener.class);
+        return ExtensionList.lookup(SaveableListener.class);
     }
 }
