@@ -511,13 +511,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>org.kohsuke</groupId>
-              <artifactId>doxia-module-markdown</artifactId>
-              <version>1.0</version>
-            </dependency>
-          </dependencies>
         </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
