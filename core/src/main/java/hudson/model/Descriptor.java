@@ -821,7 +821,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @since 2.0, used to be in {@link GlobalConfiguration} before that.
      */
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
@@ -984,7 +984,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
-            m.put(d.getDescriptor(),d);
+            Descriptor<T> descriptor;
+            try {
+                descriptor = d.getDescriptor();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                continue;
+            }
+            m.put(descriptor, d);
         }
         return m;
     }

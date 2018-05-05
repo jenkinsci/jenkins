@@ -24,11 +24,9 @@
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.Xpp3Driver;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -41,7 +39,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
@@ -148,7 +145,7 @@ public final class XmlFile {
         }
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
-        } catch (XStreamException | Error | InvalidPathException e) {
+        } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -161,11 +158,26 @@ public final class XmlFile {
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
+        return unmarshal(o, false);
+    }
 
+    /**
+     * Variant of {@link #unmarshal(Object)} applying {@link XStream2#unmarshal(HierarchicalStreamReader, Object, DataHolder, boolean)}.
+     * @since 2.99
+     */
+    public Object unmarshalNullingOut(Object o) throws IOException {
+        return unmarshal(o, true);
+    }
+
+    private Object unmarshal(Object o, boolean nullOut) throws IOException {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
-            return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (XStreamException | Error | InvalidPathException e) {
+            if (nullOut) {
+                return ((XStream2) xs).unmarshal(DEFAULT_DRIVER.createReader(in), o, null, true);
+            } else {
+                return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
+            }
+        } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -174,7 +186,7 @@ public final class XmlFile {
         mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
         try {
-            w.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+            w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
             writing.set(file);
             try {
@@ -184,7 +196,7 @@ public final class XmlFile {
                 writing.set(null);
             }
             w.commit();
-        } catch(StreamException e) {
+        } catch(RuntimeException e) {
             throw new IOException(e);
         } finally {
             w.abort();
@@ -339,13 +351,14 @@ public final class XmlFile {
     /**
      * {@link XStream} instance is supposed to be thread-safe.
      */
-    private static final XStream DEFAULT_XSTREAM = new XStream2();
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final Xpp3Driver DEFAULT_DRIVER = new Xpp3Driver();
+    private static final HierarchicalStreamDriver DEFAULT_DRIVER = XStream2.getDefaultDriver();
+
+    private static final XStream DEFAULT_XSTREAM = new XStream2(DEFAULT_DRIVER);
 
     static {
         JAXP.setNamespaceAware(true);

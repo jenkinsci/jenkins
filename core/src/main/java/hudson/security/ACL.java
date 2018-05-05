@@ -34,6 +34,7 @@ import hudson.model.Item;
 import hudson.remoting.Callable;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
+import java.util.function.BiFunction;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -44,6 +45,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -64,6 +66,9 @@ public abstract class ACL {
      */
     public final void checkPermission(@Nonnull Permission p) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
     }
@@ -75,7 +80,11 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(@Nonnull Permission p) {
-        return hasPermission(Jenkins.getAuthentication(),p);
+        Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return true;
+        }
+        return hasPermission(a, p);
     }
 
     /**
@@ -86,6 +95,21 @@ public abstract class ACL {
      * in which case you should probably just assume it has every permission.
      */
     public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
+
+    /**
+     * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
+     * @param impl the implementation of {@link ACL#hasPermission(Authentication, Permission)}
+     * @return an adapter to that lambda
+     * @since 2.105
+     */
+    public static ACL lambda(final BiFunction<Authentication, Permission, Boolean> impl) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission permission) {
+                return impl.apply(a, permission);
+            }
+        };
+    }
 
     /**
      * Checks if the current security principal has the permission to create top level items within the specified
@@ -101,6 +125,9 @@ public abstract class ACL {
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     Item.CREATE.group.title+"/"+Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
@@ -136,6 +163,9 @@ public abstract class ACL {
     public final void checkCreatePermission(@Nonnull ViewGroup c,
                                             @Nonnull ViewDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
@@ -306,4 +336,13 @@ public abstract class ACL {
         return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
     }
 
+    /**
+     * Checks if the given authentication is anonymous by checking its class.
+     * @see Jenkins#ANONYMOUS
+     * @see AnonymousAuthenticationToken
+     */
+    public static boolean isAnonymous(@Nonnull Authentication authentication) {
+        //TODO use AuthenticationTrustResolver instead to be consistent through the application
+        return authentication instanceof AnonymousAuthenticationToken;
+    }
 }

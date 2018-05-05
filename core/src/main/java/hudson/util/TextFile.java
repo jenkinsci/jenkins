@@ -23,22 +23,23 @@
  */
 package hudson.util;
 
-import com.google.common.collect.*;
+import edu.umd.cs.findbugs.annotations.CreatesObligation;
+
+import hudson.Util;
+import jenkins.util.io.LinesStream;
 
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.Iterator;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Represents a text file.
@@ -48,9 +49,10 @@ import java.util.Iterator;
  * @author Kohsuke Kawaguchi
  */
 public class TextFile {
-    public final File file;
 
-    public TextFile(File file) {
+    public final @Nonnull File file;
+
+    public TextFile(@Nonnull File file) {
         this.file = file;
     }
 
@@ -68,47 +70,42 @@ public class TextFile {
     public String read() throws IOException {
         StringWriter out = new StringWriter();
         PrintWriter w = new PrintWriter(out);
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath()), "UTF-8"))) {
+        try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(file), StandardCharsets.UTF_8)) {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
+        } catch (Exception e) {
+            throw new IOException("Failed to fully read " + file, e);
         }
         return out.toString();
     }
 
     /**
-     * Parse text file line by line.
+     * @throws RuntimeException in the case of {@link IOException} in {@link #linesStream()}
+     * @deprecated This method does not properly propagate errors and may lead to file descriptor leaks
+     *             if the collection is not fully iterated. Use {@link #linesStream()} instead.
      */
-    public Iterable<String> lines() {
-        return new Iterable<String>() {
-            @Override
-            public Iterator<String> iterator() {
-                try {
-                    final BufferedReader in = new BufferedReader(new InputStreamReader(
-                            Files.newInputStream(file.toPath()),"UTF-8"));
+    @Deprecated
+    public @Nonnull Iterable<String> lines() {
+        try {
+            return linesStream();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-                    return new AbstractIterator<String>() {
-                        @Override
-                        protected String computeNext() {
-                            try {
-                                String r = in.readLine();
-                                if (r==null) {
-                                    in.close();
-                                    return endOfData();
-                                }
-                                return r;
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    };
-                } catch (IOException | InvalidPathException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
+    /**
+     * Creates a new {@link jenkins.util.io.LinesStream} of the file.
+     * <p>
+     * Note: The caller is responsible for closing the returned
+     * <code>LinesStream</code>.
+     * @throws IOException if the file cannot be converted to a
+     * {@link java.nio.file.Path} or if the file cannot be opened for reading
+     * @since 2.111
+     */
+    @CreatesObligation
+    public @Nonnull LinesStream linesStream() throws IOException {
+        return new LinesStream(Util.fileToPath(file));
     }
 
     /**

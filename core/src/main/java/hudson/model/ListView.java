@@ -29,6 +29,8 @@ import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
+import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.CaseInsensitiveComparator;
@@ -168,7 +170,8 @@ public class ListView extends View implements DirectlyModifiableView {
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
-    
+
+
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -178,6 +181,20 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Override
     public List<TopLevelItem> getItems() {
+        return getItems(this.recurse);
+     }
+
+    /**
+     * Returns a read-only view of all {@link Job}s in this view.
+     *
+     *
+     * <p>
+     * This method returns a separate copy each time to avoid
+     * concurrent modification issue.
+     * @param recurse {@code false} not to recurse in ItemGroups
+     * true to recurse in ItemGroups
+     */
+    private List<TopLevelItem> getItems(boolean recurse) {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
 
@@ -192,7 +209,7 @@ public class ListView extends View implements DirectlyModifiableView {
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         Iterable<? extends TopLevelItem> candidates;
         if (recurse) {
-            candidates = Items.getAllItems(parent, TopLevelItem.class);
+            candidates = parent.getAllItems(TopLevelItem.class);
         } else {
             candidates = parent.getItems();
         }
@@ -215,6 +232,23 @@ public class ListView extends View implements DirectlyModifiableView {
         items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
         
         return items;
+    }
+
+    @Override
+    public SearchIndexBuilder makeSearchIndex() {
+        SearchIndexBuilder sib = new SearchIndexBuilder().addAllAnnotations(this);
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            protected TopLevelItem get(String key) { return getItem(key); }
+            protected Collection<TopLevelItem> all() { return getItems(); }
+            @Override
+            protected String getName(TopLevelItem o) {
+                // return the name instead of the display for suggestion searching
+                return o.getName();
+            }
+        });
+        // add the display name for each item in the search index
+        addDisplayNamesToSearchIndex(sib, getItems(true));
+        return sib;
     }
 
     private List<TopLevelItem> expand(Collection<TopLevelItem> items, List<TopLevelItem> allItems) {
@@ -410,7 +444,7 @@ public class ListView extends View implements DirectlyModifiableView {
             jobNames.clear();
             Iterable<? extends TopLevelItem> items;
             if (recurse) {
-                items = Items.getAllItems(getOwner().getItemGroup(), TopLevelItem.class);
+                items = getOwner().getItemGroup().getAllItems(TopLevelItem.class);
             } else {
                 items = getOwner().getItemGroup().getItems();
             }
@@ -485,24 +519,25 @@ public class ListView extends View implements DirectlyModifiableView {
         @Override
         public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
             try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
-                locationChanged(item, oldFullName, newFullName);
+                locationChanged(oldFullName, newFullName);
             }
         }
-        private void locationChanged(Item item, String oldFullName, String newFullName) {
+        private void locationChanged(String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.getInstance();
-            for (View view: jenkins.getViews()) {
-                if (view instanceof ListView) {
-                    renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
-                }
-            }
+            locationChanged(jenkins, oldFullName, newFullName);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
-                    ViewGroup vg = (ViewGroup) g;
-                    for (View v : vg.getViews()) {
-                        if (v instanceof ListView) {
-                            renameViewItem(oldFullName, newFullName, vg, (ListView) v);
-                        }
-                    }
+                    locationChanged((ViewGroup) g, oldFullName, newFullName);
+                }
+            }
+        }
+        private void locationChanged(ViewGroup vg, String oldFullName, String newFullName) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    renameViewItem(oldFullName, newFullName, vg, (ListView) v);
+                }
+                if (v instanceof ViewGroup) {
+                    locationChanged((ViewGroup) v, oldFullName, newFullName);
                 }
             }
         }
@@ -534,19 +569,20 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.getInstance();
-            for (View view: jenkins.getViews()) {
-                if (view instanceof ListView) {
-                    deleteViewItem(item, jenkins, (ListView) view);
-                }
-            }
+            deleted(jenkins, item);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
-                    ViewGroup vg = (ViewGroup) g;
-                    for (View v : vg.getViews()) {
-                        if (v instanceof ListView) {
-                            deleteViewItem(item, vg, (ListView) v);
-                        }
-                    }
+                    deleted((ViewGroup) g, item);
+                }
+            }
+        }
+        private void deleted(ViewGroup vg, Item item) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    deleteViewItem(item, vg, (ListView) v);
+                }
+                if (v instanceof ViewGroup) {
+                    deleted((ViewGroup) v, item);
                 }
             }
         }

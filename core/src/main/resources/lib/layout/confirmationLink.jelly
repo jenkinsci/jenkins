@@ -31,7 +31,7 @@ THE SOFTWARE.
         <st:attribute name="href" use="required">
             The URL to go to.
         </st:attribute>
-        <st:attribute name="post">
+        <st:attribute name="post" type="boolean">
             Use POST rather than GET (recommended).
         </st:attribute>
         <st:attribute name="message" use="required">
@@ -42,7 +42,7 @@ THE SOFTWARE.
         </st:attribute>
     </st:documentation>
     <j:set var="id" value="${h.generateId()}"/>
-    <a href="#" class="${class}" onclick="confirmPOST_${id}(${post ?: 'false'}, '${attrs.href}', '${h.jsStringEscape(message)}')"><d:invokeBody/></a>
+    <a href="#" class="${class}" onclick="confirmPOST_${id}(${post ? 'true' : 'false'}, '${h.jsStringEscape(attrs.href)}', '${h.jsStringEscape(message)}')"><d:invokeBody/></a>
     <script>
         function confirmPOST_${id}(post, href, message) {
             if (confirm(message)) {

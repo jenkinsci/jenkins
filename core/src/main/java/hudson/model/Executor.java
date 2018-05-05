@@ -87,6 +87,7 @@ public class Executor extends Thread implements ModelObject {
     protected final @Nonnull Computer owner;
     private final Queue queue;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final int DEFAULT_ESTIMATED_DURATION = -1;
 
     @GuardedBy("lock")
     private long startTime;
@@ -104,6 +105,11 @@ public class Executor extends Thread implements ModelObject {
      */
     @GuardedBy("lock")
     private Queue.Executable executable;
+
+    /**
+     * Calculation of estimated duration needs some time, so, it's better to cache it once executable is known
+     */
+    private long executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
 
     /**
      * Used to mark that the execution is continuing asynchronously even though {@link Executor} as {@link Thread}
@@ -138,7 +144,7 @@ public class Executor extends Thread implements ModelObject {
     public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
-        this.queue = Jenkins.getInstance().getQueue();
+        this.queue = Jenkins.get().getQueue();
         this.number = n;
     }
 
@@ -396,6 +402,8 @@ public class Executor extends Thread implements ModelObject {
                     return;
                 }
 
+                executableEstimatedDuration = executable.getEstimatedDuration();
+
                 if (executable instanceof Actionable) {
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
@@ -481,6 +489,7 @@ public class Executor extends Thread implements ModelObject {
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
+        executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         queue.scheduleMaintenance();
     }
 
@@ -686,18 +695,9 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public int getProgress() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return -1;
-            }
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d <= 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         int num = (int) (getElapsedTime() * 100 / d);
@@ -716,19 +716,17 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isLikelyStuck() {
-        long d;
-        long elapsed;
         lock.readLock().lock();
         try {
             if (executable == null) {
                 return false;
             }
-
-            elapsed = getElapsedTime();
-            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
+
+        long elapsed = getElapsedTime();
+        long d = executableEstimatedDuration;
         if (d >= 0) {
             // if it's taking 10 times longer than ETA, consider it stuck
             return d * 10 < elapsed;
@@ -776,17 +774,7 @@ public class Executor extends Thread implements ModelObject {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return Messages.Executor_NotAvailable();
-            }
-
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d < 0) {
             return Messages.Executor_NotAvailable();
         }
@@ -804,24 +792,14 @@ public class Executor extends Thread implements ModelObject {
      * it as a number of milli-seconds.
      */
     public long getEstimatedRemainingTimeMillis() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return -1;
-            }
-
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d < 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         long eta = d - getElapsedTime();
         if (eta <= 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         return eta;
@@ -906,16 +884,10 @@ public class Executor extends Thread implements ModelObject {
      * Returns when this executor started or should start being idle.
      */
     public long getIdleStartMilliseconds() {
-        lock.readLock().lock();
-        try {
-            if (isIdle())
-                return Math.max(creationTime, owner.getConnectTime());
-            else {
-                return Math.max(startTime + Math.max(0, executable == null ? -1 : executable.getEstimatedDuration()),
-                        System.currentTimeMillis() + 15000);
-            }
-        } finally {
-            lock.readLock().unlock();
+        if (isIdle())
+            return Math.max(creationTime, owner.getConnectTime());
+        else {
+            return Math.max(startTime + Math.max(0, executableEstimatedDuration), System.currentTimeMillis() + 15000);
         }
     }
 
@@ -981,7 +953,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @Deprecated
     public static long getEstimatedDurationFor(Executable e) {
-        return e == null ? -1 : e.getEstimatedDuration();
+        return e == null ? DEFAULT_ESTIMATED_DURATION : e.getEstimatedDuration();
     }
 
     /**

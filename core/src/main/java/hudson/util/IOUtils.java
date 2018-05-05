@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import java.nio.file.Files;
@@ -11,6 +12,8 @@ import java.io.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static hudson.Util.fileToPath;
 
 /**
  * Adds more to commons-io.
@@ -50,20 +53,11 @@ public class IOUtils {
      *      This method returns the 'dir' parameter so that the method call flows better.
      */
     public static File mkdirs(File dir) throws IOException {
-        if(dir.mkdirs() || dir.exists())
-            return dir;
-
-        // following Ant <mkdir> task to avoid possible race condition.
         try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            // ignore
+            return Files.createDirectories(fileToPath(dir)).toFile();
+        } catch (UnsupportedOperationException e) {
+            throw new IOException(e);
         }
-
-        if (dir.mkdirs() || dir.exists())
-            return dir;
-
-        throw new IOException("Failed to create a directory at "+dir);
     }
 
     /**
@@ -119,13 +113,27 @@ public class IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate.
+     * Gets the mode of a file/directory, if appropriate. Only includes read, write, and
+     * execute permissions for the owner, group, and others, i.e. the max return value
+     * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
+     * care about access permissions.
+     * <p>If the file is symlink, the mode is that of the link target, not the link itself.
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
-        return PosixAPI.jnr().stat(f.getPath()).mode();
+        try {
+            if (Util.NATIVE_CHMOD_MODE) {
+                return PosixAPI.jnr().stat(f.getPath()).mode();
+            } else {
+                return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
+            }
+        } catch (IOException cause) {
+            PosixException e = new PosixException("Unable to get file permissions", null);
+            e.initCause(cause);
+            throw e;
+        }
     }
 
     /**

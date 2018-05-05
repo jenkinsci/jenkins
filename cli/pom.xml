@@ -4,14 +4,19 @@
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.85-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>cli</artifactId>
 
   <name>Jenkins cli</name>
   <description>Command line interface for Jenkins</description>
+
+  <properties>
+    <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
+    <findbugs.threshold>Medium</findbugs.threshold>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -31,7 +36,6 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -55,7 +59,7 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <version>1.6.0</version>
+      <version>1.7.0</version>
       <optional>true</optional> <!-- do not expose to core -->
     </dependency>
     <dependency>
@@ -67,6 +71,11 @@
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
       <version>build214-jenkins-1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

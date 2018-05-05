@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
@@ -66,7 +67,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Listens to incoming TCP connections from JNLP agents and Remoting CLI.
+ * Listens to incoming TCP connections from JNLP agents and deprecated Remoting-based CLI.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
@@ -290,6 +291,7 @@ public final class TcpSlaveAgentListener extends Thread {
             try {
                 Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
 
+                //TODO: expose version about minimum supported Remoting version (JENKINS-48766)
                 if (header.startsWith("GET / ")) {
                     o.write("HTTP/1.0 200 OK\r\n");
                     o.write("Content-Type: text/plain;charset=UTF-8\r\n");
@@ -299,6 +301,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
+                    o.write("Remoting-Minimum-Version: " + RemotingVersionInfo.getMinimumSupportedVersion() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
@@ -514,10 +517,10 @@ public final class TcpSlaveAgentListener extends Thread {
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
 
     /**
-     * Host name that we advertise the CLI client to connect to.
+     * Host name that we advertise protocol clients to connect to.
      * This is primarily for those who have reverse proxies in place such that the HTTP host name
-     * and the CLI TCP/IP connection host names are different.
-     *
+     * and the TCP/IP connection host names are different.
+     * (Note: despite the name, this is used for any client, not only deprecated Remoting-based CLI.)
      * TODO: think about how to expose this (including whether this needs to be exposed at all.)
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -525,11 +528,11 @@ public final class TcpSlaveAgentListener extends Thread {
     public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName()+".hostName");
 
     /**
-     * Port number that we advertise the CLI client to connect to.
+     * Port number that we advertise protocol clients to connect to.
      * This is primarily for the case where the port that Jenkins runs is different from the port
      * that external world should connect to, because of the presence of NAT / port-forwarding / TCP reverse
      * proxy.
-     *
+     * (Note: despite the name, this is used for any client, not only deprecated Remoting-based CLI.)
      * If left to null, fall back to {@link #getPort()}
      *
      * @since 1.611

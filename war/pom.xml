@@ -27,8 +27,8 @@ THE SOFTWARE.
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.85-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.36</version>
+      <version>1.39</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -61,12 +61,8 @@ THE SOFTWARE.
           jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
         -->
         <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>jsp-api</artifactId>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>javax.servlet.jsp-api</artifactId>
         </exclusion>
         <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
         <exclusion>
@@ -93,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>4.1</version>
+      <version>4.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -114,7 +110,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.9.1</version>
+      <version>1.9.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -134,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.0</version>
+      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -203,6 +199,8 @@ THE SOFTWARE.
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
+              <Remoting-Embedded-Version>${remoting.version}</Remoting-Embedded-Version>
+              <Remoting-Minimum-Supported-Version>${remoting.minimum.supported.version}</Remoting-Minimum-Supported-Version>
             </manifestEntries>
           </archive>
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
@@ -402,6 +400,18 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
                   <version>2.16.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>command-launcher</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jdk-tool</artifactId>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>

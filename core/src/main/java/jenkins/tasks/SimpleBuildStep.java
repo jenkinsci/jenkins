@@ -52,7 +52,7 @@ import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A build step (like a {@link Builder} or {@link Publisher}) which may be called at an arbitrary time during a build (or multiple times), run, and be done.
@@ -103,7 +103,7 @@ public interface SimpleBuildStep extends BuildStep {
     }
 
     @SuppressWarnings("rawtypes")
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     @Extension
     public static final class LastBuildActionFactory extends TransientActionFactory<Job> {
 

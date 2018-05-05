@@ -436,11 +436,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
+                FilePath rootPath = n.getRootPath();
+                if (rootPath == null) {
+                    throw new AbortException(n.getDisplayName() + " seems to be offline");
+                }
                 // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+                return Lease.createDummyLease(rootPath.child(getEnvironment(listener).expand(customWorkspace)));
             }
             // TODO: this cast is indicative of abstraction problem
-            return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
+            FilePath ws = n.getWorkspaceFor((TopLevelItem) getProject());
+            if (ws == null) {
+                throw new AbortException(n.getDisplayName() + " seems to be offline");
+            }
+            return wsl.allocate(ws, getBuild());
         }
 
         public Result run(@Nonnull BuildListener listener) throws Exception {

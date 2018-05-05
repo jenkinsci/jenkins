@@ -202,7 +202,7 @@ public class JobTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
-        wc.login("joe");  // Has Item.READ permission
+        wc.withBasicCredentials("joe");  // Has Item.READ permission
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
         wc.goTo("jobCaseInsensitive/TESTJOB/");
@@ -216,11 +216,14 @@ public class JobTest {
         Item.EXTENDED_READ.setEnabled(true);
         try {
             wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
-            wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("alice", true));  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
-            wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
+
+            wc.withBasicApiToken(User.getById("bob", true));  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
             tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
-            wc.login("charlie");  // Has only EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("charlie", true));  // Has only EXTENDED_READ permission
             tryConfigDotXml(wc, 403, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
@@ -412,27 +415,27 @@ public class JobTest {
     @Issue("JENKINS-30502")
     @Test
     public void testRenameTrimsLeadingSpace() throws Exception {
-        tryRename("myJob1", " foo", "foo", false);
+        tryRename("myJob1", " foo", "foo");
     }
 
     @Issue("JENKINS-30502")
     @Test
     public void testRenameTrimsTrailingSpace() throws Exception {
-        tryRename("myJob2", "foo ", "foo", false);
+        tryRename("myJob2", "foo ", "foo");
     }
 
     @Issue("JENKINS-30502")
     @Test
     public void testAllowTrimmingByUser() throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename("myJob3 ", "myJob3", "myJob3", false);
+        tryRename("myJob3 ", "myJob3", "myJob3");
     }
 
     @Issue("JENKINS-30502")
     @Test
     public void testRenameWithLeadingSpaceTrimsLeadingSpace() throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename(" myJob4", " foo", "foo", false);
+        tryRename(" myJob4", " foo", "foo");
     }
 
     @Issue("JENKINS-30502")
@@ -440,7 +443,7 @@ public class JobTest {
     public void testRenameWithLeadingSpaceTrimsTrailingSpace()
             throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename(" myJob5", "foo ", "foo", false);
+        tryRename(" myJob5", "foo ", "foo");
     }
 
     @Issue("JENKINS-30502")
@@ -448,7 +451,7 @@ public class JobTest {
     public void testRenameWithTrailingSpaceTrimsTrailingSpace()
             throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename("myJob6 ", "foo ", "foo", false);
+        tryRename("myJob6 ", "foo ", "foo");
     }
 
     @Issue("JENKINS-30502")
@@ -456,14 +459,7 @@ public class JobTest {
     public void testRenameWithTrailingSpaceTrimsLeadingSpace()
             throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename("myJob7 ", " foo", "foo", false);
-    }
-
-    @Issue("JENKINS-30502")
-    @Test
-    public void testDoNotAutoTrimExistingUntrimmedNames() throws Exception {
-        assumeFalse("Unix-only test.", Functions.isWindows());
-        tryRename("myJob8 ", "myJob8 ", null, true);
+        tryRename("myJob7 ", " foo", "foo");
     }
 
     @Issue("JENKINS-35160")
@@ -489,24 +485,17 @@ public class JobTest {
     }
 
     private void tryRename(String initialName, String submittedName,
-            String correctResult, boolean shouldSkipConfirm) throws Exception {
+            String correctResult) throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         FreeStyleProject job = j.createFreeStyleProject(initialName);
         WebClient wc = j.createWebClient();
-        HtmlForm form = wc.getPage(job, "configure").getFormByName("config");
-        form.getInputByName("name").setValueAttribute(submittedName);
+        HtmlForm form = wc.getPage(job, "confirm-rename").getFormByName("config");
+        form.getInputByName("newName").setValueAttribute(submittedName);
         HtmlPage resultPage = j.submit(form);
 
-        String urlTemplate;
-        if (shouldSkipConfirm) {
-            urlTemplate = "/job/{0}/";
-        } else {
-            urlTemplate = "/job/{0}/rename?newName={1}";
-        }
-
         String urlString = MessageFormat.format(
-                urlTemplate, initialName, correctResult).replace(" ", "%20");
+                "/job/{0}/", correctResult).replace(" ", "%20");
 
         assertThat(resultPage.getUrl().toString(), endsWith(urlString));
     }

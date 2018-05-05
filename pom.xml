@@ -28,12 +28,13 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.39</version>
+    <version>1.43</version>
+    <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
-  <artifactId>pom</artifactId>
-  <version>2.85-SNAPSHOT</version>
+  <artifactId>jenkins-parent</artifactId>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -58,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>HEAD</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <distributionManagement>
@@ -74,6 +75,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
+    <revision>2.120</revision>
+    <changelist>-SNAPSHOT</changelist>
+
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -92,9 +96,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
-    <findbugs.failOnError>true</findbugs.failOnError>
-    <access-modifier.version>1.11</access-modifier.version>
+    <access-modifier.version>1.14</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
@@ -104,6 +106,15 @@ THE SOFTWARE.
 
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
+    <!-- Bundled Remoting version -->
+    <remoting.version>3.20</remoting.version>
+    <!-- Minimum Remoting version, which is tested for API compatibility -->
+    <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
+
+    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
+    <findbugs.effort>Max</findbugs.effort>
+    <findbugs.threshold>High</findbugs.threshold>
+    <findbugs.excludeFilterFile>../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -129,19 +140,13 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.8.4</version>
+        <version>1.9.2</version>
       </dependency>
 
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
       </dependency>
 
       <dependency>
@@ -153,12 +158,17 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.6.2</version>
+        <version>1.6.6</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.6.2</version>
+        <version>1.6.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.objenesis</groupId>
+        <artifactId>objenesis</artifactId>
+        <version>2.6</version>
       </dependency>
 
       <dependency>
@@ -170,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.13</version>
+        <version>${remoting.version}</version>
       </dependency>
 
       <dependency>
@@ -233,6 +243,30 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
+      <dependency>
+        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
+        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
+        <groupId>javax.servlet</groupId>
+        <!-- the old artifactID for the servlet API -->
+        <artifactId>servlet-api</artifactId>
+        <version>[0]</version>
+        <!-- 
+              "[0]" is a range that must be exaclty 0
+              this is different to "0" which is hint to use version 0.
+              therefore unless anyone else uses ranges (they should not) this version will always win
+              We have deployed a version 0 to jenkins repo which has an empty jar
+              This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
+              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
+        -->
+        <scope>provided</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--  TODO also add commons-logging and log4j -->
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -248,6 +282,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
+      <groupId>javax.servlet</groupId>
+      <!-- the old artifactID for the servlet API -->
+      <artifactId>servlet-api</artifactId>
     </dependency>
   </dependencies>
 
@@ -308,39 +348,6 @@ THE SOFTWARE.
               </configuration>
             </execution>
           </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>1.5-jenkins-3</version>
-          <dependencies>
-            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
-              <groupId>org.apache.ant</groupId>
-              <artifactId>ant-junit</artifactId>
-              <version>1.7.0</version>
-            </dependency>
-            <dependency>
-              <groupId>net.sourceforge.cobertura</groupId>
-              <artifactId>cobertura</artifactId>
-              <version>1.9</version>
-            </dependency>
-            <dependency>
-              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
-              <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.4</version>
-            </dependency>
-            <dependency>
-              <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-2.0</artifactId>
-              <version>1.5-jenkins-3</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <!-- 2.4 not yet supported by plugin but 2.0 works
-                 here so long as we provide explicit version -->
-            <providerSelection>2.0</providerSelection>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -487,32 +494,6 @@ THE SOFTWARE.
           <version>2.1</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>cobertura-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>${findbugs-maven-plugin.version}</version>
-          <configuration>
-            <effort>Max</effort>
-            <threshold>High</threshold>
-            <!--Excludes file is located on the top level-->
-            <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
-            <xmlOutput>true</xmlOutput>
-            <findbugsXmlOutput>false</findbugsXmlOutput>
-          </configuration>
-          <executions>
-            <execution>
-              <id>findbugs</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <phase>verify</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
         </plugin>
@@ -528,19 +509,8 @@ THE SOFTWARE.
           <version>0.6.2</version>
         </plugin>
         <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>org.kohsuke</groupId>
-              <artifactId>doxia-module-markdown</artifactId>
-              <version>1.0</version>
-            </dependency>
-          </dependencies>
         </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -554,20 +524,6 @@ THE SOFTWARE.
         	<configuration>
         		<lifecycleMappingMetadata>
         			<pluginExecutions>
-        				<pluginExecution>
-        					<pluginExecutionFilter>
-        						<groupId>org.codehaus.gmaven</groupId>
-        						<artifactId>gmaven-plugin</artifactId>
-        						<versionRange>1.5-jenkins-1</versionRange>
-        						<goals>
-        							<goal>execute</goal>
-        							<goal>testCompile</goal>
-        						</goals>
-        					</pluginExecutionFilter>
-        					<action>
-        						<ignore />
-        					</action>
-        				</pluginExecution>
         				<pluginExecution>
         					<pluginExecutionFilter>
         						<groupId>org.apache.maven.plugins</groupId>
@@ -602,7 +558,7 @@ THE SOFTWARE.
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy javadoc:aggregate</goals>
@@ -692,34 +648,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
       </plugin>
-
-      <!--<plugin>
-        <groupId>org.jvnet.fix1600</groupId>
-        <artifactId>fix1600</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>fix</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>-->
-      <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-
     </plugins>
 
     <extensions>
@@ -881,6 +809,17 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>specific-test</id>
+      <activation>
+        <property>
+          <name>test</name>
+        </property>
+      </activation>
+      <properties>
+        <failIfNoTests>false</failIfNoTests>
+      </properties>
     </profile>
   </profiles>
 </project>

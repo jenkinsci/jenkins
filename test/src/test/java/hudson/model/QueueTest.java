@@ -46,6 +46,7 @@ import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
@@ -69,6 +70,7 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTrigger;
@@ -117,10 +119,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -128,6 +132,9 @@ import org.junit.Ignore;
 public class QueueTest {
 
     @Rule public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(Queue.class, Level.FINE);
 
     /**
      * Checks the persistence of queue.
@@ -519,27 +526,36 @@ public class QueueTest {
 
     @Test public void taskEquality() throws Exception {
         AtomicInteger cnt = new AtomicInteger();
-        ScheduleResult result = r.jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        TestTask originalTask = new TestTask(cnt, true);
+        ScheduleResult result = r.jenkins.getQueue().schedule2(originalTask, 0);
         assertTrue(result.isCreated());
         WaitingItem item = result.getCreateItem();
         assertFalse(r.jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        originalTask.isBlocked = false;
         item.getFuture().get();
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
     static class TestTask implements Queue.Task {
         private final AtomicInteger cnt;
+        boolean isBlocked;
+
         TestTask(AtomicInteger cnt) {
-            this.cnt = cnt;
+            this(cnt, false);
         }
+
+        TestTask(AtomicInteger cnt, boolean isBlocked) {
+            this.cnt = cnt;
+            this.isBlocked = isBlocked;
+        }
+
         @Override public boolean equals(Object o) {
             return o instanceof TestTask && cnt == ((TestTask) o).cnt;
         }
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return false;}
-        @Override public String getWhyBlocked() {return null;}
+        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
         @Override public void checkAbortPermission() {}
@@ -771,7 +787,7 @@ public class QueueTest {
         final FreeStyleProject projectB = r.createFreeStyleProject(prefix+"B");
         projectB.getBuildersList().add(new SleepBuilder(10000));     
         projectB.setBlockBuildWhenUpstreamBuilding(true);
-        
+
         final FreeStyleProject projectC = r.createFreeStyleProject(prefix+"C");
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
@@ -928,8 +944,12 @@ public class QueueTest {
         project.getBuildersList().add(new SleepBuilder(10));
         project.scheduleBuild2(0);
 
+        User alice = User.getById("alice", true);
+        User bob = User.getById("bob", true);
+        User james = User.getById("james", true);
+
         JenkinsRule.WebClient webClient = r.createWebClient();
-        webClient.login("bob", "bob");
+        webClient.withBasicApiToken(bob);
         XmlPage p = webClient.goToXml("queue/api/xml");
 
         //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
@@ -944,13 +964,15 @@ public class QueueTest {
                 }
             }
         }
+
         webClient = r.createWebClient();
-        webClient.login("alice");
+        webClient.withBasicApiToken(alice);
         XmlPage p2 = webClient.goToXml("queue/api/xml");
         //alice does not have permission on the project and will not see it in the queue.
         assertTrue(p2.getByXPath("/queue/node()").isEmpty());
+
         webClient = r.createWebClient();
-        webClient.login("james");
+        webClient.withBasicApiToken(james);
         XmlPage p3 = webClient.goToXml("queue/api/xml");
 
         //james has DISCOVER permission on the project and will only be able to see the task name.
@@ -960,9 +982,9 @@ public class QueueTest {
 
         // Also check individual item exports.
         String url = project.getQueueItem().getUrl() + "api/xml";
-        r.createWebClient().login("bob").goToXml(url); // OK, 200
-        r.createWebClient().login("james").assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
-        r.createWebClient().login("alice").assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
+        r.createWebClient().withBasicApiToken(bob).goToXml(url); // OK, 200
+        r.createWebClient().withBasicApiToken(james).assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
+        r.createWebClient().withBasicApiToken(alice).assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
     }
 
     //we force the project not to be executed so that it stays in the queue
@@ -976,6 +998,43 @@ public class QueueTest {
                     return "blocked by canTake";
                 }
             };
+        }
+    }
+
+    @Test
+    public void testGetCauseOfBlockageForNonConcurrentFreestyle() throws Exception {
+        Queue queue = r.getInstance().getQueue();
+        FreeStyleProject t1 = r.createFreeStyleProject("project");
+        t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
+        t1.setConcurrentBuild(false);
+
+        t1.scheduleBuild2(0).waitForStart();
+        t1.scheduleBuild2(0);
+
+        queue.maintain();
+
+        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
+        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
+        CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
+
+        assertEquals(expected.getShortDescription(), actual.getShortDescription());
+    }
+
+    @Test @LocalData
+    public void load_queue_xml() {
+        Queue q = r.getInstance().getQueue();
+        Queue.Item[] items = q.getItems();
+        assertEquals(Arrays.asList(items).toString(), 11, items.length);
+        assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+    }
+
+    @TestExtension("load_queue_xml")
+    public static final class QueueSaveSniffer extends SaveableListener {
+        private static int count = 0;
+        @Override public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof Queue) {
+                count++;
+            }
         }
     }
 }

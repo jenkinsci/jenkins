@@ -66,7 +66,7 @@ public final class DumbSlave extends Slave {
     }
 
     @Extension @Symbol({"dumb",
-            "slave"/*because this is in effect the canonical slave type*/})
+            "slave", "agent" /*because this is in effect the canonical slave type*/})
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
