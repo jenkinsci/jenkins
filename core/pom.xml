@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.120</version>
+    <version>2.121-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -883,8 +883,4 @@ THE SOFTWARE.
       </properties>
     </profile>
   </profiles>
-
-  <scm>
-    <tag>jenkins-2.120-SNAPSHOT</tag>
-  </scm>
 </project>
