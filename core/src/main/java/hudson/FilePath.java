@@ -598,7 +598,7 @@ public final class FilePath implements Serializable {
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
-                if (!f.toPath().normalize().startsWith(dir.toPath())) {
+                if (!f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
                     throw new IOException(
                         "Zip " + zipFile.getPath() + " contains illegal file name that breaks out of the target directory: " + e.getName());
                 }
