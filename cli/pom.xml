@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>2.120</version>
   </parent>
 
   <artifactId>cli</artifactId>
@@ -129,4 +129,8 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <tag>jenkins-2.120-SNAPSHOT</tag>
+  </scm>
 </project>
