@@ -100,13 +100,13 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
     @Extension(ordinal=305) @Symbol("myView")
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public MyViewsTabBar getMyViewsTabBar() {
-            return Jenkins.getInstance().getMyViewsTabBar();
+            return Jenkins.get().getMyViewsTabBar();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
 
             if (json.has("myViewsTabBar")) {
                 j.setMyViewsTabBar(req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar")));

@@ -21,7 +21,7 @@ public class GlobalCloudConfiguration  extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
-            Jenkins.getInstance().clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
+            Jenkins.get().clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
             return true;
         } catch (IOException e) {
             throw new FormException(e,"clouds");

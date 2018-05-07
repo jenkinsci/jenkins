@@ -46,6 +46,6 @@ public class CSRFAdministrativeMonitor extends AdministrativeMonitor {
     
     @Override
     public boolean isActivated() {
-        return Jenkins.getInstance().getCrumbIssuer() == null;
+        return Jenkins.get().getCrumbIssuer() == null;
     }
 }

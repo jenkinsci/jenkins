@@ -1133,7 +1133,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static int addArtifacts(@Nonnull VirtualFile dir,
             @Nonnull String path, @Nonnull String pathHref, 
-            @Nonnull SerializableArtifactList r, @Nonnull SerializableArtifact parent, int upTo) throws IOException {
+            @Nonnull SerializableArtifactList r, @CheckForNull SerializableArtifact parent, int upTo) throws IOException {
         VirtualFile[] kids = dir.list();
         Arrays.sort(kids);
 
