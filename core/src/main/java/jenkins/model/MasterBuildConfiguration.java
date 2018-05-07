@@ -39,16 +39,16 @@ import java.io.IOException;
 @Extension(ordinal=500) @Symbol("masterBuild")
 public class MasterBuildConfiguration extends GlobalConfiguration {
     public int getNumExecutors() {
-        return Jenkins.getInstance().getNumExecutors();
+        return Jenkins.get().getNumExecutors();
     }
 
     public String getLabelString() {
-        return Jenkins.getInstance().getLabelString();
+        return Jenkins.get().getLabelString();
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         try {
             // for compatibility reasons, this value is stored in Jenkins
             String num = json.getString("numExecutors");

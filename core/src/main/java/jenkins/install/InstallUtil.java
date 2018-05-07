@@ -101,37 +101,30 @@ public class InstallUtil {
     /**
      * Returns the next state during a transition from the current install state
      */
-    /*package*/ static InstallState getNextInstallState(final InstallState current) {
+    /*package*/ static InstallState getNextInstallState(InstallState current) {
         List<Function<Provider<InstallState>,InstallState>> installStateFilterChain = new ArrayList<>();
-        for (final InstallStateFilter setupExtension : InstallStateFilter.all()) {
-            installStateFilterChain.add(new Function<Provider<InstallState>, InstallState>() {
-                @Override
-                public InstallState apply(Provider<InstallState> next) {
-                    return setupExtension.getNextInstallState(current, next);
-                }
-            });
+        for (InstallStateFilter setupExtension : InstallStateFilter.all()) {
+            installStateFilterChain.add(next -> setupExtension.getNextInstallState(current, next));
         }
         // Terminal condition: getNextState() on the current install state
-        installStateFilterChain.add(new Function<Provider<InstallState>, InstallState>() {
-            @Override
-            public InstallState apply(Provider<InstallState> input) {
-                // Initially, install state is unknown and 
-                // needs to be determined
-                if (current == null || InstallState.UNKNOWN.equals(current)) {
-                    return getDefaultInstallState();
-                }
-                final Map<InstallState, InstallState> states = new HashMap<InstallState, InstallState>();
-                {
-                    states.put(InstallState.CREATE_ADMIN_USER, InstallState.INITIAL_SETUP_COMPLETED);
-                    states.put(InstallState.INITIAL_PLUGINS_INSTALLING, InstallState.CREATE_ADMIN_USER);
-                    states.put(InstallState.INITIAL_SECURITY_SETUP, InstallState.NEW);
-                    states.put(InstallState.RESTART, InstallState.RUNNING);
-                    states.put(InstallState.UPGRADE, InstallState.INITIAL_SETUP_COMPLETED);
-                    states.put(InstallState.DOWNGRADE, InstallState.INITIAL_SETUP_COMPLETED);
-                    states.put(InstallState.INITIAL_SETUP_COMPLETED, InstallState.RUNNING);
-                }
-                return states.get(current);
+        installStateFilterChain.add(input -> {
+            // Initially, install state is unknown and 
+            // needs to be determined
+            if (current == null || InstallState.UNKNOWN.equals(current)) {
+                return getDefaultInstallState();
             }
+            Map<InstallState, InstallState> states = new HashMap<>();
+            {
+                states.put(InstallState.CONFIGURE_INSTANCE, InstallState.INITIAL_SETUP_COMPLETED);
+                states.put(InstallState.CREATE_ADMIN_USER, InstallState.CONFIGURE_INSTANCE);
+                states.put(InstallState.INITIAL_PLUGINS_INSTALLING, InstallState.CREATE_ADMIN_USER);
+                states.put(InstallState.INITIAL_SECURITY_SETUP, InstallState.NEW);
+                states.put(InstallState.RESTART, InstallState.RUNNING);
+                states.put(InstallState.UPGRADE, InstallState.INITIAL_SETUP_COMPLETED);
+                states.put(InstallState.DOWNGRADE, InstallState.INITIAL_SETUP_COMPLETED);
+                states.put(InstallState.INITIAL_SETUP_COMPLETED, InstallState.RUNNING);
+            }
+            return states.get(current);
         });
         
         ProviderChain<InstallState> chain = new ProviderChain<>(installStateFilterChain.iterator());

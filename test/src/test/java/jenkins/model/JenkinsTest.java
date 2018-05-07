@@ -275,22 +275,6 @@ public class JenkinsTest {
         }
     }
     
-    @Test @Issue("JENKINS-12251")
-    public void testItemFullNameExpansion() throws Exception {
-        HtmlForm f = j.createWebClient().goTo("configure").getFormByName("config");
-        f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
-        f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        j.submit(f);
-
-        // build a dummy project
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-
-        // make sure these changes are effective
-        assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
-        assertTrue(b.getRootDir().toString().contains("test12251_builds"));
-    }
 
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.

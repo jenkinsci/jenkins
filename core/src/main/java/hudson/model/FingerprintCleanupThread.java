@@ -28,9 +28,10 @@ import hudson.ExtensionList;
 import hudson.Functions;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -45,7 +46,11 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @Extension @Symbol("fingerprintCleanup")
-public final class FingerprintCleanupThread extends AsyncPeriodicWork {
+@Restricted(NoExternalUse.class)
+public class FingerprintCleanupThread extends AsyncPeriodicWork {
+
+    static final String FINGERPRINTS_DIR_NAME = "fingerprints";
+    private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -66,13 +71,13 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     public void execute(TaskListener listener) {
         int numFiles = 0;
 
-        File root = new File(Jenkins.getInstance().getRootDir(),"fingerprints");
-        File[] files1 = root.listFiles(LENGTH2DIR_FILTER);
+        File root = new File(getRootDir(), FINGERPRINTS_DIR_NAME);
+        File[] files1 = root.listFiles(f -> f.isDirectory() && f.getName().length()==2);
         if(files1!=null) {
             for (File file1 : files1) {
-                File[] files2 = file1.listFiles(LENGTH2DIR_FILTER);
+                File[] files2 = file1.listFiles(f -> f.isDirectory() && f.getName().length()==2);
                 for(File file2 : files2) {
-                    File[] files3 = file2.listFiles(FINGERPRINTFILE_FILTER);
+                    File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
                     for(File file3 : files3) {
                         if(check(file3, listener))
                             numFiles++;
@@ -101,7 +106,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
      */
     private boolean check(File fingerprintFile, TaskListener listener) {
         try {
-            Fingerprint fp = Fingerprint.load(fingerprintFile);
+            Fingerprint fp = loadFingerprint(fingerprintFile);
             if (fp == null || !fp.isAlive()) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
@@ -109,8 +114,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
             } else {
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
-                listener.getLogger().println("possibly trimming " + fingerprintFile);
-                fp = Jenkins.getInstance()._getFingerprint(fp.getHashString());
+                fp = getFingerprint(fp);
                 return fp.trim();
             }
         } catch (IOException e) {
@@ -119,17 +123,16 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
         }
     }
 
-    private static final FileFilter LENGTH2DIR_FILTER = new FileFilter() {
-        public boolean accept(File f) {
-            return f.isDirectory() && f.getName().length()==2;
-        }
-    };
+    protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+        return Fingerprint.load(fingerprintFile);
+    }
 
-    private static final FileFilter FINGERPRINTFILE_FILTER = new FileFilter() {
-        private final Pattern PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return Jenkins.get()._getFingerprint(fp.getHashString());
+    }
 
-        public boolean accept(File f) {
-            return f.isFile() && PATTERN.matcher(f.getName()).matches();
-        }
-    };
+    protected File getRootDir() {
+        return Jenkins.get().getRootDir();
+    }
+
 }
