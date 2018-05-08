@@ -47,10 +47,13 @@ function safeRedirector(url) {
     window.setTimeout(function() {
         const statusChecker = arguments.callee;
         Fetch.get(url, function(error, status) {
-            if(error || status !== 200) {
+            if(status === 503) {
                 window.setTimeout(statusChecker, timeout)
             } else {
                 window.location.replace(url);
+            }
+            if(error) {
+                console.error(error);
             }
         })
     }, timeout);

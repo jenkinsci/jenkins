@@ -42,7 +42,7 @@ THE SOFTWARE.
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
         </head>
         <body>
-            <div class="simple-main">
+            <div class="simple-page">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <div class="logo"></div>

@@ -56,30 +56,7 @@ html {
   border: solid 1px #2171ce; /*var(--main-bg-color-focus);*/
 }
 
-.simple-page .checkbox label {
-  background: #ffffff;
-  border: 1px solid rgba(73, 73, 73, 0.5);
-  border-radius: 3px;
-}
-
-.simple-page .checkbox label:after {
-  background: transparent;
-  border: 2px solid #ffffff;
-  border-top: none;
-  border-right: none;
-  transform: rotate(-45deg);
-}
-
-.simple-page .checkbox input[type=checkbox]:checked + label:after {
-  color: #ffffff;
-}
-
-.simple-page .checkbox input[type=checkbox]:checked + label {
-  background-color: #4A90E2; /*var(--main-bg-color);*/
-  border-color: #2171ce; /*var(--main-bg-color-focus);*/
-}
-
-.simple-page .danger {
+ .simple-page .danger {
   border: 1px solid #C4000A; /*var(--danger-color);*/
   box-shadow: 0 0 1px #C4000A; /*var(--danger-color);*/
 }

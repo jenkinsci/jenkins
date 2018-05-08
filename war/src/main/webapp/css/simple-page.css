@@ -59,7 +59,6 @@ html {
 }
 
 .simple-page input {
-  width: 100%;
   padding: 6px 8px;
   display: inline-block;
   text-align: left;
@@ -72,6 +71,7 @@ html {
 .simple-page input[type=text],
 .simple-page input[type=password],
 .simple-page input[type=submit] {
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -89,43 +89,6 @@ html {
   cursor: pointer;
 }
 
-/**
- * Checkbox
- */
-.simple-page .checkbox {
-  width: 20px;
-  margin: 0 13px;
-  position: relative;
-}
-
-.simple-page .checkbox label {
-  cursor: pointer;
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  top: 0;
-  left: 0;
-}
-
-/**
- * Display the tick inside the checkbox
- */
-.simple-page .checkbox label:after {
-  opacity: 0;
-  content: '';
-  position: absolute;
-  width: 9px;
-  height: 5px;
-  top: 4px;
-  left: 5px;
-}
-
-/**
- * Create the hover event of the tick
- */
-.simple-page .checkbox label:hover::after {
-  opacity: 0.3;
-}
 
 .simple-page .alert {
   text-align: center;
@@ -133,16 +96,17 @@ html {
   line-height: 18px;
 }
 
-/**
- * Create the checkbox state for the tick
- */
-.simple-page .checkbox input[type=checkbox]:checked + label:after {
-  opacity: 1;
-}
-
 .simple-page .checkboxWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+.simple-page .combinedElement{
+  display: flex;
+  align-items: center;
+}
+#remember_me{
+  width: unset;
+  margin-right: 5px;
 }
