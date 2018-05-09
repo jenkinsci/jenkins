@@ -81,7 +81,6 @@ THE SOFTWARE.
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <build.type>private</build.type>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -306,50 +305,6 @@ THE SOFTWARE.
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.7</version>
-          <executions>
-            <execution>
-              <id>timestamp-property</id>
-              <goals>
-                <goal>timestamp-property</goal>
-              </goals>
-              <configuration>
-                <name>now</name>
-                <pattern>MM/dd/yyyy HH:mm z</pattern>
-                <locale>en_US</locale>
-              </configuration>
-            </execution>
-            <execution>
-            <id>user.name</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>user.name.escaped</name>
-              <value>${user.name}</value>
-              <regex>([$\\])</regex>
-              <replacement>\\$1</replacement>
-              <failIfNoMatch>false</failIfNoMatch>
-            </configuration>
-          </execution>
-          <execution>
-              <id>version-property</id>
-              <goals>
-                <goal>regex-property</goal>
-              </goals>
-              <configuration>
-                <name>build.version</name>
-                <value>${project.version}</value>
-                <regex>-SNAPSHOT</regex>
-                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name.escaped})</replacement>
-                <failIfNoMatch>false</failIfNoMatch>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.7</version>
@@ -551,10 +506,6 @@ THE SOFTWARE.
 
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
@@ -660,30 +611,6 @@ THE SOFTWARE.
   </build>
 
   <profiles>
-    <profile>
-      <id>rc</id>
-      <properties>
-        <build.type>rc</build.type>
-      </properties>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>build-helper-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>version-property</id>
-                  <configuration>
-                    <replacement>-RC (${now})</replacement>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
     <profile>
       <id>metrics</id>
       <build>
