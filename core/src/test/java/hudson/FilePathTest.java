@@ -629,7 +629,7 @@ public class FilePathTest {
             when(con.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
-            assertFalse(d.installIfNecessaryFrom(url, null, ""));
+            assertFalse(d.installIfNecessaryFrom(url, null, "message if failed"));
 
             verify(con).setIfModifiedSince(123000);
     }
@@ -648,7 +648,7 @@ public class FilePathTest {
             when(con.getInputStream())
               .thenReturn(someZippedContent());
 
-            assertTrue(d.installIfNecessaryFrom(url, null, ""));
+            assertTrue(d.installIfNecessaryFrom(url, null, "message if failed"));
     }
 
     @Issue("JENKINS-26196")
