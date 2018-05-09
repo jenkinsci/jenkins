@@ -7,6 +7,8 @@ import jenkins.tools.ToolConfigurationCategory;
 
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 //as close as it gets to the global Maven Project configuration
 @Extension(ordinal = 50) @Symbol("maven")
 public class GlobalMavenConfig extends GlobalConfiguration {
@@ -18,7 +20,7 @@ public class GlobalMavenConfig extends GlobalConfiguration {
     }
 
     @Override
-    public ToolConfigurationCategory getCategory() {
+    public @Nonnull ToolConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
@@ -40,8 +42,8 @@ public class GlobalMavenConfig extends GlobalConfiguration {
         return settingsProvider != null ? settingsProvider : new DefaultSettingsProvider();
     }
 
-    public static GlobalMavenConfig get() {
-        return GlobalConfiguration.all().get(GlobalMavenConfig.class);
+    public static @Nonnull GlobalMavenConfig get() {
+        return GlobalConfiguration.all().getInstance(GlobalMavenConfig.class);
     }
 
 }

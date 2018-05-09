@@ -75,7 +75,7 @@ THE SOFTWARE.
               <j:mute>${customizedFields.add(name)}</j:mute>
             </j:if>
           </td><td width="1">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${name}')"
+            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
                 tooltip="${%tooltip}"/>
           </td>
         </tr>

@@ -139,6 +139,7 @@ import static hudson.Util.isSymlink;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
+import org.kohsuke.accmod.restrictions.Beta;
         
 /**
  * {@link File} like object with remoting support.
@@ -597,6 +598,10 @@ public final class FilePath implements Serializable {
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
+                if (!f.toPath().normalize().startsWith(dir.toPath())) {
+                    throw new IOException(
+                        "Zip " + zipFile.getPath() + " contains illegal file name that breaks out of the target directory: " + e.getName());
+                }
                 if (e.isDirectory()) {
                     mkdirs(f);
                 } else {
@@ -900,6 +905,28 @@ public final class FilePath implements Serializable {
     public void copyFrom(URL url) throws IOException, InterruptedException {
         try (InputStream in = url.openStream()) {
             copyFrom(in);
+        }
+    }
+
+    /**
+     * Copies the content of a URL to a remote file.
+     * Unlike {@link #copyFrom} this will not transfer content over a Remoting channel.
+     * @since 2.119
+     */
+    @Restricted(Beta.class)
+    public void copyFromRemotely(URL url) throws IOException, InterruptedException {
+        act(new CopyFromRemotely(url));
+    }
+    private final class CopyFromRemotely extends MasterToSlaveFileCallable<Void> {
+        private static final long serialVersionUID = 1;
+        private final URL url;
+        CopyFromRemotely(URL url) {
+            this.url = url;
+        }
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            copyFrom(url);
+            return null;
         }
     }
 
@@ -2260,7 +2287,8 @@ public final class FilePath implements Serializable {
                             if (f.isFile()) {
                                 File target = new File(dest, relativePath);
                                 mkdirsE(target.getParentFile());
-                                Util.copyFile(f, writing(target));
+                                Files.copy(fileToPath(f), fileToPath(writing(target)),
+                                        StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                                 count.incrementAndGet();
                             }
                         }

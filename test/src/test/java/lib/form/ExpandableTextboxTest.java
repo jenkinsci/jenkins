@@ -24,39 +24,130 @@
 package lib.form;
 
 import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.UnprotectedRootAction;
+import hudson.util.HttpResponses;
+import lib.layout.ConfirmationLinkTest;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebMethod;
 import org.w3c.dom.NodeList;
+
+import javax.annotation.CheckForNull;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExpandableTextboxTest extends HudsonTestCase {
+public class ExpandableTextboxTest {
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    
     @Issue("JENKINS-2816")
+    @Test
     public void testMultiline() throws Exception {
         // because attribute values are normalized, it's not very easy to encode multi-line string as @value. So let's use the system message here.
-        jenkins.setSystemMessage("foo\nbar\nzot");
+        j.jenkins.setSystemMessage("foo\nbar\nzot");
         HtmlPage page = evaluateAsHtml("<l:layout><l:main-panel><table><j:set var='instance' value='${it}'/><f:expandableTextbox field='systemMessage' /></table></l:main-panel></l:layout>");
         // System.out.println(page.getWebResponse().getContentAsString());
 
         NodeList textareas = page.getElementsByTagName("textarea");
         assertEquals(1, textareas.getLength());
-        assertEquals(jenkins.getSystemMessage(),textareas.item(0).getTextContent());
+        assertEquals(j.jenkins.getSystemMessage(),textareas.item(0).getTextContent());
     }
 
     /**
      * Evaluates the literal Jelly script passed as a parameter as HTML and returns the page.
      */
     protected HtmlPage evaluateAsHtml(String jellyScript) throws Exception {
-        HudsonTestCase.WebClient wc = new WebClient();
-        
+        JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;
+    }
+    
+    @Test
+    public void noInjectionArePossible() throws Exception {
+        TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
+        assertNotNull(testParams);
+    
+        checkRegularCase(testParams);
+        checkInjectionInName(testParams);
+    }
+    
+    private void checkRegularCase(TestRootAction testParams) throws Exception {
+        testParams.paramName = "testName";
+        
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage p = wc.goTo("test");
+        
+        HtmlElementUtil.click(getExpandButton(p));
+        assertNotEquals("hacked", p.getTitleText());
+    }
+    
+    private void checkInjectionInName(TestRootAction testParams) throws Exception {
+        testParams.paramName = "testName',document.title='hacked'+'";
+        
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage p = wc.goTo("test");
+        
+        HtmlElementUtil.click(getExpandButton(p));
+        assertNotEquals("hacked", p.getTitleText());
+    }
+    
+    private HtmlButtonInput getExpandButton(HtmlPage page){
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
+        // the first one is the text input
+        assertEquals(2, buttons.size());
+        return (HtmlButtonInput) buttons.get(1);
+    }
+    
+    @TestExtension("noInjectionArePossible")
+    public static final class TestRootAction implements UnprotectedRootAction {
+        
+        public String paramName;
+        
+        @Override
+        public @CheckForNull String getIconFileName() {
+            return null;
+        }
+        
+        @Override
+        public @CheckForNull String getDisplayName() {
+            return null;
+        }
+        
+        @Override
+        public String getUrlName() {
+            return "test";
+        }
+        
+        @WebMethod(name = "submit")
+        public HttpResponse doSubmit(StaplerRequest request) {
+            return HttpResponses.plainText("method:" + request.getMethod());
+        }
     }
 }

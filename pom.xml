@@ -28,13 +28,13 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.40</version>
+    <version>1.44</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.114-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>HEAD</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <distributionManagement>
@@ -75,6 +75,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
+    <revision>2.121</revision>
+    <changelist>-SNAPSHOT</changelist>
+
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -93,7 +96,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <access-modifier.version>1.13</access-modifier.version>
+    <access-modifier.version>1.14</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
@@ -103,8 +106,9 @@ THE SOFTWARE.
 
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
+    <!-- Bundled Remoting version -->
+    <remoting.version>3.20</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.version>3.19</remoting.version>
     <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
@@ -143,12 +147,6 @@ THE SOFTWARE.
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
       </dependency>
 
       <dependency>
@@ -511,19 +509,8 @@ THE SOFTWARE.
           <version>0.6.2</version>
         </plugin>
         <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>org.kohsuke</groupId>
-              <artifactId>doxia-module-markdown</artifactId>
-              <version>1.0</version>
-            </dependency>
-          </dependencies>
         </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -571,7 +558,7 @@ THE SOFTWARE.
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy javadoc:aggregate</goals>
