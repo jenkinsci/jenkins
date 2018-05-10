@@ -75,12 +75,15 @@ html {
   box-sizing: border-box;
 }
 
-.simple-page input[type=submit] {
-  text-align: center;
+.simple-page .formRow {
+  margin-top: 27px;
+}
+.simple-page .formRow ~ .formRow {
+  margin-top: 16px;
 }
 
-.simple-page form div {
-  margin-top: 16px;
+.simple-page input[type=submit] {
+  text-align: center;
 }
 
 .simple-page form .submit input {
@@ -89,24 +92,44 @@ html {
   cursor: pointer;
 }
 
-
 .simple-page .alert {
   text-align: center;
   font-size: 14px;
   line-height: 18px;
 }
 
-.simple-page .checkboxWrapper {
-  display: flex;
+.simple-page .Checkbox-wrapper {
   justify-content: center;
-  align-items: center;
-  margin-top: 20px;
 }
-.simple-page .combinedElement{
-  display: flex;
-  align-items: center;
+.simple-page .login .Checkbox-wrapper {
+  margin-top: 20px;
 }
 #remember_me{
   width: unset;
   margin-right: 5px;
+}
+
+/* forms */
+
+/**
+ * 1. Add the correct box sizing in IE 10-.
+ * 2. Remove the padding in IE 10-.
+ */
+
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+
+.layout-small {
+    font-size: 12px;
+}
+
+.layout-medium {
+    font-size: 14px;
+}
+
+.layout-large {
+    font-size: 18px;
 }

@@ -53,7 +53,7 @@ THE SOFTWARE.
   <!-- real deal starting here -->
   <html>
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-      <title>${%signIn}</title>
+      <title>${%signIn [Jenkins]}</title>
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
@@ -66,12 +66,12 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <div class="simple-page">
-            <div class="modal">
+            <div class="modal login">
               <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
-                  <div style="margin-top:2em">
+                  <div class="signupTag">
                     ${%signUp}
                   </div>
                 </j:if>
@@ -80,7 +80,7 @@ THE SOFTWARE.
                     ${%Invalid username or password}
                   </div>
                 </j:if>
-                <div>
+                <div class="formRow">
                   <input
                     class="${inputClass}"
                     type="text"
@@ -91,7 +91,7 @@ THE SOFTWARE.
                     placeholder="${%Username}"
                   />
                 </div>
-                <div>
+                <div class="formRow">
                   <input
                     class="${inputClass}"
                     type="password"
@@ -100,7 +100,7 @@ THE SOFTWARE.
                   />
                 </div>
                 <input type="hidden" name="from" value="${from}" />
-                <div class="submit"><f:submit value="${%signIn}" /></div>
+                <div class="submit formRow"><f:submit value="${%signIn}" /></div>
                 <!-- focus the username field -->
                 <script type="text/javascript">
                   document.getElementById('j_username').focus();
@@ -111,11 +111,28 @@ THE SOFTWARE.
 
                 <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
                   <!-- remember me service only available for Acegi -->
-                  <div class="checkboxWrapper">
-                    <label for="remember_me" class="combinedElement">
-                      <input type="checkbox" id="remember_me" name="remember_me" />
-                      <span >${%Keep me signed in}</span>
-                     </label>
+                  <div class="Checkbox Checkbox-medium">
+                    <label class="Checkbox-wrapper">
+                      <input
+                        type="checkbox"
+                        id="remember_me"
+                        name="remember_me"
+                      />
+                      <div class="Checkbox-indicator">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          focusable="false"
+                          width="25"
+                          height="25"
+                          class="svg-icon check"
+                          viewBox="0 0 24 24">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                        </svg>
+                      </div>
+                      <div class="Checkbox-text">
+                        ${%Keep me signed in}
+                      </div>
+                    </label>
                   </div>
                 </j:if>
 

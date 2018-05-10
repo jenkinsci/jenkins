@@ -46,7 +46,7 @@ THE SOFTWARE.
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <html>
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-            <title>${%Create an account!}</title>
+            <title>${%Create an account! [Jenkins]}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
             <!-- css styling, will fallback to default implementation -->
@@ -63,45 +63,7 @@ THE SOFTWARE.
                         </div>
                     </div>
                     <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
-                        <div>
-                            <div class="inputHeader">
-                                <label
-                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
-                                    for="fullname"
-                                >
-                                    ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
-                                </label>
-                            </div>
-                            <input
-                                tabindex="2"
-                                class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
-                                value="${data.fullname}"
-                                type="text"
-                                name="fullname"
-                                id="fullname"
-                            />
-                        </div>
-                        <j:if test="${it.mailerPluginPresent}">
-                            <div>
-                                <div class="inputHeader">
-                                    <label
-                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
-                                        for="email"
-                                    >
-                                        ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
-                                    </label>
-                                </div>
-                                <input
-                                    tabindex="3"
-                                    class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
-                                    value="${data.email}"
-                                    type="text"
-                                    name="email"
-                                    id="email"
-                                />
-                            </div>
-                        </j:if>
-                        <div>
+                        <div class="formRow">
                             <div class="inputHeader">
                                 <label
                                     class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
@@ -113,14 +75,52 @@ THE SOFTWARE.
                             <input
                                 class="${data.errors.containsKey('username') ? 'danger' : 'normal'}"
                                 value="${data.username}"
-                                tabindex="4"
+                                tabindex="2"
                                 type="text"
                                 name="username"
                                 id="username"
                             />
                         </div>
+                        <div class="formRow">
+                            <div class="inputHeader">
+                                <label
+                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
+                                    for="fullname"
+                                >
+                                    ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
+                                </label>
+                            </div>
+                            <input
+                                tabindex="3"
+                                class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
+                                value="${data.fullname}"
+                                type="text"
+                                name="fullname"
+                                id="fullname"
+                            />
+                        </div>
+                        <j:if test="${it.mailerPluginPresent}">
+                            <div class="formRow">
+                                <div class="inputHeader">
+                                    <label
+                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
+                                        for="email"
+                                    >
+                                        ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
+                                    </label>
+                                </div>
+                                <input
+                                    tabindex="4"
+                                    class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
+                                    value="${data.email}"
+                                    type="text"
+                                    name="email"
+                                    id="email"
+                                />
+                            </div>
+                        </j:if>
                         <j:if test="${it.isEnableCaptcha()}">
-                            <div>
+                            <div class="formRow">
                                 <div class="inputHeader">
                                     <label
                                         class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
@@ -139,7 +139,7 @@ THE SOFTWARE.
                                 <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
                             </div>
                         </j:if>
-                        <div>
+                        <div class="formRow">
                             <div class="inputHeader">
                                 <label
                                         class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
@@ -148,7 +148,7 @@ THE SOFTWARE.
                                     ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
                                 </label>
                                 <script type="text/javascript">
-                                    const togglePasswordType = function() {
+                                    const togglePasswordType = function(event) {
                                         const passwordField = document.getElementById('password1');
                                         const showPass = document.getElementById('showPassword');
                                         if (showPass.checked) {
@@ -227,16 +227,31 @@ THE SOFTWARE.
                                         }
                                     }
                                 </script>
-                                <label class="combinedElement">
-                                    <input
-                                        id="showPassword"
-                                        type="checkbox"
-                                        class="FormField-PasswordToggle mr-half"
-                                        onClick="togglePasswordType()"
-                                        tabindex="7"
-                                    />
-                                    <span class="FormField-PasswordToggle-Label">Show</span>
-                                </label>
+                                <div class="Checkbox Checkbox-small">
+                                    <label class="Checkbox-wrapper">
+                                        <input
+                                            type="checkbox"
+                                            id="showPassword"
+                                            onClick="togglePasswordType(this)"
+                                            name="remember_me"
+                                            tabindex="7"
+                                        />
+                                        <div class="Checkbox-indicator">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                focusable="false"
+                                                width="20"
+                                                height="20"
+                                                class="svg-icon check"
+                                                viewBox="0 0 24 24">
+                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="Checkbox-text">
+                                            ${%Show}
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                             <input
                                 onKeyUp="validatePassword()"
@@ -255,7 +270,7 @@ THE SOFTWARE.
                             </script>
 
                         </div>
-                        <div>
+                        <div class="formRow">
                             A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.
                         </div>
                         <input
@@ -265,7 +280,7 @@ THE SOFTWARE.
                             name="password2"
                             id="password2"
                         />
-                        <div class="submit">
+                        <div class="submit formRow">
                             <f:submit value="${%Create account}"/>
                         </div>
                         <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>

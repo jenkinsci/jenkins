@@ -34,7 +34,6 @@ form.signup{
   max-width: 480px;
   width: 480px;
   text-align: left;
-  margin-top: 50px;
 }
 .inputHeader {
   display: flex;
@@ -51,4 +50,7 @@ form.signup{
 }
 label {
   margin-bottom: 7px;
+}
+#passwordStrengthWrapper {
+  margin-top: 4px;
 }
