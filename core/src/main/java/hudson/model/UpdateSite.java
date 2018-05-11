@@ -121,11 +121,6 @@ public class UpdateSite {
     private transient volatile long retryWindow;
 
     /**
-     * lastModified time of the data file when it was last read.
-     */
-    private transient long dataLastReadFromFile;
-
-    /**
      * Latest data as read from the data file.
      */
     private transient Data data;
@@ -226,6 +221,7 @@ public class UpdateSite {
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
+        data = new Data(o);
         return FormValidation.ok();
     }
 
@@ -309,23 +305,20 @@ public class UpdateSite {
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         dataTimestamp = 0;
+        data = null;
         return HttpResponses.ok();
     }
 
     /**
-     * Loads the update center data, if any and if modified since last read.
+     * Loads the update center data, if any.
      *
      * @return  null if no data is available.
      */
     public Data getData() {
-        TextFile df = getDataFile();
-        if (df.exists() && dataLastReadFromFile != df.file.lastModified()) {
+        if (data == null) {
             JSONObject o = getJSONObject();
-            if (o!=null) {
+            if (o != null) {
                 data = new Data(o);
-                dataLastReadFromFile = df.file.lastModified();
-            } else {
-                data = null;
             }
         }
         return data;
@@ -1094,10 +1087,19 @@ public class UpdateSite {
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
-            for (Plugin p: getNeededDependencies()) {
-                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
-            }
-            return false;
+            return isNeededDependenciesForNewerJenkins(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesForNewerJenkins(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesForNewerJenkins:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
 
         /**
@@ -1109,11 +1111,19 @@ public class UpdateSite {
          * specified, it'll return true.
          */
         public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
-            for (Plugin p: getNeededDependencies()) {
-                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
-                    return false;
-            }
-            return true;
+            return isNeededDependenciesCompatibleWithInstalledVersion(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesCompatibleWithInstalledVersion:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         /**

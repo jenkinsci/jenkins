@@ -144,6 +144,7 @@ import java.io.ByteArrayInputStream;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
@@ -1814,6 +1815,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new AssertionError(e); // impossible since we don't tweak XMLParser
         }
         return requestedPlugins;
+    }
+
+    @Restricted(DoNotUse.class) // table.jelly
+    public MetadataCache createCache() {
+        return new MetadataCache();
+    }
+
+    @Restricted(NoExternalUse.class) // table.jelly
+    public static final class MetadataCache {
+        private final Map<String, Object> data = new HashMap<>();
+        public <T> T of(String key, Class<T> type, Supplier<T> func) {
+            return type.cast(data.computeIfAbsent(key, _ignored -> func.get()));
+        }
     }
 
     /**
