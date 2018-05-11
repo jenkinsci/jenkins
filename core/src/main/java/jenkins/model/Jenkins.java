@@ -2415,11 +2415,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
-        return new MasterToSlaveCallable<ClockDifference, IOException>() {
-            public ClockDifference call() throws IOException {
-                return new ClockDifference(0);
-            }
-        };
+        return new ClockDifferenceCallable();
+    }
+    private static class ClockDifferenceCallable extends MasterToSlaveCallable<ClockDifference, IOException> {
+        @Override
+        public ClockDifference call() throws IOException {
+            return new ClockDifference(0);
+        }
     }
 
     /**
