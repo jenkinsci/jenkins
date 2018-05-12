@@ -1,6 +1,30 @@
 ---
+packaging:
+  config:
+    bundle:
+      groupId: "org.jenkins-ci.main"
+      artifactId: "jenkins-core-it"
+      vendor: "Jenkins project"
+      title: "Jenkins Integration Tests WAR"
+      description: "Jenkins WAR for integration tests"
+    war:
+      groupId: "org.jenkins-ci.main"
+      artifactId: "jenkins-war"
+      source:
+        dir: "."
 ath:
   useLocalSnapshots: false
   athRevision: "06caf67d37d945ec5228a80d73714fac692c28d3"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
+pct:
+  pct:
+    useLocalSnapshots: false
+    jth:
+      version: 2.38
+      passCustomJenkinsWAR: true
+    plugins:
+      - "ssh-slaves"
+      - "command-launcher"
+      - "windows-slaves"
+      - "mailer"
