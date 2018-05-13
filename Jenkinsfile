@@ -12,7 +12,7 @@
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
 def failFast = false
-def jdk = 8
+def jdk = "8"
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
