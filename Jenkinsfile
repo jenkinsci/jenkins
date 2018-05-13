@@ -37,8 +37,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 180, unit: 'MINUTES') {
-                        // See below for what this method does - we're passing an arbitrary environment
-                        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
+                        // We're passing an arbitrary environment variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
                         infra.runMaven(["-Pdebug", "-U", "-Dset.changelist", "help:evaluate",
                                         "-Dexpression=changelist", "-Doutput=$changelistF",
                                         runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests',
