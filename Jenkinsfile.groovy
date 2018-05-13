@@ -75,7 +75,7 @@ for(i = 0; i < buildTypes.size(); i++) {
 builds.failFast = failFast
 parallel builds
 
-// Integration tests
+// Integration tests, see essentials.yml
 essentialsTest()
 
 // Publish to incrementals if everything is fine
