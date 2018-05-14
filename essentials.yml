@@ -18,13 +18,12 @@ ath:
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
 pct:
-  pct:
-    useLocalSnapshots: false
-    jth:
-      version: 2.38
-      passCustomJenkinsWAR: true
-    plugins:
-      - "ssh-slaves"
-      - "command-launcher"
-      - "windows-slaves"
-      - "mailer"
+  useLocalSnapshots: false
+  jth:
+    version: 2.38
+    passCustomJenkinsWAR: true
+  plugins:
+    - "ssh-slaves"
+    - "command-launcher"
+    - "windows-slaves"
+    - "mailer"
