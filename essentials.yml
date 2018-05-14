@@ -3,7 +3,7 @@ packaging:
   config:
     bundle:
       groupId: "org.jenkins-ci.main"
-      artifactId: "jenkins-core-it"
+      artifactId: "jenkins-war"
       vendor: "Jenkins project"
       title: "Jenkins Integration Tests WAR"
       description: "Jenkins WAR for integration tests"
