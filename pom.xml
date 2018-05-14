@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.44</version>
+    <version>1.46-20180514.183442-1</version> <!-- TODO https://github.com/jenkinsci/pom/pull/25 -->
     <relativePath />
   </parent>
 
