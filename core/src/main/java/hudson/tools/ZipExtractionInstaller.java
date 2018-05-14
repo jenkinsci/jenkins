@@ -42,11 +42,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
@@ -80,7 +78,14 @@ public class ZipExtractionInstaller extends ToolInstaller {
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
+
+        if (isUpToDate(dir, url)) {
+            return dir;
+        }
+
         if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
+            dir.child(".timestamp").delete(); // we don't use the timestamp
+            dir.child(".installedFrom").write(url,"UTF-8");
             dir.act(new ChmodRecAPlusX());
         }
         if (subdir == null) {
@@ -90,6 +95,17 @@ public class ZipExtractionInstaller extends ToolInstaller {
         }
     }
 
+    /**
+     * Checks if the specified expected location already contains the installed version of the tool.
+     *
+     * This check needs to run fairly efficiently. The current implementation uses the URL of the archive
+     * based on the assumption that released bits do not change its content.
+     */
+    protected boolean isUpToDate(FilePath expectedLocation, String url) throws IOException, InterruptedException {
+        FilePath marker = expectedLocation.child(".installedFrom");
+        return marker.exists() && marker.readToString().equals(url);
+    }
+
     @Extension @Symbol("zip")
     public static class DescriptorImpl extends ToolInstallerDescriptor<ZipExtractionInstaller> {
 
@@ -97,10 +113,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
             return Messages.ZipExtractionInstaller_DescriptorImpl_displayName();
         }
 
-        @RequirePOST
         public FormValidation doCheckUrl(@QueryParameter String value) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-            
             try {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
