@@ -139,6 +139,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             }
         }
 
+        // TODO this may only check the last build in fact:
         if (item instanceof Job<?,?>) {
             Job<?,?> j = (Job<?,?>) item;
             if (j.isBuilding()) {
