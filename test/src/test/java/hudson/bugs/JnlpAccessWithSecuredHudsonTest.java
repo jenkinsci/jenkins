@@ -75,7 +75,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
-     * Creates a new slave that needs to be launched via JNLP.
+     * Creates a new agent that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
         return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);

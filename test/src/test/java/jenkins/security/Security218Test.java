@@ -67,7 +67,7 @@ public class Security218Test implements Serializable {
     }
 
     /**
-     * The attack scenario here is that a master sends a normal command to a slave and a slave
+     * The attack scenario here is that a master sends a normal command to an agent and a slave
      * inserts a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
@@ -88,7 +88,7 @@ public class Security218Test implements Serializable {
 
 // TODO: reconcile this duplicate with JnlpAccessWithSecuredHudsonTest
     /**
-     * Creates a new slave that needs to be launched via JNLP.
+     * Creates a new agent that needs to be launched via JNLP.
      *
      * @see #launchJnlpSlave(Slave)
      */
@@ -100,7 +100,7 @@ public class Security218Test implements Serializable {
 
 // TODO: reconcile this duplicate with JnlpAccessWithSecuredHudsonTest
     /**
-     * Launch a JNLP slave created by {@link #createJnlpSlave(String)}
+     * Launch a JNLP agent created by {@link #createJnlpSlave(String)}
      */
     public Channel launchJnlpSlave(Slave slave) throws Exception {
         j.createWebClient().goTo("computer/"+slave.getNodeName()+"/slave-agent.jnlp?encrypt=true", "application/octet-stream");
@@ -124,7 +124,7 @@ public class Security218Test implements Serializable {
             Thread.sleep(100);
         }
 
-        throw new AssertionError("JNLP slave agent failed to connect");
+        throw new AssertionError("The JNLP agent failed to connect");
     }
 
     @After

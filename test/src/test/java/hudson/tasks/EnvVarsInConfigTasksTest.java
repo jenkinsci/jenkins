@@ -78,7 +78,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
 				"/simple-projects.zip")));
 
-		// test the regular slave - variable not expanded
+		// test the regular agent - variable not expanded
 		project.setAssignedLabel(slaveRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -89,7 +89,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		System.out.println(buildLogRegular);
 		assertTrue(buildLogRegular.contains(DUMMY_LOCATION_VARNAME));
 
-		// test the slave with prepared environment
+		// test the agent with prepared environment
 		project.setAssignedLabel(slaveEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -119,7 +119,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 				new Ant("-Dtest.property=cor${" + DUMMY_LOCATION_VARNAME
 						+ "}rect", "varAnt", "", buildFile, ""));
 
-		// test the regular slave - variable not expanded
+		// test the regular agent - variable not expanded
 		project.setAssignedLabel(slaveRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -129,7 +129,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		String buildLogRegular = getBuildLog(build);
 		assertTrue(buildLogRegular.contains(Ant_ExecutableNotFound("varAnt")));
 
-		// test the slave with prepared environment
+		// test the agent with prepared environment
 		project.setAssignedLabel(slaveEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -158,7 +158,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 							+ DUMMY_LOCATION_VARNAME + "}", "", "",
 							false));
 
-		// test the regular slave - variable not expanded
+		// test the regular agent - variable not expanded
 		project.setAssignedLabel(slaveRegular.getSelfLabel());
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -169,7 +169,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		System.out.println(buildLogRegular);
 		assertTrue(buildLogRegular.contains(DUMMY_LOCATION_VARNAME));
 
-		// test the slave with prepared environment
+		// test the agent with prepared environment
 		project.setAssignedLabel(slaveEnv.getSelfLabel());
 		build = project.scheduleBuild2(0).get();
 		System.out.println(build.getDisplayName() + " completed");
@@ -191,7 +191,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
         project.setMaven("varMaven");
         project.setGoals("clean${" + DUMMY_LOCATION_VARNAME + "}");
 
-        // test the regular slave - variable not expanded
+        // test the regular agent - variable not expanded
         project.setAssignedLabel(slaveRegular.getSelfLabel());
         MavenModuleSetBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -201,7 +201,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
         String buildLogRegular = getBuildLog(build);
         System.out.println(buildLogRegular);
 
-        // test the slave with prepared environment
+        // test the agent with prepared environment
         project.setAssignedLabel(slaveEnv.getSelfLabel());
         build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");

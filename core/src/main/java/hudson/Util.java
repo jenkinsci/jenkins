@@ -1721,7 +1721,7 @@ public class Util {
      * Warning: This should only ever be used if you find that your builds are
      * failing because Jenkins is unable to delete files, that this failure is
      * because Jenkins itself has those files locked "open", and even then it
-     * should only be used on slaves with relatively few executors (because the
+     * should only be used on agents with relatively few executors (because the
      * garbage collection can impact the performance of all job executors on
      * that slave).<br/>
      * i.e. Setting this flag is a act of last resort - it is <em>not</em>

@@ -728,7 +728,7 @@ public class ProjectTest {
     }
     
     /**
-     * Job is restricted, but label can not be provided by any cloud, only normal slaves. Then job will not submit, because no slave is available.
+     * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
      * @throws Exception
      */
     @Test
@@ -748,12 +748,12 @@ public class ProjectTest {
         j.buildAndAssertSuccess(proj);        
 
         //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
-        //We tell our mock SCM to return that it has got changes. But since there are no slaves, we get the desired result. 
+        //We tell our mock SCM to return that it has got changes. But since there are no agents, we get the desired result. 
         Slave s2 = j.createSlave();
         proj.setAssignedLabel(s2.getSelfLabel());
         requiresWorkspaceScm.hasChange = true;
         
-        //Poll (We now should have NO online slaves, this should now return NO_CHANGES.
+        //Poll (We now should have NO online agents, this should now return NO_CHANGES.
         PollingResult pr = proj.poll(j.createTaskListener());
         assertFalse(pr.hasChanges());
         

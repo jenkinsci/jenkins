@@ -158,7 +158,7 @@ public class ProcessTreeKillerTest {
             pb.command("sleep", "5m");
         }
         
-        // Create a slave so we can tell it to kill the process
+        // Create an agent so we can tell it to kill the process
         Slave s = j.createSlave();
         s.toComputer().connect(false).get();
         

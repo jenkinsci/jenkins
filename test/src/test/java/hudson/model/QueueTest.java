@@ -624,7 +624,7 @@ public class QueueTest {
      * and then introduce a security restriction to prohibit that.
      */
     @Test public void permissionSensitiveSlaveAllocations() throws Exception {
-        r.jenkins.setNumExecutors(0); // restrict builds to those slaves
+        r.jenkins.setNumExecutors(0); // restrict builds to those agents
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
