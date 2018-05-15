@@ -141,7 +141,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
         if (item instanceof Job<?,?>) {
             Job<?,?> j = (Job<?,?>) item;
-            if (item.isBuilding()) {
+            if (j.isBuilding()) {
                 return false;
             }
         }
