@@ -73,7 +73,7 @@ public class LauncherTest {
             // returns immediately and pgrep sleep => nothing. But without fix
             // hudson.model.Hudson.instance.nodes[0].rootPath.createLauncher(new hudson.util.StreamTaskListener(System.err)).
             //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
-            // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
+            // hangs and on agent machine pgrep sleep => one process; after manual kill, script returns.
     }
 
     private static final Callable<Object,RuntimeException> NOOP = new MasterToSlaveCallable<Object,RuntimeException>() {

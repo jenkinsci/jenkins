@@ -348,11 +348,11 @@ public class ViewTest {
         view2.add(foreignJob);
         foreignJob.setAssignedLabel(j.jenkins.getLabel("label0||label1"));
 
-        // contains all slaves having labels associated with freestyleJob or matrixJob
+        // contains all agents having labels associated with freestyleJob or matrixJob
         assertContainsNodes(view1, slave0, slave1, slave2, slave3);
         assertNotContainsNodes(view1, slave4);
 
-        // contains all slaves having labels associated with foreignJob
+        // contains all agents having labels associated with foreignJob
         assertContainsNodes(view2, slave0, slave1, slave3);
         assertNotContainsNodes(view2, slave2, slave4);
 

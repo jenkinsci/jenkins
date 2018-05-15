@@ -3521,17 +3521,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
         if(tcpSlaveAgentListener!=null) {
-            LOGGER.log(FINE, "Shutting down TCP/IP slave agent listener");
+            LOGGER.log(FINE, "Shutting down TCP/IP agent listener");
             try {
                 tcpSlaveAgentListener.shutdown();
             } catch (OutOfMemoryError e) {
                 // we should just propagate this, no point trying to log
                 throw e;
             } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP agent listener", e);
                 // safe to ignore and continue for this one
             } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP agent listener", e);
                 // save for later
                 errors.add(e);
             }
