@@ -139,6 +139,13 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             }
         }
 
+        if (item instanceof Job<?,?>) {
+            Job<?,?> j = (Job<?,?>) item;
+            if (item.isBuilding()) {
+                return false;
+            }
+        }
+
         LOGGER.log(Level.FINER, "Going to delete directory {0}", dir);
         return true;
     }
