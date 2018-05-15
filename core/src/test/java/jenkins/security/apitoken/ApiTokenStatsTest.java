@@ -25,12 +25,14 @@ package jenkins.security.apitoken;
 
 import hudson.XmlFile;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.LessOrEqual;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -40,10 +42,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ApiTokenPropertyConfiguration.class)
@@ -96,7 +99,7 @@ public class ApiTokenStatsTest {
             lastUsage = stats.getLastUseDate();
             assertNotNull(lastUsage);
             // to avoid flaky test in case the test is run at midnight, normally it's 0 
-            assertTrue(stats.getNumDaysUse() <= 1);
+            assertThat(stats.getNumDaysUse(), lessThanOrEqualTo(1L));
         }
         
         // to enforce a difference in the lastUseDate
@@ -107,9 +110,10 @@ public class ApiTokenStatsTest {
             
             ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_1);
             assertEquals(2, stats.getUseCounter());
-            assertTrue(lastUsage.before(stats.getLastUseDate()));
-            // to avoid flaky test in case the test is run at midnight, normally it's 0 
-            assertTrue(stats.getNumDaysUse() <= 1);
+            assertThat(lastUsage, lessThan(stats.getLastUseDate()));
+            
+            // to avoid flaky test in case the test is run at midnight, normally it's 0
+            assertThat(stats.getNumDaysUse(), lessThanOrEqualTo(1L));
         }
         
         { // check all tokens have separate stats, try with another ID
@@ -125,7 +129,7 @@ public class ApiTokenStatsTest {
                 ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_2);
                 assertEquals(1, stats.getUseCounter());
                 assertNotNull(lastUsage);
-                assertTrue(stats.getNumDaysUse() <= 1);
+                assertThat(stats.getNumDaysUse(), lessThanOrEqualTo(1L));
             }
         }
         
@@ -206,7 +210,7 @@ public class ApiTokenStatsTest {
         ApiTokenStats tokenStats = new ApiTokenStats();
         tokenStats.setParent(tmp.getRoot());
         ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID);
-        assertTrue(stats.getNumDaysUse() <= 1);
+        assertThat(stats.getNumDaysUse(), lessThan(1L));
         
         Field field = ApiTokenStats.SingleTokenStats.class.getDeclaredField("lastUseDate");
         field.setAccessible(true);
@@ -219,6 +223,6 @@ public class ApiTokenStatsTest {
                 )
         );
         
-        assertTrue(stats.getNumDaysUse() >= 2);
+        assertThat(stats.getNumDaysUse(), greaterThanOrEqualTo(2L));
     }
 }

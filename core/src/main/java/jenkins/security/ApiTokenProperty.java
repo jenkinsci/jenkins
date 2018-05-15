@@ -129,7 +129,7 @@ public class ApiTokenProperty extends UserProperty {
             this.tokenStats = ApiTokenStats.load(user.getUserFolder());
         }
         if(this.apiToken != null){
-            this.tokenStore.generateTokenFromLegacy(this.apiToken);
+            this.tokenStore.regenerateTokenFromLegacyIfRequired(this.apiToken);
         }
     }
     
@@ -483,28 +483,28 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
             
-            ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(tokenName);
+            ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = p.tokenStore.generateNewToken(tokenName);
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
-                put("tokenId", tokenIdAndPlainValue.tokenId); 
+                put("tokenUuid", tokenUuidAndPlainValue.tokenUuid); 
                 put("tokenName", tokenName); 
-                put("tokenValue", tokenIdAndPlainValue.plainValue); 
+                put("tokenValue", tokenUuidAndPlainValue.plainValue); 
             }});
         }
         
         @RequirePOST
         public HttpResponse doRename(@AncestorInPath User u,
-                                     @QueryParameter String tokenId, @QueryParameter String newName) throws IOException {
+                                     @QueryParameter String tokenUuid, @QueryParameter String newName) throws IOException {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
     
             if (StringUtils.isBlank(newName)) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
-            if(StringUtils.isBlank(tokenId)){
+            if(StringUtils.isBlank(tokenUuid)){
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenId cannot be empty");
+                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
             
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
@@ -512,7 +512,7 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
             
-            boolean renameOk = p.tokenStore.renameToken(tokenId, newName);
+            boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
             if(!renameOk){
                 // that could potentially happen if the token is removed from another page
                 // between your page loaded and your action
@@ -526,13 +526,13 @@ public class ApiTokenProperty extends UserProperty {
         
         @RequirePOST
         public HttpResponse doRevoke(@AncestorInPath User u,
-                                     @QueryParameter String tokenId) throws IOException {
+                                     @QueryParameter String tokenUuid) throws IOException {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
             
-            if(StringUtils.isBlank(tokenId)){
+            if(StringUtils.isBlank(tokenUuid)){
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenId cannot be empty");
+                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
             
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
@@ -540,7 +540,7 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
             
-            ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenId);
+            ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenUuid);
             if(revoked != null){
                 if(revoked.isLegacy()){
                     // if the user revoked the API Token, we can delete it

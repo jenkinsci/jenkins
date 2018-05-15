@@ -89,7 +89,7 @@ public class ApiTokenStats implements Saveable {
         this.tokenStats = new ArrayList<>(temp.values());
     }
     
-    public void setParent(@Nonnull File parent) {
+    void setParent(@Nonnull File parent) {
         this.parent = parent;
     }
     
@@ -170,9 +170,11 @@ public class ApiTokenStats implements Saveable {
     }
     
     /**
-     * Loads the data from the disk into this object.
+     * Loads the data from the disk into the new object.
+     * <p>
+     * If the file is not present, a fresh new instance is created.
      */
-    public static ApiTokenStats load(File parent) {
+    public static @Nonnull ApiTokenStats load(@Nonnull File parent) {
         // even if we are not using statistics, we load the existing one in case the configuration
         // is enabled afterwards to avoid erasing data
         
@@ -234,8 +236,8 @@ public class ApiTokenStats implements Saveable {
         }
         
         // used by Jelly view
-        
         /**
+         * Return the number of days since the last usage
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysUse() {

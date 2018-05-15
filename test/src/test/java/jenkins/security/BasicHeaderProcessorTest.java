@@ -8,6 +8,7 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,8 +47,7 @@ public class BasicHeaderProcessorTest {
      */
     @Test
     public void testVariousWaysToCall() throws Exception {
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getById("foo", true);
@@ -116,7 +116,7 @@ public class BasicHeaderProcessorTest {
 
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
         
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");

@@ -46,6 +46,7 @@ import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
 
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
@@ -188,8 +189,7 @@ public class RobustReflectionConverterTest {
     
     @Test
     public void testRestInterfaceFailure() throws Exception {
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
 
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
 

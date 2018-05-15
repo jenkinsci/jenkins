@@ -39,6 +39,7 @@ import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -86,8 +87,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Email("http://markmail.org/message/on4wkjdaldwi2atx")
     @Test
     public void anonymousCanAlwaysLoadJARs() throws Exception {
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
         
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         JenkinsRule.WebClient wc = r.createWebClient();

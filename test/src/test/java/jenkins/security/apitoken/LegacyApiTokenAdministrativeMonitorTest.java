@@ -35,16 +35,15 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class LegacyApiTokenAdministrativeMonitorTest {
@@ -66,11 +65,11 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
         assertFalse(monitor.isActivated());
         
-        ApiTokenStore.TokenIdAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Not Legacy");
+        ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Not Legacy");
         // "new" token does not trigger the monitor
         assertFalse(monitor.isActivated());
         
-        apiTokenProperty.getTokenStore().revokeToken(tokenInfo.tokenId);
+        apiTokenProperty.getTokenStore().revokeToken(tokenInfo.tokenUuid);
         assertFalse(monitor.isActivated());
         
         apiTokenProperty.changeApiToken();
@@ -297,7 +296,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     private void checkUserWithLegacyTokenListIsEmpty(JenkinsRule.WebClient wc, LegacyApiTokenAdministrativeMonitor monitor) throws Exception {
         HtmlPage page = wc.goTo(monitor.getUrl() + "/manage");
         String pageContent = page.getWebResponse().getContentAsString();
-        assertTrue(pageContent.contains("no-token-line"));
+        assertThat(pageContent, Matchers.containsString("no-token-line"));
     }
     
     private HtmlPage checkUserWithLegacyTokenListHasSizeOf(
@@ -353,7 +352,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
                 simulateUseOfLegacyToken(user);
                 Thread.sleep(1);
                 
-                ApiTokenStore.TokenIdAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Fresh and recent token");
+                ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Fresh and recent token");
                 simulateUseOfToken(user, tokenInfo.plainValue);
             } else {
                 simulateUseOfLegacyToken(user);
@@ -363,7 +362,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
             }
         } else {
             if (recent) {
-                ApiTokenStore.TokenIdAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Recent token");
+                ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Recent token");
                 Thread.sleep(1);
                 
                 simulateUseOfLegacyToken(user);

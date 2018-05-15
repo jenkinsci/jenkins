@@ -82,7 +82,7 @@ public class ApiTokenStatsTest {
         JSONObject jsonData = jsonObject.getJSONObject("data");
         String tokenName = jsonData.getString("tokenName");
         String tokenValue = jsonData.getString("tokenValue");
-        String tokenUuid = jsonData.getString("tokenId");
+        String tokenUuid = jsonData.getString("tokenUuid");
         
         assertEquals(TOKEN_NAME, tokenName);
         
@@ -135,7 +135,7 @@ public class ApiTokenStatsTest {
     
     private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenId=" + tokenUuid),
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);

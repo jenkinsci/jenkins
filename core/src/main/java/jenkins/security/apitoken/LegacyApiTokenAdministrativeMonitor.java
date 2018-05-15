@@ -171,11 +171,11 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                 }else{
                     ApiTokenStore.HashedToken revokedToken = apiTokenProperty.getTokenStore().revokeToken(value.uuid);
                     if(revokedToken == null){
-                        LOGGER.log(Level.INFO, "User without selected token id={0}, tokenId={1}", new Object[]{value.userId, value.uuid});
+                        LOGGER.log(Level.INFO, "User without selected token id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
                     }else{
                         apiTokenProperty.deleteApiToken();
                         user.save();
-                        LOGGER.log(Level.INFO, "Revocation success for user id={0}, tokenId={1}", new Object[]{value.userId, value.uuid});
+                        LOGGER.log(Level.INFO, "Revocation success for user id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
                     }
                 }
             }

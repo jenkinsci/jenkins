@@ -53,6 +53,7 @@ import java.util.concurrent.CountDownLatch;
 import jenkins.model.ProjectNamingStrategy;
 
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -211,8 +212,7 @@ public class JobTest {
 
     @LocalData
     @Test public void configDotXmlPermission() throws Exception {
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
         
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();

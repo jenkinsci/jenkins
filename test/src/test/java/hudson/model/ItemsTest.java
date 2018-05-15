@@ -41,6 +41,7 @@ import java.net.URL;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;
@@ -64,8 +65,7 @@ public class ItemsTest {
 
     @Before
     public void setupLegacyBehavior(){
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
     }
     
     @Test public void getAllItems() throws Exception {

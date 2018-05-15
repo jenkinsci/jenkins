@@ -52,6 +52,7 @@ import static org.junit.Assert.*;
 
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -168,7 +169,7 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
         
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);

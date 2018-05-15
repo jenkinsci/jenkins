@@ -1,14 +1,14 @@
 package jenkins.security;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -29,6 +29,7 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,9 +55,7 @@ public class ApiTokenPropertyTest {
 
     @Before
     public void setupLegacyConfig(){
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setCreationOfLegacyTokenEnabled(true);
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
     }
     
     /**
@@ -102,7 +101,7 @@ public class ApiTokenPropertyTest {
         ApiTokenProperty t = new ApiTokenProperty(historicalInitialValue);
         u.addProperty(t);
         String apiToken1 = t.getApiToken();
-        assertFalse(apiToken1.equals(Util.getDigestOf(historicalInitialValue)));
+        assertNotEquals(apiToken1, Util.getDigestOf(historicalInitialValue));
 
         // the replacement for the compromised value must be consistent and cannot be random
         ApiTokenProperty t2 = new ApiTokenProperty(historicalInitialValue);
@@ -112,7 +111,7 @@ public class ApiTokenPropertyTest {
         // any other value is OK. those are changed values
         t = new ApiTokenProperty(historicalInitialValue+"somethingElse");
         u.addProperty(t);
-        assertTrue(t.getApiToken().equals(Util.getDigestOf(historicalInitialValue+"somethingElse")));
+        assertEquals(t.getApiToken(), Util.getDigestOf(historicalInitialValue+"somethingElse"));
     }
     
     @Issue("SECURITY-200")
@@ -417,7 +416,7 @@ public class ApiTokenPropertyTest {
     
     private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenId=" + tokenUuid),
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);
@@ -432,14 +431,14 @@ public class ApiTokenPropertyTest {
         Page p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
         if(success){
-            assertFalse(p.getWebResponse().getContentAsString().contains(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
+            assertThat(p.getWebResponse().getContentAsString(), not(containsString(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed())));
         }else{
-            assertTrue(p.getWebResponse().getContentAsString().contains(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
+            assertThat(p.getWebResponse().getContentAsString(), containsString(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed()));
         }
     }
     
     public static class GenerateNewTokenResponse {
-        public String tokenId;
+        public String tokenUuid;
         public String tokenName;
         public String tokenValue;
     }

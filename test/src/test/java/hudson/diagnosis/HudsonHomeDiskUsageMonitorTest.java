@@ -13,6 +13,7 @@ import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -60,8 +61,7 @@ public class HudsonHomeDiskUsageMonitorTest {
     @Issue("SECURITY-371")
     @Test
     public void noAccessForNonAdmin() throws Exception {
-        // legacy behavior re-enabled (could be changed when the webclient will be adapted
-        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        ApiTokenTestHelper.enableLegacyBehavior();
         
         JenkinsRule.WebClient wc = j.createWebClient();
 

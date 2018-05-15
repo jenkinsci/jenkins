@@ -28,12 +28,12 @@ function revokeToken(anchorRevoke){
     var targetUrl = anchorRevoke.getAttribute('data-target-url');
     
     var inputUuid = repeatedChunk.querySelector('input.token-uuid-input');
-    var tokenId = inputUuid.value;
+    var tokenUuid = inputUuid.value;
 
     if(confirm(confirmMessage)){
         new Ajax.Request(targetUrl, {
             method: "post",
-            parameters: {tokenId: tokenId},
+            parameters: {tokenUuid: tokenUuid},
             onSuccess: function(rsp,_) {
                 if(repeatedChunk.querySelectorAll('.legacy-token').length > 0){
                     // we are revoking the legacy token
@@ -87,7 +87,7 @@ function saveApiToken(button){
                 tokenValueSpan.innerText = tokenValue;
                 tokenValueSpan.style.display = 'inline-block';
                 
-                var tokenUuid = json.data.tokenId;
+                var tokenUuid = json.data.tokenUuid;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
                 uuidInput.value = tokenUuid;
 
