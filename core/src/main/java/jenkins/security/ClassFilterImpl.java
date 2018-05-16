@@ -146,6 +146,10 @@ public class ClassFilterImpl extends ClassFilter {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);
                 return false;
             }
+            if (c.isPrimitive()) {
+                LOGGER.log(Level.FINE, "permitting {0} since it is a primitive data type", name);
+                return false;
+            }
             if (Throwable.class.isAssignableFrom(c)) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is a throwable", name);
                 return false;
