@@ -311,7 +311,8 @@ public class ClassFilterImpl extends ClassFilter {
         // could apply a cache if the pattern search turns out to be slow
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
             if (SUPPRESS_ALL) {
-                LOGGER.log(Level.WARNING, "would normally reject {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+                notifyRejected(null, name,
+                        String.format("would normally reject %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
                 return false;
             }
             notifyRejected(null, name,
