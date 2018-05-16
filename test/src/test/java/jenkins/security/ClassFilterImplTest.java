@@ -161,6 +161,32 @@ public class ClassFilterImplTest {
         filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
+    @Test
+    @Issue("JENKINS-51326")
+    public void primitivesShouldBeWhitelisted() throws Exception {
+        ClassFilterImpl filter = new ClassFilterImpl();
+
+        // ClassFilter#isBlacklisted(String) is noop now, but we check it just in case it changes
+        filter.check("long");
+        filter.check("short");
+        filter.check("int");
+        filter.check("byte");
+        filter.check("float");
+        filter.check("double");
+        filter.check("boolean");
+        filter.check("char");
+
+        // Use object check
+        filter.check(long.class);
+        filter.check(short.class);
+        filter.check(int.class);
+        filter.check(byte.class);
+        filter.check(float.class);
+        filter.check(double.class);
+        filter.check(boolean.class);
+        filter.check(char.class);
+    }
+
     @TestExtension("xstreamRequiresWhitelist")
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
