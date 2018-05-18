@@ -85,7 +85,7 @@ THE SOFTWARE.
                                                    class="token-to-revoke ${hasFreshToken ? 'fresh-token' : ''} ${hasMoreRecentlyUsedToken ? 'recent-token' : ''}" />
                                         </td>
                                         <td>
-                                            ${user.id}asdfasdf
+                                            ${user.id}
                                         </td>
                                         <td>
                                             ${user.fullName}
