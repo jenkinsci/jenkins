@@ -34,7 +34,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.125-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -75,7 +75,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.123</revision>
+    <revision>2.125</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
