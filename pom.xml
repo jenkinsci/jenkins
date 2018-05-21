@@ -34,7 +34,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.123</version>
+  <version>2.124-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>jenkins-2.123</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <distributionManagement>
