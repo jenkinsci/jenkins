@@ -512,7 +512,7 @@ THE SOFTWARE.
           <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy javadoc:aggregate</goals>
+          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
