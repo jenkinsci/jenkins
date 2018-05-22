@@ -143,6 +143,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         if (item instanceof Job<?,?>) {
             Job<?,?> j = (Job<?,?>) item;
             if (j.isBuilding()) {
+                LOGGER.log(Level.FINE, "Job {0} is building, so not deleting", item.getFullDisplayName());
                 return false;
             }
         }
