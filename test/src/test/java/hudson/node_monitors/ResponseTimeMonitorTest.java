@@ -58,6 +58,7 @@ public class ResponseTimeMonitorTest {
         DumbSlave slave = new DumbSlave("dummy", "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
         Computer c = slave.toComputer();
+        assertNotNull(c);
         OfflineCause originalOfflineCause = c.getOfflineCause();
 
         ResponseTimeMonitor rtm = ComputerSet.getMonitors().get(ResponseTimeMonitor.class);

@@ -46,20 +46,23 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ResponseTimeMonitor extends NodeMonitor {
     @Extension
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
+
         @Override
         protected Callable<Data,IOException> createCallable(Computer c) {
-            if (c.getChannel() == null) {
-                return null;
-            }
             return new Step1(get(c));
         }
 
         @Override
         protected Map<Computer, Data> monitor() throws InterruptedException {
-            Map<Computer, Data> base = super.monitor();
+            ResultMap<Data> base = (ResultMap<Data>) super.monitor();
             for (Entry<Computer, Data> e : base.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
+                if (base.getSkipped().contains(c)) {
+                    assert d == null;
+                    continue;
+                }
+
                 if (d ==null) {
                     // if we failed to monitor, put in the special value that indicates a failure
                     e.setValue(d=new Data(get(c),-1L));
