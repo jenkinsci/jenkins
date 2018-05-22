@@ -1,14 +1,22 @@
 package hudson.node_monitors;
 
+import hudson.model.Computer;
+import hudson.model.ComputerSet;
+import hudson.model.Node;
 import hudson.model.User;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.JNLPLauncher;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -45,4 +53,18 @@ public class ResponseTimeMonitorTest {
         assertNotNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
     }
 
+    @Test
+    public void doNotDisconnectBeforeLaunched() throws Exception {
+        DumbSlave slave = new DumbSlave("dummy", "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+        j.jenkins.addNode(slave);
+        Computer c = slave.toComputer();
+        OfflineCause originalOfflineCause = c.getOfflineCause();
+
+        ResponseTimeMonitor rtm = ComputerSet.getMonitors().get(ResponseTimeMonitor.class);
+        for (int i = 0; i < 10; i++) {
+            rtm.triggerUpdate().join();
+            System.out.println(rtm.getDescriptor().get(c));
+            assertEquals(originalOfflineCause, c.getOfflineCause());
+        }
+    }
 }
