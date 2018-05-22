@@ -10,5 +10,3 @@ script-security command-launcher
 script-security matrix-auth
 script-security matrix-project
 script-security windows-slaves
-
-apache-httpcomponents-client-4-api jdk-tool
