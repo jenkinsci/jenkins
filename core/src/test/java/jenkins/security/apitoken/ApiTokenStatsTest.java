@@ -37,10 +37,22 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
@@ -161,7 +173,7 @@ public class ApiTokenStatsTest {
     }
     
     @Test
-    public void resistentToDuplicatedUuid() throws Exception {
+    public void resistantToDuplicatedUuid() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
         final String ID_2 = UUID.randomUUID().toString();
         final String ID_3 = UUID.randomUUID().toString();
@@ -183,7 +195,7 @@ public class ApiTokenStatsTest {
         { // replace the ID_1 with ID_2 in the file
             XmlFile statsFile = ApiTokenStats.getConfigFile(tmp.getRoot());
             String content = FileUtils.readFileToString(statsFile.getFile());
-            // now there are two time the same id in the file with different stats
+            // now there are multiple times the same id in the file with different stats
             String newContentWithDuplicatedId = content.replace(ID_1, ID_2).replace(ID_3, ID_2);
             FileUtils.write(statsFile.getFile(), newContentWithDuplicatedId);
         }
@@ -202,6 +214,80 @@ public class ApiTokenStatsTest {
             ApiTokenStats.SingleTokenStats stats_3 = tokenStats.findTokenStatsById(ID_3);
             assertEquals(0, stats_3.getUseCounter());
         }
+    }
+    
+    @Test
+    public void resistantToDuplicatedUuid_withNull() throws Exception {
+        final String ID = "ID";
+        
+        { // prepare
+            List<ApiTokenStats.SingleTokenStats> tokenStatsList = Arrays.asList(
+                    /* A */ createSingleTokenStatsByReflection(ID, null, 0),
+                    /* B */ createSingleTokenStatsByReflection(ID, "2018-05-01 09:10:59.234", 2),
+                    /* C */ createSingleTokenStatsByReflection(ID, "2018-05-01 09:10:59.234", 3),
+                    /* D */ createSingleTokenStatsByReflection(ID, "2018-05-01 09:10:59.235", 1)
+            );
+            
+            ApiTokenStats stats = new ApiTokenStats();
+            Field field = ApiTokenStats.class.getDeclaredField("tokenStats");
+            field.setAccessible(true);
+            field.set(stats, tokenStatsList);
+            
+            stats.setParent(tmp.getRoot());
+            stats.save();
+        }
+        { // reload to see the effect
+            ApiTokenStats stats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats.SingleTokenStats tokenStats = stats.findTokenStatsById(ID);
+            // must be D (as it was the last updated one)
+            assertThat(tokenStats.getUseCounter(), equalTo(1));
+        }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testInternalComparator() throws Exception {
+        List<ApiTokenStats.SingleTokenStats> tokenStatsList = Arrays.asList(
+                createSingleTokenStatsByReflection("A", null, 0),
+                createSingleTokenStatsByReflection("B", "2018-05-01 09:10:59.234", 2),
+                createSingleTokenStatsByReflection("C", "2018-05-01 09:10:59.234", 3),
+                createSingleTokenStatsByReflection("D", "2018-05-01 09:10:59.235", 1)
+        );
+    
+        Field field = ApiTokenStats.SingleTokenStats.class.getDeclaredField("COMP_BY_LAST_USE_THEN_COUNTER");
+        field.setAccessible(true);
+        Comparator<ApiTokenStats.SingleTokenStats> comparator = (Comparator<ApiTokenStats.SingleTokenStats>) field.get(null);
+    
+        // to be not impacted by the declaration order
+        Collections.shuffle(tokenStatsList, new Random(42));
+        tokenStatsList.sort(comparator);
+    
+        List<String> idList = tokenStatsList.stream()
+                .map(ApiTokenStats.SingleTokenStats::getTokenUuid)
+                .collect(Collectors.toList());
+    
+        assertThat(idList, contains("A", "B", "C", "D"));
+    }
+    
+    private ApiTokenStats.SingleTokenStats createSingleTokenStatsByReflection(String uuid, String dateString, Integer counter) throws Exception {
+        Class<ApiTokenStats.SingleTokenStats> clazz = ApiTokenStats.SingleTokenStats.class;
+        Constructor<ApiTokenStats.SingleTokenStats> constructor = clazz.getDeclaredConstructor(String.class);
+        constructor.setAccessible(true);
+        
+        ApiTokenStats.SingleTokenStats result = constructor.newInstance(uuid);
+    
+        {
+            Field field = clazz.getDeclaredField("useCounter");
+            field.setAccessible(true);
+            field.set(result, counter);
+        }
+        if(dateString != null){
+            Field field = clazz.getDeclaredField("lastUseDate");
+            field.setAccessible(true);
+            field.set(result, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString));
+        }
+        
+        return result;
     }
     
     @Test

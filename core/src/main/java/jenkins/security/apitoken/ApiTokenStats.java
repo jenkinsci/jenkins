@@ -29,7 +29,6 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
@@ -68,11 +67,14 @@ public class ApiTokenStats implements Saveable {
         if (this.tokenStats == null) {
             this.tokenStats = new ArrayList<>();
         } else {
-            keepLastUpdatedDuplicated();
+            keepLastUpdatedUnique();
         }
     }
     
-    private void keepLastUpdatedDuplicated() {
+    /**
+     * In case of duplicate entries, we keep only the last updated element
+     */
+    private void keepLastUpdatedUnique() {
         Map<String, SingleTokenStats> temp = new HashMap<>();
         this.tokenStats.forEach(candidate -> {
             SingleTokenStats current = temp.get(candidate.tokenUuid);
@@ -81,6 +83,7 @@ public class ApiTokenStats implements Saveable {
             } else {
                 int comparison = SingleTokenStats.COMP_BY_LAST_USE_THEN_COUNTER.compare(current, candidate);
                 if (comparison < 0) {
+                    // candidate was updated more recently (or has a bigger counter in case of perfectly equivalent dates)
                     temp.put(candidate.tokenUuid, candidate);
                 }
             }
@@ -200,6 +203,10 @@ public class ApiTokenStats implements Saveable {
     }
     
     public static class SingleTokenStats {
+        private static Comparator<SingleTokenStats> COMP_BY_LAST_USE_THEN_COUNTER =
+                Comparator.comparing(SingleTokenStats::getLastUseDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+                        .thenComparing(SingleTokenStats::getUseCounter);
+        
         private final String tokenUuid;
         private Date lastUseDate;
         private Integer useCounter;
@@ -249,9 +256,5 @@ public class ApiTokenStats implements Saveable {
             deltaDays = Math.max(0, deltaDays);
             return deltaDays;
         }
-        
-        private static Comparator<SingleTokenStats> COMP_BY_LAST_USE_THEN_COUNTER =
-                Comparator.comparing(SingleTokenStats::getLastUseDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(SingleTokenStats::getUseCounter, Comparator.reverseOrder());
     }
 }

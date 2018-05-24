@@ -51,6 +51,8 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -472,7 +474,7 @@ public class ApiTokenProperty extends UserProperty {
             
             final String tokenName;
             if (StringUtils.isBlank(newTokenName)) {
-                tokenName = String.format("Token created on %s", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date()));
+                tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             }else{
                 tokenName = newTokenName;
             }
