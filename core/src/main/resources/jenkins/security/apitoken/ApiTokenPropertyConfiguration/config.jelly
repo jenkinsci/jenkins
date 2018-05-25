@@ -27,13 +27,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="${%API Token}">
         <f:entry field="tokenGenerationOnCreationEnabled">
-            <f:checkbox title="${%Enable generation of Legacy API Token on user creation}"/>
+            <f:checkbox title="${%tokenGenerationOnCreationEnabled}"/>
         </f:entry>
         <f:entry field="creationOfLegacyTokenEnabled">
-            <f:checkbox title="${%Enable capability of user without Legacy API Token to create new one}"/>
+            <f:checkbox title="${%creationOfLegacyTokenEnabled}"/>
         </f:entry>
         <f:entry field="usageStatisticsEnabled">
-            <f:checkbox title="${%Enable usage statistics on the API Token to help users knowing if they have unused / old token}"/>
+            <f:checkbox title="${%usageStatisticsEnabled}"/>
         </f:entry>
     </f:section>
 </j:jelly>
