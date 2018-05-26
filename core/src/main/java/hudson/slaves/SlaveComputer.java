@@ -60,12 +60,15 @@ import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
@@ -471,6 +474,26 @@ public class SlaveComputer extends Computer {
     @CheckForNull
     public String getAbsoluteRemoteFs() {
         return channel == null ? null : absoluteRemoteFs;
+    }
+
+    /**
+     * Just for restFul api.
+     * Returns the remote FS root absolute path or {@code null} if the agent is off-line. The absolute path may change
+     * between connections if the connection method does not provide a consistent working directory and the node's
+     * remote FS is specified as a relative path.
+     * @see #getAbsoluteRemoteFs()
+     * @return the remote FS root absolute path or {@code null} if the agent is off-line or don't have connect permission.
+     * @since TODO
+     */
+    @Exported
+    @Restricted(DoNotUse.class)
+    @CheckForNull
+    public String getAbsoluteRemotePath() {
+        if(hasPermission(CONNECT)) {
+            return getAbsoluteRemoteFs();
+        } else {
+            return null;
+        }
     }
 
     static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
