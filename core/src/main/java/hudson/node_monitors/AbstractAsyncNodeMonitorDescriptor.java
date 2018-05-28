@@ -8,7 +8,6 @@ import jenkins.model.Jenkins;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -68,10 +67,19 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     /**
      * Performs all monitoring concurrently.
      *
-     * @return {@link ResultMap}
+     * @return Mapping from computer to monitored value. The map values can be null for several reasons, see {@link Result}
+     * for more details.
      */
     @Override
     protected Map<Computer, T> monitor() throws InterruptedException {
+        // Bridge method to offer original constrained interface.
+        return monitorDetailed().getMonitoringData();
+    }
+
+    /**
+     * Perform monitoring with detailed reporting.
+     */
+    protected final @Nonnull Result<T> monitorDetailed() throws InterruptedException {
         Map<Computer,Future<T>> futures = new HashMap<Computer,Future<T>>();
         Set<Computer> skipped = new HashSet<>();
 
@@ -116,16 +124,17 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
             }
         }
 
-        return new ResultMap<>(data, skipped);
+        return new Result<>(data, skipped);
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());
 
     /**
-     * Crate returned by {@link AbstractAsyncNodeMonitorDescriptor#monitor()}, it extends Map as that is what the interface
-     * is historically obligated to provide.
+     * Result object for {@link AbstractAsyncNodeMonitorDescriptor#monitorDetailed()} to facilitate extending information
+     * returned in the future.
      *
-     * It holds the results of the monitoring in the intrinsic map. Note the value can be null for several reasons:
+     * The {@link #getMonitoringData()} provides the results of the monitoring as {@link #monitor()} does. Note the value
+     * in the map can be <tt>null</tt> for several reasons:
      * <ul>
      *     <li>The monitoring {@link Callable} returned <tt>null</tt> as a provisioning result.</li>
      *     <li>Creating or evaluating that callable has thrown an exception.</li>
@@ -136,13 +145,19 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * Clients can distinguishing among these states based on the additional data attached to this object. {@link #getSkipped()}
      * returns computers that was not monitored as they ware either offline or monitor produced <tt>null</tt> {@link Callable}.
      */
-    protected static final class ResultMap<T> extends HashMap<Computer, T> {
+    protected static final class Result<T> {
         private static final long serialVersionUID = -7671448355804481216L;
+
+        private final @Nonnull Map<Computer, T> data;
         private final @Nonnull ArrayList<Computer> skipped;
 
-        private ResultMap(@Nonnull Map<Computer, T> data, @Nonnull Collection<Computer> skipped) {
-            super(data);
+        private Result(@Nonnull Map<Computer, T> data, @Nonnull Collection<Computer> skipped) {
+            this.data = new HashMap<>(data);
             this.skipped = new ArrayList<>(skipped);
+        }
+
+        protected @Nonnull Map<Computer, T> getMonitoringData() {
+            return data;
         }
 
         /**

@@ -54,8 +54,9 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
         @Override
         protected Map<Computer, Data> monitor() throws InterruptedException {
-            ResultMap<Data> base = (ResultMap<Data>) super.monitor();
-            for (Entry<Computer, Data> e : base.entrySet()) {
+            Result<Data> base = monitorDetailed();
+            Map<Computer, Data> monitoringData = base.getMonitoringData();
+            for (Entry<Computer, Data> e : monitoringData.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
                 if (base.getSkipped().contains(c)) {
@@ -77,7 +78,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
                     LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
                 }
             }
-            return base;
+            return monitoringData;
         }
 
         public String getDisplayName() {
