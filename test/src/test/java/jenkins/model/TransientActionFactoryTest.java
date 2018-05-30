@@ -155,7 +155,7 @@ public class TransientActionFactoryTest {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild build = r.buildAndAssertSuccess(p);
         // MyProminentProjectAction is only added via the TransientActionFactory and should never be persisted.
-        assertThat(build.getActions(MyProminentProjectAction.class), hasSize(0));
+        assertThat(Util.filter(build.getActions(), MyProminentProjectAction.class), hasSize(0));
         assertThat(Util.filter(build.getAllActions(), MyProminentProjectAction.class), hasSize(1));
     }
 
