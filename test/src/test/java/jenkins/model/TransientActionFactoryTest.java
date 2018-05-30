@@ -25,23 +25,25 @@
 package jenkins.model;
 
 import hudson.Util;
-import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.FreeStyleProject;
-import hudson.model.InvisibleAction;
-import hudson.model.ProminentProjectAction;
+import hudson.model.*;
 import hudson.model.queue.FoldableAction;
+
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matchers;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+
+import javax.annotation.Nonnull;
 
 public class TransientActionFactoryTest {
 
@@ -143,6 +145,31 @@ public class TransientActionFactoryTest {
         @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
         @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
+            return Collections.singleton(new MyProminentProjectAction());
+        }
+    }
+
+    @Issue("JENKINS-51584")
+    @Test
+    public void transientActionsAreNotPersistedOnQueueItems() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild build = r.buildAndAssertSuccess(p);
+        // MyProminentProjectAction is only added via the TransientActionFactory and should never be persisted.
+        assertThat(build.getActions(MyProminentProjectAction.class), hasSize(0));
+        assertThat(Util.filter(build.getAllActions(), MyProminentProjectAction.class), hasSize(1));
+    }
+
+    @TestExtension("transientActionsAreNotPersistedOnQueueItems")
+    public static class AllFactory extends TransientActionFactory<Actionable> {
+
+        @Override
+        public Class<Actionable> type() {
+            return Actionable.class;
+        }
+
+        @Nonnull
+        @Override
+        public Collection<? extends Action> createFor(@Nonnull Actionable target) {
             return Collections.singleton(new MyProminentProjectAction());
         }
     }
