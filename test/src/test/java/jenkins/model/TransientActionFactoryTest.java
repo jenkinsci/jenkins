@@ -25,7 +25,14 @@
 package jenkins.model;
 
 import hudson.Util;
-import hudson.model.*;
+import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Actionable;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.InvisibleAction;
+import hudson.model.ProminentProjectAction;
 import hudson.model.queue.FoldableAction;
 
 import java.io.IOException;
@@ -34,8 +41,6 @@ import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matchers;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -44,6 +49,9 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 
 import javax.annotation.Nonnull;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.*;
 
 public class TransientActionFactoryTest {
 
