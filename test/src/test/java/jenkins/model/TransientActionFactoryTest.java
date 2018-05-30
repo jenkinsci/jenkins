@@ -35,7 +35,8 @@ import hudson.model.InvisibleAction;
 import hudson.model.ProminentProjectAction;
 import hudson.model.queue.FoldableAction;
 
-import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +51,9 @@ import org.jvnet.hudson.test.TestExtension;
 
 import javax.annotation.Nonnull;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
 public class TransientActionFactoryTest {
@@ -163,7 +166,7 @@ public class TransientActionFactoryTest {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild build = r.buildAndAssertSuccess(p);
         // MyProminentProjectAction is only added via the TransientActionFactory and should never be persisted.
-        assertThat(Util.filter(build.getActions(), MyProminentProjectAction.class), hasSize(0));
+        assertThat(Util.filter(build.getActions(), MyProminentProjectAction.class), is(empty()));
         assertThat(Util.filter(build.getAllActions(), MyProminentProjectAction.class), hasSize(1));
     }
 
@@ -182,6 +185,20 @@ public class TransientActionFactoryTest {
         }
     }
 
-    private static class MyProminentProjectAction extends InvisibleAction implements ProminentProjectAction {}
+    private static class MyProminentProjectAction extends InvisibleAction implements ProminentProjectAction {
+
+        private String allocation;
+
+        public MyProminentProjectAction() {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            new Exception("MyProminentProjectAction allocated at: ").printStackTrace(pw);
+            allocation = sw.toString();
+        }
+
+        public String toString() {
+            return allocation;
+        }
+    }
 
 }
