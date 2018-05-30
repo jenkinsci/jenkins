@@ -31,6 +31,8 @@ import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import org.jenkinsci.Symbol;
@@ -68,12 +70,22 @@ public class JNLPLauncher extends ComputerLauncher {
 
     @Nonnull
     private RemotingWorkDirSettings workDirSettings;
-    
+
+    /**
+     * Constructor.
+     * @param tunnel Tunnel settings
+     * @param vmargs JVM arguments
+     * @param workDirSettings Settings for Work Directory management in Remoting.
+     *                        If {@code null}, {@link RemotingWorkDirSettings#getEnabledDefaults()}
+     *                        will be used to enable work directories by default in new agents.
+     * @since 2.68
+     */
     @DataBoundConstructor
-    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @Nonnull RemotingWorkDirSettings workDirSettings) {
+    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @Nullable RemotingWorkDirSettings workDirSettings) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
-        this.workDirSettings = workDirSettings;
+        this.workDirSettings = workDirSettings != null ? workDirSettings :
+                RemotingWorkDirSettings.getEnabledDefaults();
     }
     
     @Deprecated
