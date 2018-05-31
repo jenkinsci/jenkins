@@ -32,4 +32,12 @@ public class AdvancedButtonTest extends HudsonTestCase {
         assertEquals("dvalue",c.getString("d"));
         return FormValidation.ok();
     }
+
+    public void testSectionInsideOfAdvanced() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testSectionInsideOfAdvanced");
+        HtmlForm f = p.getFormByName("config");
+        assertFalse(f.getInputByName("b").isDisplayed());
+        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
+        assertTrue(f.getInputByName("b").isDisplayed());
+    }
 }
