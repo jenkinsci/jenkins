@@ -93,6 +93,8 @@ public class Api extends AbstractModelObject {
                       @QueryParameter String wrapper,
                       @QueryParameter String tree,
                       @QueryParameter int depth) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.REST_API);
+
         setHeaders(rsp);
 
         String[] excludes = req.getParameterValues("exclude");
@@ -194,6 +196,7 @@ public class Api extends AbstractModelObject {
      * Generate schema.
      */
     public void doSchema(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.REST_API);
         setHeaders(rsp);
         rsp.setContentType("application/xml");
         StreamResult r = new StreamResult(rsp.getOutputStream());
@@ -205,6 +208,7 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as JSON.
      */
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.REST_API);
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
             rsp.serveExposedBean(req,bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
@@ -217,6 +221,7 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as Python literal.
      */
     public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.REST_API);
         setHeaders(rsp);
         rsp.serveExposedBean(req,bean, Flavor.PYTHON);
     }

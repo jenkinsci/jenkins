@@ -5139,6 +5139,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
+    public static final Permission REST_API = new Permission(PERMISSIONS, "RestApi", Messages._Jenkins_RestApiPermission_Description(), ADMINISTER, PermissionScope.JENKINS);
 
     /**
      * Urls that are always visible without READ permission.
