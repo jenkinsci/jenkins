@@ -67,8 +67,8 @@ public final class WorkUnitContext {
         this.item = item;
         this.task = item.task;
         this.future = (FutureImpl)item.getFuture();
-        this.actions = new ArrayList<Action>(item.getAllActions());
-        
+        // JENKINS-51584 do not use item.getAllActions() here.
+        this.actions = new ArrayList<Action>(item.getActions());
         // +1 for the main task
         int workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
