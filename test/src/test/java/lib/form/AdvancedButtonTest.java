@@ -6,6 +6,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;
 
 
@@ -33,6 +34,7 @@ public class AdvancedButtonTest extends HudsonTestCase {
         return FormValidation.ok();
     }
 
+    @Issue("JENKINS-14632")
     public void testSectionInsideOfAdvanced() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testSectionInsideOfAdvanced");
         HtmlForm f = p.getFormByName("config");
