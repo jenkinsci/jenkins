@@ -31,6 +31,7 @@ import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import org.jenkinsci.Symbol;
@@ -70,7 +71,7 @@ public class JNLPLauncher extends ComputerLauncher {
     private RemotingWorkDirSettings workDirSettings;
     
     @DataBoundConstructor
-    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @Nonnull RemotingWorkDirSettings workDirSettings) {
+    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @CheckForNull RemotingWorkDirSettings workDirSettings) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
         this.workDirSettings = workDirSettings;
