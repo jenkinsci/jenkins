@@ -325,7 +325,7 @@ public class ClassFilterImpl extends ClassFilter {
 
     private void notifyRejected(@CheckForNull Class<?> clazz, @CheckForNull String clazzName, String message) {
         Throwable cause = null;
-        if (LOGGER.isLoggable(Level.INFO)) {
+        if (LOGGER.isLoggable(Level.FINE)) {
             cause = new SecurityException("Class rejected by the class filter: " +
                     (clazz != null ? clazz.getName() : clazzName));
         }
