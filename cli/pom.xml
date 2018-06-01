@@ -99,7 +99,7 @@
                   <mainClass>hudson.cli.CLI</mainClass>
                 </manifest>
                 <manifestEntries>
-                  <Jenkins-CLI-Version>${build.version}</Jenkins-CLI-Version>
+                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
                 </manifestEntries>
               </archive>
             </configuration>

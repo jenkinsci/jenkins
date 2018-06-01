@@ -4947,7 +4947,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver = UNCOMPUTED_VERSION;
-        if(Main.isDevelopmentMode && "${build.version}".equals(ver)) {
+        if(Main.isDevelopmentMode && "${project.version}".equals(ver)) {
             // in dev mode, unable to get version (ahem Eclipse)
             try {
                 File dir = new File(".").getAbsoluteFile();
