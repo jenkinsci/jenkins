@@ -153,7 +153,10 @@ public final class RemotingDiagnostics {
      * Obtains the heap dump in an HPROF file.
      */
     public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new MasterToSlaveCallable<FilePath, IOException>() {
+        return channel.call(new GetHeapDump());
+    }
+    private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
+            @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
                 hprof.delete();
@@ -169,7 +172,6 @@ public final class RemotingDiagnostics {
             }
 
             private static final long serialVersionUID = 1L;
-        });
     }
 
     /**
