@@ -145,15 +145,29 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Looks for the extension instance of the given type (subclasses excluded),
      * or return null.
      */
-    public @CheckForNull <U extends T> U get(Class<U> type) {
+    public @CheckForNull <U extends T> U get(@Nonnull Class<U> type) {
         for (T ext : this)
             if(ext.getClass()==type)
                 return type.cast(ext);
         return null;
     }
 
+    /**
+     * Looks for the extension instance of the given type (subclasses excluded),
+     * or throws an IllegalStateException.
+     * 
+     * Meant to simplify call inside @Extension annotated class to retrieve their own instance.
+     */
+    public @Nonnull <U extends T> U getInstance(@Nonnull Class<U> type) throws IllegalStateException {
+        for (T ext : this)
+            if(ext.getClass()==type)
+                return type.cast(ext);
+        
+        throw new IllegalStateException("The class " + type.getName() + " was not found, potentially not yet loaded");
+    }
+
     @Override
-    public Iterator<T> iterator() {
+    public @Nonnull Iterator<T> iterator() {
         // we need to intercept mutation, so for now don't allow Iterator.remove 
         return new AdaptedIterator<ExtensionComponent<T>,T>(Iterators.readOnly(ensureLoaded().iterator())) {
             protected T adapt(ExtensionComponent<T> item) {
@@ -428,7 +442,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * @return the singleton instance of the given type in its list.
      * @throws IllegalStateException if there are no instances, or more than one
      *
-     * @since TODO
+     * @since 2.87
      */
     public static @Nonnull <U> U lookupSingleton(Class<U> type) {
         ExtensionList<U> all = lookup(type);

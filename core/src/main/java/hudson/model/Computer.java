@@ -30,7 +30,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
@@ -65,8 +64,11 @@ import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ImpersonatingExecutorService;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -903,6 +905,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private void addNewExecutorIfNecessary() {
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
         Set<Integer> availableNumbers  = new HashSet<Integer>();
         for (int i = 0; i < numExecutors; i++)
             availableNumbers.add(i);
@@ -1351,9 +1356,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
+        new ImpersonatingExecutorService(
             Executors.newCachedThreadPool(
-                    new ExceptionCatchingThreadFactory(
-                            new NamingThreadFactory(new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))));
+                new ExceptionCatchingThreadFactory(
+                    new NamingThreadFactory(
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
 
 //
 //
@@ -1470,6 +1477,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if ((!proposedName.equals(nodeName))
                 && Jenkins.getActiveInstance().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
+        }
+
+        String nExecutors = req.getSubmittedForm().getString("numExecutors");
+        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors)<=0) {
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());

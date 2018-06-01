@@ -144,12 +144,14 @@ import java.io.ByteArrayInputStream;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.CustomClassFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -705,13 +707,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
                     if (ClassicPluginStrategy.isDetachedPlugin(name)) {
-                        // If it's already installed and the installed version is older
-                        // than the bundled version, then we upgrade. The bundled version is the min required version
-                        // for "this" version of Jenkins, so we must upgrade.
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
-                            return true;
+                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                        if (installedVersion != null && bundledVersion != null) {
+                            // If the installed version is older than the bundled version, then it MUST be upgraded.
+                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                            // If the versions are equal we just keep the installed version.
+                            return installedVersion.isOlderThan(bundledVersion);
                         }
                     }
 
@@ -866,6 +869,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             synchronized (((UberClassLoader) uberClassLoader).loaded) {
                 ((UberClassLoader) uberClassLoader).loaded.clear();
             }
+
+            // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
+            CustomClassFilter.Contributed.load();
 
             try {
                 p.resolvePluginDependencies();
@@ -1809,6 +1815,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new AssertionError(e); // impossible since we don't tweak XMLParser
         }
         return requestedPlugins;
+    }
+
+    @Restricted(DoNotUse.class) // table.jelly
+    public MetadataCache createCache() {
+        return new MetadataCache();
+    }
+
+    @Restricted(NoExternalUse.class) // table.jelly
+    public static final class MetadataCache {
+        private final Map<String, Object> data = new HashMap<>();
+        public <T> T of(String key, Class<T> type, Supplier<T> func) {
+            return type.cast(data.computeIfAbsent(key, _ignored -> func.get()));
+        }
     }
 
     /**

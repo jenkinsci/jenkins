@@ -28,8 +28,8 @@ THE SOFTWARE.
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.101-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -42,8 +42,6 @@ THE SOFTWARE.
     <stapler.version>1.254</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
-    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
-    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
 
   <dependencies>
@@ -179,6 +177,12 @@ THE SOFTWARE.
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.infradna.tool</groupId>
@@ -213,7 +217,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -239,6 +243,20 @@ THE SOFTWARE.
           <artifactId>xpp3_min</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!--
+    still including the xpp3 driver to ensure backwards compatibilty
+    for other plugins that may be depending on it
+    -->
+    <dependency>
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.kxml</groupId>
+      <artifactId>kxml2</artifactId>
+      <version>2.3.0</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -447,11 +465,6 @@ THE SOFTWARE.
       <version>${spring.version}</version>
     </dependency>
     <dependency>
-      <groupId>xpp3</groupId>
-      <artifactId>xpp3</artifactId>
-      <version>1.1.4c</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -502,7 +515,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.25</version>
+      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -585,7 +598,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -632,6 +644,7 @@ THE SOFTWARE.
         <plugin>
          <groupId>org.codehaus.mojo</groupId>
          <artifactId>build-helper-maven-plugin</artifactId>
+         <version>1.7</version>
          <executions>
              <execution>
                  <id>add-source</id>

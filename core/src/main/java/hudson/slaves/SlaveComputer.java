@@ -47,6 +47,7 @@ import hudson.util.Futures;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
+import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
@@ -54,16 +55,20 @@ import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
@@ -86,6 +91,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
 /**
@@ -470,6 +476,26 @@ public class SlaveComputer extends Computer {
         return channel == null ? null : absoluteRemoteFs;
     }
 
+    /**
+     * Just for restFul api.
+     * Returns the remote FS root absolute path or {@code null} if the agent is off-line. The absolute path may change
+     * between connections if the connection method does not provide a consistent working directory and the node's
+     * remote FS is specified as a relative path.
+     * @see #getAbsoluteRemoteFs()
+     * @return the remote FS root absolute path or {@code null} if the agent is off-line or don't have connect permission.
+     * @since TODO
+     */
+    @Exported
+    @Restricted(DoNotUse.class)
+    @CheckForNull
+    public String getAbsoluteRemotePath() {
+        if(hasPermission(CONNECT)) {
+            return getAbsoluteRemoteFs();
+        } else {
+            return null;
+        }
+    }
+
     static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
@@ -518,7 +544,7 @@ public class SlaveComputer extends Computer {
 
         channel.setProperty(SlaveComputer.class, this);
 
-        channel.addListener(new Channel.Listener() {
+        channel.addListener(new LoggingChannelListener(logger, Level.FINEST) {
             @Override
             public void onClosed(Channel c, IOException cause) {
                 // Orderly shutdown will have null exception
@@ -545,6 +571,12 @@ public class SlaveComputer extends Computer {
 
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
+        VersionNumber agentVersion = new VersionNumber(slaveVersion);
+        if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
+            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
+                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
+                    RemotingVersionInfo.getMinimumSupportedVersion()));
+        }
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());

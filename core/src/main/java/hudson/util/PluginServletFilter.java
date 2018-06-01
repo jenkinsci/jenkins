@@ -117,7 +117,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
      * Checks whether the given filter is already registered in the chain.
      * @param filter the filter to check.
      * @return true if the filter is already registered in the chain.
-     * @since FIXME
+     * @since 2.94
      */
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
@@ -166,7 +166,11 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     @Restricted(NoExternalUse.class)
     public static void cleanUp() {
-        PluginServletFilter instance = getInstance(Jenkins.getInstance().servletContext);
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return;
+        }
+        PluginServletFilter instance = getInstance(jenkins.servletContext);
         if (instance != null) {
             // While we could rely on the current implementation of list being a CopyOnWriteArrayList
             // safer to just take an explicit copy of the list and operate on the copy

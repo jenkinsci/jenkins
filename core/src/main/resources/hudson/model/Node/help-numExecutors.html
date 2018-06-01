@@ -1,6 +1,6 @@
 <div>
   The maximum number of concurrent builds that Jenkins may perform on this
-  agent.
+  node.
   <p>
   A good value to start with would be the number of CPU cores on the machine.
   Setting a higher value would cause each build to take longer, but could
@@ -9,10 +9,12 @@
   the second build could take advantage of the spare I/O capacity at that
   moment.
   <p>
-  Agents must have at least one executor. To temporarily prevent any builds from
-  being executed on an agent, use the <i>Mark this node temporarily offline</i>
-  button on the agent's page.
+  Agents (nodes that are not the master) must have at least one executor.
+  To temporarily prevent any builds from being executed on an agent, use the
+  <i>Mark this node temporarily offline</i> button on the agent's page.
   <p>
-  This does not apply to the Jenkins master &mdash; setting the number of
-  executors to zero will prevent any builds from being executed on the master.
+  For the master, set the number of executors to zero to prevent it from
+  executing builds locally.
+  <i>Note:<i> master will always be able to run flyweight tasks including
+  Pipeline's top-level task.
 </div>

@@ -3,12 +3,11 @@ package jenkins.security;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
-import hudson.remoting.Which;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
+import java.io.File;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import org.codehaus.groovy.runtime.Security218;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,8 +16,14 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.logging.Level;
+import org.apache.commons.io.FileUtils;
+import org.codehaus.groovy.runtime.MethodClosure;
+import static org.hamcrest.Matchers.containsString;
 
 import static org.junit.Assert.*;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -27,6 +32,12 @@ import static org.junit.Assert.*;
 public class Security218Test implements Serializable {
     @Rule
     public transient JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     /**
      * JNLP slave.
@@ -62,14 +73,16 @@ public class Security218Test implements Serializable {
     @SuppressWarnings("ConstantConditions")
     private void check(DumbSlave s) throws Exception {
         try {
-            s.getComputer().getChannel().call(new MasterToSlaveCallable<Object, RuntimeException>() {
-                public Object call() {
-                    return new Security218();
-                }
-            });
-            fail("Expected the connection to die");
-        } catch (SecurityException e) {
-            assertTrue(e.getMessage().contains(Security218.class.getName()));
+            Object o = s.getComputer().getChannel().call(new EvilReturnValue());
+            fail("Expected the connection to die: " + o);
+        } catch (Exception e) {
+            assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
+        }
+    }
+    private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
+        @Override
+        public Object call() {
+            return new MethodClosure("oops", "trim");
         }
     }
 
@@ -92,9 +105,11 @@ public class Security218Test implements Serializable {
     public Channel launchJnlpSlave(Slave slave) throws Exception {
         j.createWebClient().goTo("computer/"+slave.getNodeName()+"/slave-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
+        File slaveJar = tmp.newFile();
+        FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"),
-                "-jar", Which.jarFile(hudson.remoting.Launcher.class).getAbsolutePath(),
+                "-jar", slaveJar.getAbsolutePath(),
                 "-jnlpUrl", j.getURL() + "computer/"+slave.getNodeName()+"/slave-agent.jnlp", "-secret", secret);
 
         pb.inheritIO();

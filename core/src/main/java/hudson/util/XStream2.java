@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -75,6 +76,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -96,7 +98,18 @@ public class XStream2 extends XStream {
      */
     private MapperInjectionPoint mapperInjectionPoint;
 
+    /**
+     * Convenience method so we only have to change the driver in one place
+     * if we switch to something new in the future
+     *
+     * @return a new instance of the HierarchicalStreamDriver we want to use
+     */
+    public static HierarchicalStreamDriver getDefaultDriver() {
+        return new KXml2Driver();
+    }
+
     public XStream2() {
+        super(getDefaultDriver());
         init();
         classOwnership = null;
     }
@@ -108,6 +121,7 @@ public class XStream2 extends XStream {
     }
 
     XStream2(ClassOwnership classOwnership) {
+        super(getDefaultDriver());
         init();
         this.classOwnership = classOwnership;
     }
@@ -131,7 +145,7 @@ public class XStream2 extends XStream {
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
      * @see XmlFile#unmarshalNullingOut
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
-     * @since FIXME
+     * @since 2.99
      */
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {
         // init() is too early to do this
@@ -207,7 +221,7 @@ public class XStream2 extends XStream {
      * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
      * @param clazz a class which we expect to hold a non-{@code transient} field
      * @param field a field name in that class
-     * @since TODO
+     * @since 2.85 this method can be used from outside core, before then it was restricted since initially added in 1.551 / 1.532.2
      */
     public void addCriticalField(Class<?> clazz, String field) {
         reflectionConverter.addCriticalField(clazz, field);
@@ -292,7 +306,7 @@ public class XStream2 extends XStream {
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
         Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }
 
@@ -526,27 +540,28 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons");
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons");
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
+
+        /** TODO see comment in {@code whitelisted-classes.txt} */
+        private static final Pattern JRUBY_PROXY = Pattern.compile("org[.]jruby[.]proxy[.].+[$]Proxy\\d+");
 
         @Override
         public boolean canConvert(Class type) {
             if (type == null) {
                 return false;
             }
-            try {
-                ClassFilter.DEFAULT.check(type);
-                ClassFilter.DEFAULT.check(type.getName());
-            } catch (SecurityException se) {
-                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
-                return true;
+            String name = type.getName();
+            if (JRUBY_PROXY.matcher(name).matches()) {
+                return false;
             }
-            return false;
+            // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+            return ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type);
         }
     }
 }
