@@ -227,8 +227,13 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             killComputer(c);
         }
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onConfigurationChange();
+        for (ComputerListener cl : ComputerListener.all()) {
+            try {
+                cl.onConfigurationChange();
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, null, t);
+            }
+        }
     }
 
 }
