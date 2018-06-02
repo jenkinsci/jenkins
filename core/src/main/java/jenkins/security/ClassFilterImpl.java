@@ -172,10 +172,13 @@ public class ClassFilterImpl extends ClassFilter {
                 return false;
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
-                LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
+                notifyRejected(_c, null,
+                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+
                 return false;
             }
-            LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
+            notifyRejected(_c, null,
+                    String.format("%s in %s might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
             return true;
         });
     }
@@ -295,21 +298,39 @@ public class ClassFilterImpl extends ClassFilter {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
             Boolean r = f.permits(name);
             if (r != null) {
-                LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, r});
+                if (r) {
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, r});
+                } else {
+                    notifyRejected(null, name,
+                            String.format("%s specifies a policy for %s: %s", f, name, r));
+                }
+
                 return !r;
             }
         }
         // could apply a cache if the pattern search turns out to be slow
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
             if (SUPPRESS_ALL) {
-                LOGGER.log(Level.WARNING, "would normally reject {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+                notifyRejected(null, name,
+                        String.format("would normally reject %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
                 return false;
             }
-            LOGGER.log(Level.WARNING, "rejecting {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+            notifyRejected(null, name,
+                    String.format("rejecting %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
             return true;
         } else {
             return false;
         }
     }
 
+    private void notifyRejected(@CheckForNull Class<?> clazz, @CheckForNull String clazzName, String message) {
+        Throwable cause = null;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            cause = new SecurityException("Class rejected by the class filter: " +
+                    (clazz != null ? clazz.getName() : clazzName));
+        }
+        LOGGER.log(Level.WARNING, message, cause);
+
+        // TODO: Integrate with Telemetry API (JEP-304) once it is available in the core
+    }
 }
