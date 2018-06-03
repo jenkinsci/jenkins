@@ -430,14 +430,14 @@ public class SlaveComputer extends Computer {
      * @param commandTransport
      *      Command Transport
      * @param listener
-     *      Gets a notification when the channel closes, to perform clean up. Can be null.
+     *      Gets a notification when the channel closes, to perform clean up. Can be {@code null}.
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      * @since TODO
      */
     public void setChannel(@Nonnull ChannelBuilder cb,
                            @Nonnull CommandTransport commandTransport,
-                           @Nonnull Channel.Listener listener) throws IOException, InterruptedException {
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(cb,this);
         }
