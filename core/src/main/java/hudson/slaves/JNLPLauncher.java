@@ -38,6 +38,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * {@link ComputerLauncher} via JNLP.
@@ -68,7 +69,7 @@ public class JNLPLauncher extends ComputerLauncher {
     public final String vmargs;
 
     @Nonnull
-    private RemotingWorkDirSettings workDirSettings;
+    private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
     /**
      * Constructor.
@@ -79,20 +80,18 @@ public class JNLPLauncher extends ComputerLauncher {
      *                        will be used to enable work directories by default in new agents.
      * @since 2.68
      */
-    @DataBoundConstructor
+    @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @CheckForNull RemotingWorkDirSettings workDirSettings) {
-        this.tunnel = Util.fixEmptyAndTrim(tunnel);
-        this.vmargs = Util.fixEmptyAndTrim(vmargs);
-        this.workDirSettings = workDirSettings != null ? workDirSettings :
-                RemotingWorkDirSettings.getEnabledDefaults();
+        this(tunnel, vmargs);
+        if (workDirSettings != null) {
+            setWorkDirSettings(workDirSettings);
+        }
     }
     
-    @Deprecated
-    public JNLPLauncher(String tunnel, String vmargs) {
-        // TODO: Enable workDir by default in API? Otherwise classes inheriting from JNLPLauncher
-        // will need to enable the feature by default as well.
-        // https://github.com/search?q=org%3Ajenkinsci+%22extends+JNLPLauncher%22&type=Code
-        this(tunnel, vmargs, RemotingWorkDirSettings.getDisabledDefaults());
+    @DataBoundConstructor
+    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs) {
+        this.tunnel = Util.fixEmptyAndTrim(tunnel);
+        this.vmargs = Util.fixEmptyAndTrim(vmargs);
     }
 
     /**
@@ -131,6 +130,11 @@ public class JNLPLauncher extends ComputerLauncher {
     @Nonnull
     public RemotingWorkDirSettings getWorkDirSettings() {
         return workDirSettings;
+    }
+
+    @DataBoundSetter
+    public final void setWorkDirSettings(@Nonnull RemotingWorkDirSettings workDirSettings) {
+        this.workDirSettings = workDirSettings;
     }
     
     @Override
