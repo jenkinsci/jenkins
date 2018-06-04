@@ -803,20 +803,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
     }
 
-    /**
-     * get the fingerprints associated with this build
-     *
-     * @return never null
-     */
-    @Exported(name = "fingerprint", inline = true, visibility = -1)
-    public Collection<Fingerprint> getBuildFingerprints() {
-        FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
-        if (fingerprintAction != null) {
-            return fingerprintAction.getFingerprints().values();
-        }
-        return Collections.<Fingerprint>emptyList();
-    }
-
 	/*
      * No need to lock the entire AbstractBuild on change set calculation
      */
