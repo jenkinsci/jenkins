@@ -65,8 +65,8 @@ public final class DumbSlave extends Slave {
         super(name, remoteFS, launcher);
     }
 
-    @Extension @Symbol({"dumb",
-            "slave", "agent" /*because this is in effect the canonical slave type*/})
+    @Extension @Symbol({"agent" /*because this is in effect the canonical slave type*/, 
+            "dumb", "slave"})
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
