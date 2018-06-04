@@ -62,7 +62,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Initially null, and usually stays null.
-     * If {@link #completed} is called before {@link #setExecutor}, then either {@link #NULL} for success, or the error.
+     * If {@link #completed} is called before {@link #setExecutorWithoutCompleting}, then either {@link #NULL} for success, or the error.
      */
     @GuardedBy("this")
     private @CheckForNull Throwable result;
@@ -99,7 +99,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Obtains the associated executor.
-     * @return Associated Executor. May be {@code null} if {@link #setExecutor(hudson.model.Executor)} 
+     * @return Associated Executor. May be {@code null} if {@link #setExecutorWithoutCompleting(hudson.model.Executor)} 
      * has not been called yet.
      */
     @CheckForNull
