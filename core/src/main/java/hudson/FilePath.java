@@ -139,7 +139,6 @@ import static hudson.Util.isSymlink;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
-import org.kohsuke.accmod.restrictions.Beta;
         
 /**
  * {@link File} like object with remoting support.
@@ -969,28 +968,6 @@ public final class FilePath implements Serializable {
     public void copyFrom(URL url) throws IOException, InterruptedException {
         try (InputStream in = url.openStream()) {
             copyFrom(in);
-        }
-    }
-
-    /**
-     * Copies the content of a URL to a remote file.
-     * Unlike {@link #copyFrom} this will not transfer content over a Remoting channel.
-     * @since 2.118
-     */
-    @Restricted(Beta.class)
-    public void copyFromRemotely(URL url) throws IOException, InterruptedException {
-        act(new CopyFromRemotely(url));
-    }
-    private final class CopyFromRemotely extends MasterToSlaveFileCallable<Void> {
-        private static final long serialVersionUID = 1;
-        private final URL url;
-        CopyFromRemotely(URL url) {
-            this.url = url;
-        }
-        @Override
-        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            copyFrom(url);
-            return null;
         }
     }
 

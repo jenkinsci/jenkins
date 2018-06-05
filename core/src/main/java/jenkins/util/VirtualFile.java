@@ -336,6 +336,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     /**
      * Optionally obtains a URL which may be used to retrieve file contents from any process on any node.
      * For example, given cloud storage this might produce a permalink to the file.
+     * <p>Only {@code http} and {@code https} protocols are permitted.
      * <p>This is only meaningful for {@link #isFile}:
      * no ZIP etc. archiving protocol is defined to allow bulk access to directory trees.
      * <p>Any necessary authentication must be encoded somehow into the URL itself;
