@@ -32,7 +32,7 @@ THE SOFTWARE.
     <!-- response contentType header -->
     <st:contentType value="text/html;charset=UTF-8"/>
     <x:doctype name="html"/>
-    <html>
+    <html lang="${request.getLocale().toLanguageTag()}">
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
             <title>${%Restarting Jenkins}</title>
             <!-- we do not want bots on this page -->
@@ -42,7 +42,7 @@ THE SOFTWARE.
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
         </head>
         <body>
-            <div class="simple-page">
+            <div class="simple-page" role="main">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <div class="logo"></div>

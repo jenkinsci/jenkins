@@ -44,7 +44,7 @@ THE SOFTWARE.
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${data.errorMessage!=null ? 'danger' : 'normal'}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
-    <html>
+    <html lang="${request.getLocale().toLanguageTag()}">
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
             <title>${%Create an account! [Jenkins]}</title>
             <!-- we do not want bots on this page -->
@@ -54,7 +54,7 @@ THE SOFTWARE.
             <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css"/>
         </head>
         <body>
-            <div class="simple-page">
+            <div class="simple-page" role="main">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
                         <h1>${%Create an account!}</h1>

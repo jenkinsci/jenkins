@@ -47,7 +47,7 @@ function safeRedirector(url) {
     window.setTimeout(function() {
         const statusChecker = arguments.callee;
         Fetch.get(url, function(error, status) {
-            if(status === 503) {
+            if(status === 503 || status === 0) {
                 window.setTimeout(statusChecker, timeout)
             } else {
                 window.location.replace(url);

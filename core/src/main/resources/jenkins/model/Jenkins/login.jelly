@@ -51,9 +51,9 @@ THE SOFTWARE.
   <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
   <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
   <!-- real deal starting here -->
-  <html>
+  <html lang="${request.getLocale().toLanguageTag()}">
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
-      <title>${%signIn [Jenkins]}</title>
+      <title>${%signIn} [Jenkins]</title>
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
@@ -65,7 +65,7 @@ THE SOFTWARE.
           <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
         </j:when>
         <j:otherwise>
-          <div class="simple-page">
+          <div class="simple-page" role="main">
             <div class="modal login">
               <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
               <!-- login form -->
