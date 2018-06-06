@@ -45,6 +45,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.Functions;
 import hudson.init.Initializer;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -186,6 +187,11 @@ public class JenkinsTest {
         
         Jenkins jenkins = Jenkins.getInstance();
         assertFalse(jenkins.isNameUnique(jobName, curJobName));
+    }
+
+    @Test
+    public void testPlatformFlake() throws Exception {
+        assertTrue(Functions.isWindows());
     }
 
     @Test
