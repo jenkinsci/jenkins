@@ -3,7 +3,7 @@ Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
             var link = $(e.target).up(".advancedLink");
             link.style.display = "none"; // hide the button
 
-            var container = link.next().down(); // TABLE -> TBODY
+            var container = link.next("table.advancedBody").down(); // TABLE -> TBODY
 
             var tr = link.up("TR");
 

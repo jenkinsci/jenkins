@@ -78,17 +78,17 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
         if (Jenkins.getInstanceOrNull()==null) {
             Channel ch = Channel.current();
             if (ch!=null)
-                all = ch.call(new SlaveToMasterCallable<Collection<ParserConfigurator>, IOException>() {
-
-                    private static final long serialVersionUID = -2178106894481500733L;
-
-                    public Collection<ParserConfigurator> call() throws IOException {
-                        return new ArrayList<ParserConfigurator>(all());
-                    }
-                });
+                all = ch.call(new GetParserConfigurators());
         } else
             all = all();
         for (ParserConfigurator pc : all)
             pc.configure(reader,context);
+    }
+    private static class GetParserConfigurators extends SlaveToMasterCallable<Collection<ParserConfigurator>, IOException> {
+        private static final long serialVersionUID = -2178106894481500733L;
+        @Override
+        public Collection<ParserConfigurator> call() throws IOException {
+            return new ArrayList<>(all());
+        }
     }
 }
