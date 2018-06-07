@@ -24,7 +24,6 @@
 package jenkins.widgets;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
@@ -32,6 +31,7 @@ import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.search.UserSearchProperty;
+import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
 
 import javax.annotation.Nonnull;
