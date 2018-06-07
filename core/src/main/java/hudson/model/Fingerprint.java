@@ -827,8 +827,8 @@ public class Fingerprint implements ModelObject, Saveable {
             }
         }
         private void locationChanged(Item item, String oldName, String newName) {
-            if (item instanceof AbstractProject) {
-                AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
+            if (item instanceof Job) {
+                Job p = Jenkins.getInstance().getItemByFullName(newName, Job.class);
                 if (p != null) {
                     RunList<? extends Run> builds = p.getBuilds();
                     for (Run build : builds) {
