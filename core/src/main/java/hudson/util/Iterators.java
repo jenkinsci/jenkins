@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -410,8 +412,8 @@ public class Iterators {
      * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
      * @param iterator some iterator
      * @param count a nonnegative count
-     * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public static void skip(@Nonnull Iterator<?> iterator, int count) {
         if (count < 0) {
             throw new IllegalArgumentException();
