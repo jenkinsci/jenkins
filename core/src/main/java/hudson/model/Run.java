@@ -1406,8 +1406,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * get the fingerprints associated with this build
      *
-     * @return never null
+     * @return The fingerprints
      */
+    @Nonnull
     @Exported(name = "fingerprint", inline = true, visibility = -1)
     public Collection<Fingerprint> getBuildFingerprints() {
         FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
