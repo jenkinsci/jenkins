@@ -271,7 +271,7 @@ var Sortable = (function() {
      *   "03-23-99 1:30 PM also ignored content"
      *   "12-25/1979 13:45:22 always with the ignored content!"
      */
-    var date_pattern = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d\d|\d\d\d\d)(?:(?:\s*(\d{1,2})?:(\d\d)?(?::(\d\d)?)?)?(?:\s*([aA][mM]|[pP][mM])?))\b/
+    var date_pattern = /^Never|(\d{1,2})[\/-](\d{1,2})[\/-](\d\d|\d\d\d\d)(?:(?:\s*(\d{1,2})?:(\d\d)?(?::(\d\d)?)?)?(?:\s*([aA][mM]|[pP][mM])?))\b/
 
     // available sort functions
     var sorter = {
@@ -284,6 +284,9 @@ var Sortable = (function() {
              */
             function toDate(x) {
                 dmatches = x.match(date_pattern);
+                if (!dmatches || dmatches[0] == "Never") {
+                    return new Date(0);
+                }
                 month = dmatches[1];
                 day = dmatches[2];
                 year = parseInt(dmatches[3]);
