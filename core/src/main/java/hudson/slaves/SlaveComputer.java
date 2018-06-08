@@ -63,6 +63,7 @@ import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -438,6 +439,7 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      * @since TODO
      */
+    @Restricted(Beta.class)
     public void setChannel(@Nonnull ChannelBuilder cb,
                            @Nonnull CommandTransport commandTransport,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
