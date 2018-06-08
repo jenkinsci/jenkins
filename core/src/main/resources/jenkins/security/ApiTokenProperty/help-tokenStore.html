@@ -6,7 +6,11 @@
     Some good practices for keeping your API tokens secure are:
     <ul>
         <li>Use a different token for each application so that if an application is compromised you can revoke its token individually.</li>
-        <li>Regenerate the tokens every 6 months (depending on your context). We put an indicator concerning the age of the token.</li>
+        <li>Regenerate the tokens every 6 months (depending on your context). We display an indicator concerning the age of the token.</li>
         <li>Protect it like your password, as it allows other people to access Jenkins as you.</li>
     </ul>
+    <div class="warning">
+        The creation date of legacy tokens which have never been used are reset every time Jenkins is restarted,
+        which means that the date may be inaccurate.
+    </div>
 </div>

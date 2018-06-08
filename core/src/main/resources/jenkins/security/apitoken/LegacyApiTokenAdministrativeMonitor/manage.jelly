@@ -105,20 +105,20 @@ THE SOFTWARE.
                                         <td>
                                             <j:choose>
                                                 <j:when test="${hasFreshToken}">
-                                                    <l:icon class="icon-accept icon-sm" alt="${%Fresh token}"/>
+                                                    <l:icon class="icon-accept icon-sm" alt="${%Fresh token}" tooltip="${%HasFreshToken_ok_tooltip}"/>
                                                 </j:when>
                                                 <j:otherwise>
-                                                    <l:icon class="icon-warning icon-sm" alt="${%No fresh token}"/>
+                                                    <l:icon class="icon-warning icon-sm" alt="${%No fresh token}" tooltip="${%HasFreshToken_warning_tooltip}"/>
                                                 </j:otherwise>
                                             </j:choose>
                                         </td>
                                         <td>
                                             <j:choose>
                                                 <j:when test="${hasMoreRecentlyUsedToken}">
-                                                    <l:icon class="icon-accept icon-sm" alt="${%Recently used token}"/>
+                                                    <l:icon class="icon-accept icon-sm" alt="${%Recently used token}" tooltip="${%HasMoreRecentlyUsedToken_ok_tooltip}"/>
                                                 </j:when>
                                                 <j:otherwise>
-                                                    <l:icon class="icon-warning icon-sm" alt="${%No recently used token}"/>
+                                                    <l:icon class="icon-warning icon-sm" alt="${%No recently used token}" tooltip="${%HasMoreRecentlyUsedToken_warning_tooltip}"/>
                                                 </j:otherwise>
                                             </j:choose>
                                         </td>
