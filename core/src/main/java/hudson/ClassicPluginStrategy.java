@@ -25,6 +25,8 @@ package hudson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -110,11 +112,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     @Override public String getShortName(File archive) throws IOException {
         Manifest manifest;
+        if (!archive.exists()) {
+            throw new FileNotFoundException("Failed to load " + archive + ". The file does not exist");
+        } else if (!archive.isFile()) {
+            throw new FileNotFoundException("Failed to load " + archive + ". It is not a file");
+        }
+
         if (isLinked(archive)) {
             manifest = loadLinkedManifest(archive);
         } else {
             try (JarFile jf = new JarFile(archive, false)) {
                 manifest = jf.getManifest();
+            } catch (IOException ex) {
+                // Mention file name in the exception
+                throw new IOException("Failed to load " + archive, ex);
             }
         }
         return PluginWrapper.computeShortName(manifest, archive.getName());
