@@ -27,6 +27,8 @@ import hudson.BulkChange;
 import hudson.XmlFile;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -43,6 +45,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Restricted(NoExternalUse.class)
 public class ApiTokenStats implements Saveable {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenStats.class.getName());
     

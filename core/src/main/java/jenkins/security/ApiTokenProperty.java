@@ -362,7 +362,8 @@ public class ApiTokenProperty extends UserProperty {
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
         }
-        
+
+        @Restricted(NoExternalUse.class) // Jelly use
         public String getNoLegacyToken(){
             return Messages.ApiTokenProperty_NoLegacyToken();
         }

@@ -80,6 +80,7 @@ public class UpgradeWizard extends InstallState {
         // and potentially the admin has re-enabled the features
         ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ApiTokenPropertyConfiguration.get();
         if(!apiTokenPropertyConfiguration.hasExistingConfigFile()){
+            LOGGER.log(Level.INFO, "New API token system configured with insecure options to keep legacy behavior");
             apiTokenPropertyConfiguration.setCreationOfLegacyTokenEnabled(false);
             apiTokenPropertyConfiguration.setTokenGenerationOnCreationEnabled(false);
         }
