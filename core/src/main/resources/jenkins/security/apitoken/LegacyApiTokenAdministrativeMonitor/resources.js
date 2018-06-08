@@ -47,27 +47,22 @@ function selectRecent(anchor){
 
 function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes){
     var mustCheck = false;
-    for(var i = 0; i < concernedCheckBoxes.length ; i++){
+    for(var i = 0; i < concernedCheckBoxes.length && !mustCheck ; i++){
         var checkBox = concernedCheckBoxes[i];
         if(!checkBox.checked){
             mustCheck = true;
         }
     }
     
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
+    allCheckBoxes.forEach(function(checkBox){
         checkBox.checked = false;
-    }
+    });
     
-    for(var i = 0; i < concernedCheckBoxes.length ; i++){
-        var checkBox = concernedCheckBoxes[i];
+    concernedCheckBoxes.forEach(function(checkBox){
         checkBox.checked = mustCheck;
-    }
+    });
     
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
-        onCheckChanged(checkBox);
-    }
+    allCheckBoxes.forEach(onCheckChanged);
 }
 
 function confirmAndRevokeAllSelected(button){

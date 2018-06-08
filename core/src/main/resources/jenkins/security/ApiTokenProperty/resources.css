@@ -106,6 +106,27 @@
     display: none;
     font-family: monospace;
     font-size: 14px;
+    margin-right: 2px; 
+}
+.token-list .token-list-new-item .new-token-value.visible{
+    display: inline-block;
+}
+.token-list .token-list-new-item .display-after-generation{
+    margin-top: 5px; 
+    display: none;
+}
+.token-list .token-list-new-item .display-after-generation.visible{
+    display: block;
+}
+.token-list .token-list-new-item .token-error-message{
+    margin-top: 5px; 
+    display: none;
+}
+.token-list .token-list-new-item .token-error-message.visible{
+    display: block;
+}
+.token-list .token-list-new-item .token-save{
+    vertical-align: baseline;
 }
 .token-list .repeated-chunk {
     border-width: 0;

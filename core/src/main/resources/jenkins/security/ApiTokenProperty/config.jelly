@@ -108,11 +108,10 @@ THE SOFTWARE.
                     <j:otherwise>
                         <div class="token-list-item token-list-new-item">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
-                            <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"
-                                       style="width: 40%; display: inline-block"/>
+                            <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"/>
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
-                            <span class="new-token-value" style="width: 40%; margin-right: 2px; display: none"><!--will be filled by javascript--></span>
-                            <span class="yui-button token-save" style="vertical-align: baseline;">
+                            <span class="new-token-value"><!--will be filled by javascript--></span>
+                            <span class="yui-button token-save">
                                 <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
                                     ${%GenerateNewToken}
                                 </button>
@@ -125,8 +124,8 @@ THE SOFTWARE.
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <l:icon class="icon-text-error icon-sm"/>
                             </a>
-                            <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
-                            <div class="warning display-after-generation" style="margin-top: 5px; display: none;">${%TokenDisplayedOnce}</div>
+                            <div class="error token-error-message"><!-- filled in case of error --></div>
+                            <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
                         </div>
                     </j:otherwise>
                 </j:choose>

@@ -71,12 +71,12 @@ function saveApiToken(button){
             var json = rsp.responseJSON;
             var errorSpan = repeatedChunk.querySelector('.error');
             if(json.status === 'error'){
-                errorSpan.style.display = 'block';
                 errorSpan.innerHTML = json.message;
+                errorSpan.addClassName('visible');
 
                 button.removeClassName('request-pending');
             }else{
-                errorSpan.style.display = 'none';
+                errorSpan.removeClassName('visible');
                 
                 var tokenName = json.data.tokenName;
                 // in case the name was empty, the application will propose a default one
@@ -85,15 +85,15 @@ function saveApiToken(button){
                 var tokenValue = json.data.tokenValue;
                 var tokenValueSpan = repeatedChunk.querySelector('.new-token-value');
                 tokenValueSpan.innerText = tokenValue;
-                tokenValueSpan.style.display = 'inline-block';
+                tokenValueSpan.addClassName('visible');
                 
                 var tokenUuid = json.data.tokenUuid;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
                 uuidInput.value = tokenUuid;
 
                 var warningMessage = repeatedChunk.querySelector('.display-after-generation');
-                warningMessage.style.display = 'block';
-                
+                warningMessage.addClassName('visible');
+
                 // we do not want to allow user to create twice a token using same name by mistake
                 button.remove();
                 
