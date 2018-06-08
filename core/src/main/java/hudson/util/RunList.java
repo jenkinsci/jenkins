@@ -150,7 +150,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public List<R> subList(int fromIndex, int toIndex) {
         List<R> r = new ArrayList<R>();
         Iterator<R> itr = iterator();
-        Iterators.skip(itr,fromIndex);
+        hudson.util.Iterators.skip(itr, fromIndex);
         for (int i=toIndex-fromIndex; i>0; i--) {
             r.add(itr.next());
         }
