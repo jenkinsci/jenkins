@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import com.google.common.io.NullOutputStream;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -39,6 +40,7 @@ import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
+import hudson.remoting.CommandTransport;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -61,6 +63,7 @@ import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -72,6 +75,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -417,6 +421,40 @@ public class SlaveComputer extends Computer {
 
         Channel channel = cb.build(in,out);
         setChannel(channel,launchLog,listener);
+    }
+
+    /**
+     * Creates a {@link Channel} from the given Channel Builder and Command Transport.
+     * This method can be used to allow {@link ComputerLauncher}s to create channels not based on I/O streams.
+     *
+     * @param cb
+     *      Channel Builder.
+     *      To print launch logs this channel builder should have a Header Stream defined
+     *      (see {@link ChannelBuilder#getHeaderStream()}) in this argument or by one of {@link ChannelConfigurator}s.
+     * @param commandTransport
+     *      Command Transport
+     * @param listener
+     *      Gets a notification when the channel closes, to perform clean up. Can be {@code null}.
+     *      By the time this method is called, the cause of the termination is reported to the user,
+     *      so the implementation of the listener doesn't need to do that again.
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public void setChannel(@Nonnull ChannelBuilder cb,
+                           @Nonnull CommandTransport commandTransport,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,this);
+        }
+
+        OutputStream headerStream = cb.getHeaderStream();
+        if (headerStream == null) {
+            LOGGER.log(Level.WARNING, "No header stream defined when setting channel for computer {0}. " +
+                    "Launch log won't be printed", this);
+            headerStream = new NullOutputStream();
+        }
+        Channel channel = cb.build(commandTransport);
+        setChannel(channel, headerStream, listener);
     }
 
     /**

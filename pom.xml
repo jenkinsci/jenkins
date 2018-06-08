@@ -106,7 +106,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.20</remoting.version>
+    <remoting.version>3.21</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
