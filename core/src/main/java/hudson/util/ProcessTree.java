@@ -396,7 +396,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         // Check for the existance of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
-                vetoersExist = SlaveComputer.getChannelToMaster().call(new DoVetoersExist());
+                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                if (channelToMaster != null) {
+                    vetoersExist = channelToMaster.call(new DoVetoersExist());
+                }
             }
             catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
