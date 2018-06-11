@@ -54,15 +54,20 @@ function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes){
         }
     }
     
-    allCheckBoxes.forEach(function(checkBox){
+    for(var i = 0; i < allCheckBoxes.length ; i++){
+        var checkBox = allCheckBoxes[i];
         checkBox.checked = false;
-    });
+    }
     
-    concernedCheckBoxes.forEach(function(checkBox){
+    for(var i = 0; i < concernedCheckBoxes.length ; i++){
+        var checkBox = concernedCheckBoxes[i];
         checkBox.checked = mustCheck;
-    });
+    }
     
-    allCheckBoxes.forEach(onCheckChanged);
+    for(var i = 0; i < allCheckBoxes.length ; i++){
+        var checkBox = allCheckBoxes[i];
+        onCheckChanged(checkBox);
+    }
 }
 
 function confirmAndRevokeAllSelected(button){
