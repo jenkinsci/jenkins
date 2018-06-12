@@ -389,21 +389,8 @@ public class SlaveComputer extends Computer {
     /**
      * Creates a {@link Channel} from the given stream and sets that to this agent.
      *
-     * @param in
-     *      Stream connected to the remote agent. It's the caller's responsibility to do
-     *      buffering on this stream, if that's necessary.
-     * @param out
-     *      Stream connected to the remote peer. It's the caller's responsibility to do
-     *      buffering on this stream, if that's necessary.
-     * @param taskListener
-     *      Receives the portion of data in <tt>is</tt> before
-     *      the data goes into the "binary mode". This is useful
-     *      when the established communication channel might include some data that might
-     *      be useful for debugging/trouble-shooting.
-     * @param listener
-     *      Gets a notification when the channel closes, to perform clean up. Can be null.
-     *      By the time this method is called, the cause of the termination is reported to the user,
-     *      so the implementation of the listener doesn't need to do that again.
+     * Same as {@link #setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}, but for
+     * {@link TaskListener}.
      */
     public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
                            @Nonnull TaskListener taskListener,
