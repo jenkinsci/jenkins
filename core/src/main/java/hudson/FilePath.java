@@ -2602,6 +2602,10 @@ public final class FilePath implements Serializable {
             TarArchiveEntry te;
             while ((te = t.getNextTarEntry()) != null) {
                 File f = new File(baseDir, te.getName());
+                if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
+                    throw new IOException(
+                            "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
+                }
                 if (te.isDirectory()) {
                     mkdirs(f);
                 } else {
