@@ -23,7 +23,6 @@
  */
 package hudson.slaves;
 
-import com.google.common.io.NullOutputStream;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -387,7 +386,28 @@ public class SlaveComputer extends Computer {
 
     private final Object channelLock = new Object();
 
-    public void setChannel(InputStream in, OutputStream out, TaskListener taskListener, Channel.Listener listener) throws IOException, InterruptedException {
+    /**
+     * Creates a {@link Channel} from the given stream and sets that to this agent.
+     *
+     * @param in
+     *      Stream connected to the remote agent. It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
+     * @param out
+     *      Stream connected to the remote peer. It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
+     * @param taskListener
+     *      Receives the portion of data in <tt>is</tt> before
+     *      the data goes into the "binary mode". This is useful
+     *      when the established communication channel might include some data that might
+     *      be useful for debugging/trouble-shooting.
+     * @param listener
+     *      Gets a notification when the channel closes, to perform clean up. Can be null.
+     *      By the time this method is called, the cause of the termination is reported to the user,
+     *      so the implementation of the listener doesn't need to do that again.
+     */
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @Nonnull TaskListener taskListener,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         setChannel(in,out,taskListener.getLogger(),listener);
     }
 
@@ -410,7 +430,9 @@ public class SlaveComputer extends Computer {
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      */
-    public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @CheckForNull OutputStream launchLog,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
             .withMode(Channel.Mode.NEGOTIATE)
             .withHeaderStream(launchLog);
@@ -437,7 +459,7 @@ public class SlaveComputer extends Computer {
      *      Gets a notification when the channel closes, to perform clean up. Can be {@code null}.
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
-     * @since TODO
+     * @since 2.127
      */
     @Restricted(Beta.class)
     public void setChannel(@Nonnull ChannelBuilder cb,
@@ -451,7 +473,6 @@ public class SlaveComputer extends Computer {
         if (headerStream == null) {
             LOGGER.log(Level.WARNING, "No header stream defined when setting channel for computer {0}. " +
                     "Launch log won't be printed", this);
-            headerStream = new NullOutputStream();
         }
         Channel channel = cb.build(commandTransport);
         setChannel(channel, headerStream, listener);
