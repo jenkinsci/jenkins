@@ -15,6 +15,9 @@ def failFast = false
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
+//TODO: Run tests on Java 10
+//TODO: Do we really need Windows for smoke tests
+
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
 
@@ -42,7 +45,8 @@ for(i = 0; i < buildTypes.size(); i++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e -Psmoke-test"
+
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
@@ -73,6 +77,7 @@ for(i = 0; i < buildTypes.size(); i++) {
     }
 }
 
+/* TODO: disabled for the Java 10 branch
 builds.ath = {
     node("docker&&highmem") {
         // Just to be safe
@@ -95,6 +100,7 @@ builds.ath = {
         }
     }
 }
+*/
 
 builds.failFast = failFast
 parallel builds
