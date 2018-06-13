@@ -13,7 +13,7 @@ COPY licenseCompleter.groovy /jenkins/src/licenseCompleter.groovy
 COPY show-pom-version.rb /jenkins/src/show-pom-version.rb
 
 WORKDIR /jenkins/src/
-RUN mvn clean install -DskipTests -Plight-test
+RUN mvn clean install --batch-mode -Psmoke-test
 
 # The image is based on https://github.com/jenkinsci/docker/tree/java10
 # All documentation is applicable
