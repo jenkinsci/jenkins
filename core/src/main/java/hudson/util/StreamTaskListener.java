@@ -160,7 +160,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     @Override
     public Charset getCharset() {
-        return charset;
+        return charset != null ? charset : Charset.defaultCharset();
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
