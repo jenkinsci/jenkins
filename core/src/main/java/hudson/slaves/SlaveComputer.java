@@ -23,7 +23,6 @@
  */
 package hudson.slaves;
 
-import com.google.common.io.NullOutputStream;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -385,7 +384,15 @@ public class SlaveComputer extends Computer {
 
     private final Object channelLock = new Object();
 
-    public void setChannel(InputStream in, OutputStream out, TaskListener taskListener, Channel.Listener listener) throws IOException, InterruptedException {
+    /**
+     * Creates a {@link Channel} from the given stream and sets that to this agent.
+     *
+     * Same as {@link #setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}, but for
+     * {@link TaskListener}.
+     */
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @Nonnull TaskListener taskListener,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         setChannel(in,out,taskListener.getLogger(),listener);
     }
 
@@ -408,7 +415,9 @@ public class SlaveComputer extends Computer {
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      */
-    public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @CheckForNull OutputStream launchLog,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
             .withMode(Channel.Mode.NEGOTIATE)
             .withHeaderStream(launchLog);
@@ -435,7 +444,7 @@ public class SlaveComputer extends Computer {
      *      Gets a notification when the channel closes, to perform clean up. Can be {@code null}.
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
-     * @since TODO
+     * @since 2.127
      */
     @Restricted(Beta.class)
     public void setChannel(@Nonnull ChannelBuilder cb,
@@ -449,7 +458,6 @@ public class SlaveComputer extends Computer {
         if (headerStream == null) {
             LOGGER.log(Level.WARNING, "No header stream defined when setting channel for computer {0}. " +
                     "Launch log won't be printed", this);
-            headerStream = new NullOutputStream();
         }
         Channel channel = cb.build(commandTransport);
         setChannel(channel, headerStream, listener);
@@ -548,14 +556,18 @@ public class SlaveComputer extends Computer {
 
     /**
      * Sets up the connection through an existing channel.
-     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already
+     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already.
+     * @param launchLog Launch log. If not {@code null}, will receive launch log messages
+     * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
-    public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+    public void setChannel(@Nonnull Channel channel,
+                           @CheckForNull OutputStream launchLog,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
-        final TaskListener taskListener = new StreamTaskListener(launchLog);
+        final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
         channel.setProperty(SlaveComputer.class, this);
