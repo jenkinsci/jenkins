@@ -102,7 +102,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         }
     }
 
-    public static void scheduleAperiodWork(AperiodicWork ap) {
+    private static void scheduleAperiodWork(AperiodicWork ap) {
         Timer.get().schedule(ap, ap.getInitialDelay(), TimeUnit.MILLISECONDS);
     }
 
