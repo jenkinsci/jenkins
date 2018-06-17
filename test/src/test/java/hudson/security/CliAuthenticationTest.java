@@ -1,8 +1,10 @@
 package hudson.security;
 
 import hudson.ExtensionList;
+import hudson.ExtensionList;
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
+import hudson.cli.CliProtocol2;
 import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import jenkins.security.SpySecurityListener;
@@ -26,6 +28,8 @@ import org.springframework.dao.DataAccessException;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -44,6 +48,13 @@ public class CliAuthenticationTest {
     public void prepareListeners(){
         //TODO simplify using #3021 into ExtensionList.lookupSingleton(SpySecurityListener.class)
         this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
+    }
+
+    @Before
+    public void setUp() {
+        Set<String> agentProtocols = new HashSet<>(j.jenkins.getAgentProtocols());
+        agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
+       j.jenkins.setAgentProtocols(agentProtocols);
     }
 
     @Test
