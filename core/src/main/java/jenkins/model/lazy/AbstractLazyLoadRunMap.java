@@ -29,10 +29,9 @@ import hudson.model.RunMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -336,9 +335,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             return null;
         case DESC:
             // TODO again could be made more efficient
-            List<Integer> reversed = new ArrayList<Integer>(numberOnDisk);
-            Collections.reverse(reversed);
-            for (int m : reversed) {
+            ListIterator<Integer> iterator = numberOnDisk.listIterator(numberOnDisk.size());
+            while(iterator.hasPrevious()) {
+                int m = iterator.previous();
                 if (m > n) {
                     continue;
                 }

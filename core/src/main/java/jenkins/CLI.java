@@ -34,12 +34,7 @@ public class CLI extends GlobalConfiguration {
 
     @Nonnull
     public static CLI get() {
-        CLI instance = GlobalConfiguration.all().get(CLI.class);
-        if (instance == null) {
-            // should not happen
-            return new CLI();
-        }
-        return instance;
+        return GlobalConfiguration.all().getInstance(CLI.class);
     }
     
     private boolean enabled = true; // historical default, but overridden in SetupWizard
@@ -49,7 +44,7 @@ public class CLI extends GlobalConfiguration {
     }
 
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 

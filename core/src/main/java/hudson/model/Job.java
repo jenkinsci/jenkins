@@ -29,6 +29,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.PermalinkList;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -55,7 +56,6 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
 import hudson.util.ProcessTree;
-import hudson.util.QuotedStringTokenizer;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -67,7 +67,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -319,6 +319,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns whether the name of this job can be changed by user.
      */
+    @Override
     public boolean isNameEditable() {
         return true;
     }
@@ -675,6 +676,40 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static class SubItemBuildsLocationImpl extends ItemListener {
+        @Override
+        public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            final Jenkins jenkins = Jenkins.getInstance();
+            if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
+                File newBuildDir = ((Job)item).getBuildDir();
+                try {
+                    if (!Util.isDescendant(item.getRootDir(), newBuildDir)) {
+                        //OK builds are stored somewhere outside of the item's root, so none of the other move operations has probably moved it.
+                        //So let's try even though we lack some information
+                        String oldBuildsDir = Jenkins.expandVariablesForDirectory(jenkins.getRawBuildsDir(), oldFullName, "<NOPE>");
+                        if (oldBuildsDir.contains("<NOPE>")) {
+                            LOGGER.severe(String.format("Builds directory for job %1$s appears to be outside of item root," +
+                                    " but somehow still containing the item root path, which is unknown. Cannot move builds from %2$s to %1$s.", newFullName, oldFullName));
+                        } else {
+                            File oldDir = new File(oldBuildsDir);
+                            if (oldDir.isDirectory()) {
+                                try {
+                                    FileUtils.moveDirectory(oldDir, newBuildDir);
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.SEVERE, String.format("Failed to move %s to %s", oldBuildsDir, newBuildDir.getAbsolutePath()), e);
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to inspect " + item.getRootDir() + ". Builds might not be moved.", e);
+                }
+            }
+        }
     }
 
     /**
@@ -1317,37 +1352,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             ItemListener.fireOnUpdated(this);
 
-            String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
-            if (validRename(name, newName)) {
-                newName = newName.trim();
-                // check this error early to avoid HTTP response splitting.
-                Jenkins.checkGoodName(newName);
-                namingStrategy.checkName(newName);
-                if (FormApply.isApply(req)) {
-                    FormApply.applyResponse("notificationBar.show(" + QuotedStringTokenizer.quote(Messages.Job_you_must_use_the_save_button_if_you_wish()) + ",notificationBar.WARNING)").generateResponse(req, rsp, null);
-                } else {
-                    rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
-                }
-            } else {
                 if(namingStrategy.isForceExistingJobs()){
                     namingStrategy.checkName(name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
-            }
         } catch (JSONException e) {
             LOGGER.log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
-    }
-
-    private boolean validRename(String oldName, String newName) {
-        if (newName == null) {
-            return false;
-        }
-        boolean noChange = oldName.equals(newName);
-        boolean spaceAdded = oldName.equals(newName.trim());
-        return !noChange && !spaceAdded;
     }
 
     /**
@@ -1547,32 +1560,25 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Renames this job.
+     * @deprecated Exists for backwards compatibility, use {@link #doConfirmRename} instead.
      */
+    @Deprecated
     @RequirePOST
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
-
-        if (!hasPermission(CONFIGURE)) {
-            // rename is essentially delete followed by a create
-            checkPermission(CREATE);
-            checkPermission(DELETE);
-        }
-
         String newName = req.getParameter("newName");
-        Jenkins.checkGoodName(newName);
+        doConfirmRename(newName).generateResponse(req, rsp, null);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void checkRename(String newName) throws Failure {
         if (isBuilding()) {
-            // redirect to page explaining that we can't rename now
-            rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
-            return;
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
         }
-
-        renameTo(newName);
-        // send to the new job page
-        // note we can't use getUrl() because that would pick up old name in the
-        // Ancestor.getUrl()
-        rsp.sendRedirect2("../" + newName);
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)

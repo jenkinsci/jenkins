@@ -213,7 +213,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
 
-        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTime(), getBuildCause(asJob(), req)).getItem();
+        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTimeInSeconds(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
@@ -377,27 +377,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          */
         Map<TriggerDescriptor,Trigger<?>> getTriggers();
 
-        /**
-         * @deprecated use {@link #scheduleBuild(Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild() {
-            return getParameterizedJobMixIn().scheduleBuild();
-        }
-
         @Override
         default boolean scheduleBuild(Cause c) {
             return getParameterizedJobMixIn().scheduleBuild(c);
-        }
-
-        /**
-         * @deprecated use {@link #scheduleBuild(int, Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild(int quietPeriod) {
-            return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
         }
 
         @Override

@@ -27,6 +27,7 @@ import hudson.model.listeners.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.io.File;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.AccessDeniedException;
 
@@ -88,4 +89,42 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Internal method. Called by {@link Item}s when they are deleted by users.
      */
     void onDeleted(T item) throws IOException;
+
+    /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     * @since 2.93
+     */
+    default <T extends Item> List<T> getAllItems(Class<T> type) {
+        return Items.getAllItems(this, type);
+    }
+
+    /**
+     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     * @since 2.93
+     */
+    default <T extends Item> Iterable<T> allItems(Class<T> type) {
+        return Items.allItems(this, type);
+    }
+
+    /**
+     * Gets all the items recursively.
+     * @since 2.93
+     */
+    default List<Item> getAllItems() {
+        return getAllItems(Item.class);
+    }
+
+    /**
+     * Gets all the items unordered, lazily and recursively.
+     * @since 2.93
+     */
+    default Iterable<Item> allItems() {
+        return allItems(Item.class);
+    }
+
+    // TODO could delegate to allItems overload taking Authentication, but perhaps more useful to introduce a variant to perform preauth filtering using Predicate and check Item.READ afterwards
+    // or return a Stream<Item> and provide a Predicate<Item> public static Items.readable(), and see https://stackoverflow.com/q/22694884/12916 if you are looking for just one result
+
 }

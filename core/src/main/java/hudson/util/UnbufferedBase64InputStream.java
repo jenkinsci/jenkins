@@ -1,11 +1,10 @@
 package hudson.util;
 
-import org.apache.commons.codec.binary.Base64;
-
 import java.io.DataInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 
 /**
  * Filter InputStream that decodes base64 without doing any buffering.
@@ -22,6 +21,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
     private byte[] decoded;
     private int pos;
     private final DataInputStream din;
+    private static final Base64.Decoder decoder = Base64.getMimeDecoder();
 
     public UnbufferedBase64InputStream(InputStream in) {
         super(in);
@@ -38,7 +38,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
 
         if (pos==decoded.length) {
             din.readFully(encoded);
-            decoded = Base64.decodeBase64(encoded);
+            decoded = decoder.decode(encoded);
             if (decoded.length==0)  return -1; // EOF
             pos = 0;
         }

@@ -79,7 +79,7 @@ public class GetViewCommandTest {
 
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
-        assertThat(result.stdout(), startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertThat(result.stdout(), startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(result.stdout(), containsString("<name>aView</name>"));
     }
 

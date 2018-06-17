@@ -23,6 +23,8 @@
  */
 package hudson.util.jna;
 
+import hudson.Util;
+
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +60,12 @@ public class Kernel32Utils {
         }
     }
 
+    /**
+     * @deprecated Use {@link java.nio.file.Files#readAttributes} with
+     * {@link java.nio.file.attribute.DosFileAttributes} and reflective calls to
+     * WindowsFileAttributes if necessary.
+     */
+    @Deprecated
     public static int getWin32FileAttributes(File file) throws IOException {
    	// allow lookup of paths longer than MAX_PATH
     	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
@@ -85,7 +93,9 @@ public class Kernel32Utils {
      *      If the function is not exported by kernel32.
      *      See http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
      *      for compatibility info.
+     * @deprecated Use {@link Util#createSymlink} instead.
      */
+    @Deprecated
     public static void createSymbolicLink(File symlink, String target, boolean dirLink) throws IOException {
         if (!Kernel32.INSTANCE.CreateSymbolicLinkW(
                 new WString(symlink.getPath()), new WString(target),
@@ -94,8 +104,12 @@ public class Kernel32Utils {
         }
     }
 
+    /**
+     * @deprecated Use {@link Util#isSymlink} to detect symbolic links and junctions instead.
+     */
+    @Deprecated
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-        return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+        return Util.isSymlink(file);
     }
 
     public static File getTempDir() {

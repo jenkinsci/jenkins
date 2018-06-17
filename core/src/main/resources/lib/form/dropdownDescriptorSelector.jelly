@@ -26,10 +26,10 @@ THE SOFTWARE.
   <st:documentation>
     Renders a single &lt;select> control for choosing a Describable.
     Depending on the currently selected value, its config.jelly will be
-    rendered below &lt;select, allowing the user to configure Describable.
+    rendered below &lt;select>, allowing the user to configure Describable.
 
     <st:attribute name="field" use="required">
-      form field name. Used for databinding.
+      Form field name. Used for databinding.
     </st:attribute>
     <st:attribute name="title" use="required">
       Human readable title of this control.
@@ -39,7 +39,7 @@ THE SOFTWARE.
       If unspecified, inferred from the type of the field.
     </st:attribute>
     <st:attribute name="default">
-      If specified, this will be chosen as the default value in case the current selection is null. The default can be an specific instance or a descriptor e.g. 
+      If specified, this will be chosen as the default value in case the current selection is null. The default can be a specific instance or a descriptor e.g.
       ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}. In the later case, the from input fields will be empty.
     </st:attribute>
     <st:attribute name="capture">
@@ -48,7 +48,7 @@ THE SOFTWARE.
       to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
   </st:documentation>
-  <f:prepareDatabinding /> 
+  <f:prepareDatabinding />
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
 
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">

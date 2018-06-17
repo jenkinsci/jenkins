@@ -204,7 +204,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         SaveableListener.fireOnChange(this, config);
     }
 
-    public Object readResolve() {
+    private Object readResolve() {
         if (secretPassword == null)
             // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
@@ -341,6 +341,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 @QueryParameter("userName") String userName, @QueryParameter("password") String password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
@@ -396,7 +398,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             if (userName.indexOf('\\') >= 0){
                 final String domain = userName.substring(0, userName.indexOf('\\'));
                 final String user = userName.substring(userName.indexOf('\\') + 1);
-                return new NTCredentials(user, Secret.fromString(password).getPlainText(), domain, "");
+                return new NTCredentials(user, Secret.fromString(password).getPlainText(), "", domain);
             } else {
                 return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
             }

@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACLContext;
+import jenkins.ExtensionRefreshException;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -120,7 +121,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -144,12 +144,15 @@ import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
+import java.util.ServiceLoader;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.CustomClassFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -254,7 +257,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * All discovered plugins.
      */
-    protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> plugins = new CopyOnWriteArrayList<>();
 
     /**
      * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
@@ -463,10 +466,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         cgd.run(getPlugins());
 
                                         // obtain topologically sorted list and overwrite the list
-                                        ListIterator<PluginWrapper> litr = getPlugins().listIterator();
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            litr.next();
-                                            litr.set(p);
                                             if(p.isActive())
                                                 activePlugins.add(p);
                                         }
@@ -653,7 +653,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     continue;
                 }
 
-                String artifactId = dependencyToken.split(":")[0];
+                String[] artifactIdVersionPair = dependencyToken.split(":");
+                String artifactId = artifactIdVersionPair[0];
+                VersionNumber dependencyVersion = new VersionNumber(artifactIdVersionPair[1]);
+
+                PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
+                VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
+                if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
+                    // Do not downgrade dependencies that are already installed.
+                    continue;
+                }
+
                 URL dependencyURL = context.getResource(fromPath + "/" + artifactId + ".hpi");
 
                 if (dependencyURL == null) {
@@ -682,9 +692,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * </ul>
      */
     protected void loadDetachedPlugins() {
-        InstallState installState = Jenkins.getActiveInstance().getInstallState();
-        if (InstallState.UPGRADE.equals(installState)) {
-            VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        if (lastExecVersion.isNewerThan(InstallUtil.NEW_INSTALL_VERSION) && lastExecVersion.isOlderThan(Jenkins.getVersion())) {
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
@@ -699,13 +708,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
                     if (ClassicPluginStrategy.isDetachedPlugin(name)) {
-                        // If it's already installed and the installed version is older
-                        // than the bundled version, then we upgrade. The bundled version is the min required version
-                        // for "this" version of Jenkins, so we must upgrade.
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
-                            return true;
+                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                        if (installedVersion != null && bundledVersion != null) {
+                            // If the installed version is older than the bundled version, then it MUST be upgraded.
+                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                            // If the versions are equal we just keep the installed version.
+                            return installedVersion.isOlderThan(bundledVersion);
                         }
                     }
 
@@ -861,6 +871,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 ((UberClassLoader) uberClassLoader).loaded.clear();
             }
 
+            // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
+            CustomClassFilter.Contributed.load();
+
             try {
                 p.resolvePluginDependencies();
                 strategy.load(p);
@@ -909,6 +922,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Redo who depends on who.
             resolveDependantPlugins();
 
+            try {
+                Jenkins.get().refreshExtensions();
+            } catch (ExtensionRefreshException e) {
+                throw new IOException("Failed to refresh extensions after installing " + sn + " plugin", e);
+            }
             LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
     }
@@ -1132,9 +1150,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Exported
     public List<PluginWrapper> getPlugins() {
-        List<PluginWrapper> out = new ArrayList<PluginWrapper>(plugins.size());
-        out.addAll(plugins);
-        return out;
+        return Collections.unmodifiableList(plugins);
     }
 
     public List<FailedPlugin> getFailedPlugins() {
@@ -1200,7 +1216,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Discover all the service provider implementations of the given class,
      * via <tt>META-INF/services</tt>.
+     * @deprecated Use {@link ServiceLoader} instead, or (more commonly) {@link ExtensionList}.
      */
+    @Deprecated
     public <T> Collection<Class<? extends T>> discover( Class<T> spi ) {
         Set<Class<? extends T>> result = new HashSet<Class<? extends T>>();
 
@@ -1805,6 +1823,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return requestedPlugins;
     }
 
+    @Restricted(DoNotUse.class) // table.jelly
+    public MetadataCache createCache() {
+        return new MetadataCache();
+    }
+
+    @Restricted(NoExternalUse.class) // table.jelly
+    public static final class MetadataCache {
+        private final Map<String, Object> data = new HashMap<>();
+        public <T> T of(String key, Class<T> type, Supplier<T> func) {
+            return type.cast(data.computeIfAbsent(key, _ignored -> func.get()));
+        }
+    }
+
     /**
      * {@link ClassLoader} that can see all plugins.
      */
@@ -2000,8 +2031,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
          * @return this monitor.
          */
-        public static final PluginUpdateMonitor getInstance() {
-            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
+        public static PluginUpdateMonitor getInstance() {
+            return ExtensionList.lookupSingleton(PluginUpdateMonitor.class);
         }
 
         /**

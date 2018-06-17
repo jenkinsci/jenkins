@@ -62,16 +62,21 @@ public class PasswordParameterDefinitionTest {
                 return true;
             }
         });
+
+        User admin = User.getById("admin", true);
+        User dev = User.getById("dev", true);
+
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // ParametersDefinitionProperty/index.jelly sends a 405 but really it is OK
         // Control case: admin can use default value.
-        j.submit(wc.login("admin").getPage(p, "build?delay=0sec").getFormByName("parameters"));
+        j.submit(wc.withBasicApiToken(admin).getPage(p, "build?delay=0sec").getFormByName("parameters"));
         j.waitUntilNoActivity();
         FreeStyleBuild b1 = p.getLastBuild();
         assertEquals(1, b1.getNumber());
         j.assertLogContains("I heard about a s3cr3t!", j.assertBuildStatusSuccess(b1));
+
         // Another control case: anyone can enter a different value.
-        HtmlForm form = wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters");
+        HtmlForm form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
         HtmlPasswordInput input = form.getInputByName("value");
         input.setText("rumor");
         j.submit(form);
@@ -79,14 +84,16 @@ public class PasswordParameterDefinitionTest {
         FreeStyleBuild b2 = p.getLastBuild();
         assertEquals(2, b2.getNumber());
         j.assertLogContains("I heard about a rumor!", j.assertBuildStatusSuccess(b2));
+
         // Test case: anyone can use default value.
-        j.submit(wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters"));
+        j.submit(wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters"));
         j.waitUntilNoActivity();
         FreeStyleBuild b3 = p.getLastBuild();
         assertEquals(3, b3.getNumber());
         j.assertLogContains("I heard about a s3cr3t!", j.assertBuildStatusSuccess(b3));
+
         // Another control case: blank values.
-        form = wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters");
+        form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
         input = form.getInputByName("value");
         input.setText("");
         j.submit(form);

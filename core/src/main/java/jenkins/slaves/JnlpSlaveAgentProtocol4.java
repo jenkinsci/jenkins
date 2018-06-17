@@ -48,6 +48,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import jenkins.AgentProtocol;
 import jenkins.model.identity.InstanceIdentityProvider;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
 import org.jenkinsci.remoting.protocol.IOHub;
@@ -62,6 +63,7 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  * @since 2.41 enabled by default
  */
 @Extension
+@Symbol("jnlp4")
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     /**
      * Our logger.

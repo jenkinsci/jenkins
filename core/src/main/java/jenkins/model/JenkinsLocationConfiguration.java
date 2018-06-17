@@ -6,6 +6,8 @@ import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.mail.internet.AddressException;
@@ -41,14 +43,20 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
+    public static @Nonnull JenkinsLocationConfiguration get() {
+        return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
+    }
+    
     /**
-     * Gets local configuration.
-     * 
-     * @return {@code null} if the {@link GlobalConfiguration#all()} list does not contain this extension.
-     *         Most likely it means that the Jenkins instance has not been fully loaded yet.
+     * Gets local configuration. For explanation when it could die, see {@link #get()}
      */
-    public static @CheckForNull JenkinsLocationConfiguration get() {
-        return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull JenkinsLocationConfiguration getOrDie(){
+        JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        if (config == null) {
+            throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
+        }
+        return config;
     }
 
     public JenkinsLocationConfiguration() {
@@ -63,7 +71,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         if(!file.exists()) {
             XStream2 xs = new XStream2();
             xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
+            file = new XmlFile(xs,new File(Jenkins.get().getRootDir(),"hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);
@@ -125,7 +133,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      */
     private void updateSecureSessionFlag() {
         try {
-            ServletContext context = Jenkins.getInstance().servletContext;
+            ServletContext context = Jenkins.get().servletContext;
             Method m;
             try {
                 m = context.getClass().getMethod("getSessionCookieConfig");

@@ -30,6 +30,8 @@ import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
+import hudson.security.ACL;
+import jenkins.security.SecurityListener;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
@@ -44,6 +46,8 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.User;
+import org.acegisecurity.userdetails.UserDetails;
 import org.apache.commons.discovery.ResourceClassIterator;
 import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
@@ -264,12 +268,14 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(getTransportAuthentication());
             new ClassParser().parse(authenticator,p);
 
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
-            if (!(this instanceof LoginCommand || this instanceof HelpCommand))
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {
@@ -344,8 +350,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Deprecated
     protected Authentication loadStoredAuthentication() throws InterruptedException {
         try {
-            if (channel!=null)
-                return new ClientAuthenticationCache(channel).get();
+            if (channel!=null){
+                Authentication authLoadedFromCache = new ClientAuthenticationCache(channel).get();
+
+                if(!ACL.isAnonymous(authLoadedFromCache)){
+                    UserDetails userDetails = new CLIUserDetails(authLoadedFromCache);
+                    SecurityListener.fireAuthenticated(userDetails);
+                }
+
+                return authLoadedFromCache;
+            }
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
             Functions.printStackTrace(e, stderr);  // recover
@@ -640,6 +654,18 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
                 CmdLineParser.registerHandler(c,h);
             }
+        }
+    }
+
+    /**
+     * User details loaded from the CLI {@link ClientAuthenticationCache}
+     * The user is never anonymous since it must be authenticated to be stored in the cache
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    private static class CLIUserDetails extends User {
+        private CLIUserDetails(Authentication auth) {
+            super(auth.getName(), "", true, true, true, true, auth.getAuthorities());
         }
     }
 }

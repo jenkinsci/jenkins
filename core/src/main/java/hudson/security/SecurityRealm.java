@@ -402,7 +402,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (captchaSupport != null) {
             String id = req.getSession().getId();
             rsp.setContentType("image/png");
-            rsp.addHeader("Cache-Control", "no-cache");
+            // source: https://stackoverflow.com/a/3414217
+            rsp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            rsp.setHeader("Pragma", "no-cache");
+            rsp.setHeader("Expires", "0");
             captchaSupport.generateImage(id, rsp.getOutputStream());
         }
     }

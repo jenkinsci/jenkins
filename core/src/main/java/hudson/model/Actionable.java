@@ -74,12 +74,15 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Deprecated
     @Nonnull
     public List<Action> getActions() {
-        synchronized (this) {
-            if(actions == null) {
-                actions = new CopyOnWriteArrayList<Action>();
+        //this double checked synchronization is only safe if the field 'actions' is volatile
+        if (actions == null) {
+            synchronized (this) {
+                if (actions == null) {
+                    actions = new CopyOnWriteArrayList<Action>();
+                }
             }
-            return actions;
         }
+        return actions;
     }
 
     /**

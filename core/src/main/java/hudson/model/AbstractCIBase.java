@@ -205,9 +205,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 for (Node s : getNodes()) {
                     long start = System.currentTimeMillis();
                     updateComputer(s, byName, used, automaticSlaveLaunch);
-                    if(LOG_STARTUP_PERFORMANCE)
-                        LOGGER.info(String.format("Took %dms to update node %s",
-                                System.currentTimeMillis()-start, s.getNodeName()));
+                    if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Took %dms to update node %s",
+                                System.currentTimeMillis() - start, s.getNodeName()));
+                    }
                 }
 
                 // find out what computers are removed, and kill off all executors.
@@ -226,8 +227,13 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             killComputer(c);
         }
         getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onConfigurationChange();
+        for (ComputerListener cl : ComputerListener.all()) {
+            try {
+                cl.onConfigurationChange();
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, null, t);
+            }
+        }
     }
 
 }

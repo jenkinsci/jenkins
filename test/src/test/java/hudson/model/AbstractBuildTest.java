@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
@@ -43,6 +44,8 @@ import static org.junit.Assert.*;
 import hudson.tasks.LogRotatorTest;
 import hudson.tasks.Recorder;
 import hudson.util.OneShotEvent;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -53,6 +56,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.UnstableBuilder;
+import org.xml.sax.SAXException;
 
 /**
  * Unit tests of {@link AbstractBuild}.
@@ -125,12 +129,31 @@ public class AbstractBuildTest {
         assertThat(rsp.getWebResponse().getContentAsString(), containsString(out));
     }
 
-    private void assertCulprits(AbstractBuild<?,?> b, String... expectedIds) {
+    private void assertCulprits(AbstractBuild<?,?> b, String... expectedIds) throws IOException, SAXException {
         Set<String> actual = new TreeSet<>();
         for (User u : b.getCulprits()) {
             actual.add(u.getId());
         }
         assertEquals(actual, new TreeSet<>(Arrays.asList(expectedIds)));
+
+        if (expectedIds.length > 0) {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            WebResponse response = wc.goTo(b.getUrl() + "api/json?tree=culprits[id]", "application/json").getWebResponse();
+            JSONObject json = JSONObject.fromObject(response.getContentAsString());
+
+            Object culpritsArray = json.get("culprits");
+            assertNotNull(culpritsArray);
+            assertTrue(culpritsArray instanceof JSONArray);
+            Set<String> fromApi = new TreeSet<>();
+            for (Object o : ((JSONArray)culpritsArray).toArray()) {
+                assertTrue(o instanceof JSONObject);
+                Object id = ((JSONObject)o).get("id");
+                if (id instanceof String) {
+                    fromApi.add((String)id);
+                }
+            }
+            assertEquals(fromApi, new TreeSet<>(Arrays.asList(expectedIds)));
+        }
     }
 
     @Test

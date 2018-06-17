@@ -40,13 +40,19 @@ public interface BuildableItem extends Item, Task {
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
     @Deprecated
-    boolean scheduleBuild();
+    default boolean scheduleBuild() {
+    	return scheduleBuild(new Cause.LegacyCodeCause());
+	}
+
 	boolean scheduleBuild(Cause c);
 	/**
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
     @Deprecated
-	boolean scheduleBuild(int quietPeriod);
+	default boolean scheduleBuild(int quietPeriod) {
+		return scheduleBuild(quietPeriod, new Cause.LegacyCodeCause());
+	}
+
 	boolean scheduleBuild(int quietPeriod, Cause c);
 }

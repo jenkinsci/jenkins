@@ -87,7 +87,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private Set<String> safeParameters;
 
-    private final List<ParameterValue> parameters;
+    private @Nonnull List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
 
@@ -99,8 +99,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private transient Run<?, ?> run;
 
-    public ParametersAction(List<ParameterValue> parameters) {
-        this.parameters = parameters;
+    public ParametersAction(@Nonnull List<ParameterValue> parameters) {
+        this.parameters = new ArrayList<>(parameters);
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
         if (paramNames != null) {
@@ -138,10 +138,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         }
     }
 
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    @Override
+    public void buildEnvironment(Run<?,?> run, EnvVars env) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
-            p.buildEnvironment(build, env); 
+            p.buildEnvironment(run, env);
         }
     }
 
@@ -283,6 +284,9 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     private Object readResolve() {
+        if (parameters == null) { // JENKINS-39495
+            parameters = Collections.emptyList();
+        }
         if (build != null)
             OldDataMonitor.report(build, "1.283");
         if (safeParameters == null) {
@@ -295,7 +299,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public void onAttached(Run<?, ?> r) {
         ParametersDefinitionProperty p = r.getParent().getProperty(ParametersDefinitionProperty.class);
         if (p != null) {
-            this.parameterDefinitionNames = p.getParameterDefinitionNames();
+            this.parameterDefinitionNames = new ArrayList<>(p.getParameterDefinitionNames());
         } else {
             this.parameterDefinitionNames = Collections.emptyList();
         }
