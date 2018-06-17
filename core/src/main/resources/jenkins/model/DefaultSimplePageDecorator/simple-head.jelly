@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah
+Copyright (c) 2018, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!-- report a login error -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <j:choose>
-    <j:new var="h" className="hudson.Functions" />
-    <j:when test="${app.setupWizard.isUsingSecurityToken()}">
-      <j:set var="error" value="true"/>
-      <st:include it="${app.setupWizard}" page="authenticate-security-token"/>
-    </j:when>
-    <j:when test="${app.isUseSecurity() and h.isAnonymous()}">
-      <st:statusCode value="401" />
-      <j:set var="error" value="true"/>
-      <st:include it="${it}" page="login.jelly"/>
-    </j:when>
-    <j:otherwise>
-      <st:redirect url="." />
-    </j:otherwise>
-  </j:choose>
+<j:jelly xmlns:j="jelly:core">
+  <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
+  <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
+  <link rel="stylesheet" href="${resURL}/css/simple-page-forms.css" type="text/css" />
 </j:jelly>
