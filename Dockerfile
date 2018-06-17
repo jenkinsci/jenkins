@@ -1,4 +1,4 @@
-# Build on Java 10 is not supported/tested so far
+# Build on Java 11 is not supported/tested so far
 FROM maven:3.5.3-jdk-8 as builder
 
 COPY .mvn/ /jenkins/src/.mvn/
@@ -15,11 +15,11 @@ COPY show-pom-version.rb /jenkins/src/show-pom-version.rb
 WORKDIR /jenkins/src/
 RUN mvn clean install --batch-mode -Psmoke-test
 
-# The image is based on https://github.com/jenkinsci/docker/tree/java10
+# The image is based on https://github.com/jenkinsci/docker/tree/java11
 # All documentation is applicable
-FROM jenkins/jenkins-experimental:2.127-jdk10
+FROM jenkins/jenkins-experimental:2.127-jdk11
 
-LABEL Description="This is an experimental image for Jenkins on Java 10"
+LABEL Description="This is an experimental image for Jenkins on Java 11"
 
 COPY --from=builder /jenkins/src/war/target/jenkins.war /usr/share/jenkins/jenkins.war
 COPY docker/jenkins2.sh /usr/local/bin/jenkins2.sh
