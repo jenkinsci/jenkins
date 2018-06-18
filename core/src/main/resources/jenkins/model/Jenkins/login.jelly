@@ -23,58 +23,136 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:choose>
-  <j:when test="${it.setupWizard.isUsingSecurityToken()}">
-    <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
-  </j:when>
-  <j:otherwise>
-  <l:layout norefresh="true">
-    <l:hasPermission permission="${app.READ}">
-      <st:include page="sidepanel.jelly" />
-    </l:hasPermission>
-    <l:main-panel>
-      <div style="margin: 2em;">
-        <!-- login form -->
-        <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
-          <table>
-            <tr>
-              <td>${%User}:</td>
-              <td><input type="text" name="j_username" id="j_username" autocorrect="off" autocapitalize="off" /></td>
-            </tr>
-            <tr>
-              <td>${%Password}:</td>
-              <td><input type="password" name="j_password" /></td>
-            </tr>
-            <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
-              <!-- remember me service only available for Acegi -->
-              <tr>
-                <td align="right"><input id="remember_me" type="checkbox" name="remember_me" /></td>
-                <td><label for="remember_me">${%Remember me on this computer}</label></td>
-              </tr>
-            </j:if>
-          </table>
-          <input type="hidden" name="from" value="${request.getParameter('from')}" />
-          <f:submit value="${%login}" />
-          <script>
-            $('j_username').focus();
-          </script>
-        </form>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
+  <!-- deactivate all caching -->
+  <st:setHeader name="Expires" value="0" />
+  <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+  <!-- needed for cli -->
+  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+    ${h.advertiseHeaders(response)}
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
+  </j:if>
+  <!-- response contentType header -->
+  <st:contentType value="text/html;charset=UTF-8" />
+  <!--
+    needed to generate a session if non exists,
+    without it we would add ";jsessionid=" to the url which will result in a 404
+  -->
+  <j:set var="_" value="${request.getSession()}"/>
+  <!-- get default/commong page variable -->
+  ${h.initPageVariables(context)}
+  <x:doctype name="html" />
+  <!-- needed for the redirect after login -->
+  <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
+  <!-- in case of error we want to surround the form elements with an error hint -->
+  <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
+  <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
+  <!-- real deal starting here -->
+  <html lang="${request.getLocale().toLanguageTag()}">
+    <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+      <title>${%signIn} [Jenkins]</title>
+      <!-- we do not want bots on this page -->
+      <meta name="ROBOTS" content="NOFOLLOW" />
+      <!-- css styling, will fallback to default implementation -->
+      <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+    </head>
+    <body>
+      <j:choose>
+        <j:when test="${it.setupWizard.isUsingSecurityToken()}">
+          <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
+        </j:when>
+        <j:otherwise>
+          <div class="simple-page" role="main">
+            <div class="modal login">
+              <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
+              <!-- login form -->
+              <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
+                <j:if test="${it.securityRealm.allowsSignup()}">
+                  <div class="signupTag">
+                    ${%signUp}
+                  </div>
+                </j:if>
+                <j:if test="${error}">
+                  <div class="alert alert-danger">
+                    ${%Invalid username or password}
+                  </div>
+                </j:if>
+                <div class="formRow">
+                  <input
+                    class="${inputClass}"
+                    type="text"
+                    name="j_username"
+                    id="j_username"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    placeholder="${%Username}"
+                  />
+                </div>
+                <div class="formRow">
+                  <input
+                    class="${inputClass}"
+                    type="password"
+                    name="j_password"
+                    placeholder="${%Password}"
+                  />
+                </div>
+                <input type="hidden" name="from" value="${from}" />
+                <div class="submit formRow"><f:submit value="${%signIn}" /></div>
+                <!-- focus the username field -->
+                <script type="text/javascript">
+                  document.getElementById('j_username').focus();
+                  var checkBoxClick = function(event) {
+                    document.getElementById('remember_me').click();
+                  }
+                </script>
 
-        <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
-          <div>
-            <st:include page="loginFragment.jelly" it="${fls}"/>
-          </div>
-        </j:forEach>
+                <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
+                  <!-- remember me service only available for Acegi -->
+                  <div class="Checkbox Checkbox-medium">
+                    <label class="Checkbox-wrapper">
+                      <input
+                        type="checkbox"
+                        id="remember_me"
+                        name="remember_me"
+                      />
+                      <div class="Checkbox-indicator">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          focusable="false"
+                          width="25"
+                          height="25"
+                          class="svg-icon check"
+                          viewBox="0 0 24 24">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                        </svg>
+                      </div>
+                      <div class="Checkbox-text">
+                        ${%Keep me signed in}
+                      </div>
+                    </label>
+                  </div>
+                </j:if>
 
-        <j:if test="${it.securityRealm.allowsSignup()}">
-          <div style="margin-top:2em">
-            ${%signUp}
+              </form>
+
+              <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
+                <div>
+                  <st:include page="loginFragment.jelly" it="${fls}"/>
+                </div>
+              </j:forEach>
+
+              <div class="footer">
+
+                <st:include it="${simpleDecorator}" page="simple-footer.jelly" optional="true"/>
+              </div>
+
+            </div>
           </div>
-        </j:if>
-      </div>
-    </l:main-panel>
-  </l:layout>
-  </j:otherwise>
-  </j:choose>
+        </j:otherwise>
+      </j:choose>
+    </body>
+  </html>
 </j:jelly>
