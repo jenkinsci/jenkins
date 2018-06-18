@@ -23,7 +23,7 @@ public class APeriodicWorkTest {
     public void newExtensionsAreScheduled() throws Exception {
         TestAperiodicWork tapw = new TestAperiodicWork();
 
-        int size = PeriodicWork.all().size();
+        int size = AperiodicWork.all().size();
         ExtensionList.lookup(AperiodicWork.class).add(tapw);
 
         assertThat("we have one new AperiodicWork", AperiodicWork.all(), hasSize(size+1));
