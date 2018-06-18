@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class APeriodicWorkTest {
+public class AperiodicWorkTest {
 
     @Rule
     public JenkinsRule jr = new JenkinsRule();
@@ -27,7 +27,7 @@ public class APeriodicWorkTest {
         ExtensionList.lookup(AperiodicWork.class).add(tapw);
 
         assertThat("we have one new AperiodicWork", AperiodicWork.all(), hasSize(size+1));
-        assertThat("The task was not run within 15 seconds",tapw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
+        assertThat("The task was run within 15 seconds", tapw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
     }
 
     private static class TestAperiodicWork extends AperiodicWork {

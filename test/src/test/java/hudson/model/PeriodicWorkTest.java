@@ -27,7 +27,7 @@ public class PeriodicWorkTest {
         ExtensionList.lookup(PeriodicWork.class).add(tpw);
 
         assertThat("we have one new PeriodicWork", PeriodicWork.all(), hasSize(size+1));
-        assertThat("The task was not run within 15 seconds",tpw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
+        assertThat("The task was run within 15 seconds", tpw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
     }
 
     private static class TestPeriodicWork extends PeriodicWork {
