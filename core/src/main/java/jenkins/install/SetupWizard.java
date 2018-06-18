@@ -133,13 +133,6 @@ public class SetupWizard extends PageDecorator {
 
                     // Disable CLI over Remoting
                     CLI.get().setEnabled(false);
-
-                    // Disable old Non-Encrypted protocols ()
-                    HashSet<String> newProtocols = new HashSet<>(jenkins.getAgentProtocols());
-                    newProtocols.removeAll(Arrays.asList(
-                            "JNLP2-connect", "JNLP-connect", "CLI-connect"   
-                    ));
-                    jenkins.setAgentProtocols(newProtocols);
                     
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
