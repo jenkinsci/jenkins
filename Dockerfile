@@ -17,7 +17,7 @@ RUN mvn clean install --batch-mode -Plight-test
 
 # The image is based on https://github.com/jenkinsci/docker/tree/java10
 # All documentation is applicable
-FROM jenkins/jenkins-experimental:2.127-jdk10
+FROM jenkins/jenkins-experimental:2.128-jdk10
 
 LABEL Description="This is an experimental image for Jenkins on Java 10"
 
