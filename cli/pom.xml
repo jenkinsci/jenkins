@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.119-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>cli</artifactId>
@@ -99,7 +99,7 @@
                   <mainClass>hudson.cli.CLI</mainClass>
                 </manifest>
                 <manifestEntries>
-                  <Jenkins-CLI-Version>${build.version}</Jenkins-CLI-Version>
+                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
                 </manifestEntries>
               </archive>
             </configuration>

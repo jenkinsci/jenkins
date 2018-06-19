@@ -328,6 +328,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
+    private String installStateName;
+
+    @Deprecated
     private InstallState installState;
     
     /**
@@ -1014,10 +1017,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Nonnull
     @Restricted(NoExternalUse.class)
     public InstallState getInstallState() {
-        if (installState == null || installState.name() == null) {
-            return InstallState.UNKNOWN;
+        if (installState != null) {
+            installStateName = installState.name();
+            installState = null;
         }
-        return installState;
+        InstallState is = installStateName != null ? InstallState.valueOf(installStateName) : InstallState.UNKNOWN;
+        return is != null ? is : InstallState.UNKNOWN;
     }
 
     /**
@@ -1026,10 +1031,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public void setInstallState(@Nonnull InstallState newState) {
-        InstallState prior = installState;
-        installState = newState;
-        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installState });
-        if (!newState.equals(prior)) {
+        String prior = installStateName;
+        installStateName = newState.name();
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installStateName });
+        if (!installStateName.equals(prior)) {
             getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
         }
@@ -2410,11 +2415,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
-        return new MasterToSlaveCallable<ClockDifference, IOException>() {
-            public ClockDifference call() throws IOException {
-                return new ClockDifference(0);
-            }
-        };
+        return new ClockDifferenceCallable();
+    }
+    private static class ClockDifferenceCallable extends MasterToSlaveCallable<ClockDifference, IOException> {
+        @Override
+        public ClockDifference call() throws IOException {
+            return new ClockDifference(0);
+        }
     }
 
     /**
@@ -4940,7 +4947,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver = UNCOMPUTED_VERSION;
-        if(Main.isDevelopmentMode && "${build.version}".equals(ver)) {
+        if(Main.isDevelopmentMode && "${project.version}".equals(ver)) {
             // in dev mode, unable to get version (ahem Eclipse)
             try {
                 File dir = new File(".").getAbsoluteFile();

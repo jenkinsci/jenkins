@@ -246,7 +246,9 @@ public class InstallState implements ExtensionPoint {
      * <p>Creating a {@code writeReplace} does not help much since XStream then just saves:
      * {@code <installState class="jenkins.install.InstallState$CreateAdminUser" resolves-to="jenkins.install.InstallState">}
      * @see #UNUSED_INNER_CLASSES
+     * @deprecated Should no longer be used, as {@link Jenkins} now saves only {@link #name}.
      */
+    @Deprecated
     protected Object readResolve() {
         // If we get invalid state from the configuration, fallback to unknown
         if (StringUtils.isBlank(name)) {

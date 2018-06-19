@@ -38,6 +38,7 @@ public class ProcessTreeKillerTest {
     
     @After
     public void tearDown() throws Exception {
+        ProcessTree.vetoersExist = null;
         if (null != process)
             process.destroy();
     }    

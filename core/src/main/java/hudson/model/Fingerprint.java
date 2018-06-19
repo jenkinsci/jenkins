@@ -827,19 +827,17 @@ public class Fingerprint implements ModelObject, Saveable {
             }
         }
         private void locationChanged(Item item, String oldName, String newName) {
-            if (item instanceof AbstractProject) {
-                AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
+            if (item instanceof Job) {
+                Job p = Jenkins.getInstance().getItemByFullName(newName, Job.class);
                 if (p != null) {
-                    RunList builds = p.getBuilds();
-                    for (Object build : builds) {
-                        if (build instanceof AbstractBuild) {
-                            Collection<Fingerprint> fingerprints = ((AbstractBuild)build).getBuildFingerprints();
-                            for (Fingerprint f : fingerprints) {
-                                try {
-                                    f.rename(oldName, newName);
-                                } catch (IOException e) {
-                                    logger.log(Level.WARNING, "Failed to update fingerprint record " + f.getFileName() + " when " + oldName + " was renamed to " + newName, e);
-                                }
+                    RunList<? extends Run> builds = p.getBuilds();
+                    for (Run build : builds) {
+                        Collection<Fingerprint> fingerprints = build.getBuildFingerprints();
+                        for (Fingerprint f : fingerprints) {
+                            try {
+                                f.rename(oldName, newName);
+                            } catch (IOException e) {
+                                logger.log(Level.WARNING, "Failed to update fingerprint record " + f.getFileName() + " when " + oldName + " was renamed to " + newName, e);
                             }
                         }
                     }
@@ -1366,7 +1364,12 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         try {
-            Fingerprint f = (Fingerprint) configFile.read();
+            Object loaded = configFile.read();
+            if (!(loaded instanceof Fingerprint)) {
+                throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
+                        + (loaded != null ? loaded.getClass() : "null"));
+            }
+            Fingerprint f = (Fingerprint) loaded;
             if(logger.isLoggable(Level.FINE))
                 logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
             if (f.facets==null)
