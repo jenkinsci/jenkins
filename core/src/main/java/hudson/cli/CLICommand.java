@@ -257,6 +257,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         registerOptionHandlers();
         CmdLineParser p = getCmdLineParser();
 
+        LOGGER.log(Level.FINE, "CLI command {0} called with {1} arguments", new Object[] {getName(), args.size()});
+
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
