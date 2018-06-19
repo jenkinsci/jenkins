@@ -446,7 +446,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
+        boolean mustMigrateLegacyConfig = isMigrationRequiredForLegacyConfigFile(unsanitizedLegacyConfigFile, configFile);
+        if (mustMigrateLegacyConfig) {
             File ancestor = unsanitizedLegacyConfigFile.getParentFile();
             if (!configFile.exists()) {
                 try {
@@ -507,6 +508,37 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         }
         return u;
+    }
+    
+    private static boolean isMigrationRequiredForLegacyConfigFile(@Nonnull File legacyConfigFile, @Nonnull File newConfigFile){
+        boolean mustMigrateLegacyConfig = legacyConfigFile.exists() && !legacyConfigFile.equals(newConfigFile);
+        if(mustMigrateLegacyConfig){
+            try{
+                // TODO Could be replace by Util.isDescendant(getRootDir(), legacyConfigFile) in 2.80+
+                String canonicalLegacy = legacyConfigFile.getCanonicalPath();
+                String canonicalUserDir = getRootDir().getCanonicalPath();
+                if(!canonicalLegacy.startsWith(canonicalUserDir + File.separator)){
+                    // without that check, the application config.xml could be moved (i.e. erased from application PoV)
+                    mustMigrateLegacyConfig = false;
+                    LOGGER.log(Level.WARNING, String.format(
+                            "Attempt to escape from users directory with %s, migration aborted, see SECURITY-897 for more information",
+                            legacyConfigFile.getAbsolutePath()
+                    ));
+                }
+            }
+            catch (IOException e){
+                mustMigrateLegacyConfig = false;
+                LOGGER.log(
+                        Level.WARNING,
+                        String.format(
+                                "Failed to determine the canonical path of %s, migration aborted, see SECURITY-897 for more information", 
+                                legacyConfigFile.getAbsolutePath()
+                        ),
+                        e
+                );
+            }
+        }
+        return mustMigrateLegacyConfig;
     }
 
     /**

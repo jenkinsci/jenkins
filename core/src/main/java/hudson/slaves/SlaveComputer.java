@@ -660,6 +660,8 @@ public class SlaveComputer extends Computer {
 
     @RequirePOST
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(CONNECT);
+            
         if(channel!=null) {
             req.getView(this,"already-launched.jelly").forward(req, rsp);
             return;
