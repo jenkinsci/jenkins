@@ -553,29 +553,7 @@ public class Maven extends Builder {
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
             // FIXME using similar stuff as in the maven plugin could be better 
             // olamy : but will add a dependency on maven in core -> so not so good 
-            String mavenVersion = launcher.getChannel().call(new MasterToSlaveCallable<String,IOException>() {
-                    private static final long serialVersionUID = -4143159957567745621L;
-
-                    public String call() throws IOException {
-                        File[] jars = new File(getHomeDir(),"lib").listFiles();
-                        if(jars!=null) { // be defensive
-                            for (File jar : jars) {
-                                if (jar.getName().startsWith("maven-")) {
-                                    JarFile jf = null;
-                                    try {
-                                        jf = new JarFile(jar);
-                                        Manifest manifest = jf.getManifest();
-                                        String version = manifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                                        if(version != null) return version;
-                                    } finally {
-                                        if(jf != null) jf.close();
-                                    }
-                                }
-                            }
-                        }
-                        return "";
-                    }
-                });
+            String mavenVersion = launcher.getChannel().call(new GetMavenVersion());
 
             if (!mavenVersion.equals("")) {
                 if (mavenReqVersion == MAVEN_20) {
@@ -594,6 +572,33 @@ public class Maven extends Builder {
             return false;
             
         }
+        private class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
+            private static final long serialVersionUID = -4143159957567745621L;
+            @Override
+            public String call() throws IOException {
+                File[] jars = new File(getHomeDir(), "lib").listFiles();
+                if (jars != null) { // be defensive
+                    for (File jar : jars) {
+                        if (jar.getName().startsWith("maven-")) {
+                            JarFile jf = null;
+                            try {
+                                jf = new JarFile(jar);
+                                Manifest manifest = jf.getManifest();
+                                String version = manifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                                if (version != null) {
+                                    return version;
+                                }
+                            } finally {
+                                if (jf != null) {
+                                    jf.close();
+                                }
+                            }
+                        }
+                    }
+                }
+                return "";
+            }
+        }
         
         /**
          * Is this Maven 2.1.x or 2.2.x - but not Maven 3.x?
@@ -609,9 +614,11 @@ public class Maven extends Builder {
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new MasterToSlaveCallable<String,IOException>() {
+            return launcher.getChannel().call(new GetExecutable());
+        }
+        private class GetExecutable extends MasterToSlaveCallable<String, IOException> {
                 private static final long serialVersionUID = 2373163112639943768L;
-
+                @Override
                 public String call() throws IOException {
                     File exe = getExeFile("mvn");
                     if(exe.exists())
@@ -621,7 +628,6 @@ public class Maven extends Builder {
                         return exe.getPath();
                     return null;
                 }
-            });
         }
 
         private File getExeFile(String execName) {

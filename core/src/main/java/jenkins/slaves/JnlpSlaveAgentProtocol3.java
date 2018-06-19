@@ -48,15 +48,12 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return !ENABLED;
+        return true ;
     }
 
     @Override
     public String getName() {
-        // we only want to force the protocol off for users that have explicitly banned it via system property
-        // everyone on the A/B test will just have the opt-in flag toggled
-        // TODO strip all this out and hardcode OptIn==TRUE once JENKINS-36871 is merged
-        return forceEnabled != Boolean.FALSE ? handler.getName() : null;
+        return handler.isEnabled() ? handler.getName() : null;
     }
 
     /**
@@ -79,26 +76,4 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
-    /**
-     * Flag to control the activation of JNLP3 protocol.
-     *
-     * <p>
-     * Once this will be on by default, the flag and this field will disappear. The system property is
-     * an escape hatch for those who hit any issues and those who are trying this out.
-     */
-    @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_REFACTORED_TO_BE_FINAL",
-            justification = "Part of the administrative API for System Groovy scripts.")
-    public static boolean ENABLED;
-    private static final Boolean forceEnabled;
-
-    static {
-        forceEnabled = SystemProperties.optBoolean(JnlpSlaveAgentProtocol3.class.getName() + ".enabled");
-        if (forceEnabled != null) {
-            ENABLED = forceEnabled;
-        } else {
-            byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
-            ENABLED = (hash % 10) == 0;
-        }
-    }
 }

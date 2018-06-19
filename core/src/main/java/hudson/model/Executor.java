@@ -431,11 +431,12 @@ public class Executor extends Thread implements ModelObject {
             } catch (AsynchronousExecution x) {
                 lock.writeLock().lock();
                 try {
-                    x.setExecutor(this);
+                    x.setExecutorWithoutCompleting(this);
                     this.asynchronousExecution = x;
                 } finally {
                     lock.writeLock().unlock();
                 }
+                x.maybeComplete();
             } catch (Throwable e) {
                 problems = e;
             } finally {
