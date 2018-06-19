@@ -92,9 +92,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-
 /**
  * Various utility methods that don't have more proper home.
  *
