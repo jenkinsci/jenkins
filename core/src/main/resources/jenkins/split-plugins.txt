@@ -19,3 +19,4 @@ bouncycastle-api 2.16 2.16.0
 command-launcher 2.86 1.0
 # JENKINS-22367
 jdk-tool 2.112 1.0
+jaxb 2.129 1.0

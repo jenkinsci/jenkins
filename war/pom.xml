@@ -95,7 +95,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>2.1</version>
+      <version>2.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -412,6 +412,12 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
                   <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.2.11-alpha-1-SNAPSHOT</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
