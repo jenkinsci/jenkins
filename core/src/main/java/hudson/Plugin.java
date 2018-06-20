@@ -228,7 +228,11 @@ public abstract class Plugin implements Saveable {
         String path = req.getRestOfPath();
 
         String pathUC = path.toUpperCase(Locale.ENGLISH);
-        if (path.isEmpty() || path.contains("..") || path.startsWith(".") || path.contains("%") || pathUC.contains("META-INF") || pathUC.contains("WEB-INF")) {
+        if (path.isEmpty() || path.contains("..") || path.startsWith(".") || path.contains("%")
+                || pathUC.contains("META-INF") || pathUC.contains("WEB-INF")
+                // ClassicPluginStrategy#explode produce that file to know if a new explosion is required or not
+                || pathUC.equals("/.TIMESTAMP2")
+        ) {
             LOGGER.warning("rejecting possibly malicious " + req.getRequestURIWithQueryString());
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
