@@ -39,6 +39,7 @@ import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
+import hudson.remoting.CommandTransport;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -60,6 +61,8 @@ import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -69,6 +72,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -380,7 +384,15 @@ public class SlaveComputer extends Computer {
 
     private final Object channelLock = new Object();
 
-    public void setChannel(InputStream in, OutputStream out, TaskListener taskListener, Channel.Listener listener) throws IOException, InterruptedException {
+    /**
+     * Creates a {@link Channel} from the given stream and sets that to this agent.
+     *
+     * Same as {@link #setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}, but for
+     * {@link TaskListener}.
+     */
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @Nonnull TaskListener taskListener,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         setChannel(in,out,taskListener.getLogger(),listener);
     }
 
@@ -403,7 +415,9 @@ public class SlaveComputer extends Computer {
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      */
-    public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+                           @CheckForNull OutputStream launchLog,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
             .withMode(Channel.Mode.NEGOTIATE)
             .withHeaderStream(launchLog);
@@ -414,6 +428,39 @@ public class SlaveComputer extends Computer {
 
         Channel channel = cb.build(in,out);
         setChannel(channel,launchLog,listener);
+    }
+
+    /**
+     * Creates a {@link Channel} from the given Channel Builder and Command Transport.
+     * This method can be used to allow {@link ComputerLauncher}s to create channels not based on I/O streams.
+     *
+     * @param cb
+     *      Channel Builder.
+     *      To print launch logs this channel builder should have a Header Stream defined
+     *      (see {@link ChannelBuilder#getHeaderStream()}) in this argument or by one of {@link ChannelConfigurator}s.
+     * @param commandTransport
+     *      Command Transport
+     * @param listener
+     *      Gets a notification when the channel closes, to perform clean up. Can be {@code null}.
+     *      By the time this method is called, the cause of the termination is reported to the user,
+     *      so the implementation of the listener doesn't need to do that again.
+     * @since 2.127
+     */
+    @Restricted(Beta.class)
+    public void setChannel(@Nonnull ChannelBuilder cb,
+                           @Nonnull CommandTransport commandTransport,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,this);
+        }
+
+        OutputStream headerStream = cb.getHeaderStream();
+        if (headerStream == null) {
+            LOGGER.log(Level.WARNING, "No header stream defined when setting channel for computer {0}. " +
+                    "Launch log won't be printed", this);
+        }
+        Channel channel = cb.build(commandTransport);
+        setChannel(channel, headerStream, listener);
     }
 
     /**
@@ -509,14 +556,18 @@ public class SlaveComputer extends Computer {
 
     /**
      * Sets up the connection through an existing channel.
-     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already
+     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already.
+     * @param launchLog Launch log. If not {@code null}, will receive launch log messages
+     * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
-    public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+    public void setChannel(@Nonnull Channel channel,
+                           @CheckForNull OutputStream launchLog,
+                           @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
-        final TaskListener taskListener = new StreamTaskListener(launchLog);
+        final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
         channel.setProperty(SlaveComputer.class, this);
