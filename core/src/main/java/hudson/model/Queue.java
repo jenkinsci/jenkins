@@ -757,7 +757,9 @@ public class Queue extends ResourceController implements Saveable {
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
-            cancel(item);
+            if(item.hasCancelPermission()){
+                cancel(item);
+            }
         } // else too late, ignore (JENKINS-14813)
         return HttpResponses.forwardToPreviousPage();
     }
@@ -2256,7 +2258,9 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         @RequirePOST
         public HttpResponse doCancelQueue() throws IOException, ServletException {
-        	Jenkins.getInstance().getQueue().cancel(this);
+            if(hasCancelPermission()){
+                Jenkins.getInstance().getQueue().cancel(this);
+            }
             return HttpResponses.forwardToPreviousPage();
         }
 
