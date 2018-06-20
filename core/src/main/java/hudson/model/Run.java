@@ -1554,6 +1554,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         
         RunListener.fireDeleted(this);
 
+        if (artifactManager != null) {
+            deleteArtifacts();
+        } // for StandardArtifactManager, deleting the whole build dir suffices
+
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
