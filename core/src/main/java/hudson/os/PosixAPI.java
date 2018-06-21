@@ -27,7 +27,7 @@ public class PosixAPI {
     }
 
     /**
-     * @deprecated use {@link #jnr} and {@link POSIX#isNative}
+     * @deprecated
      */
     @Deprecated
     public boolean isNative() {
@@ -35,7 +35,7 @@ public class PosixAPI {
     }
 
     /**
-     * @deprecated use {@link #jnr} and {@link POSIX#isNative}
+     * @deprecated
      */
     @Deprecated
     public static boolean supportsNative() {

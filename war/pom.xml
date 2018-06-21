@@ -414,6 +414,12 @@ THE SOFTWARE.
                   <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jnr-posix-api</artifactId>
+                  <version>3.0.45</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>

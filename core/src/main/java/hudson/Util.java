@@ -1637,7 +1637,7 @@ public class Util {
         int MAX_SUPPORTED_MODE = 0777;
         mode = mode & PERMISSIONS_MASK;
         if ((mode & MAX_SUPPORTED_MODE) != mode) {
-            throw new IOException("Invalid mode: " + mode);
+            throw new IOException("Invalid mode: " + Integer.toOctalString(mode));
         }
         PosixFilePermission[] allPermissions = PosixFilePermission.values();
         Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
