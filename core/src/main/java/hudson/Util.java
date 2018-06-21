@@ -1740,5 +1740,10 @@ public class Util {
      * overwritten by Jenkins erroneously.
      */
     @Restricted(value = NoExternalUse.class)
+    @Deprecated
     public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
+
+    static {
+        if (NATIVE_CHMOD_MODE) System.err.println(Util.class.getName() + ".useNativeChmodAndMode option isn't supported anymore.");
+    }
 }

@@ -107,11 +107,6 @@ THE SOFTWARE.
       <version>1.0.3-jenkins-1</version>
     </dependency>
     <dependency>
-      <groupId>com.github.jnr</groupId>
-      <artifactId>jnr-posix</artifactId>
-      <version>3.0.41</version>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>
       <version>1.2</version>

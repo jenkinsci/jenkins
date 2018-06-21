@@ -5,20 +5,16 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.logging.Logger;
-import jnr.constants.platform.Errno;
-import jnr.posix.POSIX;
-import jnr.posix.POSIXFactory;
-import jnr.posix.util.DefaultPOSIXHandler;
 
 /**
  * POSIX API wrapper.
  * Formerly used the jna-posix library, but this has been superseded by jnr-posix.
  * @author Kohsuke Kawaguchi
  */
+@Deprecated
 public class PosixAPI {
 
-    private static POSIX posix;
-    
+
     /**
      * Load the JNR implementation of the POSIX APIs for the current platform.
      * Runtime exceptions will be of type {@link PosixException}.
@@ -26,25 +22,8 @@ public class PosixAPI {
      * @return some implementation (even on Windows or unsupported Unix)
      * @since 1.518
      */
-    public static synchronized POSIX jnr() {
-        if (posix == null) {
-            posix = POSIXFactory.getPOSIX(new DefaultPOSIXHandler() {
-                @Override public void error(Errno error, String extraData) {
-                    throw new PosixException("native error " + error.description() + " " + extraData, convert(error));
-                }
-                @Override public void error(Errno error, String methodName, String extraData) {
-                    throw new PosixException("native error calling " + methodName + ": " + error.description() + " " + extraData, convert(error));
-                }
-                private org.jruby.ext.posix.POSIX.ERRORS convert(Errno error) {
-                    try {
-                        return org.jruby.ext.posix.POSIX.ERRORS.valueOf(error.name());
-                    } catch (IllegalArgumentException x) {
-                        return org.jruby.ext.posix.POSIX.ERRORS.EIO; // PosixException.message has real error anyway
-                    }
-                }
-            }, true);
-        }
-        return posix;
+    public static synchronized Object jnr() {
+        throw new UnsupportedOperationException();
     }
 
     /**
