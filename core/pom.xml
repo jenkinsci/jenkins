@@ -101,11 +101,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
 
-    <dependency> <!-- for compatibility only; all new code should use JNR -->
-      <groupId>org.jruby.ext.posix</groupId>
-      <artifactId>jna-posix</artifactId>
-      <version>1.0.3-jenkins-1</version>
-    </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>

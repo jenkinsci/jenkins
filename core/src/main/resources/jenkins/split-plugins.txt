@@ -20,4 +20,5 @@ command-launcher 2.86 1.0
 # JENKINS-22367
 jdk-tool 2.112 1.0
 # JENKINS-46725
-jnr-posix-api 2.129 3.0.45
+jnr-posix-api 2.130 3.0.45
+jna-posix-api 2.130 1.0.3-jenkins-1
