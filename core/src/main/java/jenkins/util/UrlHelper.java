@@ -28,16 +28,38 @@ import jenkins.org.apache.commons.validator.routines.UrlValidator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * Objective is to validate an URL in a lenient way sufficiently strict to avoid too weird URL
+ * but to still allow particular internal URL to be accepted
+ */
 @Restricted(NoExternalUse.class)
 public class UrlHelper {
     /**
-     * Authorize the {@code _} and {@code -} characters in domain
+     * Authorize the {@code _} and {@code -} characters in *domain*
      * <p>
-     * Avoid {@code -} and {@code .} to be first or last
+     * Avoid {@code -} to be first or last, and {@code .} to be first (but can be last)
+     * 
+     * Lenient version of 
+     * - https://tools.ietf.org/html/rfc952 GRAMMATICAL HOST TABLE SPECIFICATION
+     * - https://www.ietf.org/rfc/rfc1034.txt 3.5
+     * - https://www.ietf.org/rfc/rfc1738.txt 3.1, host
+     * - https://tools.ietf.org/html/rfc1123 2.1
+     * 
+     * Deliberately allow:
+     * - short domain name (often there are rules like minimum of 3 characters)
+     * - long domain name (normally limit on whole domain of 255 and for each subdomain/label of 63)
+     * - starting by numbers (disallowed by RFC-952 and RFC-1034, but nowadays it's supported by RFC-1123)
+     * - use of underscore (not explicitly allowed in RFC but could occur in internal network, we do not speak about path here, just domain)
+     * - custom TLD like "intern" that is not standard but could be registered locally in a network
      */
     private static String DOMAIN_REGEX = System.getProperty(
             UrlHelper.class.getName() + ".DOMAIN_REGEX", 
-            "(\\w(\\.?-?\\w+)*)(:\\d{1,5})?"
+            "^" + 
+            "\\w" + // must start with letter / number / underscore
+                "(-*(\\.|\\w))*" +// dashes are allowed but not as last character
+                "\\.*" + // can end with zero (most common), one or multiple dots 
+                "(:\\d{1,5})?" + // and potentially the port specification
+                "$"
     );
     
     public static boolean isValidRootUrl(String url) {
@@ -52,13 +74,22 @@ public class UrlHelper {
         
         @Override 
         protected boolean isValidAuthority(String authority) {
-            // to support ipv6
             boolean superResult = super.isValidAuthority(authority);
+            if(superResult && authority.contains("[")){
+                // to support ipv6
+                return true;
+            }
             if(!superResult && authority == null){
                 return false;
             }
             String authorityASCII = DomainValidator.unicodeToASCII(authority);
             return authorityASCII.matches(DOMAIN_REGEX);
+        }
+    
+        @Override 
+        protected boolean isValidQuery(String query) {
+            // does not accept query
+            return query == null;
         }
     }
 }

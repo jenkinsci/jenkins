@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.XmlFile;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationMatrixProperty;
@@ -30,6 +31,8 @@ import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Fingerprinter;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +53,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -114,6 +118,20 @@ public class FingerprintTest {
         Hashtable<String, Fingerprint.RangeSet> usages = fp.getUsages();
         assertTrue("Usages do not have a reference to " + project, usages.containsKey(project.getName()));
         assertTrue("Usages do not have a reference to " + project2, usages.containsKey(project2.getName()));       
+    }
+
+    @Test
+    @Issue("JENKINS-51179")
+    public void shouldThrowIOExceptionWhenFileIsInvalid() throws Exception {
+        XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
+        f.write("Hello, world!");
+        try {
+            Fingerprint.load(f.getFile());
+        } catch (IOException ex) {
+            assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
+            return;
+        }
+        fail("Expected IOException");
     }
     
     @Test

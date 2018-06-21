@@ -1366,7 +1366,12 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         try {
-            Fingerprint f = (Fingerprint) configFile.read();
+            Object loaded = configFile.read();
+            if (!(loaded instanceof Fingerprint)) {
+                throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
+                        + (loaded != null ? loaded.getClass() : "null"));
+            }
+            Fingerprint f = (Fingerprint) loaded;
             if(logger.isLoggable(Level.FINE))
                 logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
             if (f.facets==null)

@@ -2196,8 +2196,10 @@ public class Queue extends ResourceController implements Saveable {
             for (Action action: actions) addAction(action);
         }
 
+        @SuppressWarnings("deprecation") // JENKINS-51584
         protected Item(Item item) {
-        	this(item.task, new ArrayList<Action>(item.getAllActions()), item.id, item.future, item.inQueueSince);
+            // do not use item.getAllActions() here as this will persist actions from a TransientActionFactory
+            this(item.task, new ArrayList<Action>(item.getActions()), item.id, item.future, item.inQueueSince);
         }
 
         /**
