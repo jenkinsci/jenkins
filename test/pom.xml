@@ -307,6 +307,12 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <id>smoke-test</id>
+      <properties>
+        <test>jenkins.model.StartupTest,jenkins.model.JenkinsTest,jenkins.install.*,jenkins.security.CustomClassFilterTest,hudson.AboutJenkinsTest,hudson.ClassicPluginStrategyTest,hudson.LauncherTest,hudson.slaves.JNLPLauncherTest,hudson.model.RunTest,hudson.model.UserTest,hudson.model.FreeStyleProjectTest,hudson.model.HudsonTest,hudson.model.ComputerTest,hudson.CLI.BuildCommandTest#sync,*.smokes</test>
+      </properties>
+    </profile>
+    <profile>
       <id>all-tests</id>
       <activation>
         <property>
