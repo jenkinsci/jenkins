@@ -172,6 +172,24 @@ THE SOFTWARE.
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
 
+    <!-- Java 9+ is pushing JAXB away, so we need to bring our own -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.2.11</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.2.11</version>
+    </dependency>
+
+
     <!-- offline profiler API when we need it -->
     <!--dependency
       <groupId>com.yourkit.api</groupId>
