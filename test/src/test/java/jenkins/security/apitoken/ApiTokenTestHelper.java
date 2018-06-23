@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2018, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ApiTokenProperty;
+package jenkins.security.apitoken;
 
-f=namespace(lib.FormTagLib)
-
-f.advanced(title:_("Show API Token"), align:"left") {
-    f.entry(title: _('User ID')) {
-        f.readOnlyTextbox(value: my.id)
+public class ApiTokenTestHelper {
+    /**
+     * Reconfigure the instance to use legacy behavior
+     * When the jenkins-test-harness will support this, we will be able to remove this method.
+     */
+    public static void enableLegacyBehavior(){
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        config.setCreationOfLegacyTokenEnabled(true);
     }
-    f.entry(title:_("API Token"), field:"apiToken") {
-        f.readOnlyTextbox(id:"apiToken") // TODO: need to figure out the way to do this without using ID.
-    }
-    f.validateButton(title:_("Change API Token"),method:"changeToken")
 }

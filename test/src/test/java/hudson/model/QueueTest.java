@@ -72,7 +72,9 @@ import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -926,6 +928,7 @@ public class QueueTest {
     @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
