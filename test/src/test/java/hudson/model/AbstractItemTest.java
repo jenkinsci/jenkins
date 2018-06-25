@@ -3,6 +3,8 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -13,13 +15,17 @@ import java.net.URL;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.RenameAction;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestExtension;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -132,6 +138,30 @@ public class AbstractItemTest {
         assertThat(p.getName(), equalTo("bar"));
     }
 
+    @Test
+    @Issue("JENKINS-52164")
+    public void renameLinksShouldBeValid() throws Exception {
+        FreeStyleProject project1 = j.createFreeStyleProject("project1");
+        MockFolder folder1 = j.createProject(RenameableMockFolder.class, "folder1");
+        FreeStyleProject project2 = folder1.createProject(FreeStyleProject.class, "project2");
+
+        HtmlAnchor anchor = findRenameAnchor(project1);
+        anchor.click();
+
+        anchor = findRenameAnchor(project2);
+        anchor.click();
+
+        anchor = findRenameAnchor(folder1); // Throws ElementNotFoundException before JENKINS-52164 fix
+        anchor.click();
+    }
+
+    private HtmlAnchor findRenameAnchor(AbstractItem item) throws Exception {
+        WebClient w = j.createWebClient();
+        HtmlPage page = w.goTo(item.getUrl());
+        String relativeUrl = j.contextPath + "/" + item.getUrl() + item.getAction(RenameAction.class).getUrlName();
+        return page.getAnchorByHref(relativeUrl);
+    }
+
     private String checkNameAndReturnError(AbstractItem i, String newName) {
         FormValidation fv = i.doCheckNewName(newName);
         if (FormValidation.Kind.OK.equals(fv.kind)) {
@@ -145,4 +175,27 @@ public class AbstractItemTest {
         return u.getPath().substring(j.contextPath.length() + 1);
     }
 
+    public static class RenameableMockFolder extends MockFolder {
+        protected RenameableMockFolder(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        public boolean isNameEditable() {
+            return true;
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
+        }
+
+        @TestExtension("renameLinksShouldBeValid")
+        public static class DescriptorImpl extends TopLevelItemDescriptor {
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new RenameableMockFolder(parent, name);
+            }
+        }
+    }
 }
