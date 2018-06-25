@@ -97,10 +97,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     
     /**
      * Default REGEX for the user ID check in case the ID_REGEX is not set
-     * It allows A-Za-z0-9 + "_-"
+     * It allows A-Za-z0-9 + "_-" + "." (dot)
      * in Java {@code \w} is equivalent to {@code [A-Za-z0-9_]} (take care of "_")
      */
-    private static final String DEFAULT_ID_REGEX = "^[\\w-]+$";
+    private static final String DEFAULT_ID_REGEX = "^[\\w\\.-]+$";
     
     /**
      * If true, sign up is not allowed.
