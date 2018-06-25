@@ -100,7 +100,7 @@ THE SOFTWARE.
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                    <l:icon class="icon-text-error icon-sm"/>
+                                    <l:icon class="icon-text-error icon-sm" alt="${%RevokeToken}" />
                                 </a>
                             </span>
                         </div>
