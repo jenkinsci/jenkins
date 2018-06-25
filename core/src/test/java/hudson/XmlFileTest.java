@@ -9,7 +9,6 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.xml.sax.SAXParseException;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -61,7 +60,21 @@ public class XmlFileTest {
             assertThat(n.getMode().toString(), is("NORMAL"));
         }
     }
-    
+
+    @Test
+    public void canReadGzippedXml1_1Test() throws IOException {
+        URL configUrl = getClass().getResource("/hudson/config_1_1_gzipped.xml.gz");
+        XStream2 xs = new XStream2();
+        xs.alias("hudson", Jenkins.class);
+
+        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
+        if (xmlFile.exists()) {
+            Node n = (Node) xmlFile.read();
+            assertThat(n.getNumExecutors(), is(2));
+            assertThat(n.getMode().toString(), is("NORMAL"));
+        }
+    }
+
     @Test
     public void canReadXmlWithControlCharsTest() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_1_with_special_chars.xml");

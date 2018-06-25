@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -143,11 +145,20 @@ public final class XmlFile {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Reading "+file);
         }
-        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+        try (InputStream in = new BufferedInputStream(getInputStream())) {
             return xs.fromXML(in);
         } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
+    }
+
+    private InputStream getInputStream()
+            throws IOException {
+        InputStream is = Files.newInputStream(file.toPath());
+        if (file.getName().toLowerCase().endsWith(".gz")) {
+            is = new GZIPInputStream(is);
+        }
+        return is;
     }
 
     /**
@@ -170,7 +181,7 @@ public final class XmlFile {
     }
 
     private Object unmarshal(Object o, boolean nullOut) throws IOException {
-        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+        try (InputStream in = new BufferedInputStream(getInputStream())) {
             // TODO: expose XStream the driver from XStream
             if (nullOut) {
                 return ((XStream2) xs).unmarshal(DEFAULT_DRIVER.createReader(in), o, null, true);
@@ -250,7 +261,7 @@ public final class XmlFile {
      */
     public Reader readRaw() throws IOException {
         try {
-            InputStream fileInputStream = Files.newInputStream(file.toPath());
+            InputStream fileInputStream = getInputStream();
             try {
                 return new InputStreamReader(fileInputStream, sniffEncoding());
             } catch (IOException ex) {
@@ -299,7 +310,7 @@ public final class XmlFile {
             }
         }
 
-        try (InputStream in = Files.newInputStream(file.toPath())) {
+        try (InputStream in = getInputStream()) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {
