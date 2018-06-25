@@ -6,10 +6,10 @@ package hudson.os;
  * @see PosixAPI
  * @author Kohsuke Kawaguchi
  */
-@Deprecated
 public class PosixException extends RuntimeException {
 
-    public PosixException() {
+    public PosixException(String message) {
+        super(message);
     }
 
 
