@@ -61,7 +61,6 @@ import org.jvnet.hudson.test.Issue;
 import hudson.util.StreamTaskListener;
 
 import org.junit.Rule;
-import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.Lists;
@@ -784,18 +783,27 @@ public class UtilTest {
 
     @Test
     public void testDifferenceDays() {
-        Date day1_10am = new Date(2018, 4, 6, 10, 0);
-        Date day1_11pm55 = new Date(2018, 4, 6, 23, 55);
-        Date day2_01am = new Date(2018, 4, 7, 1, 0);
-        Date day2_11pm = new Date(2018, 4, 7, 1, 0);
-        Date day3_08am = new Date(2018, 4, 8, 8, 0);
-        assertEquals(0, Util.differenceInCalendarDay(day1_10am, day1_11pm55));
-        assertEquals(1, Util.differenceInCalendarDay(day1_10am, day2_01am));
-        assertEquals(1, Util.differenceInCalendarDay(day1_11pm55, day2_01am));
-        assertEquals(2, Util.differenceInCalendarDay(day1_10am, day3_08am));
-        assertEquals(1, Util.differenceInCalendarDay(day2_11pm, day3_08am));
+        Date may_6_10am = new Date(2018 - 1900, 4, 6, 10, 0);
+        Date may_6_11pm55 = new Date(2018 - 1900, 4, 6, 23, 55);
+        Date may_7_01am = new Date(2018 - 1900, 4, 7, 1, 0);
+        Date may_7_11pm = new Date(2018 - 1900, 4, 7, 1, 0);
+        Date may_8_08am = new Date(2018 - 1900, 4, 8, 8, 0);
+        Date june_3_08am = new Date(2018 - 1900, 5, 3, 8, 0);
+        Date june_9_08am = new Date(2018 - 1900, 5, 9, 8, 0);
+        Date june_9_08am_nextYear = new Date(2019 - 1900, 5, 9, 8, 0);
+        
+        assertEquals(0, Util.daysBetween(may_6_10am, may_6_11pm55));
+        assertEquals(1, Util.daysBetween(may_6_10am, may_7_01am));
+        assertEquals(1, Util.daysBetween(may_6_11pm55, may_7_01am));
+        assertEquals(2, Util.daysBetween(may_6_10am, may_8_08am));
+        assertEquals(1, Util.daysBetween(may_7_11pm, may_8_08am));
+        
+        // larger scale
+        assertEquals(28, Util.daysBetween(may_6_10am, june_3_08am));
+        assertEquals(34, Util.daysBetween(may_6_10am, june_9_08am));
+        assertEquals(365 + 34, Util.daysBetween(may_6_10am, june_9_08am_nextYear));
         
         // reverse order
-        assertEquals(-1, Util.differenceInCalendarDay(day3_08am, day2_11pm));
+        assertEquals(-1, Util.daysBetween(may_8_08am, may_7_11pm));
     }
 }

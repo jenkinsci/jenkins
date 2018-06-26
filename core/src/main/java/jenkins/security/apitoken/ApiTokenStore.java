@@ -40,8 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -420,7 +418,7 @@ public class ApiTokenStore {
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysCreation() {
-            return creationDate == null ? 0 : Math.max(0, Util.numOfCalendarDayToNow(creationDate));
+            return creationDate == null ? 0 : Util.daysElapsedSince(creationDate);
         }
         
         // used by Jelly view

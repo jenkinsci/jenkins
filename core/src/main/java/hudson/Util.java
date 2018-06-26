@@ -75,8 +75,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,10 +92,6 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -1672,18 +1668,19 @@ public class Util {
      * even if there are only 3 hours between. As well as "10am" to "2pm" both on the same day, returns 0.
      */
     @Restricted(NoExternalUse.class)
-    public static int differenceInCalendarDay(@Nonnull Date a, @Nonnull Date b){
+    public static long daysBetween(@Nonnull Date a, @Nonnull Date b){
         LocalDate aLocal = a.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return Period.between(aLocal, bLocal).getDays();
+        return ChronoUnit.DAYS.between(aLocal, bLocal);
     }
     
     /**
-     * @see #differenceInCalendarDay(Date, Date)
+     * @return positive number of days between the given date and now
+     * @see #daysBetween(Date, Date)
      */
     @Restricted(NoExternalUse.class)
-    public static int numOfCalendarDayToNow(@Nonnull Date date){
-        return differenceInCalendarDay(date, new Date());
+    public static long daysElapsedSince(@Nonnull Date date){
+        return Math.max(0, daysBetween(date, new Date()));
     }
     
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));

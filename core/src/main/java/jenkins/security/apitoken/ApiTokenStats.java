@@ -34,12 +34,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -256,7 +250,7 @@ public class ApiTokenStats implements Saveable {
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysUse() {
-            return lastUseDate == null ? 0 : Math.max(0, Util.numOfCalendarDayToNow(lastUseDate));
+            return lastUseDate == null ? 0 : Util.daysElapsedSince(lastUseDate);
         }
     }
 }
