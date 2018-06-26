@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.sun.istack.internal.NotNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import hudson.model.TaskListener;
