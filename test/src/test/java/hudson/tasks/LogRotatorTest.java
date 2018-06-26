@@ -55,6 +55,7 @@ import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.UnstableBuilder;
 
 /**
  * Verifies that the last successful and stable builds of a job will be kept if requested.
@@ -67,7 +68,7 @@ public class LogRotatorTest {
     @Test
     public void successVsFailure() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
+        project.setBuildDiscarder(new LogRotator(-1, 2, -1, -1, -1, -1));
         assertEquals(Result.SUCCESS, build(project)); // #1
         project.getBuildersList().replaceBy(Collections.singleton(new FailureBuilder()));
         assertEquals(Result.FAILURE, build(project)); // #2
@@ -85,7 +86,7 @@ public class LogRotatorTest {
     @Issue("JENKINS-2417")
     public void stableVsUnstable() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
+        project.setBuildDiscarder(new LogRotator(-1, 2, -1, -1, -1, -1));
         assertEquals(Result.SUCCESS, build(project)); // #1
         project.getPublishersList().replaceBy(Collections.singleton(new TestsFail()));
         assertEquals(Result.UNSTABLE, build(project)); // #2
@@ -101,7 +102,7 @@ public class LogRotatorTest {
     @Issue("JENKINS-834")
     public void artifactDelete() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 6, -1, 2));
+        project.setBuildDiscarder(new LogRotator(-1, 6, -1, 2, -1, -1));
         project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
         assertEquals("(no artifacts)", Result.FAILURE, build(project)); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
@@ -153,7 +154,7 @@ public class LogRotatorTest {
     public void artifactsRetainedWhileBuilding() throws Exception {
         j.getInstance().setNumExecutors(3);
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setBuildDiscarder(new LogRotator(-1, 3, -1, 1));
+        p.setBuildDiscarder(new LogRotator(-1, 3, -1, 1, -1, -1));
         StallBuilder sync = new StallBuilder();
         p.getBuildersList().replaceBy(Arrays.asList(new CreateArtifact(), sync));
         p.setConcurrentBuild(true);
@@ -199,6 +200,61 @@ public class LogRotatorTest {
         assertThat("run3 is last stable build", p.getLastStableBuild(), is(run3));
         assertThat("run3 is last successful build", p.getLastSuccessfulBuild(), is(run3));
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
+    }
+
+    @Test
+    @Issue("JENKINS-51229")
+    public void logDelete() throws Exception
+    {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setBuildDiscarder(new LogRotator(-1, -1, -1, -1, -1, 2));
+        assertEquals(Result.SUCCESS, build(project)); // #1
+        project.getBuildersList().replaceBy(Collections.singleton(new FailureBuilder()));
+        assertEquals(Result.FAILURE, build(project)); // #2
+        assertEquals(Result.FAILURE, build(project)); // #3
+        assertEquals(1, numberOf(project.getLastSuccessfulBuild()));
+        project.getBuildersList().replaceBy(Collections.<Builder> emptySet());
+        assertEquals(Result.SUCCESS, build(project)); // #4
+        assertFalse(project.getBuildByNumber(1).getLogFile().isFile());
+        assertFalse(project.getBuildByNumber(2).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(3).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(4).getLogFile().isFile());
+    }
+
+    @Test
+    public void keepLogForMarkKeeped() throws Exception
+    {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setBuildDiscarder(new LogRotator(-1, -1, -1, -1, -1, 2));
+        build(project); // #1
+        project.getBuildByNumber(1).keepLog();
+        build(project); // #2
+        assertTrue(project.getBuildByNumber(1).getLogFile().isFile());
+        build(project); // #3
+        build(project); // #4
+        assertTrue(project.getBuildByNumber(1).getLogFile().isFile());
+        assertFalse(project.getBuildByNumber(2).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(3).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(4).getLogFile().isFile());
+    }
+
+    @Test
+    public void keepLogForLastStableBuild() throws Exception
+    {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setBuildDiscarder(new LogRotator(-1, -1, -1, -1, -1, 2));
+        build(project); // #1
+        project.getBuildersList().replaceBy(Collections.singleton(new UnstableBuilder()));
+        build(project); // #2
+        build(project); // #3
+        assertTrue(project.getBuildByNumber(1).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(2).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(3).getLogFile().isFile());
+        build(project); // #4
+        assertTrue(project.getBuildByNumber(1).getLogFile().isFile());
+        assertFalse(project.getBuildByNumber(2).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(3).getLogFile().isFile());
+        assertTrue(project.getBuildByNumber(4).getLogFile().isFile());
     }
 
     static Result build(FreeStyleProject project) throws Exception {

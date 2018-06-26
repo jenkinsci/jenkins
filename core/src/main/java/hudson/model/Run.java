@@ -1542,6 +1542,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Deletes this build's entire log, but keeps build
+     *
+     * @throws IOException
+     *            if we fail to delete.
+     */
+    public void deleteLog() throws IOException {
+        File rootDir = getRootDir();
+        LOGGER.log(FINE, "{0}: {1} logs successfully deleted", new Object[] { this, rootDir });
+        synchronized (this) {
+            Util.deleteFile(getLogFile());
+        }
+    }
+
+    /**
      * Deletes this build's artifacts. 
      *
      * @throws IOException

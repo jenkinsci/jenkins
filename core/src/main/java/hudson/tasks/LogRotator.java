@@ -39,7 +39,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -76,10 +77,25 @@ public class LogRotator extends BuildDiscarder {
      */
     private final Integer artifactNumToKeep;
 
+    /**
+     * If not -1 nor null, build logs are only kept up to this days.
+     * Null handling is necessary to remain data compatible with old versions.
+     * @since FIXME
+     */
+    private final Integer logDaysToKeep;
+
+    /**
+     * If not -1, only this number of build logs are kept.
+     * Null handling is necessary to remain data compatible with old versions.
+     * @since FIXME
+     */
+    private final Integer logNumToKeep;
+
     @DataBoundConstructor
-    public LogRotator (String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
+    public LogRotator (String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr, String logDaysToKeepStr, String logNumToKeepStr) {
         this (parse(daysToKeepStr),parse(numToKeepStr),
-              parse(artifactDaysToKeepStr),parse(artifactNumToKeepStr));
+              parse(artifactDaysToKeepStr),parse(artifactNumToKeepStr),
+              parse(logDaysToKeepStr),parse(logNumToKeepStr));
     }
 
     public static int parse(String p) {
@@ -93,30 +109,61 @@ public class LogRotator extends BuildDiscarder {
 
     /**
      * @deprecated since 1.350.
-     *      Use {@link #LogRotator(int, int, int, int)}
+     *      Use {@link #LogRotator(int, int, int, int, int, int)}
      */
     @Deprecated
     public LogRotator(int daysToKeep, int numToKeep) {
-        this(daysToKeep, numToKeep, -1, -1);
+        this(daysToKeep, numToKeep, -1, -1, -1, -1);
     }
-    
+    /**
+     * @deprecated since FIXME
+     *      Use {@link #LogRotator(int, int, int, int, int, int)}
+     */
+    @Deprecated
     public LogRotator(int daysToKeep, int numToKeep, int artifactDaysToKeep, int artifactNumToKeep) {
+        this(daysToKeep, numToKeep, artifactDaysToKeep, artifactNumToKeep, -1, -1);
+    }
+
+    public LogRotator(int daysToKeep, int numToKeep, int artifactDaysToKeep, int artifactNumToKeep, int logDaysToKeep, int logNumToKeep) {
         this.daysToKeep = daysToKeep;
         this.numToKeep = numToKeep;
         this.artifactDaysToKeep = artifactDaysToKeep;
         this.artifactNumToKeep = artifactNumToKeep;
-        
+        this.logDaysToKeep = logDaysToKeep;
+        this.logNumToKeep = logNumToKeep;
+
     }
 
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
-        LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
-        
+        LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} " +
+                "artifactDaysToKeep={4} logNumToKeep={5} logDaysToKeep={6}", new Object[] {job, numToKeep, daysToKeep,
+                artifactNumToKeep, artifactDaysToKeep, logNumToKeep, logDaysToKeep});
+
+        performDeletionOf("build", job, numToKeep, daysToKeep, Run::delete);
+        performDeletionOf("artifacts", job, artifactNumToKeep, artifactDaysToKeep, Run::deleteArtifacts);
+        performDeletionOf("log", job, logNumToKeep, logDaysToKeep, Run::deleteLog);
+    }
+
+    /**
+     *  Deletes build metadata based on the parameters passed.
+     *
+     *  Each build or build metadata have different delete functions as specified in {@link Run}
+     * @param buildMetaData String indicating whether builds, artifacts, or logs are being deleted (used for logging)
+     * @param job the Jenkins job whose builds and/or metadata are to be deleted
+     * @param numToKeep the number of the most recent builds to keep
+     * @param daysToKeep the number of days to keep the most recent builds up until
+     * @param runAction the deletion function passed
+     * @throws IOException if fail to delete
+     * @since FIXME
+     */
+    private void performDeletionOf(String buildMetaData, Job<?,?> job, Integer numToKeep, Integer daysToKeep,
+            RunAction runAction) throws IOException{
         // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
 
-        if(numToKeep!=-1) {
+        if(numToKeep!=null && numToKeep!=-1) {
             // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
             // However we would need to load the first numToKeep anyway, just to skip over them;
             // and we would need to load the rest anyway, to delete them.
@@ -127,12 +174,12 @@ public class LogRotator extends BuildDiscarder {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
-                LOGGER.log(FINE, "{0} is to be removed", r);
-                r.delete();
+                LOGGER.log(FINE, "{0}'s {1} to be removed", new Object[] {r, buildMetaData});
+                runAction.call(r);
             }
         }
 
-        if(daysToKeep!=-1) {
+        if(daysToKeep!= null && daysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             Run r = job.getFirstBuild();
@@ -141,35 +188,8 @@ public class LogRotator extends BuildDiscarder {
                     break;
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
-                    LOGGER.log(FINE, "{0} is to be removed", r);
-                    r.delete();
-                }
-                r = r.getNextBuild();
-            }
-        }
-
-        if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
-            List<? extends Run<?,?>> builds = job.getBuilds();
-            for (Run r : copy(builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size()))) {
-                if (shouldKeepRun(r, lsb, lstb)) {
-                    continue;
-                }
-                LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                r.deleteArtifacts();
-            }
-        }
-
-        if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
-            Calendar cal = new GregorianCalendar();
-            cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
-            Run r = job.getFirstBuild();
-            while (r != null) {
-                if (tooNew(r, cal)) {
-                    break;
-                }
-                if (!shouldKeepRun(r, lsb, lstb)) {
-                    LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                    r.deleteArtifacts();
+                    LOGGER.log(FINE, "{0}'s {1} to be removed", new Object[] {r, buildMetaData});
+                    runAction.call(r);
                 }
                 r = r.getNextBuild();
             }
@@ -228,6 +248,14 @@ public class LogRotator extends BuildDiscarder {
         return unbox(artifactNumToKeep);
     }
 
+    public int getLogDaysToKeep() {
+        return unbox(logDaysToKeep);
+    }
+
+    public int getLogNumToKeep() {
+        return unbox(logNumToKeep);
+    }
+
     public String getDaysToKeepStr() {
         return toString(daysToKeep);
     }
@@ -244,6 +272,14 @@ public class LogRotator extends BuildDiscarder {
         return toString(artifactNumToKeep);
     }
 
+    public String getLogDaysToKeepStr() {
+        return toString(logDaysToKeep);
+    }
+
+    public String getLogNumToKeepStr() {
+        return toString(logNumToKeep);
+    }
+
     private int unbox(Integer i) {
         return i==null ? -1: i;
     }
@@ -251,6 +287,15 @@ public class LogRotator extends BuildDiscarder {
     private String toString(Integer i) {
         if (i==null || i==-1)   return "";
         return String.valueOf(i);
+    }
+
+    /**
+     * Interface to allow for lambda functions to run a call on a  given run.
+     * @since FIXME
+     */
+    @FunctionalInterface
+    interface RunAction {
+        void call(Run<?,?> r) throws IOException;
     }
 
     @Extension @Symbol("logRotator")
