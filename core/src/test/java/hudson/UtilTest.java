@@ -24,6 +24,8 @@
  */
 package hudson;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -782,15 +784,15 @@ public class UtilTest {
     }
 
     @Test
-    public void testDifferenceDays() {
-        Date may_6_10am = new Date(2018 - 1900, 4, 6, 10, 0);
-        Date may_6_11pm55 = new Date(2018 - 1900, 4, 6, 23, 55);
-        Date may_7_01am = new Date(2018 - 1900, 4, 7, 1, 0);
-        Date may_7_11pm = new Date(2018 - 1900, 4, 7, 1, 0);
-        Date may_8_08am = new Date(2018 - 1900, 4, 8, 8, 0);
-        Date june_3_08am = new Date(2018 - 1900, 5, 3, 8, 0);
-        Date june_9_08am = new Date(2018 - 1900, 5, 9, 8, 0);
-        Date june_9_08am_nextYear = new Date(2019 - 1900, 5, 9, 8, 0);
+    public void testDifferenceDays() throws Exception {
+        Date may_6_10am = parseDate("2018-05-06 10:00:00"); 
+        Date may_6_11pm55 = parseDate("2018-05-06 23:55:00"); 
+        Date may_7_01am = parseDate("2018-05-07 01:00:00"); 
+        Date may_7_11pm = parseDate("2018-05-07 11:00:00"); 
+        Date may_8_08am = parseDate("2018-05-08 08:00:00"); 
+        Date june_3_08am = parseDate("2018-06-03 08:00:00"); 
+        Date june_9_08am = parseDate("2018-06-09 08:00:00"); 
+        Date june_9_08am_nextYear = parseDate("2019-06-09 08:00:00"); 
         
         assertEquals(0, Util.daysBetween(may_6_10am, may_6_11pm55));
         assertEquals(1, Util.daysBetween(may_6_10am, may_7_01am));
@@ -805,5 +807,9 @@ public class UtilTest {
         
         // reverse order
         assertEquals(-1, Util.daysBetween(may_8_08am, may_7_11pm));
+    }
+    
+    private Date parseDate(String dateString) throws ParseException {
+        return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateString);
     }
 }
