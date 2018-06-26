@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import com.sun.istack.internal.NotNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import hudson.model.TaskListener;
@@ -74,6 +75,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1662,7 +1666,27 @@ public class Util {
             throw new IOException(e);
         }
     }
-
+    
+    /**
+     * Compute the number of calendar days elapsed since the given date.
+     * As it's only the calendar days difference that matter, "11.00pm" to "2.00am the day after" returns 1,
+     * even if there are only 3 hours between. As well as "10am" to "2pm" both on the same day, returns 0.
+     */
+    @Restricted(NoExternalUse.class)
+    public static int differenceInCalendarDay(@Nonnull Date a, @Nonnull Date b){
+        LocalDate aLocal = a.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return Period.between(aLocal, bLocal).getDays();
+    }
+    
+    /**
+     * @see #differenceInCalendarDay(Date, Date)
+     */
+    @Restricted(NoExternalUse.class)
+    public static int numOfCalendarDayToNow(@Nonnull Date date){
+        return differenceInCalendarDay(date, new Date());
+    }
+    
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!

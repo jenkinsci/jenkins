@@ -58,20 +58,26 @@ THE SOFTWARE.
                             <j:forEach var="user" items="${userList}">
                                 <j:set var="legacyToken" value="${it.getLegacyTokenOf(user)}"/>
                                 <j:set var="legacyStats" value="${it.getLegacyStatsOf(user, legacyToken)}"/>
-        
+                                
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
+                                <j:set var="creationDateValue" value="${%NoCreationDateValue}" />
                                 <j:if test="${legacyToken.creationDate != null}">
                                     <i:formatDate var="creationDateFormat" value="${legacyToken.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                    <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc-->
+                                    <j:set var="creationDateValue" value="${legacyStats.numDaysCreation}" />
                                 </j:if>
                                 
                                 <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
+                                <j:set var="lastUseDateValue" value="${%NoLastUseValue}" />
                                 <j:if test="${legacyStats.lastUseDate != null}">
                                     <i:formatDate var="lastUseDateFormat" value="${legacyStats.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                    <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc-->
+                                    <j:set var="lastUseDateValue" value="${legacyStats.numDaysUse}" />
                                 </j:if>
-        
+                                
                                 <j:set var="hasFreshToken"
                                        value="${it.hasFreshToken(user, legacyStats)}"/>
-        
+                                
                                 <j:set var="hasMoreRecentlyUsedToken"
                                        value="${it.hasMoreRecentlyUsedToken(user, legacyStats)}"/>
                                 
@@ -94,13 +100,13 @@ THE SOFTWARE.
                                             ${legacyToken.name}
                                         </td>
                                         <td title="${creationDateFormat}">
-                                            ${legacyStats.numDaysCreation}
+                                            ${creationDateValue}
                                         </td>
                                         <td>
                                             ${legacyStats.useCounter}
                                         </td>
                                         <td title="${lastUseDateFormat}">
-                                            ${legacyStats.numDaysUse}
+                                            ${lastUseDateValue}
                                         </td>
                                         <td>
                                             <j:choose>
@@ -138,14 +144,14 @@ THE SOFTWARE.
                         </j:otherwise>
                     </j:choose>
                 </table>
-    
+                
                 <div class="selection-panel">
                     Select:
                     <a href="#" class="action" onclick="selectAll(this);return false;">all</a>
                     <a href="#" class="action" onclick="selectFresh(this);return false;">only fresh</a>
                     <a href="#" class="action" onclick="selectRecent(this);return false;">only recent</a>
                 </div>
-    
+                
                 <div class="action-panel">
                     <span class="yui-button">
                         <button class="action-revoke-selected" onclick="confirmAndRevokeAllSelected(this);" 

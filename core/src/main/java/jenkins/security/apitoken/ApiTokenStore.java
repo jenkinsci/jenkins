@@ -124,7 +124,7 @@ public class ApiTokenStore {
      * Remove the legacy token present and generate a new one using the given secret.
      */
     public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
-        deleteAllLegacyAndGenerateNewOne(newLegacyApiToken);
+        deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, false);
     }
     
     /**
@@ -134,13 +134,13 @@ public class ApiTokenStore {
      */
     public synchronized void regenerateTokenFromLegacyIfRequired(@Nonnull Secret newLegacyApiToken) {
         if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
-            deleteAllLegacyAndGenerateNewOne(newLegacyApiToken);
+            deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, true);
         }
     }
     
-    private void deleteAllLegacyAndGenerateNewOne(@Nonnull Secret newLegacyApiToken) {
+    private void deleteAllLegacyAndGenerateNewOne(@Nonnull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
         deleteAllLegacyTokens();
-        addLegacyToken(newLegacyApiToken);
+        addLegacyToken(newLegacyApiToken, migrationFromExistingLegacy);
     }
     
     private void deleteAllLegacyTokens() {
@@ -148,13 +148,13 @@ public class ApiTokenStore {
         tokenList.removeIf(HashedToken::isLegacy);
     }
     
-    private void addLegacyToken(@Nonnull Secret legacyToken) {
+    private void addLegacyToken(@Nonnull Secret legacyToken, boolean migrationFromExistingLegacy) {
         String tokenUserUseNormally = Util.getDigestOf(legacyToken.getPlainText());
         
         String secretValueHashed = this.plainSecretToHashInHex(tokenUserUseNormally);
         
         HashValue hashValue = new HashValue(LEGACY_VERSION, secretValueHashed);
-        HashedToken token = HashedToken.buildNew(Messages.ApiTokenProperty_LegacyTokenName(), hashValue);
+        HashedToken token = HashedToken.buildNewFromLegacy(hashValue, migrationFromExistingLegacy);
         
         this.addToken(token);
     }
@@ -371,6 +371,22 @@ public class ApiTokenStore {
             
             return result;
         }
+    
+        public static @Nonnull HashedToken buildNewFromLegacy(@Nonnull HashValue value, boolean migrationFromExistingLegacy) {
+            HashedToken result = new HashedToken();
+            result.name = Messages.ApiTokenProperty_LegacyTokenName();
+            if(migrationFromExistingLegacy){
+                // we do not know when the legacy token was created
+                result.creationDate = null;
+            }else{
+                // it comes from a manual action, so we set the creation date to now
+                result.creationDate = new Date();
+            }
+            
+            result.value = value;
+            
+            return result;
+        }
         
         public void rename(String newName) {
             this.name = newName;
@@ -404,18 +420,12 @@ public class ApiTokenStore {
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysCreation() {
-            return creationDate == null ? 0 : computeDeltaDays(creationDate.toInstant(), Instant.now());
+            return creationDate == null ? 0 : Math.max(0, Util.numOfCalendarDayToNow(creationDate));
         }
         
         // used by Jelly view
         public String getUuid() {
             return this.uuid;
-        }
-        
-        private long computeDeltaDays(Instant a, Instant b) {
-            long deltaDays = ChronoUnit.DAYS.between(a, b);
-            deltaDays = Math.max(0, deltaDays);
-            return deltaDays;
         }
         
         public boolean isLegacy() {

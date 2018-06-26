@@ -24,6 +24,7 @@
  */
 package hudson;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -781,4 +782,20 @@ public class UtilTest {
         assertEquals(0000, Util.permissionsToMode(PosixFilePermissions.fromString("---------")));
     }
 
+    @Test
+    public void testDifferenceDays() {
+        Date day1_10am = new Date(2018, 4, 6, 10, 0);
+        Date day1_11pm55 = new Date(2018, 4, 6, 23, 55);
+        Date day2_01am = new Date(2018, 4, 7, 1, 0);
+        Date day2_11pm = new Date(2018, 4, 7, 1, 0);
+        Date day3_08am = new Date(2018, 4, 8, 8, 0);
+        assertEquals(0, Util.differenceInCalendarDay(day1_10am, day1_11pm55));
+        assertEquals(1, Util.differenceInCalendarDay(day1_10am, day2_01am));
+        assertEquals(1, Util.differenceInCalendarDay(day1_11pm55, day2_01am));
+        assertEquals(2, Util.differenceInCalendarDay(day1_10am, day3_08am));
+        assertEquals(1, Util.differenceInCalendarDay(day2_11pm, day3_08am));
+        
+        // reverse order
+        assertEquals(-1, Util.differenceInCalendarDay(day3_08am, day2_11pm));
+    }
 }
