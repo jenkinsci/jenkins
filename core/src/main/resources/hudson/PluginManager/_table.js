@@ -68,11 +68,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
     /**
      * Wait for document onload.
-     */    
-    Element.observe(window, "load", function() {        
+     */
+    Element.observe(window, "load", function() {
         var pluginsTable = select('#plugins');
         var pluginTRs = selectAll('.plugin', pluginsTable);
-        
+
         if (!pluginTRs) {
             return;
         }
@@ -81,16 +81,16 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         function i18n(messageId) {
             return pluginI18n.getAttribute('data-' + messageId);
         }
-        
+
         // Create a map of the plugin rows, making it easy to index them.
         var plugins = {};
         for (var i = 0; i < pluginTRs.length; i++) {
             var pluginTR = pluginTRs[i];
             var pluginId = pluginTR.getAttribute('data-plugin-id');
-            
+
             plugins[pluginId] = pluginTR;
         }
-        
+
         function getPluginTR(pluginId) {
             return plugins[pluginId];
         }
@@ -102,24 +102,24 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 return pluginId;
             }
         }
-        
+
         function processSpanSet(spans) {
             var ids = [];
             for (var i = 0; i < spans.length; i++) {
                 var span = spans[i];
                 var pluginId = span.getAttribute('data-plugin-id');
                 var pluginName = getPluginName(pluginId);
-                
+
                 span.update(pluginName);
                 ids.push(pluginId);
             }
             return ids;
         }
-        
+
         function markAllDependantsDisabled(pluginTR) {
             var jenkinsPluginMetadata = pluginTR.jenkinsPluginMetadata;
             var dependantIds = jenkinsPluginMetadata.dependantIds;
-            
+
             if (dependantIds) {
                 // If the only dependant is jenkins-core (it's a bundle plugin), then lets
                 // treat it like all its dependants are disabled. We're really only interested in
@@ -139,7 +139,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         pluginTR.removeClassName('all-dependants-disabled');
                         return;
                     }
-                    
+
                     // The dependant is a plugin....
                     var dependantPluginTr = getPluginTR(dependantId);
                     if (dependantPluginTr && dependantPluginTr.jenkinsPluginMetadata.enableInput.checked) {
@@ -149,14 +149,14 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     }
                 }
             }
-            
+
             pluginTR.addClassName('all-dependants-disabled');
         }
 
         function markHasDisabledDependencies(pluginTR) {
             var jenkinsPluginMetadata = pluginTR.jenkinsPluginMetadata;
             var dependencyIds = jenkinsPluginMetadata.dependencyIds;
-            
+
             if (dependencyIds) {
                 for (var i = 0; i < dependencyIds.length; i++) {
                     var dependencyPluginTr = getPluginTR(dependencyIds[i]);
@@ -167,10 +167,10 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     }
                 }
             }
-            
+
             pluginTR.removeClassName('has-disabled-dependency');
         }
-        
+
         function setEnableWidgetStates() {
             for (var i = 0; i < pluginTRs.length; i++) {
                 var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
@@ -183,7 +183,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 markHasDisabledDependencies(pluginTRs[i]);
             }
         }
-        
+
         function addDependencyInfoRow(pluginTR, infoTR) {
             infoTR.addClassName('plugin-dependency-info');
             pluginTR.insert({
@@ -200,7 +200,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
         }
 
-        function populateEnableDisableInfo(pluginTR, infoContainer) {    
+        function populateEnableDisableInfo(pluginTR, infoContainer) {
             var pluginMetadata = pluginTR.jenkinsPluginMetadata;
 
             // Remove all existing class info
@@ -212,9 +212,9 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var dependencySpans = pluginMetadata.dependencies;
 
                 infoContainer.update('<div class="title">' + i18n('cannot-enable') + '</div><div class="subtitle">' + i18n('disabled-dependencies') + '.</div>');
-                
+
                 // Go through each dependency <span> element. Show the spans where the dependency is
-                // disabled. Hide the others. 
+                // disabled. Hide the others.
                 for (var i = 0; i < dependencySpans.length; i++) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
@@ -228,15 +228,15 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         dependencySpan.setStyle({display: 'inline-block'});
                     }
                 }
-                
+
                 dependenciesDiv.setStyle({display: 'inherit'});
                 infoContainer.appendChild(dependenciesDiv);
-                
+
                 return true;
             } if (pluginTR.hasClassName('has-dependants')) {
                 if (!pluginTR.hasClassName('all-dependants-disabled')) {
                     var dependantIds = pluginMetadata.dependantIds;
-                    
+
                     // If the only dependant is jenkins-core (it's a bundle plugin), then lets
                     // treat it like all its dependants are disabled. We're really only interested in
                     // dependant plugins in this case.
@@ -245,18 +245,18 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         pluginTR.addClassName('all-dependants-disabled');
                         return false;
                     }
-                    
+
                     var dependantsDiv = pluginMetadata.dependantsDiv;
                     var dependantSpans = pluginMetadata.dependants;
 
                     infoContainer.update('<div class="title">' + i18n('cannot-disable') + '</div><div class="subtitle">' + i18n('enabled-dependants') + '.</div>');
-                    
+
                     // Go through each dependant <span> element. Show the spans where the dependant is
-                    // enabled. Hide the others. 
+                    // enabled. Hide the others.
                     for (var i = 0; i < dependantSpans.length; i++) {
                         var dependantSpan = dependantSpans[i];
                         var dependantId = dependantSpan.getAttribute('data-plugin-id');
-                        
+
                         if (dependantId === 'jenkins-core') {
                             // show the span
                             dependantSpan.setStyle({display: 'inline-block'});
@@ -272,14 +272,14 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                             }
                         }
                     }
-                    
+
                     dependantsDiv.setStyle({display: 'inherit'});
                     infoContainer.appendChild(dependantsDiv);
 
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -294,19 +294,19 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var dependantSpans = pluginMetadata.dependants;
 
                 infoContainer.update('<div class="title">' + i18n('cannot-uninstall') + '</div><div class="subtitle">' + i18n('installed-dependants') + '.</div>');
-                
-                // Go through each dependant <span> element. Show them all. 
+
+                // Go through each dependant <span> element. Show them all.
                 for (var i = 0; i < dependantSpans.length; i++) {
                     var dependantSpan = dependantSpans[i];
                     dependantSpan.setStyle({display: 'inline-block'});
                 }
-                
+
                 dependantsDiv.setStyle({display: 'inherit'});
                 infoContainer.appendChild(dependantsDiv);
-                
+
                 return true;
             }
-            
+
             return false;
         }
 
@@ -316,7 +316,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             var dependantsDiv = select('.dependant-list', pluginTR);
             var enableTD = select('td.enable', pluginTR);
             var uninstallTD = select('td.uninstall', pluginTR);
-            
+
             pluginTR.jenkinsPluginMetadata = {
                 enableInput: enableInput,
                 dependenciesDiv: dependenciesDiv,
@@ -331,16 +331,16 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 pluginTR.jenkinsPluginMetadata.dependants = selectAll('span', dependantsDiv);
                 pluginTR.jenkinsPluginMetadata.dependantIds = processSpanSet(pluginTR.jenkinsPluginMetadata.dependants);
             }
-            
+
             // Setup event handlers...
-            
+
             // Toggling of the enable/disable checkbox requires a check and possible
             // change of visibility on the same checkbox on other plugins.
             Element.observe(enableInput, 'click', function() {
                 setEnableWidgetStates();
             });
-            
-            // 
+
+            //
             var infoTR = document.createElement("tr");
             var infoTD = document.createElement("td");
             var infoDiv = document.createElement("div");
@@ -359,7 +359,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 }
                 showInfoTimeout = undefined;
             }
-            
+
             // Handle mouse in/out of the enable/disable cell (left most cell).
             Element.observe(enableTD, 'mouseenter', function() {
                 showInfoTimeout = setTimeout(function() {
@@ -394,7 +394,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         for (var i = 0; i < pluginTRs.length; i++) {
             initPluginRowHandling(pluginTRs[i]);
         }
-        
+
         setEnableWidgetStates();
     });
 }());
