@@ -23,13 +23,19 @@
  */
 package hudson.cli;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.model.Items;
 import hudson.model.UpdateSite;
+import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+import net.sf.json.JSON;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * Outputs a list of installed plugins.
@@ -46,17 +52,31 @@ public class ListPluginsCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Name of a specific plugin", required = false)
     public String name;
 
+    @Option(name = "--xml", usage = "Enable this option to get the output in XML format")
+    public boolean asXml;
+
+    private static XStream2 xStream2 = new XStream2();
+    static {
+        xStream2.alias("plugin", PluginResource.class);
+    }
+
     protected int run() {
         Jenkins h = Jenkins.getInstance();
         h.checkPermission(Jenkins.ADMINISTER);
         
         PluginManager pluginManager = h.getPluginManager();
 
+        List<PluginResource> pluginsToExport = new ArrayList<>();
+
         if (this.name != null) {
             PluginWrapper plugin = pluginManager.getPlugin(this.name);
 
             if (plugin != null) {
-                printPlugin(plugin, plugin.getShortName().length(), plugin.getDisplayName().length());
+                if (asXml) {
+                    pluginsToExport.add(new PluginResource(plugin.getShortName(), plugin.getDisplayName(), plugin.getVersion()));
+                } else {
+                    printPlugin(plugin, plugin.getShortName().length(), plugin.getDisplayName().length());
+                }
             }
             else {
                 throw new IllegalArgumentException("No plugin with the name '" + name + "' found");
@@ -74,8 +94,20 @@ public class ListPluginsCommand extends CLICommand {
                 }
 
                 for (PluginWrapper plugin : plugins) {
-                    printPlugin(plugin, colWidthShortName, colWidthDisplayName);
+                    if (asXml) {
+                        pluginsToExport.add(new PluginResource(plugin.getShortName(), plugin.getDisplayName(), plugin.getVersion()));
+                    } else {
+                        printPlugin(plugin, colWidthShortName, colWidthDisplayName);
+                    }
                 }
+            }
+        }
+
+        if (asXml) {
+            try {
+                xStream2.toXMLUTF8(pluginsToExport, stdout);
+            } catch (IOException e) {
+                throw new RuntimeException("Can not serialize the plugins list", e);
             }
         }
 
@@ -95,5 +127,17 @@ public class ListPluginsCommand extends CLICommand {
 
         String formatString = String.format("%%-%ds %%-%ds %%s", colWidthShortName, colWidthDisplayName);
         stdout.println(String.format(formatString, plugin.getShortName(), plugin.getDisplayName(), version));
+    }
+
+    private static class PluginResource {
+        private String id;
+        private String name;
+        private String version;
+
+        public PluginResource(String id, String name, String version) {
+            this.id = id;
+            this.name = name;
+            this.version = version;
+        }
     }
 }
