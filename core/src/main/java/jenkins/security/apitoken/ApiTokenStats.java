@@ -24,6 +24,7 @@
 package jenkins.security.apitoken;
 
 import hudson.BulkChange;
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
@@ -33,8 +34,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -251,13 +250,7 @@ public class ApiTokenStats implements Saveable {
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysUse() {
-            return lastUseDate == null ? 0 : computeDeltaDays(lastUseDate.toInstant(), Instant.now());
-        }
-        
-        private long computeDeltaDays(Instant a, Instant b) {
-            long deltaDays = ChronoUnit.DAYS.between(a, b);
-            deltaDays = Math.max(0, deltaDays);
-            return deltaDays;
+            return lastUseDate == null ? 0 : Util.daysElapsedSince(lastUseDate);
         }
     }
 }
