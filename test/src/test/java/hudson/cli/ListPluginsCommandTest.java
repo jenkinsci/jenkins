@@ -30,6 +30,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -60,6 +61,28 @@ public class ListPluginsCommandTest {
         ;
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
         assertThat(result.stdout(), containsString("token-macro"));
+    }
+
+    @Test
+    public void listPluginsAsXML() throws Exception {
+        assertNull(j.jenkins.getPluginManager().getPlugin("token-macro"));
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
+                .invokeWithArgs("--xml");
+        assertThat(result, CLICommandInvoker.Matcher.succeeded());
+        assertThat(result.stdout(), containsString("<list/>"));
+        assertThat(result.stdout(), not(containsString("token-macro")));
+
+        assertThat(new CLICommandInvoker(j, new InstallPluginCommand()).
+                        withStdin(ListPluginsCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
+                        invokeWithArgs("-name", "token-macro", "-deploy", "="),
+                CLICommandInvoker.Matcher.succeeded());
+        assertNotNull(j.jenkins.getPluginManager().getPlugin("token-macro"));
+
+        result = new CLICommandInvoker(j, new ListPluginsCommand()).invokeWithArgs("--xml");
+        assertThat(result, CLICommandInvoker.Matcher.succeeded());
+        assertThat(result.stdout(), containsString("token-macro"));
+        assertThat(result.stdout(), containsString("<list>"));
+        assertThat(result.stdout(), containsString("</list>"));
     }
     
     @Test
