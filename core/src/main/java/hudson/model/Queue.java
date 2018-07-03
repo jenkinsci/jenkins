@@ -1721,7 +1721,7 @@ public class Queue extends ResourceController implements Saveable {
             Map<Node, Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 100));
 
             for (Node n : h.getNodes()) {
                 hashSource.put(n, n.getNumExecutors() * 100);
