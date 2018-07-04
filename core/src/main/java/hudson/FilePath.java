@@ -2480,13 +2480,24 @@ public final class FilePath implements Serializable {
             final File dest = new File(target.remote);
             final AtomicInteger count = new AtomicInteger();
             scanner.scan(base, reading(new FileVisitor() {
+                private boolean exceptionEncountered;
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
                     if (f.isFile()) {
                         File target = new File(dest, relativePath);
                         mkdirsE(target.getParentFile());
-                        Files.copy(fileToPath(f), fileToPath(writing(target)),
-                                StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                        Path targetPath = fileToPath(writing(target));
+                        if(!exceptionEncountered) {
+                            try {
+                                Files.copy(fileToPath(f), targetPath,
+                                    StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                exceptionEncountered = true;
+                            }
+                        }
+                        if(exceptionEncountered) {
+                            Files.copy(fileToPath(f), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        }
                         count.incrementAndGet();
                     }
                 }
