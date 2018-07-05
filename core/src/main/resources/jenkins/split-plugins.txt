@@ -1,4 +1,5 @@
 # See ClassicPluginStrategy.DETACHED_LIST. As of JENKINS-47634 also used by plugin-compat-tester.
+# Columns are: plugin ID, first core release without the plugins' functionality, plugin version that's implied
 
 maven-plugin 1.296 1.296
 subversion 1.310 1.0
