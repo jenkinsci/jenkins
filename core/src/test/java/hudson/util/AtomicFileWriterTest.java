@@ -1,14 +1,15 @@
 package hudson.util;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -17,20 +18,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.EnumSet;
 import java.util.Set;
 
-import static org.hamcrest.core.StringContains.*;
-import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
-import static java.nio.file.attribute.PosixFilePermission.GROUP_WRITE;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -40,11 +32,39 @@ import static org.junit.Assume.assumeThat;
 
 public class AtomicFileWriterTest {
     private static final String PREVIOUS = "previous value \n blah";
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    /**
+     * Provides access to the default permissions given to a new file. (i.e. indirect way to get umask settings).
+     * <p><strong>BEWARE: null on non posix systems</strong></p>
+     */
+    @Nullable
+    private static Set<PosixFilePermission> DEFAULT_GIVEN_PERMISSIONS;
+    @ClassRule
+    public static TemporaryFolder tmp = new TemporaryFolder();
     File af;
     AtomicFileWriter afw;
     String expectedContent = "hello world";
+
+    @BeforeClass
+    public static void computePermissions() throws IOException {
+        final File tempDir = tmp.newFolder();
+        final File newFile = new File(tempDir, "blah");
+        assertThat(newFile.createNewFile(), is(true));
+        if (!isPosixSupported(newFile)) {
+            return;
+        }
+        DEFAULT_GIVEN_PERMISSIONS = Files.getPosixFilePermissions(newFile.toPath());
+    }
+
+    private static boolean isPosixSupported(File newFile) throws IOException {
+        // Check Posix calls are supported (to avoid running this test on Windows for instance)
+        boolean posixSupported = true;
+        try {
+            Files.getPosixFilePermissions(newFile.toPath());
+        } catch (UnsupportedOperationException e) {
+            posixSupported = false;
+        }
+        return posixSupported;
+    }
 
     @Before
     public void setUp() throws IOException {
@@ -142,36 +162,16 @@ public class AtomicFileWriterTest {
         }
     }
 
-    @Ignore // Need to fix the testing done here, since it assumes umask=002, which is wrong... Including on Kohsuke's release envt :-\.
     @Issue("JENKINS-48407")
     @Test
-    public void checkPermissions() throws IOException, InterruptedException {
+    public void checkPermissionsRespectUmask() throws IOException, InterruptedException {
 
         final File newFile = tmp.newFile();
+        boolean posixSupported = isPosixSupported(newFile);
 
-        // Check Posix calls are supported (to avoid running this test on Windows for instance)
-        boolean posixSupported = true;
-        try {
-            Files.getPosixFilePermissions(newFile.toPath());
-        } catch (UnsupportedOperationException e) {
-            posixSupported = false;
-        }
         assumeThat(posixSupported, is(true));
 
         // given
-        final Set<PosixFilePermission> givenPermissions = EnumSet.of(OWNER_READ,
-                                                                     OWNER_WRITE,
-                                                                     GROUP_READ,
-                                                                     GROUP_WRITE,
-                                                                     OTHERS_READ
-        );
-
-        final Set<PosixFilePermission> notGivenPermissions = EnumSet.of(OWNER_EXECUTE,
-                                                                        GROUP_EXECUTE,
-                                                                        OTHERS_WRITE,
-                                                                        OTHERS_EXECUTE);
-
-        Files.setPosixFilePermissions(newFile.toPath(), givenPermissions);
         Path filePath = newFile.toPath();
 
         // when
@@ -183,14 +183,6 @@ public class AtomicFileWriterTest {
         assertFalse(w.getTemporaryPath().toFile().exists());
         assertTrue(filePath.toFile().exists());
 
-        final Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(filePath);
-
-        for (PosixFilePermission perm : givenPermissions) {
-            assertTrue("missing: " + perm, posixFilePermissions.contains(perm));
-        }
-
-        for (PosixFilePermission perm : notGivenPermissions) {
-            assertFalse("should not be allowed: " + perm, posixFilePermissions.contains(perm));
-        }
+        assertThat(Files.getPosixFilePermissions(filePath), equalTo(DEFAULT_GIVEN_PERMISSIONS));
     }
 }

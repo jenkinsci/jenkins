@@ -44,6 +44,9 @@ import java.util.Map;
 
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
+
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
@@ -100,7 +103,7 @@ public class RobustReflectionConverterTest {
             return ACCEPT_KEYWORD.equals(keyword);
         }
         
-        public Object readResolve() throws Exception {
+        private Object readResolve() throws Exception {
             if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
@@ -170,7 +173,7 @@ public class RobustReflectionConverterTest {
     }
     
     private static final String CONFIGURATION_TEMPLATE =
-            "<?xml version='1.0' encoding='UTF-8'?>"
+            "<?xml version='1.1' encoding='UTF-8'?>"
             + "<project>"
             + "<properties>"
             +     "<hudson.util.RobustReflectionConverterTest_-KeywordProperty>"
@@ -186,6 +189,8 @@ public class RobustReflectionConverterTest {
     
     @Test
     public void testRestInterfaceFailure() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
 
         User test = User.getById("test", true);

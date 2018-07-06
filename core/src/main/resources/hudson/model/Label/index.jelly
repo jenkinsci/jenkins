@@ -42,7 +42,7 @@ THE SOFTWARE.
 
       <div>
         <h2>${%Nodes}</h2>
-        <j:forEach var="n" items="${it.nodes}">
+        <j:forEach var="n" items="${it.sortedNodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
           <j:set var="url" value="${rootURL}/${c.url}"/>
           <nobr>

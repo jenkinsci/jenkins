@@ -22,8 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <div class="alert alert-warning">
-        ${%warningMessage(rootURL)}
+        <form method="post" action="${rootURL}/${it.url}/disable">
+            <f:submit value="${%Dismiss}"/>
+        </form>
+        <j:set var="referenceAnchor">
+            <a href="https://jenkins.io/redirect/csrf-protection" target="_blank">${%referenceUrlContent}</a>
+        </j:set>
+        <j:set var="actionAnchor">
+            <a href="${rootURL}/configureSecurity">${%actionUrlContent}</a>
+        </j:set>
+        <j:out value="${%warningMessage(referenceAnchor)}"/>
+        <p />
+        <j:out value="${%actionMessage(actionAnchor)}"/>
     </div>
 </j:jelly>

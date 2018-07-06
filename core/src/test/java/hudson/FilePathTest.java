@@ -43,8 +43,11 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +55,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -625,7 +629,7 @@ public class FilePathTest {
             when(con.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
-            assertFalse(d.installIfNecessaryFrom(url, null, ""));
+            assertFalse(d.installIfNecessaryFrom(url, null, "message if failed"));
 
             verify(con).setIfModifiedSince(123000);
     }
@@ -644,7 +648,7 @@ public class FilePathTest {
             when(con.getInputStream())
               .thenReturn(someZippedContent());
 
-            assertTrue(d.installIfNecessaryFrom(url, null, ""));
+            assertTrue(d.installIfNecessaryFrom(url, null, "message if failed"));
     }
 
     @Issue("JENKINS-26196")
@@ -844,5 +848,35 @@ public class FilePathTest {
         assertTrue("junction target should not be deleted", Files.exists(targetDir));
         assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Issue("JENKINS-13128")
+    @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
+        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
+        Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
+        Set<PosixFilePermission> allRWX = EnumSet.allOf(PosixFilePermission.class);
+        Files.setPosixFilePermissions(sourceFile, allRWX);
+        FilePath f = new FilePath(src);
+        f.copyRecursiveTo(new FilePath(dst));
+        Path destinationFile = dst.toPath().resolve("test-file");
+        assertTrue("file was not copied", Files.exists(destinationFile));
+        Set<PosixFilePermission> destinationPermissions = Files.getPosixFilePermissions(destinationFile);
+        assertEquals("file permissions not copied", allRWX, destinationPermissions);
+    }
+
+    @Issue("JENKINS-13128")
+    @Test public void copyRecursivePreservesLastModifiedTime() throws Exception {
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
+        Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
+        FileTime mtime = FileTime.from(42L, TimeUnit.SECONDS);
+        Files.setLastModifiedTime(sourceFile, mtime);
+        FilePath f = new FilePath(src);
+        f.copyRecursiveTo(new FilePath(dst));
+        Path destinationFile = dst.toPath().resolve("test-file");
+        assertTrue("file was not copied", Files.exists(destinationFile));
+        assertEquals("file mtime was not preserved", mtime, Files.getLastModifiedTime(destinationFile));
     }
 }

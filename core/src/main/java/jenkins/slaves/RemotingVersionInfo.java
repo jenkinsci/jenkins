@@ -32,11 +32,10 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO: Make the API public (JENKINS-48766)
 /**
  * Provides information about Remoting versions used within the core.
  * @author Oleg Nenashev
- * @since TODO
+ * @since unrestricted since 2.104, initially added in 2.100.
  */
 public class RemotingVersionInfo {
 

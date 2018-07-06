@@ -47,6 +47,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import jenkins.model.SimplePageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
@@ -133,8 +134,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -1379,6 +1378,7 @@ public class Functions {
     }
 
     public static String jsStringEscape(String s) {
+        if (s == null) return null;
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<s.length(); i++ ) {
             char ch = s.charAt(i);
@@ -1771,7 +1771,14 @@ public class Functions {
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
-    
+    /**
+     * Gets only one {@link SimplePageDecorator}.
+     * @since FIXME
+     */
+    public static SimplePageDecorator getSimplePageDecorator() {
+        return SimplePageDecorator.first();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }

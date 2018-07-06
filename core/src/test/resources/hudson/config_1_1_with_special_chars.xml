@@ -1,0 +1,9 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<hudson>
+    <disabledAdministrativeMonitors/>
+    <version>1.480.1</version>
+    <numExecutors>2</numExecutors>
+    <mode>NORMAL</mode>
+    <label>LESS_TERMCAP_mb=&#x1b;[01;31m</label>
+    <!-- Yeah, we deleted a lot of this ... fine for testing. -->
+</hudson>

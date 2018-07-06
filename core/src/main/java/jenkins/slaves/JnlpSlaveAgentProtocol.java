@@ -76,7 +76,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return OPT_IN;
+        return true;
     }
 
     @Override
@@ -104,14 +104,4 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
-
-    /**
-     * A/B test turning off this protocol by default.
-     */
-    private static final boolean OPT_IN;
-
-    static {
-        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
-        OPT_IN = (hash % 10) == 0;
-    }
 }

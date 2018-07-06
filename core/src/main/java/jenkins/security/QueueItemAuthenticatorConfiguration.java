@@ -35,7 +35,7 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
@@ -61,8 +61,8 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
         }
     }
 
-    public static QueueItemAuthenticatorConfiguration get() {
-        return Jenkins.getInstance().getInjector().getInstance(QueueItemAuthenticatorConfiguration.class);
+    public static @Nonnull QueueItemAuthenticatorConfiguration get() {
+        return GlobalConfiguration.all().getInstance(QueueItemAuthenticatorConfiguration.class);
     }
 
     @Extension(ordinal = 100)

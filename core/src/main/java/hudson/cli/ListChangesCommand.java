@@ -15,14 +15,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Retrieves a change list for the specified builds.
  *
  * @author Kohsuke Kawaguchi
  */
-@Restricted(DoNotUse.class) // command implementation only
+@Restricted(NoExternalUse.class) // command implementation only
 @Extension
 public class ListChangesCommand extends RunRangeCommand {
     @Override

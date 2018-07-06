@@ -764,6 +764,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @Override String toString() {
         return fullName;
     }
+    
+    /**
+     * Returns the folder that store all the user information
+     * Useful for plugins to save a user-specific file aside the config.xml
+     * 
+     * @since TODO
+     */
+    public File getUserFolder(){
+        return getUserFolderFor(this.id);
+    }
 
     /**
      * The file we save our configuration.
@@ -773,7 +783,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
+        return new File(getUserFolderFor(id), "config.xml");
+    }
+    
+    private static File getUserFolderFor(String id){
+        return new File(getRootDir(), idStrategy().filenameOf(id));
     }
 
     private static File getUnsanitizedLegacyConfigFileFor(String id) {
@@ -1092,6 +1106,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (subdirs != null) {
                 for (File subdir : subdirs) {
+                    if (subdir.equals(getRootDir())) {
+                        continue; // ignore the parent directory in case of stray config.xml
+                    }
                     File configFile = new File(subdir, "config.xml");
                     if (configFile.exists()) {
                         String name = strategy.idFromFilename(subdir.getName());

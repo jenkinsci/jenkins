@@ -260,6 +260,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
+        Authentication auth = null;
         try {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
@@ -268,33 +269,50 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(getTransportAuthentication());
             new ClassParser().parse(authenticator,p);
 
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[args.size()]));
-            Authentication auth = authenticator.authenticate();
+            auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
-            if (!(this instanceof LoginCommand || this instanceof HelpCommand))
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
-            return run();
+            LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
+                    new Object[] {getName(), args.size(), auth.getName()});
+            int res = run();
+            LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
+                    new Object[] {getName(), args.size(), auth.getName(), res});
+            return res;
         } catch (CmdLineException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 4;
         } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 3;
         } catch (AbortException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             // signals an error without stack trace
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 5;
         } catch (AccessDeniedException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 6;

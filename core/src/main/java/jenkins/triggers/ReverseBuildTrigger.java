@@ -241,7 +241,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
 
         static RunListenerImpl get() {
-            return ExtensionList.lookup(RunListener.class).get(RunListenerImpl.class);
+            return ExtensionList.lookupSingleton(RunListenerImpl.class);
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger;

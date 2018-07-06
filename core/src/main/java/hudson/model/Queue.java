@@ -24,10 +24,12 @@
  */
 package hudson.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -64,7 +66,10 @@ import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
+
+import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +98,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -102,6 +106,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -454,6 +459,9 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void save() {
         if(BulkChange.contains(this))  return;
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
 
         XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
         lock.lock();
@@ -499,11 +507,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private File getQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.txt");
+        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.xml");
+        return new File(Jenkins.get().getRootDir(), "queue.xml");
     }
 
     /**
@@ -1102,7 +1110,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Gets the information about the queue item for the given project.
      *
-     * @return null if the project is not in the queue.
+     * @return empty if the project is not in the queue.
      */
     public List<Item> getItems(Task t) {
         Snapshot snapshot = this.snapshot;
@@ -1445,6 +1453,10 @@ public class Queue extends ResourceController implements Saveable {
      * and it also gets invoked periodically (see {@link Queue.MaintainTask}.)
      */
     public void maintain() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return;
+        }
         lock.lock();
         try { try {
 
@@ -1455,7 +1467,7 @@ public class Queue extends ResourceController implements Saveable {
 
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
-                for (Computer c : Jenkins.getInstance().getComputers()) {
+                for (Computer c : jenkins.getComputers()) {
                     for (Executor e : c.getExecutors()) {
                         if (e.isInterrupted()) {
                             // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set
@@ -1555,8 +1567,15 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            if (s != null)
-                s.sortBuildableItems(buildables);
+            if (s != null) {
+                try {
+                    s.sortBuildableItems(buildables);
+                } catch (Throwable e) {
+                    // We don't really care if the sort doesn't sort anything, we still should
+                    // continue to do our job. We'll complain about it and continue.
+                    LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
+                }
+            }
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
@@ -2184,8 +2203,10 @@ public class Queue extends ResourceController implements Saveable {
             for (Action action: actions) addAction(action);
         }
 
+        @SuppressWarnings("deprecation") // JENKINS-51584
         protected Item(Item item) {
-        	this(item.task, new ArrayList<Action>(item.getAllActions()), item.id, item.future, item.inQueueSince);
+            // do not use item.getAllActions() here as this will persist actions from a TransientActionFactory
+            this(item.task, new ArrayList<Action>(item.getActions()), item.id, item.future, item.inQueueSince);
         }
 
         /**
@@ -3008,5 +3029,76 @@ public class Queue extends ResourceController implements Saveable {
     @Initializer(after=JOB_LOADED)
     public static void init(Jenkins h) {
         h.getQueue().load();
+    }
+
+    /**
+     * Schedule <tt>Queue.save()</tt> call for near future once items change. Ignore all changes until the time the save
+     * takes place.
+     *
+     * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not
+     * a problem as the items will be reshuffled first and then scheduled during the next maintainance cycle.
+     *
+     * Implementation note: Queue.load() calls QueueListener hooks for every item deserialized that can hammer the persistance
+     * on load. The problem is avoided by delaying the actual save for the time long enough for queue to load so the save
+     * operations will collapse into one. Also, items are persisted as buildable or blocked in vast majority of cases and
+     * those stages does not trigger the save here.
+     */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static final class Saver extends QueueListener implements Runnable {
+
+        /**
+         * All negative values will disable periodic saving.
+         */
+        @VisibleForTesting
+        /*package*/ static /*final*/ int DELAY_SECONDS = SystemProperties.getInteger("hudson.model.Queue.Saver.DELAY_SECONDS", 60);
+
+        private final Object lock = new Object();
+        @GuardedBy("lock")
+        private Future<?> nextSave;
+
+        @Override
+        public void onEnterWaiting(WaitingItem wi) {
+            push();
+        }
+
+        @Override
+        public void onLeft(Queue.LeftItem li) {
+            push();
+        }
+
+        private void push() {
+            if (DELAY_SECONDS < 0) return;
+
+            synchronized (lock) {
+                // Can be done or canceled in case of a bug or external intervention - do not allow it to hang there forever
+                if (nextSave != null && !(nextSave.isDone() || nextSave.isCancelled())) return;
+                nextSave = Timer.get().schedule(this, DELAY_SECONDS, TimeUnit.SECONDS);
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                Jenkins j = Jenkins.getInstanceOrNull();
+                if (j != null) {
+                    j.getQueue().save();
+                }
+            } finally {
+                synchronized (lock) {
+                    nextSave = null;
+                }
+            }
+        }
+
+        @VisibleForTesting @Restricted(NoExternalUse.class)
+        /*package*/ @Nonnull Future<?> getNextSave() {
+            synchronized (lock) {
+                return nextSave == null
+                        ? Futures.precomputed(null)
+                        : nextSave
+                ;
+            }
+        }
     }
 }

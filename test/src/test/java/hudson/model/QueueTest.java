@@ -46,6 +46,7 @@ import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
@@ -71,7 +72,9 @@ import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -925,6 +928,7 @@ public class QueueTest {
     @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
@@ -1017,5 +1021,23 @@ public class QueueTest {
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
+    }
+
+    @Test @LocalData
+    public void load_queue_xml() {
+        Queue q = r.getInstance().getQueue();
+        Queue.Item[] items = q.getItems();
+        assertEquals(Arrays.asList(items).toString(), 11, items.length);
+        assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+    }
+
+    @TestExtension("load_queue_xml")
+    public static final class QueueSaveSniffer extends SaveableListener {
+        private static int count = 0;
+        @Override public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof Queue) {
+                count++;
+            }
+        }
     }
 }

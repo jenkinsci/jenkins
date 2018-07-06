@@ -52,6 +52,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
+import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
  * Extension to {@link LargeText} that handles annotations by {@link ConsoleAnnotator}.
@@ -169,7 +170,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
