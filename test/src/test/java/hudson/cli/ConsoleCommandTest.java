@@ -81,19 +81,6 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
 
-    @Test public void consoleShouldFailWithoutItemBuildPermission() throws Exception {
-
-        j.createFreeStyleProject("aProject");
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
-                .invokeWithArgs("aProject");
-
-        assertThat(result, failedWith(6));
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Job/Build permission"));
-    }
-
     @Test public void consoleShouldFailWhenProjectDoesNotExist() throws Exception {
 
         final CLICommandInvoker.Result result = command
