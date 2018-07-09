@@ -24,7 +24,6 @@
 package jenkins.model.logging;
 
 import hudson.Launcher;
-import hudson.Launcher.RemoteProcess;
 import hudson.Proc;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -34,17 +33,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import jenkins.model.Jenkins;
+
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.input.NullInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  *
  * @author Oleg Nenashev
  */
+@Restricted(Beta.class)
 public class LoggingDefinitionLauncherWrapper {
 
     /**
@@ -76,8 +77,8 @@ public class LoggingDefinitionLauncherWrapper {
             final LoggingMethod.OutputStreamWrapper streamErr = loggingMethod.provideErrStream(run);
 
             // RemoteLogstashReporterStream(new CloseProofOutputStream(ps.stdout()
-            final OutputStream out = ps.stdout() == null ? null : (streamOut == null ? ps.stdout() : streamOut);
-            final OutputStream err = ps.stdout() == null ? null : (streamErr == null ? ps.stdout() : streamErr);
+            final OutputStream out = ps.stdout() == null ? null : (streamOut == null ? ps.stdout() : streamOut.toSerializableOutputStream());
+            final OutputStream err = ps.stdout() == null ? null : (streamErr == null ? ps.stdout() : streamErr.toSerializableOutputStream());
             final InputStream in = (ps.stdin() == null || ps.stdin() == NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin(), false);
             final String workDir = ps.pwd() == null ? null : ps.pwd().getRemote();
 

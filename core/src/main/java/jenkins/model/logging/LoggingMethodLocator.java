@@ -3,6 +3,9 @@ package jenkins.model.logging;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -11,6 +14,7 @@ import javax.annotation.Nonnull;
  * @author Oleg Nenashev
  * @since TODO
  */
+@Restricted(Beta.class)
 public abstract class LoggingMethodLocator implements ExtensionPoint {
   
   /**

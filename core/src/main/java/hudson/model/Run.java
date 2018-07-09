@@ -44,6 +44,8 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
+
+import jenkins.model.logging.CloseableStreamBuildListener;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -1775,8 +1777,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
-        OutputStream logger = null;
-        StreamBuildListener listener=null;
+        CloseableStreamBuildListener listener = null;
 
         runner = job;
         onStartBuilding();
@@ -1794,8 +1795,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-                    logger = createLogger();
-                    listener = createBuildListener(job, logger, charset);
+                    listener = createBuildListener(job, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1884,9 +1884,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         } finally {
             onEndBuilding();
-            if (logger != null) {
+            if (listener != null) {
                 try {
-                    logger.close();
+                    listener.close();
                 } catch (IOException x) {
                     LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
                 }
@@ -1894,20 +1894,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
+    //TODO Support loggers
     @Nonnull
-    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, @CheckForNull StreamBuildListener listener,
+    private CloseableStreamBuildListener createBuildListener(@Nonnull RunExecution job,
                                                     Charset charset) throws IOException, InterruptedException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
         try {
-            return Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            OutputStream ostream =  Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return createBuildListener(job, ostream, charset);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
     }
 
-    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, OutputStream logger, Charset charset) throws IOException, InterruptedException {
+    private CloseableStreamBuildListener createBuildListener(@Nonnull RunExecution job, OutputStream logger, Charset charset) throws IOException, InterruptedException {
         RunT build = job.getBuild();
 
         // Global log filters
@@ -1931,7 +1933,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     new Object[] {this, f});
             logger = f.decorateLogger(build, logger);
         }
-        return new StreamBuildListener(logger,charset);
+        return new CloseableStreamBuildListener(logger, charset);
     }
 
     /**
