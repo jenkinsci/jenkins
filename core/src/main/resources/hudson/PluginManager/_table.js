@@ -398,8 +398,21 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
         }
 
+        // Currying this function because htmlunit doesn't yet support ES6
+        // which would allow block scoping some variables
+        var registerClickHandler = function(row) {
+          Element.observe(row, 'click', function(event) {
+            var checkbox = select('.enable input', row);
+            if (checkbox) {
+              checkbox.click();
+            }
+          });
+        };
+
         for (var i = 0; i < pluginTRs.length; i++) {
-            initPluginRowHandling(pluginTRs[i]);
+          var row = pluginTRs[i];
+          initPluginRowHandling(row);
+          registerClickHandler(row);
         }
 
         setEnableWidgetStates();
