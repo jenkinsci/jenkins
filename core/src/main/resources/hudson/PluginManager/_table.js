@@ -360,35 +360,42 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 showInfoTimeout = undefined;
             }
 
-            // Handle mouse in/out of the enable/disable cell (left most cell).
-            Element.observe(enableTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateEnableDisableInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(enableTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            // If we have the enableTD on the page, then we can hang some
+            // events off of it. Otherwise a `registry` error will be thrown
+            //    TypeError: registry is undefined ((prototype.js:5615:9)
+            if (enableTD) {
+              // Handle mouse in/out of the enable/disable cell (left most cell).
+              Element.observe(enableTD, 'mouseenter', function() {
+                  showInfoTimeout = setTimeout(function() {
+                      showInfoTimeout = undefined;
+                      infoDiv.update('');
+                      if (populateEnableDisableInfo(pluginTR, infoDiv)) {
+                          addDependencyInfoRow(pluginTR, infoTR);
+                      }
+                  }, 1000);
+              });
+              Element.observe(enableTD, 'mouseleave', function() {
+                  clearShowInfoTimeout();
+                  removeDependencyInfoRow(pluginTR);
+              });
+            }
 
-            // Handle mouse in/out of the uninstall cell (right most cell).
-            Element.observe(uninstallTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateUninstallInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(uninstallTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            if (uninstallTD) {
+              // Handle mouse in/out of the uninstall cell (right most cell).
+              Element.observe(uninstallTD, 'mouseenter', function() {
+                  showInfoTimeout = setTimeout(function() {
+                      showInfoTimeout = undefined;
+                      infoDiv.update('');
+                      if (populateUninstallInfo(pluginTR, infoDiv)) {
+                          addDependencyInfoRow(pluginTR, infoTR);
+                      }
+                  }, 1000);
+              });
+              Element.observe(uninstallTD, 'mouseleave', function() {
+                  clearShowInfoTimeout();
+                  removeDependencyInfoRow(pluginTR);
+              });
+            }
         }
 
         for (var i = 0; i < pluginTRs.length; i++) {
