@@ -35,7 +35,8 @@ THE SOFTWARE.
     <l:header>
       <script type="text/javascript">
       <![CDATA[
-        function flip(item) {
+        function flip(ev) {
+          var item = Event.element(ev);
           var nodes = document.getElementsByName(item.name);
           for (var i = 0; i < nodes.length; ++i) {
             if(nodes[i].nodeName == "INPUT") {
@@ -91,7 +92,7 @@ THE SOFTWARE.
                     <td class="center pane enable" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
                              checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"/>
+                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(event);"/>
                     </td>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}">
                       <div>
