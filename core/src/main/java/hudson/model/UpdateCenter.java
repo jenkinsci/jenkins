@@ -1887,7 +1887,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         VerificationResult result512 = verifyChecksums(entry.getSha512(), job.getComputedSHA512(), false);
         switch (result512) {
             case PASS:
-                // this has passed so no reason not to check the weaker checksums
+                // this has passed so no reason to check the weaker checksums
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha512(), job.getComputedSHA512(), file, "SHA-512");
