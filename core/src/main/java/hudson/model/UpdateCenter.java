@@ -1888,28 +1888,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         switch (result512) {
             case PASS:
                 // this has passed but no real reason not to check the others
-                break;
+                return;
             case FAIL:
                 throwVerificationFailure(entry.getSha512(), job.getComputedSHA512(), file, "SHA-512");
             case NOT_COMPUTED:
                 LOGGER.log(WARNING, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 failed since it could not be computed. Falling back to weaker algorithms. Update your JRE.");
                 break;
             case NOT_PROVIDED:
-                LOGGER.log(INFO, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 failed since your configured update site does not provide this checksum. Falling back to weaker algorithms.");
                 break;
         }
 
         VerificationResult result256 = verifyChecksums(entry.getSha256(), job.getComputedSHA256(), false);
         switch (result256) {
             case PASS:
-                // this has passed but no real reason not to check the others
-                break;
+                return;
             case FAIL:
                 throwVerificationFailure(entry.getSha256(), job.getComputedSHA256(), file, "SHA-256");
             case NOT_COMPUTED:
             case NOT_PROVIDED:
-                // we've probably already complained once, and if not, we've passed SHA-512.
                 break;
+        }
+
+        if (result512 == VerificationResult.NOT_PROVIDED && result256 == VerificationResult.NOT_PROVIDED) {
+            LOGGER.log(INFO, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 or SHA-256 failed since your configured update site does not provide either of those checksums. Falling back to SHA-1.");
         }
 
         VerificationResult result1 = verifyChecksums(entry.getSha1(), job.getComputedSHA1(), true);
@@ -1919,15 +1920,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             case FAIL:
                 throwVerificationFailure(entry.getSha1(), job.getComputedSHA1(), file, "SHA-1");
             case NOT_COMPUTED:
-                // we need to make sure that at least one of the checks has passed, otherwise this is a problem
-                if (result256 == VerificationResult.PASS || result512 == VerificationResult.PASS) {
-                    return;
-                }
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:
-                if (result256 == VerificationResult.PASS || result512 == VerificationResult.PASS) {
-                    return;
-                }
                 throw new IOException("Unable to confirm integrity of downloaded file, refusing installation");
         }
     }
