@@ -37,19 +37,19 @@ import org.jenkinsci.Symbol;
 @Symbol("apiToken")
 public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
     /**
-     * When a user is created, this property determine if we create a legacy token for the user or not
-     * For security reason, we do not recommend to enable this but we let that open to ease upgrade.
+     * When a user is created, this property determines whether or not we create a legacy token for the user.
+     * For security reasons, we do not recommend you enable this but we left that open to ease upgrades.
      */
     private boolean tokenGenerationOnCreationEnabled = false;
 
     /**
-     * When a user has a legacy token, this property determine if the user can request a new legacy token or not
-     * For security reason, we do not recommend to enable this but we let that open to ease upgrade.
+     * When a user has a legacy token, this property determines whether or not the user can request a new legacy token.
+     * For security reasons, we do not recommend you enable this but we left that open to ease upgrades.
      */
     private boolean creationOfLegacyTokenEnabled = false;
     
     /**
-     * Each time an API Token is used, its usage counter is incremented and the last usage date is updated. 
+     * Each time an API Token is used, its usage counter is incremented and the last used date is updated.
      * You can disable this feature using this property.
      */
     private boolean usageStatisticsEnabled = true;
