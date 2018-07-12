@@ -66,7 +66,7 @@ public class UpdateCenter2Test {
         String wrongChecksum = "ABCDEFG1234567890";
 
         // usually the problem is the file having a wrong checksum, but changing the expected one works just the same
-        j.jenkins.getUpdateCenter().getSite("default").getPlugin("changelog-history").sha1 = wrongChecksum;
+        j.jenkins.getUpdateCenter().getSite("default").getPlugin("changelog-history").sha512 = wrongChecksum;
         DownloadJob job = (DownloadJob) j.jenkins.getUpdateCenter().getPlugin("changelog-history").deploy().get();
         assertTrue(job.status instanceof Failure);
         assertTrue("error message references checksum", ((Failure) job.status).problem.getMessage().contains(wrongChecksum));
