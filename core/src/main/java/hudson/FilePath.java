@@ -2495,8 +2495,8 @@ public final class FilePath implements Serializable {
                         if (exceptionEncountered) {
                             Files.copy(fileToPath(f), targetPath, StandardCopyOption.REPLACE_EXISTING);
                             if (!logMessageShown) {
-                                LOGGER.log(Level.WARNING, 
-                                    "Attributes removed when copying to {0}, please make sure Jenkins process owns the directory.", 
+                                LOGGER.log(Level.INFO, 
+                                    "JENKINS-52325: Jenkins failed to retain attributes when copying to {0}, so proceeding without attributes.", 
                                     dest.getAbsolutePath());
                                 logMessageShown = true;
                             }
