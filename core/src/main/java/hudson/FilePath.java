@@ -58,6 +58,9 @@ import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+
+import static java.util.logging.Level.FINE;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -2457,15 +2460,36 @@ public final class FilePath implements Serializable {
             final File dest = new File(target.remote);
             final AtomicInteger count = new AtomicInteger();
             scanner.scan(base, reading(new FileVisitor() {
+                private boolean exceptionEncountered;
+                private boolean logMessageShown;
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
                     if (f.isFile()) {
                         File target = new File(dest, relativePath);
                         mkdirsE(target.getParentFile());
-                        Files.copy(fileToPath(f), fileToPath(writing(target)),
-                                StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                        Path targetPath = fileToPath(writing(target));
+                        exceptionEncountered = exceptionEncountered || !tryCopyWithAttributes(f, targetPath);
+                        if (exceptionEncountered) {
+                            Files.copy(fileToPath(f), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                            if (!logMessageShown) {
+                                LOGGER.log(Level.INFO, 
+                                    "JENKINS-52325: Jenkins failed to retain attributes when copying to {0}, so proceeding without attributes.", 
+                                    dest.getAbsolutePath());
+                                logMessageShown = true;
+                            }
+                        }
                         count.incrementAndGet();
                     }
+                }
+                private boolean tryCopyWithAttributes(File f, Path targetPath) {
+                	try {
+                        Files.copy(fileToPath(f), targetPath,
+                            StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.FINE, "Unable to copy: {0}", e.getMessage());
+                        return false;
+                    }
+                	return true;
                 }
                 @Override
                 public boolean understandsSymlink() {
