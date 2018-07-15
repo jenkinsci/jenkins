@@ -963,9 +963,10 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Reads the URL on the current VM, and writes all the data to this {@link FilePath}
-     * (this is different from resolving URL remotely.)
-     *
+     * Reads the URL on the current VM, and streams the data to this file using the Remoting channel.
+     * <p>This is different from resolving URL remotely.
+     * If you instead wished to open an HTTP(S) URL on the remote side,
+     * prefer <a href="http://javadoc.jenkins.io/plugin/apache-httpcomponents-client-4-api/io/jenkins/plugins/httpclient/RobustHTTPClient.html#copyFromRemotely-hudson.FilePath-java.net.URL-hudson.model.TaskListener-">{@code RobustHTTPClient.copyFromRemotely}</a>.
      * @since 1.293
      */
     public void copyFrom(URL url) throws IOException, InterruptedException {
