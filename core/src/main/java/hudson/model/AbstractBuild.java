@@ -543,6 +543,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     l = bw.decorateLauncher(AbstractBuild.this,l,listener);
             }
 
+            buildEnvironments = new ArrayList<Environment>();
+
             for (RunListener rl: RunListener.all()) {
                 Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
                 if (environment != null) {

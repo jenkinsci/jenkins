@@ -292,10 +292,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     }
 
     private static final long serialVersionUID = 1L;
-
-    //TODO: removed \\u
-    public static final String PREAMBLE_STR = "u001B[8mha:";
-    public static final String POSTAMBLE_STR = "u001B[0m";
+    
+    public static final String PREAMBLE_STR = "\u001B[8mha:";
+    public static final String POSTAMBLE_STR = "\u001B[0m";
 
     /**
      * Preamble of the encoded form. ANSI escape sequence to stop echo back
