@@ -1,5 +1,7 @@
 package jenkins.model.logging;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -13,9 +15,9 @@ import java.io.Serializable;
  * @since TODO
  */
 @ExportedBean
+@Restricted(Beta.class)
 public abstract class LogHandler {
 
-    @CheckForNull
     protected transient Loggable loggable;
 
     public LogHandler(@Nonnull Loggable loggable) {
@@ -44,6 +46,10 @@ public abstract class LogHandler {
 
     @Nonnull
     protected Loggable getOwner() {
+        if (loggable == null) {
+            throw new IllegalStateException("Owner has not been assigned to the object yet");
+        }
         return loggable;
+
     }
 }

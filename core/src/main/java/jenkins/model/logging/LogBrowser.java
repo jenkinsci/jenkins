@@ -3,6 +3,8 @@ package jenkins.model.logging;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleNote;
 import jenkins.util.io.OnMaster;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -24,6 +26,7 @@ import java.util.List;
  * @author Jesse Glick
  * @since TODO
  */
+@Restricted(Beta.class)
 public abstract class LogBrowser<T extends Loggable> extends LogHandler implements OnMaster {
 
     public LogBrowser(Loggable loggable) {

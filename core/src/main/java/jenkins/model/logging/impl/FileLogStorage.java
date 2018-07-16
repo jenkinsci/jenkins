@@ -5,6 +5,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.logging.Loggable;
 import jenkins.model.logging.LoggingMethod;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 
@@ -14,6 +16,7 @@ import javax.annotation.CheckForNull;
  * @author Oleg Nenashev
  * @since TODO
  */
+@Restricted(Beta.class)
 public class FileLogStorage extends LoggingMethod implements FileLogCompatLayer {
 
     public FileLogStorage(Loggable loggable) {

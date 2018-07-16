@@ -1,6 +1,8 @@
 package jenkins.model.logging;
 
 import jenkins.model.logging.impl.FileLogStorage;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -15,6 +17,7 @@ import java.nio.charset.StandardCharsets;
  * @see LogBrowser
  * @see LoggingMethod
  */
+@Restricted(Beta.class)
 public interface Loggable {
 
     @Nonnull

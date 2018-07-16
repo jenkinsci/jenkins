@@ -2,6 +2,8 @@ package jenkins.model.logging.impl;
 
 import hudson.AbortException;
 import jenkins.model.logging.Loggable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -15,6 +17,7 @@ import java.io.IOException;
  * @see FileLogStorage
  * @see FileLogBrowser
  */
+@Restricted(Beta.class)
 public interface FileLogCompatLayer {
 
     @Nonnull

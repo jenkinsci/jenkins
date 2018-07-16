@@ -2,6 +2,8 @@ package jenkins.model.logging.impl;
 
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.annotation.Nonnull;
@@ -13,6 +15,7 @@ import java.nio.charset.StandardCharsets;
  * Annotated Large Text for a case when something goes wrong.
  * @param <T> Type
  */
+@Restricted(Beta.class)
 public class BrokenAnnotatedLargeText<T> extends AnnotatedLargeText<T> {
 
     BrokenAnnotatedLargeText(Throwable cause) {

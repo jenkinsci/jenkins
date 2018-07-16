@@ -5,9 +5,17 @@ import hudson.model.TaskListener;
 import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.Loggable;
 import jenkins.model.logging.LoggingMethod;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 
+/**
+ * Default Logging Method implementation which does nothing
+ * @author Oleg Nenashev
+ * @since TODO
+ */
+@Restricted(Beta.class)
 public class NoopLoggingMethod extends LoggingMethod {
 
     public NoopLoggingMethod(Loggable loggable) {

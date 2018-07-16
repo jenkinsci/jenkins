@@ -7,6 +7,8 @@ import hudson.console.ConsoleNote;
 import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.Loggable;
 import org.apache.commons.lang.ArrayUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -23,13 +25,14 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Compatibility implementation for local log browser.
  * @author Oleg Nenashev
  * @since TODO
  */
+@Restricted(Beta.class)
 public class FileLogBrowser extends LogBrowser implements FileLogCompatLayer {
 
     private static final Logger LOGGER = Logger.getLogger(FileLogBrowser.class.getName());
@@ -43,7 +46,6 @@ public class FileLogBrowser extends LogBrowser implements FileLogCompatLayer {
         return getLogFileOrFail(loggable);
     }
 
-    @CheckForNull
     @Override
     public AnnotatedLargeText overallLog() {
         final File logFile;
@@ -57,7 +59,6 @@ public class FileLogBrowser extends LogBrowser implements FileLogCompatLayer {
                 (logFile, getOwner().getCharset(), getOwner().isLoggingFinished(), getOwner());
     }
 
-    @CheckForNull
     @Override
     public AnnotatedLargeText stepLog(@CheckForNull String stepId, boolean b) {
         // Not supported, there is no default implementation for "step"
