@@ -534,8 +534,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             // Produce correct logger
             // TODO: Consider merging with create Launcher
-            LoggingMethod locate = LoggingMethodLocator.locate(this.getBuild());
-            l = locate.decorateLauncher(l, getBuild(), getBuiltOn());
+            LoggingMethod getLoggingMethod = getLoggingMethod();
+            l = getLoggingMethod.decorateLauncher(l, getBuild(), getBuiltOn());
             
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
@@ -1241,11 +1241,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return r;
     }
 
-    @Override
-    public LoggingMethod getDefaultLoggingMethod() {
-        return new LoggingMethod.DefaultAbstractBuildLoggingMethod();
-    }
-    
     /**
      * Represents a change in the dependency.
      */

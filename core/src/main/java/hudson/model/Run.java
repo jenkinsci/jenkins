@@ -27,7 +27,6 @@
  */
 package hudson.model;
 
-import com.jcraft.jzlib.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
 import hudson.AbortException;
 import hudson.BulkChange;
@@ -38,7 +37,6 @@ import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
-import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
@@ -46,6 +44,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 
 import jenkins.model.logging.CloseableStreamBuildListener;
+import jenkins.model.logging.LogBrowser;
+import jenkins.model.logging.LogHandler;
+import jenkins.model.logging.Loggable;
+import jenkins.model.logging.impl.FileLogBrowser;
+import jenkins.model.logging.impl.FileLogStorage;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -67,14 +70,11 @@ import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -148,7 +148,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, Loggable {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
@@ -294,6 +294,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private @CheckForNull ArtifactManager artifactManager;
 
     /**
+     * Loging method associated with this build, if any.
+     * @since TODO
+     */
+    private @CheckForNull LoggingMethod loggingMethod;
+
+    /**
+     * Log browser associated with this build, if any.
+     * @since TODO
+     */
+    private @CheckForNull LogBrowser logBrowser;
+
+
+    /**
      * Creates a new {@link Run}.
      * @param job Owner job
      */
@@ -349,6 +362,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             LOGGER.log(WARNING, "reload {0} @{1} with anomalous state {2}", new Object[] {this, hashCode(), state});
         }
 
+        if (logBrowser == null) {
+            logBrowser = new FileLogBrowser(this);
+        }
+        if (loggingMethod == null) {
+            loggingMethod = new FileLogStorage(this);
+        }
+
         // not calling onLoad upon reload. partly because we don't want to call that from Run constructor,
         // and partly because some existing use of onLoad isn't assuming that it can be invoked multiple times.
     }
@@ -370,9 +390,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 ((RunAction) a).onLoad();
             }
         }
+
         if (artifactManager != null) {
             artifactManager.onLoad(this);
         }
+        LogHandler.onLoad(this, logBrowser);
+        LogHandler.onLoad(this, loggingMethod);
     }
     
     /**
@@ -523,6 +546,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return state.compareTo(State.COMPLETED) < 0;
     }
 
+    @Override
+    public boolean isLoggingFinished() {
+        return !isLogUpdated();
+    }
+
     /**
      * Gets the {@link Executor} building this job, if it's being built.
      * Otherwise null.
@@ -557,7 +585,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the charset in which the log file is written.
      * @return never null.
      * @since 1.257
-     */   
+     */
+    @Override
     public final @Nonnull Charset getCharset() {
         if(charset==null)   return Charset.defaultCharset();
         return Charset.forName(charset);
@@ -1421,12 +1450,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return Collections.<Fingerprint>emptyList();
     }
-    
-    /**
-     * Returns the log file.
-     * @return The file may reference both uncompressed or compressed logs
-     */  
-    public @Nonnull File getLogFile() {
+
+    @Override
+    @Exported
+    public LogBrowser getLogBrowser() {
+        return logBrowser != null ? logBrowser : new FileLogBrowser(this);
+    }
+
+    @Override
+    @Exported
+    public LoggingMethod getLoggingMethod() {
+        return loggingMethod != null ? loggingMethod : new FileLogStorage(this);
+    }
+
+    @CheckForNull
+    @Override
+    public File getLogFileCompatLocation() {
         File rawF = new File(getRootDir(), "log");
         if (rawF.isFile()) {
             return rawF;
@@ -1440,6 +1479,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * @deprecated Not all {@link jenkins.model.logging.LogBrowser} implementations
+     * are able to produce the log file efficiently.
+     * It is recommended to use the {@link #getLogBrowser()}
+     * to get browser with better API options.
+     */
+    @Deprecated
+    public File getLogFile() {
+        try {
+            return getLogBrowser().getLogFile();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to locate log file for " + this, e);
+            return new File(getRootDir(), "log");
+        }
+    }
+
+    /**
      * Returns an input stream that reads from the log file.
      * It will use a gzip-compressed log file (log.gz) if that exists.
      *
@@ -1449,29 +1504,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
-    	File logFile = getLogFile();
-    	
-    	if (logFile.exists() ) {
-    	    // Checking if a ".gz" file was return
-            try {
-                InputStream fis = Files.newInputStream(logFile.toPath());
-                if (logFile.getName().endsWith(".gz")) {
-                    return new GZIPInputStream(fis);
-                } else {
-                    return fis;
-                }
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
-    	}
-    	
-        String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+        return getLogBrowser().getLogInputStream();
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
-        if (charset==null)  return new InputStreamReader(getLogInputStream());
-        else                return new InputStreamReader(getLogInputStream(),charset);
+        return getLogBrowser().getLogReader();
     }
 
     /**
@@ -1520,7 +1557,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return A {@link Run} log with annotations
      */   
     public @Nonnull AnnotatedLargeText getLogText() {
-        return new AnnotatedLargeText(getLogFile(),getCharset(),!isLogUpdated(),this);
+        return getLogBrowser().overallLog();
     }
 
     @Override
@@ -1798,6 +1835,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener = createBuildListener(job, charset);
                     listener.started(getCauses());
 
+                    // If Logging has not been initialized yet, do it here
+                    if (loggingMethod == null) {
+                        loggingMethod = LoggingMethodLocator.locate(this);
+                    }
+                    if (logBrowser == null) {
+                        logBrowser = LoggingMethodLocator.locateBrowser(this);
+                    }
+
                     Authentication auth = Jenkins.getAuthentication();
                     if (!auth.equals(ACL.SYSTEM)) {
                         String id = auth.getName();
@@ -1927,7 +1972,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         
         // Decorate logger by logging method of this build
         final LoggingMethod located = LoggingMethodLocator.locate(this);
-        final ConsoleLogFilter f = located.createLoggerDecorator(this);
+        final ConsoleLogFilter f = located.createLoggerDecorator();
         if (f != null) {
             LOGGER.log(Level.INFO, "Decorated run {0} by a custom log filter {1}",
                     new Object[] {this, f});
@@ -2052,7 +2097,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public @Nonnull String getLog() throws IOException {
-        return Util.loadFile(getLogFile(),getCharset());
+        return getLogBrowser().getLog();
     }
 
     /**
@@ -2065,54 +2110,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        if (maxLines == 0) {
-            return Collections.emptyList();
-        }
-
-        int lines = 0;
-        long filePointer;
-        final List<String> lastLines = new ArrayList<>(Math.min(maxLines, 128));
-        final List<Byte> bytes = new ArrayList<>();
-
-        try (RandomAccessFile fileHandler = new RandomAccessFile(getLogFile(), "r")) {
-            long fileLength = fileHandler.length() - 1;
-
-            for (filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {
-                fileHandler.seek(filePointer);
-                byte readByte = fileHandler.readByte();
-
-                if (readByte == 0x0A) {
-                    if (filePointer < fileLength) {
-                        lines = lines + 1;
-                        lastLines.add(convertBytesToString(bytes));
-                        bytes.clear();
-                    }
-                } else if (readByte != 0xD) {
-                    bytes.add(readByte);
-                }
-            }
-        }
-
-        if (lines != maxLines) {
-            lastLines.add(convertBytesToString(bytes));
-        }
-
-        Collections.reverse(lastLines);
-
-        // If the log has been truncated, include that information.
-        // Use set (replaces the first element) rather than add so that
-        // the list doesn't grow beyond the specified maximum number of lines.
-        if (lines == maxLines) {
-            lastLines.set(0, "[...truncated " + Functions.humanReadableByteSize(filePointer)+ "...]");
-        }
-
-        return ConsoleNote.removeNotes(lastLines);
-    }
-
-    private String convertBytesToString(List<Byte> bytes) {
-        Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
-        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
+        return getLogBrowser().getLog(maxLines);
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
@@ -2592,16 +2590,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return returnedResult;
     }
-    
-    /**
-     * Determines a fallback logger to be used.
-     * @return Default logger.
-     * @since TODO
-     */
-    @Nonnull
+
+    @Override
     public LoggingMethod getDefaultLoggingMethod() {
-        LOGGER.log(Level.WARNING, "Default Logging Method is not overriden, a NOOP fallback will be used");
-        return LoggingMethod.NOOP;
+        return new FileLogStorage(this);
+    }
+
+    @Override
+    public LogBrowser getDefaultLogBrowser() {
+        return new FileLogBrowser(this);
     }
 
     public static class RedirectUp {

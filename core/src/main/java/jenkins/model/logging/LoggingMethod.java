@@ -2,11 +2,9 @@ package jenkins.model.logging;
 
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.AbstractProject;
 import hudson.model.Node;
 import hudson.model.Run;
 import java.io.OutputStream;
-import java.io.Serializable;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -14,6 +12,7 @@ import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import jenkins.model.logging.LoggingDefinitionLauncherWrapper.DefaultLocalLauncher;
 import jenkins.model.logging.LoggingDefinitionLauncherWrapper.DefaultRemoteLauncher;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -25,16 +24,19 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since TODO
  */
 @Restricted(Beta.class)
-public abstract class LoggingMethod implements Serializable {
+public abstract class LoggingMethod extends LogHandler {
+
+    public LoggingMethod(Loggable loggable) {
+        super(loggable);
+    }
 
     /**
      * Decorates logging on the Jenkins master side.
      * These filters can be also used for log redirection and multi-reporting.
-     * @param build Build to be decorated
      * @return Log filter on the master. {@code null} if no custom implementation
      */
     @CheckForNull
-    public abstract TaskListener createTaskListener(Run<?,?> build);
+    public abstract TaskListener createTaskListener();
 
     /**
      * Decorates logging on the Jenkins master side.
@@ -48,18 +50,20 @@ public abstract class LoggingMethod implements Serializable {
     /**
      * Decorates logging on the Jenkins master side.
      * These filters can be also used for log redirection and multi-reporting.
-     * @param build Build to be decorated
      * @return Log filter on the master. {@code null} if no custom implementation
      */
     @CheckForNull
-    public abstract ConsoleLogFilter createLoggerDecorator(Run<?,?> build);
+    public abstract ConsoleLogFilter createLoggerDecorator();
 
     /**
      * Gets default Log browser which should be used with this Logging method.
+     * It allows setting a custom default LogBrowser if needed.
      * @return Log browser or {@code null} if not defined.
      */
     @CheckForNull
-    public abstract LogBrowser getDefaulLogBrowser();
+    public LogBrowser getDefaultLogBrowser() {
+        return null;
+    }
 
     /**
      * Decorates external process launcher running on a node.
@@ -74,82 +78,34 @@ public abstract class LoggingMethod implements Serializable {
         if (node instanceof Jenkins) {
             return new DefaultLocalLauncher(original);
         } else {
-            return new DefaultRemoteLauncher(original, run, this);
+            return new DefaultRemoteLauncher(original, this);
         }
     }
 
     /**
      * Provides the output stream for given run.
-     * @param run Run
-     * @return output stream
+     * @return Output stream wrapper.
+     *         If {@code null}, no special stream will be used.
+     *         In such case logging will happen through master.
      */
     @CheckForNull
-    public abstract OutputStreamWrapper provideOutStream(Run run);
+    public abstract OutputStreamWrapper provideRemotableOutStream();
 
     /**
-     * Provides the error stream for given run.
-     * @param run Run
-     * @return error stream
+     * Provides the Remotable error stream for a given object.
+     * @return Error stream wrapper.
+     *         If {@code null}, no special stream will be used.
+     *         In such case logging will happen through master.
      */
     @CheckForNull
-    public abstract OutputStreamWrapper provideErrStream(Run run);
+    public abstract OutputStreamWrapper provideRemotableErrStream();
 
-    /**
-     * Fallback Logging methods for jobs, which do not define the implementation.
-     */
-    public static final LoggingMethod NOOP = new NoopLoggingMethod();
+    public interface OutputStreamWrapper extends SerializableOnlyOverRemoting {
 
-    private static class NoopLoggingMethod extends LoggingMethod {
-        @Override
-        public Launcher decorateLauncher(Launcher l, Run run, Node node) {
-            return l;
-        }
-
-        @CheckForNull
-        @Override
-        public TaskListener createTaskListener(Run<?, ?> build) {
-            return null;
-        }
-
-        //@CheckForNull
-        //@Override
-        //public StreamRunListener createRunListener(Run<?, ?> build) {
-        //    return null;
-        //}
-
-        @Override
-        public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {
-            return null;
-        }
-
-        @Override
-        public OutputStreamWrapper provideOutStream(Run run) {
-            return null;
-        }
-
-        @Override
-        public OutputStreamWrapper provideErrStream(Run run) {
-            return null;
-        }
-
-        @CheckForNull
-        @Override
-        public LogBrowser getDefaulLogBrowser() {
-            return null;
-        }
-    }
-
-    /**
-     * Default logging method for {@link AbstractProject} classes
-     */
-    public static class DefaultAbstractBuildLoggingMethod extends NoopLoggingMethod {
-        // Default impl
-    }
-
-    public interface OutputStreamWrapper extends Serializable {
-
-        OutputStream toRawOutputStream();
-
+        /**
+         * Produces a serializable object which can be sent over the channel
+         * @return Serializable output stream, e.g. {@link hudson.remoting.RemoteOutputStream}
+         */
         OutputStream toSerializableOutputStream();
     }
 }

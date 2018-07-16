@@ -25,7 +25,6 @@ package jenkins.model.logging;
 
 import hudson.Launcher;
 import hudson.Proc;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
@@ -62,19 +61,17 @@ public class LoggingDefinitionLauncherWrapper {
      */
     public static class DefaultRemoteLauncher extends Launcher.DecoratedLauncher {
         private static final NullInputStream NULL_INPUT_STREAM = new NullInputStream(0);
-        private final Run run;
         private final LoggingMethod loggingMethod;
 
-        public DefaultRemoteLauncher(Launcher inner, Run run, LoggingMethod loggingMethod) {
+        public DefaultRemoteLauncher(Launcher inner, LoggingMethod loggingMethod) {
             super(inner);
-            this.run = run;
             this.loggingMethod = loggingMethod;
         }
 
         @Override
         public Proc launch(Launcher.ProcStarter ps) throws IOException {
-            final LoggingMethod.OutputStreamWrapper streamOut = loggingMethod.provideOutStream(run);
-            final LoggingMethod.OutputStreamWrapper streamErr = loggingMethod.provideErrStream(run);
+            final LoggingMethod.OutputStreamWrapper streamOut = loggingMethod.provideRemotableOutStream();
+            final LoggingMethod.OutputStreamWrapper streamErr = loggingMethod.provideRemotableErrStream();
 
             // RemoteLogstashReporterStream(new CloseProofOutputStream(ps.stdout()
             final OutputStream out = ps.stdout() == null ? null : (streamOut == null ? ps.stdout() : streamOut.toSerializableOutputStream());
