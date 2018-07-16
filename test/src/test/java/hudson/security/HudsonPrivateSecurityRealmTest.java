@@ -51,7 +51,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.*;
 
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -180,6 +182,8 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         

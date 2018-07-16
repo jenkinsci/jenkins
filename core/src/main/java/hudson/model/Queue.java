@@ -1112,7 +1112,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Gets the information about the queue item for the given project.
      *
-     * @return null if the project is not in the queue.
+     * @return empty if the project is not in the queue.
      */
     public List<Item> getItems(Task t) {
         Snapshot snapshot = this.snapshot;
@@ -1569,8 +1569,15 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            if (s != null)
-                s.sortBuildableItems(buildables);
+            if (s != null) {
+                try {
+                    s.sortBuildableItems(buildables);
+                } catch (Throwable e) {
+                    // We don't really care if the sort doesn't sort anything, we still should
+                    // continue to do our job. We'll complain about it and continue.
+                    LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
+                }
+            }
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();

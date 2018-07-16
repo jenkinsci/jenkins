@@ -44,6 +44,9 @@ import java.util.Map;
 
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
+
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
@@ -186,6 +189,8 @@ public class RobustReflectionConverterTest {
     
     @Test
     public void testRestInterfaceFailure() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
 
         User test = User.getById("test", true);

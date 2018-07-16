@@ -529,7 +529,12 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Gets the corresponding computer object.
+     *
+     * @return
+     *      this method can return null if there's no {@link Computer} object for this node,
+     *      such as when this node has no executors at all.
      */
+    @CheckForNull
     public SlaveComputer getComputer() {
         return (SlaveComputer)toComputer();
     }

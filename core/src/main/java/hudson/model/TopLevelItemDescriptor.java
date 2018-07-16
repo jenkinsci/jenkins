@@ -135,10 +135,11 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
     }
 
     /**
-     * A description of this kind of item type. This description can contain HTML code but it is recommend to use text plain
-     * in order to avoid how it should be represented.
+     * A description of this kind of item type. This description can contain HTML code but it is recommended that
+     * you use plain text in order to be consistent with the rest of Jenkins.
      *
-     * This method should be called in a thread where Stapler is associated, but it will return an empty string.
+     * This method should be called from a thread where Stapler is handling an HTTP request, otherwise it will
+     * return an empty string.
      *
      * @return A string, by default the value from newInstanceDetail view is taken.
      *
