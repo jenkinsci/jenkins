@@ -91,5 +91,7 @@ public class BuildDiscarderPropertyTest {
         assertEquals(3, d.getNumToKeep());
         assertEquals(2, d.getArtifactDaysToKeep());
         assertEquals(1, d.getArtifactNumToKeep());
+        assertEquals(6, d.getLogDaysToKeep());
+        assertEquals(5, d.getLogNumToKeep());
     }
 }

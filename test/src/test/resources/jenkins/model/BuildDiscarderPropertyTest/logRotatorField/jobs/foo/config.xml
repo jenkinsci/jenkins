@@ -10,6 +10,8 @@
     <numToKeep>3</numToKeep>
     <artifactDaysToKeep>2</artifactDaysToKeep>
     <artifactNumToKeep>1</artifactNumToKeep>
+    <logDaysToKeep>6</logDaysToKeep>
+    <logNumToKeep>5</logNumToKeep>
   </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties/>
