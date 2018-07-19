@@ -36,7 +36,6 @@ import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
-import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,7 +53,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -64,7 +62,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -600,7 +597,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 VersionNumber actualVersion = Jenkins.getVersion();
                 if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    dependencyErrors.put(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), false);
+                    versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
                 }
             }
         }
@@ -618,11 +615,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.put(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
+                        versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     }
                 } else {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.put(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
+                        versionDependencyError(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     } else {
                         dependencyErrors.put(Messages.PluginWrapper_disabled(dependency.getLongName()), false);
                     }
@@ -635,7 +632,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    dependencyErrors.put(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
+                    versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                 } else {
                     dependencies.add(d);
                 }
@@ -658,6 +655,26 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private boolean isDependencyObsolete(Dependency d, PluginWrapper dependency) {
         return ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version));
+    }
+
+    /**
+     * Called when there appears to be a core or plugin version which is too old for a stated dependency.
+     * Normally records an error in {@link #dependencyErrors}.
+     * But if one or both versions {@link #isSnapshot}, just issue a warning (JENKINS-52665).
+     */
+    private void versionDependencyError(String message, String actual, String minimum) {
+        if (isSnapshot(actual) || isSnapshot(minimum)) {
+            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getLongName(), getVersion(), message});
+        } else {
+            dependencyErrors.put(message, false);
+        }
+    }
+
+    /**
+     * Similar to {@code org.apache.maven.artifact.ArtifactUtils.isSnapshot}.
+     */
+    static boolean isSnapshot(@Nonnull String version) {
+        return version.contains("-SNAPSHOT") || version.matches(".+-[0-9]{8}.[0-9]{6}-[0-9]+");
     }
 
     /**
