@@ -146,10 +146,10 @@ THE SOFTWARE.
                 </table>
                 
                 <div class="selection-panel">
-                    Select:
-                    <a href="#" class="action" onclick="selectAll(this);return false;">all</a>
-                    <a href="#" class="action" onclick="selectFresh(this);return false;">only fresh</a>
-                    <a href="#" class="action" onclick="selectRecent(this);return false;">only recent</a>
+                    ${%Select}:
+                    <a href="#" class="action" onclick="selectAll(this);return false;">${%all}</a>
+                    <a href="#" class="action" onclick="selectFresh(this);return false;">${%only fresh}</a>
+                    <a href="#" class="action" onclick="selectRecent(this);return false;">${%only recent}</a>
                 </div>
                 
                 <div class="action-panel">
