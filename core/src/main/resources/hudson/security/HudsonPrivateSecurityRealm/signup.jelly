@@ -188,15 +188,15 @@ THE SOFTWARE.
 
                                     const passwordStrength = function(score) {
                                         if (score > 80) {
-                                            return "Strong";
+                                            return "${%Strong}";
                                         }
                                         if (score > 60) {
-                                            return "Moderate";
+                                            return "${%Moderate}";
                                         }
                                         if (score >= 30) {
-                                            return "Weak";
+                                            return "${%Weak}";
                                         }
-                                        return "Poor";
+                                        return "${%Poor}";
                                     };
 
                                     const passwordStrengthColor = function(score) {
@@ -262,7 +262,7 @@ THE SOFTWARE.
                                 name="password1"
                                 id="password1"
                             />
-                            <div id="passwordStrengthWrapper">Strength: <span id="passwordStrength">&#160;</span> </div>
+                            <div id="passwordStrengthWrapper">${%Strength}: <span id="passwordStrength">&#160;</span> </div>
                             <script type="text/javascript">
                                 if (document.getElementById('passwordStrengthWrapper')) {
                                     document.getElementById('passwordStrengthWrapper').hidden = true;
@@ -271,7 +271,7 @@ THE SOFTWARE.
 
                         </div>
                         <div class="formRow">
-                            A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.
+                            ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
                         </div>
                         <input
                             class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
