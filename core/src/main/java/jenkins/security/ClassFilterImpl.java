@@ -304,7 +304,7 @@ public class ClassFilterImpl extends ClassFilter {
             Boolean r = f.permits(name);
             if (r != null) {
                 if (r) {
-                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, r});
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, true});
                 } else {
                     notifyRejected(null, name,
                             String.format("%s specifies a policy for %s: %s", f, name, r));
