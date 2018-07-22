@@ -58,7 +58,7 @@ public class ListJobsCommand extends CLICommand {
             View view = h.getView(name);
 
             if (view != null) {
-                jobs = view.getAllItems();
+                jobs = view.getItems();
             }
             // If no view was found, try with an item group.
             else {
@@ -66,7 +66,7 @@ public class ListJobsCommand extends CLICommand {
 
                 // If item group was found use it's jobs.
                 if (item instanceof ModifiableTopLevelItemGroup) {
-                    jobs = ((ModifiableTopLevelItemGroup) item).getAllItems(TopLevelItem.class);
+                    jobs = ((ModifiableTopLevelItemGroup) item).getItems();
                 }
                 // No view and no item group with the given name found.
                 else {
