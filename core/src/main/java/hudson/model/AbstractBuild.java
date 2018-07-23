@@ -1,7 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
+ * Copyright (c) 2004-2018, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.,
+ * CloudBees Inc., Oleg Nenashev and other contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,8 +89,6 @@ import javax.annotation.Nonnull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
-import jenkins.model.logging.LoggingMethod;
-import jenkins.model.logging.LoggingMethodLocator;
 
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -534,8 +533,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             // Produce correct logger
             // TODO: Consider merging with create Launcher
-            LoggingMethod getLoggingMethod = getLoggingMethod();
-            l = getLoggingMethod.decorateLauncher(l, getBuild(), getBuiltOn());
+            l = getLoggingMethod().decorateLauncher(l, getBuild(), currentNode);
             
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;

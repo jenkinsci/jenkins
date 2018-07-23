@@ -292,7 +292,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     }
 
     private static final long serialVersionUID = 1L;
-    
+
     public static final String PREAMBLE_STR = "\u001B[8mha:";
     public static final String POSTAMBLE_STR = "\u001B[0m";
 

@@ -1,11 +1,10 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2018, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
- * Darek Ostolski, CloudBees, Inc.
- *
- * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ * Martin Schroeder, Intel Mobile Communications GmbH,
+ * Darek Ostolski, CloudBees, Inc., Oleg Nenashev and other contributors
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,16 +35,11 @@ import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
-import hudson.console.ConsoleLogFilter;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
 
 import java.io.Closeable;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardOpenOption;
 
-import jenkins.model.logging.impl.CloseableStreamBuildListener;
 import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.LogHandler;
 import jenkins.model.logging.Loggable;

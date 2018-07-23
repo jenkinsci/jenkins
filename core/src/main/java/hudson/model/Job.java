@@ -120,7 +120,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-import jenkins.model.logging.LoggingMethod;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
