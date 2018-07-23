@@ -4,15 +4,10 @@ import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.Node;
 import hudson.model.Run;
-import java.io.OutputStream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
-import jenkins.model.logging.LoggingDefinitionLauncherWrapper.DefaultLocalLauncher;
-import jenkins.model.logging.LoggingDefinitionLauncherWrapper.DefaultRemoteLauncher;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -67,6 +62,8 @@ public abstract class LoggingMethod extends LogHandler {
 
     /**
      * Decorates external process launcher running on a node.
+     * It may be overridden to redirect logs to external destination
+     * instead of sending them by default to the master.
      * @param original Original launcher
      * @param run Run, for which the decoration should be performed
      * @param node Target node. May be {@code master} as well
@@ -75,37 +72,6 @@ public abstract class LoggingMethod extends LogHandler {
     @Nonnull
     public Launcher decorateLauncher(@Nonnull Launcher original,
         @Nonnull Run<?,?> run, @Nonnull Node node) {
-        if (node instanceof Jenkins) {
-            return new DefaultLocalLauncher(original);
-        } else {
-            return new DefaultRemoteLauncher(original, this);
-        }
-    }
-
-    /**
-     * Provides the output stream for given run.
-     * @return Output stream wrapper.
-     *         If {@code null}, no special stream will be used.
-     *         In such case logging will happen through master.
-     */
-    @CheckForNull
-    public abstract OutputStreamWrapper provideRemotableOutStream();
-
-    /**
-     * Provides the Remotable error stream for a given object.
-     * @return Error stream wrapper.
-     *         If {@code null}, no special stream will be used.
-     *         In such case logging will happen through master.
-     */
-    @CheckForNull
-    public abstract OutputStreamWrapper provideRemotableErrStream();
-
-    public interface OutputStreamWrapper extends SerializableOnlyOverRemoting {
-
-        /**
-         * Produces a serializable object which can be sent over the channel
-         * @return Serializable output stream, e.g. {@link hudson.remoting.RemoteOutputStream}
-         */
-        OutputStream toSerializableOutputStream();
+        return original;
     }
 }

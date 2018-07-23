@@ -34,16 +34,4 @@ public class FileLogStorage extends LoggingMethod implements FileLogCompatLayer 
     public ConsoleLogFilter createLoggerDecorator() {
         return null;
     }
-
-    @CheckForNull
-    @Override
-    public OutputStreamWrapper provideRemotableOutStream() {
-        return null;
-    }
-
-    @CheckForNull
-    @Override
-    public OutputStreamWrapper provideRemotableErrStream() {
-        return null;
-    }
 }

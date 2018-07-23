@@ -40,16 +40,6 @@ public class NoopLoggingMethod extends LoggingMethod {
     }
 
     @Override
-    public OutputStreamWrapper provideRemotableOutStream() {
-        return null;
-    }
-
-    @Override
-    public OutputStreamWrapper provideRemotableErrStream() {
-        return null;
-    }
-
-    @Override
     public LogBrowser getDefaultLogBrowser() {
         return new NoopLogBrowser(getOwner());
     }
