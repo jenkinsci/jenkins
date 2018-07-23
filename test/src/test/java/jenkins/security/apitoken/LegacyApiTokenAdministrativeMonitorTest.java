@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.junit.Assert.assertEquals;
@@ -50,6 +51,18 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    
+    private enum SelectFilter {
+        ALL(0),
+        ONLY_FRESH(1),
+        ONLY_RECENT(2);
+        
+        int index;
+    
+        SelectFilter(int index){
+            this.index = index;
+        }
+    }
     
     @Test
     public void isActive() throws Exception {
@@ -74,6 +87,40 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         
         apiTokenProperty.changeApiToken();
         assertTrue(monitor.isActivated());
+    }
+    
+    @Test
+    @Issue("JENKINS-52441")
+    public void takeCareOfUserWithIdNull() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setCreationOfLegacyTokenEnabled(true);
+        config.setTokenGenerationOnCreationEnabled(false);
+        
+        // user created without legacy token
+        User user = User.getById("null", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        assertFalse(apiTokenProperty.hasLegacyToken());
+        
+        LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
+        assertFalse(monitor.isActivated());
+        
+        apiTokenProperty.changeApiToken();
+        assertTrue(monitor.isActivated());
+    
+        {//revoke the legacy token
+            JenkinsRule.WebClient wc = j.createWebClient();
+    
+            HtmlPage page = wc.goTo(monitor.getUrl() + "/manage");
+            {// select all (only one user normally)
+                HtmlAnchor filterAll = getFilterByIndex(page, SelectFilter.ALL);
+                HtmlElementUtil.click(filterAll);
+            }
+            // revoke them
+            HtmlButton revokeSelected = getRevokeSelected(page);
+            HtmlElementUtil.click(revokeSelected);
+        }
+        
+        assertFalse(monitor.isActivated());
     }
     
     @Test
@@ -254,7 +301,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         checkUserWithLegacyTokenListHasSizeOf(page, 1 + 2 + 3 + 4, 2 + 4, 3 + 4);
         
         {// select 2
-            HtmlAnchor filterOnlyFresh = getFilterByIndex(page, 1);
+            HtmlAnchor filterOnlyFresh = getFilterByIndex(page, SelectFilter.ONLY_FRESH);
             HtmlElementUtil.click(filterOnlyFresh);
         }
         // revoke them
@@ -265,7 +312,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         assertTrue(monitor.isActivated());
         
         {// select 1 + 3
-            HtmlAnchor filterAll = getFilterByIndex(newPage, 0);
+            HtmlAnchor filterAll = getFilterByIndex(newPage, SelectFilter.ALL);
             HtmlElementUtil.click(filterAll);
         }
         // revoke them
@@ -275,13 +322,13 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         assertFalse(monitor.isActivated());
     }
     
-    private HtmlAnchor getFilterByIndex(HtmlPage page, int index) {
+    private HtmlAnchor getFilterByIndex(HtmlPage page, SelectFilter selectFilter) {
         HtmlElement document = page.getDocumentElement();
         HtmlDivision filterDiv = document.getOneHtmlElementByAttribute("div", "class", "selection-panel");
         DomNodeList<HtmlElement> filters = filterDiv.getElementsByTagName("a");
         assertEquals(3, filters.size());
         
-        HtmlAnchor filter = (HtmlAnchor) filters.get(index);
+        HtmlAnchor filter = (HtmlAnchor) filters.get(selectFilter.index);
         assertNotNull(filter);
         return filter;
     }
