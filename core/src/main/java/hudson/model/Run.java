@@ -1454,13 +1454,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Override
     @Exported
     public LogBrowser getLogBrowser() {
-        return logBrowser != null ? logBrowser : new FileLogBrowser(this);
+        if (logBrowser == null) {
+            //TODO(oleg_nenashev) WorkflowRun does not allow capturing Logging method in a better way
+            // In order to prevent cases between new objects and data migration, we rely on reload()
+            // which acts as readResolve() for the Run object
+            logBrowser = LoggingMethodLocator.locateBrowser(this);
+        }
+        return logBrowser;
     }
 
     @Override
     @Exported
     public LoggingMethod getLoggingMethod() {
-        return loggingMethod != null ? loggingMethod : new FileLogStorage(this);
+        if (loggingMethod == null) {
+            //TODO(oleg_nenashev) WorkflowRun does not allow capturing Logging method in a better way
+            // In order to prevent cases between new objects and data migration, we rely on reload()
+            // which acts as readResolve() for the Run object
+            loggingMethod = LoggingMethodLocator.locate(this);
+        }
+        return loggingMethod;
     }
 
     @CheckForNull
@@ -1834,14 +1846,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     }
                     listener = createBuildListener(job, charset);
                     listener.started(getCauses());
-
-                    // If Logging has not been initialized yet, do it here
-                    if (loggingMethod == null) {
-                        loggingMethod = LoggingMethodLocator.locate(this);
-                    }
-                    if (logBrowser == null) {
-                        logBrowser = LoggingMethodLocator.locateBrowser(this);
-                    }
 
                     Authentication auth = Jenkins.getAuthentication();
                     if (!auth.equals(ACL.SYSTEM)) {
