@@ -5,6 +5,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.model.StreamBuildListener;
 import hudson.tasks.BuildWrapper;
 import jenkins.model.logging.Loggable;
 import jenkins.model.logging.LoggingMethod;
@@ -44,7 +45,7 @@ public abstract class StreamLoggingMethod extends LoggingMethod {
         return null;
     }
 
-    public final CloseableStreamBuildListener createBuildListener() throws IOException, InterruptedException {
+    public final StreamBuildListener createBuildListener() throws IOException, InterruptedException {
 
         OutputStream logger = createOutputStream();
         if (!(loggable instanceof Run<?,?>)) {
@@ -73,6 +74,6 @@ public abstract class StreamLoggingMethod extends LoggingMethod {
                     new Object[]{this, f});
             logger = f.decorateLogger(build, logger);
         }
-        return new CloseableStreamBuildListener(logger, getOwner().getCharset());
+        return new StreamBuildListener(logger, getOwner().getCharset());
     }
 }

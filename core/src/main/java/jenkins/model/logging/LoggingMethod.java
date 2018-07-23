@@ -1,7 +1,6 @@
 package jenkins.model.logging;
 
 import hudson.Launcher;
-import hudson.console.ConsoleLogFilter;
 import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Run;
@@ -13,7 +12,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 /**
  * Defines logging method for Jenkins runs.
