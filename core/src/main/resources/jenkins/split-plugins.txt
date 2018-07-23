@@ -4,6 +4,7 @@
 
 # Note that all split plugins between and including matrix-auth and jdk-tool incorrectly use the first
 # core release without the plugin's functionality when they should use the immediately prior release.
+# Fixing these retroactively won't help, as the difference only matters to those specific versions.
 
 maven-plugin 1.296 1.296
 subversion 1.310 1.0
