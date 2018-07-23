@@ -161,6 +161,10 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     @RequirePOST
     public HttpResponse doRevokeAllSelected(@JsonBody RevokeAllSelectedModel content) throws IOException {
         for (RevokeAllSelectedUserAndUuid value : content.values) {
+            if(value.userId == null){
+                // special case not managed by JSONObject
+                value.userId = "null";
+            }
             User user = User.getById(value.userId, false);
             if (user == null) {
                 LOGGER.log(Level.INFO, "User not found id={0}", value.userId);
