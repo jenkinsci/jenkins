@@ -1,11 +1,10 @@
-package jenkins.model.logging;
+package jenkins.model.logging.impl;
 
 import hudson.model.StreamBuildListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;

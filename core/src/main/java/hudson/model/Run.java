@@ -39,11 +39,13 @@ import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+
+import java.io.Closeable;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 
-import jenkins.model.logging.CloseableStreamBuildListener;
+import jenkins.model.logging.impl.CloseableStreamBuildListener;
 import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.LogHandler;
 import jenkins.model.logging.Loggable;
@@ -123,7 +125,6 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -1510,7 +1511,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns an input stream that reads from the log file.
      * It will use a gzip-compressed log file (log.gz) if that exists.
      *
-     * @throws IOException 
+     * @throws IOException Operation error
      * @return An input stream from the log file. 
      *   If the log file does not exist, the error message will be returned to the output.
      * @since 1.349
@@ -1826,7 +1827,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
-        CloseableStreamBuildListener listener = null;
+        BuildListener listener = null;
 
         runner = job;
         onStartBuilding();
@@ -1839,12 +1840,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 try {
                     Computer computer = Computer.currentComputer();
-                    Charset charset = null;
                     if (computer != null) {
-                        charset = computer.getDefaultCharset();
+                        Charset charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-                    listener = createBuildListener(job, charset);
+                    listener = getLoggingMethod().createBuildListener();
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1916,7 +1916,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         // too late to update the result now
                     }
                     listener.finished(result);
-                    listener.closeQuietly();
+                    if (listener instanceof Closeable) {
+                        try {
+                            ((Closeable)listener).close();
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, "Failed to close the build listener for " + Run.this, ex);
+                        }
+                    }
                 }
 
                 try {
@@ -1933,56 +1939,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         } finally {
             onEndBuilding();
-            if (listener != null) {
+            //TODO(oleg_nenashev): DRY? there is Close operation above
+            if (listener instanceof Closeable) {
                 try {
-                    listener.close();
-                } catch (IOException x) {
-                    LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
+                    ((Closeable)listener).close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Failed to close the build listener for " + Run.this, ex);
                 }
             }
         }
-    }
-
-    //TODO Support loggers
-    @Nonnull
-    private CloseableStreamBuildListener createBuildListener(@Nonnull RunExecution job,
-                                                    Charset charset) throws IOException, InterruptedException {
-        // don't do buffering so that what's written to the listener
-        // gets reflected to the file immediately, which can then be
-        // served to the browser immediately
-        try {
-            OutputStream ostream =  Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            return createBuildListener(job, ostream, charset);
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
-    }
-
-    private CloseableStreamBuildListener createBuildListener(@Nonnull RunExecution job, OutputStream logger, Charset charset) throws IOException, InterruptedException {
-        RunT build = job.getBuild();
-
-        // Global log filters
-        for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-            logger = filter.decorateLogger(build, logger);
-        }
-
-        // Project specific log filters
-        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-            for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                logger = bw.decorateLogger((AbstractBuild) build, logger);
-            }
-        }
-        
-        // Decorate logger by logging method of this build
-        final LoggingMethod located = LoggingMethodLocator.locate(this);
-        final ConsoleLogFilter f = located.createLoggerDecorator();
-        if (f != null) {
-            LOGGER.log(Level.INFO, "Decorated run {0} by a custom log filter {1}",
-                    new Object[] {this, f});
-            logger = f.decorateLogger(build, logger);
-        }
-        return new CloseableStreamBuildListener(logger, charset);
     }
 
     /**

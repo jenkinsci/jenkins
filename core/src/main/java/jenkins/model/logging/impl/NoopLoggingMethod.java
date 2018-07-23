@@ -1,6 +1,6 @@
 package jenkins.model.logging.impl;
 
-import hudson.console.ConsoleLogFilter;
+import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.Loggable;
@@ -9,6 +9,9 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * Default Logging Method implementation which does nothing
@@ -25,18 +28,19 @@ public class NoopLoggingMethod extends LoggingMethod {
     @CheckForNull
     @Override
     public TaskListener createTaskListener() {
-        return null;
+        return TaskListener.NULL;
     }
 
-    //@CheckForNull
-    //@Override
-    //public StreamRunListener createRunListener(Run<?, ?> build) {
-    //    return null;
-    //}
-
+    @Nonnull
     @Override
-    public ConsoleLogFilter createLoggerDecorator() {
-        return null;
+    public BuildListener createBuildListener() throws IOException, InterruptedException {
+        return new BuildListener() {
+            @Nonnull
+            @Override
+            public PrintStream getLogger() {
+                return TaskListener.NULL.getLogger();
+            }
+        };
     }
 
     @Override

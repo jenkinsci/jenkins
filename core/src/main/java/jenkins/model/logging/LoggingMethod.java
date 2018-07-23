@@ -2,6 +2,7 @@ package jenkins.model.logging;
 
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
+import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Run;
 import javax.annotation.CheckForNull;
@@ -10,6 +11,9 @@ import javax.annotation.Nonnull;
 import hudson.model.TaskListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  * Defines logging method for Jenkins runs.
@@ -35,20 +39,14 @@ public abstract class LoggingMethod extends LogHandler {
 
     /**
      * Decorates logging on the Jenkins master side.
-     * These filters can be also used for log redirection and multi-reporting.
-     * @param build Build to be decorated
-     * @return Log filter on the master. {@code null} if no custom implementation
+     * This method should be always implemented, because it will be consuming the input events.
+     * Streams can be converted to per-line events by higher-level abstractions.
+     *
+     * @return Build Listener
+     * @throws IOException initialization error or wrong {@link Loggable} type
      */
-    //@CheckForNull
-    //public abstract StreamRunListener createRunListener(Run<?,?> build);
-
-    /**
-     * Decorates logging on the Jenkins master side.
-     * These filters can be also used for log redirection and multi-reporting.
-     * @return Log filter on the master. {@code null} if no custom implementation
-     */
-    @CheckForNull
-    public abstract ConsoleLogFilter createLoggerDecorator();
+     @Nonnull
+     public abstract BuildListener createBuildListener() throws IOException, InterruptedException;
 
     /**
      * Gets default Log browser which should be used with this Logging method.

@@ -9,6 +9,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Legacy File Log storage implementation.
@@ -17,10 +22,16 @@ import javax.annotation.CheckForNull;
  * @since TODO
  */
 @Restricted(Beta.class)
-public class FileLogStorage extends LoggingMethod implements FileLogCompatLayer {
+public class FileLogStorage extends StreamLoggingMethod implements FileLogCompatLayer {
 
     public FileLogStorage(Loggable loggable) {
         super(loggable);
+    }
+
+    @Override
+    public OutputStream createOutputStream() throws IOException {
+        File logFile = getLogFileOrFail(getOwner());
+        return Files.newOutputStream(logFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
     @CheckForNull
@@ -31,7 +42,7 @@ public class FileLogStorage extends LoggingMethod implements FileLogCompatLayer 
 
     @CheckForNull
     @Override
-    public ConsoleLogFilter createLoggerDecorator() {
+    public ConsoleLogFilter getExtraConsoleLogFilter() {
         return null;
     }
 }
