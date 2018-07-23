@@ -30,12 +30,14 @@ public abstract class LoggingMethod extends LogHandler {
     }
 
     /**
-     * Decorates logging on the Jenkins master side.
-     * These filters can be also used for log redirection and multi-reporting.
-     * @return Log filter on the master. {@code null} if no custom implementation
+     * Decorates logging on the Jenkins master side for non-{@link Run} loggable items.
+     * @return Log filter on the master.
+     *         {@code null} if the implementation does not support task logging
+     * @throws IOException initialization error or wrong {@link Loggable} type
+     * @throws InterruptedException one of the build listener decorators has been interrupted.
      */
     @CheckForNull
-    public abstract TaskListener createTaskListener();
+    public abstract TaskListener createTaskListener() throws IOException, InterruptedException;
 
     /**
      * Decorates logging on the Jenkins master side.
@@ -44,6 +46,8 @@ public abstract class LoggingMethod extends LogHandler {
      *
      * @return Build Listener
      * @throws IOException initialization error or wrong {@link Loggable} type
+     * @throws InterruptedException one of the build listener decorators has
+     *            been interrupted.
      */
      @Nonnull
      public abstract BuildListener createBuildListener() throws IOException, InterruptedException;
