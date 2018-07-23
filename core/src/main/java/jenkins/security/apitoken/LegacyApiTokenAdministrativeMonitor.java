@@ -100,7 +100,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     @Restricted(NoExternalUse.class)
     public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @Nullable ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        if(legacyToken != null){
+        if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
             ApiTokenProperty.TokenInfoAndStats tokenInfoAndStats = new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
             return tokenInfoAndStats;
@@ -116,7 +116,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
-        if(legacyStats == null){
+        if (legacyStats == null) {
             return false;
         }
         
@@ -140,12 +140,12 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
-        if(legacyStats == null){
+        if (legacyStats == null) {
             return false;
         }
         
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-    
+        
         return apiTokenProperty.getTokenList().stream()
                 .filter(token -> !token.isLegacy)
                 .anyMatch(token -> {
@@ -161,7 +161,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     @RequirePOST
     public HttpResponse doRevokeAllSelected(@JsonBody RevokeAllSelectedModel content) throws IOException {
         for (RevokeAllSelectedUserAndUuid value : content.values) {
-            if(value.userId == null){
+            if (value.userId == null) {
                 // special case not managed by JSONObject
                 value.userId = "null";
             }
@@ -170,13 +170,13 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                 LOGGER.log(Level.INFO, "User not found id={0}", value.userId);
             } else {
                 ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-                if(apiTokenProperty == null){
+                if (apiTokenProperty == null) {
                     LOGGER.log(Level.INFO, "User without apiTokenProperty found id={0}", value.userId);
-                }else{
+                } else {
                     ApiTokenStore.HashedToken revokedToken = apiTokenProperty.getTokenStore().revokeToken(value.uuid);
-                    if(revokedToken == null){
+                    if (revokedToken == null) {
                         LOGGER.log(Level.INFO, "User without selected token id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
-                    }else{
+                    } else {
                         apiTokenProperty.deleteApiToken();
                         user.save();
                         LOGGER.log(Level.INFO, "Revocation success for user id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
