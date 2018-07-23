@@ -58,8 +58,8 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         ONLY_RECENT(2);
         
         int index;
-    
-        SelectFilter(int index){
+        
+        SelectFilter(int index) {
             this.index = index;
         }
     }
@@ -106,10 +106,10 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         
         apiTokenProperty.changeApiToken();
         assertTrue(monitor.isActivated());
-    
+        
         {//revoke the legacy token
             JenkinsRule.WebClient wc = j.createWebClient();
-    
+            
             HtmlPage page = wc.goTo(monitor.getUrl() + "/manage");
             {// select all (only one user normally)
                 HtmlAnchor filterAll = getFilterByIndex(page, SelectFilter.ALL);
@@ -388,7 +388,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     private void createUserWithToken(boolean legacy, boolean fresh, boolean recent) throws Exception {
         User user = User.getById(String.format("user %b %b %b %d", legacy, fresh, recent, nextId++), true);
         if (!legacy) {
-            return ;
+            return;
         }
         
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
