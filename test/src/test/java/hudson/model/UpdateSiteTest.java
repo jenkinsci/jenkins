@@ -27,25 +27,11 @@ package hudson.model;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import static org.junit.Assert.*;
-
+import hudson.util.TextFile;
+import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -55,7 +41,22 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
+import static org.junit.Assert.*;
 
 public class UpdateSiteTest {
 
@@ -132,6 +133,20 @@ public class UpdateSiteTest {
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
 
+    @Test
+    public void updateSiteWithCustomUpdateNowUpdatesData() throws IOException {
+        UpdateSite us = new CustomUpdateNowUpdateSite("default", "nonUsedUrl");
+        assertNull(us.getData());
+
+        us.updateDirectlyNow(false);
+        assertNotNull(us.getData());
+        assertEquals("1.1", us.getPlugin("beer").version);
+
+        us.updateDirectlyNow(false);
+        assertNotNull(us.getData());
+        assertEquals("1.2", us.getPlugin("beer").version);
+    }
+
     @Test public void lackOfDataDoesNotFailWarningsCode() throws Exception {
         assertNull("plugin data is not present", j.jenkins.getUpdateCenter().getSite("default").getData());
 
@@ -150,5 +165,28 @@ public class UpdateSiteTest {
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
+    }
+
+    private class CustomUpdateNowUpdateSite extends UpdateSite {
+
+        private int timesCalled = 0;
+
+        public CustomUpdateNowUpdateSite(String id, String url) {
+            super(id, url);
+        }
+
+        private TextFile getDataFile() {
+            return new TextFile(new File(Jenkins.get().getRootDir(),
+                    "updates/" + getId() + ".json"));
+        }
+
+        @Restricted(NoExternalUse.class)
+        public @Nonnull
+        FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
+            getDataFile().write(getResource("custom-update-center-" + timesCalled + ".json"));
+            timesCalled++;
+            return FormValidation.ok();
+        }
+
     }
 }
