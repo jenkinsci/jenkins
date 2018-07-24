@@ -52,7 +52,6 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -165,7 +164,6 @@ public class LauncherTest {
         }
     }
 
-    @Ignore("TODO Expected: a string containing … but: was $ echo hello [master → slave0] hello [master]")
     @Issue("JENKINS-52729")
     @Test public void remotable() throws Exception {
         File log = new File(rule.jenkins.root, "log");
