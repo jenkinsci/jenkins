@@ -1015,7 +1015,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return The Jenkins {@link jenkins.install.InstallState install state}.
      */
     @Nonnull
-    @Restricted(NoExternalUse.class)
     public InstallState getInstallState() {
         if (installState != null) {
             installStateName = installState.name();
@@ -1029,7 +1028,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Update the current install state. This will invoke state.initializeState() 
      * when the state has been transitioned.
      */
-    @Restricted(NoExternalUse.class)
     public void setInstallState(@Nonnull InstallState newState) {
         String prior = installStateName;
         installStateName = newState.name();
