@@ -170,8 +170,8 @@ public class LauncherTest {
         TaskListener listener = new RemotableBuildListener(log);
         assertEquals(0, rule.createOnlineSlave().createLauncher(listener).launch().cmds("echo", "hello").stdout(listener).join());
         assertThat(FileUtils.readFileToString(log, StandardCharsets.UTF_8).replace("\r\n", "\n"),
-            containsString("$ echo hello [master → slave0]\n" +
-                           "hello [master → slave0]"));
+            containsString("[master → slave0] $ echo hello\n" +
+                           "[master → slave0] hello"));
     }
     private static class RemotableBuildListener implements BuildListener {
         private static final long serialVersionUID = 1;
@@ -194,9 +194,8 @@ public class LauncherTest {
                     fos = new FileOutputStream(logFile, true);
                     logger = new PrintStream(new LineTransformationOutputStream() {
                         @Override protected void eol(byte[] b, int len) throws IOException {
-                            fos.write(b, 0, len - 1); // all but NL
-                            fos.write((" [" + id + "]").getBytes(StandardCharsets.UTF_8));
-                            fos.write(b[len - 1]); // NL
+                            fos.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
+                            fos.write(b, 0, len);
                         }
                     }, true, "UTF-8");
                 } catch (IOException x) {
