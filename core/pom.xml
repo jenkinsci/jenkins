@@ -29,6 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
+    <!--suppress MavenPropertyInParent -->
     <version>${revision}${changelist}</version>
   </parent>
 
@@ -42,6 +43,7 @@ THE SOFTWARE.
     <stapler.version>1.254.1</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
+    <maven-jarsigner-plugin.version>1.4</maven-jarsigner-plugin.version>
   </properties>
 
   <dependencies>
@@ -813,6 +815,7 @@ THE SOFTWARE.
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
       </plugin>
+
     </plugins>
   </build>
 
@@ -867,6 +870,37 @@ THE SOFTWARE.
                   <patterns>
                     <pattern>/lib/.*</pattern>
                   </patterns>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- VERIFY SIGNATURE -->
+          <plugin>
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-tsa</id>
+                <!-- Phase and goal are the default ones -->
+                <!-- TODO: Does it cause conflict with signing parameters in the build? Seems "no". Should also use ${hudson.sign.tsa} -->
+                <configuration>
+                  <arguments>
+                    <argument>-tsa</argument>
+                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>verify-signature</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <processMainArtifact>true</processMainArtifact>
+                  <processAttachedArtifacts>false</processAttachedArtifacts>
+                  <certs>true</certs>
+                  <errorWhenNotSigned>true</errorWhenNotSigned>
+                  <arguments>-strict</arguments> <!--otherwise certificate chains will be ignored-->
                 </configuration>
               </execution>
             </executions>
