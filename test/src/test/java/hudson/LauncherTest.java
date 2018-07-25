@@ -168,9 +168,15 @@ public class LauncherTest {
     @Test public void remotable() throws Exception {
         File log = new File(rule.jenkins.root, "log");
         TaskListener listener = new RemotableBuildListener(log);
-        assertEquals(0, rule.createOnlineSlave().createLauncher(listener).launch().cmds("echo", "hello").stdout(listener).join());
+        Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
+        if (Functions.isWindows()) {
+            ps.cmds("cmd", "/c", "echo", "hello");
+        } else {
+            ps.cmds("echo", "hello");
+        }
+        assertEquals(0, ps.stdout(listener).join());
         assertThat(FileUtils.readFileToString(log, StandardCharsets.UTF_8).replace("\r\n", "\n"),
-            containsString("[master → slave0] $ echo hello\n" +
+            containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                            "[master → slave0] hello"));
     }
     private static class RemotableBuildListener implements BuildListener {
