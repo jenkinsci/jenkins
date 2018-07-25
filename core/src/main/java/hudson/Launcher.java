@@ -493,7 +493,8 @@ public abstract class Launcher {
          */
         @Nonnull
         public ProcStarter copy() {
-            ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stdout(stdoutListener).stderr(stderr).envs(envs).quiet(quiet);
+            ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs).quiet(quiet);
+            rhs.stdoutListener = stdoutListener;
             rhs.reverseStdin  = this.reverseStdin;
             rhs.reverseStderr = this.reverseStderr;
             rhs.reverseStdout = this.reverseStdout;
