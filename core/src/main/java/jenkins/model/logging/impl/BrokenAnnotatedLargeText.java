@@ -41,11 +41,11 @@ import java.nio.charset.StandardCharsets;
 @Restricted(Beta.class)
 public class BrokenAnnotatedLargeText<T> extends AnnotatedLargeText<T> {
 
-    BrokenAnnotatedLargeText(Throwable cause) {
+    public BrokenAnnotatedLargeText(Throwable cause) {
         this(cause, StandardCharsets.UTF_8);
     }
 
-    BrokenAnnotatedLargeText(@Nonnull Throwable cause, @Nonnull Charset charset) {
+    public BrokenAnnotatedLargeText(@Nonnull Throwable cause, @Nonnull Charset charset) {
         super(makeByteBuffer(cause, charset), charset, true, null);
     }
 

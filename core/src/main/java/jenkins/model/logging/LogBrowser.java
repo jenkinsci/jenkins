@@ -63,6 +63,7 @@ public abstract class LogBrowser<T extends Loggable> extends LogHandler implemen
     @Nonnull
     public abstract AnnotatedLargeText<T> overallLog();
 
+    //TODO: jglick requests justification of why it needs to be in the core
     /**
      * Gets log for a part of the object.
      * @param stepId Identifier of the step to be displayed.
