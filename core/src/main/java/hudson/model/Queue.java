@@ -1890,6 +1890,11 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
+         * @see hudson.model.LoadBalancer#assignGreedily
+         */
+        default String getAffinityKey() { return getFullDisplayName(); }
+
+        /**
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
          * <p>
