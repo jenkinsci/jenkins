@@ -68,6 +68,10 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     	return envVars;
     }
 
+    /**
+     * @return environment variables using same data type as constructor parameter.
+     * @since TODO
+     */
     public List<Entry> getEnv() {
         return envVars.entrySet().stream().map(Entry::new).collect(Collectors.toList());
     }
@@ -107,7 +111,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	public static class Entry {
 		public String key, value;
 
-		public Entry(Map.Entry<String,String> e) {
+		private Entry(Map.Entry<String,String> e) {
 		    this(e.getKey(), e.getValue());
         }
 
