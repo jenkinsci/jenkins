@@ -304,6 +304,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
         // reset remember-me cookie
         Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
+        cookie.setMaxAge(0);
+        cookie.setSecure(req.isSecure());
+        cookie.setHttpOnly(true);
         cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
         rsp.addCookie(cookie);
 
