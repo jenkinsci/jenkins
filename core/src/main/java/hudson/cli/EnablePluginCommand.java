@@ -35,7 +35,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Enables one or more installed plugins. The listed plugins
+ * Enables one or more installed plugins. The listed plugins must already be installed along with its dependencies.
+ * Any listed plugin with disabled dependencies will have its dependencies enabled transitively.
  *
  * @since TODO
  */
