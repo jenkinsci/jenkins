@@ -896,9 +896,9 @@ public class FilePathTest {
             new FilePath(folderToTar.toFile()).tar(os, "**/*");
         }
 
-        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder1");
         tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
-        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
+        assertTrue("build/lastSuccessfulBuild is not a symlink", Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
     }
 
     @Issue("JENKINS-52781")
@@ -917,9 +917,9 @@ public class FilePathTest {
             new FilePath(folderToTar.toFile()).tar(os, TrueFileFilter.TRUE);
         }
 
-        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder2");
         tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
-        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("tarme/build/lastSuccessfulBuild")));
+        assertTrue("tarme/build/lastSuccessfulBuild is not a symlink", Files.isSymbolicLink(untarredFolder.resolve("tarme/build/lastSuccessfulBuild")));
     }
 
     @Issue("JENKINS-52781")
@@ -936,9 +936,9 @@ public class FilePathTest {
             new FilePath( folderToTar.toFile()).tar(os, "**/*");
         }
 
-        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder3");
         tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
-        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
+        assertTrue("build/lastSuccessfulBuild is not a symlink", Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
 
     }
 }
