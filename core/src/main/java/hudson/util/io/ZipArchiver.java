@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.Zip64Mode;
 import org.apache.tools.zip.ZipOutputStream;
 
 import java.io.File;
@@ -49,6 +50,7 @@ final class ZipArchiver extends Archiver {
     ZipArchiver(OutputStream out) {
         zip = new ZipOutputStream(out);
         zip.setEncoding(System.getProperty("file.encoding"));
+        zip.setUseZip64(Zip64Mode.AsNeeded);
     }
 
     public void visit(final File f, final String _relativePath) throws IOException {

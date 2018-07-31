@@ -59,6 +59,7 @@ THE SOFTWARE.
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Referrer-Policy" value="same-origin" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
