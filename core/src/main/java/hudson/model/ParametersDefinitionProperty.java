@@ -101,15 +101,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * Gets the names of all the parameter definitions.
      */
     public List<String> getParameterDefinitionNames() {
-        return new AbstractList<String>() {
-            public String get(int index) {
-                return parameterDefinitions.get(index).getName();
-            }
-
-            public int size() {
-                return parameterDefinitions.size();
-            }
-        };
+        return new DefinitionsAbstractList(this.parameterDefinitions);
     }
 
     @Nonnull
@@ -245,5 +237,21 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     public String getUrlName() {
         return null;
+    }
+
+    private static class DefinitionsAbstractList extends AbstractList<String> {
+        private final List<ParameterDefinition> parameterDefinitions;
+
+        public DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
+            this.parameterDefinitions = parameterDefinitions;
+        }
+
+        public String get(int index) {
+            return this.parameterDefinitions.get(index).getName();
+        }
+
+        public int size() {
+            return this.parameterDefinitions.size();
+        }
     }
 }
