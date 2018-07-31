@@ -80,6 +80,17 @@ public class ConsoleCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
+    
+    @Issue("JENKINS-52181")
+    @Test public void consoleShouldBeAccessibleForUserWithRead() throws Exception {	
+        j.createFreeStyleProject("aProject");	
+        final CLICommandInvoker.Result result = command	
+                .authorizedTo(Jenkins.READ, Job.READ)	
+                .invokeWithArgs("aProject");	
+        
+        assertThat(result, succeeded());
+        assertThat(result.stdout(), containsString("echo 5"));	
+    }
 
     @Test public void consoleShouldFailWhenProjectDoesNotExist() throws Exception {
 
