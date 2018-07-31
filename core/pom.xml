@@ -29,7 +29,6 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <!--suppress MavenPropertyInParent -->
     <version>${revision}${changelist}</version>
   </parent>
 
@@ -878,17 +877,6 @@ THE SOFTWARE.
           <plugin>
             <artifactId>maven-jarsigner-plugin</artifactId>
             <executions>
-              <execution>
-                <id>add-tsa</id>
-                <!-- Phase and goal are the default ones -->
-                <!-- TODO: Does it cause conflict with signing parameters in the build? Seems "no". Should also use ${hudson.sign.tsa} -->
-                <configuration>
-                  <arguments>
-                    <argument>-tsa</argument>
-                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
-                  </arguments>
-                </configuration>
-              </execution>
               <execution>
                 <id>verify-signature</id>
                 <phase>verify</phase>
