@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,8 +36,9 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
-import com.google.common.collect.ImmutableList;
+import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -50,19 +52,22 @@ import net.java.sezpoz.IndexItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Discovers the implementations of an extension point.
@@ -454,7 +459,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          * Instead of using SezPoz to instantiate, we'll instantiate them by using Guice,
          * so that we can take advantage of dependency injection.
          */
-        private class SezpozModule extends AbstractModule {
+        private class SezpozModule extends AbstractModule implements ProvisionListener {
             private final List<IndexItem<?,Object>> index;
             private final List<IndexItem<?,Object>> loadedIndex;
 
@@ -503,6 +508,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
             @Override
             protected void configure() {
+
+                bindListener(Matchers.any(), this);
+
                 for (final IndexItem<?,Object> item : index) {
                     boolean optional = isOptional(item.annotation());
                     try {
@@ -549,6 +557,29 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
                 return Collections.unmodifiableList(loadedIndex);
+            }
+
+            @Override
+            public <T> void onProvision(ProvisionInvocation<T> provision) {
+                final T instance = provision.provision();
+                if (instance == null) return;
+                List<Method> methods = new LinkedList<>();
+                Class c = instance.getClass();
+                while (c != Object.class) {
+                    Arrays.stream(c.getDeclaredMethods())
+                            .filter(m -> m.getDeclaredAnnotation(PostConstruct.class) != null)
+                            .findFirst()
+                            .ifPresent(method -> methods.add(0, method));
+                    c = c.getSuperclass();
+                }
+
+                for (Method postConstruct : methods) {
+                    try {
+                        postConstruct.invoke(instance);
+                    } catch (final Exception e) {
+                        throw new RuntimeException(String.format("@PostConstruct %s", postConstruct), e);
+                    }
+                }
             }
         }
     }
