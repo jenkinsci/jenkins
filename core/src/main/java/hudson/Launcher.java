@@ -293,7 +293,7 @@ public abstract class Launcher {
         /**
          * Sends the stdout to the given {@link TaskListener}.
          * 
-         * @param out Task listener
+         * @param out Task listener (must be safely remotable)
          * @return {@code this}
          */
         public ProcStarter stdout(@Nonnull TaskListener out) {
