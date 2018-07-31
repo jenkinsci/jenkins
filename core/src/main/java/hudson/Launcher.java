@@ -287,6 +287,7 @@ public abstract class Launcher {
          */
         public ProcStarter stdout(@CheckForNull OutputStream out) {
             this.stdout = out;
+            stdoutListener = null;
             return this;
         }
 

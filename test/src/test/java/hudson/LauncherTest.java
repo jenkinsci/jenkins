@@ -40,6 +40,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
+import hudson.util.StreamTaskListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,6 +54,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -214,6 +217,59 @@ public class LauncherTest {
             Thread.dumpStack();
             String name = Channel.current().getName();
             return new RemotableBuildListener(logFile, id + " → " + name);
+        }
+    }
+
+    @Issue("JENKINS-52729")
+    @Test public void multipleStdioCalls() throws Exception {
+        Node master = rule.jenkins;
+        Node agent = rule.createOnlineSlave();
+        for (Node node : new Node[] {master, agent}) {
+            assertMultipleStdioCalls("first TaskListener then OutputStream", node, false, (ps, os1, os2, os2Listener) -> {
+                ps.stdout(os2Listener).stdout(os1);
+                assertEquals(os1, ps.stdout());
+            }, false);
+            assertMultipleStdioCalls("first OutputStream then TaskListener", node, false, (ps, os1, os2, os2Listener) -> {
+                ps.stdout(os1).stdout(os2Listener);
+                assertEquals(os2Listener.getLogger(), ps.stdout());
+            }, true);
+            assertMultipleStdioCalls("stdout then stderr", node, true, (ps, os1, os2, os2Listener) -> {
+                ps.stdout(os1).stderr(os2);
+                assertEquals(os1, ps.stdout());
+                assertEquals(os2, ps.stderr());
+            }, true);
+            assertMultipleStdioCalls("stderr then stdout", node, true, (ps, os1, os2, os2Listener) -> {
+                ps.stdout(os1).stderr(os2);
+                assertEquals(os1, ps.stdout());
+                assertEquals(os2, ps.stderr());
+            }, true);
+        }
+    }
+    @FunctionalInterface
+    private interface ProcStarterCustomizer {
+        void run(Launcher.ProcStarter ps, OutputStream os1, OutputStream os2, TaskListener os2Listener) throws Exception;
+    }
+    private void assertMultipleStdioCalls(String message, Node node, boolean emitStderr, ProcStarterCustomizer psCustomizer, boolean outputIn2) throws Exception {
+        message = node.getDisplayName() + ": " + message;
+        Launcher launcher = node.createLauncher(StreamTaskListener.fromStderr());
+        Launcher.ProcStarter ps = launcher.launch();
+        assumeFalse("should not be platform-dependent, not bothering for now", Functions.isWindows());
+        if (emitStderr) {
+            ps.cmds("sh", "-c", "echo hello >&2").quiet(true);
+        } else {
+            ps.cmds("echo", "hello");
+        }
+        ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+        TaskListener listener = new StreamTaskListener(baos2);
+        psCustomizer.run(ps, baos1, baos2, listener);
+        assertEquals(message, 0, ps.join());
+        if (outputIn2) {
+            assertThat(message, baos2.toString(), containsString("hello"));
+            assertThat(message, baos1.toString(), isEmptyString());
+        } else {
+            assertThat(message, baos1.toString(), containsString("hello"));
+            assertThat(message, baos2.toString(), isEmptyString());
         }
     }
 
