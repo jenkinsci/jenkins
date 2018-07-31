@@ -2519,7 +2519,7 @@ public final class FilePath implements Serializable {
      *      Ant file pattern mask, like "**&#x2F;*.java".
      */
     public int tar(OutputStream out, final String glob) throws IOException, InterruptedException {
-        return archive(ArchiverFactory.TAR, out, glob);
+        return archive(ArchiverFactory.TAR, out, new DirScanner.Glob(glob,null, true, false));
     }
 
     public int tar(OutputStream out, FileFilter filter) throws IOException, InterruptedException {

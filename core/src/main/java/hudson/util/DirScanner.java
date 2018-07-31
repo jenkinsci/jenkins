@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +35,11 @@ public abstract class DirScanner implements Serializable {
      * @since 1.532
      */
     protected final void scanSingle(File f, String relative, FileVisitor visitor) throws IOException {
+        if (scanSymlink(f, relative, visitor)) return;
+        visitor.visit(f, relative);
+    }
+
+    protected boolean scanSymlink(File f, String relative, FileVisitor visitor) throws IOException {
         if (visitor.understandsSymlink()) {
             String target;
             try {
@@ -43,10 +49,10 @@ public abstract class DirScanner implements Serializable {
             }
             if (target != null) {
                 visitor.visitSymlink(f, target, relative);
-                return;
+                return true;
             }
         }
-        visitor.visit(f, relative);
+        return false;
     }
 
     /**
@@ -103,6 +109,7 @@ public abstract class DirScanner implements Serializable {
         private final String includes, excludes;
 
         private boolean useDefaultExcludes = true;
+        private boolean followSymlinks = true;
 
         public Glob(String includes, String excludes) {
             this.includes = includes;
@@ -112,6 +119,11 @@ public abstract class DirScanner implements Serializable {
         public Glob(String includes, String excludes, boolean useDefaultExcludes) {
             this(includes, excludes);
             this.useDefaultExcludes = useDefaultExcludes;
+        }
+
+        public Glob(String includes, String excludes, boolean useDefaultExcludes, boolean followSymlinks) {
+            this(includes, excludes, useDefaultExcludes);
+            this.followSymlinks = followSymlinks;
         }
 
         public void scan(File dir, FileVisitor visitor) throws IOException {
@@ -127,8 +139,18 @@ public abstract class DirScanner implements Serializable {
             fs.appendSelector(new DescendantFileSelector(fs.getDir()));
 
             if(dir.exists()) {
+                fs.setFollowSymlinks(followSymlinks);
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                // due to the DescendantFileSelector usage, 
+                if(!followSymlinks) {
+                    // need to treat the symlink separately
+                    // useful for cases like archiving where the symlink to a directory should stay a symlink
+                    // see JENKINS-52781
+                    for(String f: ds.getNotFollowedSymlinks()) {
+                        File file = dir.toPath().relativize(Paths.get(f)).toFile();
+                        scanSymlink(new File(f), file.getPath(), visitor);
+                    }
+                }
+                // due to the DescendantFileSelector usage,
                 // the includedFiles are only the ones that are descendant
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
@@ -139,7 +161,7 @@ public abstract class DirScanner implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-    
+
     private static class DescendantFileSelector implements FileSelector{
         private final Set<String> alreadyDeselected;
         private final FilePath baseDirFP;
@@ -150,7 +172,7 @@ public abstract class DirScanner implements Serializable {
             this.baseDirPathLength = basedir.getPath().length();
             this.alreadyDeselected = new HashSet<>();
         }
-        
+
         @Override
         public boolean isSelected(File basedir, String filename, File file) throws BuildException {
             String parentName = file.getParent();

@@ -66,11 +66,17 @@ public abstract class FileVisitor {
                 visitor.visit(f,relativePath);
         }
 
-        private static final FileFilter PASS_THROUGH = new FileFilter() {
-            public boolean accept(File pathname) {
-                return true;
-            }
-        };
+        private static final FileFilter PASS_THROUGH = pathname -> true;
+
+        @Override
+        public boolean understandsSymlink() {
+            return visitor.understandsSymlink();
+        }
+
+        @Override
+        public void visitSymlink(File link, String target, String relativePath) throws IOException {
+            visitor.visitSymlink(link, target, relativePath);
+        }
 
         private static final long serialVersionUID = 1L;
     }

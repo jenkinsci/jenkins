@@ -44,6 +44,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -876,5 +878,67 @@ public class FilePathTest {
         Path destinationFile = dst.toPath().resolve("test-file");
         assertTrue("file was not copied", Files.exists(destinationFile));
         assertEquals("file mtime was not preserved", mtime, Files.getLastModifiedTime(destinationFile));
+    }
+
+    @Issue("JENKINS-52781")
+    @Test public void aSymlinkToADirectoryIsKeptByTarArchiveWithGlob() throws IOException, InterruptedException {
+        // create a simple hierarchy resembling a Jenkins build directory
+        Path folderToTar = temp.newFolder("tarme").toPath();
+        Path subdirectory = Files.createDirectory(folderToTar.resolve("build"));
+        Path targetDirectory = subdirectory.resolve("1");
+        Files.createDirectory(targetDirectory);
+        Files.createFile(targetDirectory.resolve("logs"));
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get("1"));
+        Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
+        FilePath tarFilePath = new FilePath(tarFile.toFile());
+
+        try (OutputStream os = tarFilePath.write()) {
+            new FilePath(folderToTar.toFile()).tar(os, "**/*");
+        }
+
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
+        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
+    }
+
+    @Issue("JENKINS-52781")
+    @Test public void aSymlinkToADirectoryIsKeptByTarArchiveWithFileFilter() throws IOException, InterruptedException {
+        // create a simple hierarchy resembling a Jenkins build directory
+        Path folderToTar = temp.newFolder("tarme").toPath();
+        Path subdirectory = Files.createDirectory(folderToTar.resolve("build"));
+        Path targetDirectory = subdirectory.resolve("1");
+        Files.createDirectory(targetDirectory);
+        Files.createFile(targetDirectory.resolve("logs"));
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get( "1"));
+        Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
+        FilePath tarFilePath = new FilePath(tarFile.toFile());
+
+        try (OutputStream os = tarFilePath.write()) {
+            new FilePath(folderToTar.toFile()).tar(os, TrueFileFilter.TRUE);
+        }
+
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
+        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("tarme/build/lastSuccessfulBuild")));
+    }
+
+    @Issue("JENKINS-52781")
+    @ Test public void aSymlinkToAFileIsKeptByTarArchive() throws IOException, InterruptedException {
+        Path folderToTar = temp.newFolder().toPath();
+        Path subdirectory = Files.createDirectory(folderToTar.resolve("build"));
+        Path targetFile = subdirectory.resolve("1");
+        Files.createFile(targetFile);
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get("1"));
+        Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
+        FilePath tarFilePath = new FilePath(tarFile.toFile());
+
+        try (OutputStream os = tarFilePath.write()) {
+            new FilePath( folderToTar.toFile()).tar(os, "**/*");
+        }
+
+        Path untarredFolder = temp.getRoot().toPath().resolve("untarredFolder");
+        tarFilePath.untar(new FilePath(untarredFolder.toFile()), FilePath.TarCompression.NONE);
+        assertTrue(Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
+
     }
 }
