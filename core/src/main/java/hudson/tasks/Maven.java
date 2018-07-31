@@ -430,7 +430,6 @@ public class Maven extends Builder {
 
         public DescriptorImpl() {
             DESCRIPTOR = this;
-            load();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

@@ -15,10 +15,6 @@ public class GlobalMavenConfig extends GlobalConfiguration {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;
 
-    public GlobalMavenConfig() {
-        load();
-    }
-
     @Override
     public @Nonnull ToolConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);

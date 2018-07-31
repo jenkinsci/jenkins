@@ -39,10 +39,6 @@ public class CLI extends GlobalConfiguration {
     
     private boolean enabled = true; // historical default, but overridden in SetupWizard
 
-    public CLI() {
-        load();
-    }
-
     @Override
     public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);

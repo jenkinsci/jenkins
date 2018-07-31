@@ -137,10 +137,6 @@ public class Shell extends CommandInterpreter {
          */
         private String shell;
 
-        public DescriptorImpl() {
-            load();
-        }
-
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }

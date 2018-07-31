@@ -127,7 +127,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         
         public DescriptorImpl() {
             super(CRUMB_SALT.get(), SystemProperties.getString("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));
-            load();
         }
 
         @Override

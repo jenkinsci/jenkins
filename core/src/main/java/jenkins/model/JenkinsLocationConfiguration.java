@@ -59,10 +59,6 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         return config;
     }
 
-    public JenkinsLocationConfiguration() {
-        load();
-    }
-
     @Override
     public synchronized void load() {
         // for backward compatibility, if we don't have our own data yet, then

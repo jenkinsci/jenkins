@@ -59,10 +59,6 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
-    public UpdateSiteWarningsConfiguration() {
-        load();
-    }
-
     @Nonnull
     public Set<String> getIgnoredWarnings() {
         return Collections.unmodifiableSet(ignoredWarnings);

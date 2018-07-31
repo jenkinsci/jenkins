@@ -25,10 +25,6 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
     private final DescribableList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> authenticators
         = new DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor>(this);
 
-    public QueueItemAuthenticatorConfiguration() {
-        load();
-    }
-
     private Object readResolve() {
         authenticators.setOwner(this);
         return this;

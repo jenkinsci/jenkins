@@ -59,10 +59,6 @@ public final class DownloadSettings extends GlobalConfiguration {
 
     private boolean useBrowser = false;
     
-    public DownloadSettings() {
-        load();
-    }
-
     public boolean isUseBrowser() {
         return useBrowser;
     }

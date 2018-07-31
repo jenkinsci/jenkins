@@ -88,7 +88,6 @@ public class UsageStatistics extends PageDecorator {
      */
     public UsageStatistics(String keyImage) {
         this.keyImage = keyImage;
-        load();
     }
 
     /**

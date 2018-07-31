@@ -58,10 +58,6 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
     }
 
-    public ApiTokenPropertyConfiguration() {
-        load();
-    }
-
     public boolean hasExistingConfigFile(){
         return getConfigFile().exists();
     }

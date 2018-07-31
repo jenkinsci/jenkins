@@ -84,6 +84,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.PostConstruct;
+
 import static java.util.logging.Level.WARNING;
 
 
@@ -242,11 +244,6 @@ public class SCMTrigger extends Trigger<Item> {
         private static final int THREADS_UPPER_BOUND = 100;
         private static final int THREADS_DEFAULT= 10;
 
-        public DescriptorImpl() {
-            load();
-            resizeThreadPool();
-        }
-
         private void readResolve() {
             if (maximumThreads == 0) {
                 maximumThreads = THREADS_DEFAULT;
@@ -347,6 +344,7 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Update the {@link ExecutorService} instance.
          */
+        @PostConstruct
         /*package*/ synchronized void resizeThreadPool() {
             queue.setExecutors(Executors.newFixedThreadPool(maximumThreads, threadFactory()));
         }
