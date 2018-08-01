@@ -31,12 +31,15 @@ import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Enables one or more installed plugins. The listed plugins must already be installed along with its dependencies.
- * Any listed plugin with disabled dependencies will have its dependencies enabled transitively.
+ * Any listed plugin with disabled dependencies will have its dependencies enabled transitively. Note that enabling an
+ * already enabled plugin does nothing.
  *
  * @since TODO
  */
@@ -59,8 +62,12 @@ public class EnablePluginCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         PluginManager manager = jenkins.getPluginManager();
-        for (String pluginName : pluginNames) {
-            enablePlugin(manager, pluginName);
+        List<PluginWrapper> pluginsToEnable = pluginNames.stream()
+                .flatMap(pluginName -> getPluginsToEnable(manager, pluginName))
+                .collect(toList());
+        for (PluginWrapper plugin : pluginsToEnable) {
+            stdout.println(String.format("Enabling plugin `%s' (%s)", plugin.getShortName(), plugin.getVersion()));
+            plugin.enable();
         }
         if (restart) {
             jenkins.safeRestart();
@@ -68,13 +75,13 @@ public class EnablePluginCommand extends CLICommand {
         return 0;
     }
 
-    private static void enablePlugin(PluginManager manager, String shortName) throws IOException {
+    private static Stream<PluginWrapper> getPluginsToEnable(PluginManager manager, String shortName) {
         PluginWrapper plugin = manager.getPlugin(shortName);
         if (plugin == null) throw new IllegalArgumentException(Messages.EnablePluginCommand_NoSuchPlugin(shortName));
-        if (plugin.isEnabled()) return;
-        for (PluginWrapper.Dependency dependency : plugin.getDependencies()) {
-            enablePlugin(manager, dependency.shortName);
-        }
-        plugin.enable();
+        if (plugin.isEnabled()) return Stream.empty();
+        Stream<PluginWrapper> dependencies = plugin.getDependencies().stream()
+                .flatMap(dependency -> getPluginsToEnable(manager, dependency.shortName));
+        return Stream.concat(Stream.of(plugin), dependencies);
     }
+
 }
