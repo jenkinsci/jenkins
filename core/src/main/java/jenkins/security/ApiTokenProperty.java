@@ -200,5 +200,6 @@ public class ApiTokenProperty extends UserProperty {
     /**
      * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
      */
-    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
+    @Restricted(NoExternalUse.class)
+    public static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
 }
