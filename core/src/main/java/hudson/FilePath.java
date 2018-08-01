@@ -128,6 +128,7 @@ import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
@@ -920,11 +921,10 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Copies the content of a URL to a remote file.
-     * Unlike {@link #copyFrom} this will not transfer content over a Remoting channel.
-     * @since 2.119
+     * Kept to maintain binary compatibility - restricted to discourage further use as it is removed in newer versions.
      */
-    @Restricted(Beta.class)
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.121.3")
     public void copyFromRemotely(URL url) throws IOException, InterruptedException {
         act(new CopyFromRemotely(url));
     }
