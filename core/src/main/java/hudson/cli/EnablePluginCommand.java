@@ -31,10 +31,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Enables one or more installed plugins. The listed plugins must already be installed along with its dependencies.
@@ -62,12 +60,8 @@ public class EnablePluginCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         PluginManager manager = jenkins.getPluginManager();
-        List<PluginWrapper> pluginsToEnable = pluginNames.stream()
-                .flatMap(pluginName -> getPluginsToEnable(manager, pluginName))
-                .collect(toList());
-        for (PluginWrapper plugin : pluginsToEnable) {
-            stdout.println(String.format("Enabling plugin `%s' (%s)", plugin.getShortName(), plugin.getVersion()));
-            plugin.enable();
+        for (String pluginName : pluginNames) {
+            enablePlugin(manager, pluginName);
         }
         if (restart) {
             jenkins.safeRestart();
@@ -75,13 +69,32 @@ public class EnablePluginCommand extends CLICommand {
         return 0;
     }
 
-    private static Stream<PluginWrapper> getPluginsToEnable(PluginManager manager, String shortName) {
+    private void enablePlugin(PluginManager manager, String shortName) throws IOException {
         PluginWrapper plugin = manager.getPlugin(shortName);
-        if (plugin == null) throw new IllegalArgumentException(Messages.EnablePluginCommand_NoSuchPlugin(shortName));
-        if (plugin.isEnabled()) return Stream.empty();
-        Stream<PluginWrapper> dependencies = plugin.getDependencies().stream()
-                .flatMap(dependency -> getPluginsToEnable(manager, dependency.shortName));
-        return Stream.concat(Stream.of(plugin), dependencies);
+        if (plugin == null) {
+            throw new IllegalArgumentException(Messages.EnablePluginCommand_NoSuchPlugin(shortName));
+        }
+        if (plugin.isEnabled()) {
+            return;
+        }
+        stdout.println(String.format("Enabling plugin `%s' (%s)", plugin.getShortName(), plugin.getVersion()));
+        enableDependencies(manager, plugin);
+        plugin.enable();
+        stdout.println(String.format("Plugin `%s' was enabled.", plugin.getShortName()));
+    }
+
+    private void enableDependencies(PluginManager manager, PluginWrapper plugin) throws IOException {
+        for (PluginWrapper.Dependency dep : plugin.getDependencies()) {
+            PluginWrapper dependency = manager.getPlugin(dep.shortName);
+            if (dependency == null) {
+                throw new IllegalArgumentException(Messages.EnablePluginCommand_MissingDependencies(plugin.getShortName(), dep));
+            }
+            if (!dependency.isEnabled()) {
+                enableDependencies(manager, dependency);
+                stdout.println(String.format("Enabling plugin dependency `%s' (%s) for `%s'", dependency.getShortName(), dependency.getVersion(), plugin.getShortName()));
+                dependency.enable();
+            }
+        }
     }
 
 }
