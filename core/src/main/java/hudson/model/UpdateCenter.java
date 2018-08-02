@@ -70,6 +70,7 @@ import org.jenkinsci.Symbol;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -146,7 +147,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
+public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
 
     private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","https://updates.jenkins.io/");
 
@@ -292,7 +293,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public Api getApi() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -364,7 +364,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
@@ -417,7 +416,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doIncompleteInstallStatus() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
         Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
         if(jobs == null) {
@@ -467,7 +465,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doInstallStatus(StaplerRequest request) {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String correlationId = request.getParameter("correlationId");
             Map<String,Object> response = new HashMap<>();
@@ -620,7 +617,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
             sendError("Jenkins upgrade not supported in this running mode");
@@ -639,7 +635,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public HttpResponse doInvalidateData() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (UpdateSite site : sites) {
             site.doInvalidateData();
         }
@@ -655,7 +650,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
         synchronized (jobs) {
             if (!isRestartScheduled()) {
-                Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
                 addJob(new RestartJenkinsJob(getCoreSource()));
                 LOGGER.info("Scheduling Jenkins reboot");
             }
@@ -726,7 +720,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doDowngrade(StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(!isDowngradable()) {
             sendError("Jenkins downgrade is not possible, probably backup does not exist");
             return;
@@ -743,7 +736,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
         LOGGER.info("Scheduling the core downgrade");
 
@@ -981,7 +973,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         return results;
     }
-
 
     /**
      * {@link AdministrativeMonitor} that checks if there's Jenkins update.
@@ -2197,6 +2188,22 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     "'. Plugin upgrades may fail.", e);
         }
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
+
 
     /**
      * Sequence number generator.
