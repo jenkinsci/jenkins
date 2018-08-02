@@ -97,6 +97,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -129,7 +130,7 @@ import org.springframework.dao.DataAccessException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     /**
      * The username of the 'unknown' user used to avoid null user references.
@@ -1025,6 +1026,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.getInstance().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+
     
     /**
      * Gets list of Illegal usernames, for which users should not be created.
