@@ -155,8 +155,6 @@ public class AdminWhitelistRule implements StaplerProxy {
 
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
-        jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
-
         String whitelist = Util.fixNull(req.getParameter("whitelist"));
         if (!whitelist.endsWith("\n"))
             whitelist+="\n";
