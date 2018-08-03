@@ -31,6 +31,10 @@ import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 
 /**
@@ -43,6 +47,8 @@ import java.util.logging.Logger;
 public class NoopLogBrowser extends LogBrowser {
 
     private static final Logger LOGGER = Logger.getLogger(NoopLogBrowser.class.getName());
+
+    private transient File noopLogFile;
 
     public NoopLogBrowser(Loggable loggable) {
         super(loggable);
@@ -60,4 +66,23 @@ public class NoopLogBrowser extends LogBrowser {
         return overallLog();
     }
 
+    //TODO: It may be better to have a single file for all implementations, but Charsets may be different
+    @Nonnull
+    @Override
+    public File getLogFile() throws IOException {
+        if (noopLogFile == null) {
+            File f = File.createTempFile("deprecated", ".log", getOwner().getTmpDir());
+            f.deleteOnExit();
+            try (OutputStream os = new FileOutputStream(f)) {
+                overallLog().writeRawLogTo(0, os);
+            }
+            return f;
+        }
+        return noopLogFile;
+    }
+
+    @Override
+    public boolean deleteLog() {
+        return true;
+    }
 }
