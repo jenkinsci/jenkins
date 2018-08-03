@@ -565,6 +565,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 if (instance == null) return;
                 List<Method> methods = new LinkedList<>();
                 Class c = instance.getClass();
+                // find PostConstruct methods in class hierarchy, the one from parent class being first in list
+                // so that we invoke them before derived class one. This isn't specified in JSR-250 but implemented
+                // this way in Spring and what most developers would expect to happen.
                 while (c != Object.class) {
                     Arrays.stream(c.getDeclaredMethods())
                             .filter(m -> m.getAnnotation(PostConstruct.class) != null)
