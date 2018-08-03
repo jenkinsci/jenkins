@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Functions;
@@ -424,7 +425,7 @@ public class Maven extends Builder {
     public static DescriptorImpl DESCRIPTOR;
 
     @Extension @Symbol("maven")
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> implements PersistentDescriptor {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 

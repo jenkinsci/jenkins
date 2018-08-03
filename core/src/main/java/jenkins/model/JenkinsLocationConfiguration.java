@@ -3,6 +3,7 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
@@ -31,7 +32,7 @@ import javax.annotation.Nonnull;
  * @since 1.494
  */
 @Extension @Symbol("location")
-public class JenkinsLocationConfiguration extends GlobalConfiguration {
+public class JenkinsLocationConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
      */

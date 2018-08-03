@@ -26,6 +26,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.PluginWrapper;
+import hudson.model.PersistentDescriptor;
 import hudson.model.UpdateSite;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -50,7 +51,7 @@ import java.util.Set;
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
+public class UpdateSiteWarningsConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     private HashSet<String> ignoredWarnings = new HashSet<>();
 

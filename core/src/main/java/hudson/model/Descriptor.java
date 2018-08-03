@@ -118,7 +118,9 @@ import javax.annotation.Nullable;
  * <p>
  * {@link Descriptor} can persist data just by storing them in fields.
  * However, it is the responsibility of the derived type to properly
- * invoke {@link #save()}. {@link #load()} is automatically invoked as a JSR-250 lifecycle method.
+ * invoke {@link #save()} and {@link #load()}.
+ * {@link #load()} is automatically invoked as a JSR-250 lifecycle method if derived class
+ * do implement {@link PersistentDescriptor}.
  *
  * <h2>Reflection Enhancement</h2>
  * {@link Descriptor} defines addition to the standard Java reflection
@@ -886,7 +888,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * (If we do that in the base class, the derived class won't
      * get a chance to set default values.)
      */
-    @PostConstruct
     public synchronized void load() {
         XmlFile file = getConfigFile();
         if(!file.exists())

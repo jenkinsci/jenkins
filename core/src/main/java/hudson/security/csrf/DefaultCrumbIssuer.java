@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import jenkins.model.Jenkins;
@@ -121,7 +122,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     }
     
     @Extension @Symbol("standard")
-    public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
+    public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject, PersistentDescriptor {
 
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
         

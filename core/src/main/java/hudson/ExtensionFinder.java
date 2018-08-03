@@ -567,7 +567,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 Class c = instance.getClass();
                 while (c != Object.class) {
                     Arrays.stream(c.getDeclaredMethods())
-                            .filter(m -> m.getDeclaredAnnotation(PostConstruct.class) != null)
+                            .filter(m -> m.getAnnotation(PostConstruct.class) != null)
                             .findFirst()
                             .ifPresent(method -> methods.add(0, method));
                     c = c.getSuperclass();

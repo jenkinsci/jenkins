@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.PersistentDescriptor;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
@@ -131,7 +132,7 @@ public class Shell extends CommandInterpreter {
     }
 
     @Extension @Symbol("shell")
-    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> implements PersistentDescriptor {
         /**
          * Shell executable, or null to default.
          */

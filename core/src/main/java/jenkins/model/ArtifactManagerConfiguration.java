@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
@@ -38,7 +39,7 @@ import javax.annotation.Nonnull;
  * @since 1.532
  */
 @Extension @Symbol("artifactManager")
-public class ArtifactManagerConfiguration extends GlobalConfiguration {
+public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     
     public static @Nonnull ArtifactManagerConfiguration get() {
         return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);

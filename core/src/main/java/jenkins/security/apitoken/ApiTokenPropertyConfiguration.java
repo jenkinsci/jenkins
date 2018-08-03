@@ -24,6 +24,7 @@
 package jenkins.security.apitoken;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import org.jenkinsci.Symbol;
@@ -35,7 +36,7 @@ import org.jenkinsci.Symbol;
  */
 @Extension 
 @Symbol("apiToken")
-public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
+public class ApiTokenPropertyConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
      * When a user is created, this property determines whether or not we create a legacy token for the user.
      * For security reasons, we do not recommend you enable this but we left that open to ease upgrades.
