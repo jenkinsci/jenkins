@@ -127,4 +127,12 @@ public abstract class LogBrowser<T extends Loggable> extends LogHandler implemen
     @Nonnull
     public abstract File getLogFile() throws IOException;
 
+    /**
+     * Deletes the log in the storage.
+     * @return {@code true} if the log was deleted.
+     *         {@code false} if Log deletion is not supported.
+     * @throws IOException Failed to delete the log.
+     */
+    public abstract boolean deleteLog() throws IOException;
+
 }

@@ -1506,6 +1506,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Deletes the log in the storage.
+     * @return {@code true} if the log was deleted.
+     *         {@code false} if Log deletion is not supported.
+     * @throws IOException Failed to delete the log.
+     * @since TODO
+     */
+    public boolean deleteLog() throws IOException {
+        return getLogBrowser().deleteLog();
+    }
+
+    /**
      * Returns an input stream that reads from the log file.
      * It will use a gzip-compressed log file (log.gz) if that exists.
      *
@@ -1626,6 +1637,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (artifactManager != null) {
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
+
+        final LogBrowser browser = getLogBrowser();
+        if (browser instanceof FileLogBrowser) {
+            browser.deleteLog();
+        } // for standard FileLogBrowser, deleting the whole build dir suffices
 
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());

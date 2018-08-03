@@ -48,6 +48,7 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -89,6 +90,22 @@ public class FileLogBrowser extends LogBrowser implements FileLogCompatLayer {
                 new UnsupportedOperationException(FileLogBrowser.class.getName() + " does not support partial logs"),
                 getOwner().getCharset()
         );
+    }
+
+    @Override
+    public boolean deleteLog() throws IOException {
+        File logFile = getLogFileOrFail(loggable);
+        if (logFile.exists()) {
+            try {
+                Files.delete(logFile.toPath());
+            } catch (Exception ex) {
+                throw new IOException("Failed to delete " + logFile, ex);
+            }
+        } else {
+            LOGGER.log(Level.FINE, "Trying to delete Log File of {0} which does not exist: {1}",
+                    new Object[] {loggable, logFile});
+        }
+        return true;
     }
 
     @Override
