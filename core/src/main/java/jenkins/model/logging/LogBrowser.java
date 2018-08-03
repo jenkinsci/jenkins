@@ -25,6 +25,7 @@ package jenkins.model.logging;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleNote;
+import hudson.model.Run;
 import jenkins.util.io.OnMaster;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -114,16 +115,16 @@ public abstract class LogBrowser<T extends Loggable> extends LogHandler implemen
         return ConsoleNote.removeNotes(logLines);
     }
 
-    public File getLogFile() throws IOException {
-        //TODO: Push warnings to Telemetry API
-        //Pipeline: LOGGER.log(Level.WARNING, "Avoid calling getLogFile on " + this,
-        //        new UnsupportedOperationException());
-        File f = File.createTempFile("deprecated", ".log", getOwner().getTmpDir());
-        f.deleteOnExit();
-        try (OutputStream os = new FileOutputStream(f)) {
-            overallLog().writeRawLogTo(0, os);
-        }
-        return f;
-    }
+    /**
+     * Gets log as a file.
+     * This is a compatibility method, which is used in {@link Run#getLogFile()}.
+     * {@link LogBrowser} implementations may provide it, e.g. by creating temporary files if needed.
+     * @return Log file. If it does not exist, {@link IOException} should be thrown
+     * @throws IOException Log file cannot be retrieved
+     * @deprecated The method is available for compatibility purposes only
+     */
+    @Deprecated
+    @Nonnull
+    public abstract File getLogFile() throws IOException;
 
 }

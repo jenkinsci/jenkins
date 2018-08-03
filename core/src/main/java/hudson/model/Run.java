@@ -1486,12 +1486,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Gets Log file.
      * @deprecated Not all {@link jenkins.model.logging.LogBrowser} implementations
      * are able to produce the log file efficiently.
      * It is recommended to use the {@link #getLogBrowser()}
      * to get browser with better API options.
+     * @return Log file.
+     *         It is never {@code null}, but the file may not exist
      */
     @Deprecated
+    @Nonnull
     public File getLogFile() {
         try {
             return getLogBrowser().getLogFile();
