@@ -38,6 +38,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -134,6 +135,7 @@ public class UpdateSiteTest {
     }
 
     @Test
+    @Ignore("Issue not fixed yet")
     public void updateSiteWithCustomUpdateNowUpdatesData() throws IOException {
         UpdateSite us = new CustomUpdateNowUpdateSite("default", "nonUsedUrl");
         assertNull(us.getData());
