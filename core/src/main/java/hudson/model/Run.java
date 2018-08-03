@@ -40,10 +40,7 @@ import hudson.console.PlainTextConsoleOutputStream;
 
 import java.io.Closeable;
 
-import jenkins.model.logging.LogBrowser;
-import jenkins.model.logging.LogHandler;
 import jenkins.model.logging.Loggable;
-import jenkins.model.logging.impl.FileLogBrowser;
 import jenkins.model.logging.impl.FileLogStorage;
 import jenkins.util.SystemProperties;
 import hudson.Util;
@@ -104,13 +101,13 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.logging.LoggingMethod;
+import jenkins.model.logging.LogStorage;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import jenkins.model.logging.LoggingMethodLocator;
+import jenkins.model.logging.LogStorageFactory;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
@@ -289,17 +286,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private @CheckForNull ArtifactManager artifactManager;
 
     /**
-     * Loging method associated with this build, if any.
+     * Log storage associated with this build, if any.
      * @since TODO
      */
-    private @CheckForNull LoggingMethod loggingMethod;
-
-    /**
-     * Log browser associated with this build, if any.
-     * @since TODO
-     */
-    private @CheckForNull LogBrowser logBrowser;
-
+    private @CheckForNull LogStorage logStorage;
 
     /**
      * Creates a new {@link Run}.
@@ -357,11 +347,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             LOGGER.log(WARNING, "reload {0} @{1} with anomalous state {2}", new Object[] {this, hashCode(), state});
         }
 
-        if (logBrowser == null) {
-            logBrowser = new FileLogBrowser(this);
-        }
-        if (loggingMethod == null) {
-            loggingMethod = new FileLogStorage(this);
+        if (logStorage == null) {
+            logStorage = new FileLogStorage(this);
         }
 
         // not calling onLoad upon reload. partly because we don't want to call that from Run constructor,
@@ -389,8 +376,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (artifactManager != null) {
             artifactManager.onLoad(this);
         }
-        LogHandler.onLoad(this, logBrowser);
-        LogHandler.onLoad(this, loggingMethod);
+        LogStorage.onLoad(this, logStorage);
     }
     
     /**
@@ -1446,28 +1432,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return Collections.<Fingerprint>emptyList();
     }
 
+    /**
+     * Gets log storage.
+     * @return Log storage
+     * @since TODO
+     */
     @Override
     @Exported
-    public LogBrowser getLogBrowser() {
-        if (logBrowser == null) {
+    public LogStorage getLogStorage() {
+        if (logStorage == null) {
             //TODO(oleg_nenashev) WorkflowRun does not allow capturing Logging method in a better way
             // In order to prevent cases between new objects and data migration, we rely on reload()
             // which acts as readResolve() for the Run object
-            logBrowser = LoggingMethodLocator.locateBrowser(this);
+            logStorage = LogStorageFactory.locate(this);
         }
-        return logBrowser;
-    }
-
-    @Override
-    @Exported
-    public LoggingMethod getLoggingMethod() {
-        if (loggingMethod == null) {
-            //TODO(oleg_nenashev) WorkflowRun does not allow capturing Logging method in a better way
-            // In order to prevent cases between new objects and data migration, we rely on reload()
-            // which acts as readResolve() for the Run object
-            loggingMethod = LoggingMethodLocator.locate(this);
-        }
-        return loggingMethod;
+        return logStorage;
     }
 
     @CheckForNull
@@ -1487,10 +1466,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Gets Log file.
-     * @deprecated Not all {@link jenkins.model.logging.LogBrowser} implementations
+     * @deprecated Not all {@link jenkins.model.logging.LogStorage} implementations
      * are able to produce the log file efficiently.
-     * It is recommended to use the {@link #getLogBrowser()}
-     * to get browser with better API options.
+     * It is recommended to use {@link #getLogStorage()} to get browser with better API options.
      * @return Log file.
      *         It is never {@code null}, but the file may not exist
      */
@@ -1498,7 +1476,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Nonnull
     public File getLogFile() {
         try {
-            return getLogBrowser().getLogFile();
+            return getLogStorage().getLogFile();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to locate log file for " + this, e);
             return new File(getRootDir(), "log");
@@ -1513,7 +1491,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since TODO
      */
     public boolean deleteLog() throws IOException {
-        return getLogBrowser().deleteLog();
+        return getLogStorage().deleteLog();
     }
 
     /**
@@ -1526,11 +1504,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
-        return getLogBrowser().getLogInputStream();
+        return getLogStorage().getLogInputStream();
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
-        return getLogBrowser().getLogReader();
+        return getLogStorage().getLogReader();
     }
 
     /**
@@ -1579,7 +1557,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return A {@link Run} log with annotations
      */   
     public @Nonnull AnnotatedLargeText getLogText() {
-        return getLogBrowser().overallLog();
+        return getLogStorage().overallLog();
     }
 
     @Override
@@ -1638,8 +1616,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
 
-        final LogBrowser browser = getLogBrowser();
-        if (browser instanceof FileLogBrowser) {
+        final LogStorage browser = getLogStorage();
+        if (!(browser instanceof FileLogStorage)) {
             browser.deleteLog();
         } // for standard FileLogBrowser, deleting the whole build dir suffices
 
@@ -1858,7 +1836,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         Charset charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-                    listener = getLoggingMethod().createBuildListener();
+                    listener = getLogStorage().createBuildListener();
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -2080,7 +2058,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public @Nonnull String getLog() throws IOException {
-        return getLogBrowser().getLog();
+        return getLogStorage().getLog();
     }
 
     /**
@@ -2093,7 +2071,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        return getLogBrowser().getLog(maxLines);
+        return getLogStorage().getLog(maxLines);
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
@@ -2575,13 +2553,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     @Override
-    public LoggingMethod getDefaultLoggingMethod() {
+    public LogStorage getDefaultLogStorage() {
         return new FileLogStorage(this);
-    }
-
-    @Override
-    public LogBrowser getDefaultLogBrowser() {
-        return new FileLogBrowser(this);
     }
 
     public static class RedirectUp {

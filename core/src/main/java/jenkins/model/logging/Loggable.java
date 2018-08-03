@@ -36,15 +36,14 @@ import java.nio.charset.StandardCharsets;
  * Interface which indicates that custom logging is applicable to the object.
  * @author Oleg Nenashev
  * @since TODO
- * @see LogBrowser
- * @see LoggingMethod
+ * @see LogStorage
  */
 @Restricted(Beta.class)
 public interface Loggable {
 
     @Nonnull
-    default LoggingMethod getLoggingMethod() {
-        return LoggingMethodLocator.locate(this);
+    default LogStorage getLogStorage() {
+        return LogStorageFactory.locate(this);
     }
 
     /**
@@ -52,19 +51,7 @@ public interface Loggable {
      * @return Default logger.
      */
     @Nonnull
-    LoggingMethod getDefaultLoggingMethod();
-
-    @Nonnull
-    default LogBrowser getLogBrowser() {
-        return LoggingMethodLocator.locateBrowser(this);
-    }
-
-    /**
-     * Determines a default log browser to be used.
-     * @return Default log browser.
-     */
-    @Nonnull
-    LogBrowser getDefaultLogBrowser();
+    LogStorage getDefaultLogStorage();
 
     /**
      * Returns {@code true} if the log file is no longer being updated.
@@ -86,7 +73,6 @@ public interface Loggable {
      * Provides legacy File storage location for compatibility implementations.
      * @return Log file or {@code null} if it is not supported.
      *         A non-existent file may be returned if log is missing in the compatibility location
-     * @see jenkins.model.logging.impl.FileLogBrowser
      * @see jenkins.model.logging.impl.FileLogStorage
      */
     @CheckForNull

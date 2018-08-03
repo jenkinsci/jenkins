@@ -23,17 +23,20 @@
  */
 package jenkins.model.logging.impl;
 
+import hudson.console.AnnotatedLargeText;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
-import jenkins.model.logging.LogBrowser;
 import jenkins.model.logging.Loggable;
-import jenkins.model.logging.LoggingMethod;
+import jenkins.model.logging.LogStorage;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
@@ -42,11 +45,12 @@ import java.io.PrintStream;
  * @since TODO
  */
 @Restricted(Beta.class)
-public class NoopLoggingMethod extends LoggingMethod {
+public class NoopLogStorage extends LogStorage {
 
-    public NoopLoggingMethod(Loggable loggable) {
+    public NoopLogStorage(Loggable loggable) {
         super(loggable);
     }
+    private transient File noopLogFile;
 
     @CheckForNull
     @Override
@@ -67,7 +71,34 @@ public class NoopLoggingMethod extends LoggingMethod {
     }
 
     @Override
-    public LogBrowser getDefaultLogBrowser() {
-        return new NoopLogBrowser(getOwner());
+    public AnnotatedLargeText overallLog() {
+        return new BrokenAnnotatedLargeText(
+                new UnsupportedOperationException("Browsing is not supported"),
+                getOwner().getCharset());
+    }
+
+    @Override
+    public AnnotatedLargeText stepLog(@CheckForNull String stepId, boolean b) {
+        return overallLog();
+    }
+
+    //TODO: It may be better to have a single file for all implementations, but Charsets may be different
+    @Nonnull
+    @Override
+    public File getLogFile() throws IOException {
+        if (noopLogFile == null) {
+            File f = File.createTempFile("deprecated", ".log", getOwner().getTmpDir());
+            f.deleteOnExit();
+            try (OutputStream os = new FileOutputStream(f)) {
+                overallLog().writeRawLogTo(0, os);
+            }
+            return f;
+        }
+        return noopLogFile;
+    }
+
+    @Override
+    public boolean deleteLog() {
+        return true;
     }
 }

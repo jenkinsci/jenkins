@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2018 CloudBees, Inc.
+ * Copyright 2016-2018 CloudBees Inc., Google Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,112 @@
  */
 package jenkins.model.logging;
 
+import hudson.Launcher;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleNote;
+import hudson.model.BuildListener;
+import hudson.model.Node;
 import hudson.model.Run;
-import jenkins.util.io.OnMaster;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import hudson.model.TaskListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.stapler.export.Exported;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Defines how the logs should be browsed.
+ * Defines logging method for Jenkins runs.
+ * This method defines how the log is persisted to the disk.
  * @author Oleg Nenashev
- * @author Jesse Glick
+ * @author Xing Yan
+ * @see LogStorageFactory
  * @since TODO
  */
 @Restricted(Beta.class)
-public abstract class LogBrowser<T extends Loggable> extends LogHandler implements OnMaster {
+public abstract class LogStorage<T extends Loggable> {
 
-    public LogBrowser(Loggable loggable) {
-        super(loggable);
+    protected transient T loggable;
+
+    public LogStorage(@Nonnull T loggable) {
+        this.loggable = loggable;
+    }
+
+    @Exported
+    public String getId() {
+        return getClass().getName();
+    }
+
+    /**
+     * Called when the owner is loaded from disk.
+     * The owner may be persisted on the disk, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
+     * @param loggable an owner to which this component is associated.
+     */
+    public void onLoad(@Nonnull T loggable) {
+        this.loggable = loggable;
+    }
+
+    public static void onLoad(@Nonnull Loggable loggable, @CheckForNull LogStorage logStorage) {
+        if (logStorage != null) {
+            logStorage.onLoad(loggable);
+        }
+    }
+
+    @Nonnull
+    protected Loggable getOwner() {
+        if (loggable == null) {
+            throw new IllegalStateException("Owner has not been assigned to the object yet");
+        }
+        return loggable;
+
+    }
+
+    /**
+     * Decorates logging on the Jenkins master side for non-{@link Run} loggable items.
+     * @return Log filter on the master.
+     *         {@code null} if the implementation does not support task logging
+     * @throws IOException initialization error or wrong {@link Loggable} type
+     * @throws InterruptedException one of the build listener decorators has been interrupted.
+     */
+    @CheckForNull
+    public abstract TaskListener createTaskListener() throws IOException, InterruptedException;
+
+    /**
+     * Decorates logging on the Jenkins master side.
+     * This method should be always implemented, because it will be consuming the input events.
+     * Streams can be converted to per-line events by higher-level abstractions.
+     *
+     * @return Build Listener
+     * @throws IOException initialization error or wrong {@link Loggable} type
+     * @throws InterruptedException one of the build listener decorators has
+     *            been interrupted.
+     */
+     @Nonnull
+     public abstract BuildListener createBuildListener() throws IOException, InterruptedException;
+
+    /**
+     * Decorates external process launcher running on a node.
+     * It may be overridden to redirect logs to external destination
+     * instead of sending them by default to the master.
+     * @param original Original launcher
+     * @param run Run, for which the decoration should be performed
+     * @param node Target node. May be {@code master} as well
+     * @return Decorated launcher or {@code original} launcher
+     */
+    @Nonnull
+    public Launcher decorateLauncher(@Nonnull Launcher original,
+        @Nonnull Run<?,?> run, @Nonnull Node node) {
+        return original;
     }
 
     /**
@@ -118,7 +192,7 @@ public abstract class LogBrowser<T extends Loggable> extends LogHandler implemen
     /**
      * Gets log as a file.
      * This is a compatibility method, which is used in {@link Run#getLogFile()}.
-     * {@link LogBrowser} implementations may provide it, e.g. by creating temporary files if needed.
+     * Implementations may provide it, e.g. by creating temporary files if needed.
      * @return Log file. If it does not exist, {@link IOException} should be thrown
      * @throws IOException Log file cannot be retrieved
      * @deprecated The method is available for compatibility purposes only
@@ -134,5 +208,4 @@ public abstract class LogBrowser<T extends Loggable> extends LogHandler implemen
      * @throws IOException Failed to delete the log.
      */
     public abstract boolean deleteLog() throws IOException;
-
 }

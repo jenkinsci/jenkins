@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2018 CloudBees, Inc.
+ * Copyright 2016-2018 CloudBees Inc., Google Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,56 +23,46 @@
  */
 package jenkins.model.logging;
 
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.io.Serializable;
 
 /**
- * Object which operates with {@link Loggable} items.
+ * Locates {@link LogStorage}s.
  * @author Oleg Nenashev
+ * @author Xing Yan
  * @since TODO
+ * @see jenkins.model.logging.impl.FileLogStorage
  */
-@ExportedBean
 @Restricted(Beta.class)
-public abstract class LogHandler {
+public abstract class LogStorageFactory implements ExtensionPoint {
+  
+  /**
+   * Retrieve the logging method for the run.
+   * @param object Loggable object
+   * @return Logging method. {@code null} if the locator does not provide the
+   *         implementation for the run.
+   */
+  @CheckForNull
+  protected abstract LogStorage getLogStorage(Loggable object);
 
-    protected transient Loggable loggable;
-
-    public LogHandler(@Nonnull Loggable loggable) {
-        this.loggable = loggable;
-    }
-
-    @Exported
-    public String getId() {
-        return getClass().getName();
-    }
-
-    /**
-     * Called when the owner is loaded from disk.
-     * The owner may be persisted on the disk, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
-     * @param loggable an owner to which this component is associated.
-     */
-    public void onLoad(@Nonnull Loggable loggable) {
-        this.loggable = loggable;
-    }
-
-    public static void onLoad(@Nonnull Loggable loggable, @CheckForNull LogHandler logHandler) {
-        if (logHandler != null) {
-            logHandler.onLoad(loggable);
-        }
-    }
-
-    @Nonnull
-    protected Loggable getOwner() {
-        if (loggable == null) {
-            throw new IllegalStateException("Owner has not been assigned to the object yet");
-        }
-        return loggable;
-
-    }
+  @Nonnull
+  public static LogStorage locate(Loggable run) {
+      for (LogStorageFactory locator : all()) {
+          final LogStorage logStorage = locator.getLogStorage(run);
+          if (logStorage != null) {
+              return logStorage;
+          }
+      }
+      // Fallback
+      return run.getDefaultLogStorage();
+  }
+  
+  public static ExtensionList<LogStorageFactory> all() {
+      return ExtensionList.lookup(LogStorageFactory.class);
+  }
 }

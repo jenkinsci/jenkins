@@ -533,7 +533,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             // Produce correct logger
             // TODO: Consider merging with create Launcher
-            l = getLoggingMethod().decorateLauncher(l, getBuild(), currentNode);
+            l = getLogStorage().decorateLauncher(l, getBuild(), currentNode);
             
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;

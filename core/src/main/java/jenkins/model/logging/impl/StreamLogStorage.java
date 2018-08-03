@@ -31,7 +31,7 @@ import hudson.model.Run;
 import hudson.model.StreamBuildListener;
 import hudson.tasks.BuildWrapper;
 import jenkins.model.logging.Loggable;
-import jenkins.model.logging.LoggingMethod;
+import jenkins.model.logging.LogStorage;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -48,12 +48,12 @@ import java.util.logging.Logger;
  * @since TODO
  */
 @Restricted(Beta.class)
-public abstract class StreamLoggingMethod extends LoggingMethod {
+public abstract class StreamLogStorage extends LogStorage {
 
     private static final Logger LOGGER =
-            Logger.getLogger(StreamLoggingMethod.class.getName());
+            Logger.getLogger(StreamLogStorage.class.getName());
 
-    public StreamLoggingMethod(@Nonnull Loggable loggable) {
+    public StreamLogStorage(@Nonnull Loggable loggable) {
         super(loggable);
     }
 
