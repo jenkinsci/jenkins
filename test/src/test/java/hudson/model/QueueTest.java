@@ -123,6 +123,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -456,6 +457,31 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
         assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-41127")
+    @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
+        Label label = r.jenkins.getSelfLabel();
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task1 = new TestFlyweightTask(cnt, label);
+        TestFlyweightTask task2 = new TestFlyweightTask(cnt, label);
+        assertFalse(task1.isConcurrentBuild());
+        assertFalse(task2.isConcurrentBuild());
+        // We need to call Queue#maintain without any interleaving Queue modification to reproduce the issue.
+        Queue.withLock(() -> {
+            r.jenkins.getQueue().schedule2(task1, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item1 = r.jenkins.getQueue().getItem(task1);
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            r.jenkins.getQueue().schedule2(task2, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item2 = r.jenkins.getQueue().getItem(task2);
+            // Before the fix, item1 would no longer be present in the pending items (but would
+            // still be assigned to a live executor), and item2 would not be blocked, which would
+            // allow the tasks to execute concurrently.
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            assertTrue(item2.isBlocked());
+        });
     }
 
     @Issue("JENKINS-27256")
