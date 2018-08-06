@@ -25,7 +25,6 @@ package jenkins.model.logging;
 
 import hudson.Launcher;
 import hudson.console.AnnotatedLargeText;
-import hudson.console.ConsoleNote;
 import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Run;
@@ -37,14 +36,12 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -149,45 +146,27 @@ public abstract class LogStorage<T extends Loggable> {
     @Nonnull
     public abstract AnnotatedLargeText<T> stepLog(@CheckForNull String stepId, boolean completed);
 
-    public InputStream getLogInputStream() throws IOException {
-        // Inefficient but probably rarely used anyway.
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        overallLog().writeRawLogTo(0, baos);
-        return new ByteArrayInputStream(baos.toByteArray());
+    public abstract InputStream getLogInputStream() throws IOException;
+
+    public @Nonnull Reader getLogReader() throws IOException {
+        return new InputStreamReader(getLogInputStream(), getOwner().getCharset());
     }
 
-    public Reader getLogReader() throws IOException {
-        // As above.
-        return overallLog().readAll();
-    }
-
-    @SuppressWarnings("deprecation")
+    /**
+     * Gets the entire log as text.
+     * This method is a convenience implementation for legacy API users.
+     * @return Entire log as a string
+     * @throws IOException Failed to read logs
+     * @deprecated Use methods like {@link #overallLog()}, {@link #getLog(int)} or {@link #getLogReader()} instead
+     */
+    @Deprecated
     public String getLog() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         overallLog().writeRawLogTo(0, baos);
-        return baos.toString("UTF-8");
+        return baos.toString(loggable.getCharset().name());
     }
 
-    public List<String> getLog(int maxLines) throws IOException {
-        int lineCount = 0;
-        List<String> logLines = new LinkedList<>();
-        if (maxLines == 0) {
-            return logLines;
-        }
-        try (BufferedReader reader = new BufferedReader(getLogReader())) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                logLines.add(line);
-                ++lineCount;
-                if (lineCount > maxLines) {
-                    logLines.remove(0);
-                }
-            }
-        }
-        if (lineCount > maxLines) {
-            logLines.set(0, "[...truncated " + (lineCount - (maxLines - 1)) + " lines...]");
-        }
-        return ConsoleNote.removeNotes(logLines);
-    }
+    public abstract List<String> getLog(int maxLines) throws IOException;
 
     /**
      * Gets log as a file.

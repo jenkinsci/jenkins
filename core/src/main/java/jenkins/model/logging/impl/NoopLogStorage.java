@@ -36,8 +36,11 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
+import java.util.List;
 
 /**
  * Default Logging Method implementation which does nothing
@@ -80,6 +83,16 @@ public class NoopLogStorage extends LogStorage {
     @Override
     public AnnotatedLargeText stepLog(@CheckForNull String stepId, boolean b) {
         return overallLog();
+    }
+
+    @Override
+    public InputStream getLogInputStream() throws IOException {
+        throw new IOException("Browsing is not supported");
+    }
+
+    @Override
+    public List<String> getLog(int maxLines) throws IOException {
+        throw new IOException("Browsing is not supported");
     }
 
     //TODO: It may be better to have a single file for all implementations, but Charsets may be different

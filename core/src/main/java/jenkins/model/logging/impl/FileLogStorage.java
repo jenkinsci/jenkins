@@ -38,6 +38,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,10 +166,6 @@ public class FileLogStorage extends StreamLogStorage {
         return new ByteArrayInputStream(message.getBytes(getOwner().getCharset()));
     }
 
-    public @Nonnull
-    Reader getLogReader() throws IOException {
-        return new InputStreamReader(getLogInputStream(), getOwner().getCharset());
-    }
 
     @Override
     public List<String> getLog(int maxLines) throws IOException {
