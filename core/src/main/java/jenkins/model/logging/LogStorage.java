@@ -35,6 +35,7 @@ import hudson.model.TaskListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,6 +54,7 @@ import java.util.List;
  * @since TODO
  */
 @Restricted(Beta.class)
+@ExportedBean
 public abstract class LogStorage<T extends Loggable> {
 
     protected transient T loggable;

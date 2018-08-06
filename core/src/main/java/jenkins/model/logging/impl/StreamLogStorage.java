@@ -68,6 +68,7 @@ public abstract class StreamLogStorage extends LogStorage {
         return null;
     }
 
+    @Override
     public final StreamBuildListener createBuildListener() throws IOException, InterruptedException {
 
         OutputStream logger = createOutputStream();
