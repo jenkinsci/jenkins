@@ -42,6 +42,7 @@ import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.util.ReflectionUtils;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionFilter;
 import jenkins.ExtensionRefreshException;
@@ -51,6 +52,7 @@ import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.util.ClassUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
@@ -66,6 +68,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -565,11 +568,17 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 if (instance == null) return;
                 List<Method> methods = new LinkedList<>();
                 Class c = instance.getClass();
+
                 // find PostConstruct methods in class hierarchy, the one from parent class being first in list
                 // so that we invoke them before derived class one. This isn't specified in JSR-250 but implemented
                 // this way in Spring and what most developers would expect to happen.
+
+                final Set<Class> interfaces = ClassUtils.getAllInterfacesAsSet(instance);
+
                 while (c != Object.class) {
                     Arrays.stream(c.getDeclaredMethods())
+                            .map(m -> getMethodAndInterfaceDeclarations(m, interfaces))
+                            .flatMap(Collection::stream)
                             .filter(m -> m.getAnnotation(PostConstruct.class) != null)
                             .findFirst()
                             .ifPresent(method -> methods.add(0, method));
@@ -587,6 +596,28 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
     }
+
+    /**
+     * Returns initial {@link Method} as well as all matching ones found in interfaces.
+     * This allows to introspect metadata for a method which is both declared in parent class and in implemented
+     * interface(s). <code>interfaces</code> typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
+     */
+    Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class> interfaces) {
+        final List<Method> methods = new ArrayList<>();
+        methods.add(method);
+
+        // we search for matching method by iteration and comparison vs getMethod to avoid repeated NoSuchMethodException
+        // being thrown, while interface typically only define a few set of methods to check.
+        interfaces.stream()
+                .map(Class::getMethods)
+                .flatMap(Arrays::stream)
+                .filter(m -> m.getName().equals(method.getName()) && Arrays.equals(m.getParameterTypes(), method.getParameterTypes()))
+                .findFirst()
+                .ifPresent(methods::add);
+
+        return methods;
+    }
+
 
     /**
      * The bootstrap implementation that looks for the {@link Extension} marker.
