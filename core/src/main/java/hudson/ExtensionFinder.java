@@ -578,6 +578,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
                 for (Method postConstruct : methods) {
                     try {
+                        postConstruct.setAccessible(true);
                         postConstruct.invoke(instance);
                     } catch (final Exception e) {
                         throw new RuntimeException(String.format("@PostConstruct %s", postConstruct), e);
