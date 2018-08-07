@@ -27,9 +27,12 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.Node;
 import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
@@ -256,6 +259,14 @@ public class Nodes implements Saveable {
                     if (c != null) {
                         c.recordTermination();
                         c.disconnect(OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()));
+                        for(Executor executor: c.getAllExecutors()){
+                            executor.interrupt(Result.ABORTED, new CauseOfInterruption() {
+                                @Override
+                                public String getShortDescription() {
+                                    return "Node was removed by " + User.current().getId();
+                                }
+                            });
+                        }
                     }
                     if (node == nodes.remove(node.getNodeName())) {
                         jenkins.updateComputerList();
