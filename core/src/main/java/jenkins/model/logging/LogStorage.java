@@ -29,6 +29,7 @@ import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Run;
 import javax.annotation.CheckForNull;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
 import hudson.model.TaskListener;
@@ -46,8 +47,12 @@ import java.io.Reader;
 import java.util.List;
 
 /**
- * Defines logging method for Jenkins runs.
- * This method defines how the log is persisted to the disk.
+ * Defines Log storage for Jenkins.
+ * The log storage may store logs for {@link Run}s and other {@link Loggable} types.
+ * This abstract class defines a low-level API which should be overridden by implementations
+ * to externalize logs.
+ * {@link LogStorageFactory} allows locating log storages for particular components.
+ *
  * @author Oleg Nenashev
  * @author Xing Yan
  * @see LogStorageFactory
@@ -77,19 +82,12 @@ public abstract class LogStorage<T extends Loggable> {
         this.loggable = loggable;
     }
 
-    public static void onLoad(@Nonnull Loggable loggable, @CheckForNull LogStorage logStorage) {
-        if (logStorage != null) {
-            logStorage.onLoad(loggable);
-        }
-    }
-
     @Nonnull
     protected Loggable getOwner() {
         if (loggable == null) {
             throw new IllegalStateException("Owner has not been assigned to the object yet");
         }
         return loggable;
-
     }
 
     /**
@@ -100,7 +98,9 @@ public abstract class LogStorage<T extends Loggable> {
      * @throws InterruptedException one of the build listener decorators has been interrupted.
      */
     @CheckForNull
-    public abstract TaskListener createTaskListener() throws IOException, InterruptedException;
+    public TaskListener createTaskListener() throws IOException, InterruptedException {
+        return null;
+    }
 
     /**
      * Decorates logging on the Jenkins master side.
@@ -115,18 +115,25 @@ public abstract class LogStorage<T extends Loggable> {
      @Nonnull
      public abstract BuildListener createBuildListener() throws IOException, InterruptedException;
 
+     //TODO: Remove it at all and update JEP-207?
     /**
      * Decorates external process launcher running on a node.
-     * It may be overridden to redirect logs to external destination
-     * instead of sending them by default to the master.
+     * It may be used to inject custom environment if it is required by the LogStorage implementation.
+     *
+     * This method should be invoked by {@link Run} implementations to be effective,
+     * and there is no guarantee that {@link Run} types excepting {@link hudson.model.AbstractBuild} invoke that.
+     * It is not advised to use this method to pass logic,
+     * {@link #createBuildListener()} and {@link hudson.model.EnvironmentContributingAction}s should be a solution.
+     *
      * @param original Original launcher
      * @param run Run, for which the decoration should be performed
      * @param node Target node. May be {@code master} as well
+     * @param listener Task listener
      * @return Decorated launcher or {@code original} launcher
      */
     @Nonnull
     public Launcher decorateLauncher(@Nonnull Launcher original,
-        @Nonnull Run<?,?> run, @Nonnull Node node) {
+        @Nonnull Run<?,?> run, @Nonnull Node node, @Nonnull TaskListener listener) {
         return original;
     }
 
@@ -137,19 +144,19 @@ public abstract class LogStorage<T extends Loggable> {
     @Nonnull
     public abstract AnnotatedLargeText<T> overallLog();
 
-    //TODO: jglick requests justification of why it needs to be in the core
     /**
-     * Gets log for a part of the object.
-     * @param stepId Identifier of the step to be displayed.
-     *               It may be Pipeline step or other similar abstraction
-     * @param completed indicates that the step is completed
-     * @return Created log or {@link jenkins.model.logging.impl.BrokenAnnotatedLargeText} if it cannot be retrieved
+     * Gets log as an input stream.
+     * @return Input stream for the log
+     * @throws IOException Failed to read logs
      */
-    @Nonnull
-    public abstract AnnotatedLargeText<T> stepLog(@CheckForNull String stepId, boolean completed);
-
     public abstract InputStream getLogInputStream() throws IOException;
 
+    /**
+     * Gets a log reader.
+     * @return Log reader.
+     *         It may just wrap {@link #getLogInputStream()} or provide a more efficient implementation.
+     * @throws IOException Failed to read logs
+     */
     public @Nonnull Reader getLogReader() throws IOException {
         return new InputStreamReader(getLogInputStream(), getOwner().getCharset());
     }
@@ -168,6 +175,12 @@ public abstract class LogStorage<T extends Loggable> {
         return baos.toString(loggable.getCharset().name());
     }
 
+    /**
+     * Get a subset of the log
+     * @param maxLines Maximum number of log lines to read.
+     * @return List of log lines.
+     * @throws IOException Failed to read logs
+     */
     public abstract List<String> getLog(int maxLines) throws IOException;
 
     /**
@@ -188,5 +201,6 @@ public abstract class LogStorage<T extends Loggable> {
      *         {@code false} if Log deletion is not supported.
      * @throws IOException Failed to delete the log.
      */
+    @CheckReturnValue
     public abstract boolean deleteLog() throws IOException;
 }

@@ -31,7 +31,6 @@ import jenkins.model.logging.LogStorage;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Reader;
 import java.util.List;
 
 /**
@@ -54,12 +52,6 @@ public class NoopLogStorage extends LogStorage {
         super(loggable);
     }
     private transient File noopLogFile;
-
-    @CheckForNull
-    @Override
-    public TaskListener createTaskListener() {
-        return TaskListener.NULL;
-    }
 
     @Nonnull
     @Override
@@ -78,11 +70,6 @@ public class NoopLogStorage extends LogStorage {
         return new BrokenAnnotatedLargeText(
                 new UnsupportedOperationException("Browsing is not supported"),
                 getOwner().getCharset());
-    }
-
-    @Override
-    public AnnotatedLargeText stepLog(@CheckForNull String stepId, boolean b) {
-        return overallLog();
     }
 
     @Override
@@ -105,7 +92,7 @@ public class NoopLogStorage extends LogStorage {
             try (OutputStream os = new FileOutputStream(f)) {
                 overallLog().writeRawLogTo(0, os);
             }
-            return f;
+            noopLogFile = f;
         }
         return noopLogFile;
     }

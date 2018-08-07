@@ -38,14 +38,11 @@ import org.kohsuke.accmod.restrictions.Beta;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -96,12 +93,6 @@ public class FileLogStorage extends StreamLogStorage {
 
     @CheckForNull
     @Override
-    public TaskListener createTaskListener() {
-        return null;
-    }
-
-    @CheckForNull
-    @Override
     public ConsoleLogFilter getExtraConsoleLogFilter() {
         return null;
     }
@@ -117,15 +108,6 @@ public class FileLogStorage extends StreamLogStorage {
 
         return new AnnotatedLargeText<Loggable>
                 (logFile, getOwner().getCharset(), getOwner().isLoggingFinished(), getOwner());
-    }
-
-    @Override
-    public AnnotatedLargeText stepLog(@CheckForNull String stepId, boolean b) {
-        // Not supported, there is no default implementation for "step"
-        return new BrokenAnnotatedLargeText(
-                new UnsupportedOperationException(FileLogStorage.class.getName() + " does not support partial logs"),
-                getOwner().getCharset()
-        );
     }
 
     @Override

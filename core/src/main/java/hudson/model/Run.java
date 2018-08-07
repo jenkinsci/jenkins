@@ -376,7 +376,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (artifactManager != null) {
             artifactManager.onLoad(this);
         }
-        LogStorage.onLoad(this, logStorage);
+        if (logStorage != null) {
+            logStorage.onLoad(this);
+        }
     }
     
     /**
