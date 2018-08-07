@@ -109,8 +109,7 @@ public abstract class LogStorage<T extends Loggable> {
      *
      * @return Build Listener
      * @throws IOException initialization error or wrong {@link Loggable} type
-     * @throws InterruptedException one of the build listener decorators has
-     *            been interrupted.
+     * @throws InterruptedException Was interrupted while decorating listeners
      */
      @Nonnull
      public abstract BuildListener createBuildListener() throws IOException, InterruptedException;
@@ -130,34 +129,41 @@ public abstract class LogStorage<T extends Loggable> {
      * @param node Target node. May be {@code master} as well
      * @param listener Task listener
      * @return Decorated launcher or {@code original} launcher
+     * @throws IOException Was interrupted while decorating the launcher
+     * @throws InterruptedException Was interrupted while decorating listeners
      */
     @Nonnull
     public Launcher decorateLauncher(@Nonnull Launcher original,
-        @Nonnull Run<?,?> run, @Nonnull Node node, @Nonnull TaskListener listener) {
+        @Nonnull Run<?,?> run, @Nonnull Node node, @Nonnull TaskListener listener)
+            throws IOException, InterruptedException {
         return original;
     }
 
     /**
      * Gets log for an object.
      * @return Created log or {@link jenkins.model.logging.impl.BrokenAnnotatedLargeText} if it cannot be retrieved
+     * @throws IOException Operation failed
+     * @throws InterruptedException Operation was interrupted
      */
     @Nonnull
-    public abstract AnnotatedLargeText<T> overallLog();
+    public abstract AnnotatedLargeText<T> overallLog() throws IOException, InterruptedException;
 
     /**
      * Gets log as an input stream.
      * @return Input stream for the log
-     * @throws IOException Failed to read logs
+     * @throws IOException Failed to access logs
+     * @throws InterruptedException Operation was interrupted
      */
-    public abstract InputStream getLogInputStream() throws IOException;
+    public abstract InputStream getLogInputStream() throws IOException, InterruptedException;
 
     /**
      * Gets a log reader.
      * @return Log reader.
      *         It may just wrap {@link #getLogInputStream()} or provide a more efficient implementation.
-     * @throws IOException Failed to read logs
+     * @throws IOException Failed to access logs
+     * @throws InterruptedException Operation was interrupted
      */
-    public @Nonnull Reader getLogReader() throws IOException {
+    public @Nonnull Reader getLogReader() throws IOException, InterruptedException {
         return new InputStreamReader(getLogInputStream(), getOwner().getCharset());
     }
 
@@ -167,9 +173,11 @@ public abstract class LogStorage<T extends Loggable> {
      * @return Entire log as a string
      * @throws IOException Failed to read logs
      * @deprecated Use methods like {@link #overallLog()}, {@link #getLog(int)} or {@link #getLogReader()} instead
+     * @throws IOException Operation failed
+     * @throws InterruptedException Operation was interrupted
      */
     @Deprecated
-    public String getLog() throws IOException {
+    public String getLog() throws IOException, InterruptedException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         overallLog().writeRawLogTo(0, baos);
         return baos.toString(loggable.getCharset().name());
@@ -180,8 +188,9 @@ public abstract class LogStorage<T extends Loggable> {
      * @param maxLines Maximum number of log lines to read.
      * @return List of log lines.
      * @throws IOException Failed to read logs
+     * @throws InterruptedException Operation was interrupted
      */
-    public abstract List<String> getLog(int maxLines) throws IOException;
+    public abstract List<String> getLog(int maxLines) throws IOException, InterruptedException;
 
     /**
      * Gets log as a file.
@@ -189,18 +198,20 @@ public abstract class LogStorage<T extends Loggable> {
      * Implementations may provide it, e.g. by creating temporary files if needed.
      * @return Log file. If it does not exist, {@link IOException} should be thrown
      * @throws IOException Log file cannot be retrieved
+     * @throws InterruptedException Operation was interrupted
      * @deprecated The method is available for compatibility purposes only
      */
     @Deprecated
     @Nonnull
-    public abstract File getLogFile() throws IOException;
+    public abstract File getLogFile() throws IOException, InterruptedException;
 
     /**
      * Deletes the log in the storage.
      * @return {@code true} if the log was deleted.
      *         {@code false} if Log deletion is not supported.
      * @throws IOException Failed to delete the log.
+     * @throws InterruptedException Operation was interrupted
      */
     @CheckReturnValue
-    public abstract boolean deleteLog() throws IOException;
+    public abstract boolean deleteLog() throws IOException, InterruptedException;
 }

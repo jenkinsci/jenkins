@@ -41,6 +41,7 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.io.Closeable;
 
 import jenkins.model.logging.Loggable;
+import jenkins.model.logging.impl.BrokenAnnotatedLargeText;
 import jenkins.model.logging.impl.FileLogStorage;
 import jenkins.util.SystemProperties;
 import hudson.Util;
@@ -1479,7 +1480,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public File getLogFile() {
         try {
             return getLogStorage().getLogFile();
-        } catch (IOException e) {
+        } catch (IOException|InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to locate log file for " + this, e);
             return new File(getRootDir(), "log");
         }
@@ -1490,9 +1491,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return {@code true} if the log was deleted.
      *         {@code false} if Log deletion is not supported.
      * @throws IOException Failed to delete the log.
+     * @throws InterruptedException Operation was interrupted
      * @since TODO
      */
-    public boolean deleteLog() throws IOException {
+    public boolean deleteLog() throws IOException, InterruptedException {
         return getLogStorage().deleteLog();
     }
 
@@ -1506,11 +1508,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
-        return getLogStorage().getLogInputStream();
+        try {
+            return getLogStorage().getLogInputStream();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
-        return getLogStorage().getLogReader();
+        try {
+            return getLogStorage().getLogReader();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -1559,7 +1569,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return A {@link Run} log with annotations
      */   
     public @Nonnull AnnotatedLargeText getLogText() {
-        return getLogStorage().overallLog();
+        try {
+            return getLogStorage().overallLog();
+        } catch (IOException|InterruptedException e) {
+            return new BrokenAnnotatedLargeText(e);
+        }
     }
 
     @Override
@@ -1618,9 +1632,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
 
-        final LogStorage browser = getLogStorage();
-        if (!(browser instanceof FileLogStorage)) {
-            browser.deleteLog();
+        final LogStorage logStorage = getLogStorage();
+        if (!(logStorage instanceof FileLogStorage)) {
+            try {
+                boolean supported = logStorage.deleteLog();
+                if (!supported) {
+                    LOGGER.log(Level.FINE, "Cannot delete logs for run {0}, log storage {1} does not support it",
+                            new Object[] {this, logStorage});
+                }
+            } catch (InterruptedException e) {
+                throw new IOException("Failed to delete logs in the log storage", e);
+            }
         } // for standard FileLogBrowser, deleting the whole build dir suffices
 
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
@@ -2060,7 +2082,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public @Nonnull String getLog() throws IOException {
-        return getLogStorage().getLog();
+        try {
+            return getLogStorage().getLog();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -2073,7 +2099,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        return getLogStorage().getLog(maxLines);
+        try {
+            return getLogStorage().getLog(maxLines);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
