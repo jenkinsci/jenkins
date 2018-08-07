@@ -36,6 +36,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.Launcher;
+import hudson.LauncherDecorator;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
@@ -44,6 +46,8 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
+
+import hudson.slaves.NodeProperty;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -2577,6 +2581,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             returnedResult = new RedirectUp();
         }
         return returnedResult;
+    }
+
+    /**
+     * Creates a {@link Launcher} that this build will use. This can be overridden by derived types
+     * to decorate the resulting {@link Launcher}.
+     *
+     * @param listener
+     *      Always non-null. Connected to the main build output.
+     * @param node
+     *      Node for which the launcher is created.
+     * @since TODO
+     */
+    @Nonnull
+    protected Launcher createLauncher(@Nonnull Node node, @Nonnull BuildListener listener)
+            throws IOException, InterruptedException {
+        Launcher l = node.createLauncher(listener);
+        l.decorateFor(this, listener);
+        return l;
     }
 
     public static class RedirectUp {

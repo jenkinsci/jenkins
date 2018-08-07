@@ -368,6 +368,43 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return hudsonVersion;
     }
 
+    @Override
+    protected Launcher createLauncher(@Nonnull Node node, @Nonnull BuildListener listener)
+            throws IOException, InterruptedException {
+        Launcher l = super.createLauncher(node, listener);
+
+        if (project instanceof BuildableItemWithBuildWrappers) {
+            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+            for (BuildWrapper bw : biwbw.getBuildWrappersList())
+                l = bw.decorateLauncher(AbstractBuild.this,l,listener);
+        }
+
+        buildEnvironments = new ArrayList<Environment>();
+
+        for (RunListener rl: RunListener.all()) {
+            Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
+            if (environment != null) {
+                buildEnvironments.add(environment);
+            }
+        }
+
+        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+            Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
+            if (environment != null) {
+                buildEnvironments.add(environment);
+            }
+        }
+
+        for (NodeProperty nodeProperty: node.getNodeProperties()) {
+            Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
+            if (environment != null) {
+                buildEnvironments.add(environment);
+            }
+        }
+
+        return l;
+    }
+
     /**
      * @deprecated as of 1.467
      *      Please use {@link hudson.model.Run.RunExecution}
@@ -518,6 +555,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return result;
         }
 
+
+
         /**
          * Creates a {@link Launcher} that this build will use. This can be overridden by derived types
          * to decorate the resulting {@link Launcher}.
@@ -527,39 +566,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         @Nonnull
         protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
-            final Node currentNode = getCurrentNode();
-            Launcher l = currentNode.createLauncher(listener);
-
-            if (project instanceof BuildableItemWithBuildWrappers) {
-                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-                for (BuildWrapper bw : biwbw.getBuildWrappersList())
-                    l = bw.decorateLauncher(AbstractBuild.this,l,listener);
-            }
-
-            buildEnvironments = new ArrayList<Environment>();
-
-            for (RunListener rl: RunListener.all()) {
-                Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
-                if (environment != null) {
-                    buildEnvironments.add(environment);
-                }
-            }
-
-            for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
-                Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
-                if (environment != null) {
-                    buildEnvironments.add(environment);
-                }
-            }
-
-            for (NodeProperty nodeProperty: currentNode.getNodeProperties()) {
-                Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
-                if (environment != null) {
-                    buildEnvironments.add(environment);
-                }
-            }
-
-            return l;
+            return AbstractBuild.this.createLauncher(getCurrentNode(), listener);
         }
 
         public void defaultCheckout() throws IOException, InterruptedException {

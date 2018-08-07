@@ -25,7 +25,9 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
+import hudson.model.BuildListener;
 import hudson.model.Computer;
+import hudson.model.Run;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
@@ -804,6 +806,22 @@ public abstract class Launcher {
         Launcher l = this;
         for (LauncherDecorator d : LauncherDecorator.all())
             l = d.decorate(l,node);
+        return l;
+    }
+
+    /**
+     * Returns a decorated {@link Launcher} for the given {@link hudson.model.Run}.
+     *
+     * @param run Run for which this launcher is created.
+     * @param listener Task listener
+     * @return Decorated instance of the Launcher.
+     * @since TODO
+     */
+    @Nonnull
+    public final Launcher decorateFor(@Nonnull Run run, @Nonnull BuildListener listener) {
+        Launcher l = this;
+        for (LauncherDecorator d : LauncherDecorator.all())
+            l = d.decorate(l, run, listener);
         return l;
     }
 

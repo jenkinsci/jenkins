@@ -1,7 +1,10 @@
 package hudson;
 
+import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Executor;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
 import javax.annotation.Nonnull;
 
@@ -40,7 +43,22 @@ public abstract class LauncherDecorator implements ExtensionPoint {
      * @see Launcher#decorateByPrefix(String[])
      */
     @Nonnull
-    public abstract Launcher decorate(@Nonnull Launcher launcher, @Nonnull Node node);
+    public Launcher decorate(@Nonnull Launcher launcher, @Nonnull Node node) {
+        return launcher;
+    }
+
+    /**
+     * Decorates Launcher by Run
+     * @param launcher Launcher to be decorated
+     * @param run Run
+     * @param listener Event Listener
+     * @return Decorated launcher or the passed launcher if not documented
+     * @since TODO
+     */
+    @Nonnull
+    public Launcher decorate(@Nonnull Launcher launcher, @Nonnull Run run, BuildListener listener) {
+        return launcher;
+    }
 
     /**
      * Returns all the registered {@link LauncherDecorator}s.
