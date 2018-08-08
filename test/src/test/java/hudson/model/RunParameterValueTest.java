@@ -20,27 +20,27 @@ public class RunParameterValueTest {
         referencedBuild.setDisplayName("referenced build display name");
         int buildNumber = referencedBuild.getNumber();
 
-        RunParameterValue rbp = new RunParameterValue("run", String.format("referencedProject#%i",buildNumber));
+        RunParameterValue rbp = new RunParameterValue("run", String.format("referencedProject#%d",buildNumber));
 
-        Map<String, String> value = rbp.getValue();
+        RunParameterValue.SerializableValue value = rbp.getValue();
 
-        assertEquals(value.get("jobName"), "referencedProject");
-        assertEquals(value.get("number"), buildNumber);
-        assertEquals(value.get("url"), "http://jenkins/url");
-        assertEquals(value.get("displayName"), "referenced build display name");
-        assertEquals(value.get("buildResult"), "SUCCESS");
+        assertEquals(value.jobName, "referencedProject");
+        assertEquals(value.number, buildNumber);
+        assertEquals(value.url, j.jenkins.getRootUrl()+referencedBuild.getUrl());
+        assertEquals(value.displayName, "referenced build display name");
+        assertEquals(value.buildResult, "SUCCESS");
     }
 
     @Test public void getValueWhenJobIsNull() throws Exception {
         RunParameterValue rbp = new RunParameterValue("run", "missingProject#1");
 
-        Map<String, String> value = rbp.getValue();
+        RunParameterValue.SerializableValue value = rbp.getValue();
 
-        assertEquals(value.get("jobName"), "missingProject");
-        assertEquals(value.get("number"), 1);
-        assertEquals(value.get("url"), null);
-        assertEquals(value.get("displayName"), null);
-        assertEquals(value.get("buildResult"), null);
+        assertEquals(value.jobName, "missingProject");
+        assertEquals(value.number, 1);
+        assertEquals(value.url, null);
+        assertEquals(value.displayName, null);
+        assertEquals(value.buildResult, null);
 
     }
 }

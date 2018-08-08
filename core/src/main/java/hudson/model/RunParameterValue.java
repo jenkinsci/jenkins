@@ -28,9 +28,12 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Locale;
 
 public class RunParameterValue extends ParameterValue {
@@ -90,22 +93,38 @@ public class RunParameterValue extends ParameterValue {
     	return r == null ? null : r[1];
     }
 
+    public class SerializableValue implements Serializable {
+
+        @Nonnull
+        public final String jobName;
+        public final int number;
+        @Nullable
+        public final String url;
+        @Nullable
+        public final String displayName;
+        @Nullable
+        public final String buildResult;
+
+        public SerializableValue(@CheckForNull String jobName, int number, String url, String displayName, String buildResult) {
+            this.jobName = jobName;
+            this.number = number;
+            this.url = url;
+            this.displayName = displayName;
+            this.buildResult = buildResult;
+        }
+    }
+
     @Override
-    public Map<String, String> getValue() {
+    public SerializableValue getValue() {
         Run run = getRun();
 
         String url = (null == run) ? null : Jenkins.getInstance().getRootUrl() + run.getUrl();
         String displayName = (null == run) ? null : run.getDisplayName();
         String buildResult = (null == run || null == run.getResult()) ? null : run.getResult().toString();
 
-        Map<String, String> valueMap = new HashMap<>();
-        valueMap.put("url", url);
-        valueMap.put("jobName", getJobName());
-        valueMap.put("number", getNumber());
-        valueMap.put("displayName", displayName);
-        valueMap.put("buildResult", buildResult);
+        int number = Integer.parseInt(getNumber());
 
-        return valueMap;
+        return new SerializableValue(getJobName(), number, url, displayName, buildResult);
     }
 
     /**
