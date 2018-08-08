@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.NullArgumentException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -105,7 +106,10 @@ public class RunParameterValue extends ParameterValue {
         @Nullable
         public final String buildResult;
 
-        public SerializableValue(@CheckForNull String jobName, int number, String url, String displayName, String buildResult) {
+        public SerializableValue(String jobName, int number, String url, String displayName, String buildResult) {
+            if (jobName == null) {
+                throw new NullArgumentException("jobName cannot be null!");
+            }
             this.jobName = jobName;
             this.number = number;
             this.url = url;
