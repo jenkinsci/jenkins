@@ -28,6 +28,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
+import java.util.Map;
+import java.util.HashMap;
 import javax.annotation.CheckForNull;
 import java.util.Locale;
 
@@ -89,8 +91,21 @@ public class RunParameterValue extends ParameterValue {
     }
 
     @Override
-    public Run getValue() {
-        return getRun();
+    public Map<String, String> getValue() {
+        Run run = getRun();
+
+        String url = (null == run) ? null : Jenkins.getInstance().getRootUrl() + run.getUrl();
+        String displayName = (null == run) ? null : run.getDisplayName();
+        String buildResult = (null == run || null == run.getResult()) ? null : run.getResult().toString();
+
+        Map<String, String> valueMap = new HashMap<>();
+        valueMap.put("url", url);
+        valueMap.put("jobName", getJobName());
+        valueMap.put("number", getNumber());
+        valueMap.put("displayName", displayName);
+        valueMap.put("buildResult", buildResult);
+
+        return valueMap;
     }
 
     /**
