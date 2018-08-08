@@ -5,7 +5,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class RunParameterValueTest {
@@ -24,11 +23,11 @@ public class RunParameterValueTest {
 
         RunParameterValue.SerializableValue value = rbp.getValue();
 
-        assertEquals(value.jobName, "referencedProject");
-        assertEquals(value.number, buildNumber);
-        assertEquals(value.url, j.jenkins.getRootUrl()+referencedBuild.getUrl());
-        assertEquals(value.displayName, "referenced build display name");
-        assertEquals(value.buildResult, "SUCCESS");
+        assertEquals("referencedProject", value.jobName);
+        assertEquals(buildNumber, value.number);
+        assertEquals(j.jenkins.getRootUrl()+referencedBuild.getUrl(), value.url);
+        assertEquals("referenced build display name", value.displayName);
+        assertEquals("SUCCESS", value.buildResult);
     }
 
     @Test public void getValueWhenJobIsNull() throws Exception {
@@ -36,11 +35,10 @@ public class RunParameterValueTest {
 
         RunParameterValue.SerializableValue value = rbp.getValue();
 
-        assertEquals(value.jobName, "missingProject");
-        assertEquals(value.number, 1);
-        assertEquals(value.url, null);
-        assertEquals(value.displayName, null);
-        assertEquals(value.buildResult, null);
-
+        assertEquals("missingProject", value.jobName);
+        assertEquals(1, value.number);
+        assertEquals(null, value.url);
+        assertEquals(null, value.displayName);
+        assertEquals(null, value.buildResult);
     }
 }
