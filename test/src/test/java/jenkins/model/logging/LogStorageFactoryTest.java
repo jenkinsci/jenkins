@@ -27,6 +27,9 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Shell;
+import jenkins.model.logging.impl.CompatFileLogStorage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +38,7 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 import javax.annotation.CheckForNull;
 import java.io.File;
@@ -43,8 +47,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 
 @For(LogStorageFactory.class)
@@ -62,16 +67,55 @@ public class LogStorageFactoryTest {
     public void setup() {
         factory = j.jenkins.getExtensionList(LogStorageFactory.class)
                 .get(MockLogStorageFactory.class);
+        factory.setBaseDir(tmpDir.getRoot());
     }
 
     @Test
     @Issue("JENKINS-38313")
-    public void shouldSetLogStorage() throws Exception {
+    public void shouldSetLogStorageWhenRequired() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
+        prj.getBuildersList().add(
+                hudson.remoting.Launcher.isWindows()
+                        ? new BatchFile("echo Hello")
+                        : new Shell("echo Hello")
+        );
         factory.alterLogStorageFor(prj);
 
         final FreeStyleBuild build = j.buildAndAssertSuccess(prj);
+        factory.assertWasInvokedFor(build);
         assertThat(build.getLogStorage(), instanceOf(MockLogStorage.class));
+        assertThat(build.getLogFile(), equalTo(factory.getLogFor(build)));
+        assertThat(build.getLog(), containsString("Hello"));
+        assertTrue(build.getLogFile().exists());
+    }
+
+    @Test
+    @Issue("JENKINS-38313")
+    public void shouldFallbackToTheDefaultFileStorage() throws Exception {
+        FreeStyleProject prj = j.createFreeStyleProject();
+        prj.getBuildersList().add(
+                hudson.remoting.Launcher.isWindows()
+                        ? new BatchFile("echo Hello")
+                        : new Shell("echo Hello")
+        );
+
+        final FreeStyleBuild build = j.buildAndAssertSuccess(prj);
+        factory.assertWasInvokedFor(build);
+        assertThat(build.getLogStorage(), instanceOf(CompatFileLogStorage.class));
+        assertThat(build.getLog(), containsString("Hello"));
+        assertTrue(build.getLogFile().exists());
+    }
+
+    /**
+     * Loads job from configuration which has no storage section.
+     */
+    @Test
+    @Issue("JENKINS-38313")
+    @LocalData
+    public void backwardCompatibility() throws Exception {
+        FreeStyleProject prj = (FreeStyleProject)j.jenkins.getItem("parameterized");
+        FreeStyleBuild build = prj.getBuildByNumber(1);
+        assertThat(build.getLogStorage(), instanceOf(CompatFileLogStorage.class));
     }
 
     @TestExtension
@@ -106,6 +150,7 @@ public class LogStorageFactoryTest {
                 Job<?, ?> parent = run.getParent();
                 if (jobCache.contains(parent)) {
                     File logDestination = new File(baseDir, parent.getFullName() + "/" + run.getNumber() + ".txt");
+                    logDestination.getParentFile().mkdirs();
                     logCache.put(object, logDestination);
                     return new MockLogStorage(object, logDestination);
                 }
