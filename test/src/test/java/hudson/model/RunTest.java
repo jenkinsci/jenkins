@@ -33,15 +33,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
+import jenkins.model.logging.impl.CompatFileLogStorage;
 import jenkins.util.VirtualFile;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -50,6 +56,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class RunTest  {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
 
     @Issue("JENKINS-17935")
     @Test public void getDynamicInvisibleTransientAction() throws Exception {
@@ -111,6 +120,19 @@ public class RunTest  {
             }
             @TestExtension("deleteArtifactsCustom") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
         }
+    }
+
+    @Test
+    @Issue("JENKINS-52867")
+    public void canDeleteLogsInCompatFileLogStorage() throws Exception {
+        FreeStyleProject prj = j.createFreeStyleProject();
+
+        final FreeStyleBuild build = j.buildAndAssertSuccess(prj);
+        assertThat(build.getLogStorage(), instanceOf(CompatFileLogStorage.class));
+        assertTrue(build.getLogFile().exists());
+
+        build.deleteLog();
+        assertFalse("Build log has not been deleted", build.getLogFile().exists());
     }
 
 }

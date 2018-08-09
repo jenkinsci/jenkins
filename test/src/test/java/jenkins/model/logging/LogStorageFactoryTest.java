@@ -25,8 +25,7 @@ package jenkins.model.logging;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
-import hudson.model.Run;
+import hudson.model.RunTest;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import jenkins.model.logging.impl.CompatFileLogStorage;
@@ -40,15 +39,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import javax.annotation.CheckForNull;
-import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
@@ -66,7 +59,7 @@ public class LogStorageFactoryTest {
     @Before
     public void setup() {
         factory = j.jenkins.getExtensionList(LogStorageFactory.class)
-                .get(MockLogStorageFactory.class);
+                .get(MockLogStorageFactoryImpl.class);
         factory.setBaseDir(tmpDir.getRoot());
     }
 
@@ -118,51 +111,24 @@ public class LogStorageFactoryTest {
         assertThat(build.getLogStorage(), instanceOf(CompatFileLogStorage.class));
     }
 
+    @Test
+    @Issue("JENKINS-52867")
+    public void canDeleteLogsInACustomStorage() throws Exception {
+        FreeStyleProject prj = j.createFreeStyleProject();
+        factory.alterLogStorageFor(prj);
+
+        final FreeStyleBuild build = j.buildAndAssertSuccess(prj);
+        factory.assertWasInvokedFor(build);
+        assertThat(build.getLogStorage(), instanceOf(MockLogStorage.class));
+        assertThat(build.getLogFile(), equalTo(factory.getLogFor(build)));
+        assertTrue(build.getLogFile().exists());
+
+        build.deleteLog();
+        assertFalse("Build log has not been deleted", build.getLogFile().exists());
+    }
+
     @TestExtension
-    public static final class MockLogStorageFactory extends LogStorageFactory {
+    public static final class MockLogStorageFactoryImpl extends MockLogStorageFactory {
 
-        @CheckForNull File baseDir;
-
-        private transient Set<Job<?, ?>> jobCache = new HashSet<>();
-        private transient Map<Loggable, File> logCache = new HashMap<>();
-
-        private transient Set<Loggable> invocationList = new HashSet<>();
-
-        public void setBaseDir(File baseDir) {
-            this.baseDir = baseDir;
-        }
-
-        public void alterLogStorageFor(Job<?, ?> job) {
-            jobCache.add(job);
-        }
-
-        @CheckForNull
-        public File getLogFor(Loggable loggable) {
-            return logCache.get(loggable);
-        }
-
-        @Override
-        protected LogStorage getLogStorage(Loggable object) {
-            invocationList.add(object);
-
-            if (object instanceof Run) {
-                Run<?, ?> run = (Run<?, ?>) object;
-                Job<?, ?> parent = run.getParent();
-                if (jobCache.contains(parent)) {
-                    File logDestination = new File(baseDir, parent.getFullName() + "/" + run.getNumber() + ".txt");
-                    logDestination.getParentFile().mkdirs();
-                    logCache.put(object, logDestination);
-                    return new MockLogStorage(object, logDestination);
-                }
-            }
-
-            return null;
-        }
-
-        public void assertWasInvokedFor(Loggable object) throws AssertionError {
-            if (!invocationList.contains(object)) {
-                throw new AssertionError("Log storage factory was not invoked for " + object);
-            }
-        }
     }
 }
