@@ -23,6 +23,7 @@
  */
 package jenkins.model.logging;
 
+import jenkins.model.logging.impl.CompatFileLogStorage;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -73,7 +74,7 @@ public interface Loggable {
      * Provides legacy File storage location for compatibility implementations.
      * @return Log file or {@code null} if it is not supported.
      *         A non-existent file may be returned if log is missing in the compatibility location
-     * @see jenkins.model.logging.impl.FileLogStorage
+     * @see CompatFileLogStorage
      */
     @CheckForNull
     default File getLogFileCompatLocation() {

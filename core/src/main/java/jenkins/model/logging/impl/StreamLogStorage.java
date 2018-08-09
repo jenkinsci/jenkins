@@ -57,7 +57,7 @@ public abstract class StreamLogStorage extends LogStorage {
         super(loggable);
     }
 
-    public abstract OutputStream createOutputStream() throws IOException;
+    public abstract OutputStream createOutputStream() throws IOException, InterruptedException;
 
     /**
      * Defines an additional Console Log Filter to be used with the logging method.
@@ -68,6 +68,7 @@ public abstract class StreamLogStorage extends LogStorage {
         return null;
     }
 
+    //TODO: This decoration logic should be shared with other implementations
     @Override
     public final StreamBuildListener createBuildListener() throws IOException, InterruptedException {
 

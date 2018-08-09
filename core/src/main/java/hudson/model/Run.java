@@ -42,7 +42,7 @@ import java.io.Closeable;
 
 import jenkins.model.logging.Loggable;
 import jenkins.model.logging.impl.BrokenAnnotatedLargeText;
-import jenkins.model.logging.impl.FileLogStorage;
+import jenkins.model.logging.impl.CompatFileLogStorage;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -349,7 +349,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         if (logStorage == null) {
-            logStorage = new FileLogStorage(this);
+            logStorage = new CompatFileLogStorage(this);
         }
 
         // not calling onLoad upon reload. partly because we don't want to call that from Run constructor,
@@ -1633,7 +1633,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } // for StandardArtifactManager, deleting the whole build dir suffices
 
         final LogStorage logStorage = getLogStorage();
-        if (!(logStorage instanceof FileLogStorage)) {
+        if (!(logStorage instanceof CompatFileLogStorage)) {
             try {
                 boolean supported = logStorage.deleteLog();
                 if (!supported) {
@@ -2586,7 +2586,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public LogStorage getDefaultLogStorage() {
-        return new FileLogStorage(this);
+        return new CompatFileLogStorage(this);
     }
 
     public static class RedirectUp {

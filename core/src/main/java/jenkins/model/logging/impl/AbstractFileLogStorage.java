@@ -24,19 +24,16 @@
 package jenkins.model.logging.impl;
 
 import com.jcraft.jzlib.GZIPInputStream;
-import hudson.AbortException;
 import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
-import hudson.model.TaskListener;
 import jenkins.model.logging.Loggable;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -54,41 +51,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Legacy File Log storage implementation.
- * When used, logging always goes to a file on the naster side.
+ * File Log storage implementation.
+ * When used, logging always goes to a file on the Jenkins master side.
+ *
+ * The implementation relies on the {@link #getLogFile()} method.
+ *
  * @author Oleg Nenashev
  * @since TODO
+ * @see CompatFileLogStorage
  */
 @Restricted(Beta.class)
-public class FileLogStorage extends StreamLogStorage {
+public abstract class AbstractFileLogStorage extends StreamLogStorage {
 
-    private static final Logger LOGGER = Logger.getLogger(FileLogStorage.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractFileLogStorage.class.getName());
 
 
-    public FileLogStorage(Loggable loggable) {
+    public AbstractFileLogStorage(Loggable loggable) {
         super(loggable);
     }
 
     @Override
-    public OutputStream createOutputStream() throws IOException {
-        File logFile = getLogFileOrFail(getOwner());
+    public OutputStream createOutputStream() throws IOException, InterruptedException {
+        File logFile = getLogFile();
         return Files.newOutputStream(logFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-    }
-
-    @Nonnull
-    @Override
-    public File getLogFile() throws IOException {
-        return getLogFileOrFail(loggable);
-    }
-
-    @Nonnull
-    public static File getLogFileOrFail(Loggable loggable) throws IOException {
-        final File file = loggable.getLogFileCompatLocation();
-        if (file == null) {
-            throw new AbortException("File log compatibility layer is invoked for a loggable " +
-                    "object which returned null for getLogFileCompatLocation(): " + loggable);
-        }
-        return file;
     }
 
     @CheckForNull
@@ -98,10 +83,10 @@ public class FileLogStorage extends StreamLogStorage {
     }
 
     @Override
-    public AnnotatedLargeText overallLog() {
+    public AnnotatedLargeText overallLog() throws IOException, InterruptedException {
         final File logFile;
         try {
-            logFile = getLogFileOrFail(getOwner());
+            logFile = getLogFile();
         } catch (IOException ex) {
             return new BrokenAnnotatedLargeText(ex, getOwner().getCharset());
         }
@@ -111,8 +96,8 @@ public class FileLogStorage extends StreamLogStorage {
     }
 
     @Override
-    public boolean deleteLog() throws IOException {
-        File logFile = getLogFileOrFail(loggable);
+    public boolean deleteLog() throws IOException, InterruptedException {
+        File logFile = getLogFile();
         if (logFile.exists()) {
             try {
                 Files.delete(logFile.toPath());
@@ -127,8 +112,8 @@ public class FileLogStorage extends StreamLogStorage {
     }
 
     @Override
-    public InputStream getLogInputStream() throws IOException {
-        File logFile = getLogFileOrFail(loggable);
+    public InputStream getLogInputStream() throws IOException, InterruptedException {
+        File logFile = getLogFile();
 
         if (logFile.exists() ) {
             // Checking if a ".gz" file was return
@@ -150,7 +135,7 @@ public class FileLogStorage extends StreamLogStorage {
 
 
     @Override
-    public List<String> getLog(int maxLines) throws IOException {
+    public List<String> getLog(int maxLines) throws IOException, InterruptedException {
         if (maxLines == 0) {
             return Collections.emptyList();
         }
@@ -160,7 +145,7 @@ public class FileLogStorage extends StreamLogStorage {
         final List<Byte> bytes = new ArrayList<>();
 
         try (RandomAccessFile fileHandler = new RandomAccessFile(
-                getLogFileOrFail(loggable), "r")) {
+                getLogFile(), "r")) {
             long fileLength = fileHandler.length() - 1;
 
             for (filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {

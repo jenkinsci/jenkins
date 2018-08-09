@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016-2018 CloudBees Inc., Google Inc.
+ * Copyright 2018 CloudBees, Inc. and other Jenkins contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model.logging;
+package jenkins.model.logging.impl;
 
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import jenkins.model.logging.impl.CompatFileLogStorage;
+import hudson.AbortException;
+import jenkins.model.logging.Loggable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
- * Locates {@link LogStorage}s.
+ * Legacy File Log storage implementation.
+ *
+ * This implementation relies on {@link Loggable#getLogFileCompatLocation()}
+ * provided by implementations.
+ *
  * @author Oleg Nenashev
- * @author Xing Yan
  * @since TODO
- * @see CompatFileLogStorage
  */
 @Restricted(Beta.class)
-public abstract class LogStorageFactory implements ExtensionPoint {
-  
-  /**
-   * Retrieve the logging method for the run.
-   * @param object Loggable object
-   * @return Logging method. {@code null} if the locator does not provide the
-   *         implementation for the run.
-   */
-  @CheckForNull
-  protected abstract LogStorage getLogStorage(Loggable object);
+public class CompatFileLogStorage extends AbstractFileLogStorage {
 
-  @Nonnull
-  public static LogStorage locate(Loggable run) {
-      for (LogStorageFactory locator : all()) {
-          final LogStorage logStorage = locator.getLogStorage(run);
-          if (logStorage != null) {
-              return logStorage;
-          }
-      }
-      // Fallback
-      return run.getDefaultLogStorage();
-  }
-  
-  public static ExtensionList<LogStorageFactory> all() {
-      return ExtensionList.lookup(LogStorageFactory.class);
-  }
+    private static final Logger LOGGER = Logger.getLogger(
+            CompatFileLogStorage.class.getName());
+
+    public CompatFileLogStorage(Loggable loggable) {
+        super(loggable);
+    }
+
+    @Nonnull
+    @Override
+    public File getLogFile() throws IOException {
+        final File file = loggable.getLogFileCompatLocation();
+        if (file == null) {
+            throw new AbortException("File log compatibility layer is invoked for a loggable " +
+                    "object which returned null for getLogFileCompatLocation(): " + loggable);
+        }
+        return file;
+    }
+
 }
