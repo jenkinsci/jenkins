@@ -137,7 +137,7 @@ THE SOFTWARE.
       </ul>
 
       <p>
-        Another way to retrieve more data is to use the <tt>depth=N</tt> query parameter .
+        Another way to retrieve more data is to use the <tt>depth=N</tt> query parameter.
         This retrieves all the data up to the specified depth.
         Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
         is for yourself. Also note that data created by a smaller depth value is always a subset of

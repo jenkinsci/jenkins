@@ -53,12 +53,13 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
-      Available values: two-column (by default), one-column (full-width size) or full-screen (since TODO).
+      Available values: two-column (by default), one-column (full-width size) or full-screen (since 2.53).
     </st:attribute>
   </st:documentation>
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Referrer-Policy" value="same-origin" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -184,8 +185,8 @@ ${h.initPageVariables(context)}
       <div id="header">
         <div class="logo">
           <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="title" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" />
+            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="[${%jenkinshead.alt}]" />
+            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${%title}" width="139" height="34" />
           </a>
         </div>
         <div class="login">

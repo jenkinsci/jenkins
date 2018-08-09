@@ -394,6 +394,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
+     * Make sure that the given string is an integer in the range specified by the lower and upper bounds (both inclusive)
+     *
+     * @param value the value to check
+     * @param lower the lower bound (inclusive)
+     * @param upper the upper bound (inclusive)
+     *
+     * @since 2.104
+     */
+    public static FormValidation validateIntegerInRange(String value, int lower, int upper) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (intValue < lower) {
+                return error(hudson.model.Messages.Hudson_MustBeAtLeast(lower));
+            }
+            if (intValue > upper) {
+                return error(hudson.model.Messages.Hudson_MustBeAtMost(upper));
+            }
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
      * Makes sure that the given string is a positive integer.
      */
     public static FormValidation validatePositiveInteger(String value) {

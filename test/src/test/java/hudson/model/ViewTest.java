@@ -62,7 +62,7 @@ import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -243,6 +243,24 @@ public class ViewTest {
         assertTrue(xml, xml.contains("<description>two</description>"));
     }
     
+    @Issue("JENKINS-21017")
+    @Test public void doConfigDotXmlReset() throws Exception {
+        ListView view = listView("v");
+        view.description = "one";
+        WebClient wc = j.createWebClient();
+        String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
+        assertThat(xml, containsString("<description>one</description>"));
+        xml = xml.replace("<description>one</description>", "");
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        req.setRequestBody(xml);
+        req.setEncodingType(null);
+        wc.getPage(req);
+        assertEquals(null, view.getDescription()); // did not work
+        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        assertThat(xml, not(containsString("<description>"))); // did not work
+        assertEquals(j.jenkins, view.getOwner());
+    }
+
     @Test
     public void testGetQueueItems() throws IOException, Exception{
         ListView view1 = listView("view1");

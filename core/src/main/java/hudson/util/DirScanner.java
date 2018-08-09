@@ -7,7 +7,6 @@ import org.apache.tools.ant.types.FileSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.Serializable;
 
 import static hudson.Util.fixEmpty;
@@ -31,19 +30,15 @@ public abstract class DirScanner implements Serializable {
      */
     protected final void scanSingle(File f, String relative, FileVisitor visitor) throws IOException {
         if (visitor.understandsSymlink()) {
+            String target;
             try {
-                String target;
-                try {
-                    target = Util.resolveSymlink(f);
-                } catch (IOException x) { // JENKINS-13202
-                    target = null;
-                }
-                if (target != null) {
-                    visitor.visitSymlink(f, target, relative);
-                    return;
-                }
-            } catch (InterruptedException e) {
-                throw (IOException) new InterruptedIOException().initCause(e);
+                target = Util.resolveSymlink(f);
+            } catch (IOException x) { // JENKINS-13202
+                target = null;
+            }
+            if (target != null) {
+                visitor.visitSymlink(f, target, relative);
+                return;
             }
         }
         visitor.visit(f, relative);

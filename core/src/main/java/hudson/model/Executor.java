@@ -144,7 +144,7 @@ public class Executor extends Thread implements ModelObject {
     public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
-        this.queue = Jenkins.getInstance().getQueue();
+        this.queue = Jenkins.get().getQueue();
         this.number = n;
     }
 
@@ -431,11 +431,12 @@ public class Executor extends Thread implements ModelObject {
             } catch (AsynchronousExecution x) {
                 lock.writeLock().lock();
                 try {
-                    x.setExecutor(this);
+                    x.setExecutorWithoutCompleting(this);
                     this.asynchronousExecution = x;
                 } finally {
                     lock.writeLock().unlock();
                 }
+                x.maybeComplete();
             } catch (Throwable e) {
                 problems = e;
             } finally {
@@ -459,7 +460,6 @@ public class Executor extends Thread implements ModelObject {
             if (asynchronousExecution == null) {
                 finish2();
             }
-            executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         }
     }
 
@@ -490,6 +490,7 @@ public class Executor extends Thread implements ModelObject {
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
+        executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         queue.scheduleMaintenance();
     }
 

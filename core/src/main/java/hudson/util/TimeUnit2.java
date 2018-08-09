@@ -65,13 +65,12 @@ import java.util.concurrent.TimeUnit;
  * implementation will be able to notice the passage of time at the
  * same granularity as the given <tt>TimeUnit</tt>.
  *
- * @since 1.5
  * @author Doug Lea
  * @deprecated use {@link TimeUnit}. (Java 5 did not have all the units required, so {@link TimeUnit2} was introduced
  * because it had better conversion until Java 6 went out.)
  */
 @Deprecated
-@RestrictedSince("TODO")
+@RestrictedSince("2.80")
 @Restricted(NoExternalUse.class)
 public enum TimeUnit2 {
     NANOSECONDS {
@@ -286,7 +285,6 @@ public enum TimeUnit2 {
      * or <tt>Long.MIN_VALUE</tt> if conversion would negatively
      * overflow, or <tt>Long.MAX_VALUE</tt> if it would positively overflow.
      * @see #convert
-     * @since 1.6
      */
     public long toMinutes(long duration) {
         throw new AbstractMethodError();
@@ -299,7 +297,6 @@ public enum TimeUnit2 {
      * or <tt>Long.MIN_VALUE</tt> if conversion would negatively
      * overflow, or <tt>Long.MAX_VALUE</tt> if it would positively overflow.
      * @see #convert
-     * @since 1.6
      */
     public long toHours(long duration) {
         throw new AbstractMethodError();
@@ -310,7 +307,6 @@ public enum TimeUnit2 {
      * @param duration the duration
      * @return the converted duration
      * @see #convert
-     * @since 1.6
      */
     public long toDays(long duration) {
         throw new AbstractMethodError();

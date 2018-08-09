@@ -1069,7 +1069,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
-        if (isLogUpdated() && !isConcurrentBuild()) {
+        if (!isConcurrentBuild() && isLogUpdated()) {
             final R lastBuild = getLastBuild();
             if (lastBuild != null) {
                 return new BlockedBecauseOfBuildInProgress(lastBuild);
@@ -1198,7 +1198,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
+        if(workspace!=null){
+            workspace.mkdirs();
+        } else {
+            throw new AbortException("Cannot checkout SCM, workspace is not defined");
+        }
+
 
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {

@@ -490,7 +490,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
+        boolean mustMigrateLegacyConfig = isMigrationRequiredForLegacyConfigFile(unsanitizedLegacyConfigFile, configFile);
+        if (mustMigrateLegacyConfig) {
             File ancestor = unsanitizedLegacyConfigFile.getParentFile();
             if (!configFile.exists()) {
                 try {
@@ -552,6 +553,37 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         return u;
     }
+    
+    private static boolean isMigrationRequiredForLegacyConfigFile(@Nonnull File legacyConfigFile, @Nonnull File newConfigFile){
+        boolean mustMigrateLegacyConfig = legacyConfigFile.exists() && !legacyConfigFile.equals(newConfigFile);
+        if(mustMigrateLegacyConfig){
+            try{
+                // TODO Could be replace by Util.isDescendant(getRootDir(), legacyConfigFile) in 2.80+
+                String canonicalLegacy = legacyConfigFile.getCanonicalPath();
+                String canonicalUserDir = getRootDir().getCanonicalPath();
+                if(!canonicalLegacy.startsWith(canonicalUserDir + File.separator)){
+                    // without that check, the application config.xml could be moved (i.e. erased from application PoV)
+                    mustMigrateLegacyConfig = false;
+                    LOGGER.log(Level.WARNING, String.format(
+                            "Attempt to escape from users directory with %s, migration aborted, see SECURITY-897 for more information",
+                            legacyConfigFile.getAbsolutePath()
+                    ));
+                }
+            }
+            catch (IOException e){
+                mustMigrateLegacyConfig = false;
+                LOGGER.log(
+                        Level.WARNING,
+                        String.format(
+                                "Failed to determine the canonical path of %s, migration aborted, see SECURITY-897 for more information", 
+                                legacyConfigFile.getAbsolutePath()
+                        ),
+                        e
+                );
+            }
+        }
+        return mustMigrateLegacyConfig;
+    }
 
     /**
      * Gets the {@link User} object by its id or full name.
@@ -587,7 +619,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param idOrFullName User ID or full name
      * @return User instance. It will be created on-demand.
-     * @since TODO
+     * @since 2.91
      */
     public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
         return get(idOrFullName,true, Collections.emptyMap());
@@ -764,6 +796,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @Override String toString() {
         return fullName;
     }
+    
+    /**
+     * Returns the folder that store all the user information
+     * Useful for plugins to save a user-specific file aside the config.xml
+     * 
+     * @since TODO
+     */
+    public File getUserFolder(){
+        return getUserFolderFor(this.id);
+    }
 
     /**
      * The file we save our configuration.
@@ -773,7 +815,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
+        return new File(getUserFolderFor(id), "config.xml");
+    }
+    
+    private static File getUserFolderFor(String id){
+        return new File(getRootDir(), idStrategy().filenameOf(id));
     }
 
     private static File getUnsanitizedLegacyConfigFileFor(String id) {
@@ -977,14 +1023,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public ACL getACL() {
-        final ACL base = Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        ACL base = Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
-        return new ACL() {
-            public boolean hasPermission(Authentication a, Permission permission) {
-                return (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
-                        || base.hasPermission(a, permission);
-            }
-        };
+        return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
+                        || base.hasPermission(a, permission));
     }
 
     /**
@@ -1096,6 +1138,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (subdirs != null) {
                 for (File subdir : subdirs) {
+                    if (subdir.equals(getRootDir())) {
+                        continue; // ignore the parent directory in case of stray config.xml
+                    }
                     File configFile = new File(subdir, "config.xml");
                     if (configFile.exists()) {
                         String name = strategy.idFromFilename(subdir.getName());
@@ -1172,7 +1217,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         /**
          * Gets all extension points, sorted by priority.
          * @return Sorted list of extension point implementations.
-         * @since TODO
+         * @since 2.93
          */
         public static List<CanonicalIdResolver> all() {
             List<CanonicalIdResolver> resolvers = new ArrayList<>(ExtensionList.lookup(CanonicalIdResolver.class));
@@ -1185,7 +1230,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * @param idOrFullName ID or full name of the user
          * @param context Context
          * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
-         * @since TODO
+         * @since 2.93
          */
         @CheckForNull
         public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {

@@ -188,59 +188,69 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
     }
 
-    private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
-        final class Record implements Serializable {
-            final boolean produced;
-            final String relativePath;
-            final String fileName;
-            final String md5sum;
+    private static final class Record implements Serializable {
 
-            public Record(boolean produced, String relativePath, String fileName, String md5sum) {
-                this.produced = produced;
-                this.relativePath = relativePath;
-                this.fileName = fileName;
-                this.md5sum = md5sum;
-            }
+        final boolean produced;
+        final String relativePath;
+        final String fileName;
+        final String md5sum;
 
-            Fingerprint addRecord(Run build) throws IOException {
-                FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
-                return map.getOrCreate(produced?build:null, fileName, md5sum);
-            }
-
-            private static final long serialVersionUID = 1L;
+        public Record(boolean produced, String relativePath, String fileName, String md5sum) {
+            this.produced = produced;
+            this.relativePath = relativePath;
+            this.fileName = fileName;
+            this.md5sum = md5sum;
         }
 
-        final long buildTimestamp = build.getTimeInMillis();
+        Fingerprint addRecord(Run build) throws IOException {
+            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
+            return map.getOrCreate(produced?build:null, fileName, md5sum);
+        }
 
-        List<Record> records = ws.act(new MasterToSlaveFileCallable<List<Record>>() {
-            public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
-                List<Record> results = new ArrayList<Record>();
+        private static final long serialVersionUID = 1L;
+    }
 
-                FileSet src = Util.createFileSet(baseDir,targets);
+    private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
 
-                DirectoryScanner ds = src.getDirectoryScanner();
-                for( String f : ds.getIncludedFiles() ) {
-                    File file = new File(baseDir,f);
+        private final String targets;
+        private final long buildTimestamp;
 
-                    // consider the file to be produced by this build only if the timestamp
-                    // is newer than when the build has started.
-                    // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
-                    boolean produced = buildTimestamp <= file.lastModified()+2000;
+        FindRecords(String targets, long buildTimestamp) {
+            this.targets = targets;
+            this.buildTimestamp = buildTimestamp;
+        }
 
-                    try {
-                        results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
-                    } catch (IOException e) {
-                        throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
-                    } catch (InterruptedException e) {
-                        throw new IOException(Messages.Fingerprinter_Aborted(),e);
-                    }
+        @Override
+        public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
+            List<Record> results = new ArrayList<Record>();
+
+            FileSet src = Util.createFileSet(baseDir,targets);
+
+            DirectoryScanner ds = src.getDirectoryScanner();
+            for( String f : ds.getIncludedFiles() ) {
+                File file = new File(baseDir,f);
+
+                // consider the file to be produced by this build only if the timestamp
+                // is newer than when the build has started.
+                // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
+                boolean produced = buildTimestamp <= file.lastModified()+2000;
+
+                try {
+                    results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
+                } catch (IOException e) {
+                    throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
+                } catch (InterruptedException e) {
+                    throw new IOException(Messages.Fingerprinter_Aborted(),e);
                 }
-
-                return results;
             }
-        });
 
-        for (Record r : records) {
+            return results;
+        }
+
+    }
+
+    private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
+        for (Record r : ws.act(new FindRecords(targets, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
             if(fp==null) {
                 listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));

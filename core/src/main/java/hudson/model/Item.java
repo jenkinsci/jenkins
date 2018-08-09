@@ -266,5 +266,5 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE, PermissionScope.ITEM);
     Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ, PermissionScope.ITEM);
     Permission WIPEOUT = new Permission(PERMISSIONS, "WipeOut", Messages._AbstractProject_WipeOutPermission_Description(), null, Functions.isWipeOutPermissionEnabled(), new PermissionScope[]{PermissionScope.ITEM});
-    Permission CANCEL = new Permission(PERMISSIONS, "Cancel", Messages._AbstractProject_CancelPermission_Description(), BUILD, PermissionScope.ITEM);
+    Permission CANCEL = new Permission(PERMISSIONS, "Cancel", Messages._AbstractProject_CancelPermission_Description(), Permission.UPDATE, PermissionScope.ITEM);
 }

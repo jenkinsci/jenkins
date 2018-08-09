@@ -9,10 +9,25 @@ var jenkins = require('../util/jenkins');
  */
 exports.saveFirstUser = function($form, success, error) {
 	jenkins.staplerPost(
-			'/setupWizard/createAdminUser',
+		'/setupWizard/createAdminUser',
 		$form,
 		function(response) {
-        		var crumbRequestField = response.data.crumbRequestField;
+			var crumbRequestField = response.data.crumbRequestField;
+			if (crumbRequestField) {
+				require('window-handle').getWindow().crumb.init(crumbRequestField, response.data.crumb);
+			}
+			success(response);
+		}, {
+			error: error
+		});
+};
+
+exports.saveConfigureInstance = function($form, success, error){
+	jenkins.staplerPost(
+		'/setupWizard/configureInstance',
+		$form,
+		function(response) {
+			var crumbRequestField = response.data.crumbRequestField;
 			if (crumbRequestField) {
 				require('window-handle').getWindow().crumb.init(crumbRequestField, response.data.crumb);
 			}
@@ -27,7 +42,7 @@ exports.saveFirstUser = function($form, success, error) {
  */
 exports.saveProxy = function($form, success, error) {
 	jenkins.staplerPost(
-			'/pluginManager/proxyConfigure',
+		'/pluginManager/proxyConfigure',
 		$form,
 		success, {
 			dataType: 'html',

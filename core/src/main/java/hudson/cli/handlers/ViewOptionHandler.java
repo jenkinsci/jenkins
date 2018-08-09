@@ -103,12 +103,13 @@ public class ViewOptionHandler extends OptionHandler<View> {
             String viewName = tok.nextToken();
 
             view = group.getView(viewName);
-            if (view == null)
+            if (view == null) {
+                group.checkPermission(View.READ);
                 throw new IllegalArgumentException(String.format(
                         "No view named %s inside view %s",
                         viewName, group.getDisplayName()
                 ));
-
+            }
             view.checkPermission(View.READ);
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;

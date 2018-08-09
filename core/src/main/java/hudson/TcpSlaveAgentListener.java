@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
@@ -290,6 +291,7 @@ public final class TcpSlaveAgentListener extends Thread {
             try {
                 Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
 
+                //TODO: expose version about minimum supported Remoting version (JENKINS-48766)
                 if (header.startsWith("GET / ")) {
                     o.write("HTTP/1.0 200 OK\r\n");
                     o.write("Content-Type: text/plain;charset=UTF-8\r\n");
@@ -299,6 +301,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
+                    o.write("Remoting-Minimum-Version: " + RemotingVersionInfo.getMinimumSupportedVersion() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {

@@ -416,7 +416,7 @@ public abstract class Cause {
         /**
          * Constructor.
          * @param userId User ID. {@code null} if the user is unknown.
-         * @since TODO
+         * @since 2.96
          */
         public UserIdCause(@CheckForNull String userId) {
             this.userId = userId;
@@ -453,9 +453,14 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
-            listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
-                    // TODO JENKINS-48467 - better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
-                    ModelHyperlinkNote.encodeTo("/user/"+getUserIdOrUnknown(), getUserName())));
+            User user = getUserId() == null ? null : User.getById(getUserId(), false);
+            if (user != null) {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        ModelHyperlinkNote.encodeTo(user)));
+            } else {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        "unknown or anonymous"));
+            }
         }
 
         @Override

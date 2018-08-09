@@ -103,7 +103,6 @@ public abstract class OfflineCause {
      * Caused by unexpected channel termination.
      */
     public static class ChannelTermination extends OfflineCause {
-        @Exported
         public final Exception cause;
 
         public ChannelTermination(Exception cause) {

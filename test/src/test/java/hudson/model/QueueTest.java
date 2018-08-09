@@ -46,6 +46,7 @@ import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
@@ -71,7 +72,9 @@ import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -120,6 +123,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -453,6 +457,31 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
         assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-41127")
+    @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
+        Label label = r.jenkins.getSelfLabel();
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task1 = new TestFlyweightTask(cnt, label);
+        TestFlyweightTask task2 = new TestFlyweightTask(cnt, label);
+        assertFalse(task1.isConcurrentBuild());
+        assertFalse(task2.isConcurrentBuild());
+        // We need to call Queue#maintain without any interleaving Queue modification to reproduce the issue.
+        Queue.withLock(() -> {
+            r.jenkins.getQueue().schedule2(task1, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item1 = r.jenkins.getQueue().getItem(task1);
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            r.jenkins.getQueue().schedule2(task2, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item2 = r.jenkins.getQueue().getItem(task2);
+            // Before the fix, item1 would no longer be present in the pending items (but would
+            // still be assigned to a live executor), and item2 would not be blocked, which would
+            // allow the tasks to execute concurrently.
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            assertTrue(item2.isBlocked());
+        });
     }
 
     @Issue("JENKINS-27256")
@@ -925,6 +954,7 @@ public class QueueTest {
     @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
@@ -1017,5 +1047,23 @@ public class QueueTest {
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
+    }
+
+    @Test @LocalData
+    public void load_queue_xml() {
+        Queue q = r.getInstance().getQueue();
+        Queue.Item[] items = q.getItems();
+        assertEquals(Arrays.asList(items).toString(), 11, items.length);
+        assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+    }
+
+    @TestExtension("load_queue_xml")
+    public static final class QueueSaveSniffer extends SaveableListener {
+        private static int count = 0;
+        @Override public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof Queue) {
+                count++;
+            }
+        }
     }
 }

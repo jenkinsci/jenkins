@@ -92,7 +92,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      * @return trim - {@code true}, if trim options has been selected, else return {@code false}.
      *      Trimming will happen when creating {@link StringParameterValue}s,
      *      the value in the config will not be changed.
-     * @since TODO
+     * @since 2.90
      */
     public boolean isTrim() {
         return trim;
