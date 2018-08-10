@@ -57,6 +57,10 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(String url, String text) {
+        // If text contains newlines, then its stored length will not match its length when being
+        // displayed, since the display length will only include text up to the first newline,
+        // which will cause an IndexOutOfBoundsException in MarkupText#rangeCheck when viewing the note.
+        text = text.replace('\n', ' ');
         try {
             return new ModelHyperlinkNote(url,text.length()).encode()+text;
         } catch (IOException e) {
