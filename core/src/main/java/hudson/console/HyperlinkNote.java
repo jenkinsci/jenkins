@@ -79,7 +79,7 @@ public class HyperlinkNote extends ConsoleNote {
         return encodeTo(url, text, HyperlinkNote::new);
     }
 
-    static String encodeTo(String url, String text, BiFunction<String, Integer, ? extends ConsoleNote> constructor) {
+    static String encodeTo(String url, String text, BiFunction<String, Integer, ConsoleNote> constructor) {
         // If text contains newlines, then its stored length will not match its length when being
         // displayed, since the display length will only include text up to the first newline,
         // which will cause an IndexOutOfBoundsException in MarkupText#rangeCheck when
