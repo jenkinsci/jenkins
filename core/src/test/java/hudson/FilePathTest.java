@@ -888,7 +888,7 @@ public class FilePathTest {
         Path targetDirectory = subdirectory.resolve("1");
         Files.createDirectory(targetDirectory);
         Files.createFile(targetDirectory.resolve("logs"));
-        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get("1"));
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), targetDirectory);
         Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
         FilePath tarFilePath = new FilePath(tarFile.toFile());
 
@@ -909,7 +909,7 @@ public class FilePathTest {
         Path targetDirectory = subdirectory.resolve("1");
         Files.createDirectory(targetDirectory);
         Files.createFile(targetDirectory.resolve("logs"));
-        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get( "1"));
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), targetDirectory);
         Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
         FilePath tarFilePath = new FilePath(tarFile.toFile());
 
@@ -928,7 +928,7 @@ public class FilePathTest {
         Path subdirectory = Files.createDirectory(folderToTar.resolve("build"));
         Path targetFile = subdirectory.resolve("1");
         Files.createFile(targetFile);
-        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), Paths.get("1"));
+        Files.createSymbolicLink(subdirectory.resolve("lastSuccessfulBuild"), targetFile.resolve("1"));
         Path tarFile = temp.getRoot().toPath().resolve("archive.tar");
         FilePath tarFilePath = new FilePath(tarFile.toFile());
 
@@ -943,11 +943,15 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-52781")
-    @Test public void tryingToCreateADirectoryOnAnExistingDirectorySymlinkShouldNotFail() throws IOException, InterruptedException {
+    @Test public void tryingToCreateADirectoryOnAnExistingDirectorySymlinkShouldNotFailAndAlsoCreateTheTargetDirectory() throws IOException {
         Path testFolder = temp.newFolder().toPath();
         Path symlinkDirPath = testFolder.resolve("symlinkDir");
-        Files.createSymbolicLink(symlinkDirPath, Paths.get("nonExistingTarget"));
+        Path nonExistingTarget = testFolder.resolve("nonExistingTarget");
+        Files.createSymbolicLink(symlinkDirPath, nonExistingTarget);
 
         new FilePath(testFolder.toFile()).mkdirs(symlinkDirPath.toFile());
+
+        assertTrue("Target directory should have been created", Files.exists(nonExistingTarget));
+        assertTrue("Target directory should be a directory", Files.isDirectory(nonExistingTarget));
     }
 }

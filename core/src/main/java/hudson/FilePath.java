@@ -3223,21 +3223,15 @@ public final class FilePath implements Serializable {
 
     @Restricted(NoExternalUse.class)
     boolean mkdirs(File dir) throws IOException {
-        Path dirPath = fileToPath(dir);
-        if (Files.exists(dirPath, LinkOption.NOFOLLOW_LINKS)) {
-            return false;
-        } else if (Files.notExists(dirPath, LinkOption.NOFOLLOW_LINKS)) {
-            filterNonNull().mkdirs(dir);
-            Files.createDirectories(dirPath);
-        } else {
-            LOGGER.log(Level.WARNING, "unable to determine if file exists, trying to create it");
-            try {
-                filterNonNull().mkdirs(dir);
-                Files.createDirectories(dirPath);
-            } catch(FileAlreadyExistsException exception) {
-                LOGGER.log(Level.WARNING, "file existed", exception);
-            }
+        // when checking for existence, we are in fact following symlinks, so we need to be consistent
+        // and create the dir, for the link we followed
+        if(Files.isSymbolicLink(dir.toPath())) {
+            dir = Files.readSymbolicLink(dir.toPath()).toFile();
         }
+        if (dir.exists())   return false;
+
+        filterNonNull().mkdirs(dir);
+        Files.createDirectories(fileToPath(dir));
         return true;
     }
 
