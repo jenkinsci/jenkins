@@ -39,6 +39,9 @@ import org.kohsuke.stapler.Stapler;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link NodeProperty} that sets additional environment variables.
@@ -63,6 +66,14 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	
     public EnvVars getEnvVars() {
     	return envVars;
+    }
+
+    /**
+     * @return environment variables using same data type as constructor parameter.
+     * @since TODO
+     */
+    public List<Entry> getEnv() {
+        return envVars.entrySet().stream().map(Entry::new).collect(Collectors.toList());
     }
 
     @Override
@@ -99,6 +110,10 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	
 	public static class Entry {
 		public String key, value;
+
+		private Entry(Map.Entry<String,String> e) {
+		    this(e.getKey(), e.getValue());
+        }
 
 		@DataBoundConstructor
 		public Entry(String key, String value) {

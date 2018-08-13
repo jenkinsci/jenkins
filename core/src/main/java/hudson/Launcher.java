@@ -166,6 +166,8 @@ public abstract class Launcher {
         @CheckForNull
         protected OutputStream stdout = NULL_OUTPUT_STREAM, stderr;
         @CheckForNull
+        private TaskListener stdoutListener;
+        @CheckForNull
         protected InputStream stdin = NULL_INPUT_STREAM;
         @CheckForNull
         protected String[] envs = null;
@@ -285,17 +287,20 @@ public abstract class Launcher {
          */
         public ProcStarter stdout(@CheckForNull OutputStream out) {
             this.stdout = out;
+            stdoutListener = null;
             return this;
         }
 
         /**
          * Sends the stdout to the given {@link TaskListener}.
          * 
-         * @param out Task listener
+         * @param out Task listener (must be safely remotable)
          * @return {@code this}
          */
         public ProcStarter stdout(@Nonnull TaskListener out) {
-            return stdout(out.getLogger());
+            stdout = out.getLogger();
+            stdoutListener = out;
+            return this;
         }
 
         /**
@@ -490,6 +495,7 @@ public abstract class Launcher {
         @Nonnull
         public ProcStarter copy() {
             ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs).quiet(quiet);
+            rhs.stdoutListener = stdoutListener;
             rhs.reverseStdin  = this.reverseStdin;
             rhs.reverseStderr = this.reverseStderr;
             rhs.reverseStdout = this.reverseStdout;
@@ -1041,7 +1047,7 @@ public abstract class Launcher {
         }
 
         public Proc launch(ProcStarter ps) throws IOException {
-            final OutputStream out = ps.stdout == null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
+            final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream  in  = (ps.stdin==null || ps.stdin==NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin,false);
             
@@ -1049,7 +1055,7 @@ public abstract class Launcher {
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
-                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener)));
+                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener)));
             } catch (InterruptedException e) {
                 throw (IOException)new InterruptedIOException().initCause(e);
             }
@@ -1265,6 +1271,7 @@ public abstract class Launcher {
         private final @CheckForNull OutputStream err;
         private final @CheckForNull String workDir;
         private final @Nonnull TaskListener listener;
+        private final @CheckForNull TaskListener stdoutListener;
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
 
@@ -1272,7 +1279,7 @@ public abstract class Launcher {
                 @CheckForNull InputStream in, boolean reverseStdin, 
                 @CheckForNull OutputStream out, boolean reverseStdout, 
                 @CheckForNull OutputStream err, boolean reverseStderr, 
-                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener) {
+                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener, @CheckForNull TaskListener stdoutListener) {
             this.cmd = new ArrayList<>(cmd);
             this.masks = masks;
             this.env = env;
@@ -1281,6 +1288,7 @@ public abstract class Launcher {
             this.err = err;
             this.workDir = workDir;
             this.listener = listener;
+            this.stdoutListener = stdoutListener;
             this.reverseStdin = reverseStdin;
             this.reverseStdout = reverseStdout;
             this.reverseStderr = reverseStderr;
@@ -1290,7 +1298,12 @@ public abstract class Launcher {
         public RemoteProcess call() throws IOException {
             final Channel channel = getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
-            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
+            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stderr(err).quiet(quiet);
+            if (stdoutListener != null) {
+                ps.stdout(stdoutListener.getLogger());
+            } else {
+                ps.stdout(out);
+            }
             if(workDir!=null)   ps.pwd(workDir);
             if (reverseStdin)   ps.writeStdin();
             if (reverseStdout)  ps.readStdout();

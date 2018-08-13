@@ -15,9 +15,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import org.jvnet.hudson.test.Issue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -180,4 +179,16 @@ public class PluginWrapperTest {
             );
         }
     }
+
+    @Issue("JENKINS-52665")
+    @Test
+    public void isSnapshot() {
+        assertFalse(PluginWrapper.isSnapshot("1.0"));
+        assertFalse(PluginWrapper.isSnapshot("1.0-alpha-1"));
+        assertFalse(PluginWrapper.isSnapshot("1.0-rc9999.abc123def456"));
+        assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT"));
+        assertTrue(PluginWrapper.isSnapshot("1.0-20180719.153600-1"));
+        assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT (private-abcd1234-jqhacker)"));
+    }
+
 }
