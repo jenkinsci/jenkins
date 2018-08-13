@@ -79,6 +79,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -2031,9 +2032,9 @@ public final class FilePath implements Serializable {
      */
     public String readToString() throws IOException, InterruptedException {
         return act(new ReadToString());
-    } 
+    }
     private final class ReadToString extends SecureFileCallable<String> {
-        private static final long serialVersionUID = 1L;       
+        private static final long serialVersionUID = 1L;
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return new String(Files.readAllBytes(fileToPath(reading(f))));
@@ -3221,10 +3222,21 @@ public final class FilePath implements Serializable {
     }
 
     private boolean mkdirs(File dir) throws IOException {
-        if (dir.exists())   return false;
-
-        filterNonNull().mkdirs(dir);
-        Files.createDirectories(fileToPath(dir));
+        Path dirPath = fileToPath(dir);
+        if (Files.exists(dirPath)) {
+            return false;
+        } else if (Files.notExists(dirPath)) {
+            filterNonNull().mkdirs(dir);
+            Files.createDirectories(fileToPath(dir));
+        } else {
+            LOGGER.log(Level.WARNING, "unable to determine if file exists, trying to create it");
+            try {
+                filterNonNull().mkdirs(dir);
+                Files.createDirectories(fileToPath(dir));
+            } catch(FileAlreadyExistsException exception) {
+                LOGGER.log(Level.WARNING, "file existed", exception);
+            }
+        }
         return true;
     }
 
@@ -3259,7 +3271,7 @@ public final class FilePath implements Serializable {
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
-    
+
             Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
             Path parentRealPath;
             try {
@@ -3307,7 +3319,7 @@ public final class FilePath implements Serializable {
                     }
                 } catch (NoSuchFileException e) {
                     // nonexistent file / Windows Server 2016 + MSFT docker
-                    // in case this folder / file will be copied somewhere else, 
+                    // in case this folder / file will be copied somewhere else,
                     // it becomes the responsibility of that system to check the isDescendant with the existing links
                     // we are not taking the parentRealPath to avoid possible problem
                     Path child = currentFileAbsolutePath.normalize();
@@ -3329,7 +3341,7 @@ public final class FilePath implements Serializable {
             }
             return current;
         }
-        
+
         private @Nonnull Path windowsToRealPath(@Nonnull Path path) throws IOException {
             try {
                 return path.toRealPath();
