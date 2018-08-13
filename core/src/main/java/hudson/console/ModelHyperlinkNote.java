@@ -5,8 +5,6 @@ import hudson.model.*;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
@@ -57,20 +55,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(String url, String text) {
-        // If text contains newlines, then its stored length will not match its length when being
-        // displayed, since the display length will only include text up to the first newline,
-        // which will cause an IndexOutOfBoundsException in MarkupText#rangeCheck when
-        // ConsoleAnnotationOutputStream converts the note into markup. That stream treats '\n' as
-        // the sole end-of-line marker on all platforms, so we ignore '\r' because it will not
-        // break the conversion.
-        text = text.replace('\n', ' ');
-        try {
-            return new ModelHyperlinkNote(url,text.length()).encode()+text;
-        } catch (IOException e) {
-            // impossible, but don't make this a fatal problem
-            LOGGER.log(Level.WARNING, "Failed to serialize "+ModelHyperlinkNote.class,e);
-            return text;
-        }
+        return HyperlinkNote.encodeTo(url, text, ModelHyperlinkNote::new);
     }
 
     @Extension @Symbol("hyperlinkToModels")
