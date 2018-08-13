@@ -1470,7 +1470,7 @@ public class Queue extends ResourceController implements Saveable {
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : jenkins.getComputers()) {
-                    for (Executor e : c.getExecutors()) {
+                    for (Executor e : c.getAllExecutors()) {
                         if (e.isInterrupted()) {
                             // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set
                             // we need to clear lost pendings as we cannot know what work unit was on this executor
