@@ -129,10 +129,9 @@ dt {
     -moz-border-radius: 0.5em;
 }
 
-#header .login {
+.login {
   position: relative;
-  top: 6px;
-  color: white;
+  color: #fff;
   margin-right: 10px;
 }
 
