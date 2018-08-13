@@ -100,7 +100,7 @@ public class ApiTokenProperty extends UserProperty {
      * Disabled by default due to the security reasons.
      * It's the version of {@link #SHOW_LEGACY_TOKEN_TO_ADMINS} for the new API Token system (SECURITY-200).
      *
-     * @since TODO
+     * @since 2.129
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =

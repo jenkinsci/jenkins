@@ -478,7 +478,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
          *
          * @return A long value representing the time the file was last modified, measured in milliseconds since
          * the epoch (00:00:00 GMT, January 1, 1970), or 0L if is not possible to obtain the times.
-         * @since TODO
+         * @since 2.127
          */
         public long getLastModified() {
             return lastModified;
@@ -488,7 +488,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
          *
          * @return A Calendar representing the time the file was last modified, it lastModified is 0L
          * it will return 00:00:00 GMT, January 1, 1970.
-         * @since TODO
+         * @since 2.127
          */
         @Restricted(NoExternalUse.class)
         public Calendar getLastModifiedAsCalendar() {

@@ -33,7 +33,7 @@ import hudson.model.Descriptor;
  * <p>
  * This class provides a few hooks to augment the HTML of the login page.
  *
- * @since TODO
+ * @since 2.128
  */
 public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator> {
 
