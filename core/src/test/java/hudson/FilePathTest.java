@@ -941,4 +941,13 @@ public class FilePathTest {
         assertTrue("build/lastSuccessfulBuild is not a symlink", Files.isSymbolicLink(untarredFolder.resolve("build/lastSuccessfulBuild")));
 
     }
+
+    @Issue("JENKINS-52781")
+    @Test public void tryingToCreateADirectoryOnAnExistingDirectorySymlinkShouldNotFail() throws IOException, InterruptedException {
+        Path testFolder = temp.newFolder().toPath();
+        Path symlinkDirPath = testFolder.resolve("symlinkDir");
+        Files.createSymbolicLink(symlinkDirPath, Paths.get("nonExistingTarget"));
+
+        new FilePath(testFolder.toFile()).mkdirs(symlinkDirPath.toFile());
+    }
 }
