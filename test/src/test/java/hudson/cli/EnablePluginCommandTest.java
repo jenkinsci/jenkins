@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -69,6 +70,10 @@ public class EnablePluginCommandTest {
         PluginWrapper plugin = j.getPluginManager().getPlugin(name);
         assertThat(plugin, is(notNullValue()));
         assertFalse(plugin.isEnabled());
+    }
+
+    private void assumeNotWindows() {
+        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows"));
     }
 
     private void assertJenkinsInQuietMode() {
@@ -117,6 +122,7 @@ public class EnablePluginCommandTest {
     @Test
     @Issue("JENKINS-52950")
     public void enablePluginWithRestart() throws IOException {
+        assumeNotWindows();
         String name = "credentials";
         assertThat(installTestPlugin(name), succeeded());
         disablePlugin(name);
@@ -127,6 +133,7 @@ public class EnablePluginCommandTest {
     @Test
     @Issue("JENKINS-52950")
     public void enableNoPluginsWithRestartIsNoOp() {
+        assumeNotWindows();
         String name = "variant";
         assertThat(installTestPlugin(name), succeeded());
         assertThat(enablePlugins("-restart", name), succeeded());
