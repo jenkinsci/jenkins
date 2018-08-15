@@ -26,6 +26,7 @@ package jenkins.security;
 import hudson.Util;
 import hudson.model.User;
 import jenkins.model.GlobalConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -40,7 +41,8 @@ public class BasicApiTokenHelper {
     public static @CheckForNull User isConnectingUsingApiToken(String username, String tokenValue){
         User user = User.getById(username, false);
         if(user == null){
-            if(isLegacyTokenGeneratedOnUserCreation()){
+            ApiTokenPropertyConfiguration apiTokenConfiguration = GlobalConfiguration.all().getInstance(ApiTokenPropertyConfiguration.class);
+            if(apiTokenConfiguration.isTokenGenerationOnCreationEnabled()){
                 String generatedTokenOnCreation = Util.getDigestOf(ApiTokenProperty.API_KEY_SEED.mac(username));
                 boolean areTokenEqual = MessageDigest.isEqual(
                         generatedTokenOnCreation.getBytes(StandardCharsets.US_ASCII),
@@ -61,28 +63,5 @@ public class BasicApiTokenHelper {
         }
         
         return null;
-    }
-    
-    //TODO could be simplified when the patch is merged in 2.129+
-    @SuppressWarnings("unchecked")
-    static boolean isLegacyTokenGeneratedOnUserCreation(){
-        Class<GlobalConfiguration> clazz;
-        try {
-            clazz = (Class<GlobalConfiguration>) BasicApiTokenHelper.class.getClassLoader().loadClass("jenkins.security.apitoken.ApiTokenPropertyConfiguration");
-        } catch (ClassNotFoundException e) {
-            // case the new api token system is not in place
-            return true;
-        }
-        
-        Object apiTokenConfiguration = GlobalConfiguration.all().get(clazz);
-        boolean tokenGenerationOnCreationEnabled;
-        try {
-            Method isTokenGenerationOnCreationEnabled = clazz.getDeclaredMethod("isTokenGenerationOnCreationEnabled");
-            tokenGenerationOnCreationEnabled = (boolean) isTokenGenerationOnCreationEnabled.invoke(apiTokenConfiguration);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return false;
-        }
-        
-        return tokenGenerationOnCreationEnabled;
     }
 }
