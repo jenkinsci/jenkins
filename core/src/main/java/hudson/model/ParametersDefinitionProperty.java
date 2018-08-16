@@ -133,7 +133,9 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            // time set in UI is in seconds. Changing it into milliseconds
+            delay=new TimeDuration(getJob().getQuietPeriod() * 1000);
 
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -182,7 +184,9 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         		values.add(value);
         	}
         }
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            // time set in UI is in seconds. Changing it into milliseconds
+            delay=new TimeDuration(getJob().getQuietPeriod() * 1000);
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();

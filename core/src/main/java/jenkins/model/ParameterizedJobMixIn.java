@@ -190,7 +190,8 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     @SuppressWarnings("deprecation")
     public final void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         if (delay == null) {
-            delay = new TimeDuration(asJob().getQuietPeriod());
+            // time set in UI is in seconds. Changing it into milliseconds
+            delay = new TimeDuration(asJob().getQuietPeriod() * 1000);
         }
 
         if (!asJob().isBuildable()) {
