@@ -39,7 +39,7 @@ import java.util.List;
  * Any listed plugin with disabled dependencies will have its dependencies enabled transitively. Note that enabling an
  * already enabled plugin does nothing.
  *
- * @since TODO
+ * @since 2.136
  */
 @Extension
 public class EnablePluginCommand extends CLICommand {

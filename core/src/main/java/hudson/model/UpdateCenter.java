@@ -1647,7 +1647,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Base64 encoded SHA-256 checksum of the downloaded file, if it could be computed.
          *
-         * @since TODO
+         * @since 2.130
          */
         @CheckForNull
         public String getComputedSHA256() {
@@ -1659,7 +1659,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Base64 encoded SHA-512 checksum of the downloaded file, if it could be computed.
          *
-         * @since TODO
+         * @since 2.130
          */
         @CheckForNull
         public String getComputedSHA512() {

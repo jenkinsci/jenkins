@@ -31,7 +31,7 @@ import org.jenkinsci.Symbol;
 /**
  * Configuration for the new token generation when a user is created
  *
- * @since TODO
+ * @since 2.129
  */
 @Extension 
 @Symbol("apiToken")

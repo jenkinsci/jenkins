@@ -653,7 +653,7 @@ public class UpdateSite {
         /**
          * The base64 encoded SHA-256 checksum of the file.
          * Can be null if not provided by the update site.
-         * @since TODO
+         * @since 2.130
          */
         public String getSha256() {
             return sha256;
@@ -662,7 +662,7 @@ public class UpdateSite {
         /**
          * The base64 encoded SHA-512 checksum of the file.
          * Can be null if not provided by the update site.
-         * @since TODO
+         * @since 2.130
          */
         public String getSha512() {
             return sha512;
