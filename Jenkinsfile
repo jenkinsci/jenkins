@@ -63,34 +63,12 @@ for(i = 0; i < buildTypes.size(); i++) {
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
                                              excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-builds.ath = {
-    node("docker&&highmem") {
-        // Just to be safe
-        deleteDir()
-        def fileUri
-        def metadataPath
-        dir("sources") {
-            checkout scm
-            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                          "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
-                sh "mvn --batch-mode --show-version -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
-            }
-            dir("war/target") {
-                fileUri = "file://" + pwd() + "/jenkins.war"
-            }
-            metadataPath = pwd() + "/essentials.yml"
-        }
-        dir("ath") {
-            runATH jenkins: fileUri, metadataFile: metadataPath
         }
     }
 }
