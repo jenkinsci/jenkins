@@ -27,6 +27,8 @@ import hudson.Extension;
 import hudson.MarkupText;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -79,6 +81,7 @@ public class HyperlinkNote extends ConsoleNote {
         return encodeTo(url, text, HyperlinkNote::new);
     }
 
+    @Restricted(NoExternalUse.class)
     static String encodeTo(String url, String text, BiFunction<String, Integer, ConsoleNote> constructor) {
         // If text contains newlines, then its stored length will not match its length when being
         // displayed, since the display length will only include text up to the first newline,
