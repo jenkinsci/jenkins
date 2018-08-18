@@ -26,8 +26,10 @@ package hudson.cli;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
@@ -52,44 +54,89 @@ public class EnablePluginCommandTest {
         return new CLICommandInvoker(j, new EnablePluginCommand()).invokeWithArgs(names);
     }
 
+    private void assertPluginEnabled(String name) {
+        PluginWrapper plugin = j.getPluginManager().getPlugin(name);
+        assertThat(plugin, is(notNullValue()));
+        assertTrue(plugin.isEnabled());
+    }
+
+    private void disablePlugin(String name) throws IOException {
+        PluginWrapper plugin = j.getPluginManager().getPlugin(name);
+        assertThat(plugin, is(notNullValue()));
+        plugin.disable();
+    }
+
+    private void assertPluginDisabled(String name) {
+        PluginWrapper plugin = j.getPluginManager().getPlugin(name);
+        assertThat(plugin, is(notNullValue()));
+        assertFalse(plugin.isEnabled());
+    }
+
+    private void assumeNotWindows() {
+        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows"));
+    }
+
+    private void assertJenkinsInQuietMode() {
+        QuietDownCommandTest.assertJenkinsInQuietMode(j);
+    }
+
+    private void assertJenkinsNotInQuietMode() {
+        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+    }
+
     @Test
+    @Issue("JENKINS-52822")
     public void enableSinglePlugin() throws IOException {
         String name = "token-macro";
         PluginManager m = j.getPluginManager();
         assertThat(m.getPlugin(name), is(nullValue()));
-        assertThat(installTestPlugin("token-macro"), succeeded());
-        PluginWrapper wrapper = m.getPlugin(name);
-        assertThat(wrapper, is(notNullValue()));
-        assertTrue(wrapper.isEnabled());
-        wrapper.disable();
-        assertFalse(wrapper.isEnabled());
-
+        assertThat(installTestPlugin(name), succeeded());
+        assertPluginEnabled(name);
+        disablePlugin(name);
+        assertPluginDisabled(name);
         assertThat(enablePlugins(name), succeeded());
-        assertTrue(wrapper.isEnabled());
+        assertPluginEnabled(name);
+        assertJenkinsNotInQuietMode();
     }
 
     @Test
+    @Issue("JENKINS-52822")
     public void enableInvalidPluginFails() {
-        assertThat(
-                new CLICommandInvoker(j, "enable-plugin").invokeWithArgs("foobar"), failedWith(3)
-        );
+        assertThat(enablePlugins("foobar"), failedWith(3));
+        assertJenkinsNotInQuietMode();
     }
 
     @Test
+    @Issue("JENKINS-52822")
     public void enableDependerEnablesDependee() throws IOException {
         installTestPlugin("dependee");
         installTestPlugin("depender");
-        PluginManager m = j.getPluginManager();
-        PluginWrapper depender = m.getPlugin("depender");
-        assertThat(depender, is(notNullValue()));
-        PluginWrapper dependee = m.getPlugin("dependee");
-        assertThat(dependee, is(notNullValue()));
-
-        depender.disable();
-        dependee.disable();
-
+        disablePlugin("depender");
+        disablePlugin("dependee");
         assertThat(enablePlugins("depender"), succeeded());
-        assertTrue(depender.isEnabled());
-        assertTrue(dependee.isEnabled());
+        assertPluginEnabled("depender");
+        assertPluginEnabled("dependee");
+        assertJenkinsNotInQuietMode();
+    }
+
+    @Test
+    @Issue("JENKINS-52950")
+    public void enablePluginWithRestart() throws IOException {
+        assumeNotWindows();
+        String name = "credentials";
+        assertThat(installTestPlugin(name), succeeded());
+        disablePlugin(name);
+        assertThat(enablePlugins("-restart", name), succeeded());
+        assertJenkinsInQuietMode();
+    }
+
+    @Test
+    @Issue("JENKINS-52950")
+    public void enableNoPluginsWithRestartIsNoOp() {
+        assumeNotWindows();
+        String name = "variant";
+        assertThat(installTestPlugin(name), succeeded());
+        assertThat(enablePlugins("-restart", name), succeeded());
+        assertJenkinsNotInQuietMode();
     }
 }
