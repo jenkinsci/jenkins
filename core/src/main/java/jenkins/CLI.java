@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import java.io.IOException;
 import javax.annotation.Nonnull;
+
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import org.jenkinsci.Symbol;
@@ -23,7 +25,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @Restricted(NoExternalUse.class)
 @Extension @Symbol("remotingCLI")
-public class CLI extends GlobalConfiguration {
+public class CLI extends GlobalConfiguration implements PersistentDescriptor {
 
     /**
      * Supersedes {@link #isEnabled} if set.
@@ -38,10 +40,6 @@ public class CLI extends GlobalConfiguration {
     }
     
     private boolean enabled = true; // historical default, but overridden in SetupWizard
-
-    public CLI() {
-        load();
-    }
 
     @Override
     public @Nonnull GlobalConfigurationCategory getCategory() {
