@@ -96,6 +96,14 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
+     * Whether this job property can be modified by the user, either through the UI or the {@code properties} step in Pipeline.
+     * @return defaults to true
+     */
+    public boolean isModifiableByUser() {
+        return true;
+    }
+
+    /**
      * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
      */
     public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
