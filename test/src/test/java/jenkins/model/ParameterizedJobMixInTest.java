@@ -25,6 +25,7 @@ package jenkins.model;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
 import javax.servlet.http.HttpServletResponse;
 
@@ -66,19 +67,22 @@ public class ParameterizedJobMixInTest {
     @Test
     @Issue("JENKINS-48770")
     public void doBuildQuietPeriodInSeconds() throws Exception {
-        final int projectQuietPeriodInSeconds = 10;
-        final int projectQuietPeriodInMillis = projectQuietPeriodInSeconds * 1000;
-        final int timeToExecuteProject = 5000; // Time to finish the execution of the job
+        final int projectQuietPeriodInSeconds = 50;
+
         final FreeStyleProject project = j.createFreeStyleProject();
         project.setQuietPeriod(projectQuietPeriodInSeconds);
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.goTo(project.getUrl() + "build", "");
+        long triggerTime = System.currentTimeMillis();
 
-        Assert.assertEquals(0, project.getBuilds().size());
-        Thread.sleep(projectQuietPeriodInMillis / 2);
-        Assert.assertEquals(0, project.getBuilds().size());
-        Thread.sleep(projectQuietPeriodInMillis / 2 + timeToExecuteProject);
-        Assert.assertEquals(1, project.getBuilds().size());
+        Queue.Item item = Jenkins.get().getQueue().getItem(1);
+        Assert.assertTrue(item instanceof Queue.WaitingItem);
+        Assert.assertTrue(item.task instanceof FreeStyleProject);
+
+        Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
+        Assert.assertTrue((waitingItem.timestamp.getTimeInMillis() - triggerTime) > 45000);
+
+        Jenkins.get().getQueue().doCancelItem(1);
     }
 }
