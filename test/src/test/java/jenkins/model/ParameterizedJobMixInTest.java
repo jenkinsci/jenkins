@@ -23,12 +23,12 @@
  */
 package jenkins.model;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
-import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
+
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -61,5 +61,24 @@ public class ParameterizedJobMixInTest {
         
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.assertFails(project.getUrl() + "buildWithParameters", HttpServletResponse.SC_CONFLICT);
+    }
+
+    @Test
+    @Issue("JENKINS-48770")
+    public void doBuildQuietPeriodInSeconds() throws Exception {
+        final int projectQuietPeriodInSeconds = 10;
+        final int projectQuietPeriodInMillis = projectQuietPeriodInSeconds * 1000;
+        final int timeToExecuteProject = 5000; // Time to finish the execution of the job
+        final FreeStyleProject project = j.createFreeStyleProject();
+        project.setQuietPeriod(projectQuietPeriodInSeconds);
+
+        final JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.goTo(project.getUrl() + "build", "");
+
+        Assert.assertEquals(0, project.getBuilds().size());
+        Thread.sleep(projectQuietPeriodInMillis / 2);
+        Assert.assertEquals(0, project.getBuilds().size());
+        Thread.sleep(projectQuietPeriodInMillis / 2 + timeToExecuteProject);
+        Assert.assertEquals(1, project.getBuilds().size());
     }
 }

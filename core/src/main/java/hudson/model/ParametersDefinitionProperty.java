@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -134,8 +135,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         if (delay==null)
-            // time set in UI is in seconds. Changing it into milliseconds
-            delay=new TimeDuration(getJob().getQuietPeriod() * 1000);
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -185,8 +185,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         	}
         }
         if (delay==null)
-            // time set in UI is in seconds. Changing it into milliseconds
-            delay=new TimeDuration(getJob().getQuietPeriod() * 1000);
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
