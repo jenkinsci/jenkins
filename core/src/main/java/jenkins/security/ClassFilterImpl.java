@@ -164,12 +164,15 @@ public class ClassFilterImpl extends ClassFilter {
             {
                 // Class.isEnum seems to be false for, e.g., java.util.concurrent.TimeUnit$6
                 // https://www.logicbig.com/how-to/code-snippets/jcode-reflection-field-isenumconstant.html
-                Field[] declaredFields = c.getDeclaredFields();
-                for (int i = 0; i < declaredFields.length; i++) {
-                    Field f = declaredFields[i];
-                    if (f.isEnumConstant() && name == f.getName()) {
-                        LOGGER.log(Level.FINE, "permitting {0} since it is an enum", name);
-                        return false;
+                Class declaringClass = c.getDeclaringClass();
+                if (declaringClass.isEnum()) {
+                    Field[] declaredFields = c.getDeclaredFields();
+                    for (int i = 0; i < declaredFields.length; i++) {
+                        Field f = declaredFields[i];
+                        if (f.isEnumConstant() && c == declaringClass.values()[i]) {
+                            LOGGER.log(Level.FINE, "permitting {0} since it is an enum (albeit somewhat special)", name);
+                            return false;
+                        }
                     }
                 }
             }
