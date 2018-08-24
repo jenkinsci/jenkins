@@ -34,10 +34,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -155,9 +157,24 @@ public class ClassFilterImpl extends ClassFilter {
                 LOGGER.log(Level.FINE, "permitting {0} since it is a throwable", name);
                 return false;
             }
-            if (Enum.class.isAssignableFrom(c)) { // Class.isEnum seems to be false for, e.g., java.util.concurrent.TimeUnit$6
+            if (Enum.class.isAssignableFrom(c)) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an enum", name);
                 return false;
+            }
+            {
+                // Class.isEnum seems to be false for, e.g., java.util.concurrent.TimeUnit$6
+                // https://www.logicbig.com/how-to/code-snippets/jcode-reflection-field-isenumconstant.html
+                Class declaringClass = c.getDeclaringClass();
+                if (declaringClass.isEnum()) {
+                    Field[] declaredFields = c.getDeclaredFields();
+                    for (int i = 0; i < declaredFields.length; i++) {
+                        Field f = declaredFields[i];
+                        if (f.isEnumConstant() && c == declaringClass.values()[i]) {
+                            LOGGER.log(Level.FINE, "permitting {0} since it is an enum (albeit somewhat special)", name);
+                            return false;
+                        }
+                    }
+                }
             }
             String location = codeSource(c);
             if (location != null) {
