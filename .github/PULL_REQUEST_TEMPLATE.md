@@ -1,4 +1,4 @@
-See [JENKINS-XXXXX](https://issues.jenkins-ci.org/browse/JENKINS-XXXXX).
+See [JENKINS](https://issues.jenkins-ci.org/projects/JENKINS).
 
 <!-- Comment: 
 If the issue is not fully described in the ticket, add more information here (justification, pull request links, etc.).
