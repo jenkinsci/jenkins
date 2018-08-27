@@ -204,7 +204,7 @@ public final class CronTab {
         }
 
         void setTo(Calendar c, int i) {
-            c.set(field,i-offset);
+            c.set(field,Math.min(i-offset, c.getActualMaximum(field)));
         }
 
         void clear(Calendar c) {

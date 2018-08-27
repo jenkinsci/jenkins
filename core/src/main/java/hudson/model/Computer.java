@@ -325,6 +325,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
+        checkPermission(CONNECT);
         return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 

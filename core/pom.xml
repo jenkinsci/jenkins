@@ -545,7 +545,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.8</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

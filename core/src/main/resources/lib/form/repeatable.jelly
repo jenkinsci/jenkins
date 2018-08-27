@@ -107,6 +107,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,enableTopButton?,add?,minimum?,header?"/>
   </st:documentation>
+  <j:set var="minimum" value="${attrs.minimum ?: 0}" />
 
 
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
