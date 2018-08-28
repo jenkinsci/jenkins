@@ -266,7 +266,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
-        for (ParameterizedJobMixIn.ParameterizedJob p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+        for (ParameterizedJobMixIn.ParameterizedJob<?, ?> p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
                 if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t !=null && t.spec != null && t.tabs != null) {

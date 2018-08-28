@@ -1,0 +1,132 @@
+<div>
+  Definisce un'espressione logica che determina quali agenti possano eseguire
+  compilazioni di questo progetto. Quest'espressione, se testata sul nome e
+  sulle etichette di ogni agente disponibile, sarà <i>vera</i> o <i>falsa</i>.
+  Se l'espressione viene valutata come <i>vera</i>, allora a tale agente sarà
+  consentito eseguire compilazioni di questo progetto.
+  <p>
+  Se questo progetto deve essere sempre compilato su un agente specifico, o sul
+  master Jenkins, è possibile rispettivamente immettere il nome dell'agente, o
+  <code>master</code>.
+  <p>
+  Ciò nonostante, in generale si dovrebbe evitare di utilizzare il <i>nome</i>
+  di un agente in questo campo e si dovrebbero preferibilmente specificare le
+  <i>etichette</i> di un agente. Come documentato nella pagina di configurazione
+  di ogni agente e nella pagina <i>Configura sistema</i> del master, le
+  etichette possono essere utilizzate per rappresentare il sistema operativo
+  su cui è in esecuzione l'agente, la sua architettura della CPU, o altre
+  caratteristiche.
+  <br>
+  L'utilizzo delle etichette elimina la necessità di riconfigurare l'espressione
+  per le etichette immessa in questo campo ogni volta che si aggiungono,
+  rimuovono o rinominano agenti.
+  <p>
+  Un'espressione etichetta può essere semplice, come una singola <b>etichetta</b>
+  o un <b>nome agente</b>, ad esempio <code>android-builder</code>, o
+  <code>linux-machine-42</code>.<br>
+  È anche possibile utilizzare vari <i>operatori</i> per creare espressioni
+  più complesse.
+
+  <h3>Operatori supportati</h3>
+  Sono supportati i seguenti operatori in ordine di priorità decrescente:
+  <dl>
+    <dt><tt>(espressione)</tt></dt>
+    <dd>
+      parentesi — utilizzate per definire esplicitamente l'associatività di un'espressione
+    </dd>
+
+    <dt><tt>!espressione</tt></dt>
+    <dd>
+      NOT — negazione; il risultato di <tt>espressione</tt> <b>non</b> deve essere vero
+    </dd>
+
+    <dt><tt>a &amp;&amp; b</tt></dt>
+    <dd>
+      AND — <b>entrambe</b> le espressioni <tt>a</tt> e <tt>b</tt> devono essere vere
+    </dd>
+
+    <dt><tt>a || b</tt></dt>
+    <dd>
+      OR — <b>una</b> delle espressioni <tt>a</tt> o <tt>b</tt> può essere vera
+    </dd>
+
+    <dt><tt>a -> b</tt></dt>
+    <dd>
+      operatore "implica" — equivalente a <tt>!a || b</tt>.<br>
+      Ad esempio, si può pensare a <tt>windows -> x64</tt> come a "se viene
+      utilizzato un agente Windows, allora quell'agente <i>deve</i> essere a 64
+      bit", consentendo comunque a questo progetto di essere eseguito su un
+      qualunque agente <i>senza</i> l'etichetta <tt>windows</tt>,
+      indipendentemente dal fatto che abbiano anche un'etichetta <tt>x64</tt>
+    </dd>
+
+    <dt><tt>a &lt;-> b</tt></dt>
+    <dd>
+      operatore "se e solo se" — equivalente a <tt>a &amp;&amp; b ||
+      !a &amp;&amp; !b</tt><br>
+      Ad esempio, si può pensare a <tt>windows &lt;-> dc2</tt> come a "se viene
+      utilizzato un agente Windows, allora quell'agente <i>deve</i> essere nel
+      datacenter 2, ma se non viene utilizzato un agente Windows allora
+      <i>non deve</i> essere nel datacenter 2"
+    </dd>
+  </dl>
+
+  <h3>Note</h3>
+  <ul>
+    <li>
+      Tutti gli operatori sono associativi a sinistra, ossia <tt>a -> b -> c</tt>
+      è equivalente a <tt>(a -> b) -> c</tt>.
+    </li>
+    <li>
+      Le etichette o i nomi degli agenti possono essere posti fra virgolette
+      doppie se contengono caratteri che entrerebbero in conflitto con la
+      sintassi degli operatori.<br>
+      Ad esempio, <tt>"osx (10.11)" || "Windows Server"</tt>.
+    </li>
+    <li>
+      Le espressioni possono essere scritte senza spazi bianchi, ma è
+      raccomandato includerli per una maggiore leggibilità; Jenkins ignorerà
+      gli spazi bianchi durante la valutazione delle espressioni.
+    </li>
+    <li>
+      La ricerca di corrispondenze fra etichette o nomi di agenti con caratteri
+      jolly o espressioni regolari non è supportata.
+    </li>
+    <li>
+      Un'espressione vuota sarà sempre valutata come <i>vero</i> e come
+      corrispondente a tutti gli agenti.
+    </li>
+  </ul>
+
+  <h3>Esempi</h3>
+  <dl>
+    <dt><tt>master</tt></dt>
+    <dd>Le compilazioni di questo progetto possono essere eseguite solo sul master Jenkins<dd>
+
+    <dt><tt>linux-machine-42</tt></dt>
+    <dd>
+      Le compilazioni di questo progetto possono essere eseguite solo sull'agente
+      con nome <tt>linux-machine-42</tt> (o su una qualsiasi macchina che abbia
+      l'etichetta <tt>linux-machine-42</tt>)
+    </dd>
+
+    <dt><tt>windows &amp;&amp; jdk9</tt></dt>
+    <dd>
+      Le compilazioni di questo progetto possono essere eseguite solo su un
+      agente Windows che abbia installato il Java Development Kit, versione 9
+      (assumendo che agli agenti che abbiano il JDK 9 installato sia stata
+      assegnata l'etichetta <tt>jdk9</tt>)
+    </dd>
+
+    <dt><tt>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</tt></dt>
+    <dd>
+      Le compilazioni di questo progetto possono essere eseguite solo su un
+      agente Linux o FreeBSD, a condizione che <i>non</i> siano una macchina
+      virtuale e che abbiano PostgreSQL installato (assumendo che ogni agente
+      abbia le etichette appropriate — in particolare, ogni agente eseguito in
+      una macchina virtuale deve avere l'etichetta <tt>vm</tt> per far sì che
+      quest'esempio funzioni come previsto)
+    </dd>
+
+  </dl>
+</div>

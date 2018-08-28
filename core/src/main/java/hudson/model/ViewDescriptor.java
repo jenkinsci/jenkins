@@ -88,7 +88,6 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup<?> container) {
-        // TODO do we need a permissions check here?
         AutoCompletionCandidates candidates = AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
         if (container instanceof DirectlyModifiableTopLevelItemGroup) {
             DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
@@ -172,7 +171,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     /**
      * Returns true if this {@link View} type is applicable in the specific {@link ViewGroup}.
      * <p>
-     * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup#getClass()}.
+     * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup}’s {@link Object#getClass}.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the given owner.
      * @since 2.37

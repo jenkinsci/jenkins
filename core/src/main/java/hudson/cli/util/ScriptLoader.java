@@ -15,7 +15,9 @@ import java.net.URL;
  * Reads a file (either a path or URL) over a channel.
  *
  * @author vjuranek
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public class ScriptLoader extends MasterToSlaveCallable<String,IOException> {
     
     private final String script;

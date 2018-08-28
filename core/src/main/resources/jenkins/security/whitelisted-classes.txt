@@ -1,0 +1,210 @@
+com.google.common.collect.AbstractListMultimap
+com.google.common.collect.AbstractMultimap
+com.google.common.collect.AbstractSetMultimap
+# Artifactory - https://issues.jenkins-ci.org/browse/JENKINS-48991
+com.google.common.collect.ArrayListMultimap
+com.google.common.collect.EmptyImmutableList
+com.google.common.collect.EmptyImmutableSet
+com.google.common.collect.EmptyImmutableSortedSet
+com.google.common.collect.HashMultimap
+# First hit: https://github.com/jenkinsci/pitmutation-plugin/
+com.google.common.collect.HashMultiset
+com.google.common.collect.ImmutableList
+# Registered in XStream2 converters
+com.google.common.collect.ImmutableMap
+# Registered in XStream2 converters
+com.google.common.collect.ImmutableSet
+com.google.common.collect.ImmutableSet$SerializedForm
+com.google.common.collect.ImmutableSortedSet
+# https://issues.jenkins-ci.org/browse/JENKINS-48989
+com.google.common.collect.Maps$TransformedEntriesMap
+# https://github.com/jenkinsci/sonar-gerrit-plugin
+com.google.common.collect.Multimap
+com.google.common.collect.RegularImmutableList
+com.google.common.collect.RegularImmutableSet
+com.google.common.collect.RegularImmutableSortedSet
+com.google.common.collect.SingletonImmutableList
+com.google.common.collect.SingletonImmutableMap
+com.google.common.collect.SingletonImmutableSet
+
+# TODO remove when maven-plugin 3.1 is widely adopted
+hudson.maven.MavenInformation
+
+# TODO remove when https://github.com/jenkinsci/kubernetes-pipeline-plugin/pull/66 is widely adopted
+io.fabric8.docker.api.model.Config
+io.fabric8.docker.api.model.GraphDriverData
+io.fabric8.docker.api.model.ImageInspect
+
+java.io.File
+java.lang.Boolean
+java.lang.Byte
+java.lang.Character
+java.lang.Class
+java.lang.Double
+java.lang.Enum
+java.lang.Float
+java.lang.Integer
+java.lang.Long
+java.lang.Number
+java.lang.Object
+java.lang.Short
+java.lang.StackTraceElement
+java.lang.String
+java.lang.String$CaseInsensitiveComparator
+java.lang.StringBuffer
+java.lang.StringBuilder
+java.lang.reflect.Proxy
+java.math.BigDecimal
+java.math.BigInteger
+java.net.URI
+java.net.URL
+java.security.KeyRep
+java.time.Ser
+java.util.ArrayDeque
+java.util.ArrayList
+java.util.Arrays$ArrayList
+java.util.Collections$AsLIFOQueue
+java.util.Collections$CheckedCollection
+java.util.Collections$CheckedList
+java.util.Collections$CheckedMap
+java.util.Collections$CheckedNavigableMap
+java.util.Collections$CheckedNavigableSet
+java.util.Collections$CheckedQueue
+java.util.Collections$CheckedRandomAccessList
+java.util.Collections$CheckedSet
+java.util.Collections$CheckedSortedMap
+java.util.Collections$CheckedSortedSet
+java.util.Collections$CopiesList
+java.util.Collections$EmptyList
+java.util.Collections$EmptyMap
+java.util.Collections$EmptySet
+java.util.Collections$SetFromMap
+java.util.Collections$SingletonList
+java.util.Collections$SingletonMap
+java.util.Collections$SingletonSet
+java.util.Collections$SynchronizedCollection
+java.util.Collections$SynchronizedList
+java.util.Collections$SynchronizedMap
+java.util.Collections$SynchronizedNavigableMap
+java.util.Collections$SynchronizedNavigableSet
+java.util.Collections$SynchronizedRandomAccessList
+java.util.Collections$SynchronizedSet
+java.util.Collections$SynchronizedSortedMap
+java.util.Collections$SynchronizedSortedSet
+java.util.Collections$UnmodifiableCollection
+java.util.Collections$UnmodifiableList
+java.util.Collections$UnmodifiableMap
+java.util.Collections$UnmodifiableNavigableMap
+java.util.Collections$UnmodifiableNavigableSet
+java.util.Collections$UnmodifiableRandomAccessList
+java.util.Collections$UnmodifiableSet
+java.util.Collections$UnmodifiableSortedMap
+java.util.Collections$UnmodifiableSortedSet
+
+java.util.Date
+java.util.EnumMap
+java.util.EnumSet
+java.util.GregorianCalendar
+java.util.HashMap
+java.util.HashSet
+java.util.Hashtable
+java.util.LinkedHashMap
+java.util.LinkedHashSet
+java.util.LinkedList
+java.util.Locale
+java.util.Optional
+java.util.Properties
+java.util.RandomAccessSublist
+java.util.RegularEnumSet
+java.util.Stack
+java.util.Sublist
+java.util.TreeMap
+java.util.TreeMap$KeySet
+java.util.TreeSet
+java.util.UUID
+java.util.Vector
+java.util.concurrent.ConcurrentHashMap
+java.util.concurrent.ConcurrentLinkedQueue
+java.util.concurrent.ConcurrentSkipListMap
+java.util.concurrent.CopyOnWriteArrayList
+java.util.concurrent.CopyOnWriteArraySet
+java.util.concurrent.CountDownLatch
+java.util.concurrent.CountDownLatch$Sync
+java.util.concurrent.atomic.AtomicBoolean
+java.util.logging.Level
+java.util.logging.LogRecord
+java.util.regex.Pattern
+
+# TODO remove when https://github.com/jenkinsci/job-dsl-plugin/pull/1092 is widely adopted
+javaposse.jobdsl.dsl.GeneratedJob
+
+# TODO remove when https://github.com/jenkinsci/monitoring-plugin/pull/6 is widely adopted
+net.bull.javamelody.internal.model.CacheInformations
+net.bull.javamelody.internal.model.HeapHistogram
+net.bull.javamelody.internal.model.HeapHistogram$ClassInfo
+net.bull.javamelody.internal.model.JavaInformations
+net.bull.javamelody.internal.model.JobInformations
+net.bull.javamelody.internal.model.MBeanNode
+net.bull.javamelody.internal.model.MBeanNode$MBeanAttribute
+net.bull.javamelody.internal.model.MemoryInformations
+net.bull.javamelody.internal.model.ProcessInformations
+net.bull.javamelody.internal.model.ThreadInformations
+net.bull.javamelody.internal.model.TomcatInformations
+
+org.acegisecurity.userdetails.User
+org.apache.commons.fileupload.disk.DiskFileItem
+org.apache.commons.fileupload.util.FileItemHeadersImpl
+org.apache.tools.ant.Location
+
+# TODO remove when git-client 2.7.1+ is widely adopted
+org.eclipse.jgit.lib.ObjectId
+org.eclipse.jgit.lib.ObjectIdOwnerMap$Entry
+org.eclipse.jgit.lib.PersonIdent
+org.eclipse.jgit.revwalk.RevCommit
+org.eclipse.jgit.revwalk.RevObject
+org.eclipse.jgit.revwalk.RevTree
+org.eclipse.jgit.transport.URIish
+
+# TODO remove when https://github.com/jenkinsci/workflow-support-plugin/pull/50 is widely adopted
+org.jboss.marshalling.TraceInformation$FieldInfo
+org.jboss.marshalling.TraceInformation$ObjectInfo
+
+# TODO see main ruby-runtime section below
+org.jenkinsci.jruby.JRubyMapper$DynamicProxy
+
+# TODO remove when https://github.com/jenkinsci/xtrigger-lib/pull/9 is widely adopted in fstrigger-plugin, urltrigger-plugin, etc.
+org.jenkinsci.lib.xtrigger.XTriggerCause
+org.jenkinsci.lib.xtrigger.XTriggerCauseAction
+
+# TODO remove (also XStream2.BlacklistedTypesConverter.JRUBY_PROXY) when Ruby Runtime is fixed
+# Related PRs:
+#   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/5,
+#   - https://github.com/jenkinsci/ruby-runtime-plugin/pull/6
+#
+# oleg-nenashev in PR#6 we are trying to get help from last maintainers due to the plugin codebase splitbrain.
+#               It is required to fix JENKINS-50616 in a proper way for 2.107.x
+org.jruby.RubyArray
+org.jruby.RubyBignum
+org.jruby.RubyBoolean
+org.jruby.RubyBoolean$False
+org.jruby.RubyBoolean$True
+org.jruby.RubyFixnum
+org.jruby.RubyHash
+org.jruby.RubyNil
+org.jruby.RubyObject
+org.jruby.RubyString
+org.jruby.RubySymbol
+org.jruby.java.proxies.ConcreteJavaProxy
+org.jruby.runtime.builtin.IRubyObject
+
+org.jvnet.hudson.MemoryUsage
+org.jvnet.localizer.Localizable
+org.jvnet.localizer.ResourceBundleHolder
+
+# TODO remove when https://github.com/jenkinsci/dependency-check-plugin/pull/20 is widely adopted
+org.owasp.dependencycheck.dependency.Reference
+org.owasp.dependencycheck.dependency.Vulnerability
+org.owasp.dependencycheck.dependency.VulnerableSoftware
+
+sun.security.rsa.RSAPublicKeyImpl
+sun.security.x509.X509Key

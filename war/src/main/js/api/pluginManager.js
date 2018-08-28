@@ -177,7 +177,7 @@ exports.incompleteInstallStatus = function(handler, correlationId) {
  * Call this to complete the installation without installing anything
  */
 exports.completeInstall = function(handler) {
-	jenkins.get('/setupWizard/completeInstall', function() {
+	jenkins.post('/setupWizard/completeInstall', {}, function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,
@@ -219,7 +219,7 @@ exports.installPluginsDone = function(handler) {
  * Restart Jenkins
  */
 exports.restartJenkins = function(handler) {
-	jenkins.get('/updateCenter/safeRestart', function() {
+	jenkins.post('/updateCenter/safeRestart', {}, function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,

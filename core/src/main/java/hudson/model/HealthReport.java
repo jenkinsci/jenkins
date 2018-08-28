@@ -84,7 +84,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     /**
      * The path to the icon corresponding to this health score or <code>null</code> to use the default icon
      * corresponding to the current health score.
-     * <p/>
+     * <p>
      * If the path begins with a '/' then it will be the absolute path, otherwise the image is assumed to be in one of
      * <code>/images/16x16/</code>, <code>/images/24x24/</code> or <code>/images/32x32/</code> depending on the icon
      * size selected by the user.
@@ -110,7 +110,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @param score       The percentage health score (from 0 to 100 inclusive).
      * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or <code>null</code> to
      *                    display the default icon corresponding to the current health score.
-     *                    <p/>
+     *                    <p>
      *                    If the path begins with a '/' then it will be the absolute path, otherwise the image is
      *                    assumed to be in one of <code>/images/16x16/</code>, <code>/images/24x24/</code> or
      *                    <code>/images/32x32/</code> depending on the icon size selected by the user.
@@ -131,7 +131,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @param score       The percentage health score (from 0 to 100 inclusive).
      * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or <code>null</code> to
      *                    display the default icon corresponding to the current health score.
-     *                    <p/>
+     *                    <p>
      *                    If the path begins with a '/' then it will be the absolute path, otherwise the image is
      *                    assumed to be in one of <code>/images/16x16/</code>, <code>/images/24x24/</code> or
      *                    <code>/images/32x32/</code> depending on the icon size selected by the user.

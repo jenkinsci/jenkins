@@ -28,7 +28,7 @@ public abstract class CyclicGraphDetector<N> {
 
     /**
      * Returns all the nodes in the topologically sorted order.
-     * That is, if there's an edge a->b, b always come earlier than a.
+     * That is, if there's an edge a → b, b always come earlier than a.
      */
     public List<N> getSorted() {
         return topologicalOrder;

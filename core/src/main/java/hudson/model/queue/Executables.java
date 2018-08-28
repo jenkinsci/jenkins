@@ -36,10 +36,14 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public class Executables {
+    
     /**
-     * Due to the return type change in {@link Executable}, the caller needs a special precaution now.
+     * Due to the return type change in {@link Executable} in 1.377, the caller needs a special precaution now.
+     * @param e Executable
+     * @return Discovered subtask
      */
-    public static @Nonnull SubTask getParentOf(Executable e) {
+    public static @Nonnull SubTask getParentOf(@Nonnull Executable e) 
+            throws Error, RuntimeException {
         try {
             return e.getParent();
         } catch (AbstractMethodError _) {
@@ -66,19 +70,17 @@ public class Executables {
      * This can happen if Computer.getIdleStartMilliseconds() is called before the executable is set to non-null in Computer.run()
      * or if the executor thread exits prematurely, see JENKINS-30456
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
-     * was compiled against Hudson < 1.383
+     * was compiled against Hudson prior to 1.383
      * @param e Executable item
      * @return the estimated duration for a given executable, -1 if the executable is null
+     * @deprecated call {@link Executable#getEstimatedDuration} directly
      */
+    @Deprecated
     public static long getEstimatedDurationFor(@CheckForNull Executable e) {
         if (e == null) {
             return -1;
         }
-        try {
-            return e.getEstimatedDuration();
-        } catch (AbstractMethodError error) {
-            return e.getParent().getEstimatedDuration();
-        }
+        return e.getEstimatedDuration();
     }
 
 }

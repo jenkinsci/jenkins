@@ -23,20 +23,14 @@
  */
 package hudson.model.listeners;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import hudson.cli.CLI;
+import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
+import java.io.ByteArrayInputStream;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
 
 /**
  * Tests for ItemListener events.
@@ -64,16 +58,11 @@ public class ItemListenerTest {
 
     @Test
     public void onCreatedViaCLI() throws Exception {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(buf);
-        try (CLI cli = new CLI(j.getURL())) {
-            cli.execute(Arrays.asList("create-job", "testJob"),
-                    new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
-                            + "<buildWrappers/></project>").getBytes()),
-                    out, out);
-            out.flush();
-            assertNotNull("job should be created: " + buf, j.jenkins.getItem("testJob"));
-            assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
-        }
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
+                withStdin(new ByteArrayInputStream(("<project><actions/><builders/><publishers/><buildWrappers/></project>").getBytes())).
+                invokeWithArgs("testJob");
+        assertThat(result, CLICommandInvoker.Matcher.succeeded());
+        assertNotNull("job should be created: " + result, j.jenkins.getItem("testJob"));
+        assertEquals("onCreated event should be triggered: " + result, "C", events.toString());
     }
 }

@@ -44,7 +44,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * <p>
  * Have the JavaScript make an AJAX call, to which we respond with 302 redirect. If the reverse proxy
- * is done correctly, this will be handled by {@link #doFoo()}, but otherwise we'll report that as an error.
+ * is done correctly, this will be handled by web methods, but otherwise we'll report that as an error.
  * Unfortunately, {@code XmlHttpRequest} doesn't expose properties that allow the client-side JavaScript
  * to learn the details of the failure, so we have to make do with limited information.
  *
@@ -92,7 +92,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+setup+is+broken");
+            return new HttpRedirect("https://jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
         }
     }
 

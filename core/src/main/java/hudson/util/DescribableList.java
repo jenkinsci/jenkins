@@ -200,7 +200,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Rebuilds the list by creating a fresh instances from the submitted form.
      *
      * <p>
-     * This version works with the &lt;f:hetero-list> UI tag, where the user
+     * This version works with the {@code <f:hetero-list>} UI tag, where the user
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
@@ -270,10 +270,9 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
-
             try {
-                DescribableList r = (DescribableList)context.getRequiredType().newInstance();
+                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
+                CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
                 r.data.replaceBy(core);
                 return r;
             } catch (InstantiationException e) {

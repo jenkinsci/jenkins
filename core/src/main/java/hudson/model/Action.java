@@ -56,11 +56,11 @@ import javax.annotation.CheckForNull;
  * tweak from there. One of the use cases of this is to show nested actions, like where
  * Jenkins show the option to wipe out the workspace inside the workspace link:
  *
- * <pre>
- * &lt;l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
- *   &lt;l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
- * &lt;/l:task>
- * </pre>
+ * <pre>{@code
+ * <l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
+ *   <l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
+ * </l:task>
+ * }</pre>
  *
  * <h2>Persistence</h2>
  * <p>
@@ -70,9 +70,9 @@ import javax.annotation.CheckForNull;
  * when it's used with {@link Job}).
  * <p>
  * The {@link Actionable#replaceAction(Action)}, {@link Actionable#addOrReplaceAction(Action)}, and
- * {@link Actionable#removeAction(Action)} methods use {@link Action#equals(Object)} to determine whether to update
+ * {@link Actionable#removeAction(Action)} methods use {@link Object#equals} to determine whether to update
  * or replace or remove an {@link Action}. As such, {@link Action} subclasses that provide a deep
- * {@link #equals(Object)} will assist in reducing the need for unnecessary persistence.
+ * {@link Object#equals} will assist in reducing the need for unnecessary persistence.
  *
  * @author Kohsuke Kawaguchi
  */

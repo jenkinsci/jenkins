@@ -1,0 +1,3 @@
+$v.getOwnerItemGroup() :: $v instanceof hudson.model.View => $v.getOwner().getItemGroup();;
+$v.getOwnerPrimaryView() :: $v instanceof hudson.model.View => $v.getOwner().getPrimaryView();;
+$v.getOwnerViewActions() :: $v instanceof hudson.model.View => $v.getOwner().getViewActions();;

@@ -27,12 +27,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Set of {@link SearchItem}s that are statically known upfront.
  *
  * @author Kohsuke Kawaguchi
  */
 public class FixedSet implements SearchIndex {
+
     private final Collection<? extends SearchItem> items;
 
     public FixedSet(Collection<? extends SearchItem> items) {
@@ -45,27 +48,21 @@ public class FixedSet implements SearchIndex {
 
     public void find(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
-        for (SearchItem i : items){
+        for (SearchItem i : items) {
             String name = i.getSearchName();
-            if(caseInsensitive){
-                token=token.toLowerCase();
-                name=name.toLowerCase();
-            }
-            if(token.equals(i.getSearchName()))
+            if (name.equals(token) || (caseInsensitive && name.equalsIgnoreCase(token))) {
                 result.add(i);
+            }
         }
     }
 
     public void suggest(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
-        for (SearchItem i : items){
+        for (SearchItem i : items) {
             String name = i.getSearchName();
-            if(caseInsensitive){
-                token=token.toLowerCase();
-                name=name.toLowerCase();
-            }
-            if(name.contains(token))
+            if (name.contains(token) || (caseInsensitive && StringUtils.containsIgnoreCase(name, token))) {
                 result.add(i);
+            }
         }
     }
 }

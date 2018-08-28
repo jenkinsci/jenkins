@@ -23,7 +23,6 @@
  */
 package hudson.node_monitors;
 
-import hudson.Util;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -47,6 +46,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ResponseTimeMonitor extends NodeMonitor {
     @Extension
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
+
         @Override
         protected Callable<Data,IOException> createCallable(Computer c) {
             return new Step1(get(c));
@@ -54,10 +54,16 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
         @Override
         protected Map<Computer, Data> monitor() throws InterruptedException {
-            Map<Computer, Data> base = super.monitor();
-            for (Entry<Computer, Data> e : base.entrySet()) {
+            Result<Data> base = monitorDetailed();
+            Map<Computer, Data> monitoringData = base.getMonitoringData();
+            for (Entry<Computer, Data> e : monitoringData.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
+                if (base.getSkipped().contains(c)) {
+                    assert d == null;
+                    continue;
+                }
+
                 if (d ==null) {
                     // if we failed to monitor, put in the special value that indicates a failure
                     e.setValue(d=new Data(get(c),-1L));
@@ -72,7 +78,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
                     LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
                 }
             }
-            return base;
+            return monitoringData;
         }
 
         public String getDisplayName() {

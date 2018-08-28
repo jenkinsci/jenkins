@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -114,12 +114,12 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      */
     @WebMethod(name="script.js")
     public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rsp.serveFile(req, getResource("/script.js"), TimeUnit2.DAYS.toMillis(1));
+        rsp.serveFile(req, getResource("/script.js"), TimeUnit.DAYS.toMillis(1));
     }
 
     @WebMethod(name="style.css")
     public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rsp.serveFile(req, getResource("/style.css"), TimeUnit2.DAYS.toMillis(1));
+        rsp.serveFile(req, getResource("/style.css"), TimeUnit.DAYS.toMillis(1));
     }
 
     /**

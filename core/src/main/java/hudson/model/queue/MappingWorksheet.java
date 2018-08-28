@@ -30,6 +30,7 @@ import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.LoadBalancer;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
@@ -133,7 +134,7 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
                 return false;   // tasks don't have a permission to run on this node
 
             return true;
@@ -373,8 +374,8 @@ public class MappingWorksheet {
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
-        for (SubTask meu : Tasks.getSubTasksOf(item.task)) {
-            Object c = Tasks.getSameNodeConstraintOf(meu);
+        for (SubTask meu : item.task.getSubTasks()) {
+            Object c = meu.getSameNodeConstraint();
             if (c==null)    c = new Object();
 
             List<SubTask> l = m.get(c);

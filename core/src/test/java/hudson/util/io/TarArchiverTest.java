@@ -33,6 +33,8 @@ import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import static org.junit.Assert.*;
 import org.junit.Assume;
@@ -71,8 +73,8 @@ public class TarArchiverTest {
             f.chmod(0644);
             int dirMode = dir.child("subdir").mode();
 
-            dir.tar(new FileOutputStream(tar),"**/*");
-            dir.zip(new FileOutputStream(zip));
+            dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
+            dir.zip(Files.newOutputStream(zip.toPath()));
 
 
             FilePath e = dir.child("extract");
@@ -81,9 +83,9 @@ public class TarArchiverTest {
             // extract via the tar command
             run(e, "tar", "xvpf", tar.getAbsolutePath());
 
-            assertEquals(0100755,e.child("a.txt").mode());
+            assertEquals(0755,e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0100644,e.child("subdir/b.txt").mode());
+            assertEquals(0644,e.child("subdir/b.txt").mode());
 
 
             // extract via the zip command
@@ -91,9 +93,9 @@ public class TarArchiverTest {
             run(e, "unzip", zip.getAbsolutePath());
             e = e.listDirectories().get(0);
 
-            assertEquals(0100755, e.child("a.txt").mode());
+            assertEquals(0755, e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0100644,e.child("subdir/b.txt").mode());
+            assertEquals(0644,e.child("subdir/b.txt").mode());
         } finally {
             tar.delete();
             zip.delete();
@@ -149,12 +151,12 @@ public class TarArchiverTest {
             File openFile = file;
             try {
                 openFile.createNewFile();
-                FileOutputStream fos = new FileOutputStream(openFile);
-                for (int i = 0; !finish && i < 5000000; i++) { // limit the max size, just in case.
-                    fos.write(0);
-                    // Thread.sleep(5);
+                try (OutputStream fos = Files.newOutputStream(openFile.toPath())) {
+                    for (int i = 0; !finish && i < 5000000; i++) { // limit the max size, just in case.
+                        fos.write(0);
+                        // Thread.sleep(5);
+                    }
                 }
-                fos.close();
             } catch (Exception e) {
                 ex = e;
             }

@@ -26,7 +26,11 @@ package hudson.util.io;
 
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.Zip64Mode;
 import org.apache.tools.zip.ZipOutputStream;
 
 import java.io.File;
@@ -46,6 +50,7 @@ final class ZipArchiver extends Archiver {
     ZipArchiver(OutputStream out) {
         zip = new ZipOutputStream(out);
         zip.setEncoding(System.getProperty("file.encoding"));
+        zip.setUseZip64(Zip64Mode.AsNeeded);
     }
 
     public void visit(final File f, final String _relativePath) throws IOException {
@@ -69,13 +74,12 @@ final class ZipArchiver extends Archiver {
             if (mode!=-1)   fileZipEntry.setUnixMode(mode);
             fileZipEntry.setTime(f.lastModified());
             zip.putNextEntry(fileZipEntry);
-            FileInputStream in = new FileInputStream(f);
-            try {
+            try (InputStream in = Files.newInputStream(f.toPath())) {
                 int len;
                 while((len=in.read(buf))>=0)
                     zip.write(buf,0,len);
-            } finally {
-                in.close();
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
             zip.closeEntry();
         }

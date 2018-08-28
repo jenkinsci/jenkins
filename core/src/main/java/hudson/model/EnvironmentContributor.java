@@ -41,10 +41,9 @@ import javax.annotation.Nonnull;
  * of {@link Job}s to compute values.
  *
  * <h2>Views</h2>
- * <h4>buildEnv.groovy/.jelly</h4>
- * <p>
+ * <h3>buildEnv.groovy/.jelly</h3>
  * When Jenkins displays the help page listing all the environment variables available for a build, it does
- * so by combining all the {@code buildEnv} views from this extension point. This view should use the &lt;t:buildEnvVar> tag
+ * so by combining all the {@code buildEnv} views from this extension point. This view should use the {@code <t:buildEnvVar>} tag
  * to render a variable.
  *
  * <p>

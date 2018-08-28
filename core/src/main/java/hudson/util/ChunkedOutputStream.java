@@ -37,7 +37,7 @@ import java.io.OutputStream;
  * Implements HTTP chunking support. Writes are buffered to an internal buffer (2048 default size).
  * Chunks are guaranteed to be at least as large as the buffer size (except for the last chunk).
  *
- * @author Mohammad Rezaei, Goldman, Sachs & Co.
+ * @author Mohammad Rezaei, Goldman, Sachs &amp; Co.
  */
 public class ChunkedOutputStream extends OutputStream {
 

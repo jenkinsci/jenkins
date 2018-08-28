@@ -51,7 +51,7 @@ import net.sf.json.JSONObject;
  * This object must have the <tt>column.jelly</tt>. This view
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
- * the &lt;td> tag.
+ * the {@code <td>} tag.
  *
  * <p>
  * This object may have an additional <tt>columnHeader.jelly</tt>. The default ColumnHeader

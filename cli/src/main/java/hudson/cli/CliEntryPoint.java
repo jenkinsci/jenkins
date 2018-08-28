@@ -34,7 +34,9 @@ import java.util.Locale;
  * Remotable interface for CLI entry point on the server side.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public interface CliEntryPoint {
     /**
      * Just like the static main method.

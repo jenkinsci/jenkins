@@ -28,10 +28,10 @@ import java.rmi.activation.ActivationInstantiator;
 import java.rmi.server.ObjID;
 import java.rmi.server.RemoteObject;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.SocketFactory;
-import static jenkins.security.security218.Payload.CommonsCollections1;
 import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
 import jenkins.security.security218.ysoserial.payloads.ObjectPayload;
 import static org.junit.Assert.*;
@@ -59,6 +59,8 @@ public class Security232Test {
 
     @Test
     public void commonsCollections1() throws Exception {
+        r.jenkins.setAgentProtocols(Collections.singleton("CLI-connect")); // override CliProtocol.OPT_IN
+
         File pwned = new File(r.jenkins.getRootDir(), "pwned");
 
         int jrmpPort = 12345;
@@ -94,13 +96,13 @@ public class Security232Test {
 
             Class<?> reqClass = Class.forName("hudson.remoting.RemoteInvocationHandler$RPCRequest");
 
-            Constructor<?> reqCons = reqClass.getDeclaredConstructor(int.class, Method.class, Object[].class);
+            Constructor<?> reqCons = reqClass.getDeclaredConstructor(int.class, Method.class, Object[].class, ClassLoader.class, boolean.class);
             reqCons.setAccessible(true);
 
             Object getJarLoader = reqCons
                     .newInstance(1, Class.forName("hudson.remoting.IChannel").getMethod("getProperty", Object.class), new Object[] {
                         JarLoader.class.getName() + ".ours"
-            });
+            }, null, true);
 
             Object call = c.call((Callable<Object,Exception>) getJarLoader);
             InvocationHandler remote = Proxy.getInvocationHandler(call);
@@ -128,7 +130,7 @@ public class Security232Test {
             Object o = reqCons
                     .newInstance(oid, JarLoader.class.getMethod("isPresentOnRemote", Class.forName("hudson.remoting.Checksum")), new Object[] {
                         uro,
-            });
+            }, null, true);
 
             try {
                 c.call((Callable<Object,Exception>) o);

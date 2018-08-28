@@ -45,7 +45,7 @@ import java.util.List;
  * Collection whose change is notified to the parent object for persistence.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.MULTISOURCE
+ * @since 1.333
  */
 public class PersistedList<T> extends AbstractList<T> {
     protected final CopyOnWriteList<T> data = new CopyOnWriteList<T>();

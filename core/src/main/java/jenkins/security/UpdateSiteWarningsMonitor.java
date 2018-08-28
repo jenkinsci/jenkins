@@ -58,7 +58,7 @@ import java.util.Set;
  *   <li>Inapplicable warnings are those that are not applicable.
  * </ul>
  *
- * <p></p>The following sets may be non-empty:</p>
+ * <p>The following sets may be non-empty:</p>
  *
  * <ul>
  *   <li>Intersection of applicable and active
@@ -121,12 +121,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     }
 
     private Set<UpdateSite.Warning> getActiveWarnings() {
-        ExtensionList<UpdateSiteWarningsConfiguration> configurations = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
-        if (configurations.isEmpty()) {
-            return Collections.emptySet();
-        }
-        UpdateSiteWarningsConfiguration configuration = configurations.get(0);
-
+        UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
         HashSet<UpdateSite.Warning> activeWarnings = new HashSet<>();
 
         for (UpdateSite.Warning warning : configuration.getApplicableWarnings()) {
@@ -160,13 +155,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
      * @return true iff there are applicable but ignored (i.e. hidden) warnings.
      */
     public boolean hasApplicableHiddenWarnings() {
-        ExtensionList<UpdateSiteWarningsConfiguration> configurations = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
-        if (configurations.isEmpty()) {
-            return false;
-        }
-
-        UpdateSiteWarningsConfiguration configuration = configurations.get(0);
-
+        UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
         return getActiveWarnings().size() < configuration.getApplicableWarnings().size();
     }
 

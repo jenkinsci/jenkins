@@ -20,7 +20,9 @@ import hudson.security.SecurityRealm;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.419
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public abstract class CliTransportAuthenticator implements ExtensionPoint {
     /**
      * Checks if this implementation supports the specified protocol.

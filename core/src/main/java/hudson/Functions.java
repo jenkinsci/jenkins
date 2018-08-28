@@ -26,6 +26,7 @@
 package hudson;
 
 import hudson.model.Slave;
+import hudson.security.*;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -46,6 +47,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import jenkins.model.SimplePageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
@@ -56,11 +58,6 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
-import hudson.security.AccessControlled;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.Permission;
-import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -125,6 +122,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -136,7 +134,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -469,6 +466,16 @@ public class Functions {
 
     public static Map getSystemProperties() {
         return new TreeMap<Object,Object>(System.getProperties());
+    }
+
+    /**
+     * Gets the system property indicated by the specified key.
+     * 
+     * Delegates to {@link SystemProperties#getString(java.lang.String)}.
+     */
+    @Restricted(DoNotUse.class)
+    public static String getSystemProperty(String key) {
+        return SystemProperties.getString(key);
     }
 
     public static Map getEnvVars() {
@@ -1103,7 +1110,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner().getItemGroup())) {
                 assert i instanceof TopLevelItem;
                 if (view != null) {
                     // assume p and the current page belong to the same view, so return a relative path
@@ -1135,20 +1142,24 @@ public class Functions {
      * @since 1.512
      */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
-      return Items.getAllItems(root, TopLevelItem.class);
+      return root.getAllItems(TopLevelItem.class);
     }
     
     /**
      * Gets the relative name or display name to the given item from the specified group.
      *
      * @since 1.515
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, a {@code null} will be returned by the method
+     * @param g the ItemGroup used as point of reference for the item.
+     *          If the group is not specified, item's path will be used.
      * @param useDisplayName if true, returns a display name, otherwise returns a name
      * @return
-     *      String like "foo » bar"
+     *      String like "foo » bar".
+     *      {@code null} if item is null or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g, boolean useDisplayName) {
         if (p == null) return null;
         if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
         String separationString = useDisplayName ? " » " : "/";
@@ -1182,7 +1193,7 @@ public class Functions {
 
             if (gr instanceof Item)
                 i = (Item)gr;
-            else
+            else // Parent is a group, but not an item
                 return null;
         }
     }
@@ -1192,11 +1203,14 @@ public class Functions {
      *
      * @since 1.515
      * @param p the Item we want the relative display name
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo/bar"
+     *      String like "foo/bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
     }    
     
@@ -1205,12 +1219,15 @@ public class Functions {
      * Gets the relative display name to the given item from the specified group.
      *
      * @since 1.512
-     * @param p the Item we want the relative display name
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "Foo » Bar"
+     *      String like "Foo » Bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeDisplayNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
     }
 
@@ -1361,6 +1378,7 @@ public class Functions {
     }
 
     public static String jsStringEscape(String s) {
+        if (s == null) return null;
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<s.length(); i++ ) {
             char ch = s.charAt(i);
@@ -1571,7 +1589,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return ACL.isAnonymous(Jenkins.getAuthentication());
     }
 
     /**
@@ -1753,7 +1771,14 @@ public class Functions {
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
-    
+    /**
+     * Gets only one {@link SimplePageDecorator}.
+     * @since 2.128
+     */
+    public static SimplePageDecorator getSimplePageDecorator() {
+        return SimplePageDecorator.first();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
@@ -1798,7 +1823,7 @@ public class Functions {
     }
 
     /**
-     * Generate a series of &lt;script> tags to include <tt>script.js</tt>
+     * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
@@ -1839,7 +1864,7 @@ public class Functions {
     }
 
     /**
-     * Used by &lt;f:password/> so that we send an encrypted value to the client.
+     * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
         if (o==null)    return null;
@@ -1997,7 +2022,7 @@ public class Functions {
     /**
      * Get a string that can be safely broken to several lines when necessary.
      *
-     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * This implementation inserts {@code <wbr>} tags into string. It allows browsers
      * to wrap line before any sequence of punctuation characters or anywhere
      * in the middle of prolonged sequences of word characters.
      *
@@ -2024,7 +2049,7 @@ public class Functions {
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal !=null) {
+            if (tal != null) { // headers used only by deprecated Remoting-based CLI
                 int p = tal.getAdvertisedPort();
                 rsp.setIntHeader("X-Hudson-CLI-Port", p);
                 rsp.setIntHeader("X-Jenkins-CLI-Port", p);
@@ -2040,6 +2065,15 @@ public class Functions {
             return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
         } else {
             return true;
+        }
+    }
+
+    @Restricted(NoExternalUse.class) // for cc.xml.jelly
+    public static Collection<TopLevelItem> getCCItems(View v) {
+        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
+            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
+        } else {
+            return v.getItems();
         }
     }
 

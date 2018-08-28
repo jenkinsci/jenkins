@@ -2,6 +2,7 @@ package hudson.model.queue;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Computer;
 import hudson.model.Queue;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.BuildableItem;

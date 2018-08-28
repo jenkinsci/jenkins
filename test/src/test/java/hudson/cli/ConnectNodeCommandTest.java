@@ -106,12 +106,13 @@ public class ConnectNodeCommandTest {
 
     @Test public void connectNodeShouldSucceedWithForce() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
+        slave.toComputer().connect(false).get(); // avoid a race condition in the test
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("-f", "aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(slave.toComputer().getLog(), result, succeededSilently());
+        assertThat(slave.toComputer().getLog(), slave.toComputer().isOnline(), equalTo(true));
 
         result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)

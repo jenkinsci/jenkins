@@ -47,7 +47,8 @@
         "category":"Pipelines and Continuous Delivery",
         "plugins": [
             { "name": "workflow-aggregator", "suggested": true, "added": "2.0" },
-            { "name": "github-organization-folder", "suggested": true, "added": "2.0" },
+            { "name": "github-branch-source", "suggested": true, "added": "2.0" },
+            { "name": "pipeline-github-lib", "suggested": true, "added": "2.0" },
             { "name": "pipeline-stage-view", "suggested": true, "added": "2.0" },
             { "name": "build-pipeline-plugin" },
             { "name": "conditional-buildstep" },

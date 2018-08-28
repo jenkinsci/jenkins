@@ -29,12 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * Implements memoization semantics.
  *
  * <p>
- * Conceptually a function from K -> V that computes values lazily and remembers the results.
+ * Conceptually a function from K → V that computes values lazily and remembers the results.
  * Often used to implement a data store per key.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.281
+ * @deprecated Simply use {@link ConcurrentHashMap#computeIfAbsent}.
  */
+@Deprecated
 public abstract class Memoizer<K,V> {
     private final ConcurrentHashMap<K,V> store = new ConcurrentHashMap<K,V>();
 

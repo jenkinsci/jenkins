@@ -48,11 +48,11 @@ import java.util.Collection;
  * <p>
  * To use this, HTML needs to declare the SELECT element:
  *
- * <pre><xmp>
+ * <pre>{@code <xmp>
  * <select id='foo'>
  *   <option>Fetching values...</option>
  * </select>
- * </xmp></pre>
+ * </xmp>}</pre>
  *
  * <p>
  * The SELECT element may have initial option values (in fact in most cases having initial
@@ -65,9 +65,9 @@ import java.util.Collection;
  * function, defined in <tt>hudson-behavior.js</tt>. The following example does it
  * when the value of the textbox changes:
  *
- * <pre><xmp>
+ * <pre>{@code <xmp>
  * <input type="textbox" onchange="updateListBox('list','optionValues?value='+encode(this.value))"/>
- * </xmp></pre>
+ * </xmp>}</pre>
  *
  * <p>
  * The first argument is the SELECT element or the ID of it (see Prototype.js <tt>$(...)</tt> function.)
@@ -78,9 +78,9 @@ import java.util.Collection;
  * for producing option values. See the following example:
  *
  * <pre>
- * public ListBoxModel doOptionValues(@QueryParameter("value") String value) throws IOException, ServletException {
+ * public ListBoxModel doOptionValues(&#64;QueryParameter("value") String value) throws IOException, ServletException {
  *   ListBoxModel m = new ListBoxModel();
- *   for(int i=0; i<5; i++)
+ *   for(int i=0; i&lt;5; i++)
  *     m.add(value+i,value+i);
  *   // make the third option selected initially
  *   m.get(3).selected = true;

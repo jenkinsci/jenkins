@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.
@@ -55,14 +56,15 @@ public class InstallPluginCommand extends CLICommand {
         return Messages.InstallPluginCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file, that file will be installed. " +
-            "If this is an URL, Jenkins downloads the URL and installs that as a plugin." +
-            "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like \"findbugs\")," +
+    @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file (‘-remoting’ mode only), that file will be installed. " +
+            "If this is an URL, Jenkins downloads the URL and installs that as a plugin. " +
+            "If it is the string ‘=’, the file will be read from standard input of the command, and ‘-name’ must be specified. " +
+            "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
             "and the plugin will be installed from the update center.")
     public List<String> sources = new ArrayList<String>();
 
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
-    public String name;
+    public String name; // TODO better to parse out Short-Name from the manifest and deprecate this option
 
     @Option(name="-restart",usage="Restart Jenkins upon successful installation.")
     public boolean restart;
@@ -80,6 +82,19 @@ public class InstallPluginCommand extends CLICommand {
         }
 
         for (String source : sources) {
+            if (source.equals("=")) {
+                if (name == null) {
+                    throw new IllegalArgumentException("-name required when using -source -");
+                }
+                stdout.println(Messages.InstallPluginCommand_InstallingPluginFromStdin());
+                File f = getTargetFile(name);
+                FileUtils.copyInputStreamToFile(stdin, f);
+                if (dynamicLoad) {
+                    pm.dynamicLoad(f);
+                }
+                continue;
+            }
+
             // is this a file?
             if (channel!=null) {
                 FilePath f = new FilePath(channel, source);

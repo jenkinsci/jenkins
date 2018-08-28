@@ -49,6 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -102,10 +103,11 @@ public abstract class Proc {
      * the child process to your {@link OutputStream} of choosing.
      *
      * @return
-     *      null unless {@link ProcStarter#readStdout()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#readStdout()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract InputStream getStdout();
 
     /**
@@ -115,10 +117,11 @@ public abstract class Proc {
      * the child process to your {@link OutputStream} of choosing.
      *
      * @return
-     *      null unless {@link ProcStarter#readStderr()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#readStderr()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract InputStream getStderr();
 
     /**
@@ -128,10 +131,11 @@ public abstract class Proc {
      * of your choosing to the child process.
      *
      * @return
-     *      null unless {@link ProcStarter#writeStdin()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#writeStdin()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract OutputStream getStdin();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
@@ -503,7 +507,7 @@ public abstract class Proc {
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
-    * See <a href="https://jenkins-ci.org/issue/23271">JENKINS-23271></a>
+    * See <a href="https://jenkins-ci.org/issue/23271">JENKINS-23271</a>
     * @author Oleg Nenashev
     */
     @Restricted(NoExternalUse.class)

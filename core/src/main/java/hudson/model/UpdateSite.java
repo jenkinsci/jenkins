@@ -36,7 +36,7 @@ import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.TextFile;
-import static hudson.util.TimeUnit2.*;
+import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
@@ -121,11 +121,6 @@ public class UpdateSite {
     private transient volatile long retryWindow;
 
     /**
-     * lastModified time of the data file when it was last read.
-     */
-    private transient long dataLastReadFromFile;
-
-    /**
      * Latest data as read from the data file.
      */
     private transient Data data;
@@ -193,6 +188,7 @@ public class UpdateSite {
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
+    @RequirePOST
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
         DownloadSettings.checkPostBackAccess();
         return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
@@ -225,6 +221,7 @@ public class UpdateSite {
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
+        data = new Data(o);
         return FormValidation.ok();
     }
 
@@ -308,23 +305,20 @@ public class UpdateSite {
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         dataTimestamp = 0;
+        data = null;
         return HttpResponses.ok();
     }
 
     /**
-     * Loads the update center data, if any and if modified since last read.
+     * Loads the update center data, if any.
      *
      * @return  null if no data is available.
      */
     public Data getData() {
-        TextFile df = getDataFile();
-        if (df.exists() && dataLastReadFromFile != df.file.lastModified()) {
+        if (data == null) {
             JSONObject o = getJSONObject();
-            if (o!=null) {
+            if (o != null) {
                 data = new Data(o);
-                dataLastReadFromFile = df.file.lastModified();
-            } else {
-                data = null;
             }
         }
         return data;
@@ -484,18 +478,6 @@ public class UpdateSite {
      */
     @Deprecated
     public String getDownloadUrl() {
-        /*
-            HACKISH:
-
-            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
-            The elegant way to solve the problem is to always load update center from HTTPS,
-            but our backend mirroring scheme isn't ready for that. So this hack serves regular
-            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
-
-            We'll monitor the traffic to see if we can sustain this added traffic.
-         */
-        if (url.equals("http://updates.jenkins-ci.org/update-center.json") && Jenkins.getInstance().isRootUrlSecure())
-            return "https"+url.substring(4);
         return url;
     }
 
@@ -627,6 +609,12 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         /* final */ String sha1;
 
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha256;
+
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha512;
+
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
         }
@@ -639,6 +627,8 @@ public class UpdateSite {
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
+            this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
+            this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -658,6 +648,24 @@ public class UpdateSite {
         // TODO @Exported assuming we want this in the API
         public String getSha1() {
             return sha1;
+        }
+
+        /**
+         * The base64 encoded SHA-256 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since 2.130
+         */
+        public String getSha256() {
+            return sha256;
+        }
+
+        /**
+         * The base64 encoded SHA-512 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since 2.130
+         */
+        public String getSha512() {
+            return sha512;
         }
 
         /**
@@ -1105,10 +1113,19 @@ public class UpdateSite {
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
-            for (Plugin p: getNeededDependencies()) {
-                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
-            }
-            return false;
+            return isNeededDependenciesForNewerJenkins(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesForNewerJenkins(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesForNewerJenkins:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
 
         /**
@@ -1120,11 +1137,19 @@ public class UpdateSite {
          * specified, it'll return true.
          */
         public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
-            for (Plugin p: getNeededDependencies()) {
-                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
-                    return false;
-            }
-            return true;
+            return isNeededDependenciesCompatibleWithInstalledVersion(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesCompatibleWithInstalledVersion:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         /**
@@ -1133,14 +1158,8 @@ public class UpdateSite {
         @CheckForNull
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
-            ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
-            if (list.size() == 0) {
-                return Collections.emptySet();
-            }
-
+            UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
             Set<Warning> warnings = new HashSet<>();
-
-            UpdateSiteWarningsConfiguration configuration = list.get(0);
 
             for (Warning warning: configuration.getAllWarnings()) {
                 if (configuration.isIgnored(warning)) {

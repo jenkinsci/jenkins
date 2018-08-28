@@ -30,12 +30,12 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import javax.servlet.ServletException;
 
 import org.apache.commons.fileupload.FileItem;
@@ -205,8 +205,7 @@ public class FileParameterValue extends ParameterValue {
             AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
             File fileParameter = getLocationUnderBuild(build);
             if (fileParameter.isFile()) {
-                InputStream data = new FileInputStream(fileParameter);
-                try {
+                try (InputStream data = Files.newInputStream(fileParameter.toPath())) {
                     long lastModified = fileParameter.lastModified();
                     long contentLength = fileParameter.length();
                     if (request.hasParameter("view")) {
@@ -214,8 +213,8 @@ public class FileParameterValue extends ParameterValue {
                     } else {
                         response.serveFile(request, data, lastModified, contentLength, originalFileName);
                     }
-                } finally {
-                    IOUtils.closeQuietly(data);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             }
         }
@@ -245,7 +244,11 @@ public class FileParameterValue extends ParameterValue {
         }
 
         public InputStream getInputStream() throws IOException {
-            return new FileInputStream(file);
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
 
         public String getContentType() {
@@ -266,10 +269,10 @@ public class FileParameterValue extends ParameterValue {
 
         public byte[] get() {
             try {
-                try (FileInputStream inputStream = new FileInputStream(file)) {
+                try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                     return IOUtils.toByteArray(inputStream);
                 }
-            } catch (IOException e) {
+            } catch (IOException | InvalidPathException e) {
                 throw new Error(e);
             }
         }
@@ -306,7 +309,11 @@ public class FileParameterValue extends ParameterValue {
 
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
-            return new FileOutputStream(file);
+            try {
+                return Files.newOutputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
 
         @Override

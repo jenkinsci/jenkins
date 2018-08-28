@@ -29,7 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static hudson.util.TimeUnit2.*;
+import static java.util.concurrent.TimeUnit.*;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 

@@ -17,6 +17,7 @@
  */
 package jenkins.util;
 
+import java.nio.file.Files;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -790,7 +791,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             if (jarFile == null && file.isDirectory()) {
                 File resource = new File(file, resourceName);
                 if (resource.exists()) {
-                    return new FileInputStream(resource);
+                    return Files.newInputStream(resource.toPath());
                 }
             } else {
                 if (jarFile == null) {

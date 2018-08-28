@@ -51,6 +51,8 @@ import org.apache.commons.io.IOUtils;
 
 import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.File;
@@ -78,6 +80,7 @@ import java.beans.Introspector;
 import java.util.IdentityHashMap;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Metadata about a configurable instance.
@@ -116,6 +119,8 @@ import javax.annotation.Nonnull;
  * {@link Descriptor} can persist data just by storing them in fields.
  * However, it is the responsibility of the derived type to properly
  * invoke {@link #save()} and {@link #load()}.
+ * {@link #load()} is automatically invoked as a JSR-250 lifecycle method if derived class
+ * do implement {@link PersistentDescriptor}.
  *
  * <h2>Reflection Enhancement</h2>
  * {@link Descriptor} defines addition to the standard Java reflection
@@ -563,7 +568,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+    public T newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -820,7 +825,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @since 2.0, used to be in {@link GlobalConfiguration} before that.
      */
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
@@ -937,12 +942,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if(url!=null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
-                InputStream in = url.openStream();
-                try {
+                try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in,"UTF-8");
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
                 return;
             }
@@ -986,13 +988,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
-            m.put(d.getDescriptor(),d);
+            Descriptor<T> descriptor;
+            try {
+                descriptor = d.getDescriptor();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                continue;
+            }
+            m.put(descriptor, d);
         }
         return m;
     }
 
     /**
-     * Used to build {@link Describable} instance list from &lt;f:hetero-list> tag.
+     * Used to build {@link Describable} instance list from {@code <f:hetero-list>} tag.
      *
      * @param req
      *      Request that represents the form submission.

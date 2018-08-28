@@ -115,7 +115,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     }
 
     /**
-     * Calculates the first transient build record. Everything >= this will be discarded when AJAX call is made.
+     * Calculates the first transient build record. Everything ≥ this will be discarded when AJAX call is made.
      *
      * @param historyPageFilter
      *      The history page filter containing the list of builds.

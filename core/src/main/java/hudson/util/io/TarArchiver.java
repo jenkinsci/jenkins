@@ -32,8 +32,11 @@ import hudson.util.IOUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
@@ -99,16 +102,19 @@ final class TarArchiver extends Archiver {
         try {
             if (!file.isDirectory()) {
                 // ensure we don't write more bytes than the declared when we created the entry
-                
-                try (FileInputStream fin = new FileInputStream(file);
+
+                try (InputStream fin = Files.newInputStream(file.toPath());
                      BoundedInputStream in = new BoundedInputStream(fin, size)) {
-                    int len;
-                    while ((len = in.read(buf)) >= 0) {
-                        tar.write(buf, 0, len);
+                    // Separate try block not to wrap exception thrown while opening the input stream into an exception
+                    // indicating a problem while writing
+                    try {
+                        int len;
+                        while ((len = in.read(buf)) >= 0) {
+                            tar.write(buf, 0, len);
+                        }
+                    } catch (IOException | InvalidPathException e) {// log the exception in any case
+                        throw new IOException("Error writing to tar file from: " + file, e);
                     }
-                } catch (IOException e) {// log the exception in any case
-                    IOException ioE = new IOException("Error writing to tar file from: " + file, e);
-                    throw ioE;
                 }
             }
         } finally { // always close the entry

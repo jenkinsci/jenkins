@@ -41,7 +41,7 @@ import java.util.HashMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MultipartFormDataParser {
+public class MultipartFormDataParser implements AutoCloseable {
     private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
     private final Map<String,FileItem> byName = new HashMap<String,FileItem>();
 
@@ -71,6 +71,12 @@ public class MultipartFormDataParser {
     public void cleanUp() {
         for (FileItem item : byName.values())
             item.delete();
+    }
+
+    /** Alias for {@link #cleanUp}. */
+    @Override
+    public void close() {
+        cleanUp();
     }
 
     /**

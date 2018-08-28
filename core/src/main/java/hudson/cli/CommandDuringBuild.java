@@ -36,7 +36,9 @@ import java.io.IOException;
  * Base class for those commands that are valid only during a build.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Limited to Remoting-based protocol.
  */
+@Deprecated
 public abstract class CommandDuringBuild extends CLICommand {
     /**
      * This method makes sense only when called from within the build kicked by Jenkins.

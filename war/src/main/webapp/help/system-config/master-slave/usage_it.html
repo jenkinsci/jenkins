@@ -1,0 +1,38 @@
+<div>
+  Controlla la modalità con cui Jenkins pianifica le compilazioni su questo nodo.
+
+  <dl>
+    <dt><b>
+      Utilizza questo nodo il più possibile
+    </b></dt>
+    <dd>
+      Questa è l'impostazione predefinita.
+      <br>
+      In questa modalità Jenkins utilizza questo nodo liberamente. Ogniqualvolta
+      esiste una compilazione che può essere eseguita utilizzando questo nodo,
+      Jenkins lo userà.
+    </dd>
+
+    <dt><b>
+      Esegui solo processi di compilazione con espressioni etichetta corrispondenti a questo nodo
+    </b></dt>
+    <dd>
+      In questa modalità, Jenkins compilerà un progetto su questo nodo solo
+      quando quel progetto è limitato a dati nodi utilizzando un'espressione
+      etichetta e quando tale espressione corrisponde al nome e/o alle
+      etichette di questo nodo.
+      <p>
+      Ciò consente a un nodo di essere dedicato a determinati tipi di processi.
+      Ad esempio, se si hanno processi che eseguono test di performance, si
+      potrebbe desiderare che questi siano eseguiti solo su una macchina
+      appositamente configurata impedendo allo stesso tempo a tutti gli altri
+      processi di utilizzare tale macchina. Per fare ciò, si dovrebbe restringere
+      l'insieme delle macchine su cui possono essere eseguiti i processi di test
+      attribuendo a loro un'espressione etichetta corrispondente a tale macchina.
+      <br>
+      Inoltre, se si imposta il valore <i>numero di esecutori</i> a <tt>1</tt>,
+      ci si può assicurare che solo un test di performance venga eseguito in
+      qualunque momento su tale macchina; nessun'altra compilazione interferirà.
+    </dd>
+  </dl>
+</div>

@@ -42,6 +42,7 @@ THE SOFTWARE.
       evaluating a page that has called l:layout tag.
     </st:attribute>
   </st:documentation>
+  <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
   <j:choose>
     <j:when test="${rootURL!=null}">
       <!-- no envelope needed, since this is called during full HTML rendering. Don't overwrite content-type either -->

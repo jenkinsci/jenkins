@@ -60,7 +60,7 @@ import jenkins.model.Jenkins;
 public abstract class SCMListener implements ExtensionPoint {
 
     /**
-     * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} is called.
+     * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} is called.
      * @param pollingBaseline information about what actually was checked out, if that is available, and this checkout is intended to be included in the build’s polling (if it does any at all)
      * @throws Exception if the checkout should be considered failed
      * @since 1.568

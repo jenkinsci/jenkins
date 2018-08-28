@@ -123,19 +123,39 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            return super.autoLogin(request, response);
-        } catch (Exception e) {
-            cancelCookie(request, response, "Failed to handle remember-me cookie: "+Functions.printThrowable(e));
+        if(Jenkins.getInstance().isDisableRememberMe()){
+            cancelCookie(request, response, null);
             return null;
+        }else {
+            try {
+                return super.autoLogin(request, response);
+            } catch (Exception e) {
+                cancelCookie(request, response, "Failed to handle remember-me cookie: " + Functions.printThrowable(e));
+                return null;
+            }
         }
     }
 
-	@Override
-	protected Cookie makeValidCookie(String tokenValueBase64, HttpServletRequest request, long maxAge) {
-		Cookie cookie = super.makeValidCookie(tokenValueBase64, request, maxAge);
+    @Override
+    protected Cookie makeValidCookie(String tokenValueBase64, HttpServletRequest request, long maxAge) {
+        Cookie cookie = super.makeValidCookie(tokenValueBase64, request, maxAge);
+        secureCookie(cookie, request);
+        return cookie;
+    }
+
+    @Override 
+    protected Cookie makeCancelCookie(HttpServletRequest request) {
+        Cookie cookie = super.makeCancelCookie(request);
+        secureCookie(cookie, request);
+        return cookie;
+    }
+    
+    /**
+     * Force always the http-only flag and depending on the request, put also the secure flag.
+     */
+    private void secureCookie(Cookie cookie, HttpServletRequest request){
         // if we can mark the cookie HTTP only, do so to protect this cookie even in case of XSS vulnerability.
-		if (SET_HTTP_ONLY!=null) {
+        if (SET_HTTP_ONLY!=null) {
             try {
                 SET_HTTP_ONLY.invoke(cookie,true);
             } catch (IllegalAccessException e) {
@@ -148,12 +168,10 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         // if the user is running Jenkins over HTTPS, we also want to prevent the cookie from leaking in HTTP.
         // whether the login is done over HTTPS or not would be a good enough approximation of whether Jenkins runs in
         // HTTPS or not, so use that.
-        if (request.isSecure())
-            cookie.setSecure(true);
-		return cookie;
-	}
+        cookie.setSecure(request.isSecure());
+    }
 
-	/**
+    /**
      * Used to compute the token signature securely.
      */
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class,"mac");

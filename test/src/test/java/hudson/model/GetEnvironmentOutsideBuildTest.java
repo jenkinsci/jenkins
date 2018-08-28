@@ -6,8 +6,10 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 
 import hudson.EnvVars;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.StreamTaskListener;
 
@@ -69,24 +71,23 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenModuleSet m = createSimpleMavenProject();
 
-        assertGetEnvironmentCallOutsideBuildWorks(m);
+        final MavenModuleSetBuild build = buildAndAssertSuccess(m);
+
+        assertGetEnvironmentWorks(build);
     }
 
     public void testFreestyle() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
 
-        assertGetEnvironmentCallOutsideBuildWorks(project);
+        final FreeStyleBuild build = buildAndAssertSuccess(project);
+
+        assertGetEnvironmentWorks(build);
     }
 
     public void testMatrix() throws Exception {
         MatrixProject createMatrixProject = jenkins.createProject(MatrixProject.class, "mp");
 
-        assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void assertGetEnvironmentCallOutsideBuildWorks(AbstractProject job) throws Exception {
-        AbstractBuild build = buildAndAssertSuccess(job);
+        final MatrixBuild build = buildAndAssertSuccess(createMatrixProject);
 
         assertGetEnvironmentWorks(build);
     }
