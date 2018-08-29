@@ -4280,7 +4280,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
-        LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+        LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                 getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
@@ -4311,7 +4311,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
-                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
