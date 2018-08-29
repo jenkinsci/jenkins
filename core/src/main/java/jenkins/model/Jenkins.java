@@ -4196,7 +4196,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
-                    LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                    LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
@@ -4233,7 +4233,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
                         Thread.sleep(10000);
-                        LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                        LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
                         for (RestartListener listener : RestartListener.all())
                             listener.onRestart();
                         lifecycle.restart();
@@ -4280,7 +4280,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
-        LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+        LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                 getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
@@ -4311,7 +4311,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
-                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
