@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 /**
  * Extension point for collecting JEP-214 telemetry.
  *
- * @link https://github.com/jenkinsci/jep/tree/master/jep/214
+ * @see <a href="https://github.com/jenkinsci/jep/tree/master/jep/214">JEP-214</a>
  */
 public abstract class Telemetry implements ExtensionPoint {
     /**
