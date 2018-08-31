@@ -1,0 +1,43 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <div>
+        Knowing how Jenkins is used is a tremendous help in guiding the direction of the development, especially
+        for open-source projects where users are inherently hard to track down. When this option is enabled,
+        Jenkins periodically send information about your usage of Jenkins.
+    </div>
+    <div>
+        <p>As part of general usage statistics, Jenkins reports the following:</p>
+
+        <ul>
+            <li>Your Jenkins version</li>
+            <li>For your master and each agent, OS type, and # of executors</li>
+            <li>Plugins that are installed and their versions</li>
+            <li>Number of jobs per each job type in your Jenkins</li>
+        </ul>
+
+        <p>
+            The information doesn't contain anything that identifies you or allows us to contact you (except information
+            inherently revealed by HTTP, such as the IP address). Aggregated, monthly updated summaries of these usage
+            statistics submissions are published at <a href="https://stats.jenkins.io">stats.jenkins.io</a>.
+        </p>
+    </div>
+    <div>
+        <p>
+            In addition to the above, the Jenkins project collects usage telemetry to inform future development in so-called trials.
+            Each trial has a specific purpose and a defined end date, after which collection stops (independent of installed Jenkins or plugin versions).
+            Once finished, these results may be aggregated and shared with the developer community.
+        </p>
+        <p>
+            The following trials are currently set up on this instance:
+        </p>
+        <j:invokeStatic className="jenkins.telemetry.Telemetry" method="all" var="collectors"/>
+        <dl>
+        <j:forEach items="${collectors}" var="collector">
+            <dt>${collector.displayName}</dt>
+            <dd>
+                <st:include from="${collector}" optional="true" page="description.jelly"/>
+            </dd>
+        </j:forEach>
+        </dl>
+    </div>
+</j:jelly>
