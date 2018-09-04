@@ -28,10 +28,14 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.model.listeners.ItemListener;
@@ -111,12 +115,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -182,10 +186,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     protected View(String name) {
         this.name = name;
+        TransientViewActionFactoryExtensionListListener.addView(this);
     }
 
     protected View(String name, ViewGroup owner) {
-        this.name = name;
+        this(name);
         this.owner = owner;
     }
 
@@ -1407,4 +1412,39 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Message<View> NEW_PRONOUN = new Message<View>();
 
     private final static Logger LOGGER = Logger.getLogger(View.class.getName());
+
+    /**
+     * An ExtensionListener that will listen for new {@link TransientViewActionFactory}s (probably when installing a new
+     * plugin) and invalidate the {@link View#transientActions} cache so that the new factory can be used to populate
+     * the view.
+     */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static class TransientViewActionFactoryExtensionListListener extends ExtensionListListener {
+
+        /**
+         * A weak hashset of views that will need to be invalidated for the new {@link TransientViewActionFactory}
+         * to be used
+         */
+        private static Set<View> views = Collections.newSetFromMap(new WeakHashMap<View, Boolean>());
+
+        private static void addView(View view) {
+            views.add(view);
+        }
+
+        /**
+         * Install this listener to the Downloadable extension list after all extensions have been loaded; we only
+         * care about those that are added after initialization
+         */
+        @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
+        public static void installListener() {
+            ExtensionList.lookup(TransientViewActionFactory.class).addListener(new TransientViewActionFactoryExtensionListListener());
+        }
+
+        @Override
+        public void onChange() {
+            // Invalidate the cache for the views, as we have a new TransientViewActionFactory that will contribute to it.
+            views.forEach(view -> view.transientActions = null);
+        }
+    }
 }
