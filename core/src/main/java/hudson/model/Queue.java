@@ -1890,7 +1890,7 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
-         * @see hudson.model.LoadBalancer#assignGreedily
+         * @see hudson.model.LoadBalancer#assignGreedily()
          */
         default String getAffinityKey() { return getFullDisplayName(); }
 
