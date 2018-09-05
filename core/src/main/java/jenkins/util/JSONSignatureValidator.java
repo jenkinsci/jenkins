@@ -2,10 +2,15 @@ package jenkins.util;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
+
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
@@ -20,7 +25,9 @@ import java.io.OutputStreamWriter;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
@@ -78,63 +85,150 @@ public class JSONSignatureValidator {
                 CertificateUtil.validatePath(certs, loadTrustAnchors(cf));
             }
 
-            // this is for computing a digest to check sanity
-            MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-            DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(),sha1);
-
-            // this is for computing a signature
-            Signature sig = Signature.getInstance("SHA1withRSA");
             if (certs.isEmpty()) {
                 return FormValidation.error("No certificate found in %s. Cannot verify the signature", name);
-            } else {    
+            }
+
+            // check the better digest first
+            FormValidation resultSha512 = null;
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-512");
+                Signature sig = Signature.getInstance("SHA512withRSA");
                 sig.initVerify(certs.get(0));
-            }
-            SignatureOutputStream sos = new SignatureOutputStream(sig);
-
-            // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
-            // that only covers the earlier portion of the file. This was caused by the lack of close() call
-            // in the canonical writing, which apparently leave some bytes somewhere that's not flushed to
-            // the digest output stream. This affects Jenkins [1.424,1,431].
-            // Jenkins 1.432 shipped with the "fix" (1eb0c64abb3794edce29cbb1de50c93fa03a8229) that made it
-            // compute the correct digest, but it breaks all the existing UC json metadata out there. We then
-            // quickly discovered ourselves in the catch-22 situation. If we generate UC with the correct signature,
-            // it'll cut off [1.424,1.431] from the UC. But if we don't, we'll cut off [1.432,*).
-            //
-            // In 1.433, we revisited 1eb0c64abb3794edce29cbb1de50c93fa03a8229 so that the original "digest"/"signature"
-            // pair continues to be generated in a buggy form, while "correct_digest"/"correct_signature" are generated
-            // correctly.
-            //
-            // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
-            // the attacker to inject a fragment at the end of the json.
-            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8")).close();
-
-            // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
-            // (which is more likely than someone tampering with update center), we can tell
-            String computedDigest = new String(Base64.encode(sha1.digest()));
-            String providedDigest = signature.optString("correct_digest");
-            if (providedDigest==null) {
-                return FormValidation.error("No correct_digest parameter in "+name+". This metadata appears to be old.");
-            }
-            if (!computedDigest.equalsIgnoreCase(providedDigest)) {
-                String msg = "Digest mismatch: computed=" + computedDigest + " vs expected=" + providedDigest + " in " + name;
-                if (LOGGER.isLoggable(Level.SEVERE)) {
-                    LOGGER.severe(msg);
-                    LOGGER.severe(o.toString(2));
+                resultSha512 = checkSpecificSignature(o, signature, digest, "correct_digest512", sig, "correct_signature512", "SHA-512");
+                switch (resultSha512.kind) {
+                    case ERROR:
+                        return resultSha512;
+                    case WARNING:
+                        LOGGER.log(Level.INFO, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
+                        break;
+                    case OK:
+                        // fall through
                 }
-                return FormValidation.error(msg);
+            } catch (NoSuchAlgorithmException nsa) {
+                LOGGER.log(Level.WARNING, "Failed to verify potential SHA-512 digest/signature, falling back to SHA-1", nsa);
             }
 
-            String providedSignature = signature.getString("correct_signature");
-            if (!sig.verify(Base64.decode(providedSignature.toCharArray()))) {
-                return FormValidation.error("Signature in the update center doesn't match with the certificate in "+name);
+            // if we get here, SHA-512 passed, wasn't provided, or the JRE is terrible.
+
+            MessageDigest digest = MessageDigest.getInstance("SHA1");
+            Signature sig = Signature.getInstance("SHA1withRSA");
+            sig.initVerify(certs.get(0));
+            FormValidation resultSha1 = checkSpecificSignature(o, signature, digest, "correct_digest", sig, "correct_signature", "SHA-1");
+
+            switch (resultSha1.kind) {
+                case ERROR:
+                    return resultSha1;
+                case WARNING:
+                    if (resultSha512.kind == FormValidation.Kind.WARNING) {
+                        // neither signature provided
+                        return FormValidation.error("No correct_signature or correct_signature512 entry found in '" + name + "'.");
+                    }
+                case OK:
+                    // fall through
             }
 
             if (warning!=null)  return warning;
             return FormValidation.ok();
         } catch (GeneralSecurityException e) {
-            return FormValidation.error(e,"Signature verification failed in "+name);
+            return FormValidation.error(e, "Signature verification failed in "+name);
         }
     }
+
+
+    /**
+     * Computes the specified {@code digest} and {@code signature} for the provided {@code json} object and checks whether they match {@code digestEntry} and {@signatureEntry} in the provided {@code signatureJson} object.
+     *
+     * @param json the full update-center.json content
+     * @param signatureJson signature block from update-center.json
+     * @param digest digest to compute
+     * @param digestEntry key of the digest entry in {@code signatureJson} to check
+     * @param signature signature to compute
+     * @param signatureEntry key of the signature entry in {@code signatureJson} to check
+     * @param digestName name of the digest used for log/error messages
+     * @return {@link FormValidation.Kind#WARNING} if digest or signature are not provided, {@link FormValidation.Kind#OK} if check is successful, {@link FormValidation.Kind#ERROR} otherwise.
+     * @throws IOException if this somehow fails to write the canonical JSON representation to an in-memory stream.
+     */
+    private FormValidation checkSpecificSignature(JSONObject json, JSONObject signatureJson, MessageDigest digest, String digestEntry, Signature signature, String signatureEntry, String digestName) throws IOException {
+        // this is for computing a digest to check sanity
+        DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(), digest);
+        SignatureOutputStream sos = new SignatureOutputStream(signature);
+
+        String providedDigest = signatureJson.optString(digestEntry, null);
+        if (providedDigest == null) {
+            return FormValidation.warning("No '" + digestEntry + "' found");
+        }
+
+        String providedSignature = signatureJson.optString(signatureEntry, null);
+        if (providedSignature == null) {
+            return FormValidation.warning("No '" + signatureEntry + "' found");
+        }
+
+        // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
+        // that only covers the earlier portion of the file. This was caused by the lack of close() call
+        // in the canonical writing, which apparently leave some bytes somewhere that's not flushed to
+        // the digest output stream. This affects Jenkins [1.424,1,431].
+        // Jenkins 1.432 shipped with the "fix" (1eb0c64abb3794edce29cbb1de50c93fa03a8229) that made it
+        // compute the correct digest, but it breaks all the existing UC json metadata out there. We then
+        // quickly discovered ourselves in the catch-22 situation. If we generate UC with the correct signature,
+        // it'll cut off [1.424,1.431] from the UC. But if we don't, we'll cut off [1.432,*).
+        //
+        // In 1.433, we revisited 1eb0c64abb3794edce29cbb1de50c93fa03a8229 so that the original "digest"/"signature"
+        // pair continues to be generated in a buggy form, while "correct_digest"/"correct_signature" are generated
+        // correctly.
+        //
+        // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
+        // the attacker to inject a fragment at the end of the json.
+        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), Charsets.UTF_8)).close();
+
+        // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
+        // (which is more likely than someone tampering with update center), we can tell
+
+        if (!digestMatches(digest.digest(), providedDigest)) {
+            String msg = digestName + " digest mismatch: expected=" + providedDigest + " in '" + name + "'";
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.severe(msg);
+                LOGGER.severe(json.toString(2));
+            }
+            return FormValidation.error(msg);
+        }
+
+        if (!verifySignature(signature, providedSignature)) {
+            return FormValidation.error(digestName + " based signature in the update center doesn't match with the certificate in '"+name + "'");
+        }
+
+        return FormValidation.ok();
+    }
+
+    /**
+     * Utility method supporting both possible signature formats: Base64 and Hex
+     */
+    private boolean verifySignature(Signature signature, String providedSignature) {
+        try {
+            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
+                return true;
+            }
+        } catch (SignatureException|IOException ignore) {
+            // ignore
+        }
+
+        try {
+            if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
+                return true;
+            }
+        } catch (SignatureException|DecoderException ignore) {
+            // ignore
+        }
+        return false;
+    }
+
+    /**
+     * Utility method supporting both possible digest formats: Base64 and Hex
+     */
+    private boolean digestMatches(byte[] digest, String providedDigest) {
+        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.encode(digest)));
+    }
+
 
     protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,

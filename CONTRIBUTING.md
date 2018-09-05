@@ -13,7 +13,7 @@ This page provides information about contributing code to the Jenkins core codeb
     - In Jenkins project we usually use [OpenJDK](http://openjdk.java.net/),
   but you can use other JDKs as well.
     - Java 9 is **not supported** in Jenkins.
-  * Maven 3.3.9 or above. You can download it [here](https://maven.apache.org/download.cgi)
+  * Maven 3.5.3 or above. You can download it [here](https://maven.apache.org/download.cgi)
   * Any IDE which supports importing Maven projects
 4. Setup your development environment as described in [Preparing for Plugin Development](https://jenkins.io/doc/developer/tutorial/prepare/)
 
@@ -30,7 +30,7 @@ Building and debugging process is described [here](https://jenkins.io/doc/develo
 
 If you want simply to have the `jenkins.war` file as fast as possible without tests, run:
 
-    mvn clean package -pl war -am -DskipTests
+    mvn clean package -pl war -am -DskipTests -Dfindbugs.skip
 
 The WAR file will be created in `war/target/jenkins.war`.
 After that you can start Jenkins using Java CLI ([guide](https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins)).

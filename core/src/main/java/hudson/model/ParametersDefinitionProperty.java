@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -101,15 +102,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * Gets the names of all the parameter definitions.
      */
     public List<String> getParameterDefinitionNames() {
-        return new AbstractList<String>() {
-            public String get(int index) {
-                return parameterDefinitions.get(index).getName();
-            }
-
-            public int size() {
-                return parameterDefinitions.size();
-            }
-        };
+        return new DefinitionsAbstractList(this.parameterDefinitions);
     }
 
     @Nonnull
@@ -141,7 +134,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -190,7 +184,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         		values.add(value);
         	}
         }
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
@@ -245,5 +240,21 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     public String getUrlName() {
         return null;
+    }
+
+    private static class DefinitionsAbstractList extends AbstractList<String> {
+        private final List<ParameterDefinition> parameterDefinitions;
+
+        public DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
+            this.parameterDefinitions = parameterDefinitions;
+        }
+
+        public String get(int index) {
+            return this.parameterDefinitions.get(index).getName();
+        }
+
+        public int size() {
+            return this.parameterDefinitions.size();
+        }
     }
 }

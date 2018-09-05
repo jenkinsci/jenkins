@@ -56,6 +56,8 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -531,6 +533,8 @@ public class UserTest {
     @Test
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());

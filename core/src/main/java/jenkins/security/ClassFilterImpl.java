@@ -129,7 +129,11 @@ public class ClassFilterImpl extends ClassFilter {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
             Boolean r = f.permits(_c);
             if (r != null) {
-                LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), r});
+                if (r) {
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), true});
+                } else {
+                    notifyRejected(_c, _c.getName(), String.format("%s specifies a policy for %s: %s ", f, _c.getName(), r));
+                }
                 return !r;
             }
         }
@@ -140,6 +144,7 @@ public class ClassFilterImpl extends ClassFilter {
                 return false;
             }
             if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true, but may issue diagnostics
+                notifyRejected(_c, _c.getName(), String.format("%s is not permitted ", _c.getName()));
                 return true;
             }
             if (c.isArray()) {
@@ -299,7 +304,7 @@ public class ClassFilterImpl extends ClassFilter {
             Boolean r = f.permits(name);
             if (r != null) {
                 if (r) {
-                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, r});
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, true});
                 } else {
                     notifyRejected(null, name,
                             String.format("%s specifies a policy for %s: %s", f, name, r));

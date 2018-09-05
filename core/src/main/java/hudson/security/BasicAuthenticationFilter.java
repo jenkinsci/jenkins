@@ -29,6 +29,7 @@ import hudson.util.Scrambler;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
+import jenkins.security.BasicApiTokenHelper;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 
@@ -135,12 +136,9 @@ public class BasicAuthenticationFilter implements Filter {
             return;
         }
 
-        {// attempt to authenticate as API token
-            // create is true as the user may not have been saved and the default api token may be in use.
-            // validation of the user will be performed against the underlying realm in impersonate.
-            User u = User.getById(username, true);
-            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-            if (t!=null && t.matchesPassword(password)) {
+        {
+            User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
+            if(u != null){
                 UserDetails userDetails = u.getUserDetailsForImpersonation();
                 Authentication auth = u.impersonate(userDetails);
 

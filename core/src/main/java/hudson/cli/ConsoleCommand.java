@@ -41,7 +41,7 @@ public class ConsoleCommand extends CLICommand {
     public int n = -1;
 
     protected int run() throws Exception {
-        job.checkPermission(Item.BUILD);
+        job.checkPermission(Item.READ);
 
         Run<?,?> run;
 
