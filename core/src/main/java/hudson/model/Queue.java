@@ -1890,7 +1890,8 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
-         * @see hudson.model.LoadBalancer#assignGreedily()
+         * Key for this task used for scheduling when searching for the next fee executor
+         * @see hudson.model.LoadBalancer
          */
         default String getAffinityKey() { return getFullDisplayName(); }
 
