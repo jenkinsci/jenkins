@@ -522,7 +522,11 @@ public final class FilePath implements Serializable {
      * @see #unzipFrom(InputStream)
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
-        // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
+    	if (target == null) {
+    		return;
+    	}
+    	
+    	// TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
             target.act(new UnzipRemote(in));
@@ -563,7 +567,11 @@ public final class FilePath implements Serializable {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
-        // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
+    	if (target == null) {
+    		return;
+    	}
+    	
+    	// TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
             target.act(new UntarRemote(compression, in));
@@ -970,9 +978,11 @@ public final class FilePath implements Serializable {
      * @since 1.293
      */
     public void copyFrom(URL url) throws IOException, InterruptedException {
-        try (InputStream in = url.openStream()) {
-            copyFrom(in);
-        }
+    	if (url != null) {
+	        try (InputStream in = url.openStream()) {
+	            copyFrom(in);
+	        }
+    	}
     }
 
     /**
@@ -992,14 +1002,16 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyFrom(FilePath src) throws IOException, InterruptedException {
-        src.copyTo(this);
+    	if (src != null) {
+    		src.copyTo(this);
+    	}
     }
 
     /**
      * Place the data from {@link FileItem} into the file location specified by this {@link FilePath} object.
      */
     public void copyFrom(FileItem file) throws IOException, InterruptedException {
-        if(channel==null) {
+        if(channel == null && file != null) {
             try {
                 file.write(writing(new File(remote)));
             } catch (IOException e) {
@@ -1056,11 +1068,12 @@ public final class FilePath implements Serializable {
      * so that one can perform local file operations.
      */
     public <T> T act(final FileCallable<T> callable) throws IOException, InterruptedException {
-        return act(callable,callable.getClass().getClassLoader());
+    	ClassLoader cl = callable != null ? callable.getClass().getClassLoader() : this.getClass().getClassLoader();
+    	return act(callable, cl);
     }
 
     private <T> T act(final FileCallable<T> callable, ClassLoader cl) throws IOException, InterruptedException {
-        if(channel!=null) {
+        if(channel != null) {
             // run this on a remote system
             try {
                 DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
@@ -1073,6 +1086,9 @@ public final class FilePath implements Serializable {
             }
         } else {
             // the file is on the local machine.
+        	if (callable == null) {
+        		return null;
+        	}
             return callable.invoke(new File(remote), localChannel);
         }
     }
@@ -1108,12 +1124,16 @@ public final class FilePath implements Serializable {
 
         @Override
         public final ClassLoader getClassLoader() {
-            return callable.getClassLoader();
+            return callable != null ? callable.getClassLoader() : this.getClassLoader();
         }
 
         public final T call() throws IOException {
             before();
             try {
+            	if (callable == null) {
+            		return null;
+            	}
+            	
                 return callable.call();
             } finally {
                 after();
@@ -1160,6 +1180,9 @@ public final class FilePath implements Serializable {
             return channel.call(callable);
         } else {
             // the file is on the local machine
+        	if (callable == null) {
+        		return null;
+        	}
             return callable.call();
         }
     }
@@ -1780,7 +1803,9 @@ public final class FilePath implements Serializable {
     private static void _chmod(File f, int mask) throws IOException {
         // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
         // Anyway the existing calls already skip this method if on Windows.
-        if (File.pathSeparatorChar==';')  return; // noop
+        if (File.pathSeparatorChar == ';' || f == null)  { 
+        	return; // noop
+        }
 
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
@@ -1834,7 +1859,7 @@ public final class FilePath implements Serializable {
 
     private static final class DirectoryFilter implements FileFilter, Serializable {
         public boolean accept(File f) {
-            return f.isDirectory();
+            return f != null && f.isDirectory();
         }
         private static final long serialVersionUID = 1L;
     }
@@ -2165,6 +2190,10 @@ public final class FilePath implements Serializable {
      * be on the some host
      */
     public void renameTo(final FilePath target) throws IOException, InterruptedException {
+    	if (target == null) {
+    		return;
+    	}
+    	
     	if(this.channel != target.channel) {
     		throw new IOException("renameTo target must be on the same host");
     	}
@@ -2189,7 +2218,11 @@ public final class FilePath implements Serializable {
      * @since 1.308.
      */
     public void moveAllChildrenTo(final FilePath target) throws IOException, InterruptedException {
-        if(this.channel != target.channel) {
+    	if (target == null) {
+    		return;
+    	}
+    	
+    	if(this.channel != target.channel) {
             throw new IOException("pullUpTo target must be on the same host");
         }
         act(new MoveAllChildrenTo(target));
@@ -2224,13 +2257,15 @@ public final class FilePath implements Serializable {
      * Copies this file to the specified target.
      */
     public void copyTo(FilePath target) throws IOException, InterruptedException {
-        try {
-            try (OutputStream out = target.write()) {
-                copyTo(out);
-            }
-        } catch (IOException e) {
-            throw new IOException("Failed to copy "+this+" to "+target,e);
-        }
+    	if (target != null) {
+	        try {
+	            try (OutputStream out = target.write()) {
+	                copyTo(out);
+	            }
+	        } catch (IOException e) {
+	            throw new IOException("Failed to copy "+this+" to "+target,e);
+	        }
+    	}
     }
 
     /**
@@ -2238,6 +2273,10 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
+    	if (target == null) {
+    		return;
+    	}
+    	
         // Use NIO copy with StandardCopyOption.COPY_ATTRIBUTES when copying on the same machine.
         if (this.channel == target.channel) {
             act(new CopyToWithPermission(target));
@@ -2390,7 +2429,11 @@ public final class FilePath implements Serializable {
      * @since 1.532
      */
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
-        if(this.channel==target.channel) {
+    	if (target == null) {
+    		return 0;
+    	}
+    	
+    	if(this.channel==target.channel) {
             // local to local copy.
             return act(new CopyRecursiveLocal(target, scanner));
         } else
@@ -2454,7 +2497,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Integer invoke(File base, VirtualChannel channel) throws IOException {
-            if (!base.exists()) {
+            if (base == null || !base.exists() || target == null || scanner == null) {
                 return 0;
             }
             assert target.channel == null;
@@ -2584,6 +2627,10 @@ public final class FilePath implements Serializable {
      *      number of files/directories that are written.
      */
     private Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
+    	if (scanner == null) {
+    		return 0;
+    	}
+    	
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
             scanner.scan(baseDir,reading(tw));
@@ -2714,15 +2761,17 @@ public final class FilePath implements Serializable {
             private static final long serialVersionUID = 1;
             @Override
             public String invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-                if(fileMasks.startsWith("~"))
+                if(fileMasks.startsWith("~")) {
                     return Messages.FilePath_TildaDoesntWork();
+                }
 
                 StringTokenizer tokens = new StringTokenizer(fileMasks,",");
 
                 while(tokens.hasMoreTokens()) {
                     final String fileMask = tokens.nextToken().trim();
-                    if(hasMatch(dir,fileMask,caseSensitive))
+                    if (hasMatch(dir,fileMask,caseSensitive)) {
                         continue;   // no error on this portion
+                    }
                     
                     // JENKINS-5253 - if we can get some match in case insensitive mode
                     // and user requested case sensitive match, notify the user
@@ -2748,7 +2797,9 @@ public final class FilePath implements Serializable {
                         String f=fileMask;
                         while(true) {
                             int idx = findSeparator(f);
-                            if(idx==-1)     break;
+                            if(idx==-1) {
+                            	break;
+                            }
                             f=f.substring(idx+1);
 
                             if(hasMatch(dir,f,caseSensitive))
@@ -2775,12 +2826,15 @@ public final class FilePath implements Serializable {
                                 String prefix="";
                                 while(true) {
                                     int idx = findSeparator(f);
-                                    if(idx==-1)     break;
+                                    if(idx==-1) {
+                                    	break;
+                                    }
 
                                     prefix+=f.substring(0,idx)+'/';
                                     f=f.substring(idx+1);
-                                    if(hasMatch(dir,prefix+fileMask,caseSensitive))
+                                    if(hasMatch(dir,prefix+fileMask,caseSensitive)) {
                                         return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask, prefix+fileMask);
+                                    }
                                 }
                             }
                         }
@@ -2801,10 +2855,12 @@ public final class FilePath implements Serializable {
 
                             int idx = findSeparator(pattern);
                             if(idx<0) {// no more path component left to go back
-                                if(pattern.equals(fileMask))
+                                if(pattern.equals(fileMask)) {
                                     return Messages.FilePath_validateAntFileMask_doesntMatchAnything(fileMask);
-                                else
+                                }
+                                else {
                                     return Messages.FilePath_validateAntFileMask_doesntMatchAnythingAndSuggest(fileMask,pattern);
+                                }
                             }
 
                             // cut off the trailing component and try again
@@ -2854,8 +2910,12 @@ public final class FilePath implements Serializable {
             private int findSeparator(String pattern) {
                 int idx1 = pattern.indexOf('\\');
                 int idx2 = pattern.indexOf('/');
-                if(idx1==-1)    return idx2;
-                if(idx2==-1)    return idx1;
+                if(idx1==-1) {
+                	return idx2;
+                }
+                if(idx2==-1) {
+                	return idx1;
+                }
                 return Math.min(idx1,idx2);
             }
     }
@@ -2896,7 +2956,9 @@ public final class FilePath implements Serializable {
      * Shortcut for {@link #validateFileMask(String,boolean,boolean)} with {@code errorIfNotExist} true, as the left-hand side can be null.
      */
     public static FormValidation validateFileMask(@CheckForNull FilePath path, String value, boolean caseSensitive) throws IOException {
-        if(path==null) return FormValidation.ok();
+        if(path==null) {
+        	return FormValidation.ok();
+        }
         return path.validateFileMask(value, true, caseSensitive);
     }
 
@@ -2924,8 +2986,9 @@ public final class FilePath implements Serializable {
         checkPermissionForValidate();
 
         value = fixEmpty(value);
-        if(value==null)
+        if(value==null) {
             return FormValidation.ok();
+        }
 
         try {
             if(!exists()) // no workspace. can't check
@@ -2958,34 +3021,45 @@ public final class FilePath implements Serializable {
         value = fixEmpty(value);
 
         // none entered yet, or something is seriously wrong
-        if(value==null) return FormValidation.ok();
+        if(value==null) {
+        	return FormValidation.ok();
+        }
 
         // a common mistake is to use wildcard
-        if(value.contains("*")) return FormValidation.error(Messages.FilePath_validateRelativePath_wildcardNotAllowed());
+        if(value.contains("*")) {
+        	return FormValidation.error(Messages.FilePath_validateRelativePath_wildcardNotAllowed());
+        }
 
         try {
-            if(!exists())    // no base directory. can't check
+            if(!exists()) { // no base directory. can't check
                 return FormValidation.ok();
+            }
 
             FilePath path = child(value);
             if(path.exists()) {
                 if (expectingFile) {
-                    if(!path.isDirectory())
+                    if(!path.isDirectory()) {
                         return FormValidation.ok();
-                    else
+                    } else {
                         return FormValidation.error(Messages.FilePath_validateRelativePath_notFile(value));
+                    }
                 } else {
-                    if(path.isDirectory())
+                    if(path.isDirectory()) {
                         return FormValidation.ok();
-                    else
+                    } else {
                         return FormValidation.error(Messages.FilePath_validateRelativePath_notDirectory(value));
+                    }
                 }
             }
 
             String msg = expectingFile ? Messages.FilePath_validateRelativePath_noSuchFile(value) : 
                 Messages.FilePath_validateRelativePath_noSuchDirectory(value);
-            if(errorIfNotExist)     return FormValidation.error(msg);
-            else                    return FormValidation.warning(msg);
+            if(errorIfNotExist) {
+            	return FormValidation.error(msg);
+            }
+            else {
+            	return FormValidation.warning(msg);
+            }
         } catch (InterruptedException e) {
             return FormValidation.ok();
         }
@@ -3017,8 +3091,11 @@ public final class FilePath implements Serializable {
     }
 
     public VirtualChannel getChannel() {
-        if(channel!=null)   return channel;
-        else                return localChannel;
+        if(channel!=null) {
+        	return channel;
+        } else {
+        	return localChannel;
+        }
     }
 
     /**
@@ -3031,8 +3108,9 @@ public final class FilePath implements Serializable {
     private void writeObject(ObjectOutputStream oos) throws IOException {
         Channel target = Channel.current();
 
-        if(channel!=null && channel!=target)
+        if(channel!=null && channel!=target) {
             throw new IllegalStateException("Can't send a remote FilePath to a different remote channel");
+        }
 
         oos.defaultWriteObject();
         oos.writeBoolean(channel==null);
@@ -3071,7 +3149,7 @@ public final class FilePath implements Serializable {
 
         public FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
-            this.classLoader = callable.getClass().getClassLoader();
+            this.classLoader = callable != null ? callable.getClass().getClassLoader() : this.getClassLoader();
         }
 
         private FileCallableWrapper(FileCallable<T> callable, ClassLoader classLoader) {
@@ -3081,6 +3159,9 @@ public final class FilePath implements Serializable {
 
         public T call() throws IOException {
             try {
+            	if (callable == null) {
+            		return null;
+            	}
                 return callable.invoke(new File(remote), Channel.current());
             } catch (InterruptedException e) {
                 throw new TunneledInterruptedException(e);
@@ -3092,7 +3173,9 @@ public final class FilePath implements Serializable {
          */
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
-            callable.checkRoles(checker);
+        	if (callable != null) {
+        		callable.checkRoles(checker);
+        	}
         }
 
         public ClassLoader getClassLoader() {
@@ -3101,6 +3184,10 @@ public final class FilePath implements Serializable {
 
         @Override
         public String toString() {
+        	if (callable == null) {
+        		return null;
+        	}
+        	
             return callable.toString();
         }
 
@@ -3188,7 +3275,9 @@ public final class FilePath implements Serializable {
      */
     private FileVisitor reading(final FileVisitor v) {
         final FilePathFilter filter = FilePathFilter.current();
-        if (filter==null)    return v;
+        if (filter==null) {
+        	return v;
+        }
 
         return new FileVisitor() {
             @Override
@@ -3239,8 +3328,9 @@ public final class FilePath implements Serializable {
      */
     private File writing(File f) {
         FilePathFilter filter = filterNonNull();
-        if (!f.exists())
+        if (!f.exists()) {
             filter.create(f);
+        }
         filter.write(f);
         return f;
     }
@@ -3250,8 +3340,9 @@ public final class FilePath implements Serializable {
      */
     private File symlinking(File f) {
         FilePathFilter filter = filterNonNull();
-        if (!f.exists())
+        if (!f.exists()) {
             filter.create(f);
+        }
         filter.symlink(f);
         return f;
     }
@@ -3265,7 +3356,9 @@ public final class FilePath implements Serializable {
     }
 
     private boolean mkdirs(File dir) throws IOException {
-        if (dir.exists())   return false;
+        if (dir.exists()) {
+        	return false;
+        }
 
         filterNonNull().mkdirs(dir);
         Files.createDirectories(fileToPath(dir));
