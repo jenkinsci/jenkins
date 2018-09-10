@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010-2011, CloudBees, Inc.
+ * Copyright (c) 2018, Tenable, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * Turns a text into a anchor link by specifying the anchor separately.
  * Allows to create links directly into a longer log.
  *
- * @author RB based on HyperlinkNote by Kohsuke Kawaguchi
+ * @author Ralph Boerger based on HyperlinkNote by Kohsuke Kawaguchi
  * @since ???
  */
 public class AnchorNote extends ConsoleNote {
