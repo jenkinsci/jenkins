@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  * Allows to create links directly into a longer log.
  *
  * @author Ralph Boerger based on HyperlinkNote by Kohsuke Kawaguchi
- * @since ???
+ * @since TODO
  */
 public class AnchorNote extends ConsoleNote {
     private final String anchor;
