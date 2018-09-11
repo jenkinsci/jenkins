@@ -52,7 +52,7 @@ public class SecuritySystemProperties extends Telemetry {
     @Nonnull
     @Override
     public LocalDate getStart() {
-        return LocalDate.of(2018, 8, 1);
+        return LocalDate.of(2018, 9, 1);
     }
 
     @Nonnull
