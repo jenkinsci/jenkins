@@ -50,7 +50,6 @@ import javax.annotation.Nonnull;
  * @see UpdateSite
  * @see DownloadService
  */
-@Restricted(NoExternalUse.class) // no clear reason for this to be an API
 @Extension @Symbol("downloadSettings")
 public final class DownloadSettings extends GlobalConfiguration implements PersistentDescriptor {
 
