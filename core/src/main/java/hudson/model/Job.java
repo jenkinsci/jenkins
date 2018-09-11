@@ -68,6 +68,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -305,7 +306,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         final TextFile nextBuildNumberFile = getNextBuildNumberFile();
         final String text = String.valueOf(nextBuildNumber) + '\n';
-        nextBuildNumberFile.write(text);
+        try {
+            nextBuildNumberFile.write(text);
+        }
+        catch (IOException ignored) {
+            final Path pathToFile = Util.fileToPath(nextBuildNumberFile.file);
+            LOGGER.log(Level.WARNING, "Could not save the next build number to file {0}.", pathToFile);
+        }
     }
 
     @Exported
