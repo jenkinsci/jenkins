@@ -303,7 +303,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (nextBuildNumber == 0) { // #3361
             nextBuildNumber = 1;
         }
-        getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
+        final TextFile nextBuildNumberFile = getNextBuildNumberFile();
+        nextBuildNumberFile.write(String.valueOf(nextBuildNumber) + '\n');
     }
 
     @Exported
