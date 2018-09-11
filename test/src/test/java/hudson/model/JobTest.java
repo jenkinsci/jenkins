@@ -61,6 +61,7 @@ import jenkins.model.ProjectNamingStrategy;
 
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.util.io.LinesStream;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -182,6 +183,28 @@ public class JobTest {
                 stop.countDown();
             }
         }
+    }
+
+    @Test public void saveNextBuildNumberShouldNeverFail() throws Exception {
+        final AbstractProject project = j.createFreeStyleProject();
+        final TextFile nextBuildNumberFile = project.getNextBuildNumberFile();
+
+        final int initialRunNumber = project.assignBuildNumber();
+        assertEquals(1, initialRunNumber);
+
+        // purposely lock the file, preventing it from being saved
+        try (final LinesStream stream = nextBuildNumberFile.linesStream()) {
+
+            final int secondRunNumber = project.assignBuildNumber();
+            assertEquals(2, secondRunNumber);
+
+            project.updateNextBuildNumber(4);
+            final int thirdRunNumber = project.getNextBuildNumber();
+            assertEquals(4, thirdRunNumber);
+        }
+
+        final int fourthRunNumber = project.assignBuildNumber();
+        assertEquals(4, fourthRunNumber);
     }
 
     @SuppressWarnings("unchecked")
