@@ -28,9 +28,13 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
 import hudson.model.AsyncPeriodicWork;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.model.UsageStatistics;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
@@ -42,6 +46,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,17 +101,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * @return
      */
     @Nonnull
-    public abstract String createContent();
-
-    /**
-     * MIME type of the content sent to the telemetry service.
-     *
-     * @return MIME type
-     */
-    @Nonnull
-    public String getContentType() {
-        return "text/plain";
-    }
+    public abstract JSONObject createContent();
 
     public static ExtensionList<Telemetry> all() {
         return ExtensionList.lookup(Telemetry.class);
@@ -140,45 +135,52 @@ public abstract class Telemetry implements ExtensionPoint {
                     return;
                 }
 
-                String data = "";
+                JSONObject data = new JSONObject();
                 try {
                     data = telemetry.createContent();
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: " + telemetry.getDisplayName(), e);
                 }
 
-                String endpoint = BASE_ENDPOINT + telemetry.getId();
+                JSONObject wrappedData = new JSONObject();
+                wrappedData.put("type", telemetry.getId());
+                wrappedData.put("payload", data);
+                wrappedData.put("correlator", ExtensionList.lookupSingleton(Correlator.class).getCorrelationId());
 
                 try {
-                    URL url = new URL(endpoint);
+                    URL url = new URL(ENDPOINT);
                     URLConnection conn = ProxyConfiguration.open(url);
-                    if (!(conn instanceof HttpsURLConnection)) {
-                        // TODO not sure this check is a good idea, but worst possible outcome seems to be losing data from some instances, so that's fine.
-                        LOGGER.config("Refusing to communicate telemetry except via HTTPS: " + endpoint);
+                    if (!(conn instanceof HttpURLConnection)) {
+                        LOGGER.config("URL did not result in an HttpURLConnection: " + ENDPOINT);
                         return;
                     }
                     HttpURLConnection http = (HttpURLConnection) conn;
-                    http.setRequestProperty("Content-Type", telemetry.getContentType() + "; charset=utf-8");
+                    http.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                     http.setDoOutput(true);
 
+                    String body = wrappedData.toString();
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.finest("Submitting JSON: " + body);
+                    }
+
                     try (OutputStreamWriter writer = new OutputStreamWriter(http.getOutputStream(), StandardCharsets.UTF_8)) {
-                        writer.append(data);
+                        writer.append(body);
                     }
 
                     LOGGER.config("Telemetry submission received response '" + http.getResponseCode() + " " + http.getResponseMessage() + "' for: " + telemetry.getId());
                 } catch (MalformedURLException e) {
-                    LOGGER.config("Malformed endpoint URL: " + endpoint + " for telemetry: " + telemetry.getId());
+                    LOGGER.config("Malformed endpoint URL: " + ENDPOINT + " for telemetry: " + telemetry.getId());
                 } catch (IOException e) {
                     // deliberately low visibility, as temporary infra problems aren't a big deal and we'd
                     // rather have some unsuccessful submissions than admins opting out to clean up logs
-                    LOGGER.log(Level.CONFIG, "Failed to submit telemetry: " + telemetry.getId() + " to: " + endpoint, e);
+                    LOGGER.log(Level.CONFIG, "Failed to submit telemetry: " + telemetry.getId() + " to: " + ENDPOINT, e);
                 }
             });
         }
     }
 
     // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
-    private static final String BASE_ENDPOINT = "https://telemetry.jenkins.io/";
+    private static final String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://telemetry.jenkins.io/events");
 
     private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
 }

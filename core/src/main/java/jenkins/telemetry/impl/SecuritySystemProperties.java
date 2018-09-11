@@ -69,7 +69,7 @@ public class SecuritySystemProperties extends Telemetry {
 
     @Nonnull
     @Override
-    public String createContent() {
+    public JSONObject createContent() {
         Map<String, String> security = new TreeMap<>();
         putBoolean(security, "hudson.ConsoleNote.INSECURE", false);
         putBoolean(security, "hudson.model.ParametersAction.keepUndefinedParameters", false);
@@ -82,11 +82,10 @@ public class SecuritySystemProperties extends Telemetry {
 
         Map<String, Object> info = new TreeMap<>();
         info.put("core", Jenkins.getVersion().toString());
-        info.put("instance", Jenkins.get().getLegacyInstanceId());
         info.put("clientDate", clientDateString());
         info.put("properties", security);
 
-        return JSONObject.fromObject(info).toString();
+        return JSONObject.fromObject(info);
     }
 
     private static String clientDateString() {
@@ -107,11 +106,5 @@ public class SecuritySystemProperties extends Telemetry {
             reportedValue = Integer.toString(value.length());
         }
         propertiesMap.put(systemProperty, reportedValue);
-    }
-
-    @Nonnull
-    @Override
-    public String getContentType() {
-        return "application/json";
     }
 }
