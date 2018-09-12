@@ -58,7 +58,11 @@ import java.util.logging.Logger;
  */
 public abstract class Telemetry implements ExtensionPoint {
     /**
-     * ID of this collector, typically a basic alphanumeric string (and _- characters)
+     * ID of this collector, typically a basic alphanumeric string (and _- characters).
+     *
+     * Good IDs are globally unique and human readable (i.e. no UUIDs).
+     *
+     * For a periodically updated list of all public implementations, see {@see https://jenkins.io/doc/developer/extensions/jenkins-core/#telemetry}
      * 
      * @return ID of the collector, never null or empty
      */
@@ -139,7 +143,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 try {
                     data = telemetry.createContent();
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to build telemetry content for: " + telemetry.getDisplayName(), e);
+                    LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
                 }
 
                 JSONObject wrappedData = new JSONObject();
