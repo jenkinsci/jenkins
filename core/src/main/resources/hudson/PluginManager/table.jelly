@@ -167,8 +167,8 @@ THE SOFTWARE.
               <f:submit value="${%Download now and install after restart}" />
             </j:if>
             <st:include page="check.jelly"/>
-            </div>
           </div>
+        </div>
         <d:invokeBody />
       </form>
     </l:main-panel>
