@@ -58,6 +58,19 @@ THE SOFTWARE.
       <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
+
+        <div id="top-sticker" >
+          <div class="top-sticker-inner">
+            <j:if test="${!empty(list)}">
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
+              <f:submit value="${%Download now and install after restart}" />
+            </j:if>
+          </div>
+        </div>
+
         <div class="pane-frame">
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
@@ -159,13 +172,6 @@ THE SOFTWARE.
 
         <div id="bottom-sticker" >
           <div class="bottom-sticker-inner">
-            <j:if test="${!empty(list)}">
-              <j:if test="${!isUpdates}">
-                <f:submit value="${%Install without restart}" name="dynamicLoad" />
-                <span style="margin-left:2em;"></span>
-              </j:if>
-              <f:submit value="${%Download now and install after restart}" />
-            </j:if>
             <st:include page="check.jelly"/>
           </div>
         </div>
