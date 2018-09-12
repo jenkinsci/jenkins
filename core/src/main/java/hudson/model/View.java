@@ -546,10 +546,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<>();
-    	result.addAll(getOwner().getViewActions());
+        List<Action> result = new ArrayList<>();
+        result.addAll(getOwner().getViewActions());
         result.addAll(TransientViewActionFactory.createAllFor(this));
-    	return result;
+        return result;
     }
 
     public Object getDynamic(String token) {
