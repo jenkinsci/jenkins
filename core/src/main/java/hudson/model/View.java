@@ -546,11 +546,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
+    	List<Action> result = new ArrayList<>();
     	result.addAll(getOwner().getViewActions());
-    	synchronized (this) {
-            result.addAll(TransientViewActionFactory.createAllFor(this));
-    	}
+        result.addAll(TransientViewActionFactory.createAllFor(this));
     	return result;
     }
 
