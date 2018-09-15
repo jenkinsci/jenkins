@@ -43,7 +43,16 @@ import jenkins.security.SlaveToMasterCallable;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -64,7 +73,6 @@ import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
 import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import javax.annotation.Nonnull;
@@ -175,8 +183,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // let's do with what we have.
                     killers = Collections.emptyList();
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to obtain killers",e);
+            } catch (IOException | Error e) {
+                LOGGER.log(Level.WARNING, "Failed to obtain killers", e);
                 killers = Collections.emptyList();
             }
         return killers;
@@ -232,10 +240,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         void killByKiller() throws InterruptedException {
             for (ProcessKiller killer : getKillers())
                 try {
-                    if (killer.kill(this))
+                    if (killer.kill(this)) {
                         break;
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to kill pid="+getPid(),e);
+                    }
+                } catch (IOException | Error e) {
+                    LOGGER.log(Level.WARNING, "Failed to kill pid=" + getPid(), e);
                 }
         }
 
