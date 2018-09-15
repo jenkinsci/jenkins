@@ -75,9 +75,7 @@ public class ApiTokenStore {
         this.init();
     }
     
-    //TODO Properly investigate this
-    @SuppressFBWarnings("SE_READ_RESOLVE_MUST_RETURN_OBJECT")
-    private ApiTokenStore readResolve() {
+    private Object readResolve() {
         this.init();
         return this;
     }
@@ -358,9 +356,7 @@ public class ApiTokenStore {
             this.init();
         }
     
-        //TODO Properly investigate this
-        @SuppressFBWarnings("SE_READ_RESOLVE_MUST_RETURN_OBJECT")
-        private HashedToken readResolve() {
+        private Object readResolve() {
             this.init();
             return this;
         }
