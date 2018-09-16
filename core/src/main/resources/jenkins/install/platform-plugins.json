@@ -105,7 +105,8 @@
     {
         "category":"Languages",
         "plugins": [
-            { "name": "localization-zh-cn", "suggested": true }
+            { "name": "locale"},
+            { "name": "localization-zh-cn"}
         ]
     }
 ]
