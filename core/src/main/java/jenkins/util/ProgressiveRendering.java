@@ -204,6 +204,13 @@ public abstract class ProgressiveRendering {
     }
 
     /**
+     * @return whether the computation has finished.
+     */
+    public boolean isFinished() {
+        return (status < 0 || status >= 1);
+    }
+
+    /**
      * Actually do the work.
      * <p>The security context will be that in effect when the web request was made.
      * {@link Stapler#getCurrentRequest} will also be similar to that in effect when the web request was made;

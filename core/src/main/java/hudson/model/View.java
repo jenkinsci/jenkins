@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
  * Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,7 +55,6 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -65,7 +64,6 @@ import jenkins.model.item_category.ItemCategory;
 import jenkins.scm.RunWithSCM;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
-
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -74,9 +72,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -84,7 +85,9 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.SAXException;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
@@ -116,12 +119,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCM.*;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
-import org.xml.sax.SAXException;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -136,7 +133,7 @@ import org.xml.sax.SAXException;
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
  * which is included in the "new view" page. This page should have some
- * description of what the view is about. 
+ * description of what the view is about.
  * </ul>
  *
  * @author Kohsuke Kawaguchi
@@ -161,7 +158,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
-    
+
     /**
      * If true, only show relevant executors
      */
@@ -171,7 +168,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant queue items
      */
     protected boolean filterQueue;
-    
+
     protected transient List<Action> transientActions;
 
     /**
@@ -292,7 +289,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -365,7 +362,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-    
+
     /**
      * Enables or disables automatic refreshes of the view.
      * By default, automatic refreshes are enabled.
@@ -374,14 +371,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isAutomaticRefreshEnabled() {
         return true;
     }
-    
+
     /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
         return filterExecutors;
     }
-    
+
     /**
      * If true, only show relevant queue items
      */
@@ -420,7 +417,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return getOwner().getPrimaryView()==this;
     }
-    
+
     public List<Computer> getComputers() {
         Computer[] computers = Jenkins.getInstance().getComputers();
 
@@ -559,11 +556,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	}
     	return result;
     }
-    
+
     public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this); 
+        transientActions = TransientViewActionFactory.createAllFor(this);
     }
-    
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -708,15 +705,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public People(Jenkins parent) {
             this.parent = parent;
-            // for Hudson, really load all users
-            Map<User,UserInfo> users = getUserInfo(parent.getItems());
-            User unknown = User.getUnknown();
-            for (User u : User.getAll()) {
-                if(u==unknown)  continue;   // skip the special 'unknown' user
-                if(!users.containsKey(u))
-                    users.put(u,new UserInfo(u,null,null));
-            }
-            this.users = toList(users);
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
         public People(View parent) {
@@ -727,7 +716,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?, ?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     RunList<? extends Run<?, ?>> runs = job.getBuilds();
                     for (Run<?, ?> r : runs) {
                         if (r instanceof RunWithSCM) {
@@ -826,7 +821,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Override protected void compute() throws Exception {
             int itemCount = 0;
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?,?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     RunList<? extends Run<?, ?>> builds = job.getBuilds();
                     int buildCount = 0;
                     for (Run<?, ?> r : builds) {
@@ -868,27 +869,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 itemCount++;
                 progress(1.0 * itemCount / (items.size() + /* handling User.getAll */1));
             }
-            if (unknown != null) {
-                if (canceled()) {
-                    return;
-                }
-                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
-                    if (canceled()) {
-                        return;
-                    }
-                    if (u == unknown) {
-                        continue;
-                    }
-                    if (!users.containsKey(u)) {
-                        UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
-                        synchronized (this) {
-                            users.put(u, userInfo);
-                            modified.add(u);
-                        }
-                    }
-                }
-            }
+        }
+
+        // for testing purpose
+        @Restricted(NoExternalUse.class)
+            /*package*/ Set<User> getModified() {
+            return modified;
         }
 
         @Override protected synchronized JSON data() {
@@ -935,15 +921,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
-            
+
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine((String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName())));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
-        }        
+        }
     }
-    
+
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
@@ -956,7 +942,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return o.getName();
                 }
             });
-        
+
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
 
@@ -993,7 +979,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
+        updateTransientActions();
 
         save();
 
@@ -1026,7 +1012,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <p>
      * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
-     * 
+     *
      * @return
      *      null if fails.
      */
@@ -1126,11 +1112,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
-    
+
     public RunList getBuilds() {
         return new RunList(this);
     }
-    
+
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
@@ -1297,7 +1283,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static Permission getItemCreatePermission() {
         return Item.CREATE;
     }
-    
+
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
         String mode = req.getParameter("mode");
