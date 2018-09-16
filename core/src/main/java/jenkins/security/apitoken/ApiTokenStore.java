@@ -75,7 +75,7 @@ public class ApiTokenStore {
         this.init();
     }
     
-    private ApiTokenStore readResolve() {
+    private Object readResolve() {
         this.init();
         return this;
     }
