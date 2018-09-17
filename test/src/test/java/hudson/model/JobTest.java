@@ -310,8 +310,32 @@ public class JobTest {
         }).intValue());
     }
 
-    @Test public void onLoadAfterCreation() throws Exception {
+    @Test public void onLoadAfterCreation_LazyBuildMixin() throws Exception {
         final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterCreation(queueJob);
+    }
+
+    @Test public void onLoadAfterOneRun_LazyBuildMixin() throws Exception {
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterOneRun(queueJob);
+    }
+
+    @Test public void onLoadAfterTwoRuns_LazyBuildMixin() throws Exception {
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRuns(queueJob);
+    }
+
+    @Test public void onLoadAfterTwoRunsAndCorruption_LazyBuildMixin() throws Exception {
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRunsAndCorruption(queueJob);
+    }
+
+    @Test public void onLoadAfterTwoRunsAndDeletion_LazyBuildMixin() throws Exception {
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRunsAndDeletion(queueJob);
+    }
+
+    private void onLoadAfterCreation(final JobTest.QueueJob queueJob) throws Exception {
         final Job job = queueJob.getJob();
         job.saveNextBuildNumber();
         assertEquals(1, job.getNextBuildNumber());
@@ -322,8 +346,7 @@ public class JobTest {
         assertEquals(1, job.getNextBuildNumber());
     }
 
-    @Test public void onLoadAfterOneRun() throws Exception {
-        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+    private void onLoadAfterOneRun(final JobTest.QueueJob queueJob) throws Exception {
         scheduleAndWait(queueJob);
         final Job job = queueJob.getJob();
         assertEquals(2, job.getNextBuildNumber());
@@ -334,8 +357,7 @@ public class JobTest {
         assertEquals(2, job.getNextBuildNumber());
     }
 
-    @Test public void onLoadAfterTwoRuns() throws Exception {
-        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+    private void onLoadAfterTwoRuns(final JobTest.QueueJob queueJob) throws Exception {
         scheduleAndWait(queueJob);
         scheduleAndWait(queueJob);
         final Job job = queueJob.getJob();
@@ -347,8 +369,7 @@ public class JobTest {
         assertEquals(3, job.getNextBuildNumber());
     }
 
-    @Test public void onLoadAfterTwoRunsAndCorruption() throws Exception {
-        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+    private void onLoadAfterTwoRunsAndCorruption(final JobTest.QueueJob queueJob) throws Exception {
         scheduleAndWait(queueJob);
         scheduleAndWait(queueJob);
         final Job job = queueJob.getJob();
@@ -361,8 +382,7 @@ public class JobTest {
         assertEquals(3, job.getNextBuildNumber());
     }
 
-    @Test public void onLoadAfterTwoRunsAndDeletion() throws Exception {
-        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+    private void onLoadAfterTwoRunsAndDeletion(final JobTest.QueueJob queueJob) throws Exception {
         scheduleAndWait(queueJob);
         scheduleAndWait(queueJob);
         final Job job = queueJob.getJob();
