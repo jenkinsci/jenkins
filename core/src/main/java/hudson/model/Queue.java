@@ -1897,7 +1897,13 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
-         * Key for this task used for scheduling when searching for the next fee executor
+         * Returns task-specific key which is used by the {@link LoadBalancer} to choose one particular executor
+         * amongst all the free executors on all possibly suitable nodes.
+         * NOTE: To be able to re-use the same node during the next run this key should not change from one run to
+         * another. You probably want to compute that key based on the job's name.
+         * <p>
+         * @return by default: {@link #getFullDisplayName()}
+         *
          * @see hudson.model.LoadBalancer
          */
         default String getAffinityKey() { return getFullDisplayName(); }
