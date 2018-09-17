@@ -1476,16 +1476,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, @Nonnull XMLOutput out) throws IOException {
-        try {
-			getLogText().writeHtmlTo(offset,out.asWriter());
-		} catch (IOException e) {
-			// try to fall back to the old getLogInputStream()
-			// mainly to support .gz compressed files
-			// In this case, console annotation handling will be turned off.
-			try (InputStream input = getLogInputStream()) {
-				IOUtils.copy(input, out.asWriter());
-			}
-		}
+        getLogText().writeHtmlTo(offset, out.asWriter());
     }
 
     /**
