@@ -56,7 +56,6 @@ import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -312,66 +311,102 @@ public class JobTest {
     }
 
     @Test public void onLoadAfterCreation() throws Exception {
-        final AbstractProject project = j.createFreeStyleProject();
-        project.saveNextBuildNumber();
-        assertEquals(1, project.getNextBuildNumber());
-        project.nextBuildNumber = 0;
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        final Job job = queueJob.getJob();
+        job.saveNextBuildNumber();
+        assertEquals(1, job.getNextBuildNumber());
+        job.nextBuildNumber = 0;
 
-        project.onLoad(j.jenkins, project.name);
+        job.onLoad(j.jenkins, job.name);
 
-        assertEquals(1, project.getNextBuildNumber());
+        assertEquals(1, job.getNextBuildNumber());
     }
 
     @Test public void onLoadAfterOneRun() throws Exception {
-        final AbstractProject project = j.createFreeStyleProject();
-        scheduleAndWait(project);
-        assertEquals(2, project.getNextBuildNumber());
-        project.nextBuildNumber = 0;
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        scheduleAndWait(queueJob);
+        final Job job = queueJob.getJob();
+        assertEquals(2, job.getNextBuildNumber());
+        job.nextBuildNumber = 0;
 
-        project.onLoad(j.jenkins, project.name);
+        job.onLoad(j.jenkins, job.name);
 
-        assertEquals(2, project.getNextBuildNumber());
+        assertEquals(2, job.getNextBuildNumber());
     }
 
     @Test public void onLoadAfterTwoRuns() throws Exception {
-        final AbstractProject project = j.createFreeStyleProject();
-        scheduleAndWait(project);
-        scheduleAndWait(project);
-        assertEquals(3, project.getNextBuildNumber());
-        project.nextBuildNumber = 0;
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        scheduleAndWait(queueJob);
+        scheduleAndWait(queueJob);
+        final Job job = queueJob.getJob();
+        assertEquals(3, job.getNextBuildNumber());
+        job.nextBuildNumber = 0;
 
-        project.onLoad(j.jenkins, project.name);
+        job.onLoad(j.jenkins, job.name);
 
-        assertEquals(3, project.getNextBuildNumber());
+        assertEquals(3, job.getNextBuildNumber());
     }
 
     @Test public void onLoadAfterTwoRunsAndCorruption() throws Exception {
-        final AbstractProject project = j.createFreeStyleProject();
-        scheduleAndWait(project);
-        scheduleAndWait(project);
-        assertEquals(3, project.getNextBuildNumber());
-        project.getNextBuildNumberFile().write("corrupting file on purpose\n");
-        project.nextBuildNumber = 0;
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        scheduleAndWait(queueJob);
+        scheduleAndWait(queueJob);
+        final Job job = queueJob.getJob();
+        assertEquals(3, job.getNextBuildNumber());
+        job.getNextBuildNumberFile().write("corrupting file on purpose\n");
+        job.nextBuildNumber = 0;
 
-        project.onLoad(j.jenkins, project.name);
+        job.onLoad(j.jenkins, job.name);
 
-        assertEquals(3, project.getNextBuildNumber());
+        assertEquals(3, job.getNextBuildNumber());
     }
 
     @Test public void onLoadAfterTwoRunsAndDeletion() throws Exception {
-        final AbstractProject project = j.createFreeStyleProject();
-        scheduleAndWait(project);
-        scheduleAndWait(project);
-        assertEquals(3, project.getNextBuildNumber());
-        project.getNextBuildNumberFile().file.delete();
-        project.nextBuildNumber = 0;
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        scheduleAndWait(queueJob);
+        scheduleAndWait(queueJob);
+        final Job job = queueJob.getJob();
+        assertEquals(3, job.getNextBuildNumber());
+        job.getNextBuildNumberFile().file.delete();
+        job.nextBuildNumber = 0;
 
-        project.onLoad(j.jenkins, project.name);
+        job.onLoad(j.jenkins, job.name);
 
-        assertEquals(3, project.getNextBuildNumber());
+        assertEquals(3, job.getNextBuildNumber());
     }
 
-    private void scheduleAndWait(final Queue.Task task) throws ExecutionException, InterruptedException {
+    private interface QueueJob {
+        Queue.Task getTask();
+        Job getJob();
+    }
+
+    private static class LazyBuildMixInQueueJob implements QueueJob {
+
+        private final AbstractProject project;
+
+        // TODO: should accept LazyBuildMixin directly, but I couldn't figure out the type parameters
+        public LazyBuildMixInQueueJob(final AbstractProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public Queue.Task getTask() {
+            return project;
+        }
+
+        @Override
+        public Job getJob() {
+            return project;
+        }
+    }
+
+    private QueueJob createLazyBuildMixinQueueJob() throws IOException {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        return new LazyBuildMixInQueueJob(freeStyleProject);
+    }
+
+    private void scheduleAndWait(final QueueJob queueJob) throws ExecutionException, InterruptedException {
+        final Queue.Task task  = queueJob.getTask();
         final Queue queue = j.jenkins.getQueue();
         final int quietPeriod = 0;
         final Cause c = new Cause.LegacyCodeCause();
