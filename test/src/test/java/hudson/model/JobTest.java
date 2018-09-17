@@ -329,6 +329,18 @@ public class JobTest {
         assertEquals(2, project.getNextBuildNumber());
     }
 
+    @Test public void onLoadAfterTwoRuns() throws Exception {
+        final AbstractProject project = j.createFreeStyleProject();
+        project.assignBuildNumber();
+        project.assignBuildNumber();
+        assertEquals(3, project.getNextBuildNumber());
+        project.nextBuildNumber = 0;
+
+        project.onLoad(j.jenkins, project.name);
+
+        assertEquals(3, project.getNextBuildNumber());
+    }
+
     @Issue("JENKINS-19764")
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
