@@ -320,7 +320,7 @@ public class JobTest {
 
     @Test public void onLoadAfterOneRun() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.assignBuildNumber();
+        project.scheduleBuild2(0).get();
         assertEquals(2, project.getNextBuildNumber());
         project.nextBuildNumber = 0;
 
@@ -331,8 +331,8 @@ public class JobTest {
 
     @Test public void onLoadAfterTwoRuns() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.assignBuildNumber();
-        project.assignBuildNumber();
+        project.scheduleBuild2(0).get();
+        project.scheduleBuild2(0).get();
         assertEquals(3, project.getNextBuildNumber());
         project.nextBuildNumber = 0;
 
