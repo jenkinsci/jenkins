@@ -341,6 +341,32 @@ public class JobTest {
         assertEquals(3, project.getNextBuildNumber());
     }
 
+    @Test public void onLoadAfterTwoRunsAndCorruption() throws Exception {
+        final AbstractProject project = j.createFreeStyleProject();
+        project.scheduleBuild2(0).get();
+        project.scheduleBuild2(0).get();
+        assertEquals(3, project.getNextBuildNumber());
+        project.getNextBuildNumberFile().write("corrupting file on purpose\n");
+        project.nextBuildNumber = 0;
+
+        project.onLoad(j.jenkins, project.name);
+
+        assertEquals(3, project.getNextBuildNumber());
+    }
+
+    @Test public void onLoadAfterTwoRunsAndDeletion() throws Exception {
+        final AbstractProject project = j.createFreeStyleProject();
+        project.scheduleBuild2(0).get();
+        project.scheduleBuild2(0).get();
+        assertEquals(3, project.getNextBuildNumber());
+        project.getNextBuildNumberFile().file.delete();
+        project.nextBuildNumber = 0;
+
+        project.onLoad(j.jenkins, project.name);
+
+        assertEquals(3, project.getNextBuildNumber());
+    }
+
     @Issue("JENKINS-19764")
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
