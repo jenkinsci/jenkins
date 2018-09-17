@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -41,6 +42,9 @@ import hudson.util.TextFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -320,7 +324,7 @@ public class JobTest {
 
     @Test public void onLoadAfterOneRun() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.scheduleBuild2(0).get();
+        scheduleAndWait(project);
         assertEquals(2, project.getNextBuildNumber());
         project.nextBuildNumber = 0;
 
@@ -331,8 +335,8 @@ public class JobTest {
 
     @Test public void onLoadAfterTwoRuns() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        scheduleAndWait(project);
+        scheduleAndWait(project);
         assertEquals(3, project.getNextBuildNumber());
         project.nextBuildNumber = 0;
 
@@ -343,8 +347,8 @@ public class JobTest {
 
     @Test public void onLoadAfterTwoRunsAndCorruption() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        scheduleAndWait(project);
+        scheduleAndWait(project);
         assertEquals(3, project.getNextBuildNumber());
         project.getNextBuildNumberFile().write("corrupting file on purpose\n");
         project.nextBuildNumber = 0;
@@ -356,8 +360,8 @@ public class JobTest {
 
     @Test public void onLoadAfterTwoRunsAndDeletion() throws Exception {
         final AbstractProject project = j.createFreeStyleProject();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        scheduleAndWait(project);
+        scheduleAndWait(project);
         assertEquals(3, project.getNextBuildNumber());
         project.getNextBuildNumberFile().file.delete();
         project.nextBuildNumber = 0;
@@ -365,6 +369,24 @@ public class JobTest {
         project.onLoad(j.jenkins, project.name);
 
         assertEquals(3, project.getNextBuildNumber());
+    }
+
+    private void scheduleAndWait(final Queue.Task task) throws ExecutionException, InterruptedException {
+        final Queue queue = j.jenkins.getQueue();
+        final int quietPeriod = 0;
+        final Cause c = new Cause.LegacyCodeCause();
+        final CauseAction causeAction = new CauseAction(c);
+        final List<Action> queueActions = new ArrayList<>();
+        queueActions.add(causeAction);
+        final ScheduleResult scheduleResult = queue.schedule2(task, quietPeriod, queueActions);
+
+        final Queue.Item item = scheduleResult.getItem();
+        if (item == null) {
+            throw new IllegalStateException("Unable to schedule run");
+        }
+
+        final QueueTaskFuture<Queue.Executable> future = item.getFuture();
+        future.get();
     }
 
     @Issue("JENKINS-19764")
