@@ -25,8 +25,6 @@ public class NewViewLinkTest {
 	
     @Mock
     private Jenkins jenkins;
-	
-    private final String rootUrl = "https://127.0.0.1:8080/";
 
     private NewViewLink newViewLink;
 
@@ -36,7 +34,6 @@ public class NewViewLinkTest {
     public void initTests() throws Exception {
     PowerMockito.mockStatic(Jenkins.class);
     PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
-    PowerMockito.when(jenkins.getRootUrl()).thenReturn(rootUrl);
     newViewLink = new NewViewLink();
     }
 
