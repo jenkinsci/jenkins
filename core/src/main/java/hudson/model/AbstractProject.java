@@ -121,6 +121,7 @@ import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -1959,7 +1960,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+                    Stapler.getCurrentRequest().getContextPath() + "/", Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
             );
         }
 
