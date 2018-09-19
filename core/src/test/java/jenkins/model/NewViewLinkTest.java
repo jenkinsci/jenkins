@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.View;
 import java.util.List;
@@ -25,7 +26,6 @@ public class NewViewLinkTest {
     @Mock
     private Jenkins jenkins;
 	
-    @Mock
     private final String rootUrl = "https://127.0.0.1:8080/";
 
     private NewViewLink newViewLink;
@@ -50,7 +50,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertEquals(Messages.NewViewLink_NewView(), action.getDisplayName());
         assertEquals(NewViewLink.ICON_FILE_NAME, action.getIconFileName());
-        assertEquals(rootUrl + NewViewLink.URL_NAME, action.getUrlName());
+        assertEquals("/" + NewViewLink.URL_NAME, action.getUrlName());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertNull(action.getDisplayName());
         assertNull(action.getIconFileName());
-        assertEquals(rootUrl + NewViewLink.URL_NAME, action.getUrlName());
+        assertEquals("/" + NewViewLink.URL_NAME, action.getUrlName());
     }
 
 }
