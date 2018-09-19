@@ -60,7 +60,7 @@ public class ApiTokenStats implements Saveable {
         this.init();
     }
     
-    private ApiTokenStats readResolve() {
+    private Object readResolve() {
         this.init();
         return this;
     }
@@ -217,7 +217,7 @@ public class ApiTokenStats implements Saveable {
             this.tokenUuid = tokenUuid;
         }
         
-        private SingleTokenStats readResolve() {
+        private Object readResolve() {
             if (this.useCounter != null) {
                 // to avoid negative numbers to be injected
                 this.useCounter = Math.max(0, this.useCounter);

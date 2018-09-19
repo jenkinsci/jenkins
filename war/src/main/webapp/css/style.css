@@ -1067,7 +1067,6 @@ table.parameters > tbody:hover {
 }
 
 .build-row.multi-line .build-row-cell .pane.build-name.block {
-  padding-right: 20px;
   width: 100%;
 }
 .build-row-cell .pane.build-controls.block {
