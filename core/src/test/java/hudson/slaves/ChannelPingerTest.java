@@ -63,7 +63,7 @@ public class ChannelPingerTest {
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT,
                                                                       ChannelPinger.PING_INTERVAL_SECONDS_DEFAULT)));
-        verifyStatic();
+        verifyStatic(Channel.class);
         ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT,
                                           ChannelPinger.PING_INTERVAL_SECONDS_DEFAULT, true);
     }
@@ -77,7 +77,7 @@ public class ChannelPingerTest {
         channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(new ChannelPinger.SetUpRemotePing(42, 73));
-        verifyStatic();
+        verifyStatic(Channel.class);
         ChannelPinger.setUpPingForChannel(mockChannel, null, 42, 73, true);
     }
 
@@ -89,7 +89,7 @@ public class ChannelPingerTest {
         channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 420)));
-        verifyStatic();
+        verifyStatic(Channel.class);
         ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 420, true);
     }
 
@@ -102,7 +102,7 @@ public class ChannelPingerTest {
         channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 73)));
-        verifyStatic();
+        verifyStatic(Channel.class);
         ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 73, true);
     }
 
