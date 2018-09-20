@@ -54,7 +54,7 @@ public class CoreEnvironmentContributorTest {
         
         // currentComputer shouldn't be called since it relates to a running build,
         // which is not the case for calls of this method (e.g. polling) 
-        verifyStatic(times(0));
+        verifyStatic(Computer.class, times(0));
         Computer.currentComputer();
     }
 
