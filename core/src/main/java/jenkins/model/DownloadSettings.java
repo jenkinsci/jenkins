@@ -30,6 +30,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
 import hudson.model.DownloadService.Downloadable;
+import hudson.model.PersistentDescriptor;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
@@ -51,7 +52,7 @@ import javax.annotation.Nonnull;
  */
 @Restricted(NoExternalUse.class) // no clear reason for this to be an API
 @Extension @Symbol("downloadSettings")
-public final class DownloadSettings extends GlobalConfiguration {
+public final class DownloadSettings extends GlobalConfiguration implements PersistentDescriptor {
 
     public static @Nonnull DownloadSettings get() {
         return GlobalConfiguration.all().getInstance(DownloadSettings.class);
@@ -59,10 +60,6 @@ public final class DownloadSettings extends GlobalConfiguration {
 
     private boolean useBrowser = false;
     
-    public DownloadSettings() {
-        load();
-    }
-
     public boolean isUseBrowser() {
         return useBrowser;
     }

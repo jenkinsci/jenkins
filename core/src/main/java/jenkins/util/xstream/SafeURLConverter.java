@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2018 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ApiTokenProperty;
+package jenkins.util.xstream;
 
-f=namespace(lib.FormTagLib)
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.converters.basic.URLConverter;
+import hudson.remoting.URLDeserializationHelper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-f.advanced(title:_("Show API Token"), align:"left") {
-    f.entry(title: _('User ID')) {
-        f.readOnlyTextbox(value: my.id)
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLStreamHandler;
+
+/**
+ * Wrap the URL handler during deserialization into a specific one that does not generate DNS query on the hostname
+ * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}. 
+ * Required to protect against SECURITY-637
+ * 
+ * @since TODO
+ */
+@Restricted(NoExternalUse.class)
+public class SafeURLConverter extends URLConverter {
+    
+    @Override
+    public Object fromString(String str) {
+        URL url = (URL) super.fromString(str);
+        try {
+            return URLDeserializationHelper.wrapIfRequired(url);
+        } catch (IOException e) {
+            throw new ConversionException(e);
+        }
     }
-    f.entry(title:_("API Token"), field:"apiToken") {
-        f.readOnlyTextbox(id:"apiToken") // TODO: need to figure out the way to do this without using ID.
-    }
-    f.validateButton(title:_("Change API Token"),method:"changeToken")
 }

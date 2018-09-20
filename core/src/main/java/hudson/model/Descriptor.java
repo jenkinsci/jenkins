@@ -51,6 +51,8 @@ import org.apache.commons.io.IOUtils;
 
 import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.File;
@@ -117,6 +119,8 @@ import javax.annotation.Nullable;
  * {@link Descriptor} can persist data just by storing them in fields.
  * However, it is the responsibility of the derived type to properly
  * invoke {@link #save()} and {@link #load()}.
+ * {@link #load()} is automatically invoked as a JSR-250 lifecycle method if derived class
+ * do implement {@link PersistentDescriptor}.
  *
  * <h2>Reflection Enhancement</h2>
  * {@link Descriptor} defines addition to the standard Java reflection

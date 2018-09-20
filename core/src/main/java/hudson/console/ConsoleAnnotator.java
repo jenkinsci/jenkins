@@ -91,6 +91,32 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
         return (ConsoleAnnotator)a;
     }
 
+    private static final class ConsoleAnnotatorAggregator<T> extends ConsoleAnnotator<T> {
+        List<ConsoleAnnotator<T>> list;
+
+        ConsoleAnnotatorAggregator(Collection list) {
+            this.list = new ArrayList<ConsoleAnnotator<T>>(list);
+        }
+
+        public ConsoleAnnotator annotate(T context, MarkupText text) {
+            ListIterator<ConsoleAnnotator<T>> itr = list.listIterator();
+            while (itr.hasNext()) {
+                ConsoleAnnotator a =  itr.next();
+                ConsoleAnnotator b = a.annotate(context,text);
+                if (a!=b) {
+                    if (b==null)    itr.remove();
+                    else            itr.set(b);
+                }
+            }
+
+            switch (list.size()) {
+                case 0:     return null;    // no more annotator left
+                case 1:     return list.get(0); // no point in aggregating
+                default:    return this;
+            }
+        }
+    }
+
     /**
      * Bundles all the given {@link ConsoleAnnotator} into a single annotator.
      */
@@ -100,32 +126,7 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
         case 1:     return  cast(all.iterator().next()); // just one
         }
 
-        class Aggregator extends ConsoleAnnotator<T> {
-            List<ConsoleAnnotator<T>> list;
-
-            Aggregator(Collection list) {
-                this.list = new ArrayList<ConsoleAnnotator<T>>(list);
-            }
-
-            public ConsoleAnnotator annotate(T context, MarkupText text) {
-                ListIterator<ConsoleAnnotator<T>> itr = list.listIterator();
-                while (itr.hasNext()) {
-                    ConsoleAnnotator a =  itr.next();
-                    ConsoleAnnotator b = a.annotate(context,text);
-                    if (a!=b) {
-                        if (b==null)    itr.remove();
-                        else            itr.set(b);
-                    }
-                }
-
-                switch (list.size()) {
-                case 0:     return null;    // no more annotator left
-                case 1:     return list.get(0); // no point in aggregating
-                default:    return this;
-                }
-            }
-        }
-        return new Aggregator(all);
+        return new ConsoleAnnotatorAggregator<T>(all);
     }
 
     /**

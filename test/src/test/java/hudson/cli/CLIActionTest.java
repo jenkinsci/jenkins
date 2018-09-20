@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
@@ -141,6 +143,8 @@ public class CLIActionTest {
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
     public void authentication() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
