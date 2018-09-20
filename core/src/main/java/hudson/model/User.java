@@ -97,6 +97,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -129,7 +130,7 @@ import org.springframework.dao.DataAccessException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     /**
      * The username of the 'unknown' user used to avoid null user references.
@@ -490,7 +491,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
+        boolean mustMigrateLegacyConfig = isMigrationRequiredForLegacyConfigFile(unsanitizedLegacyConfigFile, configFile);
+        if (mustMigrateLegacyConfig) {
             File ancestor = unsanitizedLegacyConfigFile.getParentFile();
             if (!configFile.exists()) {
                 try {
@@ -551,6 +553,37 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         }
         return u;
+    }
+    
+    private static boolean isMigrationRequiredForLegacyConfigFile(@Nonnull File legacyConfigFile, @Nonnull File newConfigFile){
+        boolean mustMigrateLegacyConfig = legacyConfigFile.exists() && !legacyConfigFile.equals(newConfigFile);
+        if(mustMigrateLegacyConfig){
+            try{
+                // TODO Could be replace by Util.isDescendant(getRootDir(), legacyConfigFile) in 2.80+
+                String canonicalLegacy = legacyConfigFile.getCanonicalPath();
+                String canonicalUserDir = getRootDir().getCanonicalPath();
+                if(!canonicalLegacy.startsWith(canonicalUserDir + File.separator)){
+                    // without that check, the application config.xml could be moved (i.e. erased from application PoV)
+                    mustMigrateLegacyConfig = false;
+                    LOGGER.log(Level.WARNING, String.format(
+                            "Attempt to escape from users directory with %s, migration aborted, see SECURITY-897 for more information",
+                            legacyConfigFile.getAbsolutePath()
+                    ));
+                }
+            }
+            catch (IOException e){
+                mustMigrateLegacyConfig = false;
+                LOGGER.log(
+                        Level.WARNING,
+                        String.format(
+                                "Failed to determine the canonical path of %s, migration aborted, see SECURITY-897 for more information", 
+                                legacyConfigFile.getAbsolutePath()
+                        ),
+                        e
+                );
+            }
+        }
+        return mustMigrateLegacyConfig;
     }
 
     /**
@@ -764,6 +797,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @Override String toString() {
         return fullName;
     }
+    
+    /**
+     * Returns the folder that store all the user information
+     * Useful for plugins to save a user-specific file aside the config.xml
+     * 
+     * @since 2.129
+     */
+    public File getUserFolder(){
+        return getUserFolderFor(this.id);
+    }
 
     /**
      * The file we save our configuration.
@@ -773,7 +816,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
+        return new File(getUserFolderFor(id), "config.xml");
+    }
+    
+    private static File getUserFolderFor(String id){
+        return new File(getRootDir(), idStrategy().filenameOf(id));
     }
 
     private static File getUnsanitizedLegacyConfigFileFor(String id) {
@@ -1067,6 +1114,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.getInstance().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+
     
     /**
      * Gets list of Illegal usernames, for which users should not be created.

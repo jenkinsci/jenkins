@@ -54,6 +54,7 @@ THE SOFTWARE.
         <j:if test="${icon!=null}">
           <div class="manage-option">
           <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
+          <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
           <j:choose>
             <j:when test="${m.requiresConfirmation}">
@@ -68,7 +69,7 @@ THE SOFTWARE.
             </j:when>
             <j:when test="${m.requiresPOST}">
               <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                <img class="icon" src="${iconUrl}" alt="manage-option"/>
+                <img class="icon" src="${iconUrl}" alt="[${%alt}]"/>
                 <dl>
                   <dt>${m.displayName}</dt>
                   <dd><j:out value="${m.description}"/></dd>

@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.254</stapler.version>
+    <stapler.version>1.254.1</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -212,7 +212,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>2.0-alpha-4-20180618.093353-2</version>
+      <version>2.0-beta-2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -515,7 +515,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.26</version>
+      <version>1.27</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -535,7 +535,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>4.2.1</version>
+      <version>4.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -545,7 +545,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.8</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -560,7 +560,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.12</version>
+      <version>1.13</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -570,8 +570,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.4</version>
-      <scope>provided</scope>
+      <version>1.8</version>
       <optional>true</optional>
     </dependency>
     <dependency>

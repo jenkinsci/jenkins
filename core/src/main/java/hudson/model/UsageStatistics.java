@@ -66,7 +66,7 @@ import jenkins.util.SystemProperties;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class UsageStatistics extends PageDecorator {
+public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private final String keyImage;
 
     /**
@@ -88,7 +88,6 @@ public class UsageStatistics extends PageDecorator {
      */
     public UsageStatistics(String keyImage) {
         this.keyImage = keyImage;
-        load();
     }
 
     /**

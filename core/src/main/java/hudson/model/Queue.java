@@ -760,7 +760,9 @@ public class Queue extends ResourceController implements Saveable {
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
-            cancel(item);
+            if(item.hasCancelPermission()){
+                cancel(item);
+            }
         } // else too late, ignore (JENKINS-14813)
         return HttpResponses.forwardToPreviousPage();
     }
@@ -1110,7 +1112,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Gets the information about the queue item for the given project.
      *
-     * @return null if the project is not in the queue.
+     * @return empty if the project is not in the queue.
      */
     public List<Item> getItems(Task t) {
         Snapshot snapshot = this.snapshot;
@@ -1468,7 +1470,7 @@ public class Queue extends ResourceController implements Saveable {
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : jenkins.getComputers()) {
-                    for (Executor e : c.getExecutors()) {
+                    for (Executor e : c.getAllExecutors()) {
                         if (e.isInterrupted()) {
                             // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set
                             // we need to clear lost pendings as we cannot know what work unit was on this executor
@@ -1567,8 +1569,15 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            if (s != null)
-                s.sortBuildableItems(buildables);
+            if (s != null) {
+                try {
+                    s.sortBuildableItems(buildables);
+                } catch (Throwable e) {
+                    // We don't really care if the sort doesn't sort anything, we still should
+                    // continue to do our job. We'll complain about it and continue.
+                    LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
+                }
+            }
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
@@ -2265,7 +2274,9 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         @RequirePOST
         public HttpResponse doCancelQueue() throws IOException, ServletException {
-        	Jenkins.getInstance().getQueue().cancel(this);
+            if(hasCancelPermission()){
+                Jenkins.getInstance().getQueue().cancel(this);
+            }
             return HttpResponses.forwardToPreviousPage();
         }
 

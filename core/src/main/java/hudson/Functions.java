@@ -1773,7 +1773,7 @@ public class Functions {
     }
     /**
      * Gets only one {@link SimplePageDecorator}.
-     * @since FIXME
+     * @since 2.128
      */
     public static SimplePageDecorator getSimplePageDecorator() {
         return SimplePageDecorator.first();
