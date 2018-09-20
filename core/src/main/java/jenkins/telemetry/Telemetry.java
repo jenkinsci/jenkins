@@ -184,7 +184,7 @@ public abstract class Telemetry implements ExtensionPoint {
     }
 
     // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
-    private static final String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://telemetry.jenkins.io/events");
+    private static final String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://uplink.jenkins.io/events");
 
     private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
 }
