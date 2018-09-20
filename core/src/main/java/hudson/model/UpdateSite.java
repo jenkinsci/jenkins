@@ -1117,7 +1117,7 @@ public class UpdateSite {
         public boolean isForNewerJava() {
             try {
                 return requiredJava != null && new VersionNumber(requiredJava).isNewerThan(
-                        new VersionNumber(System.getProperty("java.version")));
+                        new VersionNumber(System.getProperty("java.specification.version")));
             } catch (NumberFormatException nfe) {
                 return false; // plugin doesn't declare a minimum Java version
             }
