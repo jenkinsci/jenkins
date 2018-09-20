@@ -617,7 +617,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 // TODO replace with calls to Runtime.version() once we're on Java 9+
                 VersionNumber actualVersion = new VersionNumber(System.getProperty("java.specification.version"));
                 if (actualVersion.isOlderThan(new VersionNumber(requiredJavaVersion))) {
-                    dependencyErrors.add(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), requiredJavaVersion));
+                    versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), requiredJavaVersion), actualVersion.toString(), requiredJavaVersion);
                 }
             }
         }
