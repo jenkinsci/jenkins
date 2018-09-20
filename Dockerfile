@@ -1,5 +1,5 @@
 # Build on Java 11 is not supported/tested so far
-FROM maven:3.5.3-jdk-8 as builder
+FROM maven:3.5.4-jdk-8 as builder
 
 COPY .mvn/ /jenkins/src/.mvn/
 COPY cli/ /jenkins/src/cli/
