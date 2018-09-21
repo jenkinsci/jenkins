@@ -23,6 +23,7 @@
  */
 package jenkins.telemetry;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -37,6 +38,7 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
@@ -186,7 +188,8 @@ public abstract class Telemetry implements ExtensionPoint {
     }
 
     // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
     public static String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://uplink.jenkins.io/events");
 
     private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
