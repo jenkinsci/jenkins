@@ -1253,18 +1253,18 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_32;
             }
             try {
-                IntByReference _ = new IntByReference(sizeOfInt);
+                IntByReference ref = new IntByReference(sizeOfInt);
                 IntByReference size = new IntByReference(sizeOfInt);
                 Memory m;
                 int nRetry = 0;
                 while(true) {
                     // find out how much memory we need to do this
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, _)!=0)
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, ref)!=0)
                         throw new IOException("Failed to obtain memory requirement: "+LIBC.strerror(Native.getLastError()));
 
                     // now try the real call
                     m = new Memory(size.getValue());
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, _)!=0) {
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, ref)!=0) {
                         if(Native.getLastError()==ENOMEM && nRetry++<16)
                             continue; // retry
                         throw new IOException("Failed to call kern.proc.all: "+LIBC.strerror(Native.getLastError()));
@@ -1324,14 +1324,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     arguments = new ArrayList<String>();
                     envVars = new EnvVars();
 
-                    IntByReference _ = new IntByReference();
+                    IntByReference intByRef = new IntByReference();
 
                     IntByReference argmaxRef = new IntByReference(0);
                     IntByReference size = new IntByReference(sizeOfInt);
 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, intByRef)!=0)
                         throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
@@ -1369,7 +1369,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     }
                     StringArrayMemory m = new StringArrayMemory(argmax);
                     size.setValue(argmax);
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, _)!=0)
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, intByRef)!=0)
                         throw new IOException("Failed to obtain ken.procargs2: "+LIBC.strerror(Native.getLastError()));
 
 

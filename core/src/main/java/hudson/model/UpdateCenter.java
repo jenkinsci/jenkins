@@ -1401,7 +1401,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             status = new Running();
             try {
                 // safeRestart records the current authentication for the log, so set it to the managing user
-                try (ACLContext _ = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
+                try (ACLContext acl = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
                     Jenkins.getInstance().safeRestart();
                 }
             } catch (RestartNotSupportedException exception) {
