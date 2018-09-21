@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -41,7 +42,7 @@ public class TelemetryTest {
 
     @Test
     public void testSubmission() throws Exception {
-        j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we 
+        j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
         assertEquals("no requests received", 0, counter);
         Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
@@ -74,7 +75,7 @@ public class TelemetryTest {
         @Nonnull
         @Override
         public LocalDate getStart() {
-            return LocalDate.of(2025, 1, 1);
+            return LocalDate.now().plus(1, ChronoUnit.DAYS);
         }
 
         @Nonnull
@@ -114,7 +115,7 @@ public class TelemetryTest {
         @Nonnull
         @Override
         public LocalDate getEnd() {
-            return LocalDate.of(2018, 1, 1);
+            return LocalDate.now().minus(1, ChronoUnit.DAYS);
         }
 
         @Nonnull
