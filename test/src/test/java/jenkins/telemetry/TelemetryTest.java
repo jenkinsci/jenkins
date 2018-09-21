@@ -46,7 +46,9 @@ public class TelemetryTest {
         assertEquals("no requests received", 0, counter);
         Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
-        Thread.sleep(4000); // TODO better
+        do {
+            Thread.sleep(250);
+        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
         assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
