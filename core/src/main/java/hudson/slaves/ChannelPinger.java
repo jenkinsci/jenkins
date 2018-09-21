@@ -34,6 +34,8 @@ import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.PingFailureAnalyzer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
@@ -177,7 +179,8 @@ public class ChannelPinger extends ComputerListener {
     }
 
     @VisibleForTesting
-    /*package*/ static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
+    @Restricted(NoExternalUse.class)
+    public static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
         LOGGER.log(Level.FINE, "setting up ping on {0} with a {1} seconds interval and {2} seconds timeout", new Object[] {channel.getName(), intervalSeconds, timeoutSeconds});
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, timeoutSeconds * 1000L, intervalSeconds * 1000L) {

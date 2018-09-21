@@ -219,7 +219,7 @@ public class RunTest {
         final ItemGroup group = Mockito.mock(ItemGroup.class);
         final Job j = Mockito.mock(Job.class);
 
-        Mockito.when(j.getParent()).thenReturn(group);
+        Mockito.doReturn(group).when(j.getParent());
         Mockito.when(group.getFullName()).thenReturn("j");
         Mockito.when(j.assignBuildNumber()).thenReturn(1, 2);
 
