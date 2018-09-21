@@ -1,49 +1,49 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <div>
-        Knowing how Jenkins is used is a tremendous help in guiding the direction of the development, especially
-        for open-source projects where users are inherently hard to track down. When this option is enabled,
-        Jenkins periodically send information about your usage of Jenkins.
+        For any project, it's critical to know how the software is used, but tracking usage data is inherently difficult in open-source projects.
+        Anonymous usage statistics address this need.
+        When enabled, it periodically sends information about Jenkins usage to the Jenkins project.
+
+        The Jenkins project uses this information to set development priorities.
     </div>
     <h1>General usage statistics</h1>
     <div>
-        <p>As part of general usage statistics, Jenkins reports the following:</p>
-
+        <p>Jenkins Telemetry reports the following general usage statistics:</p>
         <ul>
             <li>Your Jenkins version</li>
-            <li>For your master and each agent, OS type, and # of executors</li>
-            <li>Plugins that are installed and their versions</li>
-            <li>Number of jobs per each job type in your Jenkins</li>
+            <li>For your master and each agent, the OS type and number of executors</li>
+            <li>Installed plugins and their versions</li>
+            <li>Number of items (like jobs) of each item type</li>
         </ul>
-
         <p>
-            The information doesn't contain anything that identifies you or allows us to contact you (except information
-            inherently revealed by HTTP, such as the IP address). Aggregated, monthly updated summaries of these usage
-            statistics submissions are published at <a href="https://stats.jenkins.io">stats.jenkins.io</a>.
+            This <b>does not</b> report any personally identifiable information. The only information reported by Jenkins is information inherently revealed by the HTTP protocol, such as the IP address.
+
+            These usage statistics are aggregated, updated monthly, and published to <a href="https://stats.jenkins.io">stats.jenkins.io</a>
         </p>
     </div>
     <h1>Telemetry collection</h1>
     <div>
         <p>
-            In addition to the above, the Jenkins project collects usage telemetry to inform future development in so-called trials.
-            Each trial has a specific purpose and a defined end date, after which collection stops (independent of installed Jenkins or plugin versions).
-            Once finished, these results may be aggregated and shared with the developer community.
+            In addition to the general usage statistics listed above, the Jenkins project collects telemetry data from specific trials to inform future development.
+            Each trial has a specific purpose and a defined end date, after which collection stops, independent of the installed versions of Jenkins or plugins.
+            Once a trial is complete, the trial results may be aggregated and shared with the developer community.
         </p>
         <p>
             The following trials are currently set up on this instance:
         </p>
         <j:invokeStatic className="jenkins.telemetry.Telemetry" method="all" var="collectors"/>
         <dl>
-        <j:forEach items="${collectors}" var="collector">
-            <dt>${collector.displayName}</dt>
-            <dd>
-                <st:include from="${collector}" optional="true" page="description.jelly"/>
-                <p>
-                    Start date: ${collector.start}
-                    End date: ${collector.end}
-                </p>
-            </dd>
-        </j:forEach>
+            <j:forEach items="${collectors}" var="collector">
+                <dt>${collector.displayName}</dt>
+                <dd>
+                    <st:include from="${collector}" optional="true" page="description.jelly"/>
+                    <p>
+                        Start date: ${collector.start}
+                        End date: ${collector.end}
+                    </p>
+                </dd>
+            </j:forEach>
         </dl>
     </div>
 </j:jelly>
