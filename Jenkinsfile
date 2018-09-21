@@ -24,7 +24,7 @@ for(i = 0; i < buildTypes.size(); i++) {
 for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
-    builds["${buildType}-jdk${jdk}""] = {
+    builds["${buildType}-jdk${jdk}"] = {
         node(buildType.toLowerCase()) {
             timestamps {
                 // First stage is actually checking out the source. Since we're using Multibranch
