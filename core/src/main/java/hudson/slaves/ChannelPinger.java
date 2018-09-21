@@ -121,14 +121,15 @@ public class ChannelPinger extends ComputerListener {
     }
 
     @VisibleForTesting
-    /*package*/ static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
+    @Restricted(NoExternalUse.class)
+    public static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
         private transient int pingInterval;
         private final int pingTimeoutSeconds;
         private final int pingIntervalSeconds;
 
-        SetUpRemotePing(int pingTimeoutSeconds, int pingIntervalSeconds) {
+        public SetUpRemotePing(int pingTimeoutSeconds, int pingIntervalSeconds) {
             this.pingTimeoutSeconds = pingTimeoutSeconds;
             this.pingIntervalSeconds = pingIntervalSeconds;
         }
