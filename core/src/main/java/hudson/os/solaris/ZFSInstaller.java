@@ -219,7 +219,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     // revert the file system creation
                     try {
                         hudson.destory();
-                    } catch (Exception _) {
+                    } catch (Exception ex) {
                         // but ignore the error and let the original error thrown
                     }
                     throw e;

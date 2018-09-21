@@ -788,7 +788,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     if(p!=null)
                         try {
                             return p.classLoader.loadClass(name);
-                        } catch (ClassNotFoundException _) {
+                        } catch (ClassNotFoundException ex) {
                             // try next
                         }
                 }

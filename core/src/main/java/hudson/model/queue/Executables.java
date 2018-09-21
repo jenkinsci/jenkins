@@ -46,7 +46,7 @@ public class Executables {
             throws Error, RuntimeException {
         try {
             return e.getParent();
-        } catch (AbstractMethodError _) {
+        } catch (AbstractMethodError ex) {
             try {
                 Method m = e.getClass().getMethod("getParent");
                 m.setAccessible(true);
