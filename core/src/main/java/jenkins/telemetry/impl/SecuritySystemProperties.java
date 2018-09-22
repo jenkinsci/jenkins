@@ -76,9 +76,13 @@ public class SecuritySystemProperties extends Telemetry {
         putBoolean(security, "hudson.model.User.allowNonExistentUserToLogin", false);
         putBoolean(security, "hudson.model.User.allowUserCreationViaUrl", false);
         putBoolean(security, "hudson.model.User.SECURITY_243_FULL_DEFENSE", true);
+        putBoolean(security, "hudson.remoting.URLDeserializationHelper.avoidUrlWrapping", false);
+        putBoolean(security, "jenkins.security.ClassFilterImpl.SUPPRESS_WHITELIST", false);
+        putBoolean(security, "jenkins.security.ClassFilterImpl.SUPPRESS_ALL", false);
 
         putStringInfo(security, "hudson.model.ParametersAction.safeParameters");
         putStringInfo(security, "hudson.model.DirectoryBrowserSupport.CSP");
+        putStringInfo(security, "hudson.security.HudsonPrivateSecurityRealm.ID_REGEX");
 
         Map<String, Object> info = new TreeMap<>();
         info.put("core", Jenkins.getVersion().toString());
