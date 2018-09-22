@@ -43,6 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -61,6 +62,14 @@ import java.util.logging.Logger;
  * @see <a href="https://github.com/jenkinsci/jep/tree/master/jep/214">JEP-214</a>
  */
 public abstract class Telemetry implements ExtensionPoint {
+
+    // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    static String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://uplink.jenkins.io/events");
+
+    private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
+
     /**
      * ID of this collector, typically a basic alphanumeric string (and _- characters).
      *
@@ -171,7 +180,8 @@ public abstract class Telemetry implements ExtensionPoint {
                         LOGGER.finest("Submitting JSON: " + body);
                     }
 
-                    try (OutputStreamWriter writer = new OutputStreamWriter(http.getOutputStream(), StandardCharsets.UTF_8)) {
+                    try (OutputStream out = http.getOutputStream();
+                            OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
                         writer.append(body);
                     }
 
@@ -186,11 +196,4 @@ public abstract class Telemetry implements ExtensionPoint {
             });
         }
     }
-
-    // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
-    @Restricted(NoExternalUse.class)
-    @VisibleForTesting
-    public static String ENDPOINT = SystemProperties.getString(Telemetry.class.getName() + ".endpoint", "https://uplink.jenkins.io/events");
-
-    private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
 }
