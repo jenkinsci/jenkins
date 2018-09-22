@@ -205,18 +205,18 @@ public class JSONSignatureValidator {
      */
     private boolean verifySignature(Signature signature, String providedSignature) {
         try {
-            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
-                return true;
-            }
-        } catch (SignatureException|IOException ignore) {
-            // ignore
-        }
-
-        try {
             if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
                 return true;
             }
         } catch (SignatureException|DecoderException ignore) {
+            // ignore
+        }
+
+        try {
+            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
+                return true;
+            }
+        } catch (SignatureException|IOException ignore) {
             // ignore
         }
         return false;
