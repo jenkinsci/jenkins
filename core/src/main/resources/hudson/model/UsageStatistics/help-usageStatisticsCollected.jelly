@@ -3,13 +3,12 @@
     <div>
         For any project, it's critical to know how the software is used, but tracking usage data is inherently difficult in open-source projects.
         Anonymous usage statistics address this need.
-        When enabled, it periodically sends information about Jenkins usage to the Jenkins project.
-
+        When enabled, Jenkins periodically sends information to the Jenkins project.
         The Jenkins project uses this information to set development priorities.
     </div>
     <h1>General usage statistics</h1>
     <div>
-        <p>Jenkins Telemetry reports the following general usage statistics:</p>
+        <p>Jenkins reports the following general usage statistics:</p>
         <ul>
             <li>Your Jenkins version</li>
             <li>For your master and each agent, the OS type and number of executors</li>
