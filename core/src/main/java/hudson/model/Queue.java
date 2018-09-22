@@ -2004,7 +2004,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * <h2>Views</h2>
      * <p>
-     * Implementation must have <tt>executorCell.jelly</tt>, which is
+     * Implementation must have {@code executorCell.jelly}, which is
      * used to render the HTML that indicates this executable is executing.
      */
     public interface Executable extends Runnable {
@@ -3036,7 +3036,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Schedule <tt>Queue.save()</tt> call for near future once items change. Ignore all changes until the time the save
+     * Schedule {@code Queue.save()} call for near future once items change. Ignore all changes until the time the save
      * takes place.
      *
      * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not

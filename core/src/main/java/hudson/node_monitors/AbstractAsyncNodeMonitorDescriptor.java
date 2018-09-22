@@ -134,16 +134,16 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * returned in the future.
      *
      * The {@link #getMonitoringData()} provides the results of the monitoring as {@link #monitor()} does. Note the value
-     * in the map can be <tt>null</tt> for several reasons:
+     * in the map can be {@code null} for several reasons:
      * <ul>
-     *     <li>The monitoring {@link Callable} returned <tt>null</tt> as a provisioning result.</li>
+     *     <li>The monitoring {@link Callable} returned {@code null} as a provisioning result.</li>
      *     <li>Creating or evaluating that callable has thrown an exception.</li>
      *     <li>The computer was not monitored as it was offline.</li>
      *     <li>The {@link AbstractAsyncNodeMonitorDescriptor#createCallable} has returned null.</li>
      * </ul>
      *
      * Clients can distinguishing among these states based on the additional data attached to this object. {@link #getSkipped()}
-     * returns computers that was not monitored as they ware either offline or monitor produced <tt>null</tt> {@link Callable}.
+     * returns computers that was not monitored as they ware either offline or monitor produced {@code null} {@link Callable}.
      */
     protected static final class Result<T> {
         private static final long serialVersionUID = -7671448355804481216L;

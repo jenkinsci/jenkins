@@ -790,7 +790,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)

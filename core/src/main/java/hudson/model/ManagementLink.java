@@ -37,7 +37,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Extension point to add icon to <tt>http://server/hudson/manage</tt> page.
+ * Extension point to add icon to {@code http://server/hudson/manage} page.
  *
  * <p>
  * This is a place for exposing features that are only meant for system admins

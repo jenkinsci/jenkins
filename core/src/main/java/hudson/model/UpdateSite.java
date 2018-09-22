@@ -131,7 +131,7 @@ public class UpdateSite {
     private final String id;
 
     /**
-     * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
+     * Path to {@code update-center.json}, like {@code http://jenkins-ci.org/update-center.json}.
      */
     private final String url;
 

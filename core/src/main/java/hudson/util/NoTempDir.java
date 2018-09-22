@@ -33,7 +33,7 @@ import java.io.IOException;
  * there appears to be no temporary directory.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

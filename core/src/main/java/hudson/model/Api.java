@@ -60,7 +60,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Used to expose remote access API for ".../api/"
  *
  * <p>
- * If the parent object has a <tt>_api.jelly</tt> view, it will be included
+ * If the parent object has a {@code _api.jelly} view, it will be included
  * in the api index page.
  *
  * @author Kohsuke Kawaguchi

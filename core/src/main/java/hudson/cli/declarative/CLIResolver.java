@@ -40,12 +40,12 @@ import java.lang.annotation.Target;
  * <p>
  * Hudson uses the return type of the resolver method
  * to pick the resolver method to use, of all the resolver methods it discovers. That is,
- * if Hudson is looking to find an instance of type <tt>T</tt> for the current command, it first
- * looks for the resolver method whose return type is <tt>T</tt>, then it checks for the base type of <tt>T</tt>,
+ * if Hudson is looking to find an instance of type {@code T} for the current command, it first
+ * looks for the resolver method whose return type is {@code T}, then it checks for the base type of {@code T},
  * and so on.
  *
  * <p>
- * If the chosen resolver method is an instance method on type <tt>S</tt>, the "parent resolver" is then
+ * If the chosen resolver method is an instance method on type {@code S}, the "parent resolver" is then
  * located to resolve an instance of type 'S'. This process repeats until a static resolver method is discovered
  * (since most of Hudson's model objects are anchored to the root {@link jenkins.model.Jenkins} object, normally that would become
  * the top-most resolver method.)
