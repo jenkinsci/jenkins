@@ -246,7 +246,7 @@ public class Maven extends Builder {
     }
 
     /**
-     * Looks for <tt>pom.xlm</tt> or <tt>project.xml</tt> to determine the maven executable
+     * Looks for {@code pom.xlm} or {@code project.xml} to determine the maven executable
      * name.
      */
     private static final class DecideDefaultMavenCommand extends MasterToSlaveFileCallable<String> {
@@ -779,7 +779,7 @@ public class Maven extends Builder {
          * If the Maven installation can not be uniquely determined,
          * it's often better to return just one of them, rather than returning
          * null, since this method is currently ultimately only used to
-         * decide where to parse <tt>conf/settings.xml</tt> from.
+         * decide where to parse {@code conf/settings.xml} from.
          */
         MavenInstallation inferMavenInstallation();
     }

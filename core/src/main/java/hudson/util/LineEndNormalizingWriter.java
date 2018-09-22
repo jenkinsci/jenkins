@@ -31,7 +31,7 @@ import java.io.IOException;
  * Finds the lone LF and converts that to CR+LF.
  *
  * <p>
- * Internet Explorer's <tt>XmlHttpRequest.responseText</tt> seems to
+ * Internet Explorer's {@code XmlHttpRequest.responseText} seems to
  * normalize the line end, and if we only send LF without CR, it will
  * not recognize that as a new line. To work around this problem,
  * we use this filter to always convert LF to CR+LF.

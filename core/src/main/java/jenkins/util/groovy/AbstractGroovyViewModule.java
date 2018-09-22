@@ -12,9 +12,9 @@ import lib.JenkinsTagLib;
  * <p>
  * Usage from script of a subclass, say ViewHelper:
  * <p>
- * <tt>new ViewHelper(delegate).method();</tt>
+ * {@code new ViewHelper(delegate).method();}
  * <p>
- * see <tt>ModularizeViewScript</tt> in ui-samples for an example how to use
+ * see {@code ModularizeViewScript} in ui-samples for an example how to use
  * this class.
  */
 public abstract class AbstractGroovyViewModule extends GroovyObjectSupport {

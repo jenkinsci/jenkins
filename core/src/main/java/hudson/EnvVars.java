@@ -54,7 +54,7 @@ import javax.annotation.Nonnull;
  * but case <b>insensitive</b> way (that is, cmd.exe can get both FOO and foo as environment variables
  * when it's launched, and the "set" command will display it accordingly, but "echo %foo%" results in
  * echoing the value of "FOO", not "foo" &mdash; this is presumably caused by the behavior of the underlying
- * Win32 API <tt>GetEnvironmentVariable</tt> acting in case insensitive way.) Windows users are also
+ * Win32 API {@code GetEnvironmentVariable} acting in case insensitive way.) Windows users are also
  * used to write environment variable case-insensitively (like %Path% vs %PATH%), and you can see many
  * documents on the web that claims Windows environment variables are case insensitive.
  *
@@ -65,10 +65,10 @@ import javax.annotation.Nonnull;
  * <p>
  * In Jenkins, often we need to build up "environment variable overrides"
  * on master, then to execute the process on agents. This causes a problem
- * when working with variables like <tt>PATH</tt>. So to make this work,
- * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
- * that starts with <tt>PATH+</tt> are merged and prepended to the inherited
- * <tt>PATH</tt> variable, on the process where a new process is executed. 
+ * when working with variables like {@code PATH}. So to make this work,
+ * we introduce a special convention {@code PATH+FOO} &mdash; all entries
+ * that starts with {@code PATH+} are merged and prepended to the inherited
+ * {@code PATH} variable, on the process where a new process is executed.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -107,7 +107,7 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
-     * Builds an environment variables from an array of the form <tt>"key","value","key","value"...</tt>
+     * Builds an environment variables from an array of the form {@code "key","value","key","value"...}
      */
     public EnvVars(String... keyValuePairs) {
         this();
@@ -121,7 +121,7 @@ public class EnvVars extends TreeMap<String,String> {
      * Overrides the current entry by the given entry.
      *
      * <p>
-     * Handles <tt>PATH+XYZ</tt> notation.
+     * Handles {@code PATH+XYZ} notation.
      */
     public void override(String key, String value) {
         if(value==null || value.length()==0) {

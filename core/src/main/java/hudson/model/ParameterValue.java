@@ -56,12 +56,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
+ * Instances of {@link ParameterValue}s are persisted into build's {@code build.xml}
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
  * <h2>Associated Views</h2>
  * <h3>value.jelly</h3>
- * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
+ * The {@code value.jelly} view contributes a UI fragment to display the parameter
  * values used for a build.
  *
  * <h2>Notes</h2>

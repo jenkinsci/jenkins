@@ -84,7 +84,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * Information about a Hudson agent node.
  *
  * <p>
- * Ideally this would have been in the <tt>hudson.slaves</tt> package,
+ * Ideally this would have been in the {@code hudson.slaves} package,
  * but for compatibility reasons, it can't.
  *
  * <p>
