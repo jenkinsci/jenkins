@@ -560,7 +560,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.12</version>
+      <version>1.13</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
