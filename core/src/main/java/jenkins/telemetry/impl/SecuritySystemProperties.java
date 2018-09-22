@@ -28,6 +28,8 @@ import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
@@ -42,6 +44,7 @@ import java.util.TreeMap;
  * Telemetry implementation gathering information about system properties.
  */
 @Extension
+@Restricted(NoExternalUse.class)
 public class SecuritySystemProperties extends Telemetry {
     @Nonnull
     @Override
