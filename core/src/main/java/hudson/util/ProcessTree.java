@@ -969,7 +969,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /**
-     * Implementation for Solaris that uses <tt>/proc</tt>.
+     * Implementation for Solaris that uses {@code /proc}.
      *
      * /proc/PID/psinfo contains a psinfo_t struct. We use it to determine where the
      *     process arguments and environment are located in PID's address space.

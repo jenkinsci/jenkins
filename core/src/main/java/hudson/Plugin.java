@@ -62,20 +62,20 @@ import jenkins.model.GlobalConfiguration;
  * to plugin functionality.
  *
  * <p>
- * A plugin is bound to URL space of Hudson as <tt>${rootURL}/plugin/foo/</tt>,
+ * A plugin is bound to URL space of Hudson as {@code ${rootURL}/plugin/foo/},
  * where "foo" is taken from your plugin name "foo.jpi". All your web resources
  * in src/main/webapp are visible from this URL, and you can also define Jelly
  * views against your Plugin class, and those are visible in this URL, too.
  *
  * <p>
- * {@link Plugin} can have an optional <tt>config.jelly</tt> page. If present,
+ * {@link Plugin} can have an optional {@code config.jelly} page. If present,
  * it will become a part of the system configuration page (http://server/hudson/configure).
  * This is convenient for exposing/maintaining configuration that doesn't
  * fit any {@link Descriptor}s.
  *
  * <p>
  * Up until Hudson 1.150 or something, subclasses of {@link Plugin} required
- * <tt>@plugin</tt> javadoc annotation, but that is no longer a requirement.
+ * {@code @plugin} javadoc annotation, but that is no longer a requirement.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.42
@@ -194,11 +194,11 @@ public abstract class Plugin implements Saveable {
      * Handles the submission for the system configuration.
      *
      * <p>
-     * If this class defines <tt>config.jelly</tt> view, be sure to
+     * If this class defines {@code config.jelly} view, be sure to
      * override this method and persists the submitted values accordingly.
      *
      * <p>
-     * The following is a sample <tt>config.jelly</tt> that you can start yours with:
+     * The following is a sample {@code config.jelly} that you can start yours with:
      * <pre>{@code <xmp>
      * <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
      *   <f:section title="Locale">
@@ -222,7 +222,7 @@ public abstract class Plugin implements Saveable {
     }
 
     /**
-     * This method serves static resources in the plugin under <tt>hudson/plugin/SHORTNAME</tt>.
+     * This method serves static resources in the plugin under {@code hudson/plugin/SHORTNAME}.
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();

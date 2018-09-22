@@ -157,7 +157,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     /**
-     * Checks the URL in <tt>global.jelly</tt>
+     * Checks the URL in {@code global.jelly}
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
         if(value.startsWith("http://localhost"))

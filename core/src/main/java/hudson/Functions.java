@@ -396,11 +396,11 @@ public class Functions {
      * is chosen, this part remains intact.
      *
      * <p>
-     * The <tt>524</tt> is the path from {@link Job} to {@link Run}.
+     * The {@code 524} is the path from {@link Job} to {@link Run}.
      *
      * <p>
-     * The <tt>bbb</tt> portion is the path after that till the last
-     * {@link Run} subtype. The <tt>ccc</tt> portion is the part
+     * The {@code bbb} portion is the path after that till the last
+     * {@link Run} subtype. The {@code ccc} portion is the part
      * after that.
      */
     public static final class RunUrl {
@@ -618,7 +618,7 @@ public class Functions {
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Used by <tt>layout.jelly</tt> to control the auto refresh behavior.
+     * Used by {@code layout.jelly} to control the auto refresh behavior.
      *
      * @param noAutoRefresh
      *      On certain pages, like a page with forms, will have annoying interference
@@ -772,7 +772,7 @@ public class Functions {
     }
 
     /**
-     * This version is so that the 'checkPermission' on <tt>layout.jelly</tt>
+     * This version is so that the 'checkPermission' on {@code layout.jelly}
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
@@ -1693,7 +1693,7 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in <tt>slave-agent.jnlp.jelly</tt> to specify the destination
+     * This is primarily used in {@code slave-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
      */
     public String getServerName() {
@@ -1746,7 +1746,7 @@ public class Functions {
     /**
      * If the given href link is matching the current page, return true.
      *
-     * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
+     * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
