@@ -304,15 +304,18 @@ function findAncestorClass(e, cssClass) {
 function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
-    while (tr.tagName != "TR")
+    console.log(tr);
+    if(tr.tagName!=undefined){
+      while (tr.tagName != "TR")
         tr = tr.parentNode;
 
-    // then next TR that matches the CSS
-    do {
+      // then next TR that matches the CSS
+      do {
         tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
-
-    return tr;
+      } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
+      return tr;
+    }
+    return undefined;  
 }
 
 function find(src,filter,traversalF) {

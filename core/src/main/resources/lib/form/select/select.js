@@ -5,9 +5,12 @@ function updateListBox(listBox,url,config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
-    if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
-        status.innerHTML = "";
+    var followingTR = findFollowingTR(listBox, "validation-error-area");
+    if(followingTR!=undefined){
+    	var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+    	if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
+        	status.innerHTML = "";
+    	}
     }
     config.onSuccess = function (rsp) {
         l.removeClassName("select-ajax-pending");
