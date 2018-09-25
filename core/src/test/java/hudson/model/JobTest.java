@@ -74,7 +74,7 @@ public class JobTest {
         Node node = PowerMockito.mock(Node.class);
         PowerMockito.doReturn(c).when(node).toComputer();
 
-        EnvVars env = job.getEnvironment(node, null);
+        EnvVars env = job.getEnvironment(node, TaskListener.NULL);
         String path = "/test";
         env.override("PATH+TEST", path);
 

@@ -138,7 +138,7 @@ public class Util {
     private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
-     * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
+     * Replaces the occurrence of '$key' by {@code properties.get('key')}.
      *
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
@@ -150,7 +150,7 @@ public class Util {
     }
 
     /**
-     * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
+     * Replaces the occurrence of '$key' by {@code resolver.get('key')}.
      *
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)

@@ -574,7 +574,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
-     * Gets the {@link UpdateSite} from which we receive updates for <tt>jenkins.war</tt>.
+     * Gets the {@link UpdateSite} from which we receive updates for {@code jenkins.war}.
      *
      * @return
      *      {@code null} if no such update center is provided.
@@ -1218,8 +1218,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *
          * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
-         *      is now a part of the <tt>update-center.json</tt> file. See
-         *      <tt>http://jenkins-ci.org/update-center.json</tt> as an example.
+         *      is now a part of the {@code update-center.json} file. See
+         *      {@code http://jenkins-ci.org/update-center.json} as an example.
          */
         @Deprecated
         public String getConnectionCheckUrl() {
@@ -1245,7 +1245,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Returns the URL of the server that hosts plugins and core updates.
          *
          * @deprecated as of 1.333
-         *      <tt>update-center.json</tt> is now signed, so we don't have to further make sure that
+         *      {@code update-center.json} is now signed, so we don't have to further make sure that
          *      we aren't downloading from anywhere unsecure.
          */
         @Deprecated
@@ -1279,7 +1279,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Things that {@link UpdateCenter#installerService} executes.
      *
-     * This object will have the <tt>row.jelly</tt> which renders the job on UI.
+     * This object will have the {@code row.jelly} which renders the job on UI.
      */
     @ExportedBean
     public abstract class UpdateCenterJob implements Runnable {

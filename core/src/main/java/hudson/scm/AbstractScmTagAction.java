@@ -37,11 +37,11 @@ import java.io.IOException;
 import jenkins.model.RunAction2;
 
 /**
- * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
+ * Common part of {@code CVSSCM.TagAction} and {@code SubversionTagAction}.
  *
  * <p>
  * This class implements the action that tags the modules. Derived classes
- * need to provide <tt>tagForm.jelly</tt> view that displays a form for
+ * need to provide {@code tagForm.jelly} view that displays a form for
  * letting user start tagging.
  *
  * @author Kohsuke Kawaguchi

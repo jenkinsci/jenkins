@@ -730,7 +730,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *
      * <p>
      * The salt is prepended to the hashed password and returned. So the encoded password is of the form
-     * <tt>SALT ':' hash(PASSWORD,SALT)</tt>.
+     * {@code SALT ':' hash(PASSWORD,SALT)}.
      *
      * <p>
      * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling

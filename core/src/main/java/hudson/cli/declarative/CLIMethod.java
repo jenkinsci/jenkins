@@ -38,8 +38,8 @@ import java.lang.annotation.Target;
  * Annotates methods on model objects to expose them as CLI commands.
  *
  * <p>
- * You need to have <tt>Messages.properties</tt> in the same package with the
- * <tt>CLI.<i>command-name</i>.shortDescription</tt> key to describe the command.
+ * You need to have {@code Messages.properties} in the same package with the
+ * {@code CLI.<i>command-name</i>.shortDescription} key to describe the command.
  * This is used for the same purpose as {@link CLICommand#getShortDescription()}.
  *
  * <p>
