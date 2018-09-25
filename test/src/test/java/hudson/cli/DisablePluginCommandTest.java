@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.PluginWrapper;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -66,6 +67,7 @@ public class DisablePluginCommandTest {
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
     public void disableDependentPluginsWrongOrder() {
+        assumeNotWindows();
         assertThat(disablePlugins("-restart", "dependee", "mandatory-depender"), failedWith(16));
         assertPluginDisabled("mandatory-depender");
         assertJenkinsInQuietMode(); // one plugin was disabled (mandatory-depender)
@@ -75,8 +77,8 @@ public class DisablePluginCommandTest {
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
     public void disableDependentPluginsRightOrder() {
+        assumeNotWindows();
         assertThat(disablePlugins("-restart", "mandatory-depender", "dependee"), succeeded());
-
         assertPluginDisabled("dependee");
         assertPluginDisabled("mandatory-depender");
         assertJenkinsInQuietMode();
@@ -86,6 +88,7 @@ public class DisablePluginCommandTest {
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
     public void disablePluginWithoutDepender() {
+        assumeNotWindows();
         assertThat(disablePlugins("-restart", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsInQuietMode();
@@ -124,6 +127,7 @@ public class DisablePluginCommandTest {
     @Issue("JENKINS-27177")
     @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
     public void disablePluginsWithError16() {
+        assumeNotWindows();
         assertThat(disablePlugins("-restart", "variant", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(16));
         assertPluginDisabled("variant");
         assertPluginEnabled("dependee");
@@ -166,5 +170,9 @@ public class DisablePluginCommandTest {
 
     private void assertJenkinsNotInQuietMode() {
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+    }
+
+    private void assumeNotWindows() {
+        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows"));
     }
 }
