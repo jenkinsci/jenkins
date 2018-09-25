@@ -334,7 +334,7 @@ public class Search implements StaplerProxy {
         public int length() { return tokens.length; }
 
         /**
-         * Returns {@link List} such that its <tt>get(end)</tt>
+         * Returns {@link List} such that its {@code get(end)}
          * returns the concatenation of [token_start,...,token_end]
          * (both end inclusive.)
          */

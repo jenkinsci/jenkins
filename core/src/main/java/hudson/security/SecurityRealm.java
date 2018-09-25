@@ -75,7 +75,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * If additional views/URLs need to be exposed,
- * an active {@link SecurityRealm} is bound to <tt>CONTEXT_ROOT/securityRealm/</tt>
+ * an active {@link SecurityRealm} is bound to {@code CONTEXT_ROOT/securityRealm/}
  * through {@link jenkins.model.Jenkins#getSecurityRealm()}, so you can define additional pages and
  * operations on your {@link SecurityRealm}.
  *
@@ -143,7 +143,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * {@link AuthenticationManager} instantiation often depends on the user-specified parameters
      * (for example, if the authentication is based on LDAP, the user needs to specify
      * the host name of the LDAP server.) Such configuration is expected to be
-     * presented to the user via <tt>config.jelly</tt> and then
+     * presented to the user via {@code config.jelly} and then
      * captured as instance variables inside the {@link SecurityRealm} implementation.
      *
      * <p>
@@ -205,8 +205,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * <p>
      * {@link SecurityRealm} is a singleton resource in Hudson, and therefore
-     * it's always configured through <tt>config.jelly</tt> and never with
-     * <tt>global.jelly</tt>. 
+     * it's always configured through {@code config.jelly} and never with
+     * {@code global.jelly}.
      */
     @Override
     public Descriptor<SecurityRealm> getDescriptor() {
@@ -225,7 +225,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Gets the target URL of the "login" link.
      * There's no need to override this, except for {@link LegacySecurityRealm}.
      * On legacy implementation this should point to {@code loginEntry}, which
-     * is protected by <tt>web.xml</tt>, so that the user can be eventually authenticated
+     * is protected by {@code web.xml}, so that the user can be eventually authenticated
      * by the container.
      *
      * <p>
@@ -315,12 +315,12 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
     /**
      * Returns true if this {@link SecurityRealm} allows online sign-up.
-     * This creates a hyperlink that redirects users to <tt>CONTEXT_ROOT/signUp</tt>,
-     * which will be served by the <tt>signup.jelly</tt> view of this class.
+     * This creates a hyperlink that redirects users to {@code CONTEXT_ROOT/signUp},
+     * which will be served by the {@code signup.jelly} view of this class.
      *
      * <p>
      * If the implementation needs to redirect the user to a different URL
-     * for signing up, use the following jelly script as <tt>signup.jelly</tt>
+     * for signing up, use the following jelly script as {@code signup.jelly}
      *
      * <pre>{@code <xmp>
      * <st:redirect url="http://www.sun.com/" xmlns:st="jelly:stapler"/>

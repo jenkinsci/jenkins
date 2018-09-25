@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
  *
  * <h2>View</h2>
- * <tt>summary.groovy/.jelly</tt> should do one-line HTML rendering to be used while rendering
+ * {@code summary.groovy/.jelly} should do one-line HTML rendering to be used while rendering
  * "build history" widget, next to the blocking build. By default it simply renders
  * {@link #getShortDescription()} text.
  *

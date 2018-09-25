@@ -282,7 +282,7 @@ public abstract class Launcher {
          * Sets STDOUT destination.
          * 
          * @param out Output stream. 
-         *            Use {@code null} to send STDOUT to <tt>/dev/null</tt>.
+         *            Use {@code null} to send STDOUT to {@code /dev/null}.
          * @return {@code this}
          */
         public ProcStarter stdout(@CheckForNull OutputStream out) {
@@ -334,7 +334,7 @@ public abstract class Launcher {
 
         /**
          * Controls where the stdin of the process comes from.
-         * By default, <tt>/dev/null</tt>.
+         * By default, {@code /dev/null}.
          * 
          * @return {@code this}
          */

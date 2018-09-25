@@ -59,7 +59,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Keeps a list of the parameters defined for a project.
  *
  * <p>
- * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
+ * This class also implements {@link Action} so that {@code index.jelly} provides
  * a form to enter build parameters.
  * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
  * The builds also need a {@code sidepanel.jelly}.

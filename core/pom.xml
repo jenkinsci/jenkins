@@ -41,7 +41,7 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <stapler.version>1.254.1</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.11</groovy.version>
+    <groovy.version>2.4.12</groovy.version>
   </properties>
 
   <dependencies>
@@ -481,7 +481,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
@@ -560,7 +560,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.12</version>
+      <version>1.13</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>

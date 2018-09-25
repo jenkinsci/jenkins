@@ -33,7 +33,7 @@ import java.net.URL;
  * we find out that the container is picking up its own Ant and that's not 1.7.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

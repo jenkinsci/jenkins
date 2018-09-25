@@ -26,7 +26,7 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

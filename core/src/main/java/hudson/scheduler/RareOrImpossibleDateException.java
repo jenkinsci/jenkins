@@ -35,7 +35,7 @@ import java.util.Calendar;
  * <p>This can typically have a few different reasons:</p>
  *
  * <ul>
- *   <li>The date is impossible. For example, June 31 does never happen, so <tt>0 0 31 6 *</tt> will never happen</li>
+ *   <li>The date is impossible. For example, June 31 does never happen, so {@code 0 0 31 6 *} will never happen</li>
  *   <li>The date happens only rarely
  *     <ul>
  *       <li>February 29 being the obvious one</li>
