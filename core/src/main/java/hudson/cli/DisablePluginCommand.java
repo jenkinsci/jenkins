@@ -41,7 +41,7 @@ import java.util.Set;
  * continues, but the exit code is 16, instead of 0. Disabling an already disabled plugin does nothing. It only restart
  * if, at least, one plugin has been disabled and the restart option was set.
  *
- * @since 2.136
+ * @since TODO
  */
 @Extension
 public class DisablePluginCommand extends CLICommand {
@@ -59,6 +59,7 @@ public class DisablePluginCommand extends CLICommand {
 
     @Override
     protected void printUsageSummary(PrintStream stderr) {
+        super.printUsageSummary(stderr);
         stderr.println(Messages.DisablePluginCommand_PrintUsageSummary());
     }
 
@@ -91,10 +92,10 @@ public class DisablePluginCommand extends CLICommand {
      * Try to disable a  plugin.
      * @param manager The PluginManager.
      * @param shortName The name of the plugin to disable.
-     * @return The result of the disabling of this plugin. See {@link DISABLING_STATUS}
+     * @return The result of the disabling of this plugin. See {@link DisablingStatus}
      * @throws IOException An exception disabling the plugin. See {@link PluginWrapper#disable()}
      */
-    private DISABLING_STATUS disablePlugin(PluginManager manager, String shortName) throws IOException {
+    private DisablingStatus disablePlugin(PluginManager manager, String shortName) throws IOException {
         PluginWrapper plugin = manager.getPlugin(shortName);
         if (plugin == null) {
             throw new IllegalArgumentException(Messages.DisablePluginCommand_NoSuchPlugin(shortName)); // exit with 3
@@ -103,17 +104,16 @@ public class DisablePluginCommand extends CLICommand {
         if (!plugin.isEnabled()) {
             stdout.format(Messages.DisablePluginCommand_Already_Disabled(shortName));
             stdout.println();
-            return DISABLING_STATUS.ALREADY_DISABLED;
+            return DisablingStatus.ALREADY_DISABLED;
         }
 
         Set<String> dependants = plugin.getDependants();
         for (String dependant : dependants) {
             PluginWrapper dependantPlugin = manager.getPlugin(dependant);
             if (dependantPlugin != null && dependantPlugin.isEnabled()) {
-                // TO-DO: stdout or stderr? the process continues but as the result code is not 0, it looks like stderr
                 stderr.format(Messages.DisablePluginCommand_Plugin_Has_Dependant(shortName, dependant));
                 stderr.println();
-                return DISABLING_STATUS.NOT_DISABLED_DEPENDANTS;
+                return DisablingStatus.NOT_DISABLED_DEPENDANTS;
             }
         }
 
@@ -121,13 +121,13 @@ public class DisablePluginCommand extends CLICommand {
         stdout.format(Messages.DisablePluginCommand_Plugin_Disabled(plugin.getShortName()));
         stdout.println();
 
-        return DISABLING_STATUS.DISABLED;
+        return DisablingStatus.DISABLED;
     }
 
     /**
      * An enum to hold the status of a disabling action. To do it more reader-friendly.
      */
-    private enum DISABLING_STATUS {
+    private enum DisablingStatus {
         DISABLED,
         ALREADY_DISABLED,
         NOT_DISABLED_DEPENDANTS
