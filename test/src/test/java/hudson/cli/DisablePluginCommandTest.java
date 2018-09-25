@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import hudson.Functions;
 import hudson.PluginWrapper;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -173,6 +174,6 @@ public class DisablePluginCommandTest {
     }
 
     private void assumeNotWindows() {
-        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows"));
+        Assume.assumeFalse(Functions.isWindows());
     }
 }
