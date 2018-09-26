@@ -192,6 +192,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
+    @Nonnull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
