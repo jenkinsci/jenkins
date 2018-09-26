@@ -778,19 +778,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
                         if (c!=null)    return c;
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException ignored) {
                         //not found. try next
                     }
                 }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
-                    if(p!=null)
+                    if(p!=null) {
                         try {
                             return p.classLoader.loadClass(name);
-                        } catch (ClassNotFoundException ex) {
-                            // try next
+                        } catch (ClassNotFoundException ignored) {
+                            // OK, try next
                         }
+                    }
                 }
             }
 
