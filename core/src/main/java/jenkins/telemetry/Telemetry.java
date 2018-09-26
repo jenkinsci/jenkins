@@ -55,9 +55,8 @@ import java.util.logging.Logger;
  * Extension point for collecting JEP-214 telemetry.
  *
  * @see <a href="https://github.com/jenkinsci/jep/tree/master/jep/214">JEP-214</a>
- *
- * @since TODO
  */
+@Restricted(NoExternalUse.class)
 public abstract class Telemetry implements ExtensionPoint {
 
     // https://webhook.site is a nice stand-in for this during development; just needs to end in ? to submit the ID as query parameter
