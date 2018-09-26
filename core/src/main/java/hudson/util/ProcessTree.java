@@ -821,22 +821,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Field to access the PID of the process.
          * Required for Java 8 and older JVMs.
          */
-        private static final @CheckForNull Field JAVA8_PID_FIELD;
+        private static final Field JAVA8_PID_FIELD;
 
         /**
          * Field to access the PID of the process.
          * Required for Java 9 and above until this is replaced by multi-release JAR.
          */
-        private static final @CheckForNull Method JAVA9_PID_METHOD;
+        private static final Method JAVA9_PID_METHOD;
 
         /**
          * Method to destroy a process, given pid.
          *
          * Looking at the JavaSE source code, this is using SIGTERM (15)
          */
-        private static final @CheckForNull Method JAVA8_DESTROY_PROCESS;
-        private static final @CheckForNull Method JAVA_9_PROCESSHANDLE_OF;
-        private static final @CheckForNull Method JAVA_9_PROCESSHANDLE_DESTROY;
+        private static final Method JAVA8_DESTROY_PROCESS;
+        private static final Method JAVA_9_PROCESSHANDLE_OF;
+        private static final Method JAVA_9_PROCESSHANDLE_DESTROY;
 
         static {
             try {
