@@ -107,4 +107,5 @@ public class HyperlinkNote extends ConsoleNote {
     }
 
     private static final Logger LOGGER = Logger.getLogger(HyperlinkNote.class.getName());
+    private static final long serialVersionUID = 3908468829358026949L;
 }
