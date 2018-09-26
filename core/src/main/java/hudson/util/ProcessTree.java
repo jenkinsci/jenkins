@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +65,6 @@ import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
 import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import javax.annotation.Nonnull;
@@ -684,13 +684,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         
         @Override
         public OSProcess get(Process proc) {
-            try {
-                return get((Integer) UnixReflection.PID_FIELD.get(proc));
-            } catch (IllegalAccessException e) { // impossible
-                IllegalAccessError x = new IllegalAccessError();
-                x.initCause(e);
-                throw x;
-            }
+            return get(UnixReflection.pid(proc));
         }
 
         public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
@@ -818,60 +812,94 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         public abstract List<String> getArguments();
     }
 
+    //TODO: can be replaced by multi-release JAR
     /**
      * Reflection used in the Unix support.
      */
     private static final class UnixReflection {
         /**
          * Field to access the PID of the process.
+         * Required for Java 8 and older JVMs.
          */
-        private static final Field PID_FIELD;
+        private static final @CheckForNull Field JAVA8_PID_FIELD;
+
+        /**
+         * Field to access the PID of the process.
+         * Required for Java 9 and above until this is replaced by multi-release JAR.
+         */
+        private static final @CheckForNull Method JAVA9_PID_METHOD;
 
         /**
          * Method to destroy a process, given pid.
          *
          * Looking at the JavaSE source code, this is using SIGTERM (15)
          */
-        private static final Method DESTROY_PROCESS;
+        private static final @CheckForNull Method JAVA8_DESTROY_PROCESS;
+        private static final @CheckForNull Method JAVA_9_PROCESSHANDLE_OF;
+        private static final @CheckForNull Method JAVA_9_PROCESSHANDLE_DESTROY;
 
         static {
             try {
-                Class<?> clazz = Class.forName("java.lang.UNIXProcess");
-                PID_FIELD = clazz.getDeclaredField("pid");
-                PID_FIELD.setAccessible(true);
-
-                if (isPreJava8()) {
-                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                if (isPostJava8()) { // Java 9+
+                    Class<?> clazz = Process.class;
+                    JAVA9_PID_METHOD = clazz.getMethod("pid");
+                    JAVA8_PID_FIELD = null;
+                    Class<?> processHandleClazz = Class.forName("java.lang.ProcessHandle");
+                    JAVA_9_PROCESSHANDLE_OF = processHandleClazz.getMethod("of", long.class);
+                    JAVA_9_PROCESSHANDLE_DESTROY = processHandleClazz.getMethod("destroy");
+                    JAVA8_DESTROY_PROCESS = null;
                 } else {
-                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
+                    Class<?> clazz = Class.forName("java.lang.UNIXProcess");
+                    JAVA8_PID_FIELD = clazz.getDeclaredField("pid");
+                    JAVA8_PID_FIELD.setAccessible(true);
+                    JAVA9_PID_METHOD = null;
+
+                    JAVA8_DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess", int.class, boolean.class);
+                    JAVA8_DESTROY_PROCESS.setAccessible(true);
+                    JAVA_9_PROCESSHANDLE_OF = null;
+                    JAVA_9_PROCESSHANDLE_DESTROY = null;
                 }
-                DESTROY_PROCESS.setAccessible(true);
-            } catch (ClassNotFoundException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
-                throw x;
-            } catch (NoSuchFieldException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
-                throw x;
-            } catch (NoSuchMethodException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
+            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
+                LinkageError x = new LinkageError("Cannot initialize reflection for Unix Processes", e);
                 throw x;
             }
         }
 
-        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
-            if (isPreJava8()) {
-                DESTROY_PROCESS.invoke(null, pid);
+        public static void destroy(int pid) throws IllegalAccessException,
+                InvocationTargetException {
+            if (JAVA8_DESTROY_PROCESS != null) {
+                JAVA8_DESTROY_PROCESS.invoke(null, pid, false);
             } else {
-                DESTROY_PROCESS.invoke(null, pid, false);
+                final Optional handle = (Optional)JAVA_9_PROCESSHANDLE_OF.invoke(null, pid);
+                if (handle.isPresent()) {
+                    JAVA_9_PROCESSHANDLE_DESTROY.invoke(handle.get());
+                }
             }
         }
 
-        private static boolean isPreJava8() {
-            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
-            return javaVersionAsAnInteger < 18;
+        //TODO: We ideally need to update ProcessTree APIs to Support Long (JENKINS-53799).
+        public static int pid(@Nonnull Process proc) {
+            try {
+                if (JAVA8_PID_FIELD != null) {
+                    return JAVA8_PID_FIELD.getInt(proc);
+                } else {
+                    long pid = (long)JAVA9_PID_METHOD.invoke(proc);
+                    if (pid > Integer.MAX_VALUE) {
+                        throw new IllegalAccessError("Java 9+ support error: PID is out of Jenkins API bounds: " + pid);
+                    }
+                    return (int)pid;
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) { // impossible
+                IllegalAccessError x = new IllegalAccessError();
+                x.initCause(e);
+                throw x;
+            }
+        }
+
+        // Java 9 uses new version format
+        private static boolean isPostJava8() {
+            String javaVersion = System.getProperty("java.version");
+            return !javaVersion.startsWith("1.");
         }
     }
 
