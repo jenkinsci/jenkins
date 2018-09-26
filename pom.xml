@@ -755,6 +755,8 @@ THE SOFTWARE.
         <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- Tweak for PowerMock vs. XStream conflict: JENKINS-53795 -->
+        <argLine>--add-opens java.xml/jdk.xml.internal=ALL-UNNAMED</argLine>
       </properties>
       <activation>
         <jdk>11</jdk>
