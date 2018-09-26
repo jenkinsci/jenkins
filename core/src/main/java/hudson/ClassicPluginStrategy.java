@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
@@ -81,7 +82,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.graalvm.compiler.core.common.SuppressFBWarnings;
 import org.jenkinsci.bytecode.Transformer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -801,7 +801,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         @Override
         @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS",
-        justification = "Should not produce network overheads since the URL is local. JENKINS-53793 is a follow-up")
+                            justification = "Should not produce network overheads since the URL is local. JENKINS-53793 is a follow-up")
         protected Enumeration<URL> findResources(String name) throws IOException {
             HashSet<URL> result = new HashSet<URL>();
 
