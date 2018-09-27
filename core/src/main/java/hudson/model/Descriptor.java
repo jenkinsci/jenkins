@@ -39,6 +39,7 @@ import hudson.views.ListViewColumn;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -601,7 +602,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
         } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+            throw new Error("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
         }
     }
 
