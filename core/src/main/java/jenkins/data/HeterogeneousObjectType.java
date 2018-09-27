@@ -10,8 +10,8 @@ import java.util.Stack;
  * @author Anderw Bayer
  */
 public final class HeterogeneousObjectType extends ParameterType {
-    private final Map<String,DescribableModel<?>> types;
-    HeterogeneousObjectType(Class<?> supertype, Map<String,DescribableModel<?>> types) {
+    private final Map<String,DataModel<?>> types;
+    HeterogeneousObjectType(Class<?> supertype, Map<String,DataModel<?>> types) {
         super(supertype);
         this.types = types;
     }
@@ -21,9 +21,9 @@ public final class HeterogeneousObjectType extends ParameterType {
     }
 
     /**
-     * A map from names which could be passed to {@link DescribableModel#CLAZZ} to types of allowable nested objects.
+     * A map from names which could be passed to {@link ReflectiveDataModel#CLAZZ} to types of allowable nested objects.
      */
-    public Map<String,DescribableModel<?>> getTypes() {
+    public Map<String,DataModel<?>> getTypes() {
         return types;
     }
 
@@ -38,14 +38,14 @@ public final class HeterogeneousObjectType extends ParameterType {
             try {
                 b.append('{');
                 boolean first = true;
-                for (Map.Entry<String, DescribableModel<?>> entry : types.entrySet()) {
+                for (Map.Entry<String, DataModel<?>> entry : types.entrySet()) {
                     if (first) {
                         first = false;
                     } else {
                         b.append(" | ");
                     }
                     String key = entry.getKey();
-                    DescribableModel<?> model = entry.getValue();
+                    DataModel<?> model = entry.getValue();
                     if (!key.equals(model.getType().getSimpleName())) {
                         b.append(key).append('~');
                     }

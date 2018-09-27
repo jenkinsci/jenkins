@@ -17,8 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * A type of a parameter to a class.
@@ -38,7 +39,7 @@ public abstract class ParameterType {
         this.actualType = actualType;
     }
 
-    static ParameterType of(Type type) {
+    static ParameterType of(Type type, DataModelRegistry registry) {
         try {
             if (type instanceof Class) {
                 Class<?> c = (Class<?>) type;
@@ -46,7 +47,7 @@ public abstract class ParameterType {
                     return new AtomicType(c);
                 }
                 if (Enum.class.isAssignableFrom(c)) {
-                    List<String> constants = new ArrayList<String>();
+                    List<String> constants = new ArrayList<>();
                     for (Enum<?> value : c.asSubclass(Enum.class).getEnumConstants()) {
                         constants.add(value.name());
                     }
@@ -65,32 +66,32 @@ public abstract class ParameterType {
                 Set<Class<?>> subtypes = DescribableModel.findSubtypes(c);
                 if ((subtypes.isEmpty() && !Modifier.isAbstract(c.getModifiers())) || subtypes.equals(Collections.singleton(c))) {
                     // Probably homogeneous. (Might be concrete but subclassable.)
-                    return new HomogeneousObjectType(c);
+                    return new HomogeneousObjectType(registry.lookupOrFail(c));
                 } else {
                     // Definitely heterogeneous.
-                    Map<String,List<Class<?>>> subtypesBySimpleName = new HashMap<String,List<Class<?>>>();
+                    Map<String,List<Class<?>>> subtypesBySimpleName = new HashMap<>();
                     for (Class<?> subtype : subtypes) {
                         String simpleName = subtype.getSimpleName();
                         List<Class<?>> bySimpleName = subtypesBySimpleName.get(simpleName);
                         if (bySimpleName == null) {
-                            subtypesBySimpleName.put(simpleName, bySimpleName = new ArrayList<Class<?>>());
+                            subtypesBySimpleName.put(simpleName, bySimpleName = new ArrayList<>());
                         }
                         bySimpleName.add(subtype);
                     }
-                    Map<String,DescribableModel<?>> types = new TreeMap<String,DescribableModel<?>>();
+                    Map<String,DataModel<?>> types = new TreeMap<>();
                     for (Map.Entry<String,List<Class<?>>> entry : subtypesBySimpleName.entrySet()) {
                         if (entry.getValue().size() == 1) { // normal case: unambiguous via simple name
                             try {
-                                types.put(entry.getKey(), DescribableModel.of(entry.getValue().get(0)));
+                                types.put(entry.getKey(), registry.lookupOrFail(entry.getValue().get(0)));
                             } catch (Exception x) {
-                                LOGGER.log(Level.FINE, "skipping subtype", x);
+                                LOGGER.log(FINE, "skipping subtype", x);
                             }
                         } else { // have to diambiguate via FQN
                             for (Class<?> subtype : entry.getValue()) {
                                 try {
-                                    types.put(subtype.getName(), DescribableModel.of(subtype));
+                                    types.put(subtype.getName(), registry.lookupOrFail(subtype));
                                 } catch (Exception x) {
-                                    LOGGER.log(Level.FINE, "skipping subtype", x);
+                                    LOGGER.log(FINE, "skipping subtype", x);
                                 }
                             }
                         }
@@ -99,7 +100,7 @@ public abstract class ParameterType {
                 }
             }
             if (Types.isSubClassOf(type, Collection.class)) {
-                return new ArrayType(type, of(Types.getTypeArgument(Types.getBaseClass(type,Collection.class), 0, Object.class)));
+                return new ArrayType(type, of(Types.getTypeArgument(Types.getBaseClass(type,Collection.class), 0, Object.class),registry));
             }
             throw new UnsupportedOperationException("do not know how to categorize attributes of type " + type);
         } catch (Exception x) {
@@ -112,7 +113,7 @@ public abstract class ParameterType {
     @Override
     public final String toString() {
         StringBuilder b = new StringBuilder();
-        toString(b, new Stack<Class<?>>());
+        toString(b, new Stack<>());
         return b.toString();
     }
 

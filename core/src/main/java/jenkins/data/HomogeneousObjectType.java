@@ -8,11 +8,11 @@ import java.util.Stack;
  * @author Anderw Bayer
  */
 public final class HomogeneousObjectType extends ParameterType {
-    private final DescribableModel<?> type;
+    private final DataModel<?> model;
 
-    HomogeneousObjectType(Class<?> actualClass) {
-        super(actualClass);
-        this.type = DescribableModel.of(actualClass);
+    HomogeneousObjectType(DataModel<?> model) {
+        super(model.getType());
+        this.model = model;
     }
 
     public Class<?> getType() {
@@ -22,8 +22,8 @@ public final class HomogeneousObjectType extends ParameterType {
     /**
      * The schema representing a type of nested object.
      */
-    public DescribableModel<?> getSchemaType() {
-        return type;
+    public DataModel<?> getSchemaType() {
+        return model;
     }
 
     /**
@@ -31,6 +31,6 @@ public final class HomogeneousObjectType extends ParameterType {
      */
     @Override
     void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
-        type.toString(b, modelTypes);
+        model.toString(b, modelTypes);
     }
 }

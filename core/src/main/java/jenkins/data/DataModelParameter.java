@@ -6,6 +6,7 @@ import org.jvnet.tiger_types.Types;
 import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Stack;
 
 /**
  * A property of {@link DataModel}
@@ -13,38 +14,38 @@ import java.lang.reflect.Type;
  * @author Kohsuke Kawaguchi
  * @see DataModel#getParameter(String)
  */
-public interface DataModelParameter {
+public abstract class DataModelParameter {
     /**
      * Classification of the type of this parameter.
      * <p>
      * Originates from the pipeline plugin and I'm not sure the logic behind this.
      */
-    ParameterType getType();
+    public abstract ParameterType getType();
 
     /**
      * The type of this parameter, possibly with generics.
      */
-    Type getRawType();
+    public abstract Type getRawType();
 
     /**
      * Gets the erasure of {@link #getRawType()}
      */
-    default Class getErasedType() {
+    public Class getErasedType() {
         return Types.erasure(getRawType());
     }
 
-    String getName();
+    public abstract String getName();
 
 
     /**
      * True if this parameter is required.
      */
-    boolean isRequired();
+    public abstract boolean isRequired();
 
     /**
      * True if this parameter is deprecated.
      */
-    boolean isDeprecated();
+    public abstract boolean isDeprecated();
 
     /**
      * Loads help defined for this parameter.
@@ -53,9 +54,29 @@ public interface DataModelParameter {
      * @see Descriptor#doHelp
      */
     @CheckForNull
-    String getHelp() throws IOException;
+    public abstract String getHelp() throws IOException;
 
-    default String getCapitalizedName() {
+    public String getCapitalizedName() {
         return Character.toUpperCase(getName().charAt(0)) + getName().substring(1);
+    }
+
+
+    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+        b.append(getName());
+        if (!isRequired()) {
+            b.append('?');
+        }
+        if (isDeprecated()) {
+            b.append("(deprecated)");
+        }
+        b.append(": ");
+        getType().toString(b, modelTypes);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        toString(b, new Stack<Class<?>>());
+        return b.toString();
     }
 }

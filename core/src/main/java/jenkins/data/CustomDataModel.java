@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class CustomDataModel<T> implements DataModel<T> {
+public abstract class CustomDataModel<T> extends DataModel<T> {
     private final Class<T> type;
     private final List<DataModelParameter> parameters;
 

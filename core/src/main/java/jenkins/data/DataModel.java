@@ -9,19 +9,20 @@ import org.kohsuke.stapler.DataBoundSetter;
 import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Stack;
 import java.util.function.Function;
 
 /**
  * Immutable object that represents the databinding and introspection logic of an object.
  */
-public interface DataModel<T> {
-    CNode write(T object, WriteDataContext context);
-    T read(CNode input, ReadDataContext context) throws IOException;
+public abstract class DataModel<T> {
+    public abstract CNode write(T object, WriteDataContext context);
+    public abstract T read(CNode input, ReadDataContext context) throws IOException;
 
     /**
      * A concrete class, usually {@link Describable}.
      */
-    Class<T> getType();
+    public abstract Class<T> getType();
 
     /**
      * A map from parameter names to types.
@@ -32,9 +33,9 @@ public interface DataModel<T> {
      * Sorted by the mandatory parameters first (in the order they are specified in the code),
      * followed by optional arguments.
      */
-    Collection<? extends DataModelParameter> getParameters();
+    public abstract Collection<? extends DataModelParameter> getParameters();
 
-    default DataModelParameter getParameter(String name) {
+    public DataModelParameter getParameter(String name) {
         for (DataModelParameter p : getParameters()) {
             if (p.getName().equals(name))
                 return p;
@@ -45,7 +46,7 @@ public interface DataModel<T> {
     /**
      * Corresponds to {@link Descriptor#getDisplayName} where available.
      */
-    default String getDisplayName() {
+    public String getDisplayName() {
         return getType().getSimpleName();
     }
 
@@ -54,7 +55,7 @@ public interface DataModel<T> {
      *
      * A model is deprecated if it's {@link #getType() type} is marked as {@link Deprecated}.
      */
-    default boolean isDeprecated() {
+    public boolean isDeprecated() {
         return getType().getAnnotation(Deprecated.class) != null;
     }
 
@@ -65,16 +66,47 @@ public interface DataModel<T> {
      * @see Descriptor#doHelp
      */
     @CheckForNull
-    String getHelp() throws IOException;
+    public abstract String getHelp() throws IOException;
+
+
+    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+        b.append(getType().getSimpleName());
+        if (modelTypes.contains(getType())) {
+            b.append('…');
+        } else {
+            modelTypes.push(getType());
+            try {
+                b.append('(');
+                boolean first = true;
+                for (DataModelParameter dp : getParameters()) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        b.append(", ");
+                    }
+                    dp.toString(b, modelTypes);
+                }
+                b.append(')');
+            } finally {
+                modelTypes.pop();
+            }
+        }
+    }
+
+    @Override public String toString() {
+        StringBuilder b = new StringBuilder();
+        toString(b, new Stack<Class<?>>());
+        return b.toString();
+    }
 
     
     
 
-    static <X,Y> DataModel<Y> byTranslation(Class<X> dto, Function<X,Y> reader, Function<Y,X> writer) {
+    public static <X,Y> DataModel<Y> byTranslation(Class<X> dto, Function<X, Y> reader, Function<Y, X> writer) {
         throw new UnsupportedOperationException(); // TODO
     }
 
-    static <T> DataModel<T> byReflection(Class<T> type) {
+    public static <T> DataModel<T> byReflection(Class<T> type) {
         throw new UnsupportedOperationException(); // TODO
     }
 

@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
  *
  * @author Kohsuke Kawaguchi
  */
-/*package*/ abstract class AbstractDataModelParameter implements DataModelParameter {
+/*package*/ abstract class AbstractDataModelParameter extends DataModelParameter {
     private ParameterType type;
     protected final String name;
 

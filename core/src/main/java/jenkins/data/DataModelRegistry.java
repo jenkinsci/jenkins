@@ -27,7 +27,11 @@ public interface DataModelRegistry {
      * @throws IOException if we don't know any {@link DataModel} for requested type
      */
     @Nonnull
-    <T> DataModel<T> lookupOrFail(Type type) throws IOException;
+    default <T> DataModel<T> lookupOrFail(Type type) throws IOException {
+        DataModel<T> t = lookup(type);
+        if (t==null)    throw new IOException("No DataModel found for "+type);
+        return t;
+    }
 
     /**
      * Retrieve default implementation from Jenkins

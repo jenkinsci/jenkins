@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
  * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
  */
-class ReflectiveDataModel<T> implements DataModel<T> {
+class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
     /**
      * Type that this model represents.
@@ -123,7 +123,7 @@ class ReflectiveDataModel<T> implements DataModel<T> {
         }
 
         // rest of the properties will be sorted alphabetically
-        Map<String,DataModelParameter> rest = new TreeMap<>();
+        Map<String,ReflectiveDataModelParameter> rest = new TreeMap<>();
 
         for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
             for (Field f : c.getDeclaredFields()) {
@@ -147,7 +147,7 @@ class ReflectiveDataModel<T> implements DataModel<T> {
         modelCache.putIfAbsent(clazz.getName(), this);
     }
 
-    private void addParameter(Map<String,DataModelParameter> props, Type type, String name, Setter setter) {
+    private void addParameter(Map<String,ReflectiveDataModelParameter> props, Type type, String name, Setter setter) {
         props.put(name, new ReflectiveDataModelParameter(this, type, name, setter));
     }
 
@@ -596,7 +596,7 @@ class ReflectiveDataModel<T> implements DataModel<T> {
     }
 
     /**
-     * Serialized form of {@link DataModel}, which is just its class as everything else
+     * Serialized form of {@link ReflectiveDataModel}, which is just its class as everything else
      * can be computed.
      */
     private static class SerializedForm implements Serializable {
@@ -607,7 +607,7 @@ class ReflectiveDataModel<T> implements DataModel<T> {
         }
 
         private Object readResolve() {
-            return DataModel.of(type);
+            return ReflectiveDataModel.of(type);
         }
 
         private static final long serialVersionUID = 1L;
@@ -615,7 +615,7 @@ class ReflectiveDataModel<T> implements DataModel<T> {
 
     public static final String CLAZZ = "$class";
 
-    private static final Logger LOGGER = Logger.getLogger(DataModel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModel.class.getName());
 
     private static final long serialVersionUID = 1L;
 
@@ -639,13 +639,13 @@ class ReflectiveDataModel<T> implements DataModel<T> {
     }
 
     /**
-     * As a short-hand, if a {@link DescribableModel} has only one required parameter,
+     * As a short-hand, if a {@link DataModel} has only one required parameter,
      * {@link #instantiate(Class)} accepts a single-item map whose key is this magic token.
      *
      * <p>
      * To avoid clients from needing to special-case this key, {@link #from(Object)} does not
      * produce {@link #arguments} that contains this magic token. Clients who want
-     * to take advantages of this should look at {@link DescribableModel#hasSingleRequiredParameter()}
+     * to take advantages of this should look at {@link DataModel#hasSingleRequiredParameter()}
      */
     public static final String ANONYMOUS_KEY = "<anonymous>";
 }
