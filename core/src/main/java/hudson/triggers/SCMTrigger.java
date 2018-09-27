@@ -471,7 +471,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
         
         /**
-         * Used from <tt>polling.jelly</tt> to write annotated polling log to the given output.
+         * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support

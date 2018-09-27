@@ -1471,7 +1471,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Used from <tt>console.jelly</tt> to write annotated log to the given output.
+     * Used from {@code console.jelly} to write annotated log to the given output.
      *
      * @since 1.349
      */

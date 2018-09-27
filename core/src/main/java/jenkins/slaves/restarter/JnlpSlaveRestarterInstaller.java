@@ -77,7 +77,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
             try {
                 Engine.class.getMethod("addListener", EngineListener.class);
-            } catch (NoSuchMethodException _) {
+            } catch (NoSuchMethodException ex) {
                 return null;    // running with older version of remoting that doesn't support adding listener
             }
 

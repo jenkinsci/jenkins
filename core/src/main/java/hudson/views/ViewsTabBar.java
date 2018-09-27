@@ -48,7 +48,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * Extension point for adding a ViewsTabBar header to Projects {@link ListView}.
  *
  * <p>
- * This object must have the <tt>viewTabs.jelly</tt>. This view
+ * This object must have the {@code viewTabs.jelly}. This view
  * is called once when the project views main panel is built.
  * The "views" attribute is set to the "Collection of views".
  *

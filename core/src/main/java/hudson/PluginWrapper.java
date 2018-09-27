@@ -81,7 +81,7 @@ import static org.apache.commons.io.FilenameUtils.getBaseName;
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatibility),
+ * A plug-in is packaged into a jar file whose extension is {@code ".jpi"} (or {@code ".hpi"} for backward compatibility),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
@@ -126,7 +126,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Base URL for loading static resources from this plugin.
      * Null if disabled. The static resources are mapped under
-     * <tt>CONTEXTPATH/plugin/SHORTNAME/</tt>.
+     * {@code CONTEXTPATH/plugin/SHORTNAME/}.
      */
     public final URL baseResourceURL;
 
@@ -151,7 +151,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * True if this plugin is activated for this session.
-     * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
+     * The snapshot of {@code disableFile.exists()} as of the start up.
      */
     private final boolean active;
     

@@ -75,7 +75,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.142</revision>
+    <revision>2.144</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -151,18 +151,18 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.10.19</version>
+        <version>2.22.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.6.6</version>
+        <version>2.0.0-beta.5</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito</artifactId>
-        <version>1.6.6</version>
+        <artifactId>powermock-api-mockito2</artifactId>
+        <version>2.0.0-beta.5</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -747,6 +747,18 @@ THE SOFTWARE.
       <properties>
         <failIfNoTests>false</failIfNoTests>
       </properties>
+    </profile>
+
+    <profile>
+      <id>jdk11</id>
+      <properties>
+        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <doclint>none</doclint>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+      </properties>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
     </profile>
   </profiles>
 </project>
