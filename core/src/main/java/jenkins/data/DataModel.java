@@ -348,7 +348,7 @@ public abstract class DataModel<T> {
      *      Source object to be converted.
      */
     @SuppressWarnings("unchecked")
-    private Object coerce(String location, Type type, Object o, DataContext context) throws Exception {
+    private Object coerce(String location, Type type, Object o, ReadDataContext context) throws Exception {
         Class erased = Types.erasure(type);
 
         if (type instanceof Class) {
@@ -365,7 +365,7 @@ public abstract class DataModel<T> {
         } else if (o==null) {
             return null;
         } else if (o instanceof CNode) {
-            return context.getBinder(erased).read(o);
+            return context.lookup(erased).read((CNode)o, context);
         } else if (o instanceof Map) {
             Map<String,Object> m = new HashMap<String,Object>();
             for (Map.Entry<?,?> entry : ((Map<?,?>) o).entrySet()) {
@@ -373,7 +373,7 @@ public abstract class DataModel<T> {
             }
 
             Class<?> clazz = resolveClass(erased, (String) m.remove(CLAZZ), null);
-            return new DataModel(clazz).instantiate(m);
+            return context.lookup(clazz).instantiate(m);
         } else if (o instanceof String && erased.isEnum()) {
             return Enum.valueOf(erased.asSubclass(Enum.class), (String) o);
         } else if (o instanceof String && erased == URL.class) {

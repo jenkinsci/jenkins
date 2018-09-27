@@ -1,16 +1,19 @@
 package jenkins.data;
 
 import jenkins.data.model.CNode;
-import org.apache.log4j.spi.ModelBinder;
 import org.kohsuke.stapler.Stapler;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataContext {
+/**
+ * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ */
+public class DataContext implements DataModelRegistry {
 
     private Deprecation deprecation = Deprecation.reject;
     private Restriction restriction = Restriction.reject;
@@ -18,9 +21,9 @@ public class DataContext {
 
     private transient List<Listener> listeners = new ArrayList<>();
 
-    private transient final ModelBinderRegistry registry;
+    private transient final DataModelRegistry registry;
 
-    public ConfigurationContext(ModelBinderRegistry registry) {
+    public DataContext(DataModelRegistry registry) {
         this.registry = registry;
     }
 
@@ -57,20 +60,14 @@ public class DataContext {
 
 
     @Override
-    @CheckForNull
-    public RootElementModelBinder lookupRootElement(String name) {
-        return registry.lookupRootElement(name);
-    }
-
-    @Override
     @Nonnull
-    public DataModel lookupOrFail(Type type) throws ModelBinderException {
+    public <T> DataModel<T> lookupOrFail(Type type) throws IOException {
         return registry.lookupOrFail(type);
     }
 
     @Override
     @CheckForNull
-    public DataModel lookup(Type type) {
+    public <T> DataModel<T> lookup(Type type) {
         return registry.lookup(type);
     }
 
@@ -88,10 +85,6 @@ public class DataContext {
 
     public Version getVersion() {
         return version;
-    }
-
-    public <T> DataModel<T> getReflectionBinder(Class<T> type) {
-        throw new UnsupportedOperationException();
     }
 
     // Once we introduce some breaking change on the model inference mechanism, we will introduce `TWO` and so on
