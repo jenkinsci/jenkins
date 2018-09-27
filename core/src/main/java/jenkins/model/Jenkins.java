@@ -37,6 +37,7 @@ import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -898,9 +899,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (pluginManager==null)
                 pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
+            WebApp webApp = WebApp.get(servletContext);
             // JSON binding needs to be able to see all the classes from all the plugins
-            WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
-
+            webApp.setClassLoader(pluginManager.uberClassLoader);
+            webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
+            
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
             // TODO pending move to standard blacklist, or API to append filter
