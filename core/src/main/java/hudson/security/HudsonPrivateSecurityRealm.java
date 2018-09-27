@@ -73,6 +73,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -263,6 +265,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @SuppressWarnings("ACL.impersonate")
     private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            // avoid session fixation
+            session.invalidate();
+        }
+        req.getSession(true);
+        
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
         a = this.getSecurityComponents().manager.authenticate(a);
@@ -466,8 +475,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is to map users under the security realm URL.
      * This in turn helps us set up the right navigation breadcrumb.
      */
+    @Restricted(NoExternalUse.class)
     public User getUser(String id) {
-        return User.getById(id, true);
+        return User.getById(id, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(Jenkins.ADMINISTER));
     }
 
     // TODO

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 //TODO merge into QueueTest after security patch
-public class QueueTest_SEC891 {
+public class QueueSEC891Test {
     
     @Rule
     public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);

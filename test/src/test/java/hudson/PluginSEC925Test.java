@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 //TODO merge it within PluginTest after the security release
-public class PluginTest_SEC925 {
+public class PluginSEC925Test {
     
     @Rule
     public JenkinsRule r = new JenkinsRule();
