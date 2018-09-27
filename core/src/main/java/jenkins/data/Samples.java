@@ -8,9 +8,11 @@ import jenkins.data.model.CNode;
 import jenkins.data.model.Mapping;
 import jenkins.data.model.Scalar;
 import jenkins.model.Jenkins;
+import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 /**
@@ -184,22 +186,90 @@ public class Samples {
                 d -> new DurianResource(d.age > 30));
     }
 
+
     /**
-     * This would be a part of the system, not a part of the user-written code.
+     * Variant of a Durian example in the form closer to Antonio's original proposal.
+     *
+     * This has the effect of making the idiom more explicit.
      */
-    @Describes(APIExportable.class)
-    public class APIExportableBinder implements DataModel<APIExportable> {
-        @Override
-        public CNode write(APIExportable object, WriteDataContext context) {
-            APIResource r = object.toResource();
-            DataModel std = context.getReflectionBinder(r.getClass());
-            return std.write(r, context);
+    public static class Eggfruit extends Fruit implements APIExportable<EggfruitResource> {
+        private float age;
+
+        // some other gnary fields that you don't want to participate in the format
+
+        public Eggfruit(float age) {
+            super("Eggfruit");
+            this.age = age;
         }
 
+        // lots of gnary behaviours
+
+        public EggfruitResource toResource() {
+            return new EggfruitResource(age>30.0f);
+        }
+
+        @Extension
+        public static final class DescriptorImpl extends FruitDescriptor {}
+    }
+
+    /**
+     * Model object that's defined as contract. This is the class that gets data-bound.
+     */
+    public static class EggfruitResource implements APIResource {
+        private boolean smelly;
+
+        @DataBoundConstructor
+        EggfruitResource(boolean smelly) {
+            this.smelly = smelly;
+        }
+
+        public boolean isSmelly() {
+            return smelly;
+        }
+
+        public Eggfruit toModel() {
+            return new Eggfruit(smelly?45.0f:15.0f);
+        }
+
+        // no behavior
+    }
+
+    /**
+     * This would be a part of the system, not a part of the user-written code.
+     * It's a bit of sugar
+     */
+    @Extension
+    public static class APIExportableModelFactory implements DataModelFactory {
         @Override
-        public APIExportable read(CNode input, ReadDataContext context) {
-            DataModel<APIResource> std = DataModel.byReflection(context.expectedType());
-            return std.read(input, context).toModel();
+        public DataModel find(final Class type) {
+            if (APIExportable.class.isAssignableFrom(type)) {
+                return new TranslatedModel(type);
+            }
+            return null;
+        }
+
+        private static class TranslatedModel<T extends APIExportable<U>,U extends APIResource> extends CustomDataModel<T> {
+            private final Class<U> u;
+            private final DataModel<U> um;
+
+            public TranslatedModel(Class<T> type) {
+                super(type);
+                Type t = Types.getBaseClass(type, APIExportable.class);
+                Type u = Types.getTypeArgument(t, 0);
+                this.u = Types.erasure(u);
+                um = DataModel.byReflection(this.u);
+            }
+
+            @Override
+            public CNode write(T object, WriteDataContext context) {
+                U r = object.toResource();
+                return um.write(r, context);
+            }
+
+            @Override
+            public T read(CNode input, ReadDataContext context) throws IOException {
+                return (T)um.read(input, context).toModel();
+            }
         }
     }
 

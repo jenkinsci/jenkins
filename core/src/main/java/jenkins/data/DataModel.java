@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Function;
 
+/**
+ * Immutable object that represents the databinding and introspection logic of an object.
+ */
 public interface DataModel<T> {
     CNode write(T object, WriteDataContext context);
     T read(CNode input, ReadDataContext context) throws IOException;
