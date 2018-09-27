@@ -78,7 +78,7 @@ public class Samples {
         public Banana read(CNode input, ReadDataContext context) {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
-            ModelBinder<Banana> std = context.getReflectionBinder(Banana.class);
+            ModelBinder<Banana> std = ModelBinder.byReflection(Banana.class);
             return std.read(input, context);
 
 //            return new DefaultModelBinder(Banana.class).read(m,context);
@@ -123,13 +123,16 @@ public class Samples {
      * Example where 'contract' is defined elsewhere explicitly as a separate resource class
      */
     public static class Durian extends Fruit implements APIExportable {
-        // some other gnary fields that you don't want to participate in the format
         private float age;
+
+        // some other gnary fields that you don't want to participate in the format
 
         public Durian(float age) {
             super("Durian");
             this.age = age;
         }
+
+        // lots of gnary behaviours
 
         public DurianResource toResource() {
             return new DurianResource(age>30.0f);
@@ -161,6 +164,20 @@ public class Samples {
         // no behavior
     }
 
+    // Jesse sees this more as a convenience sugar, not a part of the foundation,
+    // in which case helper method like this is preferrable over interfaces that 'invade' model objects
+    //
+    // Kohsuke notes that, channeling Antonio & James N & co, the goal is to make the kata more explicit,
+    // so this would go against that.
+    //
+    // either way, we'd like to establish that these can be implemented as sugar
+    @Binds(Durian.class)
+    public static ModelBinder<Durian> durianBinder() {
+        return ModelBinder.byTranslation(DurianResource.class,
+                dr -> new Durian(dr.smelly ? 45 : 15),
+                d -> new DurianResource(d.age > 30));
+    }
+
     /**
      * This would be a part of the system, not a part of the user-written code.
      */
@@ -175,7 +192,7 @@ public class Samples {
 
         @Override
         public APIExportable read(CNode input, ReadDataContext context) {
-            ModelBinder<APIResource> std = context.getReflectionBinder(context.expectedType());
+            ModelBinder<APIResource> std = ModelBinder.byReflection(context.expectedType());
             return std.read(input, context).toModel();
         }
     }
