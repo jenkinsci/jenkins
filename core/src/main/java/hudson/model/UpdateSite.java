@@ -990,8 +990,8 @@ public class UpdateSite {
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL.negate())).count());
             int optionalDepCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL)).count());
-            dependencies = getPresizedMap(depCount);
-            optionalDependencies = getPresizedMap(optionalDepCount);
+            dependencies = getPresizedMutableMap(depCount);
+            optionalDependencies = getPresizedMutableMap(optionalDepCount);
 
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;

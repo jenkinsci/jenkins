@@ -44,8 +44,9 @@ public class MemoryReductionUtil {
         }
     }
 
-    public static Map getPresizedMap(int elementCount) {
-        return (elementCount > 0) ? new HashMap(preallocatedHashmapCapacity(elementCount)) : Collections.EMPTY_MAP;
+    /** Returns a mutable HashMap presized to hold the given number of elements without needing to resize. */
+    public static Map getPresizedMutableMap(int elementCount) {
+        return new HashMap(preallocatedHashmapCapacity(elementCount));
     }
 
     /** Empty string array, exactly what it says on the tin. Avoids repeatedly created empty array when calling "toArray." */
