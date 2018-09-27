@@ -1,6 +1,8 @@
 package jenkins.data.model;
 
-import io.jenkins.plugins.casc.ConfiguratorException;
+import jenkins.data.ReadException;
+
+import java.io.IOException;
 
 /**
  * A configuration Node in yaml tree.
@@ -14,21 +16,17 @@ public interface CNode extends Cloneable {
 
     Type getType();
 
-    default Mapping asMapping() throws ConfiguratorException {
-        throw new ConfiguratorException("Item isn't a Mapping");
+    default Mapping asMapping() throws IOException {
+        throw new ReadException("Item isn't a Mapping").withSource(getSource());
     }
 
-    default Sequence asSequence() throws ConfiguratorException {
-        throw new ConfiguratorException("Item isn't a Sequence");
+    default Sequence asSequence() throws IOException {
+        throw new ReadException("Item isn't a Sequence").withSource(getSource());
     }
 
-    default Scalar asScalar() throws ConfiguratorException {
-        throw new ConfiguratorException("Item isn't a Scalar");
+    default Scalar asScalar() throws IOException {
+        throw new ReadException("Item isn't a Scalar").withSource(getSource());
     }
-
-    /** @deprecated sensitive data are identified based on target attribute being a ${@link hudson.util.Secret} */
-    @Deprecated
-    default boolean isSensitiveData() { return false; }
 
     /**
      * Indicate the source (file, line number) this specific configuration node comes from.

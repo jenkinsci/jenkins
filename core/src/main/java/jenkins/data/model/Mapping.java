@@ -1,7 +1,8 @@
 package jenkins.data.model;
 
-import io.jenkins.plugins.casc.ConfiguratorException;
+import jenkins.data.ReadException;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -52,7 +53,7 @@ public final class Mapping extends HashMap<String, CNode> implements CNode {
         if (!seq.isEmpty()) super.put(key, seq);
     }
 
-    public String getScalarValue(String key) throws ConfiguratorException {
+    public String getScalarValue(String key) throws IOException {
         return remove(key).asScalar().getValue();
     }
 

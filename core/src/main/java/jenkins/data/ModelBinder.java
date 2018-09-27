@@ -16,7 +16,7 @@ public interface ModelBinder<T> {
 
     default DescribableParameter getParameter(String name) {
         for (DescribableParameter p : getParameters()) {
-            if (p.name.equals(name))
+            if (p.getName().equals(name))
                 return p;
         }
         return null;

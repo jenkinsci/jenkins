@@ -49,7 +49,7 @@ public class Samples {
     }
 
     /**
-     * Custom marshaller falling back to the default reflection-based reader
+     * Custom binder falling back to the default reflection-based reader
      */
     public static class Banana extends Fruit {
         private boolean yellow;
@@ -67,8 +67,6 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
-    // exporter (not necessarily in core, could be a plugin):
-
     @Binds(Banana.class)
     public class BananaBinder implements ModelBinder<Banana> {
         @Override
@@ -84,10 +82,16 @@ public class Samples {
             m.put("yellow",m.get("ripe"));
             ModelBinder<Banana> std = ModelBinder.byReflection(Banana.class);
             return std.read(input, context);
+        }
 
-//            return new DefaultModelBinder(Banana.class).read(m,context);
-
-//            return context.readDefault(Banana.class,m);
+        /**
+         * When hand-writing a binder, one needs to also hand-code schema
+         */
+        @Override
+        public Collection<DescribableParameter> getParameters() {
+            return Arrays.asList(
+                new DescribableParameter(this,Boolean.class,"ripe",null)
+            );
         }
     }
 
@@ -120,6 +124,15 @@ public class Samples {
         @Override
         public Cherry read(CNode input, ReadDataContext context) {
             return new Cherry(input.asScalar().getValue());
+        }
+
+        /**
+         * When hand-writing a binder, one needs to also hand-code schema
+         */
+        @Override
+        public Collection<DescribableParameter> getParameters() {
+            // TODO: in this example, cherry binds to a scalar, so how do you go about that?
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -249,4 +262,9 @@ public class Samples {
 
         new JsonSerializer().write(d, System.out);
     }
+
+    // TODO: does this replace structs for Pipeline?
+    // TODO: does this replace CasC?
+
+
 }
