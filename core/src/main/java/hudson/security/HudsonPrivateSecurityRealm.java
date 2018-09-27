@@ -475,8 +475,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is to map users under the security realm URL.
      * This in turn helps us set up the right navigation breadcrumb.
      */
+    @Restricted(NoExternalUse.class)
     public User getUser(String id) {
-        return User.getById(id, true);
+        return User.getById(id, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(Jenkins.ADMINISTER));
     }
 
     // TODO
