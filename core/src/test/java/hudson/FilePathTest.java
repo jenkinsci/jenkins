@@ -923,7 +923,7 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-52781")
-    @ Test public void aSymlinkToAFileIsKeptByTarArchive() throws IOException, InterruptedException {
+    @Test public void aSymlinkToAFileIsKeptByTarArchive() throws IOException, InterruptedException {
         Path folderToTar = temp.newFolder().toPath();
         Path subdirectory = Files.createDirectory(folderToTar.resolve("build"));
         Path targetFile = subdirectory.resolve("1");
