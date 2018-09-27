@@ -68,17 +68,17 @@ public class Samples {
     @Binds(Banana.class)
     public class BananaBinder implements ModelBinder<Banana> {
         @Override
-        public CNode write(Banana object, DataContext context) {
+        public CNode write(Banana object, WriteDataContext context) {
             Mapping m = new Mapping();
             m.put("ripe",object.yellow);
             return m;
         }
 
         @Override
-        public Banana read(CNode input, DataContext context) {
+        public Banana read(CNode input, ReadDataContext context) {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
-            ModelBinder<Banana> std = ModelBinder.byReflection(Banana.class);
+            ModelBinder<Banana> std = context.getReflectionBinder(Banana.class);
             return std.read(input, context);
 
 //            return new DefaultModelBinder(Banana.class).read(m,context);
@@ -109,15 +109,90 @@ public class Samples {
     @Binds(Cherry.class)
     public class CherryBinder implements ModelBinder<Cherry> {
         @Override
-        public CNode write(Cherry object, DataContext context) {
+        public CNode write(Cherry object, WriteDataContext context) {
             return new Scalar(object.color());
         }
 
         @Override
-        public Cherry read(CNode input, DataContext context) {
+        public Cherry read(CNode input, ReadDataContext context) {
             return new Cherry(input.asScalar().getValue());
         }
     }
+
+    /**
+     * Example where 'contract' is defined elsewhere explicitly as a separate resource class
+     */
+    public static class Durian extends Fruit implements APIExportable {
+        // some other gnary fields that you don't want to participate in the format
+        private float age;
+
+        public Durian(float age) {
+            super("Durian");
+            this.age = age;
+        }
+
+        public DurianResource toResource() {
+            return new DurianResource(age>30.0f);
+        }
+
+        @Extension
+        public static final class DescriptorImpl extends FruitDescriptor {}
+    }
+
+    /**
+     * Model object that's defined as contract. This is the class that gets data-bound.
+     */
+    public static class DurianResource implements APIResource {
+        private boolean smelly;
+
+        @DataBoundConstructor
+        DurianResource(boolean smelly) {
+            this.smelly = smelly;
+        }
+
+        public boolean isSmelly() {
+            return smelly;
+        }
+
+        public Durian toModel() {
+            return new Durian(smelly?45.0f:15.0f);
+        }
+
+        // no behavior
+    }
+
+    /**
+     * This would be a part of the system, not a part of the user-written code.
+     */
+    @Binds(APIExportable.class)
+    public class APIExportableBinder implements ModelBinder<APIExportable> {
+        @Override
+        public CNode write(APIExportable object, WriteDataContext context) {
+            APIResource r = object.toResource();
+            ModelBinder std = context.getReflectionBinder(r.getClass());
+            return std.write(r, context);
+        }
+
+        @Override
+        public APIExportable read(CNode input, ReadDataContext context) {
+            ModelBinder<APIResource> std = context.getReflectionBinder(context.expectedType());
+            return std.read(input, context).toModel();
+        }
+    }
+
+
+
+//    public static class GitSCM extends Fruit {
+//        private List<UserRemoteConfig> userRemoteConfigs;
+//        private transient List<RemoteConfig> remoteRepositories;
+//    }
+//
+//    public class UserRemoteConfig extends AbstractDescribableImpl<UserRemoteConfig> {
+//        private String name;
+//        private String refspec;
+//        private String url;
+//        private String credentialsId;
+//    }
 
 
 

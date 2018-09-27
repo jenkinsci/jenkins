@@ -1,5 +1,6 @@
 package jenkins.data;
 
+import jenkins.data.Samples.Banana;
 import jenkins.data.model.CNode;
 import org.apache.log4j.spi.ModelBinder;
 import org.kohsuke.stapler.Stapler;
@@ -88,6 +89,10 @@ public class DataContext {
 
     public Version getVersion() {
         return version;
+    }
+
+    public <T> ModelBinder<T> getReflectionBinder(Class<T> type) {
+        throw new UnsupportedOperationException();
     }
 
     // Once we introduce some breaking change on the model inference mechanism, we will introduce `TWO` and so on
