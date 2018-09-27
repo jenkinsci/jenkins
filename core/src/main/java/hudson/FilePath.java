@@ -3281,5 +3281,60 @@ public final class FilePath implements Serializable {
         return IOUtils.mkdirs(dir);
     }
 
+    /**
+     * Check if the relative child is really a descendant after symlink resolution if any.
+     *
+     * TODO un-restrict it in a weekly after the patch
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isDescendant(@Nonnull String potentialChildRelativePath) throws IOException, InterruptedException {
+        return act(new IsDescendant(potentialChildRelativePath));
+    }
+
+    private class IsDescendant extends SecureFileCallable<Boolean> {
+        private static final long serialVersionUID = 1L;
+        private String potentialChildRelativePath;
+
+        private IsDescendant(@Nonnull String potentialChildRelativePath){
+            this.potentialChildRelativePath = potentialChildRelativePath;
+        }
+
+        @Override
+        public Boolean invoke(@Nonnull File parentFile, @Nonnull VirtualChannel channel) throws IOException, InterruptedException {
+            if (new File(potentialChildRelativePath).isAbsolute()) {
+                throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
+            }
+
+            Path parent = parentFile.getAbsoluteFile().toPath().normalize();
+
+            String remainingPath = potentialChildRelativePath;
+            File currentFile = parentFile;
+            while (!remainingPath.isEmpty()) {
+                File directChild = this.getDirectChild(currentFile, remainingPath);
+                File childUsingFullPath = new File(currentFile, remainingPath);
+                remainingPath = childUsingFullPath.getAbsolutePath().substring(directChild.getAbsolutePath().length());
+                
+                File childFileSymbolic = Util.resolveSymlinkToFile(directChild);
+                if (childFileSymbolic == null) {
+                    currentFile = directChild;
+                } else {
+                    currentFile = childFileSymbolic;
+                }
+            }
+
+            //TODO could be refactored using Util#isDescendant(File, File) from 2.80+
+            Path child = currentFile.getAbsoluteFile().toPath().normalize();
+            return child.startsWith(parent);
+        }
+
+        private @CheckForNull File getDirectChild(File parentFile, String childPath){
+            File current = new File(parentFile, childPath);
+            while (current != null && !parentFile.equals(current.getParentFile())) {
+                current = current.getParentFile();
+            }
+            return current;
+        }
+    }
+
     private static final SoloFilePathFilter UNRESTRICTED = SoloFilePathFilter.wrap(FilePathFilter.UNRESTRICTED);
 }
