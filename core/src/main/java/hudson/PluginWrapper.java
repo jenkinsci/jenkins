@@ -188,7 +188,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * A String error message, and a boolean indicating whether it's an original error (false) or downstream from an original one (true)
      */
-    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>();
+    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>(0);
 
     /**
      * Is this plugin bundled in jenkins.war?
