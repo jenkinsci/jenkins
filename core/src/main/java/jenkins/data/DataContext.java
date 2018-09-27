@@ -1,6 +1,5 @@
 package jenkins.data;
 
-import jenkins.data.Samples.Banana;
 import jenkins.data.model.CNode;
 import org.apache.log4j.spi.ModelBinder;
 import org.kohsuke.stapler.Stapler;
@@ -65,13 +64,13 @@ public class DataContext {
 
     @Override
     @Nonnull
-    public ModelBinder lookupOrFail(Type type) throws ModelBinderException {
+    public DataModel lookupOrFail(Type type) throws ModelBinderException {
         return registry.lookupOrFail(type);
     }
 
     @Override
     @CheckForNull
-    public ModelBinder lookup(Type type) {
+    public DataModel lookup(Type type) {
         return registry.lookup(type);
     }
 
@@ -91,7 +90,7 @@ public class DataContext {
         return version;
     }
 
-    public <T> ModelBinder<T> getReflectionBinder(Class<T> type) {
+    public <T> DataModel<T> getReflectionBinder(Class<T> type) {
         throw new UnsupportedOperationException();
     }
 

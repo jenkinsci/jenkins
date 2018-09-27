@@ -1,5 +1,6 @@
 package jenkins.data;
 
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import org.jvnet.tiger_types.Types;
@@ -19,13 +20,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A property of {@link ModelBinder}
+ * A property of {@link DataModel}
  *
  * @author Kohsuke Kawaguchi
- * @see ModelBinder#getParameter(String)
+ * @see DataModel#getParameter(String)
  */
-public final class DescribableParameter {
-    private final ModelBinder<?> parent;
+public final class DataModelParameter {
+    private final DataModel<?> parent;
     private ParameterType type;
     private final String name;
 
@@ -40,7 +41,7 @@ public final class DescribableParameter {
      */
     /*package*/ final Setter setter;
 
-    /*package*/ DescribableParameter(ModelBinder<?> parent, Type type, String name, Setter setter) {
+    /*package*/ DataModelParameter(DataModel<?> parent, Type type, String name, Setter setter) {
         this.parent = parent;
         this.rawType = type;
         this.name = name;
@@ -190,7 +191,7 @@ public final class DescribableParameter {
         } else if (o != null && !o.getClass().getName().startsWith("java.")) {
             try {
                 // Check to see if this can be treated as a data-bound struct.
-                UninstantiatedDescribable nested = ModelBinder.uninstantiate2_(o);
+                UninstantiatedDescribable nested = DataModel.uninstantiate2_(o);
                 if (type != o.getClass()) {
                     int simpleNameCount = 0;
                     for (Class<?> c : findSubtypes(Types.erasure(type))) {
@@ -218,5 +219,5 @@ public final class DescribableParameter {
         return o;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(DescribableParameter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DataModelParameter.class.getName());
 }

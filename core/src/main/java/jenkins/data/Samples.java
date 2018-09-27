@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
 import jenkins.data.model.CNode;
 import jenkins.data.model.Mapping;
 import jenkins.data.model.Scalar;
@@ -13,7 +12,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Here is how the Data API gets consumed by plugin devs.
@@ -67,8 +65,8 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
-    @Binds(Banana.class)
-    public class BananaBinder implements ModelBinder<Banana> {
+    @Describes(Banana.class)
+    public class BananaBinder implements DataModel<Banana> {
         @Override
         public CNode write(Banana object, WriteDataContext context) {
             Mapping m = new Mapping();
@@ -80,7 +78,7 @@ public class Samples {
         public Banana read(CNode input, ReadDataContext context) {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
-            ModelBinder<Banana> std = ModelBinder.byReflection(Banana.class);
+            DataModel<Banana> std = DataModel.byReflection(Banana.class);
             return std.read(input, context);
         }
 
@@ -88,9 +86,9 @@ public class Samples {
          * When hand-writing a binder, one needs to also hand-code schema
          */
         @Override
-        public Collection<DescribableParameter> getParameters() {
+        public Collection<DataModelParameter> getParameters() {
             return Arrays.asList(
-                new DescribableParameter(this,Boolean.class,"ripe",null)
+                new DataModelParameter(this,Boolean.class,"ripe",null)
             );
         }
     }
@@ -114,8 +112,8 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
-    @Binds(Cherry.class)
-    public class CherryBinder implements ModelBinder<Cherry> {
+    @Describes(Cherry.class)
+    public class CherryBinder implements DataModel<Cherry> {
         @Override
         public CNode write(Cherry object, WriteDataContext context) {
             return new Scalar(object.color());
@@ -130,7 +128,7 @@ public class Samples {
          * When hand-writing a binder, one needs to also hand-code schema
          */
         @Override
-        public Collection<DescribableParameter> getParameters() {
+        public Collection<DataModelParameter> getParameters() {
             // TODO: in this example, cherry binds to a scalar, so how do you go about that?
             throw new UnsupportedOperationException();
         }
@@ -188,9 +186,9 @@ public class Samples {
     // so this would go against that.
     //
     // either way, we'd like to establish that these can be implemented as sugar
-    @Binds(Durian.class)
-    public static ModelBinder<Durian> durianBinder() {
-        return ModelBinder.byTranslation(DurianResource.class,
+    @Describes(Durian.class)
+    public static DataModel<Durian> durianBinder() {
+        return DataModel.byTranslation(DurianResource.class,
                 dr -> new Durian(dr.smelly ? 45 : 15),
                 d -> new DurianResource(d.age > 30));
     }
@@ -198,18 +196,18 @@ public class Samples {
     /**
      * This would be a part of the system, not a part of the user-written code.
      */
-    @Binds(APIExportable.class)
-    public class APIExportableBinder implements ModelBinder<APIExportable> {
+    @Describes(APIExportable.class)
+    public class APIExportableBinder implements DataModel<APIExportable> {
         @Override
         public CNode write(APIExportable object, WriteDataContext context) {
             APIResource r = object.toResource();
-            ModelBinder std = context.getReflectionBinder(r.getClass());
+            DataModel std = context.getReflectionBinder(r.getClass());
             return std.write(r, context);
         }
 
         @Override
         public APIExportable read(CNode input, ReadDataContext context) {
-            ModelBinder<APIResource> std = ModelBinder.byReflection(context.expectedType());
+            DataModel<APIResource> std = DataModel.byReflection(context.expectedType());
             return std.read(input, context).toModel();
         }
     }

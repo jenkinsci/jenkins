@@ -5,17 +5,17 @@ import jenkins.data.model.CNode;
 import java.util.Collection;
 import java.util.function.Function;
 
-public interface ModelBinder<T> {
+public interface DataModel<T> {
     CNode write(T object, WriteDataContext context);
     T read(CNode input, ReadDataContext context);
 
     /**
      * Returns all the parameters of the model the binder represents
      */
-    Collection<DescribableParameter> getParameters();
+    Collection<DataModelParameter> getParameters();
 
-    default DescribableParameter getParameter(String name) {
-        for (DescribableParameter p : getParameters()) {
+    default DataModelParameter getParameter(String name) {
+        for (DataModelParameter p : getParameters()) {
             if (p.getName().equals(name))
                 return p;
         }
@@ -24,11 +24,11 @@ public interface ModelBinder<T> {
 
 
 
-    static <X,Y> ModelBinder<Y> byTranslation(Class<X> dto, Function<X,Y> reader, Function<Y,X> writer) {
+    static <X,Y> DataModel<Y> byTranslation(Class<X> dto, Function<X,Y> reader, Function<Y,X> writer) {
         throw new UnsupportedOperationException(); // TODO
     }
 
-    static <T> ModelBinder<T> byReflection(Class<T> type) {
+    static <T> DataModel<T> byReflection(Class<T> type) {
         throw new UnsupportedOperationException(); // TODO
     }
 }
