@@ -7,6 +7,7 @@ import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import jenkins.data.model.CNode;
 import jenkins.data.model.Mapping;
+import jenkins.data.model.Scalar;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -30,6 +31,9 @@ public class Samples {
 
     public static class FruitDescriptor extends Descriptor<Fruit> {}
 
+    /**
+     * Implicit inline model where in-memory format and the data format is identical.
+     */
     public static class Apple extends Fruit {
         private int seeds;
         @DataBoundConstructor public Apple(int seeds) {
@@ -40,6 +44,9 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
+    /**
+     * Custom marshaller falling back to the default reflection-based reader
+     */
     public static class Banana extends Fruit {
         private boolean yellow;
         @DataBoundConstructor
@@ -47,6 +54,11 @@ public class Samples {
             super("Banana");
             this.yellow = yellow;
         }
+
+        public boolean isYellow() {
+            return yellow;
+        }
+
         @Extension
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
@@ -68,11 +80,46 @@ public class Samples {
             m.put("yellow",m.get("ripe"));
             ModelBinder<Banana> std = ModelBinder.byReflection(Banana.class);
             return std.read(input, context);
+
 //            return new DefaultModelBinder(Banana.class).read(m,context);
 
 //            return context.readDefault(Banana.class,m);
         }
     }
+
+    /**
+     * Custom serializer from scratch, no delegation to default.
+     */
+    public static class Cherry extends Fruit {
+        private String color;
+
+        public Cherry(String c) {
+            super("Cherry");
+            this.color = c;
+        }
+
+        public String color() { // don't need to be following convention
+            return color;
+        }
+
+        @Extension
+        public static final class DescriptorImpl extends FruitDescriptor {}
+    }
+
+    @Binds(Cherry.class)
+    public class CherryBinder implements ModelBinder<Cherry> {
+        @Override
+        public CNode write(Cherry object, DataContext context) {
+            return new Scalar(object.color());
+        }
+
+        @Override
+        public Cherry read(CNode input, DataContext context) {
+            return new Cherry(input.asScalar().getValue());
+        }
+    }
+
+
 
     void fruitSample() {
         // API usage:
