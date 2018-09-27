@@ -52,7 +52,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-public class BasicHeaderApiTokenAuthenticatorTest_SEC986 {
+public class BasicHeaderApiTokenAuthenticatorSEC986Test {
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
     

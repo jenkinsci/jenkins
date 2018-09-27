@@ -37,7 +37,7 @@ import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class TokenBasedRememberMeServices2Test_SEC996 {
+public class TokenBasedRememberMeServices2SEC996Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
     
