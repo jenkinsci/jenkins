@@ -10,8 +10,8 @@ import jenkins.data.model.Scalar;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Here is how the Data API gets consumed by plugin devs.
@@ -66,7 +66,12 @@ public class Samples {
     }
 
     @Describes(Banana.class)
-    public class BananaModel implements DataModel<Banana> {
+    public class BananaModel extends CustomDataModel<Banana> {
+        public BananaModel() {
+            super(Banana.class,
+                    parameter("ripe",boolean.class));
+        }
+
         @Override
         public CNode write(Banana object, WriteDataContext context) {
             Mapping m = new Mapping();
@@ -75,21 +80,11 @@ public class Samples {
         }
 
         @Override
-        public Banana read(CNode input, ReadDataContext context) {
+        public Banana read(CNode input, ReadDataContext context) throws IOException {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
             DataModel<Banana> std = DataModel.byReflection(Banana.class);
             return std.read(input, context);
-        }
-
-        /**
-         * When hand-writing a binder, one needs to also hand-code schema
-         */
-        @Override
-        public Collection<DataModelParameter> getParameters() {
-            return Arrays.asList(
-                new DataModelParameter(this,Boolean.class,"ripe",null)
-            );
         }
     }
 
@@ -113,24 +108,20 @@ public class Samples {
     }
 
     @Describes(Cherry.class)
-    public class CherryBinder implements DataModel<Cherry> {
+    public class CherryModel extends CustomDataModel<Cherry> {
+        public CherryModel() {
+            // TODO: in this example, cherry binds to a scalar, so how do you go about parameters?
+            super(Cherry.class);
+        }
+
         @Override
         public CNode write(Cherry object, WriteDataContext context) {
             return new Scalar(object.color());
         }
 
         @Override
-        public Cherry read(CNode input, ReadDataContext context) {
+        public Cherry read(CNode input, ReadDataContext context) throws IOException {
             return new Cherry(input.asScalar().getValue());
-        }
-
-        /**
-         * When hand-writing a binder, one needs to also hand-code schema
-         */
-        @Override
-        public Collection<DataModelParameter> getParameters() {
-            // TODO: in this example, cherry binds to a scalar, so how do you go about that?
-            throw new UnsupportedOperationException();
         }
     }
 

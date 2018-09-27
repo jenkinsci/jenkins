@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public interface DataModel<T> {
     CNode write(T object, WriteDataContext context);
-    T read(CNode input, ReadDataContext context);
+    T read(CNode input, ReadDataContext context) throws IOException;
 
     /**
      * A concrete class, usually {@link Describable}.

@@ -9,8 +9,8 @@ import java.lang.reflect.Type;
  *
  * @author Kohsuke Kawaguchi
  */
-public class CustomDataModelParameter extends AbstractDataModelParameter {
-    public CustomDataModelParameter(String name, Type rawType) {
+final class CustomDataModelParameter extends AbstractDataModelParameter {
+    CustomDataModelParameter(String name, Type rawType) {
         super(name, rawType);
     }
 
