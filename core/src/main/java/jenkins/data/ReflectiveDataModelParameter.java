@@ -2,6 +2,7 @@ package jenkins.data;
 
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import jenkins.data.model.CNode;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -94,7 +95,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     /**
      * Given an configured instance, try to infer the current value of the property.
      */
-    /*package*/ Object inspect(Object o) {
+    /*package*/ CNode inspect(Object o) {
         return uncoerce(getValue(o), rawType);
     }
 

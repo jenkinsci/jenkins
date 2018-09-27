@@ -75,14 +75,14 @@ public class Samples {
         }
 
         @Override
-        public CNode write(Banana object, WriteDataContext context) {
+        public CNode write(Banana object, DataContext context) {
             Mapping m = new Mapping();
             m.put("ripe",object.yellow);
             return m;
         }
 
         @Override
-        public Banana read(CNode input, ReadDataContext context) throws IOException {
+        public Banana read(CNode input, DataContext context) throws IOException {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
             DataModel<Banana> std = DataModel.byReflection(Banana.class);
@@ -117,12 +117,12 @@ public class Samples {
         }
 
         @Override
-        public CNode write(Cherry object, WriteDataContext context) {
+        public CNode write(Cherry object, DataContext context) {
             return new Scalar(object.color());
         }
 
         @Override
-        public Cherry read(CNode input, ReadDataContext context) throws IOException {
+        public Cherry read(CNode input, DataContext context) throws IOException {
             return new Cherry(input.asScalar().getValue());
         }
     }
@@ -157,7 +157,7 @@ public class Samples {
         private boolean smelly;
 
         @DataBoundConstructor
-        DurianResource(boolean smelly) {
+        public DurianResource(boolean smelly) {
             this.smelly = smelly;
         }
 
@@ -219,7 +219,7 @@ public class Samples {
         private boolean smelly;
 
         @DataBoundConstructor
-        EggfruitResource(boolean smelly) {
+        public EggfruitResource(boolean smelly) {
             this.smelly = smelly;
         }
 
@@ -261,13 +261,13 @@ public class Samples {
             }
 
             @Override
-            public CNode write(T object, WriteDataContext context) {
+            public CNode write(T object, DataContext context) {
                 U r = object.toResource();
                 return um.write(r, context);
             }
 
             @Override
-            public T read(CNode input, ReadDataContext context) throws IOException {
+            public T read(CNode input, DataContext context) throws IOException {
                 return (T)um.read(input, context).toModel();
             }
         }

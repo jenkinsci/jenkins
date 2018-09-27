@@ -16,8 +16,8 @@ import java.util.function.Function;
  * Immutable object that represents the databinding and introspection logic of an object.
  */
 public abstract class DataModel<T> {
-    public abstract CNode write(T object, WriteDataContext context);
-    public abstract T read(CNode input, ReadDataContext context) throws IOException;
+    public abstract CNode write(T object, DataContext context);
+    public abstract T read(CNode input, DataContext context) throws IOException;
 
     /**
      * A concrete class, usually {@link Describable}.

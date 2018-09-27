@@ -1,7 +1,5 @@
 package jenkins.data;
 
-import com.google.common.primitives.Primitives;
-import groovy.lang.GString;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -10,9 +8,13 @@ import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import jenkins.data.model.CNode;
+import jenkins.data.model.Mapping;
+import jenkins.data.model.Sequence;
 import jenkins.model.Jenkins;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.codehaus.groovy.reflection.ReflectionCache;
 import org.jenkinsci.Symbol;
 import org.jvnet.tiger_types.Types;
@@ -27,7 +29,6 @@ import javax.annotation.Nullable;
 import java.beans.Introspector;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -46,6 +47,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -91,9 +93,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     static ConcurrentHashMap<String, ReflectiveDataModel> modelCache = new ConcurrentHashMap<>();
 
     /**
-     * Loads a definition of the structure of a class: what kind of data
-     * you might get back from {@link #uninstantiate} on an instance,
-     * or might want to pass to {@link #instantiate(Map)}.
+     * Loads a definition of the structure of a class.
      *
      * Use {@link #of(Class)} instead -- that will returned cached instances.
      */
@@ -239,7 +239,10 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * or {@link Class#getSimpleName} may be used in case the argument type is {@link Describable}
      * and only one subtype is registered (as a {@link Descriptor}) with that simple name.
      */
-    public T instantiate(Map<String,?> arguments, ReadDataContext context) throws Exception {
+    @Override
+    public T read(CNode input, DataContext context) throws IOException {
+        Mapping arguments = input.asMapping();
+
         if (arguments.containsKey(ANONYMOUS_KEY)) {
             if (arguments.size()!=1)
                 throw new IllegalArgumentException("All arguments have to be named but it has "+ANONYMOUS_KEY);
@@ -247,7 +250,8 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
             DataModelParameter rp = getSoleRequiredParameter();
             if (rp==null)
                 throw new IllegalArgumentException("Arguments to "+type+" have to be explicitly named");
-            arguments = Collections.singletonMap(rp.getName(),arguments.get(ANONYMOUS_KEY));
+            arguments = new Mapping();
+            arguments.put(rp.getName(),arguments.get(ANONYMOUS_KEY));
         }
 
         try {
@@ -299,7 +303,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * @return
      *      null if the method shouldn't be invoked at all. IOW, there's nothing in the bag.
      */
-    private Object[] buildArguments(Map<String,?> bag, Type[] types, String[] names, boolean callEvenIfNoArgs, ReadDataContext context) throws Exception {
+    private Object[] buildArguments(Mapping bag, Type[] types, String[] names, boolean callEvenIfNoArgs, DataContext context) throws Exception {
         assert names.length==types.length;
 
         Object[] args = new Object[names.length];
@@ -307,7 +311,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         for (int i = 0; i < args.length; i++) {
             String name = names[i];
             hasArg |= bag.containsKey(name);
-            Object a = bag.get(name);
+            CNode a = bag.get(name);
             Type type = types[i];
             if (a != null) {
                 args[i] = coerce(this.type.getName() + "." + name, type, a, context);
@@ -325,11 +329,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     /**
      * Injects via {@link DataBoundSetter}
      */
-    private void injectSetters(Object o, Map<String,?> arguments, ReadDataContext context) throws Exception {
+    private void injectSetters(Object o, Mapping arguments, DataContext context) throws Exception {
         for (ReflectiveDataModelParameter p : parameters.values()) {
             if (p.setter!=null) {
                 if (arguments.containsKey(p.getName())) {
-                    Object v = arguments.get(p.getName());
+                    CNode v = arguments.get(p.getName());
                     p.setter.set(o, coerce(p.setter.getDisplayName(), p.getRawType(), v, context));
                 }
             }
@@ -343,54 +347,53 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      *      Human readable location of coercion when reporting a problem.
      * @param type
      *      The type to convert the object to.
-     * @param o
+     * @param n
      *      Source object to be converted.
      */
     @SuppressWarnings("unchecked")
-    private Object coerce(String location, Type type, Object o, ReadDataContext context) throws Exception {
+    private Object coerce(String location, Type type, CNode n, DataContext context) throws Exception {
         Class erased = Types.erasure(type);
 
-        if (type instanceof Class) {
-            o = ReflectionCache.getCachedClass(erased).coerceArgument(o);
-        }
-        if (o instanceof GString) {
-            o = o.toString();
-        }
-        if (o instanceof List && Collection.class.isAssignableFrom(erased)) {
+        switch (n.getType()) {
+        case MAPPING:
+            Mapping m = n.clone().asMapping();
+            CNode clazzName = m.remove(CLAZZ);
+            Class<?> clazz = resolveClass(erased, clazzName!=null ? clazzName.asScalar().getValue() : null, null);
+            return context.lookup(clazz).read(m, context);
+        case SEQUENCE:
             return coerceList(location,
-                    Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class), (List) o, context);
-        } else if (Primitives.wrap(erased).isInstance(o)) {
-            return o;
-        } else if (o==null) {
-            return null;
-        } else if (o instanceof CNode) {
-            return context.lookup(erased).read((CNode)o, context);
-        } else if (o instanceof Map) {
-            Map<String,Object> m = new HashMap<>();
-            for (Map.Entry<?,?> entry : ((Map<?,?>) o).entrySet()) {
-                m.put((String) entry.getKey(), entry.getValue());
+                    Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class),
+                    n.asSequence(), context);
+        case SCALAR:
+            Object o = n.asScalar().getValue();
+
+            if (type instanceof Class) {
+                o = ReflectionCache.getCachedClass(erased).coerceArgument(o);
             }
 
-            Class<?> clazz = resolveClass(erased, (String) m.remove(CLAZZ), null);
-            return context.lookup(clazz).instantiate(m, context);
-        } else if (o instanceof String && erased.isEnum()) {
-            return Enum.valueOf(erased.asSubclass(Enum.class), (String) o);
-        } else if (o instanceof String && erased == URL.class) {
-            return new URL((String) o);
-        } else if (o instanceof String && erased == Result.class) {
-            return Result.fromString((String)o);
-        } else if (o instanceof String && (erased == char.class || erased == Character.class) && ((String) o).length() == 1) {
-            return ((String) o).charAt(0);
-        } else if (o instanceof String && ClassUtils.isAssignable(ClassUtils.primitiveToWrapper(erased), Number.class)) {
-            return coerceStringToNumber(location, ClassUtils.primitiveToWrapper(erased), (String)o);
-        } else if (o instanceof String && (erased == boolean.class || erased == Boolean.class)) {
-            return Boolean.valueOf((String)o);
-        } else if (o instanceof List && erased.isArray()) {
-            Class<?> componentType = erased.getComponentType();
-            List<Object> list = coerceList(location, componentType, (List) o, context);
-            return list.toArray((Object[]) Array.newInstance(componentType, list.size()));
-        } else {
-            throw new ClassCastException(location + " expects " + type + " but received " + o.getClass());
+            Object v = ConvertUtils.convert(o, erased);
+            if (erased.isInstance(v)) {
+                return v;
+            } else if (o==null) {
+                // TODO: is this how we deal with null?
+                return null;
+            } else if (o instanceof String && erased.isEnum()) {
+                return Enum.valueOf(erased.asSubclass(Enum.class), (String) o);
+            } else if (o instanceof String && erased == URL.class) {
+                return new URL((String) o);
+            } else if (o instanceof String && erased == Result.class) {
+                return Result.fromString((String)o);
+            } else if (o instanceof String && (erased == char.class || erased == Character.class) && ((String) o).length() == 1) {
+                return ((String) o).charAt(0);
+            } else if (o instanceof String && ClassUtils.isAssignable(ClassUtils.primitiveToWrapper(erased), Number.class)) {
+                return coerceStringToNumber(location, ClassUtils.primitiveToWrapper(erased), (String)o);
+            } else if (o instanceof String && (erased == boolean.class || erased == Boolean.class)) {
+                return Boolean.valueOf((String)o);
+            } else {
+                throw new ClassCastException(location + " expects " + type + " but received " + o.getClass());
+            }
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -478,11 +481,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     }
 
     /**
-     * Apply {@link #coerce(String, Type, Object, ReadDataContext)} method to a collection item.
+     * Apply {@link #coerce(String, Type, CNode, DataContext)} method to a collection item.
      */
-    private List<Object> coerceList(String location, Type type, List<?> list, ReadDataContext context) throws Exception {
+    private List<Object> coerceList(String location, Type type, Sequence list, DataContext context) throws Exception {
         List<Object> r = new ArrayList<>();
-        for (Object elt : list) {
+        for (CNode elt : list) {
             r.add(coerce(location, type, elt, context));
         }
         return r;
@@ -538,6 +541,86 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      */
     public boolean isDeprecated() {
         return type.getAnnotation(Deprecated.class) != null;
+    }
+
+
+    @Override
+    public CNode write(T o, DataContext context) {
+        if (o==null)
+            throw new IllegalArgumentException("Expected "+type+" but got null");
+        if (!type.isInstance(o))
+            throw new IllegalArgumentException("Expected "+type+" but got an instance of "+o.getClass());
+
+        Mapping r = new Mapping();
+        Mapping constructorOnlyDataBoundProps = new Mapping();
+        Mapping nonDeprecatedDataBoundProps = new Mapping();
+        for (ReflectiveDataModelParameter p : parameters.values()) {
+            CNode v = p.inspect(o);
+            if (p.isRequired() && v==null) {
+                // instantiate() method treats missing properties as nulls, so we don't need to keep it
+                // but if it's for the setter, explicit null invocation is needed, so we need to keep it
+                continue;
+            }
+            r.put(p.getName(), v);
+            if (p.isRequired()) {
+                constructorOnlyDataBoundProps.put(p.getName(),v);
+            }
+            if (!p.isDeprecated()) {
+                nonDeprecatedDataBoundProps.put(p.getName(),v);
+            }
+        }
+
+        Object control = null;
+        try {
+            control = read(constructorOnlyDataBoundProps,context);
+        } catch (Exception x) {
+            LOGGER.log(Level.WARNING, "Cannot create control version of " + type + " using " + constructorOnlyDataBoundProps, x);
+        }
+
+        if (control!=null) {
+            for (ReflectiveDataModelParameter p : parameters.values()) {
+                if (p.isRequired())
+                    continue;
+
+                CNode v = p.inspect(control);
+
+                // if the control has the same value as our object, we won't need to keep it
+                if (ObjectUtils.equals(v, r.get(p.getName()))) {
+                    r.remove(p.getName());
+                    nonDeprecatedDataBoundProps.remove(p.getName());
+                }
+            }
+        }
+
+        if (!nonDeprecatedDataBoundProps.keySet().equals(r.keySet())) {
+            // we have some deprecated properties
+            control = null;
+            try {
+                control = read(nonDeprecatedDataBoundProps,context);
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING,
+                        "Cannot create control version of " + type + " using " + nonDeprecatedDataBoundProps, x);
+            }
+
+            if (control != null) {
+                for (ReflectiveDataModelParameter p : parameters.values()) {
+                    if (!p.isDeprecated())
+                        continue;
+
+                    CNode v = p.inspect(control);
+
+                    // if the control has the same value as our object, we won't need to keep it
+                    if (ObjectUtils.equals(v, r.get(p.getName()))) {
+                        r.remove(p.getName());
+                    }
+                }
+            }
+        }
+
+        // TODO: this is probably not right
+        r.put(CLAZZ,symbolOf(o));
+
+        return r;
     }
 
     /**
@@ -640,12 +723,13 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
     /**
      * As a short-hand, if a {@link DataModel} has only one required parameter,
-     * {@link #instantiate(Class)} accepts a single-item map whose key is this magic token.
+     * {@link #read(CNode,DataContext)} accepts a single-item map whose key is this magic token.
      *
      * <p>
      * To avoid clients from needing to special-case this key, {@link #from(Object)} does not
      * produce {@link #arguments} that contains this magic token. Clients who want
      * to take advantages of this should look at {@link DataModel#hasSingleRequiredParameter()}
      */
+    // TODO: which layer does this belong?
     public static final String ANONYMOUS_KEY = "<anonymous>";
 }
