@@ -340,7 +340,7 @@ public abstract class DataModel<T> {
     /**
      * Take an object of random type and tries to convert it into another type
      *
-     * @param context
+     * @param location
      *      Human readable location of coercion when reporting a problem.
      * @param type
      *      The type to convert the object to.
@@ -348,7 +348,7 @@ public abstract class DataModel<T> {
      *      Source object to be converted.
      */
     @SuppressWarnings("unchecked")
-    private Object coerce(String context, Type type, Object o) throws Exception {
+    private Object coerce(String location, Type type, Object o, DataContext context) throws Exception {
         Class erased = Types.erasure(type);
 
         if (type instanceof Class) {
@@ -358,14 +358,14 @@ public abstract class DataModel<T> {
             o = o.toString();
         }
         if (o instanceof List && Collection.class.isAssignableFrom(erased)) {
-            return coerceList(context,
+            return coerceList(location,
                     Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class), (List) o);
         } else if (Primitives.wrap(erased).isInstance(o)) {
             return o;
         } else if (o==null) {
             return null;
-        } else if (o instanceof UninstantiatedDescribable) {
-            return ((UninstantiatedDescribable)o).instantiate(erased);
+        } else if (o instanceof CNode) {
+            return context.getBinder(erased).read(o);
         } else if (o instanceof Map) {
             Map<String,Object> m = new HashMap<String,Object>();
             for (Map.Entry<?,?> entry : ((Map<?,?>) o).entrySet()) {
@@ -383,15 +383,15 @@ public abstract class DataModel<T> {
         } else if (o instanceof String && (erased == char.class || erased == Character.class) && ((String) o).length() == 1) {
             return ((String) o).charAt(0);
         } else if (o instanceof String && ClassUtils.isAssignable(ClassUtils.primitiveToWrapper(erased), Number.class)) {
-            return coerceStringToNumber(context, ClassUtils.primitiveToWrapper(erased), (String)o);
+            return coerceStringToNumber(location, ClassUtils.primitiveToWrapper(erased), (String)o);
         } else if (o instanceof String && (erased == boolean.class || erased == Boolean.class)) {
             return Boolean.valueOf((String)o);
         } else if (o instanceof List && erased.isArray()) {
             Class<?> componentType = erased.getComponentType();
-            List<Object> list = coerceList(context, componentType, (List) o);
+            List<Object> list = coerceList(location, componentType, (List) o);
             return list.toArray((Object[]) Array.newInstance(componentType, list.size()));
         } else {
-            throw new ClassCastException(context + " expects " + type + " but received " + o.getClass());
+            throw new ClassCastException(location + " expects " + type + " but received " + o.getClass());
         }
     }
 
