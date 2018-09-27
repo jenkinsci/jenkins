@@ -11,6 +11,10 @@ import jenkins.data.model.Scalar;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Here is how the Data API gets consumed by plugin devs.
  *
@@ -213,14 +217,36 @@ public class Samples {
 
 
 
-    void fruitSample() {
-        // API usage:
+    /**
+     * Read from stdin and construct model object
+     */
+    public void cliReaderSample() {
+            VersionedResource<Fruit> envelope = new JsonSerializer().read(Fruit.class, System.in);
+            for (Fruit res : envelope.getData()) {
+                System.out.println(res);
+            }
 
-        FreeStyleProject p = ...
-        APIResource resource = ModelExporter.getExporterFor(p.getClass()).fromModel(p);
-
-        APIResource r = deserializeInput(inputString);
-        FreeStyleProject p = ModelExporter.getExporterFor(FreeStyleProject.class).toModel(r);
+//            VersionedResource input = JSONCLICommandHelper.readInput(stdin);
+//            for (Object res : (Collection) input.getData()) {
+//                DomainCredentials domainCredentials = (DomainCredentials) ((APIResource) res).toModel();
+//                Domain domain = domainCredentials.getDomain();
+//                if (domainCredentials.getDomain().getName() == null) {
+//                    domain = Domain.global();
+//                }
+//                for (Credentials creds : domainCredentials.getCredentials()) {
+//                    store.addCredentials(domain, creds);
+//                }
+//            }
     }
 
+    public void cliWriterExample() {
+        VersionedResource<Fruit> d = new VersionedResource<>(1, Arrays.asList(
+                new Apple(3),
+                new Banana(true),
+                new Cherry("orange"),
+                new Durian(35.0f)
+        ));
+
+        new JsonSerializer().write(d, System.out);
+    }
 }
