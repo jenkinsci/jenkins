@@ -26,7 +26,7 @@ public interface DataModel<T> {
      * Sorted by the mandatory parameters first (in the order they are specified in the code),
      * followed by optional arguments.
      */
-    Collection<DataModelParameter> getParameters();
+    Collection<? extends DataModelParameter> getParameters();
 
     default DataModelParameter getParameter(String name) {
         for (DataModelParameter p : getParameters()) {

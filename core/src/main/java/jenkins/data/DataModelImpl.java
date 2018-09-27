@@ -55,12 +55,12 @@ public class DataModelImpl<T> implements DataModel<T> {
      */
     private final Class<T> type;
 
-    private Map<String,DataModelParameter> parameters = new LinkedHashMap<>(4);
+    private Map<String,DataModelParameterImpl> parameters = new LinkedHashMap<>(4);
 
     /**
      * Read only view to {@link #parameters}
      */
-    private Map<String,DataModelParameter> parametersView;
+    private Map<String,DataModelParameterImpl> parametersView;
 
     /**
      * Data-bound constructor.
@@ -144,7 +144,7 @@ public class DataModelImpl<T> implements DataModel<T> {
     }
 
     private void addParameter(Map<String,DataModelParameter> props, Type type, String name, Setter setter) {
-        props.put(name, new DataModelParameter(this, type, name, setter));
+        props.put(name, new DataModelParameterImpl(this, type, name, setter));
     }
 
     /**
@@ -163,7 +163,7 @@ public class DataModelImpl<T> implements DataModel<T> {
      * Sorted by the mandatory parameters first (in the order they are specified in the code),
      * followed by optional arguments.
      */
-    public Collection<DataModelParameter> getParameters() {
+    public Collection<DataModelParameterImpl> getParameters() {
         return parametersView.values();
     }
 
@@ -322,7 +322,7 @@ public class DataModelImpl<T> implements DataModel<T> {
      * Injects via {@link DataBoundSetter}
      */
     private void injectSetters(Object o, Map<String,?> arguments, ReadDataContext context) throws Exception {
-        for (DataModelParameter p : parameters.values()) {
+        for (DataModelParameterImpl p : parameters.values()) {
             if (p.setter!=null) {
                 if (arguments.containsKey(p.getName())) {
                     Object v = arguments.get(p.getName());
