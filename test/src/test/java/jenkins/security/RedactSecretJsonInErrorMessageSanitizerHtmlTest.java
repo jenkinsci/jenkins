@@ -147,7 +147,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
     @Test
     @Issue("SECURITY-765")
     public void checkSanitizationIsApplied_inDescriptor() throws Exception {
-        logging.record("/jenkins", Level.ALL).capture(1);
+        logging.record("", Level.WARNING).capture(100);
         
         j.jenkins.setCrumbIssuer(null);
         
@@ -165,7 +165,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         ));
         
         // check the system log also
-        Throwable thrown = logging.getRecords().get(0).getThrown();
+        Throwable thrown = logging.getRecords().stream().filter(r -> r.getMessage().contains("Error while serving")).findAny().get().getThrown();
         // the exception from Descriptor
         assertThat(thrown.getCause().getMessage(), allOf(
                 containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
@@ -190,7 +190,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
     @Test
     @Issue("SECURITY-765")
     public void checkSanitizationIsApplied_inStapler() throws Exception {
-        logging.record("/jenkins", Level.ALL).capture(1);
+        logging.record("", Level.WARNING).capture(100);
         
         j.jenkins.setCrumbIssuer(null);
         
@@ -208,7 +208,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         ));
         
         // check the system log also
-        Throwable thrown = logging.getRecords().get(0).getThrown();
+        Throwable thrown = logging.getRecords().stream().filter(r -> r.getMessage().contains("Error while serving")).findAny().get().getThrown();
         // the exception from RequestImpl
         assertThat(thrown.getCause().getMessage(), allOf(
                 containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
