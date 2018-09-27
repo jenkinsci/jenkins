@@ -28,27 +28,28 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
      */
     @Override
     public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
-        // attempt to authenticate as API token
-        User u = User.getById(username, true);
-        ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-        if (t!=null && t.matchesPassword(password)) {
-            Authentication auth;
-            try {
-                UserDetails userDetails = u.getUserDetailsForImpersonation();
-                auth = u.impersonate(userDetails);
+        User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
+        if(u != null) {
+            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+            if (t != null && t.matchesPassword(password)) {
+                Authentication auth;
+                try {
+                    UserDetails userDetails = u.getUserDetailsForImpersonation();
+                    auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
-            } catch (UsernameNotFoundException x) {
-                // The token was valid, but the impersonation failed. This token is clearly not his real password,
-                // so there's no point in continuing the request processing. Report this error and abort.
-                LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
-                throw new ServletException(x);
-            } catch (DataAccessException x) {
-                throw new ServletException(x);
+                    SecurityListener.fireAuthenticated(userDetails);
+                } catch (UsernameNotFoundException x) {
+                    // The token was valid, but the impersonation failed. This token is clearly not his real password,
+                    // so there's no point in continuing the request processing. Report this error and abort.
+                    LOGGER.log(WARNING, "API token matched for user " + username + " but the impersonation failed", x);
+                    throw new ServletException(x);
+                } catch (DataAccessException x) {
+                    throw new ServletException(x);
+                }
+
+                req.setAttribute(BasicHeaderApiTokenAuthenticator.class.getName(), true);
+                return auth;
             }
-
-            req.setAttribute(BasicHeaderApiTokenAuthenticator.class.getName(), true);
-            return auth;
         }
         return null;
     }

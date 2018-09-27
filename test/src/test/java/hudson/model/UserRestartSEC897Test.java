@@ -16,7 +16,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 //TODO after the security fix, it could be merged inside UserRestartTest
-public class UserRestartTest_SEC897 {
+public class UserRestartSEC897Test {
     
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
