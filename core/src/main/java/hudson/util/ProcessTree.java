@@ -885,7 +885,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 } else {
                     long pid = (long)JAVA9_PID_METHOD.invoke(proc);
                     if (pid > Integer.MAX_VALUE) {
-                        throw new IllegalAccessError("Java 9+ support error: PID is out of Jenkins API bounds: " + pid);
+                        throw new IllegalAccessError("Java 9+ support error (JENKINS-53799). PID is out of Jenkins API bounds: " + pid);
                     }
                     return (int)pid;
                 }
