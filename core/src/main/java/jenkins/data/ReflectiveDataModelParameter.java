@@ -3,6 +3,8 @@ package jenkins.data;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import jenkins.data.model.CNode;
+import jenkins.data.model.Scalar;
+import jenkins.data.model.Sequence;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -125,26 +127,26 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     }
 
 
-    private Object uncoerce(Object o, Type type) {
-        if (type instanceof Class && ((Class) type).isEnum() && o instanceof Enum) {
-            return ((Enum) o).name();
-        } else if (type == URL.class && o instanceof URL) {
-            return o.toString();
-        } else if (type == Result.class && o instanceof Result) {
-            return o.toString();
-        } else if ((type == Character.class || type == char.class) && o instanceof Character) {
-            return o.toString();
+    private CNode uncoerce(Object o) {
+        if (o instanceof Enum) {
+            return new Scalar((Enum) o);
+        } else if (o instanceof URL) {
+            return new Scalar(o.toString());
+        } else if (o instanceof Result) {
+            return new Scalar(o.toString());
+        } else if (o instanceof Character) {
+            return new Scalar(o.toString());
         } else if (o instanceof Object[]) {
             Object[] array = (Object[]) o;
-            List<Object> list = new ArrayList<>(array.length);
+            Sequence list = new Sequence(array.length);
             for (Object elt : array) {
                 list.add(uncoerce(elt, array.getClass().getComponentType()));
             }
             return list;
-        } else if (o instanceof Collection && Types.isSubClassOf(type, Collection.class)) {
-            List<Object> list = new ArrayList<>(((Collection) o).size());
+        } else if (o instanceof Collection) {
+            Sequence list = new Sequence(((Collection) o).size());
             for (Object elt : (Collection<?>) o) {
-                list.add(uncoerce(elt, Types.getTypeArgument(Types.getBaseClass(type,Collection.class),0,Object.class)));
+                list.add(uncoerce(elt));
             }
             return list;
         } else if (o != null && !o.getClass().getName().startsWith("java.")) {

@@ -10,10 +10,6 @@ import java.util.Stack;
 public final class ArrayType extends ParameterType {
     private final ParameterType elementType;
 
-    ArrayType(Class<?> actualClass) {
-        this(actualClass, of(actualClass.getComponentType()));
-    }
-
     ArrayType(Type actualClass, ParameterType elementType) {
         super(actualClass);
         this.elementType = elementType;

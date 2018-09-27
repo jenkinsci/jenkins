@@ -60,7 +60,7 @@ public abstract class ParameterType {
                     return new AtomicType(String.class);
                 }
                 if (c.isArray()) {
-                    return new ArrayType(c);
+                    return new ArrayType(c,of(c.getComponentType(),registry));
                 }
                 // Assume it is a nested object of some sort.
                 Set<Class<?>> subtypes = DescribableModel.findSubtypes(c);
