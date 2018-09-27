@@ -304,9 +304,9 @@ function findAncestorClass(e, cssClass) {
 function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
-    if(tr.tagName!=undefined){
+    if(tr.tagName!=undefined && tr.parentNode!=undefined){
       while (tr.tagName != "TR")
-        tr = tr.parentNode;
+	tr = tr.parentNode;
 
       // then next TR that matches the CSS
       do {
