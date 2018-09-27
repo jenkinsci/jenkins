@@ -35,7 +35,7 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
-import hudson.util.MemoryReductionUtil;
+import static hudson.util.MemoryReductionUtil.*;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
@@ -520,7 +520,7 @@ public class UpdateSite {
         public final String connectionCheckUrl;
 
         Data(JSONObject o) {
-            this.sourceId = ((String)o.get("id")).intern();
+            this.sourceId = Util.intern((String)o.get("id"));
             JSONObject c = o.optJSONObject("core");
             if (c!=null) {
                 core = new Entry(sourceId, c, url);
@@ -550,7 +550,7 @@ public class UpdateSite {
                         }
                     }
                 }
-                plugins.put(e.getKey().intern(), p);
+                plugins.put(Util.intern(e.getKey()), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -622,8 +622,8 @@ public class UpdateSite {
 
         Entry(String sourceId, JSONObject o, String baseURL) {
             this.sourceId = sourceId;
-            this.name = o.getString("name").intern();
-            this.version = o.getString("version").intern();
+            this.name = Util.intern(o.getString("name"));
+            this.version = Util.intern(o.getString("version"));
 
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
@@ -829,7 +829,7 @@ public class UpdateSite {
                 this.type = Type.UNKNOWN;
             }
             this.id = o.getString("id");
-            this.component = o.getString("name").intern();
+            this.component = Util.intern(o.getString("name"));
             this.message = o.getString("message");
             this.url = o.getString("url");
 
@@ -984,26 +984,26 @@ public class UpdateSite {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = get(o,"compatibleSinceVersion").intern();
-            this.requiredCore = get(o,"requiredCore").intern();
-            this.categories = o.has("labels") ? MemoryReductionUtil.internInPlace((String[])o.getJSONArray("labels").toArray(MemoryReductionUtil.EMPTY_STRING_ARRAY)) : null;
+            this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.requiredCore = Util.intern(get(o,"requiredCore"));
+            this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL.negate())).count());
             int optionalDepCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL)).count());
-            dependencies = MemoryReductionUtil.getPresizedMap(depCount);
-            optionalDependencies = MemoryReductionUtil.getPresizedMap(optionalDepCount);
+            dependencies = getPresizedMap(depCount);
+            optionalDependencies = getPresizedMap(optionalDepCount);
 
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute and that the optional value isn't true.
-                if (get(depObj,"name")!=null) {
+                String depName = Util.intern(get(depObj,"name"));
+                if (depName!=null) {
                     if (get(depObj, "optional").equals("false")) {
-                        dependencies.put(get(depObj, "name").intern(), get(depObj, "version").intern());
+                        dependencies.put(depName, Util.intern(get(depObj, "version")));
                     } else {
-                        optionalDependencies.put(get(depObj, "name").intern(), get(depObj, "version").intern());
+                        optionalDependencies.put(depName, Util.intern(get(depObj, "version")));
                     }
                 }
-                
             }
 
         }
