@@ -35,6 +35,7 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
+import hudson.util.MemoryReductionUtil;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
@@ -46,7 +47,6 @@ import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +56,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -519,7 +520,7 @@ public class UpdateSite {
         public final String connectionCheckUrl;
 
         Data(JSONObject o) {
-            this.sourceId = (String)o.get("id");
+            this.sourceId = ((String)o.get("id")).intern();
             JSONObject c = o.optJSONObject("core");
             if (c!=null) {
                 core = new Entry(sourceId, c, url);
@@ -549,7 +550,7 @@ public class UpdateSite {
                         }
                     }
                 }
-                plugins.put(e.getKey(), p);
+                plugins.put(e.getKey().intern(), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -621,8 +622,8 @@ public class UpdateSite {
 
         Entry(String sourceId, JSONObject o, String baseURL) {
             this.sourceId = sourceId;
-            this.name = o.getString("name");
-            this.version = o.getString("version");
+            this.name = o.getString("name").intern();
+            this.version = o.getString("version").intern();
 
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
@@ -828,7 +829,7 @@ public class UpdateSite {
                 this.type = Type.UNKNOWN;
             }
             this.id = o.getString("id");
-            this.component = o.getString("name");
+            this.component = o.getString("name").intern();
             this.message = o.getString("message");
             this.url = o.getString("url");
 
@@ -918,6 +919,13 @@ public class UpdateSite {
         }
     }
 
+    private static String get(JSONObject o, String prop) {
+        if(o.has(prop))
+            return o.getString(prop);
+        else
+            return null;
+    }
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -959,13 +967,16 @@ public class UpdateSite {
          * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
-        public final Map<String,String> dependencies = new HashMap<String,String>();
+        public final Map<String,String> dependencies;
         
         /**
          * Optional dependencies of this plugin.
          */
         @Exported
-        public final Map<String,String> optionalDependencies = new HashMap<String,String>();
+        public final Map<String,String> optionalDependencies;
+
+        final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
+        final Predicate<Object> IS_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -973,17 +984,23 @@ public class UpdateSite {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
-            this.requiredCore = get(o,"requiredCore");
-            this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
+            this.compatibleSinceVersion = get(o,"compatibleSinceVersion").intern();
+            this.requiredCore = get(o,"requiredCore").intern();
+            this.categories = o.has("labels") ? MemoryReductionUtil.internInPlace((String[])o.getJSONArray("labels").toArray(MemoryReductionUtil.EMPTY_STRING_ARRAY)) : null;
+            JSONArray ja = o.getJSONArray("dependencies");
+            int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL.negate())).count());
+            int optionalDepCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_OPTIONAL)).count());
+            dependencies = MemoryReductionUtil.getPresizedMap(depCount);
+            optionalDependencies = MemoryReductionUtil.getPresizedMap(optionalDepCount);
+
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute and that the optional value isn't true.
                 if (get(depObj,"name")!=null) {
                     if (get(depObj, "optional").equals("false")) {
-                        dependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        dependencies.put(get(depObj, "name").intern(), get(depObj, "version").intern());
                     } else {
-                        optionalDependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        optionalDependencies.put(get(depObj, "name").intern(), get(depObj, "version").intern());
                     }
                 }
                 
@@ -991,12 +1008,7 @@ public class UpdateSite {
 
         }
 
-        private String get(JSONObject o, String prop) {
-            if(o.has(prop))
-                return o.getString(prop);
-            else
-                return null;
-        }
+
 
         public String getDisplayName() {
             String displayName;

@@ -256,8 +256,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             int idx = s.indexOf(':');
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
-            this.shortName = s.substring(0,idx);
-            String version = s.substring(idx+1);
+            this.shortName = s.substring(0,idx).intern();
+            String version = s.substring(idx+1).intern();
 
             boolean isOptional = false;
             String[] osgiProperties = version.split("[;]");
@@ -300,7 +300,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
 		this.manifest = manifest;
-		this.shortName = computeShortName(manifest, archive.getName());
+		this.shortName = computeShortName(manifest, archive.getName()).intern();
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
