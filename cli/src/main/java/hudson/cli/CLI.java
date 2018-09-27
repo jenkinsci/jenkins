@@ -572,7 +572,7 @@ public class CLI implements AutoCloseable {
             // -auth option not set
             if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
                 auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
-            } else if (StringUtils.isNotBlank(userIdEnv) || StringUtils.isNotBlank(tokenEnv)) {
+            } else if (StringUtils.isBlank(userIdEnv) || StringUtils.isBlank(tokenEnv)) {
                 LOGGER.warning(Messages.CLI_BadAuth());
                 return -1;
             } // Otherwise, none credentials were set
