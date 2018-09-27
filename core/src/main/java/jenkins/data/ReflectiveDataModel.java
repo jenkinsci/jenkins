@@ -52,19 +52,19 @@ import java.util.logging.Logger;
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
  * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
  */
-class DataModelImpl<T> implements DataModel<T> {
+class ReflectiveDataModel<T> implements DataModel<T> {
 
     /**
      * Type that this model represents.
      */
     private final Class<T> type;
 
-    private Map<String,DataModelParameterImpl> parameters = new LinkedHashMap<>(4);
+    private Map<String,ReflectiveDataModelParameter> parameters = new LinkedHashMap<>(4);
 
     /**
      * Read only view to {@link #parameters}
      */
-    private Map<String,DataModelParameterImpl> parametersView;
+    private Map<String,ReflectiveDataModelParameter> parametersView;
 
     /**
      * Data-bound constructor.
@@ -78,17 +78,17 @@ class DataModelImpl<T> implements DataModel<T> {
 
     /** Binds type parameter, preferred means of obtaining a DataModel. */
     public static <T> DataModel<T> of(Class<T> clazz) {
-        DataModelImpl mod = modelCache.get(clazz.getName());
+        ReflectiveDataModel mod = modelCache.get(clazz.getName());
         if (mod != null && mod.type == clazz) {
             return mod;
         }
-        mod = new DataModelImpl<>(clazz);
+        mod = new ReflectiveDataModel<>(clazz);
         modelCache.put(clazz.getName(), mod);
         return mod;
     }
 
     /** Map class name to cached model. */
-    static ConcurrentHashMap<String, DataModelImpl> modelCache = new ConcurrentHashMap<>();
+    static ConcurrentHashMap<String, ReflectiveDataModel> modelCache = new ConcurrentHashMap<>();
 
     /**
      * Loads a definition of the structure of a class: what kind of data
@@ -97,10 +97,10 @@ class DataModelImpl<T> implements DataModel<T> {
      *
      * Use {@link #of(Class)} instead -- that will returned cached instances.
      */
-    public DataModelImpl(Class<T> clazz) {
+    public ReflectiveDataModel(Class<T> clazz) {
         this.type = clazz;
 
-        DataModelImpl mod = modelCache.get(clazz.getName());
+        ReflectiveDataModel mod = modelCache.get(clazz.getName());
         if (mod != null && mod.type == clazz) {
             constructor = mod.constructor;
             parameters = mod.parameters;
@@ -148,7 +148,7 @@ class DataModelImpl<T> implements DataModel<T> {
     }
 
     private void addParameter(Map<String,DataModelParameter> props, Type type, String name, Setter setter) {
-        props.put(name, new DataModelParameterImpl(this, type, name, setter));
+        props.put(name, new ReflectiveDataModelParameter(this, type, name, setter));
     }
 
     /**
@@ -167,7 +167,7 @@ class DataModelImpl<T> implements DataModel<T> {
      * Sorted by the mandatory parameters first (in the order they are specified in the code),
      * followed by optional arguments.
      */
-    public Collection<DataModelParameterImpl> getParameters() {
+    public Collection<ReflectiveDataModelParameter> getParameters() {
         return parametersView.values();
     }
 
@@ -326,7 +326,7 @@ class DataModelImpl<T> implements DataModel<T> {
      * Injects via {@link DataBoundSetter}
      */
     private void injectSetters(Object o, Map<String,?> arguments, ReadDataContext context) throws Exception {
-        for (DataModelParameterImpl p : parameters.values()) {
+        for (ReflectiveDataModelParameter p : parameters.values()) {
             if (p.setter!=null) {
                 if (arguments.containsKey(p.getName())) {
                     Object v = arguments.get(p.getName());

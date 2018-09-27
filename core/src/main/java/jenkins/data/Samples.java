@@ -66,7 +66,7 @@ public class Samples {
     }
 
     @Describes(Banana.class)
-    public class BananaBinder implements DataModel<Banana> {
+    public class BananaModel implements DataModel<Banana> {
         @Override
         public CNode write(Banana object, WriteDataContext context) {
             Mapping m = new Mapping();

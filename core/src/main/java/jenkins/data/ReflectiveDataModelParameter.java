@@ -1,6 +1,5 @@
 package jenkins.data;
 
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import org.jvnet.tiger_types.Types;
@@ -25,15 +24,8 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-class DataModelParameterImpl implements DataModelParameter {
-    private final DataModelImpl<?> parent;
-    private ParameterType type;
-    private final String name;
-
-    /**
-     * Type of the value that {@link Describable} expects in its setter/field.
-     */
-    private final Type rawType;
+class ReflectiveDataModelParameter extends AbstractDataModelParameter {
+    private final ReflectiveDataModel<?> parent;
 
     /**
      * If this property is optional, the {@link Setter} that abstracts away how to set
@@ -41,33 +33,10 @@ class DataModelParameterImpl implements DataModelParameter {
      */
     /*package*/ final Setter setter;
 
-    /*package*/ DataModelParameterImpl(DataModelImpl<?> parent, Type type, String name, Setter setter) {
+    /*package*/ ReflectiveDataModelParameter(ReflectiveDataModel<?> parent, Type type, String name, Setter setter) {
+        super(name,type);
         this.parent = parent;
-        this.rawType = type;
-        this.name = name;
         this.setter = setter;
-    }
-
-    /**
-     * Classification of the type of this parameter.
-     * <p>
-     * Originates from the pipeline plugin and I'm not sure the logic behind this.
-     */
-    public ParameterType getType() {
-        if (type==null)
-            type = ParameterType.of(rawType);
-        return type;
-    }
-
-    /**
-     * The type of this parameter, possibly with generics.
-     */
-    public Type getRawType() {
-        return rawType;
-    }
-
-    public String getName() {
-        return name;
     }
 
     /**
@@ -208,5 +177,5 @@ class DataModelParameterImpl implements DataModelParameter {
         return o;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(DataModelParameterImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModelParameter.class.getName());
 }

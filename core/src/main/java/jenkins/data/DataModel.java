@@ -1,7 +1,10 @@
 package jenkins.data;
 
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.data.model.CNode;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
@@ -39,7 +42,9 @@ public interface DataModel<T> {
     /**
      * Corresponds to {@link Descriptor#getDisplayName} where available.
      */
-    String getDisplayName();
+    default String getDisplayName() {
+        getType().getSimpleName();
+    }
 
     /**
      * True if this model's type is deprecated.
