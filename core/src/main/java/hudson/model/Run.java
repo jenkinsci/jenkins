@@ -93,6 +93,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -120,8 +122,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -141,7 +145,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
@@ -2479,6 +2483,31 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return returnedResult;
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            // This is a bit weird, but while the Run's PermissionScope does not have READ, delegate to the parent
+            if (!getParent().hasPermission(Item.DISCOVER)) {
+                // work around Stapler bug when returning null from getTarget()
+                try {
+                    Stapler.getCurrentResponse().sendError(SC_NOT_FOUND); // send same response body Stapler would send
+                } catch (IOException ex) {
+                    throw HttpResponses.notFound();
+                }
+            }
+            getParent().checkPermission(Item.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
+
 
     public static class RedirectUp {
         public void doDynamic(StaplerResponse rsp) throws IOException {
