@@ -3,6 +3,8 @@ package jenkins.data;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.NoStaplerConstructorException;
 
 import javax.annotation.CheckForNull;
