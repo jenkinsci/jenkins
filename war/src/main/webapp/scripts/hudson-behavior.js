@@ -2588,7 +2588,12 @@ function buildFormTree(form) {
                     addProperty(p, e.name.substring(r), e.value);
                 }
                 break;
-
+            case "password":
+                p = findParent(e);
+                addProperty(p, e.name, e.value);
+                // must be kept in sync with RedactSecretJsonForTraceSanitizer.REDACT_KEY
+                addProperty(p, "$redact", shortenName(e.name));
+                break;
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
