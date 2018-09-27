@@ -44,6 +44,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.annotation.CheckForNull;
 
 /**
  * Environment variables.
@@ -84,7 +85,24 @@ public class EnvVars extends TreeMap<String,String> {
      * So this property remembers that information.
      */
     private Platform platform;
+    
+    /**
+     * Gets the platform for which these env vars targeted.
+     * @since TODO
+     * @return The platform.
+     */
+    public @CheckForNull Platform getPlatform() {
+        return platform;
+    }
 
+    /**
+     * Sets the platform for which these env vars target.
+     * @since TODO
+     * @param platform the platform to set.
+     */
+    public void setPlatform(@Nonnull Platform platform) {
+        this.platform = platform;
+    }
     public EnvVars() {
         super(CaseInsensitiveComparator.INSTANCE);
     }
@@ -425,7 +443,7 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * If you access this field from agents, then this is the environment
-     * variable of the agent agent.
+     * variable of the agent.
      */
     public static final Map<String,String> masterEnvVars = initMaster();
 
