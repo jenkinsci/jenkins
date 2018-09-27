@@ -48,7 +48,11 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public class DataModelImpl<T> implements DataModel<T> {
+/**
+ * {@link DataModel} implementation for models that defines itself via Stapler form binding
+ * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
+ */
+class DataModelImpl<T> implements DataModel<T> {
 
     /**
      * Type that this model represents.

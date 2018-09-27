@@ -20,9 +20,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * {@link DataModelParameter} implementation for models that defines itself via Stapler form binding
+ * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class DataModelParameterImpl implements DataModelParameter {
+class DataModelParameterImpl implements DataModelParameter {
     private final DataModelImpl<?> parent;
     private ParameterType type;
     private final String name;
