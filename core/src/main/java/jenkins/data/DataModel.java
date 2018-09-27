@@ -43,7 +43,7 @@ public interface DataModel<T> {
      * Corresponds to {@link Descriptor#getDisplayName} where available.
      */
     default String getDisplayName() {
-        getType().getSimpleName();
+        return getType().getSimpleName();
     }
 
     /**
