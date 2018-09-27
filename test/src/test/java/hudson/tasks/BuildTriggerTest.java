@@ -158,7 +158,7 @@ public class BuildTriggerTest {
             }
         }
         FreeStyleProject dp = createDownstreamProject();
-        ToolInstallations.configureDefaultMaven();
+        ToolInstallations.configureDefaultMaven("apache-maven-3.5.4", 0);
         MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
         m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
         if (!evenWhenUnstable) {
