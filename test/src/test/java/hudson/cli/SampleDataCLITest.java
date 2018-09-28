@@ -306,7 +306,7 @@ public class SampleDataCLITest {
     // so this would go against that.
     //
     // either way, we'd like to establish that these can be implemented as sugar
-    @Extension
+    @Extension(optional=true)
     public static DataModel<Durian> durianBinder() {
         return DataModel.byTranslation(DurianResource.class,
                 dr -> new Durian(dr.smelly ? 45 : 15),
