@@ -926,6 +926,9 @@ public class UpdateSite {
             return null;
     }
 
+    static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
+    static final Predicate<Object> IS_NOT_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -974,9 +977,6 @@ public class UpdateSite {
          */
         @Exported
         public final Map<String,String> optionalDependencies;
-
-        final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
-        final Predicate<Object> IS_NOT_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
