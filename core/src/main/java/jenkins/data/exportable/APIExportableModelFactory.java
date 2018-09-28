@@ -21,7 +21,7 @@ public class APIExportableModelFactory implements DataModelFactory {
 
     @Override
     public DataModel find(final Type type) {
-        Class<Object> clazz = Types.erasure(Types.getTypeArgument(type, 0));
+        Class<Object> clazz = Types.erasure(type);
         if (APIExportable.class.isAssignableFrom(clazz)) {
             return new TranslatedModel(clazz);
         }

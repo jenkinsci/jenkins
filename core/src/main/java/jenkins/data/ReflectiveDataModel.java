@@ -6,6 +6,7 @@ import hudson.model.Descriptor;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import jenkins.data.tree.Mapping;
+import jenkins.data.tree.Scalar;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
 import jenkins.model.Jenkins;
@@ -353,9 +354,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         switch (n.getType()) {
         case MAPPING:
             Mapping m = n.clone().asMapping();
-            TreeNode clazzName = m.remove(CLAZZ);
-            Class<?> clazz = resolveClass(erased, clazzName!=null ? clazzName.asScalar().getValue() : null, null, context);
-            return context.lookup(clazz).read(m, context);
+            Class<?> clazz = resolveClass(erased,
+                    stringValue(m.remove(CLAZZ)),
+                    stringValue(m.remove("type")), // TODO: we acknowledge that this might collide with legitimate property names of some models
+                    context);
+            return context.lookupOrFail(clazz).read(m, context);
         case SEQUENCE:
             return coerceList(location,
                     Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class),
@@ -391,6 +394,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         default:
             throw new AssertionError();
         }
+    }
+
+    private String stringValue(TreeNode s) throws IOException {
+        if (s==null)    return null;
+        return s.asScalar().getValue();
     }
 
     private Object coerceStringToNumber(@Nonnull String context, @Nonnull Class numberClass, @Nonnull String o)

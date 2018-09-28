@@ -17,6 +17,7 @@ import jenkins.data.tree.Scalar;
 import jenkins.data.tree.TreeNode;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.jenkinsci.Symbol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -43,7 +44,8 @@ public class SampleDataCLITest {
     @Test
     public void sampleDataFruitTest() {
         CLICommandInvoker invoker = new CLICommandInvoker(jenkins, new SampleFruitDataCLI());
-        CLICommandInvoker.Result result = invoker.withStdin(new StringInputStream("{\"version\": 1,\"data\": [{\"name\": \"Banana\", \"yellow\": true}, {\"name\": \"Apple\", \"seeds\": 22}]}")).invoke();
+        CLICommandInvoker.Result result = invoker.withStdin(new StringInputStream(
+                "{\"version\": 1,\"data\": [{\"type\": \"banana\", \"yellow\": true}, {\"type\": \"apple\", \"seeds\": 22}]}")).invoke();
         System.out.println(result.stdout());
     }
 
@@ -171,7 +173,7 @@ public class SampleDataCLITest {
             super("Apple");
             this.seeds = seeds;
         }
-        @Extension
+        @Extension @Symbol("apple")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
@@ -190,7 +192,7 @@ public class SampleDataCLITest {
             return yellow;
         }
 
-        @Extension
+        @Extension @Symbol("banana")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
@@ -232,7 +234,7 @@ public class SampleDataCLITest {
             return color;
         }
 
-        @Extension
+        @Extension @Symbol("cherry")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
@@ -273,7 +275,7 @@ public class SampleDataCLITest {
             return new DurianResource(age>30.0f);
         }
 
-        @Extension
+        @Extension @Symbol("durian")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
@@ -335,7 +337,7 @@ public class SampleDataCLITest {
             return new EggfruitResource(age>30.0f);
         }
 
-        @Extension
+        @Extension @Symbol("eggfruit")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
