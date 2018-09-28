@@ -31,7 +31,7 @@ public @interface Describes {
         @Override
         public DataModel find(Class type) {
             // TODO: list up Describes and find those
-            throw new UnsupportedOperationException();
+            return null;
         }
     }
 }

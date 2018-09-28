@@ -30,7 +30,7 @@ public abstract class Serializer {
         return (VersionedEnvelope<T>) registry.lookupOrFail(type).read(unstring(in), createContext());
     }
 
-    protected abstract TreeNode unstring(Reader in);
+    protected abstract TreeNode unstring(Reader in) throws IOException;
 
     public void write(VersionedEnvelope<?> data, Writer out) throws IOException {
         TreeNode tree = registry.lookupOrFail(data.getClass()).write(data, createContext());
@@ -41,7 +41,7 @@ public abstract class Serializer {
         write(data,new OutputStreamWriter(out,UTF_8));
     }
 
-    protected abstract void stringify(TreeNode tree, Writer out);
+    protected abstract void stringify(TreeNode tree, Writer out) throws IOException;
 
     private DataContext createContext() {
         return new DataContext(registry);
