@@ -570,8 +570,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.4</version>
-      <scope>provided</scope>
+      <version>1.8</version>
       <optional>true</optional>
     </dependency>
     <dependency>
