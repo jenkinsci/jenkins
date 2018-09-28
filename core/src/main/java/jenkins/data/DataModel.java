@@ -107,7 +107,6 @@ public abstract class DataModel<T> {
     }
 
     public static <T> DataModel<T> byReflection(Class<T> type) {
-        throw new UnsupportedOperationException(); // TODO
+        return ReflectiveDataModel.of(type);
     }
-
 }
