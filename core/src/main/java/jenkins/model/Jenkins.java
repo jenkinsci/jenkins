@@ -5030,7 +5030,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (idx > 0) {
                     return new VersionNumber(versionString.substring(0,idx));
                 }
-            } catch (NumberFormatException _) {
+            } catch (NumberFormatException ignored) {
                 // fall through
             }
 

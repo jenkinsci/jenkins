@@ -69,7 +69,7 @@ public class ApiTokenPropertyTest {
         final String token = t.getApiToken();
 
         // Make sure that user is able to get the token via the interface
-        try (ACLContext _ = ACL.as(u)) {
+        try (ACLContext acl = ACL.as(u)) {
             assertEquals("User is unable to get its own token", token, t.getApiToken());
         }
 

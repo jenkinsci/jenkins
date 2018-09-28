@@ -431,7 +431,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         public static class ItemListenerImpl extends ItemListener {
             @Override
             public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-                try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                     locationChanged(item, oldFullName, newFullName);
                 }
             }

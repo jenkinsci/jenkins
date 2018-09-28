@@ -116,7 +116,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -172,8 +171,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected boolean filterQueue;
     
-    protected transient List<Action> transientActions;
-
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -550,21 +547,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
-    	result.addAll(getOwner().getViewActions());
-    	synchronized (this) {
-    		if (transientActions == null) {
-                updateTransientActions();
-    		}
-    		result.addAll(transientActions);
-    	}
-    	return result;
+        List<Action> result = new ArrayList<>();
+        result.addAll(getOwner().getViewActions());
+        result.addAll(TransientViewActionFactory.createAllFor(this));
+        return result;
     }
-    
-    public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this); 
-    }
-    
+
+    /**
+     * No-op. Included to maintain backwards compatibility.
+     * @deprecated This method does nothing and should not be used
+     */
+    @Restricted(DoNotUse.class)
+    @Deprecated
+    public void updateTransientActions() {}
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -994,7 +990,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
 
         save();
 
