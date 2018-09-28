@@ -21,6 +21,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static jenkins.data.ReflectiveDataModel.*;
+
 /**
  * {@link DataModelParameter} implementation for models that defines itself via Stapler form binding
  * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
@@ -97,8 +99,8 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     /**
      * Given an configured instance, try to infer the current value of the property.
      */
-    /*package*/ CNode inspect(Object o) {
-        return uncoerce(getValue(o), rawType);
+    /*package*/ CNode inspect(Object o, DataContext context) {
+        return uncoerce(getValue(o), rawType, context);
     }
 
     private Object getValue(Object o) {
@@ -127,47 +129,61 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     }
 
 
-    private CNode uncoerce(Object o) {
+    /**
+     * @param type
+     *      Expected type statically inferred from signature. Where heterogenous typing is possible,
+     *      the returned tree representation must include type annotation.
+     */
+    private CNode uncoerce(Object o, Type type, DataContext context) {
+        if (o==null)
+            return null;
         if (o instanceof Enum) {
             return new Scalar((Enum) o);
-        } else if (o instanceof URL) {
-            return new Scalar(o.toString());
         } else if (o instanceof Result) {
-            return new Scalar(o.toString());
-        } else if (o instanceof Character) {
             return new Scalar(o.toString());
         } else if (o instanceof Object[]) {
             Object[] array = (Object[]) o;
             Sequence list = new Sequence(array.length);
+            Class<?> ct = array.getClass().getComponentType();
             for (Object elt : array) {
-                list.add(uncoerce(elt, array.getClass().getComponentType()));
+                list.add(uncoerce(elt, ct, context));
             }
             return list;
         } else if (o instanceof Collection) {
+            Type ct = Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class);
             Sequence list = new Sequence(((Collection) o).size());
             for (Object elt : (Collection<?>) o) {
-                list.add(uncoerce(elt));
+                list.add(uncoerce(elt, ct, context));
             }
             return list;
-        } else if (o != null && !o.getClass().getName().startsWith("java.")) {
+        } else if (!o.getClass().getName().startsWith("java.")) {
             try {
                 // Check to see if this can be treated as a data-bound struct.
-                UninstantiatedDescribable nested = DataModel.uninstantiate2_(o);
-                if (type != o.getClass()) {
-                    int simpleNameCount = 0;
-                    for (Class<?> c : findSubtypes(Types.erasure(type))) {
-                        if (c.getSimpleName().equals(o.getClass().getSimpleName())) {
-                            simpleNameCount++;
-                        }
-                    }
-                    if (simpleNameCount > 1) {
-                        nested.setKlass(o.getClass().getName());
+                DataModel<Object> model = DataModelRegistry.get().lookup(o.getClass());
+                if (model!=null) {
+                    CNode nested = model.write(o, context);
+                    if (nested.getType()!=CNode.Type.MAPPING) {
+                        // can't add the type name. fall through
                     } else {
-                        nested.setKlass(o.getClass().getSimpleName());
+                        if (type != o.getClass()) {
+                            int simpleNameCount = 0;
+                            for (Class<?> c : findSubtypes(Types.erasure(type))) {
+                                if (c.getSimpleName().equals(o.getClass().getSimpleName())) {
+                                    simpleNameCount++;
+                                }
+                            }
+// TODO: klass - do we continue to need this?
+//                            if (simpleNameCount > 1) {
+//                                nested.setKlass(o.getClass().getName());
+//                            } else {
+//                                nested.setKlass(o.getClass().getSimpleName());
+//                            }
+                        }
+                        // TODO: how do we insert the symbol?
+                        // nested.setSymbol(symbolOf(o));
                     }
+                    return nested;
                 }
-                nested.setSymbol(symbolOf(o));
-                return nested;
             } catch (UnsupportedOperationException x) {
                 // then leave it raw
                 if (!(x.getCause() instanceof NoStaplerConstructorException)) {
@@ -177,7 +193,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
                 // leave it raw
             }
         }
-        return o;
+        return new Scalar(o.toString());
     }
 
     private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModelParameter.class.getName());

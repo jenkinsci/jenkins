@@ -37,7 +37,7 @@ public interface DataModelRegistry {
      * Retrieve default implementation from Jenkins
      */
     static DataModelRegistry get() {
-        return Jenkins.getInstance().getExtensionList(DataModelRegistry.class).get(0);
+        return Jenkins.get().getExtensionList(DataModelRegistry.class).get(0);
     }
 }
 

@@ -507,6 +507,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         return null;
     }
 
+    // TODO: this isn't kosher. It needs to rely on DataModelRegistry somehow
     static Set<Class<?>> findSubtypes(Class<?> supertype) {
         Set<Class<?>> clazzes = new HashSet<>();
         // Jenkins.getDescriptorList does not work well since it is limited to descriptors declaring one supertype, and does not work at all for SimpleBuildStep.
@@ -555,7 +556,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         Mapping constructorOnlyDataBoundProps = new Mapping();
         Mapping nonDeprecatedDataBoundProps = new Mapping();
         for (ReflectiveDataModelParameter p : parameters.values()) {
-            CNode v = p.inspect(o);
+            CNode v = p.inspect(o,context);
             if (p.isRequired() && v==null) {
                 // instantiate() method treats missing properties as nulls, so we don't need to keep it
                 // but if it's for the setter, explicit null invocation is needed, so we need to keep it
@@ -582,7 +583,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
                 if (p.isRequired())
                     continue;
 
-                CNode v = p.inspect(control);
+                CNode v = p.inspect(control,context);
 
                 // if the control has the same value as our object, we won't need to keep it
                 if (ObjectUtils.equals(v, r.get(p.getName()))) {
@@ -607,7 +608,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
                     if (!p.isDeprecated())
                         continue;
 
-                    CNode v = p.inspect(control);
+                    CNode v = p.inspect(control,context);
 
                     // if the control has the same value as our object, we won't need to keep it
                     if (ObjectUtils.equals(v, r.get(p.getName()))) {
@@ -726,9 +727,9 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * {@link #read(CNode,DataContext)} accepts a single-item map whose key is this magic token.
      *
      * <p>
-     * To avoid clients from needing to special-case this key, {@link #from(Object)} does not
-     * produce {@link #arguments} that contains this magic token. Clients who want
-     * to take advantages of this should look at {@link DataModel#hasSingleRequiredParameter()}
+     * To avoid clients from needing to special-case this key, {@link #write(Object, DataContext)} does not
+     * produce a tree that contains this magic token. Clients who want
+     * to take advantages of this should look at {@link ReflectiveDataModel#hasSingleRequiredParameter()}
      */
     // TODO: which layer does this belong?
     public static final String ANONYMOUS_KEY = "<anonymous>";

@@ -39,7 +39,7 @@ public abstract class ParameterType {
         this.actualType = actualType;
     }
 
-    static ParameterType of(Type type, DataModelRegistry registry) {
+    static ParameterType of(Type type) {
         try {
             if (type instanceof Class) {
                 Class<?> c = (Class<?>) type;
@@ -60,10 +60,11 @@ public abstract class ParameterType {
                     return new AtomicType(String.class);
                 }
                 if (c.isArray()) {
-                    return new ArrayType(c,of(c.getComponentType(),registry));
+                    return new ArrayType(c,of(c.getComponentType()));
                 }
                 // Assume it is a nested object of some sort.
-                Set<Class<?>> subtypes = DescribableModel.findSubtypes(c);
+                Set<Class<?>> subtypes = ReflectiveDataModel.findSubtypes(c);
+                DataModelRegistry registry = DataModelRegistry.get();
                 if ((subtypes.isEmpty() && !Modifier.isAbstract(c.getModifiers())) || subtypes.equals(Collections.singleton(c))) {
                     // Probably homogeneous. (Might be concrete but subclassable.)
                     return new HomogeneousObjectType(registry.lookupOrFail(c));
@@ -100,7 +101,7 @@ public abstract class ParameterType {
                 }
             }
             if (Types.isSubClassOf(type, Collection.class)) {
-                return new ArrayType(type, of(Types.getTypeArgument(Types.getBaseClass(type,Collection.class), 0, Object.class),registry));
+                return new ArrayType(type, of(Types.getTypeArgument(Types.getBaseClass(type,Collection.class), 0, Object.class)));
             }
             throw new UnsupportedOperationException("do not know how to categorize attributes of type " + type);
         } catch (Exception x) {
