@@ -1,6 +1,6 @@
 package jenkins.data;
 
-import jenkins.data.model.CNode;
+import jenkins.data.tree.TreeNode;
 import org.kohsuke.stapler.Stapler;
 
 import javax.annotation.CheckForNull;
@@ -31,7 +31,7 @@ public class DataContext implements DataModelRegistry {
         listeners.add(listener);
     }
 
-    public void warning(@Nonnull CNode node, @Nonnull String message) {
+    public void warning(@Nonnull TreeNode node, @Nonnull String message) {
         for (Listener listener : listeners) {
             listener.warning(node, message);
         }
@@ -134,6 +134,6 @@ public class DataContext implements DataModelRegistry {
 
     @FunctionalInterface
     public interface Listener {
-        void warning(@Nonnull CNode node, @Nonnull String error);
+        void warning(@Nonnull TreeNode node, @Nonnull String error);
     }
 }

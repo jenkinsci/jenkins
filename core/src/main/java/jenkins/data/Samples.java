@@ -4,9 +4,9 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import jenkins.data.model.CNode;
-import jenkins.data.model.Mapping;
-import jenkins.data.model.Scalar;
+import jenkins.data.tree.TreeNode;
+import jenkins.data.tree.Mapping;
+import jenkins.data.tree.Scalar;
 import jenkins.model.Jenkins;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -75,14 +75,14 @@ public class Samples {
         }
 
         @Override
-        public CNode write(Banana object, DataContext context) {
+        public TreeNode write(Banana object, DataContext context) {
             Mapping m = new Mapping();
             m.put("ripe",object.yellow);
             return m;
         }
 
         @Override
-        public Banana read(CNode input, DataContext context) throws IOException {
+        public Banana read(TreeNode input, DataContext context) throws IOException {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
             DataModel<Banana> std = DataModel.byReflection(Banana.class);
@@ -117,12 +117,12 @@ public class Samples {
         }
 
         @Override
-        public CNode write(Cherry object, DataContext context) {
+        public TreeNode write(Cherry object, DataContext context) {
             return new Scalar(object.color());
         }
 
         @Override
-        public Cherry read(CNode input, DataContext context) throws IOException {
+        public Cherry read(TreeNode input, DataContext context) throws IOException {
             return new Cherry(input.asScalar().getValue());
         }
     }
@@ -261,13 +261,13 @@ public class Samples {
             }
 
             @Override
-            public CNode write(T object, DataContext context) {
+            public TreeNode write(T object, DataContext context) {
                 U r = object.toResource();
                 return um.write(r, context);
             }
 
             @Override
-            public T read(CNode input, DataContext context) throws IOException {
+            public T read(TreeNode input, DataContext context) throws IOException {
                 return (T)um.read(input, context).toModel();
             }
         }

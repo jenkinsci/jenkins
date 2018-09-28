@@ -2,7 +2,7 @@ package jenkins.data;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import jenkins.data.model.CNode;
+import jenkins.data.tree.TreeNode;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -16,8 +16,8 @@ import java.util.function.Function;
  * Immutable object that represents the databinding and introspection logic of an object.
  */
 public abstract class DataModel<T> {
-    public abstract CNode write(T object, DataContext context);
-    public abstract T read(CNode input, DataContext context) throws IOException;
+    public abstract TreeNode write(T object, DataContext context);
+    public abstract T read(TreeNode input, DataContext context) throws IOException;
 
     /**
      * A concrete class, usually {@link Describable}.

@@ -1,16 +1,15 @@
-package jenkins.data.model;
+package jenkins.data.tree;
 
 import jenkins.data.ReadException;
 
 import java.io.IOException;
 
 /**
- * A configuration Node in yaml tree.
- * (We didn't used <em>Node</em> as class name to avoid collision with commonly used Jenkins class hudson.model.Node
+ * A node in YAML/JSON/etc tree.
+ *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-
-public interface CNode extends Cloneable {
+public interface TreeNode extends Cloneable {
 
     enum Type { MAPPING, SEQUENCE, SCALAR }
 
@@ -34,5 +33,5 @@ public interface CNode extends Cloneable {
      */
     Source getSource();
 
-    CNode clone();
+    TreeNode clone();
 }

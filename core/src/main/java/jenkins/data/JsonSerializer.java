@@ -1,6 +1,6 @@
 package jenkins.data;
 
-import jenkins.data.model.CNode;
+import jenkins.data.tree.TreeNode;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -10,13 +10,13 @@ import java.io.Writer;
  */
 public class JsonSerializer extends Serializer {
     @Override
-    protected CNode unstring(Reader in) {
+    protected TreeNode unstring(Reader in) {
         // TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected void stringify(CNode tree, Writer out) {
+    protected void stringify(TreeNode tree, Writer out) {
         // TODO
         throw new UnsupportedOperationException();
     }

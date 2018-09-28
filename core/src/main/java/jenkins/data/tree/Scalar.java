@@ -1,4 +1,4 @@
-package jenkins.data.model;
+package jenkins.data.tree;
 
 import java.util.stream.IntStream;
 
@@ -6,7 +6,7 @@ import java.util.stream.IntStream;
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
 
-public final class Scalar implements CNode, CharSequence {
+public final class Scalar implements TreeNode, CharSequence {
 
     private String value;
     private Format format;
@@ -101,7 +101,7 @@ public final class Scalar implements CNode, CharSequence {
     }
 
     @Override
-    public CNode clone() {
+    public TreeNode clone() {
         return new Scalar(this);
     }
 

@@ -1,6 +1,6 @@
 package jenkins.data;
 
-import jenkins.data.model.Source;
+import jenkins.data.tree.Source;
 
 import java.io.IOException;
 

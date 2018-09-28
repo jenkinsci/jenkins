@@ -1,6 +1,4 @@
-package jenkins.data.model;
-
-import jenkins.data.ReadException;
+package jenkins.data.tree;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -9,7 +7,7 @@ import java.util.HashMap;
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
 
-public final class Mapping extends HashMap<String, CNode> implements CNode {
+public final class Mapping extends HashMap<String, TreeNode> implements TreeNode {
 
     public static final Mapping EMPTY = new Mapping();
     private Source source;
@@ -45,7 +43,7 @@ public final class Mapping extends HashMap<String, CNode> implements CNode {
         super.put(key, new Scalar(String.valueOf(value)));
     }
 
-    public void putIfNotNull(String key, CNode node) {
+    public void putIfNotNull(String key, TreeNode node) {
         if (node != null) super.put(key, node);
     }
 

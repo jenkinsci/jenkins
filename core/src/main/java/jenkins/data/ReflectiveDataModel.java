@@ -7,9 +7,9 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
-import jenkins.data.model.CNode;
-import jenkins.data.model.Mapping;
-import jenkins.data.model.Sequence;
+import jenkins.data.tree.TreeNode;
+import jenkins.data.tree.Mapping;
+import jenkins.data.tree.Sequence;
 import jenkins.model.Jenkins;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.io.IOUtils;
@@ -240,7 +240,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * and only one subtype is registered (as a {@link Descriptor}) with that simple name.
      */
     @Override
-    public T read(CNode input, DataContext context) throws IOException {
+    public T read(TreeNode input, DataContext context) throws IOException {
         Mapping arguments = input.asMapping();
 
         if (arguments.containsKey(ANONYMOUS_KEY)) {
@@ -311,7 +311,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         for (int i = 0; i < args.length; i++) {
             String name = names[i];
             hasArg |= bag.containsKey(name);
-            CNode a = bag.get(name);
+            TreeNode a = bag.get(name);
             Type type = types[i];
             if (a != null) {
                 args[i] = coerce(this.type.getName() + "." + name, type, a, context);
@@ -333,7 +333,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         for (ReflectiveDataModelParameter p : parameters.values()) {
             if (p.setter!=null) {
                 if (arguments.containsKey(p.getName())) {
-                    CNode v = arguments.get(p.getName());
+                    TreeNode v = arguments.get(p.getName());
                     p.setter.set(o, coerce(p.setter.getDisplayName(), p.getRawType(), v, context));
                 }
             }
@@ -351,13 +351,13 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      *      Source object to be converted.
      */
     @SuppressWarnings("unchecked")
-    private Object coerce(String location, Type type, CNode n, DataContext context) throws Exception {
+    private Object coerce(String location, Type type, TreeNode n, DataContext context) throws Exception {
         Class erased = Types.erasure(type);
 
         switch (n.getType()) {
         case MAPPING:
             Mapping m = n.clone().asMapping();
-            CNode clazzName = m.remove(CLAZZ);
+            TreeNode clazzName = m.remove(CLAZZ);
             Class<?> clazz = resolveClass(erased, clazzName!=null ? clazzName.asScalar().getValue() : null, null);
             return context.lookup(clazz).read(m, context);
         case SEQUENCE:
@@ -481,11 +481,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     }
 
     /**
-     * Apply {@link #coerce(String, Type, CNode, DataContext)} method to a collection item.
+     * Apply {@link #coerce(String, Type, TreeNode, DataContext)} method to a collection item.
      */
     private List<Object> coerceList(String location, Type type, Sequence list, DataContext context) throws Exception {
         List<Object> r = new ArrayList<>();
-        for (CNode elt : list) {
+        for (TreeNode elt : list) {
             r.add(coerce(location, type, elt, context));
         }
         return r;
@@ -546,7 +546,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
 
     @Override
-    public CNode write(T o, DataContext context) {
+    public TreeNode write(T o, DataContext context) {
         if (o==null)
             throw new IllegalArgumentException("Expected "+type+" but got null");
         if (!type.isInstance(o))
@@ -556,7 +556,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         Mapping constructorOnlyDataBoundProps = new Mapping();
         Mapping nonDeprecatedDataBoundProps = new Mapping();
         for (ReflectiveDataModelParameter p : parameters.values()) {
-            CNode v = p.inspect(o,context);
+            TreeNode v = p.inspect(o,context);
             if (p.isRequired() && v==null) {
                 // instantiate() method treats missing properties as nulls, so we don't need to keep it
                 // but if it's for the setter, explicit null invocation is needed, so we need to keep it
@@ -583,7 +583,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
                 if (p.isRequired())
                     continue;
 
-                CNode v = p.inspect(control,context);
+                TreeNode v = p.inspect(control,context);
 
                 // if the control has the same value as our object, we won't need to keep it
                 if (ObjectUtils.equals(v, r.get(p.getName()))) {
@@ -608,7 +608,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
                     if (!p.isDeprecated())
                         continue;
 
-                    CNode v = p.inspect(control,context);
+                    TreeNode v = p.inspect(control,context);
 
                     // if the control has the same value as our object, we won't need to keep it
                     if (ObjectUtils.equals(v, r.get(p.getName()))) {
@@ -724,7 +724,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
     /**
      * As a short-hand, if a {@link DataModel} has only one required parameter,
-     * {@link #read(CNode,DataContext)} accepts a single-item map whose key is this magic token.
+     * {@link #read(TreeNode,DataContext)} accepts a single-item map whose key is this magic token.
      *
      * <p>
      * To avoid clients from needing to special-case this key, {@link #write(Object, DataContext)} does not

@@ -1,6 +1,6 @@
 package jenkins.data;
 
-import jenkins.data.model.CNode;
+import jenkins.data.tree.TreeNode;
 import org.jvnet.tiger_types.Types;
 
 import java.io.IOException;
@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,10 +30,10 @@ public abstract class Serializer {
         return (VersionedResource<T>) registry.lookupOrFail(type).read(unstring(in), createContext());
     }
 
-    protected abstract CNode unstring(Reader in);
+    protected abstract TreeNode unstring(Reader in);
 
     public void write(VersionedResource<?> data, Writer out) throws IOException {
-        CNode tree = registry.lookupOrFail(data.getClass()).write(data, createContext());
+        TreeNode tree = registry.lookupOrFail(data.getClass()).write(data, createContext());
         stringify(tree,out);
     }
 
@@ -42,7 +41,7 @@ public abstract class Serializer {
         write(data,new OutputStreamWriter(out,UTF_8));
     }
 
-    protected abstract void stringify(CNode tree, Writer out);
+    protected abstract void stringify(TreeNode tree, Writer out);
 
     private DataContext createContext() {
         return new DataContext(registry);

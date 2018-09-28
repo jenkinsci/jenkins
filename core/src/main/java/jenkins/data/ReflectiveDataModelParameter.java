@@ -2,9 +2,9 @@ package jenkins.data;
 
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import jenkins.data.model.CNode;
-import jenkins.data.model.Scalar;
-import jenkins.data.model.Sequence;
+import jenkins.data.tree.TreeNode;
+import jenkins.data.tree.Scalar;
+import jenkins.data.tree.Sequence;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -13,10 +13,7 @@ import org.kohsuke.stapler.NoStaplerConstructorException;
 import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,7 +96,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     /**
      * Given an configured instance, try to infer the current value of the property.
      */
-    /*package*/ CNode inspect(Object o, DataContext context) {
+    /*package*/ TreeNode inspect(Object o, DataContext context) {
         return uncoerce(getValue(o), rawType, context);
     }
 
@@ -134,7 +131,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
      *      Expected type statically inferred from signature. Where heterogenous typing is possible,
      *      the returned tree representation must include type annotation.
      */
-    private CNode uncoerce(Object o, Type type, DataContext context) {
+    private TreeNode uncoerce(Object o, Type type, DataContext context) {
         if (o==null)
             return null;
         if (o instanceof Enum) {
@@ -161,8 +158,8 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
                 // Check to see if this can be treated as a data-bound struct.
                 DataModel<Object> model = DataModelRegistry.get().lookup(o.getClass());
                 if (model!=null) {
-                    CNode nested = model.write(o, context);
-                    if (nested.getType()!=CNode.Type.MAPPING) {
+                    TreeNode nested = model.write(o, context);
+                    if (nested.getType()!= TreeNode.Type.MAPPING) {
                         // can't add the type name. fall through
                     } else {
                         if (type != o.getClass()) {

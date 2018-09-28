@@ -1,4 +1,4 @@
-package jenkins.data.model;
+package jenkins.data.tree;
 
 import java.io.Serializable;
 
