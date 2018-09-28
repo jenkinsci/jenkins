@@ -1,5 +1,7 @@
 package jenkins.data;
 
+import jenkins.data.parameterType.ParameterType;
+
 import java.lang.reflect.Type;
 
 /**

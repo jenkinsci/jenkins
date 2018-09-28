@@ -1,4 +1,4 @@
-package jenkins.data;
+package jenkins.data.parameterType;
 
 import com.google.common.primitives.Primitives;
 
@@ -18,7 +18,7 @@ public final class AtomicType extends ParameterType {
     }
 
     @Override
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         b.append(Primitives.unwrap((Class<?>) getActualType()).getSimpleName());
     }
 }

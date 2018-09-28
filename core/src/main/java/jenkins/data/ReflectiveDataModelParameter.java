@@ -164,7 +164,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
                     } else {
                         if (type != o.getClass()) {
                             int simpleNameCount = 0;
-                            for (Class<?> c : findSubtypes(Types.erasure(type))) {
+                            for (Class<?> c : context.findSubtypes(Types.erasure(type))) {
                                 if (c.getSimpleName().equals(o.getClass().getSimpleName())) {
                                     simpleNameCount++;
                                 }

@@ -1,6 +1,7 @@
 package jenkins.data;
 
 import hudson.model.Descriptor;
+import jenkins.data.parameterType.ParameterType;
 import org.jvnet.tiger_types.Types;
 
 import javax.annotation.CheckForNull;

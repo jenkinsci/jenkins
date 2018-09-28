@@ -1,4 +1,4 @@
-package jenkins.data;
+package jenkins.data.parameterType;
 
 import java.util.Arrays;
 import java.util.Stack;
@@ -27,7 +27,7 @@ public final class EnumType extends ParameterType {
     }
 
     @Override
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         b.append(((Class) getActualType()).getSimpleName()).append(Arrays.toString(values));
     }
 }

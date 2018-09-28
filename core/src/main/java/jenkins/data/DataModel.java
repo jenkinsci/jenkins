@@ -69,7 +69,7 @@ public abstract class DataModel<T> {
     public abstract String getHelp() throws IOException;
 
 
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         b.append(getType().getSimpleName());
         if (modelTypes.contains(getType())) {
             b.append('…');
@@ -95,7 +95,7 @@ public abstract class DataModel<T> {
 
     @Override public String toString() {
         StringBuilder b = new StringBuilder();
-        toString(b, new Stack<Class<?>>());
+        toString(b, new Stack<>());
         return b.toString();
     }
 
@@ -107,7 +107,6 @@ public abstract class DataModel<T> {
     }
 
     public static <T> DataModel<T> byReflection(Class<T> type) {
-        throw new UnsupportedOperationException(); // TODO
+        return ReflectiveDataModel.of(type);
     }
-
 }

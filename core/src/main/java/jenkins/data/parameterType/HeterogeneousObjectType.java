@@ -1,4 +1,6 @@
-package jenkins.data;
+package jenkins.data.parameterType;
+
+import jenkins.data.DataModel;
 
 import java.util.Map;
 import java.util.Stack;
@@ -21,14 +23,14 @@ public final class HeterogeneousObjectType extends ParameterType {
     }
 
     /**
-     * A map from names which could be passed to {@link ReflectiveDataModel#CLAZZ} to types of allowable nested objects.
+     * A map from names which could be passed to {@link jenkins.data.ReflectiveDataModel#CLAZZ} to types of allowable nested objects.
      */
     public Map<String,DataModel<?>> getTypes() {
         return types;
     }
 
     @Override
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         Class<?> type = getType();
         b.append(type.getSimpleName());
         if (modelTypes.contains(type)) {

@@ -67,8 +67,8 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
-    @Describes(Banana.class)
-    public class BananaModel extends CustomDataModel<Banana> {
+    @Extension
+    public static class BananaModel extends CustomDataModel<Banana> {
         public BananaModel() {
             super(Banana.class,
                     parameter("ripe",boolean.class));
@@ -109,8 +109,8 @@ public class Samples {
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
 
-    @Describes(Cherry.class)
-    public class CherryModel extends CustomDataModel<Cherry> {
+    @Extension
+    public static class CherryModel extends CustomDataModel<Cherry> {
         public CherryModel() {
             // TODO: in this example, cherry binds to a scalar, so how do you go about parameters?
             super(Cherry.class);
@@ -179,7 +179,7 @@ public class Samples {
     // so this would go against that.
     //
     // either way, we'd like to establish that these can be implemented as sugar
-    @Describes(Durian.class)
+    @Extension
     public static DataModel<Durian> durianBinder() {
         return DataModel.byTranslation(DurianResource.class,
                 dr -> new Durian(dr.smelly ? 45 : 15),

@@ -1,4 +1,4 @@
-package jenkins.data;
+package jenkins.data.parameterType;
 
 import java.lang.reflect.Type;
 import java.util.Stack;
@@ -23,7 +23,7 @@ public final class ArrayType extends ParameterType {
     }
 
     @Override
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         elementType.toString(b, modelTypes);
         b.append("[]");
     }
