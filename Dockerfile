@@ -20,7 +20,6 @@ RUN mvn clean install --batch-mode -Plight-test
 FROM jenkins/jenkins-experimental:2.138.1-jdk11
 
 LABEL Description="This is an experimental image for Jenkins on Java 11"
-ARG JAVA_OPTS="-Dhudson.model.DownloadService.noSignatureCheck=true"
 
 COPY --from=builder /jenkins/src/war/target/jenkins.war /usr/share/jenkins/jenkins.war
 COPY docker/jenkins2.sh /usr/local/bin/jenkins2.sh
