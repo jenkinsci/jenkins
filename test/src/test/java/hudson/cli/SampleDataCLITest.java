@@ -8,7 +8,6 @@ import jenkins.data.CustomDataModel;
 import jenkins.data.DataContext;
 import jenkins.data.DataModel;
 import jenkins.data.JsonSerializer;
-import jenkins.data.Serializer;
 import jenkins.data.VersionedEnvelope;
 import jenkins.data.exportable.APIExportable;
 import jenkins.data.exportable.APIResource;
@@ -21,16 +20,19 @@ import org.jenkinsci.Symbol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.StringReader;
 import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 public class SampleDataCLITest {
 
+    public static final String FRUITS = "{\"version\": 1,\"data\": [{\"type\": \"banana\", \"ripe\": true}, {\"type\": \"apple\", \"seeds\": 22}]}";
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
@@ -45,10 +47,23 @@ public class SampleDataCLITest {
     public void sampleDataFruitTest() {
         CLICommandInvoker invoker = new CLICommandInvoker(jenkins, new SampleFruitDataCLI());
         CLICommandInvoker.Result result = invoker.withStdin(new StringInputStream(
-                "{\"version\": 1,\"data\": [{\"type\": \"banana\", \"yellow\": true}, {\"type\": \"apple\", \"seeds\": 22}]}")).invoke();
+                FRUITS)).invoke();
         System.out.println(result.stdout());
     }
 
+    @Test
+    public void fruits() throws IOException {
+        VersionedEnvelope<Fruit> envelope = new JsonSerializer().read(Fruit.class, new StringReader(FRUITS));
+        List<Fruit> fruits = envelope.getData();
+
+        Banana b = (Banana) fruits.get(0);
+        assertThat(b.yellow,is(true));
+
+        Apple a = (Apple) fruits.get(1);
+        assertThat(a.seeds, is(22));
+
+        assertThat(fruits.size(), is(2));
+    }
 
     @Extension
     public static class SampleDataCLI extends CLICommand {
