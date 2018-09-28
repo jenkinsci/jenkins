@@ -1,5 +1,6 @@
 package jenkins.data;
 
+import jenkins.data.tree.Mapping;
 import jenkins.data.tree.TreeNode;
 
 import java.io.IOException;
@@ -27,11 +28,11 @@ public abstract class Serializer {
         return (VersionedEnvelope<T>) registry.lookupOrFail(VersionedEnvelope.class).read(unstring(in), createContext());
     }
 
-    protected abstract TreeNode unstring(Reader in) throws IOException;
+    protected abstract Mapping unstring(Reader in) throws IOException;
 
     public void write(VersionedEnvelope<?> data, Writer out) throws IOException {
         DataModel dm = registry.lookupOrFail(data.getClass());
-        TreeNode tree = dm.write(data, createContext());
+        Mapping tree = dm.write(data, createContext());
         stringify(tree,out);
     }
 
@@ -39,7 +40,7 @@ public abstract class Serializer {
         write(data,new OutputStreamWriter(out,UTF_8));
     }
 
-    protected abstract void stringify(TreeNode tree, Writer out) throws IOException;
+    protected abstract void stringify(Mapping tree, Writer out) throws IOException;
 
     private DataContext createContext() {
         return new DataContext(registry);

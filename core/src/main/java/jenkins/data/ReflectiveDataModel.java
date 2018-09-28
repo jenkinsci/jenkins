@@ -6,7 +6,6 @@ import hudson.model.Descriptor;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import jenkins.data.tree.Mapping;
-import jenkins.data.tree.Scalar;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
 import jenkins.model.Jenkins;
@@ -237,7 +236,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * and only one subtype is registered (as a {@link Descriptor}) with that simple name.
      */
     @Override
-    public T read(TreeNode input, DataContext context) throws IOException {
+    public T read(Mapping input, DataContext context) throws IOException {
         Mapping arguments = input.asMapping();
 
         if (arguments.containsKey(ANONYMOUS_KEY)) {
@@ -505,7 +504,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
 
     @Override
-    public TreeNode write(T o, DataContext context) {
+    public Mapping write(T o, DataContext context) {
         if (o==null)
             throw new IllegalArgumentException("Expected "+type+" but got null");
         if (!type.isInstance(o))
@@ -653,7 +652,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
 
     /**
      * As a short-hand, if a {@link DataModel} has only one required parameter,
-     * {@link #read(TreeNode,DataContext)} accepts a single-item map whose key is this magic token.
+     * {@link DataModel#read(Mapping, DataContext)} accepts a single-item map whose key is this magic token.
      *
      * <p>
      * To avoid clients from needing to special-case this key, {@link #write(Object, DataContext)} does not

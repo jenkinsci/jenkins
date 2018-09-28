@@ -2,6 +2,7 @@ package jenkins.data;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import jenkins.data.tree.Mapping;
 import jenkins.data.tree.TreeNode;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -23,22 +24,32 @@ import java.util.function.Function;
  * {@link Holder} might be a good example to see this difference.
  */
 public abstract class DataModel<T> {
-    public abstract TreeNode write(T object, DataContext context);
-    public abstract T read(TreeNode input, DataContext context) throws IOException;
-
     /**
-     * A concrete class, usually {@link Describable}.
+     * Type that this model represents.
      */
     public abstract Class<T> getType();
 
     /**
-     * A map from parameter names to types.
-     * A parameter name is either the name of an argument to a {@link DataBoundConstructor},
-     * or the JavaBeans property name corresponding to a {@link DataBoundSetter}.
+     * Serializes an object into a tree structure and return it.
+     *
+     * @param context
+     *      Provides access to a bigger context in which this object is being serialized.
+     */
+    public abstract Mapping write(T object, DataContext context);
+
+    /**
+     * Instantiates an object from a tree structure and return the newly constructed instance.
+     *
+     * @param context
+     *      Provides access to a bigger context in which this object is being serialized.
+     */
+    public abstract T read(Mapping input, DataContext context) throws IOException;
+
+    /**
+     * "Schema" of this data model.
      *
      * <p>
-     * Sorted by the mandatory parameters first (in the order they are specified in the code),
-     * followed by optional arguments.
+     * If you think of a {@link DataModel} as a class, then {@link DataModelParameter}s are properties.
      */
     public abstract Collection<? extends DataModelParameter> getParameters();
 

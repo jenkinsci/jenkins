@@ -1,11 +1,9 @@
 package jenkins.data;
 
-import groovy.json.JsonOutput;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.Scalar;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -13,7 +11,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Iterator;
 
@@ -23,16 +20,16 @@ import java.util.Iterator;
 public class JsonSerializer extends Serializer {
 
     @Override
-    protected TreeNode unstring(Reader in) throws IOException {
+    protected Mapping unstring(Reader in) throws IOException {
         Mapping mapping = new Mapping();
         String json = IOUtils.toString(in);
         JSONObject o = JSONObject.fromObject(json);
-        return fromJSONObject(o);
+        return fromJSONObject(o).asMapping();
     }
 
 
     @Override
-    protected void stringify(TreeNode tree, Writer out) throws IOException {
+    protected void stringify(Mapping tree, Writer out) throws IOException {
         out.write(JSONSerializer.toJSON(tree.asMapping()).toString());
     }
 
