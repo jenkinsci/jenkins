@@ -26,7 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;

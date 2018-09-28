@@ -26,7 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import hudson.model.TaskListener;
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
@@ -93,7 +93,6 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 /**

@@ -35,7 +35,7 @@ import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;

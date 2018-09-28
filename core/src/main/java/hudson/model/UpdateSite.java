@@ -35,7 +35,7 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
-import static hudson.util.MemoryReductionUtil.*;
+import static jenkins.util.MemoryReductionUtil.*;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;

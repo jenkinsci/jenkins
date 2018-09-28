@@ -41,7 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

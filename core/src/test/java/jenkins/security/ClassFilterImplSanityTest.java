@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;

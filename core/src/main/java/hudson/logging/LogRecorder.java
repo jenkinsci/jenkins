@@ -32,7 +32,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
 import hudson.util.HttpResponses;
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;

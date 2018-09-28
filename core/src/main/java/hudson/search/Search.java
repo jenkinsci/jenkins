@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

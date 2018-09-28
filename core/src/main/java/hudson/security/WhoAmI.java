@@ -8,7 +8,7 @@ import hudson.model.UnprotectedRootAction;
 import java.util.ArrayList;
 import java.util.List;
 
-import hudson.util.MemoryReductionUtil;
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.Authentication;
