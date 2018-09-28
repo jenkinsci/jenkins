@@ -20,15 +20,15 @@ public interface DataModelRegistry {
      * @return <code>null</code> if we don't know any {@link DataModel} for requested type
      */
     @CheckForNull
-    <T> DataModel<T> lookup(Type type);
+    <T> DataModel<T> lookup(Class<T> type);
 
     /**
-     * null-safe flavour of {@link #lookup(Type)}.
+     * null-safe flavour of {@link #lookup(Class)}.
      * @param type
      * @throws IOException if we don't know any {@link DataModel} for requested type
      */
     @Nonnull
-    default <T> DataModel<T> lookupOrFail(Type type) throws IOException {
+    default <T> DataModel<T> lookupOrFail(Class<T> type) throws IOException {
         DataModel<T> t = lookup(type);
         if (t==null)    throw new IOException("No DataModel found for "+type);
         return t;

@@ -19,9 +19,7 @@ public class DefaultDataModelFactoryImpl implements DataModelFactory {
     private final ExtensionList<DataModel> dataModels = ExtensionList.lookup(DataModel.class);
 
     @Override
-    public DataModel find(Type type) {
-        Class<Object> c = Types.erasure(type);
-
+    public DataModel find(Class c) {
         // if a custom data model is defined for the given type, go for it
         for (DataModel dm : dataModels) {
             if (dm.getType().equals(c))

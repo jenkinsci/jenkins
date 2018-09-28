@@ -7,13 +7,20 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
+import javax.xml.ws.Holder;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.function.Function;
 
 /**
  * Immutable object that represents the databinding and introspection logic of an object.
+ *
+ * There's one {@link DataModel} per every data-bindable {@link Class}, not {@link Type}.
+ * This might feel subtle, but what this means is that if a class is parameterized, the model
+ * and the serialized form doesn't consider the particular parameterization at a site of use.
+ * {@link Holder} might be a good example to see this difference.
  */
 public abstract class DataModel<T> {
     public abstract TreeNode write(T object, DataContext context);

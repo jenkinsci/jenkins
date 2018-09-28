@@ -6,7 +6,6 @@ import org.kohsuke.stapler.Stapler;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,13 +61,13 @@ public class DataContext implements DataModelRegistry {
 
     @Override
     @Nonnull
-    public <T> DataModel<T> lookupOrFail(Type type) throws IOException {
+    public <T> DataModel<T> lookupOrFail(Class<T> type) throws IOException {
         return registry.lookupOrFail(type);
     }
 
     @Override
     @CheckForNull
-    public <T> DataModel<T> lookup(Type type) {
+    public <T> DataModel<T> lookup(Class<T> type) {
         return registry.lookup(type);
     }
 

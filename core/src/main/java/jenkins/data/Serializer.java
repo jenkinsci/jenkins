@@ -1,7 +1,6 @@
 package jenkins.data;
 
 import jenkins.data.tree.TreeNode;
-import org.jvnet.tiger_types.Types;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,9 +9,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Type;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 public abstract class Serializer {
     protected DataModelRegistry registry = DataModelRegistry.get();
@@ -26,14 +24,14 @@ public abstract class Serializer {
     }
 
     public <T> VersionedEnvelope<T> read(Class<T> payloadType, Reader in) throws IOException {
-        Type type = Types.createParameterizedType(VersionedEnvelope.class, payloadType);
-        return (VersionedEnvelope<T>) registry.lookupOrFail(type).read(unstring(in), createContext());
+        return (VersionedEnvelope<T>) registry.lookupOrFail(VersionedEnvelope.class).read(unstring(in), createContext());
     }
 
     protected abstract TreeNode unstring(Reader in) throws IOException;
 
     public void write(VersionedEnvelope<?> data, Writer out) throws IOException {
-        TreeNode tree = registry.lookupOrFail(data.getClass()).write(data, createContext());
+        DataModel dm = registry.lookupOrFail(data.getClass());
+        TreeNode tree = dm.write(data, createContext());
         stringify(tree,out);
     }
 

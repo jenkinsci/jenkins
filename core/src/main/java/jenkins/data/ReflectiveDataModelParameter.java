@@ -2,9 +2,9 @@ package jenkins.data;
 
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import jenkins.data.tree.TreeNode;
 import jenkins.data.tree.Scalar;
 import jenkins.data.tree.Sequence;
+import jenkins.data.tree.TreeNode;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -17,8 +17,6 @@ import java.util.Collection;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static jenkins.data.ReflectiveDataModel.*;
 
 /**
  * {@link DataModelParameter} implementation for models that defines itself via Stapler form binding
@@ -156,7 +154,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
         } else if (!o.getClass().getName().startsWith("java.")) {
             try {
                 // Check to see if this can be treated as a data-bound struct.
-                DataModel<Object> model = DataModelRegistry.get().lookup(o.getClass());
+                DataModel model = DataModelRegistry.get().lookup(o.getClass());
                 if (model!=null) {
                     TreeNode nested = model.write(o, context);
                     if (nested.getType()!= TreeNode.Type.MAPPING) {
