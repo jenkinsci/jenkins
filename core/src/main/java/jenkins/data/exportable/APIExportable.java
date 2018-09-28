@@ -1,4 +1,4 @@
-package jenkins.data;
+package jenkins.data.exportable;
 
 import javax.annotation.CheckForNull;
 

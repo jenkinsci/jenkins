@@ -27,7 +27,7 @@ public class JsonSerializer extends Serializer {
         Mapping mapping = new Mapping();
         String json = IOUtils.toString(in);
         JSONObject o = JSONObject.fromObject(json);
-        return fromJSONObject((JSONObject) o);
+        return fromJSONObject(o);
     }
 
 
