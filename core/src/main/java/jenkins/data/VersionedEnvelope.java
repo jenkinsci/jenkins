@@ -1,12 +1,14 @@
 package jenkins.data;
 
+import hudson.model.AbstractDescribableImpl;
+
 import java.util.List;
 
 /**
  * Wrapper for in/out messages.
  * It adds the API version and the effective content of the request/response.
  */
-public class VersionedEnvelope<T> {
+public class VersionedEnvelope<T> extends AbstractDescribableImpl<VersionedEnvelope<T>> {
     /*
         This is the envelope format
         {

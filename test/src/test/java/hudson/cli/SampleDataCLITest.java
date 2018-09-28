@@ -7,6 +7,7 @@ import hudson.model.Descriptor;
 import jenkins.data.CustomDataModel;
 import jenkins.data.DataContext;
 import jenkins.data.DataModel;
+import jenkins.data.JsonSerializer;
 import jenkins.data.Serializer;
 import jenkins.data.VersionedEnvelope;
 import jenkins.data.exportable.APIExportable;
@@ -39,8 +40,15 @@ public class SampleDataCLITest {
         System.out.println(result.stdout());
     }
 
+    @Test
+    public void sampleDataFruitTest() {
+        CLICommandInvoker invoker = new CLICommandInvoker(jenkins, new SampleFruitDataCLI());
+        CLICommandInvoker.Result result = invoker.withStdin(new StringInputStream("{\"version\": 1,\"data\": [{\"name\": \"Banana\", \"yellow\": true}, {\"name\": \"Apple\", \"seeds\": 22}]}")).invoke();
+        System.out.println(result.stdout());
+    }
 
-    @TestExtension
+
+    @Extension
     public static class SampleDataCLI extends CLICommand {
 
         private boolean read = true;
@@ -53,37 +61,18 @@ public class SampleDataCLITest {
         @Override
         protected int run() throws Exception {
             if (read) {
-                VersionedEnvelope<SampleDataCLI.Provisioning> envelope = new SampleDataCLI.JsonSerializer().read(SampleDataCLI.Provisioning.class, stdin);
-                for (SampleDataCLI.Provisioning res : envelope.getData()) {
+                VersionedEnvelope<Provisioning> envelope = new JsonSerializer().read(Provisioning.class, stdin);
+                for (Provisioning res : envelope.getData()) {
                     System.out.println(res);
                 }
                 return 0;
             } else {
-                VersionedEnvelope<SampleDataCLI.Provisioning> data = new VersionedEnvelope<>(1, Arrays.asList(
-                        new SampleDataCLI.Provisioning("3"),
-                        new SampleDataCLI.Provisioning("4")
+                VersionedEnvelope<Provisioning> data = new VersionedEnvelope<>(1, Arrays.asList(
+                        new Provisioning("3"),
+                        new Provisioning("4")
                 ));
-                new SampleDataCLI.JsonSerializer().write(data, stdout);
+                new JsonSerializer().write(data, stdout);
                 return 0;
-            }
-        }
-
-        public static final class JsonSerializer extends Serializer {
-
-            @Override
-            protected TreeNode unstring(Reader in) throws IOException {
-                // let's pretend some parsing and mapping mechanism runs here
-                // jackson could be plugged here
-
-                Mapping mapping = new Mapping();
-                mapping.put("memoryGB", new Scalar(4));
-                return mapping;
-            }
-
-            @Override
-            protected void stringify(TreeNode tree, Writer out) throws IOException {
-                // jackson serialization of tree could be plugged here
-                out.write("{}");
             }
         }
 
@@ -117,7 +106,7 @@ public class SampleDataCLITest {
 
             @Override
             public APIExportable<?> toModel() {
-                return new SampleDataCLI.Provisioning(memoryGB);
+                return new Provisioning(memoryGB);
             }
 
             public String getMemoryGB() {
@@ -131,6 +120,35 @@ public class SampleDataCLITest {
     }
 
     // Fruit shop
+
+    @Extension
+    public static class SampleFruitDataCLI extends CLICommand {
+
+        private boolean read = true;
+
+        @Override
+        public String getShortDescription() {
+            return "Fruits";
+        }
+
+        @Override
+        protected int run() throws Exception {
+            if (read) {
+                VersionedEnvelope<Fruit> envelope = new JsonSerializer().read(Fruit.class, stdin);
+                for (Fruit res : envelope.getData()) {
+                    System.out.println(res);
+                }
+                return 0;
+            } else {
+                VersionedEnvelope<Fruit> data = new VersionedEnvelope<>(1, Arrays.asList(
+                        new Apple(2),
+                        new Banana(true)
+                ));
+                new JsonSerializer().write(data, stdout);
+                return 0;
+            }
+        }
+    }
 
     public static abstract class Fruit implements ExtensionPoint, Describable<Fruit> {
         protected String name;
