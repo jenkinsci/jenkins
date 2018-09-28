@@ -731,8 +731,8 @@ public class UpdateSite {
 
         public WarningVersionRange(JSONObject o) {
             this.name = Util.fixEmpty(o.optString("name"));
-            this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
-            this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
+            this.firstVersion = Util.intern(Util.fixEmpty(o.optString("firstVersion")));
+            this.lastVersion = Util.intern(Util.fixEmpty(o.optString("lastVersion")));
             Pattern p;
             try {
                 p = Pattern.compile(o.getString("pattern"));
@@ -834,8 +834,8 @@ public class UpdateSite {
             this.url = o.getString("url");
 
             if (o.has("versions")) {
-                List<WarningVersionRange> ranges = new ArrayList<>();
                 JSONArray versions = o.getJSONArray("versions");
+                List<WarningVersionRange> ranges = new ArrayList<>(versions.size());
                 for (int i = 0; i < versions.size(); i++) {
                     WarningVersionRange range = new WarningVersionRange(versions.getJSONObject(i));
                     ranges.add(range);
