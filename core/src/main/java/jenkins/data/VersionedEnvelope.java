@@ -1,6 +1,7 @@
 package jenkins.data;
 
-import hudson.model.AbstractDescribableImpl;
+import hudson.Extension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
 
@@ -8,7 +9,7 @@ import java.util.List;
  * Wrapper for in/out messages.
  * It adds the API version and the effective content of the request/response.
  */
-public class VersionedEnvelope<T> extends AbstractDescribableImpl<VersionedEnvelope<T>> {
+public class VersionedEnvelope<T> {
     /*
         This is the envelope format
         {
@@ -37,6 +38,7 @@ public class VersionedEnvelope<T> extends AbstractDescribableImpl<VersionedEnvel
      * @param version a specific API version
      * @param data    the data object
      */
+    @DataBoundConstructor
     public VersionedEnvelope(String version, List<T> data) {
         if (version == null) {
             throw new IllegalArgumentException("version has to be an integer, found null");
@@ -70,4 +72,7 @@ public class VersionedEnvelope<T> extends AbstractDescribableImpl<VersionedEnvel
     public void setVersion(String version) {
         this.version = version;
     }
+
+    @Extension
+    public static final DataModel<VersionedEnvelope> MODEL = DataModel.byReflection(VersionedEnvelope.class);
 }
