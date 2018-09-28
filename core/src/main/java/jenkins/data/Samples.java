@@ -241,9 +241,10 @@ public class Samples {
     @Extension
     public static class APIExportableModelFactory implements DataModelFactory {
         @Override
-        public DataModel find(final Class type) {
-            if (APIExportable.class.isAssignableFrom(type)) {
-                return new TranslatedModel(type);
+        public DataModel find(final Type type) {
+            Class<Object> clazz = Types.erasure(Types.getTypeArgument(type, 0));
+            if (APIExportable.class.isAssignableFrom(clazz)) {
+                return new TranslatedModel(clazz);
             }
             return null;
         }

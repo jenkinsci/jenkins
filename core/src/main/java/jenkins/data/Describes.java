@@ -7,6 +7,7 @@ import org.jvnet.hudson.annotation_indexer.Indexed;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.Type;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
@@ -29,7 +30,7 @@ public @interface Describes {
     @Extension
     public static final class DataModelFactoryImpl implements DataModelFactory {
         @Override
-        public DataModel find(Class type) {
+        public DataModel find(Type type) {
             // TODO: list up Describes and find those
             return null;
         }
