@@ -2,8 +2,11 @@ package hudson.cli;
 
 import hudson.EnvVars;
 import hudson.Launcher;
+import hudson.model.User;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
+import jenkins.security.ApiTokenProperty;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.io.FileUtils;
 
 import org.junit.Before;
@@ -45,99 +48,117 @@ public class CLIEnvVarTest {
     }
 
     @Test
-    public void testJENKINS_URL() throws Exception {
-        // Using -s option
+    public void testSOptionWithoutJENKINS_URL() throws Exception {
         assertEquals(0, launch("java",
-                               "-Duser.home=" + home,
-                               "-jar", jar.getAbsolutePath(),
-                               "-s", r.getURL().toString(),
-                               "who-am-i")
-        );
-
-        // Without -s option and without JENKINS_URL
-        assertNotEquals(0, launch("java",
-                                  "-Duser.home=" + home,
-                                  "-jar", jar.getAbsolutePath(),
-                                  "who-am-i")
-        );
-
-        // Without -s option but with JENKINS_URL
-        Map<String, String> envars = new HashMap<>();
-        envars.put("JENKINS_URL", r.getURL().toString());
-        assertEquals(0, launch(envars,
-                               "java",
-                               "-Duser.home=" + home,
-                               "-jar", jar.getAbsolutePath(),
-                               "who-am-i")
-        );
-
-        envars = new HashMap<>();
-        envars.put("JENKINS_URL", "http://invalid-url");
-        assertNotEquals(0, launch(envars,
-                                  "java",
-                                  "-Duser.home=" + home,
-                                  "-jar", jar.getAbsolutePath(),
-                                  "who-am-i")
-        );
-
-        // Override JENKINS_URL with -s option
-        envars = new HashMap<>();
-        envars.put("JENKINS_URL", "http://invalid-url");
-        assertEquals(0, launch(envars,
-                               "java",
-                               "-Duser.home=" + home,
-                               "-jar", jar.getAbsolutePath(),
-                               "-s", r.getURL().toString(),
-                               "who-am-i")
+                "-Duser.home=" + home,
+                "-jar", jar.getAbsolutePath(),
+                "-s", r.getURL().toString(),
+                "who-am-i")
         );
     }
 
     @Test
-    public void testJENKINS_USER_IDandJENKINS_API_TOKEN() throws Exception {
+    public void testWithoutSOptionAndWithoutJENKINS_URL() throws Exception {
+        assertNotEquals(0, launch("java",
+                "-Duser.home=" + home,
+                "-jar", jar.getAbsolutePath(),
+                "who-am-i")
+        );
+    }
+
+    @Test
+    public void testJENKINS_URLWithoutSOption() throws Exception {
+        // Valid URL
+        Map<String, String> envars = new HashMap<>();
+        envars.put("JENKINS_URL", r.getURL().toString());
+        assertEquals(0, launch(envars,
+                "java",
+                "-Duser.home=" + home,
+                "-jar", jar.getAbsolutePath(),
+                "who-am-i")
+        );
+
+        // Invalid URL
+        envars = new HashMap<>();
+        envars.put("JENKINS_URL", "http://invalid-url");
+        assertNotEquals(0, launch(envars,
+                "java",
+                "-Duser.home=" + home,
+                "-jar", jar.getAbsolutePath(),
+                "who-am-i")
+        );
+
+    }
+
+    @Test
+    public void testSOptionOverridesJENKINS_URL() throws Exception {
+        Map<String, String> envars = new HashMap<>();
+        envars.put("JENKINS_URL", "http://invalid-url");
+        assertEquals(0, launch(envars,
+                "java",
+                "-Duser.home=" + home,
+                "-jar", jar.getAbsolutePath(),
+                "-s", r.getURL().toString(),
+                "who-am-i")
+        );
+    }
+
+    @Test
+    public void testAuthOptionWithoutEnvVars() throws Exception {
+        String token = getToken();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            assertEquals(0, launch(Collections.emptyMap(), baos, null,
+                    "java",
+                    "-Duser.home=" + home,
+                    "-jar", jar.getAbsolutePath(),
+                    "-s", r.getURL().toString(),
+                    "-auth", String.format("%s:%s", "admin", token),
+                    "who-am-i")
+            );
+            assertThat(baos.toString(), containsString("Authenticated as: admin"));
+        }
+    }
+
+    @Test
+    public void testWithoutEnvVarsAndWithoutAuthOption() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
 
-        // Using -auth option
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             assertEquals(0, launch(Collections.emptyMap(), baos, null,
-                                   "java",
-                                   "-Duser.home=" + home,
-                                   "-jar", jar.getAbsolutePath(),
-                                   "-s", r.getURL().toString(),
-                                   "-auth", "admin:admin",
-                                   "who-am-i")
-            );
-            assertThat(baos.toString(), containsString("Authenticated as: admin"));
-        }
-
-        // Without -auth option and without env vars
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            assertEquals(0, launch(Collections.emptyMap(), baos, null,
-                                   "java",
-                                   "-Duser.home=" + home,
-                                   "-jar", jar.getAbsolutePath(),
-                                   "-s", r.getURL().toString(),
-                                   "who-am-i")
+                    "java",
+                    "-Duser.home=" + home,
+                    "-jar", jar.getAbsolutePath(),
+                    "-s", r.getURL().toString(),
+                    "who-am-i")
             );
             assertThat(baos.toString(), containsString("Authenticated as: anonymous"));
         }
+    }
 
-        // Without -s option but with both env var
+    @Test
+    public void testEnvVarsWithoutAuthOption() throws Exception {
+        String token = getToken();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
             envars.put("JENKINS_USER_ID", "admin");
-            envars.put("JENKINS_API_TOKEN", "admin");
+            envars.put("JENKINS_API_TOKEN", token);
             assertEquals(0, launch(envars, baos, null,
-                                   "java",
-                                   "-Duser.home=" + home,
-                                   "-jar", jar.getAbsolutePath(),
-                                   "-s", r.getURL().toString(),
-                                   "who-am-i")
+                    "java",
+                    "-Duser.home=" + home,
+                    "-jar", jar.getAbsolutePath(),
+                    "-s", r.getURL().toString(),
+                    "who-am-i")
             );
             assertThat(baos.toString(), containsString("Authenticated as: admin"));
         }
+    }
 
-        // Without -s option but with only one of the env var
+    @Test
+    public void testOnlyOneEnvVar() throws Exception {
+        String token = getToken();
+
+        // only JENKINS_USER_ID
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
             envars.put("JENKINS_USER_ID", "admin");
@@ -150,9 +171,10 @@ public class CLIEnvVarTest {
             );
         }
 
+        // only JENKINS_API_TOKEN
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
-            envars.put("JENKINS_API_TOKEN", "admin");
+            envars.put("JENKINS_API_TOKEN", token);
             assertNotEquals(0, launch(envars,
                                       "java",
                                       "-Duser.home=" + home,
@@ -161,22 +183,35 @@ public class CLIEnvVarTest {
                                       "who-am-i")
             );
         }
+    }
 
-        // Override env vars with -auth option
+    @Test
+    public void testAuthOptionOverridesEnvVars() throws Exception {
+        String token = getToken();
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
             envars.put("JENKINS_USER_ID", "other-user");
             envars.put("JENKINS_API_TOKEN", "other-user");
             assertEquals(0, launch(envars, baos, null,
-                                   "java",
-                                   "-Duser.home=" + home,
-                                   "-jar", jar.getAbsolutePath(),
-                                   "-s", r.getURL().toString(),
-                                   "-auth", "admin:admin",
-                                   "who-am-i")
+                    "java",
+                    "-Duser.home=" + home,
+                    "-jar", jar.getAbsolutePath(),
+                    "-s", r.getURL().toString(),
+                    "-auth", String.format("%s:%s", "admin", token),
+                    "who-am-i")
             );
             assertThat(baos.toString(), containsString("Authenticated as: admin"));
         }
+    }
+
+    private String getToken() {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+
+        return User.get("admin").getProperty(ApiTokenProperty.class).getApiToken();
     }
 
     private int launch(String... cmdArgs) throws Exception {

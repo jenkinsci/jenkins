@@ -280,7 +280,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>commons-digester</groupId>
