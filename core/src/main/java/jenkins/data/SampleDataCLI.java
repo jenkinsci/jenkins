@@ -25,7 +25,7 @@ public class SampleDataCLI extends CLICommand {
     @Override
     protected int run() throws Exception {
         if (read) {
-            VersionedEnvelope<Provisioning> envelope = new JacksonSerializer().read(Provisioning.class, stdin);
+            VersionedEnvelope<Provisioning> envelope = new JsonSerializer().read(Provisioning.class, stdin);
             for (Provisioning res : envelope.getData()) {
                 System.out.println(res);
             }
@@ -35,17 +35,18 @@ public class SampleDataCLI extends CLICommand {
                     new Provisioning("3"),
                     new Provisioning("4")
             ));
-            new JacksonSerializer().write(data, stdout);
+            new JsonSerializer().write(data, stdout);
             return 0;
         }
     }
 
-    public static final class JacksonSerializer extends Serializer {
+    public static final class JsonSerializer extends Serializer {
 
         @Override
         protected TreeNode unstring(Reader in) throws IOException {
             // let's pretend some parsing and mapping mechanism runs here
             // jackson could be plugged here
+
             Mapping mapping = new Mapping();
             mapping.put("memoryGB", new Scalar(4));
             return mapping;
