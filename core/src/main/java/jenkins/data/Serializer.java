@@ -21,23 +21,23 @@ public abstract class Serializer {
         this.registry = registry;
     }
 
-    public <T> VersionedResource<T> read(Class<T> payloadType, InputStream in) throws IOException {
+    public <T> VersionedEnvelope<T> read(Class<T> payloadType, InputStream in) throws IOException {
         return read(payloadType,new InputStreamReader(in, UTF_8));
     }
 
-    public <T> VersionedResource<T> read(Class<T> payloadType, Reader in) throws IOException {
-        Type type = Types.createParameterizedType(VersionedResource.class, payloadType);
-        return (VersionedResource<T>) registry.lookupOrFail(type).read(unstring(in), createContext());
+    public <T> VersionedEnvelope<T> read(Class<T> payloadType, Reader in) throws IOException {
+        Type type = Types.createParameterizedType(VersionedEnvelope.class, payloadType);
+        return (VersionedEnvelope<T>) registry.lookupOrFail(type).read(unstring(in), createContext());
     }
 
     protected abstract TreeNode unstring(Reader in);
 
-    public void write(VersionedResource<?> data, Writer out) throws IOException {
+    public void write(VersionedEnvelope<?> data, Writer out) throws IOException {
         TreeNode tree = registry.lookupOrFail(data.getClass()).write(data, createContext());
         stringify(tree,out);
     }
 
-    public void write(VersionedResource<?> data, OutputStream out) throws IOException {
+    public void write(VersionedEnvelope<?> data, OutputStream out) throws IOException {
         write(data,new OutputStreamWriter(out,UTF_8));
     }
 

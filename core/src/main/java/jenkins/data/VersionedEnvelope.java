@@ -6,7 +6,7 @@ import java.util.List;
  * Wrapper for in/out messages.
  * It adds the API version and the effective content of the request/response.
  */
-public class VersionedResource<T> {
+public class VersionedEnvelope<T> {
     /*
         This is the envelope format
         {
@@ -25,7 +25,7 @@ public class VersionedResource<T> {
      *
      * @param data the data object
      */
-    public VersionedResource(List<T> data) {
+    public VersionedEnvelope(List<T> data) {
         this.data = data;
     }
 
@@ -35,7 +35,7 @@ public class VersionedResource<T> {
      * @param version a specific API version
      * @param data    the data object
      */
-    public VersionedResource(String version, List<T> data) {
+    public VersionedEnvelope(String version, List<T> data) {
         if (version == null) {
             throw new IllegalArgumentException("version has to be an integer, found null");
         }
@@ -48,7 +48,7 @@ public class VersionedResource<T> {
         this.data = data;
     }
 
-    public VersionedResource(int version, List<T> data) {
+    public VersionedEnvelope(int version, List<T> data) {
         this.version = Integer.toString(version);
         this.data = data;
     }
