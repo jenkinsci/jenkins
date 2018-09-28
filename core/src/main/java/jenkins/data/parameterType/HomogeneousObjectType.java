@@ -1,4 +1,6 @@
-package jenkins.data;
+package jenkins.data.parameterType;
+
+import jenkins.data.DataModel;
 
 import java.util.Stack;
 
@@ -30,7 +32,7 @@ public final class HomogeneousObjectType extends ParameterType {
      * The actual class underlying the type.
      */
     @Override
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
+    public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
         model.toString(b, modelTypes);
     }
 }

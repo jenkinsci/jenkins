@@ -1,7 +1,9 @@
-package jenkins.data;
+package jenkins.data.parameterType;
 
 import com.google.common.primitives.Primitives;
 import hudson.model.Result;
+import jenkins.data.DataModel;
+import jenkins.data.DataModelRegistry;
 import org.jvnet.tiger_types.Types;
 
 import javax.annotation.Nonnull;
@@ -39,7 +41,10 @@ public abstract class ParameterType {
         this.actualType = actualType;
     }
 
-    static ParameterType of(Type type) {
+    /**
+     * Creates the right {@link ParameterType} tree, given a Java type.
+     */
+    public static ParameterType of(Type type) {
         try {
             if (type instanceof Class) {
                 Class<?> c = (Class<?>) type;
@@ -63,8 +68,8 @@ public abstract class ParameterType {
                     return new ArrayType(c,of(c.getComponentType()));
                 }
                 // Assume it is a nested object of some sort.
-                Set<Class<?>> subtypes = ReflectiveDataModel.findSubtypes(c);
                 DataModelRegistry registry = DataModelRegistry.get();
+                Set<Class<?>> subtypes = registry.findSubtypes(c);
                 if ((subtypes.isEmpty() && !Modifier.isAbstract(c.getModifiers())) || subtypes.equals(Collections.singleton(c))) {
                     // Probably homogeneous. (Might be concrete but subclassable.)
                     return new HomogeneousObjectType(registry.lookupOrFail(c));
@@ -109,7 +114,10 @@ public abstract class ParameterType {
         }
     }
 
-    abstract void toString(StringBuilder b, Stack<Class<?>> modelTypes);
+    /**
+     * Flavor of toString that avoids infinite recursion.
+     */
+    public abstract void toString(StringBuilder b, Stack<Class<?>> modelTypes);
 
     @Override
     public final String toString() {

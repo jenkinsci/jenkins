@@ -6,6 +6,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Set;
 
 /**
  * A Registry to allow {@link DataModel}s retrieval.
@@ -32,6 +33,13 @@ public interface DataModelRegistry {
         if (t==null)    throw new IOException("No DataModel found for "+type);
         return t;
     }
+
+    /**
+     * Finds all the valid databindable subtypes assignable to given type.
+     *
+     * TODO: the return type not being Set<DataModel<?>> makes me feel uneasy
+     */
+    Set<Class<?>> findSubtypes(Class<?> superType);
 
     /**
      * Retrieve default implementation from Jenkins

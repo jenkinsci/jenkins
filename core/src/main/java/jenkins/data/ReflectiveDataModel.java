@@ -3,13 +3,11 @@ package jenkins.data;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
-import jenkins.data.tree.TreeNode;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.Sequence;
+import jenkins.data.tree.TreeNode;
 import jenkins.model.Jenkins;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.io.IOUtils;
@@ -39,12 +37,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -358,7 +354,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         case MAPPING:
             Mapping m = n.clone().asMapping();
             TreeNode clazzName = m.remove(CLAZZ);
-            Class<?> clazz = resolveClass(erased, clazzName!=null ? clazzName.asScalar().getValue() : null, null);
+            Class<?> clazz = resolveClass(erased, clazzName!=null ? clazzName.asScalar().getValue() : null, null, context);
             return context.lookup(clazz).read(m, context);
         case SEQUENCE:
             return coerceList(location,
@@ -431,7 +427,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * @param base
      *      Signature of the type that the resolved class should be assignable to.
      */
-    /*package*/ static Class<?> resolveClass(Class<?> base, @Nullable String name, @Nullable String symbol) throws ClassNotFoundException {
+    /*package*/ static Class<?> resolveClass(Class<?> base, @Nullable String name, @Nullable String symbol, DataContext context) throws ClassNotFoundException {
         // TODO: if both name & symbol are present, should we verify its consistency?
 
         if (name != null) {
@@ -441,7 +437,7 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
                 return Class.forName(name, true, loader);
             } else {
                 Class<?> clazz = null;
-                for (Class<?> c : findSubtypes(base)) {
+                for (Class<?> c : context.findSubtypes(base)) {
                     if (c.getSimpleName().equals(name)) {
                         if (clazz != null) {
                             throw new UnsupportedOperationException(name + " as a " + base + " could mean either " + clazz.getName() + " or " + c.getName());
@@ -462,15 +458,6 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
             if (d != null) {
                 return d.clazz;
             }
-            if (base == ParameterValue.class) { // TODO JENKINS-26093 workaround
-                d = SymbolLookup.get().findDescriptor(ParameterDefinition.class, symbol);
-                if (d != null) {
-                    Class<?> c = parameterValueClass(d.clazz);
-                    if (c != null) {
-                        return c;
-                    }
-                }
-            }
             throw new UnsupportedOperationException("no known implementation of " + base + " is using symbol ‘" + symbol + "’");
         }
 
@@ -489,42 +476,6 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
             r.add(coerce(location, type, elt, context));
         }
         return r;
-    }
-
-    /** Tries to find the {@link ParameterValue} type corresponding to a {@link ParameterDefinition} by assuming conventional naming. */
-    private static @CheckForNull Class<?> parameterValueClass(@Nonnull Class<?> parameterDefinitionClass) { // TODO JENKINS-26093
-        String name = parameterDefinitionClass.getName();
-        if (name.endsWith("Definition")) {
-            try {
-                Class<?> parameterValueClass = parameterDefinitionClass.getClassLoader().loadClass(name.replaceFirst("Definition$", "Value"));
-                if (ParameterValue.class.isAssignableFrom(parameterValueClass)) {
-                    return parameterValueClass;
-                }
-            } catch (ClassNotFoundException x) {
-                // ignore
-            }
-        }
-        return null;
-    }
-
-    // TODO: this isn't kosher. It needs to rely on DataModelRegistry somehow
-    static Set<Class<?>> findSubtypes(Class<?> supertype) {
-        Set<Class<?>> clazzes = new HashSet<>();
-        // Jenkins.getDescriptorList does not work well since it is limited to descriptors declaring one supertype, and does not work at all for SimpleBuildStep.
-        for (Descriptor<?> d : ExtensionList.lookup(Descriptor.class)) {
-            if (supertype.isAssignableFrom(d.clazz)) {
-                clazzes.add(d.clazz);
-            }
-        }
-        if (supertype == ParameterValue.class) { // TODO JENKINS-26093 hack, pending core change
-            for (Class<?> d : findSubtypes(ParameterDefinition.class)) {
-                Class<?> c = parameterValueClass(d);
-                if (c != null) {
-                    clazzes.add(c);
-                }
-            }
-        }
-        return clazzes;
     }
 
     /**
@@ -643,36 +594,6 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
             }
         }
         return null;
-    }
-
-    void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
-        b.append(type.getSimpleName());
-        if (modelTypes.contains(type)) {
-            b.append('…');
-        } else {
-            modelTypes.push(type);
-            try {
-                b.append('(');
-                boolean first = true;
-                for (DataModelParameter dp : getParameters()) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        b.append(", ");
-                    }
-                    dp.toString(b, modelTypes);
-                }
-                b.append(')');
-            } finally {
-                modelTypes.pop();
-            }
-        }
-    }
-
-    @Override public String toString() {
-        StringBuilder b = new StringBuilder();
-        toString(b, new Stack<>());
-        return b.toString();
     }
 
     private Object writeReplace() {

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -69,6 +70,11 @@ public class DataContext implements DataModelRegistry {
     @CheckForNull
     public <T> DataModel<T> lookup(Type type) {
         return registry.lookup(type);
+    }
+
+    @Override
+    public Set<Class<?>> findSubtypes(Class<?> superType) {
+        return registry.findSubtypes(superType);
     }
 
     /**
