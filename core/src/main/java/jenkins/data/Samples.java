@@ -292,7 +292,7 @@ public class Samples {
     /**
      * Read from stdin and construct model object
      */
-    public void cliReaderSample() {
+    public void cliReaderSample() throws IOException {
             VersionedResource<Fruit> envelope = new JsonSerializer().read(Fruit.class, System.in);
             for (Fruit res : envelope.getData()) {
                 System.out.println(res);
@@ -311,7 +311,7 @@ public class Samples {
 //            }
     }
 
-    public void cliWriterExample() {
+    public void cliWriterExample() throws IOException {
         VersionedResource<Fruit> d = new VersionedResource<>(1, Arrays.asList(
                 new Apple(3),
                 new Banana(true),
