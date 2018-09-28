@@ -34,9 +34,9 @@ public class DefaultDataModelRegistry implements DataModelRegistry {
             .build(new CacheLoader<Type, DataModel>() {
                 @Override
                 public DataModel load(Type type) throws IOException {
-
+                    Class<Object> c = Types.erasure(type);
                     for (DataModelFactory f : factories) {
-                        DataModel m = f.find(type);
+                        DataModel m = f.find(c);
                         if (m!=null)
                             return m;
                     }

@@ -20,8 +20,7 @@ import java.lang.reflect.Type;
 public class APIExportableModelFactory implements DataModelFactory {
 
     @Override
-    public DataModel find(final Type type) {
-        Class<Object> clazz = Types.erasure(type);
+    public DataModel find(final Class clazz) {
         if (APIExportable.class.isAssignableFrom(clazz)) {
             return new TranslatedModel(clazz);
         }
