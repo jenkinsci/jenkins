@@ -273,7 +273,7 @@ public class SampleDataCLITest {
     /**
      * Example where 'contract' is defined elsewhere explicitly as a separate resource class
      */
-    public static class Durian extends Fruit implements APIExportable {
+    public static class Durian extends Fruit {
         private float age;
 
         // some other gnary fields that you don't want to participate in the format
@@ -285,10 +285,6 @@ public class SampleDataCLITest {
 
         // lots of gnary behaviours
 
-        public DurianResource toResource() {
-            return new DurianResource(age>30.0f);
-        }
-
         @Extension @Symbol("durian")
         public static final class DescriptorImpl extends FruitDescriptor {}
     }
@@ -296,7 +292,7 @@ public class SampleDataCLITest {
     /**
      * Model object that's defined as contract. This is the class that gets data-bound.
      */
-    public static class DurianResource implements APIResource {
+    public static class DurianResource {
         private boolean smelly;
 
         @DataBoundConstructor
@@ -307,11 +303,6 @@ public class SampleDataCLITest {
         public boolean isSmelly() {
             return smelly;
         }
-
-        public Durian toModel() {
-            return new Durian(smelly?45.0f:15.0f);
-        }
-
         // no behavior
     }
 
