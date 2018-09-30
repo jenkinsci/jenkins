@@ -25,6 +25,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.AbstractItem;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -40,8 +42,8 @@ public class GetJobCommand extends CLICommand {
         return Messages.GetJobCommand_ShortDescription();
     }
 
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         job.writeConfigDotXml(stdout);
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

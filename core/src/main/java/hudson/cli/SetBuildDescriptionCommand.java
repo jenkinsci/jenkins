@@ -3,11 +3,12 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
-
-import java.io.Serializable;
-
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
+
+import java.io.Serializable;
 
 @Extension
 public class SetBuildDescriptionCommand extends CLICommand implements Serializable {
@@ -15,7 +16,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
     @Override
     public String getShortDescription() {
         return Messages.SetBuildDescriptionCommand_ShortDescription();
-     }
+    }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
     public transient Job<?,?> job;
@@ -26,20 +27,21 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
     @Argument(metaVar="DESCRIPTION",required=true,usage="Description to be set. '=' to read from stdin.", index=2)
     public String description;
 
-    protected int run() throws Exception {
-    	Run run = job.getBuildByNumber(number);
-        if (run == null)
-            throw new IllegalArgumentException("No such build #"+number);
+    protected CLIReturnCode execute() throws Exception {
+        Run run = job.getBuildByNumber(number);
+        if (run == null) {
+            throw new IllegalArgumentException("No such build #" + number);
+        }
 
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {
-        	description = IOUtils.toString(stdin);
+            description = IOUtils.toString(stdin);
         }
         
         run.setDescription(description);
         
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
     
 }

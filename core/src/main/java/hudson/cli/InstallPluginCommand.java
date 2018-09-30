@@ -27,22 +27,23 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.PluginManager;
-import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
 import hudson.util.EditDistance;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.
@@ -72,10 +73,10 @@ public class InstallPluginCommand extends CLICommand {
     @Option(name="-deploy",usage="Deploy plugins right away without postponing them until the reboot.")
     public boolean dynamicLoad;
 
-    protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
-        h.checkPermission(PluginManager.UPLOAD_PLUGINS);
-        PluginManager pm = h.getPluginManager();
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(PluginManager.UPLOAD_PLUGINS);
+        PluginManager pm = jenkins.getPluginManager();
 
         if (sources.size() > 1 && name != null) {
             throw new IllegalArgumentException("-name is incompatible with multiple sources");
@@ -96,14 +97,15 @@ public class InstallPluginCommand extends CLICommand {
             }
 
             // is this a file?
-            if (channel!=null) {
+            if (channel != null) {
                 FilePath f = new FilePath(channel, source);
                 if (f.exists()) {
                     stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
                     String n = name != null ? name : f.getBaseName();
                     f.copyTo(getTargetFilePath(n));
-                    if (dynamicLoad)
+                    if (dynamicLoad) {
                         pm.dynamicLoad(getTargetFile(n));
+                    }
                     continue;
                 }
             }
@@ -125,19 +127,20 @@ public class InstallPluginCommand extends CLICommand {
                     }
                 }
                 getTargetFilePath(n).copyFrom(u);
-                if (dynamicLoad)
+                if (dynamicLoad) {
                     pm.dynamicLoad(getTargetFile(n));
+                }
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
             }
 
             // is this a plugin the update center?
-            UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
-            if (p!=null) {
+            UpdateSite.Plugin p = jenkins.getUpdateCenter().getPlugin(source);
+            if (p != null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
                 Throwable e = p.deploy(dynamicLoad).get().getError();
-                if (e!=null) {
+                if (e != null) {
                     AbortException myException = new AbortException("Failed to install plugin " + source);
                     myException.initCause(e);
                     throw myException;
@@ -149,27 +152,29 @@ public class InstallPluginCommand extends CLICommand {
 
             if (!source.contains(".") && !source.contains(":") && !source.contains("/") && !source.contains("\\")) {
                 // looks like a short plugin name. Why did we fail to find it in the update center?
-                if (h.getUpdateCenter().getSites().isEmpty()) {
+                if (jenkins.getUpdateCenter().getSites().isEmpty()) {
                     stdout.println(Messages.InstallPluginCommand_NoUpdateCenterDefined());
                 } else {
-                    Set<String> candidates = new HashSet<String>();
-                    for (UpdateSite s : h.getUpdateCenter().getSites()) {
+                    Set<String> candidates = new HashSet<>();
+                    for (UpdateSite s : jenkins.getUpdateCenter().getSites()) {
                         Data dt = s.getData();
-                        if (dt==null)
+                        if (dt == null) {
                             stdout.println(Messages.InstallPluginCommand_NoUpdateDataRetrieved(s.getUrl()));
-                        else
+                        } else {
                             candidates.addAll(dt.plugins.keySet());
+                        }
                     }
-                    stdout.println(Messages.InstallPluginCommand_DidYouMean(source,EditDistance.findNearest(source,candidates)));
+                    stdout.println(Messages.InstallPluginCommand_DidYouMean(source, EditDistance.findNearest(source, candidates)));
                 }
             }
 
             throw new AbortException("Error occurred, see previous output.");
         }
 
-        if (restart)
-            h.safeRestart();
-        return 0; // all success
+        if (restart) {
+            jenkins.safeRestart();
+        }
+        return CLIReturnCodeStandard.OK;
     }
 
     private static FilePath getTargetFilePath(String name) {
@@ -177,6 +182,6 @@ public class InstallPluginCommand extends CLICommand {
     }
 
     private static File getTargetFile(String name) {
-        return new File(Jenkins.getActiveInstance().getPluginManager().rootDir,name+".jpi");
+        return new File(Jenkins.get().getPluginManager().rootDir,name + ".jpi");
     }
 }

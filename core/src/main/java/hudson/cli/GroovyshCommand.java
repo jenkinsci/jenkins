@@ -23,26 +23,27 @@
  */
 package hudson.cli;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
-import hudson.remoting.ChannelClosedException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import hudson.Extension;
+import hudson.remoting.ChannelClosedException;
+import jenkins.cli.CLIReturnCode;
+import jenkins.model.Jenkins;
+import jline.TerminalFactory;
+import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
+import org.kohsuke.args4j.Argument;
 
-import java.util.List;
-import java.io.PrintStream;
-import java.io.InputStream;
 import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-
-import jline.UnsupportedTerminal;
-import jline.TerminalFactory;
-import org.kohsuke.args4j.Argument;
+import java.util.List;
 
 /**
  * Executes Groovy shell.
@@ -59,9 +60,9 @@ public class GroovyshCommand extends CLICommand {
     @Argument(metaVar="ARGS") public List<String> args = new ArrayList<String>();
 
     @Override
-    protected int run() {
+    protected CLIReturnCode execute() {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Jenkins.getActiveInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
@@ -76,27 +77,31 @@ public class GroovyshCommand extends CLICommand {
         }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
-        return shell.run(commandLine.toString());
+        //TODO the return code could be inside the reserved range
+        int shellResultCode = shell.run(commandLine.toString());
+        return new ShellResultAsReturnCode(shellResultCode);
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
+        
+        Jenkins jenkins = Jenkins.get();
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", Jenkins.getActiveInstance()); // backward compatibility
-        binding.setProperty("jenkins", Jenkins.getActiveInstance());
+        binding.setProperty("hudson", jenkins); // backward compatibility
+        binding.setProperty("jenkins", jenkins);
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Jenkins.getActiveInstance().pluginManager.uberClassLoader;
+        final ClassLoader cl = jenkins.pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert(args.length == 1);
                 assert(args[0] instanceof Shell);
@@ -119,7 +124,7 @@ public class GroovyshCommand extends CLICommand {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) throws ChannelClosedException {
                 if (args.length == 1 && args[0] instanceof ChannelClosedException) {
                     throw (ChannelClosedException)args[0];
@@ -132,4 +137,16 @@ public class GroovyshCommand extends CLICommand {
         return shell;
     }
 
+    private static class ShellResultAsReturnCode implements CLIReturnCode {
+        private int shellReturnCode;
+
+        private ShellResultAsReturnCode(int shellReturnCode){
+            this.shellReturnCode = shellReturnCode;
+        }
+
+        @Override
+        public int getCode() {
+            return shellReturnCode;
+        }
+    }
 }

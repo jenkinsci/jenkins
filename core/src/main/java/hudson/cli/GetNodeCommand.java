@@ -26,12 +26,12 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Node;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 import java.io.IOException;
-
-import jenkins.model.Jenkins;
-
-import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza
@@ -45,17 +45,15 @@ public class GetNodeCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.GetNodeCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws IOException {
-
+    protected CLIReturnCode execute() throws IOException {
         node.checkPermission(Computer.EXTENDED_READ);
 
         Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

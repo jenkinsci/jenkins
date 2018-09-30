@@ -24,6 +24,8 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -41,14 +43,14 @@ public class WhoAmICommand extends CLICommand implements UnprotectedCLICommand {
         return Messages.WhoAmICommand_ShortDescription();
     }
 
-    protected int run() {
+    protected CLIReturnCode execute() {
         Authentication a = Jenkins.getAuthentication();
         stdout.println("Authenticated as: "+a.getName());
         stdout.println("Authorities:");
         for (GrantedAuthority ga : a.getAuthorities()) {
             stdout.println("  "+ga.getAuthority());
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }
 

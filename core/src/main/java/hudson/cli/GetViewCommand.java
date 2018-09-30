@@ -25,7 +25,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.View;
-
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -40,16 +41,14 @@ public class GetViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.GetViewCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-
+    protected CLIReturnCode execute() throws Exception {
         view.checkPermission(View.READ);
         view.writeXml(stdout);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

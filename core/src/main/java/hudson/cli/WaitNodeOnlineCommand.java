@@ -25,6 +25,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Node;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -44,8 +46,8 @@ public class WaitNodeOnlineCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         node.toComputer().waitUntilOnline();
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

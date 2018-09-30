@@ -24,19 +24,20 @@
 
 package hudson.cli;
 
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import jenkins.cli.CLIReturnCodeStandard;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 public class SetBuildDisplayNameCommandTest {
 
@@ -59,7 +60,7 @@ public class SetBuildDisplayNameCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Build #42 does not exist"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
     }
 
     @Test public void setDescriptionSuccessfully() throws Exception {

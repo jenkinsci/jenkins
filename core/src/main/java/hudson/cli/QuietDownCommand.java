@@ -25,6 +25,8 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Option;
 
@@ -53,8 +55,8 @@ public class QuietDownCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
-        Jenkins.getActiveInstance().doQuietDown(block, timeout);
-        return 0;
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins.get().doQuietDown(block, timeout);
+        return CLIReturnCodeStandard.OK;
     }
 }

@@ -25,6 +25,8 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
@@ -50,34 +52,34 @@ public class HelpCommand extends CLICommand implements UnprotectedCLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
-        if (!Jenkins.getActiveInstance().hasPermission(Jenkins.READ)) {
+    protected CLIReturnCode execute() throws Exception {
+        if (!Jenkins.get().hasPermission(Jenkins.READ)) {
             throw new AccessDeniedException("You must authenticate to access this Jenkins.\n"
                     + CLI.usage());
         }
 
-        if (command != null)
+        if (command != null) {
             return showCommandDetails();
+        }
 
-        showAllCommands();
-
-        return 0;
+        return showAllCommands();
     }
 
-    private int showAllCommands() {
+    private CLIReturnCode showAllCommands() {
         Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
-        for (CLICommand c : CLICommand.all())
-            commands.put(c.getName(),c);
+        for (CLICommand c : CLICommand.all()) {
+            commands.put(c.getName(), c);
+        }
 
         for (CLICommand c : commands.values()) {
             stderr.println("  "+c.getName());
             stderr.println("    "+c.getShortDescription());
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
-    private int showCommandDetails() throws Exception {
+    private CLIReturnCode showCommandDetails() throws Exception {
         CLICommand command = CLICommand.clone(this.command);
         if (command == null) {
             showAllCommands();
@@ -86,6 +88,6 @@ public class HelpCommand extends CLICommand implements UnprotectedCLICommand {
 
         command.printUsage(stderr, command.getCmdLineParser());
         
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

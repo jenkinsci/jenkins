@@ -24,13 +24,11 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +36,12 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CopyJobCommandTest {
 
@@ -76,11 +80,11 @@ public class CopyJobCommandTest {
             grant(Item.CREATE).onItems(d2).to("charlie", "debbie").
             grant(Item.EXTENDED_READ).onItems(p).to("debbie"));
         copyJobCommand.setTransportAuth(User.get("alice").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         copyJobCommand.setTransportAuth(User.get("bob").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));

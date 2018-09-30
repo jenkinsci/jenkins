@@ -28,13 +28,15 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
 
 /**
  * CLI Command, which disconnects nodes.
@@ -49,19 +51,17 @@ public class DisconnectNodeCommand extends CLICommand {
     @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")
     public String cause;
 
-    private static final Logger LOGGER = Logger.getLogger(DisconnectNodeCommand.class.getName());
-
     @Override
     public String getShortDescription() {
         return Messages.DisconnectNodeCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final Set<String> hs = new HashSet<>();
         hs.addAll(nodes);
 
         List<String> names = null;
@@ -88,7 +88,7 @@ public class DisconnectNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                stderr.println(String.format(node_s + ": " + e.getMessage()));
+                stderr.println(node_s + ": " + e.getMessage());
                 errorOccurred = true;
                 continue;
             }
@@ -97,6 +97,6 @@ public class DisconnectNodeCommand extends CLICommand {
         if (errorOccurred) {
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

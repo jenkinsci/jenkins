@@ -25,6 +25,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.AbstractItem;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import javax.xml.transform.Source;
@@ -43,9 +45,9 @@ public class UpdateJobCommand extends CLICommand {
         return Messages.UpdateJobCommand_ShortDescription();
     }
 
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         job.updateByXml((Source)new StreamSource(stdin));
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }
 

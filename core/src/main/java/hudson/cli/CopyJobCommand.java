@@ -23,10 +23,12 @@
  */
 package hudson.cli;
 
-import jenkins.model.Jenkins;
-import hudson.model.TopLevelItem;
 import hudson.Extension;
 import hudson.model.Item;
+import hudson.model.TopLevelItem;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
@@ -49,8 +51,8 @@ public class CopyJobCommand extends CLICommand {
     @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1,required=true)
     public String dst;
 
-    protected int run() throws Exception {
-        Jenkins jenkins = Jenkins.getActiveInstance();
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
 
         if (jenkins.getItemByFullName(dst)!=null) {
             throw new IllegalStateException("Job '"+dst+"' already exists");
@@ -74,7 +76,7 @@ public class CopyJobCommand extends CLICommand {
         }
 
         ig.copy(src,dst).save();
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }
 

@@ -26,14 +26,15 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.cli.handlers.ViewOptionHandler;
-import hudson.model.ViewGroup;
 import hudson.model.View;
-
+import hudson.model.ViewGroup;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
 
 /**
  * @author ogondza, pjanouse
@@ -47,17 +48,15 @@ public class DeleteViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.DeleteViewCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-
+    protected CLIReturnCode execute() throws Exception {
         boolean errorOccurred = false;
 
         // Remove duplicates
-        final HashSet<String> hs = new HashSet<String>();
+        final Set<String> hs = new HashSet<>();
         hs.addAll(views);
 
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
@@ -87,16 +86,14 @@ public class DeleteViewCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(view_s + ": " + e.getMessage());
-                stderr.println(errorMsg);
+                stderr.println(view_s + ": " + e.getMessage());
                 errorOccurred = true;
-                continue;
             }
         }
 
         if (errorOccurred) {
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

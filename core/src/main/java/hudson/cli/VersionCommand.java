@@ -24,6 +24,8 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 
 /**
@@ -38,9 +40,9 @@ public class VersionCommand extends CLICommand {
         return Messages.VersionCommand_ShortDescription();
     }
 
-    protected int run() {
+    protected CLIReturnCode execute() {
         // CLICommand.main checks Hudson.READ permission.. no other check needed.
         stdout.println(Jenkins.VERSION);
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

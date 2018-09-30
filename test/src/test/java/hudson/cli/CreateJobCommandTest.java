@@ -24,20 +24,23 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import hudson.model.Item;
 import hudson.model.User;
-import java.io.ByteArrayInputStream;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+
+import java.io.ByteArrayInputStream;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 public class CreateJobCommandTest {
 
@@ -54,7 +57,7 @@ public class CreateJobCommandTest {
             grant(Item.READ).onItems(d).toAuthenticated(). // including alice
             grant(Item.CREATE).onItems(d).to("bob"));
         cmd.setTransportAuth(User.get("alice").impersonate());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(6));
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         cmd.setTransportAuth(User.get("bob").impersonate());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));

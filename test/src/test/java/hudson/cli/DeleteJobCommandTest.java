@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.model.Job;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,7 +63,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Job/Delete permission"));
     }
@@ -75,7 +76,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -98,7 +99,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
@@ -128,7 +129,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aProject1", "aProject2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -147,7 +148,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1","never_created", "aProject2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -166,7 +167,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -185,7 +186,7 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such job 'never_created1'"));
         assertThat(result.stderr(), containsString("never_created2: No such job 'never_created2'"));

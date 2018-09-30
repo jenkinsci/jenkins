@@ -27,6 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Result;
 import hudson.model.Run;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -47,10 +49,10 @@ public class SetBuildResultCommand extends CommandDuringBuild {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         Run r = getCurrentlyBuilding();
         r.checkPermission(Run.UPDATE);
         r.setResult(result);
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

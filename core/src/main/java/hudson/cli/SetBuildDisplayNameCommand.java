@@ -3,6 +3,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 
@@ -27,7 +29,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
     public String displayName;
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         Run<?, ?> run = job.getBuildByNumber(number);
         if (run == null) {
             throw new IllegalArgumentException("Build #" + number + " does not exist");
@@ -40,6 +42,6 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
 
         run.setDisplayName(displayName);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

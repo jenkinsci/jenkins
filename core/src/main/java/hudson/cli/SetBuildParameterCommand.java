@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import java.util.Collections;
@@ -32,7 +34,7 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         Run r = getCurrentlyBuilding();
         r.checkPermission(Run.UPDATE);
 
@@ -45,6 +47,6 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
             r.addAction(new ParametersAction(p));
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

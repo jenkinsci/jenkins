@@ -32,6 +32,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.QueueTest;
 import hudson.util.OneShotEvent;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,7 +77,7 @@ public class QuietDownCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Administer permission"));
     }
@@ -122,7 +123,7 @@ public class QuietDownCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout");
-        assertThat(result, failedWith(2));
+        assertThat(result, failedWith(CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Option \"-timeout\" takes an operand"));
     }
