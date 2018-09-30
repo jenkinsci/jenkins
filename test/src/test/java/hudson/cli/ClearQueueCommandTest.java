@@ -30,6 +30,7 @@ package hudson.cli;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,7 +60,7 @@ public class ClearQueueCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ).invoke();
 
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
     }

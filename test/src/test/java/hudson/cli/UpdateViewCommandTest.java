@@ -24,6 +24,16 @@
 
 package hudson.cli;
 
+import hudson.model.ListView;
+import hudson.model.TreeView;
+import hudson.model.View;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -31,16 +41,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-
-import hudson.model.ListView;
-import hudson.model.TreeView;
-import hudson.model.View;
-import jenkins.model.Jenkins;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateViewCommandTest {
 
@@ -63,7 +63,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
     }
@@ -95,7 +95,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
                 ;
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED.getCode()));
         assertThat(result.stderr(), containsString("Expecting view type: "+ tv.getClass()
                 + " but got: class hudson.model.ListView instead."));
     }
@@ -128,7 +128,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("not_created")
         ;
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No view named not_created inside view Jenkins"));
     }

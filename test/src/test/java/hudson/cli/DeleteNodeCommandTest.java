@@ -29,13 +29,16 @@
 package hudson.cli;
 
 import hudson.model.Computer;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
@@ -60,7 +63,7 @@ public class DeleteNodeCommandTest {
                 .invokeWithArgs("aNode")
         ;
 
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Delete permission"));
     }
@@ -85,7 +88,7 @@ public class DeleteNodeCommandTest {
                 .invokeWithArgs("never_created")
         ;
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such node 'never_created'"));
     }
@@ -115,7 +118,7 @@ public class DeleteNodeCommandTest {
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aNode1", "aNode2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -134,7 +137,7 @@ public class DeleteNodeCommandTest {
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
                 .invokeWithArgs("aNode1", "never_created", "aNode2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -153,7 +156,7 @@ public class DeleteNodeCommandTest {
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "never_created");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -172,7 +175,7 @@ public class DeleteNodeCommandTest {
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
                 .invokeWithArgs("aNode1", "never_created1", "never_created2", "aNode2");
 
-        assertThat(result, failedWith(5));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such node 'never_created1'"));
         assertThat(result.stderr(), containsString("never_created2: No such node 'never_created2'"));

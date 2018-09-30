@@ -23,9 +23,11 @@
  */
 package hudson.cli;
 
-import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
@@ -44,18 +46,18 @@ public class CreateJobCommand extends CLICommand {
     @Argument(metaVar="NAME",usage="Name of the job to create",required=true)
     public String name;
 
-    protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
 
-        if (h.getItemByFullName(name)!=null) {
+        if (jenkins.getItemByFullName(name)!=null) {
             throw new IllegalStateException("Job '"+name+"' already exists");
         }
 
-        ModifiableTopLevelItemGroup ig = h;
+        ModifiableTopLevelItemGroup ig = jenkins;
         int i = name.lastIndexOf('/');
         if (i > 0) {
             String group = name.substring(0, i);
-            Item item = h.getItemByFullName(group);
+            Item item = jenkins.getItemByFullName(group);
             if (item == null) {
                 throw new IllegalArgumentException("Unknown ItemGroup " + group);
             }
@@ -70,7 +72,7 @@ public class CreateJobCommand extends CLICommand {
 
         Jenkins.checkGoodName(name);
         ig.createProjectFromXML(name, stdin);
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }
 

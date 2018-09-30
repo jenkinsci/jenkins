@@ -27,6 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -56,7 +58,7 @@ public class EnablePluginCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         PluginManager manager = jenkins.getPluginManager();
@@ -67,7 +69,7 @@ public class EnablePluginCommand extends CLICommand {
         if (restart && enabledAnyPlugins) {
             jenkins.safeRestart();
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
     private boolean enablePlugin(PluginManager manager, String shortName) throws IOException {

@@ -23,12 +23,13 @@
  */
 package hudson.cli;
 
-import javax.xml.transform.stream.StreamSource;
-
 import hudson.Extension;
 import hudson.model.View;
-
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
+
+import javax.xml.transform.stream.StreamSource;
 
 /**
  * @author ogondza
@@ -42,14 +43,12 @@ public class UpdateViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.UpdateViewCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-
+    protected CLIReturnCode execute() throws Exception {
         view.updateByXml(new StreamSource(stdin));
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

@@ -23,16 +23,17 @@
  */
 package hudson.cli;
 
-import java.util.Collection;
-
+import hudson.Extension;
 import hudson.model.Item;
-import hudson.model.Items;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.Extension;
-import jenkins.model.ModifiableTopLevelItemGroup;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
+
+import java.util.Collection;
 
 /**
  * Lists all jobs (in a specific view).
@@ -49,20 +50,20 @@ public class ListJobsCommand extends CLICommand {
     @Argument(metaVar="NAME",usage="Name of the view",required=false)
     public String name;
 
-    protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
         final Collection<TopLevelItem> jobs;
 
         // If name is given retrieve jobs for the given view.
         if (name != null) {
-            View view = h.getView(name);
+            View view = jenkins.getView(name);
 
             if (view != null) {
                 jobs = view.getAllItems();
             }
             // If no view was found, try with an item group.
             else {
-                final Item item = h.getItemByFullName(name);
+                final Item item = jenkins.getItemByFullName(name);
 
                 // If item group was found use it's jobs.
                 if (item instanceof ModifiableTopLevelItemGroup) {
@@ -76,7 +77,7 @@ public class ListJobsCommand extends CLICommand {
         }
         // Fallback to listing all jobs.
         else {
-            jobs = h.getItems();
+            jobs = jenkins.getItems();
         }
 
         // Print all jobs.
@@ -84,6 +85,6 @@ public class ListJobsCommand extends CLICommand {
             stdout.println(item.getName());
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

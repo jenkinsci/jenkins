@@ -29,27 +29,23 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Issue;
-
-import java.io.IOException;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
@@ -77,7 +73,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -106,7 +102,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("never_created");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
@@ -119,7 +115,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(4));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Permalink lastBuild produced no build"));
     }
@@ -132,7 +128,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
     }
@@ -145,7 +141,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1a");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\""));
 
@@ -156,7 +152,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1a");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\". Did you mean \"lastBuild\"?"));
     }
@@ -330,7 +326,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
     }

@@ -23,43 +23,46 @@
  */
 package hudson.cli;
 
+import com.google.common.base.Preconditions;
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.ParametersAction;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.ParameterDefinition;
-import hudson.Extension;
-import hudson.AbortException;
-import hudson.model.Queue;
 import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-
-import java.nio.file.NoSuchFileException;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.triggers.SCMTriggerItem;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-
-import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
-import jenkins.triggers.SCMTriggerItem;
+import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Builds a job, and optionally waits until its completion.
@@ -99,14 +102,15 @@ public class BuildCommand extends CLICommand {
 
     protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
 
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         job.checkPermission(Item.BUILD);
 
         ParametersAction a = null;
         if (!parameters.isEmpty()) {
             ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
-            if (pdp==null)
-                throw new IllegalStateException(job.getFullDisplayName()+" is not parameterized but the -p option was specified.");
+            if (pdp==null) {
+                throw new IllegalStateException(job.getFullDisplayName() + " is not parameterized but the -p option was specified.");
+            }
 
             //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -129,8 +133,9 @@ public class BuildCommand extends CLICommand {
 
             // handle missing parameters by adding as default values ISSUE JENKINS-7162
             for(ParameterDefinition pd :  pdp.getParameterDefinitions()) {
-                if (parameters.containsKey(pd.getName()))
+                if (parameters.containsKey(pd.getName())) {
                     continue;
+                }
 
                 // not passed in use default
                 ParameterValue defaultValue = pd.getDefaultParameterValue();
@@ -145,14 +150,16 @@ public class BuildCommand extends CLICommand {
 
         if (checkSCM) {
             SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
-            if (item == null)
-                throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
+            if (item == null) {
+                throw new AbortException(job.getFullDisplayName() + " has no SCM trigger, but checkSCM was specified");
+            }
             // preemptively check for a polling veto
             if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
-                return 0;
+                return CLIReturnCodeStandard.OK;
             }
-            if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges())
-                return 0;
+            if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges()) {
+                return CLIReturnCodeStandard.OK;
+            }
         }
 
         if (!job.isBuildable()) {
@@ -173,7 +180,7 @@ public class BuildCommand extends CLICommand {
                 throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
             }
             Run<?,?> b = f.waitForStart();    // wait for the start
-            stdout.println("Started "+b.getFullDisplayName());
+            stdout.println("Started " + b.getFullDisplayName());
             stdout.flush();
 
             if (sync || follow) {
@@ -184,7 +191,7 @@ public class BuildCommand extends CLICommand {
                         // exception on a slow/busy machine, if it takes
                         // longish to create the log file
                         int retryInterval = 100;
-                        for (int i=0;i<=retryCnt;) {
+                        for (int i = 0; i <= retryCnt; ) {
                             try {
                                 b.writeWholeLogTo(stdout);
                                 break;
@@ -201,11 +208,14 @@ public class BuildCommand extends CLICommand {
                         }
                     }
                     f.get();    // wait for the completion
-                    stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
-                    return b.getResult().ordinal;
+
+                    Result buildResult = Preconditions.checkNotNull(b.getResult());
+                    stdout.println("Completed " + b.getFullDisplayName() + " : " + buildResult);
+                    //TODO the return code could be inside the reserved range
+                    return new JobResultAsReturnCode(buildResult);
                 } catch (InterruptedException e) {
                     if (follow) {
-                        return 125;
+                        return BuildCommandReturnCode.COMMAND_INTERRUPTED_BUT_NOT_BACKGROUND_TASK;
                     } else {
                         // if the CLI is aborted, try to abort the build as well
                         f.cancel(true);
@@ -217,7 +227,7 @@ public class BuildCommand extends CLICommand {
             }
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
     @Override
@@ -271,6 +281,34 @@ public class BuildCommand extends CLICommand {
         @Override
         public int hashCode() {
             return 7;
+        }
+    }
+
+    private enum BuildCommandReturnCode implements CLIReturnCode {
+        COMMAND_INTERRUPTED_BUT_NOT_BACKGROUND_TASK(125);
+
+        private final int code;
+
+        BuildCommandReturnCode(int code){
+            this.code = code;
+        }
+        
+        @Override
+        public int getCode() {
+            return code;
+        }
+    }
+
+    private static class JobResultAsReturnCode implements CLIReturnCode {
+        private Result result;
+
+        private JobResultAsReturnCode(@Nonnull Result result){
+            this.result = result;
+        }
+
+        @Override
+        public int getCode() {
+            return result.ordinal;
         }
     }
 }

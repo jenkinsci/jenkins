@@ -31,6 +31,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,7 +66,7 @@ public class DeleteBuildsCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aProject", "1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -76,7 +77,7 @@ public class DeleteBuildsCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("aProject", "1");
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Run/Delete permission"));
     }
@@ -85,7 +86,7 @@ public class DeleteBuildsCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
                 .invokeWithArgs("never_created", "1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
@@ -97,7 +98,7 @@ public class DeleteBuildsCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ, Run.DELETE)
                 .invokeWithArgs("", "1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job ''; perhaps you meant 'aProject'?"));
     }

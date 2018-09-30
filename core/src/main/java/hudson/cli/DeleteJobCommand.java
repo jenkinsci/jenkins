@@ -26,12 +26,14 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
-import java.util.List;
 import java.util.HashSet;
-import java.util.logging.Logger;
+import java.util.List;
+import java.util.Set;
 
 /**
  * CLI command, which deletes a job or multiple jobs.
@@ -46,17 +48,15 @@ public class DeleteJobCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.DeleteJobCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-
+    protected CLIReturnCode execute() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final Set<String> hs = new HashSet<>();
         hs.addAll(jobs);
 
         for (String job_s: hs) {
@@ -76,16 +76,14 @@ public class DeleteJobCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(job_s + ": " + e.getMessage());
-                stderr.println(errorMsg);
+                stderr.println(job_s + ": " + e.getMessage());
                 errorOccurred = true;
-                continue;
             }
         }
 
         if (errorOccurred) {
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

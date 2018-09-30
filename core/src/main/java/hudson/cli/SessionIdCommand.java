@@ -1,6 +1,8 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 
 /**
@@ -16,9 +18,9 @@ public class SessionIdCommand extends CLICommand {
         return Messages.SessionIdCommand_ShortDescription();
     }
 
-    protected int run() {
+    protected CLIReturnCode execute() {
         stdout.println(Jenkins.SESSION_HASH);
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }
 

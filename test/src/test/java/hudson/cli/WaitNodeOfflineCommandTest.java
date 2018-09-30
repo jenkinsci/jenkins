@@ -29,6 +29,7 @@
 package hudson.cli;
 
 import hudson.slaves.DumbSlave;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,7 +66,7 @@ public class WaitNodeOfflineCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("never_created");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such node 'never_created'"));
     }

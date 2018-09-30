@@ -1,6 +1,9 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 
@@ -28,7 +31,7 @@ public class LogoutCommand extends CLICommand implements UnprotectedCLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
 
         Authentication auth = store.get();
@@ -37,6 +40,6 @@ public class LogoutCommand extends CLICommand implements UnprotectedCLICommand {
 
         SecurityListener.fireLoggedOut(auth.getName());
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

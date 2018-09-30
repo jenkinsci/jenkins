@@ -23,17 +23,19 @@
  */
 package hudson.cli;
 
-import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import hudson.Extension;
 import hudson.cli.util.ScriptLoader;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Run;
-import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,23 +61,24 @@ public class GroovyCommand extends CLICommand {
      * Remaining arguments.
      */
     @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
-    public List<String> remaining = new ArrayList<String>();
+    public List<String> remaining = new ArrayList<>();
 
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
-        Jenkins.getActiveInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
 
         Binding binding = new Binding();
-        binding.setProperty("out",new PrintWriter(stdout,true));
-        binding.setProperty("stdin",stdin);
-        binding.setProperty("stdout",stdout);
-        binding.setProperty("stderr",stderr);
-        binding.setProperty("channel",channel);
+        binding.setProperty("out", new PrintWriter(stdout,true));
+        binding.setProperty("stdin", stdin);
+        binding.setProperty("stdout", stdout);
+        binding.setProperty("stderr", stderr);
+        binding.setProperty("channel", channel);
 
         if (channel != null) {
             String j = getClientEnvironmentVariable("JOB_NAME");
             if (j != null) {
-                Item job = Jenkins.getActiveInstance().getItemByFullName(j);
+                Item job = jenkins.getItemByFullName(j);
                 binding.setProperty("currentJob", job);
                 String b = getClientEnvironmentVariable("BUILD_NUMBER");
                 if (b != null && job instanceof AbstractProject) {
@@ -85,19 +88,21 @@ public class GroovyCommand extends CLICommand {
             }
         }
 
-        GroovyShell groovy = new GroovyShell(Jenkins.getActiveInstance().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
-        return 0;
+        GroovyShell groovy = new GroovyShell(jenkins.getPluginManager().uberClassLoader, binding);
+        groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[remaining.size()]));
+        return CLIReturnCodeStandard.OK;
     }
 
     /**
      * Loads the script from the argument.
      */
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
-        if(script==null)
+        if (script==null) {
             throw new CmdLineException(null, "No script is specified");
-        if (script.equals("="))
+        }
+        if (script.equals("=")) {
             return IOUtils.toString(stdin);
+        }
 
         return checkChannel().call(new ScriptLoader(script));
     }

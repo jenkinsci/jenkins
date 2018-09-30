@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,8 +37,12 @@ import java.io.IOException;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class EnablePluginCommandTest {
 
@@ -102,7 +107,7 @@ public class EnablePluginCommandTest {
     @Test
     @Issue("JENKINS-52822")
     public void enableInvalidPluginFails() {
-        assertThat(enablePlugins("foobar"), failedWith(3));
+        assertThat(enablePlugins("foobar"), failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertJenkinsNotInQuietMode();
     }
 

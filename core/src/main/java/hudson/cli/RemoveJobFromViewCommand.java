@@ -23,15 +23,15 @@
  */
 package hudson.cli;
 
-import java.util.List;
-
 import hudson.Extension;
-import hudson.model.TopLevelItem;
 import hudson.model.DirectlyModifiableView;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
-
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
+
+import java.util.List;
 
 /**
  * @author ogondza
@@ -52,16 +52,17 @@ public class RemoveJobFromViewCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         view.checkPermission(View.CONFIGURE);
 
-        if (!(view instanceof DirectlyModifiableView))
+        if (!(view instanceof DirectlyModifiableView)) {
             throw new IllegalStateException("'" + view.getDisplayName() + "' view can not be modified directly");
+        }
 
         for (TopLevelItem job: jobs) {
             ((DirectlyModifiableView) view).remove(job);
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

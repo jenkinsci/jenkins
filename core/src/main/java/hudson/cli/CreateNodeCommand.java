@@ -29,10 +29,10 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.model.User;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza
@@ -51,9 +51,8 @@ public class CreateNodeCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
-
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+    protected CLIReturnCode execute() throws Exception {
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Computer.CREATE);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);
@@ -75,7 +74,7 @@ public class CreateNodeCommand extends CLICommand {
 
         jenkins.addNode(newNode);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
 }

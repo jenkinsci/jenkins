@@ -24,22 +24,23 @@
 
 package hudson.cli;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 public class CreateNodeCommandTest {
 
@@ -62,7 +63,7 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Create permission"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
     }
 
     @Test public void createNode() throws Exception {
@@ -131,7 +132,7 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Node 'SlaveFromXML' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(4));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
@@ -146,6 +147,6 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Node 'ExistingSlave' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(4));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
     }
 }

@@ -24,14 +24,14 @@
 
 package hudson.cli;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import hudson.Extension;
 import hudson.model.Node;
-
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 /**
  * @author ogondza
@@ -45,15 +45,13 @@ public class UpdateNodeCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.UpdateNodeCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws IOException, ServletException {
-
+    protected CLIReturnCode execute() throws IOException, ServletException {
         node.toComputer().updateByXml(stdin);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

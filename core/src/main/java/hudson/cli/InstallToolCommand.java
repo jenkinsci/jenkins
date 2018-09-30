@@ -23,26 +23,27 @@
  */
 package hudson.cli;
 
-import hudson.Extension;
 import hudson.AbortException;
 import hudson.EnvVars;
-import jenkins.model.Jenkins;
+import hudson.Extension;
 import hudson.model.AbstractProject;
-import hudson.model.Run;
 import hudson.model.Executor;
-import hudson.model.Node;
 import hudson.model.Item;
-import hudson.util.EditDistance;
-import hudson.util.StreamTaskListener;
+import hudson.model.Node;
+import hudson.model.Run;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.io.IOException;
-
+import hudson.util.EditDistance;
+import hudson.util.StreamTaskListener;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.Argument;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Performs automatic tool installation on demand.
@@ -63,30 +64,33 @@ public class InstallToolCommand extends CLICommand {
         return Messages.InstallToolCommand_ShortDescription();
     }
 
-    protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
-        h.checkPermission(Jenkins.READ);
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.READ);
 
         // where is this build running?
         BuildIDs id = checkChannel().call(new BuildIDs());
 
-        if (!id.isComplete())
+        if (!id.isComplete()) {
             throw new IllegalStateException("This command can be only invoked from a build executing inside Hudson");
+        }
 
-        AbstractProject p = h.getItemByFullName(id.job, AbstractProject.class);
-        if (p==null)
-            throw new IllegalStateException("No such job found: "+id.job);
+        AbstractProject p = jenkins.getItemByFullName(id.job, AbstractProject.class);
+        if (p == null) {
+            throw new IllegalStateException("No such job found: " + id.job);
+        }
         p.checkPermission(Item.CONFIGURE);
 
-        List<String> toolTypes = new ArrayList<String>();
+        List<String> toolTypes = new ArrayList<>();
         for (ToolDescriptor<?> d : ToolInstallation.all()) {
             toolTypes.add(d.getDisplayName());
             if (d.getDisplayName().equals(toolType)) {
-                List<String> toolNames = new ArrayList<String>();
+                List<String> toolNames = new ArrayList<>();
                 for (ToolInstallation t : d.getInstallations()) {
                     toolNames.add(t.getName());
-                    if (t.getName().equals(toolName))
+                    if (t.getName().equals(toolName)) {
                         return install(t, id, p);
+                    }
                 }
 
                 // didn't find the right tool name
@@ -102,24 +106,26 @@ public class InstallToolCommand extends CLICommand {
     }
 
     private int error(List<String> candidates, String given, String noun) throws AbortException {
-        if (given ==null)
-            throw new IllegalArgumentException("No tool "+ noun +" was specified. Valid values are "+candidates.toString());
-        else
-            throw new IllegalArgumentException("Unrecognized tool "+noun+". Perhaps you meant '"+ EditDistance.findNearest(given,candidates)+"'?");
+        if (given == null) {
+            throw new IllegalArgumentException("No tool " + noun + " was specified. Valid values are " + candidates.toString());
+        } else {
+            throw new IllegalArgumentException("Unrecognized tool " + noun + ". Perhaps you meant '" + EditDistance.findNearest(given, candidates) + "'?");
+        }
     }
 
     /**
      * Performs an installation.
      */
-    private int install(ToolInstallation t, BuildIDs id, AbstractProject p) throws IOException, InterruptedException {
-
+    private CLIReturnCode install(ToolInstallation t, BuildIDs id, AbstractProject p) throws IOException, InterruptedException {
         Run b = p.getBuildByNumber(Integer.parseInt(id.number));
-        if (b==null)
-            throw new IllegalStateException("No such build: "+id.number);
+        if (b == null) {
+            throw new IllegalStateException("No such build: " + id.number);
+        }
 
         Executor exec = b.getExecutor();
-        if (exec==null)
-            throw new IllegalStateException(b.getFullDisplayName()+" is not building");
+        if (exec == null) {
+            throw new IllegalStateException(b.getFullDisplayName() + " is not building");
+        }
 
         Node node = exec.getOwner().getNode();
         if (node == null) {
@@ -128,11 +134,11 @@ public class InstallToolCommand extends CLICommand {
 
         t = t.translate(node, EnvVars.getRemote(checkChannel()), new StreamTaskListener(stderr));
         stdout.println(t.getHome());
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
     private static final class BuildIDs extends MasterToSlaveCallable<BuildIDs, IOException> {
-        String job,number,id;
+        String job, number, id;
 
         public BuildIDs call() throws IOException {
             job = System.getenv("JOB_NAME");

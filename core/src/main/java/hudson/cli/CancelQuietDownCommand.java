@@ -25,9 +25,9 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-
-import java.util.logging.Logger;
 
 /**
  * Cancel previous quiet down Jenkins - preparation for a restart
@@ -37,17 +37,14 @@ import java.util.logging.Logger;
  */
 @Extension
 public class CancelQuietDownCommand extends CLICommand {
-
-    private static final Logger LOGGER = Logger.getLogger(CancelQuietDownCommand.class.getName());
-
     @Override
     public String getShortDescription() {
         return Messages.CancelQuietDownCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-        Jenkins.getActiveInstance().doCancelQuietDown();
-        return 0;
+    protected CLIReturnCode execute() {
+        Jenkins.get().doCancelQuietDown();
+        return CLIReturnCodeStandard.OK;
     }
 }

@@ -26,7 +26,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.Launcher;
-import static hudson.cli.CLICommandInvoker.Matcher.*;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
@@ -34,7 +33,6 @@ import hudson.model.Executor;
 import hudson.model.FileParameterDefinition;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -47,15 +45,9 @@ import hudson.model.TopLevelItem;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import jenkins.cli.CLIReturnCodeStandard;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,6 +58,23 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@link BuildCommand} test.
@@ -195,7 +204,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("the-project");
 
-        assertThat(result, failedWith(4));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
         assertThat(result.stderr(), containsString("ERROR: Cannot build the-project because it is disabled."));
         assertNull("Project should not be built", project.getBuildByNumber(1));
     }
@@ -207,7 +216,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("new-one");
 
-        assertThat(result, failedWith(4));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
         assertThat(result.stderr(), containsString("ERROR: Cannot build new-one because its configuration has not been saved."));
         assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
@@ -250,7 +259,7 @@ public class BuildCommandTest {
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("foo", "-p", "string=value");
-        assertThat(result, failedWith(2));
+        assertThat(result, failedWith(CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No default value for the parameter \'FOO\'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted

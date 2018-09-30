@@ -29,12 +29,14 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-
 import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * CLI Command, which moves the node to the online state.
@@ -53,10 +55,10 @@ public class OnlineNodeCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
-        final HashSet<String> hs = new HashSet<String>(nodes);
+        final Jenkins jenkins = Jenkins.get();
+        final Set<String> hs = new HashSet<>(nodes);
         List<String> names = null;
 
         for (String node_s : hs) {
@@ -79,16 +81,14 @@ public class OnlineNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = node_s + ": " + e.getMessage();
-                stderr.println(errorMsg);
+                stderr.println(node_s + ": " + e.getMessage());
                 errorOccurred = true;
-                continue;
             }
         }
 
         if (errorOccurred){
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

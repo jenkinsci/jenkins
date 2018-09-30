@@ -1,6 +1,10 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.security.ACL;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
@@ -39,17 +43,18 @@ public class LoginCommand extends CLICommand implements UnprotectedCLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
+    protected CLIReturnCode execute() throws Exception {
         Authentication a = Jenkins.getAuthentication();
-        if (a== Jenkins.ANONYMOUS)
+        if (ACL.isAnonymous(a)) {
             throw new CmdLineException("No credentials specified."); // this causes CLI to show the command line options.
+        }
 
         ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
         store.set(a);
 
         SecurityListener.fireLoggedIn(a.getName());
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
 }

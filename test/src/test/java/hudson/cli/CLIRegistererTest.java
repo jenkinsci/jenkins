@@ -1,18 +1,17 @@
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
-import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-
-import jenkins.model.Jenkins;
-import hudson.cli.CLICommandInvoker;
 import hudson.cli.CLICommandInvoker.Result;
-
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CLIRegistererTest {
 
@@ -26,7 +25,7 @@ public class CLIRegistererTest {
         CLICommandInvoker command = new CLICommandInvoker(j, "quiet-down");
 
         Result invocation = command.invokeWithArgs("--username", "foo", "--password", "invalid");
-        assertThat(invocation, failedWith(7));
+        assertThat(invocation, failedWith(CLIReturnCodeStandard.BAD_CREDENTIALS.getCode()));
         assertThat(invocation.stderr(), containsString("ERROR: Bad Credentials. Search the server log for "));
         assertThat("Unauthorized command was executed", Jenkins.getInstance().isQuietingDown(), is(false));
 

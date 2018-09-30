@@ -23,12 +23,13 @@
  */
 package hudson.cli;
 
-import org.kohsuke.args4j.Argument;
-
-import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Failure;
 import hudson.model.View;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza
@@ -47,14 +48,12 @@ public class CreateViewCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
-
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+    protected CLIReturnCode execute() throws Exception {
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(View.CREATE);
 
         View newView;
         try {
-
             newView = View.createViewFromXML(viewName, stdin);
         } catch (Failure ex) {
             throw new IllegalArgumentException("Invalid view name: " + ex.getMessage());
@@ -67,6 +66,6 @@ public class CreateViewCommand extends CLICommand {
 
         jenkins.addView(newView);
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

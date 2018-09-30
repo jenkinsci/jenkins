@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -33,14 +32,12 @@ import hudson.model.Run;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
@@ -70,7 +67,7 @@ public class SetBuildDescriptionCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aProject", "1", "test");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -83,7 +80,7 @@ public class SetBuildDescriptionCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "1", "test");
-        assertThat(result, failedWith(6));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Run/Update permission"));
     }
@@ -118,7 +115,7 @@ public class SetBuildDescriptionCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
                 .invokeWithArgs("never_created");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
@@ -129,7 +126,7 @@ public class SetBuildDescriptionCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
                 .invokeWithArgs("never_created1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created1'; perhaps you meant 'never_created'?"));
     }
@@ -143,7 +140,7 @@ public class SetBuildDescriptionCommandTest {
                 .authorizedTo(Job.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "2", "test");
 
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #2"));
     }

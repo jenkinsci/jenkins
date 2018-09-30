@@ -27,6 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.util.HudsonIsLoading;
 import hudson.util.JenkinsReloadFailed;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.WebApp;
 
@@ -45,8 +47,8 @@ public class ReloadConfigurationCommand extends CLICommand {
     }
 
     @Override
-    protected int run() throws Exception {
-        Jenkins j = Jenkins.getInstance();
+    protected CLIReturnCode execute() throws Exception {
+        Jenkins j = Jenkins.get();
         // Or perhaps simpler to inline the thread body of doReload?
         j.doReload();
         Object app;
@@ -54,7 +56,7 @@ public class ReloadConfigurationCommand extends CLICommand {
             Thread.sleep(100);
         }
         if (app instanceof Jenkins) {
-            return 0;
+            return CLIReturnCodeStandard.OK;
         } else if (app instanceof JenkinsReloadFailed) {
             Throwable t = ((JenkinsReloadFailed) app).cause;
             if (t instanceof Exception) {
@@ -64,7 +66,7 @@ public class ReloadConfigurationCommand extends CLICommand {
             }
         } else {
             stderr.println("Unexpected status " + app);
-            return 1; // could throw JenkinsReloadFailed.cause if it were not deprecated
+            return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED; // could throw JenkinsReloadFailed.cause if it were not deprecated
         }
     }
 

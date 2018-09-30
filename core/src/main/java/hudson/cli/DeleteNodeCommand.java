@@ -26,12 +26,14 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Node;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
 
 /**
  * CLI command, which deletes Jenkins nodes.
@@ -46,17 +48,15 @@ public class DeleteNodeCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.DeleteNodeCommand_ShortDescription();
     }
 
     @Override
-    protected int run() throws Exception {
-
+    protected CLIReturnCode execute() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final Set<String> hs = new HashSet<>();
         hs.addAll(nodes);
 
         for (String node_s : hs) {
@@ -75,8 +75,7 @@ public class DeleteNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(node_s + ": " + e.getMessage());
-                stderr.println(errorMsg);
+                stderr.println(node_s + ": " + e.getMessage());
                 errorOccurred = true;
                 continue;
             }
@@ -85,6 +84,6 @@ public class DeleteNodeCommand extends CLICommand {
         if (errorOccurred) {
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 }

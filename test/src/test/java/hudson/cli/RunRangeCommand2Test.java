@@ -24,24 +24,18 @@
 
 package hudson.cli;
 
-import hudson.Extension;
 import hudson.Functions;
-import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.util.List;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
@@ -49,7 +43,6 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 /**
  * @author pjanouse
@@ -71,7 +64,7 @@ public class RunRangeCommand2Test {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("", "1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job ''"));
     }
@@ -83,7 +76,7 @@ public class RunRangeCommand2Test {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(" ", "1");
-        assertThat(result, failedWith(3));
+        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job ' '"));
     }

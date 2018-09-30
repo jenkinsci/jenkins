@@ -23,13 +23,16 @@
  */
 package hudson.cli;
 
-import java.util.List;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
+
+import java.util.List;
 
 /**
  * Outputs a list of installed plugins.
@@ -46,11 +49,11 @@ public class ListPluginsCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Name of a specific plugin", required = false)
     public String name;
 
-    protected int run() {
-        Jenkins h = Jenkins.getInstance();
-        h.checkPermission(Jenkins.ADMINISTER);
+    protected CLIReturnCode execute() {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         
-        PluginManager pluginManager = h.getPluginManager();
+        PluginManager pluginManager = jenkins.getPluginManager();
 
         if (this.name != null) {
             PluginWrapper plugin = pluginManager.getPlugin(this.name);
@@ -79,7 +82,7 @@ public class ListPluginsCommand extends CLICommand {
             }
         }
 
-        return 0;
+        return CLIReturnCodeStandard.OK;
     }
 
     private void printPlugin(PluginWrapper plugin, int colWidthShortName, int colWidthDisplayName) {
