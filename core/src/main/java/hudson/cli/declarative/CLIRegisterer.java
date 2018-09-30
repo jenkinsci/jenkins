@@ -32,10 +32,12 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import hudson.security.CliAuthenticator;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
-import hudson.security.CliAuthenticator;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -44,8 +46,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.ClassParser;
-import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,11 +62,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import static java.util.logging.Level.SEVERE;
-
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Discover {@link CLIMethod}s and register them as {@link CLICommand} implementations.
@@ -177,21 +179,7 @@ public class CLIRegisterer extends ExtensionFinder {
                          * @return
                          *      Exit code from the CLI command execution
                          *
-                         *      <p>
-                         *      Jenkins standard exit codes from CLI:
-                         *      0 means everything went well.
-                         *      1 means further unspecified exception is thrown while performing the command.
-                         *      2 means CmdLineException is thrown while performing the command.
-                         *      3 means IllegalArgumentException is thrown while performing the command.
-                         *      4 mean IllegalStateException is thrown while performing the command.
-                         *      5 means AbortException is thrown while performing the command.
-                         *      6 means AccessDeniedException is thrown while performing the command.
-                         *      7 means BadCredentialsException is thrown while performing the command.
-                         *      8-15 are reserved for future usage
-                         *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
-                         *
-                         *      <p>
-                         *      Note: For details - see JENKINS-32273
+                         * @see CLIReturnCode
                          */
                         @Override
                         public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
@@ -202,12 +190,14 @@ public class CLIRegisterer extends ExtensionFinder {
                             List<MethodBinder> binders = new ArrayList<MethodBinder>();
 
                             CmdLineParser parser = bindMethod(binders);
+                            SecurityContext sc = null;
+                            Authentication old = null;
                             try {
-                                SecurityContext sc = SecurityContextHolder.getContext();
-                                Authentication old = sc.getAuthentication();
+                                sc = SecurityContextHolder.getContext();
+                                old = sc.getAuthentication();
                                 try {
                                     // authentication
-                                    CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
+                                    CliAuthenticator authenticator = Jenkins.get().getSecurityRealm().createCliAuthenticator(this);
                                     new ClassParser().parse(authenticator, parser);
 
                                     // fill up all the binders
@@ -233,50 +223,57 @@ public class CLIRegisterer extends ExtensionFinder {
                                     if (t instanceof Exception)
                                         throw (Exception) t;
                                     throw e;
-                                } finally {
-                                    sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 printUsage(stderr, parser);
-                                return 2;
+                                return CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode();
                             } catch (IllegalStateException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return 4;
+                                return CLIReturnCodeStandard.ILLEGAL_STATE.getCode();
                             } catch (IllegalArgumentException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return 3;
+                                return CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode();
                             } catch (AbortException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return 5;
+                                return CLIReturnCodeStandard.ABORTED.getCode();
                             } catch (AccessDeniedException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return 6;
+                                return CLIReturnCodeStandard.ACCESS_DENIED.getCode();
                             } catch (BadCredentialsException e) {
                                 // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
                                 // do that to the server log instead
                                 String id = UUID.randomUUID().toString();
                                 LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
-                                return 7;
+                                return CLIReturnCodeStandard.BAD_CREDENTIALS.getCode();
                             } catch (Throwable e) {
                                 final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                                         getName());
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
                                 Functions.printStackTrace(e, stderr);
-                                return 1;
+                                return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED.getCode();
+                            } finally {
+                                if (sc != null) {
+                                    // restore previous one
+                                    sc.setAuthentication(old);
+                                }
                             }
                         }
 
                         protected int run() throws Exception {
+                            throw new UnsupportedOperationException();
+                        }
+
+                        protected CLIReturnCode execute() throws Exception {
                             throw new UnsupportedOperationException();
                         }
                     }));

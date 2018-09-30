@@ -25,13 +25,13 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.args4j.Argument;
 
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.acegisecurity.AccessDeniedException;
-import org.kohsuke.args4j.Argument;
 
 /**
  * Show the list of all commands.
@@ -39,7 +39,7 @@ import org.kohsuke.args4j.Argument;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class HelpCommand extends CLICommand {
+public class HelpCommand extends CLICommand implements UnprotectedCLICommand {
 
     @Argument(metaVar="COMMAND", usage="Name of the command")
     public String command;

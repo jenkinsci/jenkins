@@ -1,11 +1,13 @@
 package hudson.cli;
 
 import hudson.Extension;
-import java.io.PrintStream;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
+
+import java.io.PrintStream;
 
 /**
  * Saves the current credential to allow future commands to run without explicit credential information.
@@ -16,7 +18,7 @@ import org.kohsuke.args4j.CmdLineException;
  */
 @Extension
 @Deprecated
-public class LoginCommand extends CLICommand {
+public class LoginCommand extends CLICommand implements UnprotectedCLICommand {
     @Override
     public String getShortDescription() {
         return Messages.LoginCommand_ShortDescription();

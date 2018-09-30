@@ -27,20 +27,25 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
-import hudson.security.ACL;
-import jenkins.security.SecurityListener;
-import jenkins.util.SystemProperties;
+import hudson.Util;
+import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.OptionHandlerExtension;
-import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelProperty;
+import hudson.security.ACL;
 import hudson.security.CliAuthenticator;
 import hudson.security.SecurityRealm;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeLegacyWrapper;
+import jenkins.cli.CLIReturnCodeStandard;
+import jenkins.cli.UnprotectedCLICommand;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.SecurityListener;
+import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -62,6 +67,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.spi.OptionHandler;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -75,8 +82,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 /**
  * Base class for Hudson CLI.
@@ -209,6 +214,15 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public abstract String getShortDescription();
 
     /**
+     * @deprecated Use {@link #invoke(List, Locale, InputStream, PrintStream, PrintStream)} instead, since TODO
+     */
+    @Deprecated
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        CLIReturnCode returnCode = invoke(args, locale, stdin, stdout, stderr);
+        return returnCode.getCode();
+    }
+
+    /**
      * Entry point to the CLI command.
      * 
      * <p>
@@ -233,23 +247,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @return
      *      Exit code from the CLI command execution
      *
-     *      <p>
-     *      Jenkins standard exit codes from CLI:
-     *      0 means everything went well.
-     *      1 means further unspecified exception is thrown while performing the command.
-     *      2 means CmdLineException is thrown while performing the command.
-     *      3 means IllegalArgumentException is thrown while performing the command.
-     *      4 mean IllegalStateException is thrown while performing the command.
-     *      5 means AbortException is thrown while performing the command.
-     *      6 means AccessDeniedException is thrown while performing the command.
-     *      7 means BadCredentialsException is thrown while performing the command.
-     *      8-15 are reserved for future usage
-     *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
-     *
-     *      <p>
-     *      Note: For details - see JENKINS-32273
+     * @see CLIReturnCode
+     * @since TODO
      */
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public CLIReturnCode invoke(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        Jenkins jenkins = Jenkins.get();
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
@@ -265,77 +267,77 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
 
-            CliAuthenticator authenticator = Jenkins.getActiveInstance().getSecurityRealm().createCliAuthenticator(this);
+            CliAuthenticator authenticator = jenkins.getSecurityRealm().createCliAuthenticator(this);
             sc.setAuthentication(getTransportAuthentication());
             new ClassParser().parse(authenticator,p);
 
-            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+            if (!(this instanceof UnprotectedCLICommand)){
+                jenkins.checkPermission(Jenkins.READ);
+            }
+
             p.parseArgument(args.toArray(new String[args.size()]));
             auth = authenticator.authenticate();
-            if (auth==Jenkins.ANONYMOUS)
+            // isAnonymous requires non null value, but authenticate does not provide contract
+            if (auth == null || ACL.isAnonymous(auth)) {
                 auth = loadStoredAuthentication();
+            }
             sc.setAuthentication(auth); // run the CLI with the right credential
-            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+
+            if (!(this instanceof UnprotectedCLICommand)){
+                jenkins.checkPermission(Jenkins.READ);
+            }
+
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
-            int res = run();
+            CLIReturnCode res = execute();
             LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
                     new Object[] {getName(), args.size(), auth.getName(), res});
             return res;
         } catch (CmdLineException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
-            stderr.println("ERROR: " + e.getMessage());
+            logCLIError(args, auth, e);
             printUsage(stderr, p);
-            return 2;
+            return CLIReturnCodeStandard.WRONG_CMD_PARAMETER;
         } catch (IllegalStateException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
-            stderr.println("ERROR: " + e.getMessage());
-            return 4;
+            logCLIError(args, auth, e);
+            return CLIReturnCodeStandard.ILLEGAL_STATE;
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
-            stderr.println("ERROR: " + e.getMessage());
-            return 3;
+            logCLIError(args, auth, e);
+            return CLIReturnCodeStandard.ILLEGAL_ARGUMENT;
         } catch (AbortException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            // signals an error without stack trace
-            stderr.println("");
-            stderr.println("ERROR: " + e.getMessage());
-            return 5;
+            logCLIError(args, auth, e);
+            return CLIReturnCodeStandard.ABORTED;
         } catch (AccessDeniedException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
-            stderr.println("ERROR: " + e.getMessage());
-            return 6;
+            logCLIError(args, auth, e);
+            return CLIReturnCodeStandard.ACCESS_DENIED;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
             LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
-            return 7;
+            return CLIReturnCodeStandard.BAD_CREDENTIALS;
         } catch (Throwable e) {
             final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                     getName());
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
             Functions.printStackTrace(e, stderr);
-            return 1;
+            return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED;
         } finally {
-            if(sc != null)
-                sc.setAuthentication(old); // restore
+            if (sc != null) {
+                // restore previous one
+                sc.setAuthentication(old);
+            }
         }
+    }
+
+    private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull Exception e){
+        LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+            getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
+        stderr.println();
+        stderr.println("ERROR: " + e.getMessage());
     }
 
     /**
@@ -401,8 +403,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @deprecated Unused.
      */
     @Deprecated
-    protected boolean shouldPerformAuthentication(Authentication auth) {
-        return auth== Jenkins.ANONYMOUS;
+    protected boolean shouldPerformAuthentication(@Nonnull Authentication auth) {
+        return ACL.isAnonymous(auth);
     }
 
     /**
@@ -432,11 +434,23 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * Executes the command, and return the exit code.
+     * @deprecated Use {@link #execute()} instead, since TODO
+     */
+    @Deprecated
+    protected int run() throws Exception {
+        if (Util.isOverridden(CLICommand.class, getClass(), "execute")) {
+            return execute().getCode();
+        } else {
+            throw new AbstractMethodError("you must override at least one of CLICommand.run or CLICommand.execute methods");
+        }
+    }
+
+    /**
+     * Executes the command, and return the exit code. That's the method to implement in the subclass.
      * 
      * <p>
      * This is an internal contract between {@link CLICommand} and its subtype.
-     * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
+     * To execute CLI method from outside, use {@link #invoke(List, Locale, InputStream, PrintStream, PrintStream)}
      *
      * @return
      *      0 to indicate a success, otherwise a custom error code.
@@ -455,8 +469,17 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      If the caller doesn't have sufficient rights for requested action
      * @throws BadCredentialsException
      *      If bad credentials were provided to CLI
+     * @see CLIReturnCode
+     * @since TODO
      */
-    protected abstract int run() throws Exception;
+    protected CLIReturnCode execute() throws Exception {
+        if (Util.isOverridden(CLICommand.class, getClass(), "run")) {
+            int exitCode = run();
+            return new CLIReturnCodeLegacyWrapper(exitCode);
+        } else {
+            throw new AbstractMethodError("you must override at least one of CLICommand.run or CLICommand.execute methods");
+        }
+    }
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
         stderr.print("java -jar jenkins-cli.jar " + getName());

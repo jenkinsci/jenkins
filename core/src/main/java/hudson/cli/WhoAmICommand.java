@@ -24,6 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -34,7 +35,7 @@ import org.acegisecurity.GrantedAuthority;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class WhoAmICommand extends CLICommand {
+public class WhoAmICommand extends CLICommand implements UnprotectedCLICommand {
     @Override
     public String getShortDescription() {
         return Messages.WhoAmICommand_ShortDescription();

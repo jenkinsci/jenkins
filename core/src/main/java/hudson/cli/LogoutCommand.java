@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.UnprotectedCLICommand;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 
@@ -15,7 +16,7 @@ import java.io.PrintStream;
  */
 @Deprecated
 @Extension
-public class LogoutCommand extends CLICommand {
+public class LogoutCommand extends CLICommand implements UnprotectedCLICommand {
     @Override
     public String getShortDescription() {
         return Messages.LogoutCommand_ShortDescription();
