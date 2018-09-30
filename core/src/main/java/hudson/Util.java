@@ -1199,9 +1199,11 @@ public class Util {
     }
 
     /**
-     * Convert null to defaultValue.
+     * Convert {@code null} to a default value.
+     * @since TODO
      */
-    public static <T> T fixNull(@CheckForNull T s, T defaultValue) {
+    @Nonnull
+    public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
         return s != null ? s : defaultValue;
     }
 
