@@ -30,8 +30,6 @@ import hudson.PluginManager;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
 import hudson.util.EditDistance;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.args4j.Argument;

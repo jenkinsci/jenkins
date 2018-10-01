@@ -4,8 +4,6 @@ import hudson.Extension;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import java.util.Collections;

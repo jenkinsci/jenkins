@@ -6,8 +6,6 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Run;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;

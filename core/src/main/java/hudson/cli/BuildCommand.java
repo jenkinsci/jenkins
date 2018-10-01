@@ -44,8 +44,6 @@ import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;

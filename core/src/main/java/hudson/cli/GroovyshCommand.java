@@ -28,7 +28,6 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 import hudson.Extension;
 import hudson.remoting.ChannelClosedException;
-import jenkins.cli.CLIReturnCode;
 import jenkins.model.Jenkins;
 import jline.TerminalFactory;
 import jline.UnsupportedTerminal;

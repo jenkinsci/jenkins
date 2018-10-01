@@ -48,11 +48,9 @@ public class ListJobsCommandTest {
 
     @Before
     public void setUp() {
-
         jenkins = mock(Jenkins.class);
         mockStatic(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(jenkins);
-        when(Jenkins.getActiveInstance()).thenReturn(jenkins);
+        when(Jenkins.get()).thenReturn(jenkins);
         command = mock(ListJobsCommand.class, Mockito.CALLS_REAL_METHODS);
         command.stdout = new PrintStream(stdout);
         command.stderr = new PrintStream(stderr);

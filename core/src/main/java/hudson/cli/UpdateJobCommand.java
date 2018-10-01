@@ -25,8 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.AbstractItem;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import javax.xml.transform.Source;

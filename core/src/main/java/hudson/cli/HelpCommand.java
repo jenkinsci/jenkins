@@ -25,9 +25,6 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
-import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;

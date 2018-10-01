@@ -30,7 +30,6 @@ package hudson.cli;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;

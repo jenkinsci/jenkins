@@ -27,8 +27,6 @@ import hudson.Extension;
 import hudson.model.DirectlyModifiableView;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import java.util.List;

@@ -45,7 +45,6 @@ import hudson.model.TopLevelItem;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
-import jenkins.cli.CLIReturnCodeStandard;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.ClassRule;

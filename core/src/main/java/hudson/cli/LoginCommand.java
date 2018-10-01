@@ -2,9 +2,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.security.ACL;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
-import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;

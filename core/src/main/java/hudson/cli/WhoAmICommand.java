@@ -24,9 +24,6 @@
 package hudson.cli;
 
 import hudson.Extension;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
-import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;

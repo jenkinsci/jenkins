@@ -35,8 +35,6 @@ import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.Argument;

@@ -26,8 +26,6 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;

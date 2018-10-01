@@ -1,7 +1,6 @@
 package hudson.cli;
 
 import hudson.cli.CLICommandInvoker.Result;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;

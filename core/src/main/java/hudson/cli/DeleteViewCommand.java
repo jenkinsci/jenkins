@@ -28,8 +28,6 @@ import hudson.Extension;
 import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.View;
 import hudson.model.ViewGroup;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;

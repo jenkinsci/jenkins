@@ -27,7 +27,6 @@ package hudson.cli;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;

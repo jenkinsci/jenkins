@@ -30,8 +30,6 @@ import hudson.cli.util.ScriptLoader;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Run;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
