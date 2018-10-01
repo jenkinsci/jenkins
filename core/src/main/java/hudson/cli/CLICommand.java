@@ -41,7 +41,6 @@ import hudson.security.SecurityRealm;
 import jenkins.cli.CLIReturnCode;
 import jenkins.cli.CLIReturnCodeLegacyWrapper;
 import jenkins.cli.CLIReturnCodeStandard;
-import jenkins.cli.UnprotectedCLICommand;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.SecurityListener;

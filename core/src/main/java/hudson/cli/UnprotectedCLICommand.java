@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2018, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,11 @@
  */
 package hudson.cli;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-
 /**
- * Report the current granted authorities
+ * Marker interface used by {@link hudson.cli.CLICommand} implementations to indicate that
+ * they are accessible to requests that do not have the READ permission on {@link jenkins.model.Jenkins}.
  *
- * @author Kohsuke Kawaguchi
+ * @since TODO
  */
-@Extension
-public class WhoAmICommand extends CLICommand implements UnprotectedCLICommand {
-    @Override
-    public String getShortDescription() {
-        return Messages.WhoAmICommand_ShortDescription();
-    }
-
-    protected int run() {
-        Authentication a = Jenkins.getAuthentication();
-        stdout.println("Authenticated as: "+a.getName());
-        stdout.println("Authorities:");
-        for (GrantedAuthority ga : a.getAuthorities()) {
-            stdout.println("  "+ga.getAuthority());
-        }
-        return 0;
-    }
+public interface UnprotectedCLICommand {
 }
-
