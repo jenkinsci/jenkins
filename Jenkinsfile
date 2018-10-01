@@ -77,7 +77,7 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-/* TODO: disabled for the Java 10 branch
+// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker&&highmem") {
         // Just to be safe
@@ -100,7 +100,6 @@ builds.ath = {
         }
     }
 }
-*/
 
 builds.failFast = failFast
 parallel builds
