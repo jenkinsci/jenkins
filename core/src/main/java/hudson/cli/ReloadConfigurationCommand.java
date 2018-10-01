@@ -27,6 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.util.HudsonIsLoading;
 import hudson.util.JenkinsReloadFailed;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.WebApp;
 

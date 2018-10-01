@@ -30,6 +30,7 @@ import hudson.model.ListView;
 import hudson.model.Node;
 import hudson.model.User;
 import hudson.tasks.Mailer;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Ignore;

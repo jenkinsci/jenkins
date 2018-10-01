@@ -27,6 +27,8 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;

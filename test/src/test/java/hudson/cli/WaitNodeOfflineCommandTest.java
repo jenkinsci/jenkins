@@ -29,6 +29,7 @@
 package hudson.cli;
 
 import hudson.slaves.DumbSlave;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;

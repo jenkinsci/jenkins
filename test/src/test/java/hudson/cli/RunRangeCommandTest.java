@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.Run;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

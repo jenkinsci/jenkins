@@ -25,6 +25,8 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.cli.CLIReturnCode;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 
 /**

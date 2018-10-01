@@ -27,6 +27,7 @@ package hudson.cli;
 import hudson.model.AllView;
 import hudson.model.ListView;
 import hudson.model.View;
+import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
