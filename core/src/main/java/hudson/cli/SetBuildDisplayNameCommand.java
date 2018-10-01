@@ -3,8 +3,6 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 

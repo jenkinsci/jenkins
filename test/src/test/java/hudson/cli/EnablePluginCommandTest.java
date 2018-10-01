@@ -26,7 +26,6 @@ package hudson.cli;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import jenkins.cli.CLIReturnCodeStandard;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;

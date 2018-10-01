@@ -27,7 +27,6 @@ package hudson.cli;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;

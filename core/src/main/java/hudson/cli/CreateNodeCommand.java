@@ -29,8 +29,6 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.model.User;
-import jenkins.cli.CLIReturnCode;
-import jenkins.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
