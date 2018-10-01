@@ -55,6 +55,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -64,6 +65,7 @@ import jenkins.model.item_category.ItemCategory;
 import jenkins.scm.RunWithSCM;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
+
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -87,7 +89,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
@@ -120,6 +121,11 @@ import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.xml.sax.SAXException;
+
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
  * that {@link Jenkins} owns.
@@ -131,7 +137,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
  * <h2>Note for implementers</h2>
  * <ul>
  * <li>
- * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
+ * {@link View} subtypes need the {@code newViewDetail.jelly} page,
  * which is included in the "new view" page. This page should have some
  * description of what the view is about.
  * </ul>
@@ -169,8 +175,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected boolean filterQueue;
 
-    protected transient List<Action> transientActions;
-
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -189,6 +193,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
+    @Nonnull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
@@ -481,7 +486,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             if (count == FILTER_LOOP_MAX_COUNT) {
                 LOGGER.warning(String.format(
                         "Failed to find root task for queue item '%s' for " +
-                        "view '%s' in under %d iterations, aborting!",
+                                "view '%s' in under %d iterations, aborting!",
                         item.getDisplayName(), getDisplayName(),
                         FILTER_LOOP_MAX_COUNT));
                 break;
@@ -546,20 +551,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
-    	result.addAll(getOwner().getViewActions());
-    	synchronized (this) {
-    		if (transientActions == null) {
-                updateTransientActions();
-    		}
-    		result.addAll(transientActions);
-    	}
-    	return result;
+        List<Action> result = new ArrayList<>();
+        result.addAll(getOwner().getViewActions());
+        result.addAll(TransientViewActionFactory.createAllFor(this));
+        return result;
     }
 
-    public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this);
-    }
+    /**
+     * No-op. Included to maintain backwards compatibility.
+     * @deprecated This method does nothing and should not be used
+     */
+    @Restricted(DoNotUse.class)
+    @Deprecated
+    public void updateTransientActions() {}
 
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
@@ -716,13 +720,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
-                if (!item.hasPermission(Item.READ)) {
-                    continue;
-                }
                 for (Job<?, ?> job : item.getAllJobs()) {
-                    if (!job.hasPermission(Item.READ)) {
-                        continue;
-                    }
                     RunList<? extends Run<?, ?>> runs = job.getBuilds();
                     for (Run<?, ?> r : runs) {
                         if (r instanceof RunWithSCM) {
@@ -921,7 +919,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine((String.format("Adding url=%s,displayName=%s",
-                            item.getSearchUrl(), item.getDisplayName())));
+                        item.getSearchUrl(), item.getDisplayName())));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }
@@ -931,14 +929,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
-                protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
-                @Override
-                protected String getName(TopLevelItem o) {
-                    // return the name instead of the display for suggestion searching
-                    return o.getName();
-                }
-            });
+            protected TopLevelItem get(String key) { return getItem(key); }
+            protected Collection<TopLevelItem> all() { return getItems(); }
+            @Override
+            protected String getName(TopLevelItem o) {
+                // return the name instead of the display for suggestion searching
+                return o.getName();
+            }
+        });
 
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
@@ -976,7 +974,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();
 
         save();
 
@@ -1120,7 +1117,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
+                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1133,11 +1130,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
         RSS.forwardToRss(getDisplayName()+" last builds only", getUrl(),
-            lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
+                lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
@@ -1201,8 +1198,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 // ensure that we've got the same view type. extending this code to support updating
                 // to different view type requires destroying & creating a new view type
                 throw new IOException("Expecting view type: "+this.getClass()+" but got: "+o.getClass()+" instead." +
-                    "\nShould you needed to change to a new view type, you must first delete and then re-create " +
-                    "the view with the new view type.");
+                        "\nShould you needed to change to a new view type, you must first delete and then re-create " +
+                        "the view with the new view type.");
             }
             name = oldname;
             owner = oldOwner;
@@ -1292,7 +1289,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         boolean isXmlSubmission = requestContentType != null
                 && (requestContentType.startsWith("application/xml")
-                        || requestContentType.startsWith("text/xml"));
+                || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
         Jenkins.checkGoodName(name);
@@ -1350,7 +1347,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Instantiate View subtype from XML stream.
      *
-     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     * @param name Alternative name to use or {@code null} to keep the one in xml.
      */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
 
