@@ -1229,11 +1229,12 @@ public class Util {
 
     /**
      *
-     * @param l list to check
+     * @param l list to check.
      * @param <T>
+     *     Type of the list.
      * @return
-     *     l if l is not {@code null}
-     *     an empty <b>immutable list</b> if l is {@code null}
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable list</b> if l is {@code null}.
      */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
@@ -1242,11 +1243,12 @@ public class Util {
 
     /**
      *
-     * @param l set to check
+     * @param l set to check.
      * @param <T>
+     *     Type of the set.
      * @return
-     *     l if l is not {@code null}
-     *     an empty <b>immutable set</b> if l is {@code null}
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
      */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
@@ -1255,11 +1257,12 @@ public class Util {
 
     /**
      *
-     * @param l collection to check
+     * @param l collection to check.
      * @param <T>
+     *     Type of the collection.
      * @return
-     *     l if l is not {@code null}
-     *     an empty <b>immutable set</b> if l is {@code null}
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
      */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
@@ -1268,11 +1271,12 @@ public class Util {
 
     /**
      *
-     * @param l iterable to check
+     * @param l iterable to check.
      * @param <T>
+     *     Type of the iterable.
      * @return
-     *     l if l is not {@code null}
-     *     an empty <b>immutable set</b> if l is {@code null}
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
      */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
