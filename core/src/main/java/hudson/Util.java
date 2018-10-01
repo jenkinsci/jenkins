@@ -1199,7 +1199,7 @@ public class Util {
     }
 
     /**
-     * Convert {@code null} to a default value.
+     * Convert {@code null} to a default <b>immutable</b> value.
      * @since TODO
      */
     @Nonnull
@@ -1227,21 +1227,53 @@ public class Util {
         return fixEmpty(s.trim());
     }
 
+    /**
+     *
+     * @param l list to check
+     * @param <T>
+     * @return
+     *     l if l is not {@code null}
+     *     an empty <b>immutable list</b> if l is {@code null}
+     */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
         return fixNull(l, Collections.<T>emptyList());
     }
 
+    /**
+     *
+     * @param l set to check
+     * @param <T>
+     * @return
+     *     l if l is not {@code null}
+     *     an empty <b>immutable set</b> if l is {@code null}
+     */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
         return fixNull(l, Collections.<T>emptySet());
     }
 
+    /**
+     *
+     * @param l collection to check
+     * @param <T>
+     * @return
+     *     l if l is not {@code null}
+     *     an empty <b>immutable set</b> if l is {@code null}
+     */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
         return fixNull(l, Collections.<T>emptySet());
     }
 
+    /**
+     *
+     * @param l iterable to check
+     * @param <T>
+     * @return
+     *     l if l is not {@code null}
+     *     an empty <b>immutable set</b> if l is {@code null}
+     */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
         return fixNull(l, Collections.<T>emptySet());
