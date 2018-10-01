@@ -21,9 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.cli;
-
-import hudson.cli.CLICommand;
+package hudson.cli;
 
 /**
  * Should only be used to wrap legacy use of {@link CLICommand#run()} inside commands
