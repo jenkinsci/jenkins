@@ -1216,7 +1216,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Discover all the service provider implementations of the given class,
-     * via <tt>META-INF/services</tt>.
+     * via {@code META-INF/services}.
      * @deprecated Use {@link ServiceLoader} instead, or (more commonly) {@link ExtensionList}.
      */
     @Deprecated
@@ -1493,7 +1493,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        try (ACLContext _ = ACL.as(currentAuth)) {
+                        try (ACLContext acl = ACL.as(currentAuth)) {
                             InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                         }
                     }

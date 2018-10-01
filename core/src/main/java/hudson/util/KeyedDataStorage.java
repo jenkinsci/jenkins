@@ -254,7 +254,7 @@ public abstract class KeyedDataStorage<T,P> {
      * Among cache misses, number of times when we had {@link SoftReference}
      * but lost its value due to GC.
      *
-     * <tt>totalQuery-cacheHit-weakRefLost</tt> means cache miss.
+     * {@code totalQuery-cacheHit-weakRefLost} means cache miss.
      */
     public final AtomicInteger weakRefLost = new AtomicInteger();
     /**

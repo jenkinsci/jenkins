@@ -62,7 +62,7 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
         T s = j.getItemByFullName(src, type());
         if (s == null) {
             final Authentication who = Jenkins.getAuthentication();
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 Item actual = j.getItemByFullName(src);
                 if (actual == null) {
                     LOGGER.log(Level.FINE, "really no item exists named {0}", src);

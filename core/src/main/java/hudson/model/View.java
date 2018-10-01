@@ -116,7 +116,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -134,7 +133,7 @@ import org.xml.sax.SAXException;
  * <h2>Note for implementers</h2>
  * <ul>
  * <li>
- * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
+ * {@link View} subtypes need the {@code newViewDetail.jelly} page,
  * which is included in the "new view" page. This page should have some
  * description of what the view is about. 
  * </ul>
@@ -172,8 +171,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected boolean filterQueue;
     
-    protected transient List<Action> transientActions;
-
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -192,6 +189,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
+    @Nonnull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
@@ -549,21 +547,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
-    	result.addAll(getOwner().getViewActions());
-    	synchronized (this) {
-    		if (transientActions == null) {
-                updateTransientActions();
-    		}
-    		result.addAll(transientActions);
-    	}
-    	return result;
+        List<Action> result = new ArrayList<>();
+        result.addAll(getOwner().getViewActions());
+        result.addAll(TransientViewActionFactory.createAllFor(this));
+        return result;
     }
-    
-    public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this); 
-    }
-    
+
+    /**
+     * No-op. Included to maintain backwards compatibility.
+     * @deprecated This method does nothing and should not be used
+     */
+    @Restricted(DoNotUse.class)
+    @Deprecated
+    public void updateTransientActions() {}
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -993,7 +990,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
 
         save();
 
@@ -1154,7 +1150,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
@@ -1367,7 +1363,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Instantiate View subtype from XML stream.
      *
-     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     * @param name Alternative name to use or {@code null} to keep the one in xml.
      */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
 

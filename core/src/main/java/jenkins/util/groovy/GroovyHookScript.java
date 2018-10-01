@@ -31,8 +31,8 @@ import jenkins.model.Jenkins;
  * </ol>
  *
  * <p>
- * Scripts inside <tt>/WEB-INF</tt> is meant for OEM distributions of Jenkins. Files inside
- * <tt>$JENKINS_HOME</tt> are for installation local settings. Use of <tt>HOOK.groovy.d</tt>
+ * Scripts inside {@code /WEB-INF} is meant for OEM distributions of Jenkins. Files inside
+ * {@code $JENKINS_HOME} are for installation local settings. Use of {@code HOOK.groovy.d}
  * allows configuration management tools to control scripts easily.
  *
  * @author Kohsuke Kawaguchi

@@ -165,7 +165,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Adds key value pairs as "-Dkey=value -Dkey=value ..."
      *
-     * <tt>-D</tt> portion is configurable as the 'prefix' parameter.
+     * {@code -D} portion is configurable as the 'prefix' parameter.
      * @since 1.114
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {

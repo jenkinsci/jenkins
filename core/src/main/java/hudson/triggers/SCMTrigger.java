@@ -245,10 +245,11 @@ public class SCMTrigger extends Trigger<Item> {
         private static final int THREADS_UPPER_BOUND = 100;
         private static final int THREADS_DEFAULT= 10;
 
-        private void readResolve() {
+        private Object readResolve() {
             if (maximumThreads == 0) {
                 maximumThreads = THREADS_DEFAULT;
             }
+            return this;
         }
 
         public boolean isApplicable(Item item) {
@@ -470,7 +471,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
         
         /**
-         * Used from <tt>polling.jelly</tt> to write annotated polling log to the given output.
+         * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support

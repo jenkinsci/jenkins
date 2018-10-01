@@ -822,7 +822,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public static final class ProjectRenameListener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldName, final String newName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 locationChanged(item, oldName, newName);
             }
         }
@@ -1438,7 +1438,7 @@ public class Fingerprint implements ModelObject, Saveable {
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
-        try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
             final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
             if (itemBySystemUser == null) {
                 return false;
