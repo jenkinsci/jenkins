@@ -58,14 +58,14 @@ import java.net.URLEncoder;
  *
  * <p>
  * When an HTTP request arrives with an HTTP basic auth header, this filter detects
- * that and emulate an invocation of <tt>/j_security_check</tt>
+ * that and emulate an invocation of {@code /j_security_check}
  * (see <a href="http://mail-archives.apache.org/mod_mbox/tomcat-users/200105.mbox/%3C9005C0C9C85BD31181B20060085DAC8B10C8EF@tuvi.andmevara.ee%3E">this page</a> for the original technique.)
  *
  * <p>
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) <tt>/secured/...</tt> page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) {@code /secured/...} page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,
@@ -79,7 +79,7 @@ import java.net.URLEncoder;
  * <h2>Notes</h2>
  * <ul>
  * <li>
- * The technique of getting a request dispatcher for <tt>/j_security_check</tt> may not
+ * The technique of getting a request dispatcher for {@code /j_security_check} may not
  * work for all containers, but so far that seems like the only way to make this work.
  * <li>
  * This A → B → A redirect is a cyclic redirection, so we need to watch out for clients

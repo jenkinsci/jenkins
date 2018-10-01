@@ -293,7 +293,7 @@ public class PluginManagerTest {
         try {
             callDependerValue();
             fail();
-        } catch (ClassNotFoundException _) {
+        } catch (ClassNotFoundException ex) {
         }
         
         // No extensions exist.
@@ -331,7 +331,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
         
         // Load dependee.
@@ -380,7 +380,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
     }
 

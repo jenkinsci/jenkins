@@ -47,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
  *
  * <p>
- * This object must have the <tt>myViewTabs.jelly</tt>. This view
+ * This object must have the {@code myViewTabs.jelly}. This view
  * is called once when the My Views main panel is built.
  * The "views" attribute is set to the "Collection of views".
  *

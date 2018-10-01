@@ -67,7 +67,7 @@ import java.util.concurrent.Future;
  * <p>
  * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
  * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} <tt>configure-entries.jelly</tt> and read it back in through {@link DataBoundConstructor}.
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -80,9 +80,9 @@ import java.util.concurrent.Future;
  *
  * <h3>Views</h3>
  *
- * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
- * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their <tt>summary</tt>
- * views displayed. Actions further contribute to <tt>sidepanel</tt> with <tt>box</tt> views. All mentioned views are
+ * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide {@code top} or {@code main} view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their {@code summary}
+ * views displayed. Actions further contribute to {@code sidepanel} with {@code box} views. All mentioned views are
  * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi

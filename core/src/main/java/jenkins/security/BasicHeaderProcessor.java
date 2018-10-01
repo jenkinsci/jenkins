@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.*;
 
 /**
- * Takes "username:password" given in the <tt>Authorization</tt> HTTP header and authenticates
+ * Takes "username:password" given in the {@code Authorization} HTTP header and authenticates
  * the request.
  *
  * <p>

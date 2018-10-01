@@ -43,7 +43,16 @@ import jenkins.security.SlaveToMasterCallable;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,6 +65,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +74,6 @@ import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
 import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import javax.annotation.Nonnull;
@@ -175,8 +184,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // let's do with what we have.
                     killers = Collections.emptyList();
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to obtain killers",e);
+            } catch (IOException | Error e) {
+                LOGGER.log(Level.WARNING, "Failed to obtain killers", e);
                 killers = Collections.emptyList();
             }
         return killers;
@@ -232,10 +241,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         void killByKiller() throws InterruptedException {
             for (ProcessKiller killer : getKillers())
                 try {
-                    if (killer.kill(this))
+                    if (killer.kill(this)) {
                         break;
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to kill pid="+getPid(),e);
+                    }
+                } catch (IOException | Error e) {
+                    LOGGER.log(Level.WARNING, "Failed to kill pid=" + getPid(), e);
                 }
         }
 
@@ -684,13 +694,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         
         @Override
         public OSProcess get(Process proc) {
-            try {
-                return get((Integer) UnixReflection.PID_FIELD.get(proc));
-            } catch (IllegalAccessException e) { // impossible
-                IllegalAccessError x = new IllegalAccessError();
-                x.initCause(e);
-                throw x;
-            }
+            return get(UnixReflection.pid(proc));
         }
 
         public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
@@ -818,60 +822,94 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         public abstract List<String> getArguments();
     }
 
+    //TODO: can be replaced by multi-release JAR
     /**
      * Reflection used in the Unix support.
      */
     private static final class UnixReflection {
         /**
          * Field to access the PID of the process.
+         * Required for Java 8 and older JVMs.
          */
-        private static final Field PID_FIELD;
+        private static final Field JAVA8_PID_FIELD;
+
+        /**
+         * Field to access the PID of the process.
+         * Required for Java 9 and above until this is replaced by multi-release JAR.
+         */
+        private static final Method JAVA9_PID_METHOD;
 
         /**
          * Method to destroy a process, given pid.
          *
          * Looking at the JavaSE source code, this is using SIGTERM (15)
          */
-        private static final Method DESTROY_PROCESS;
+        private static final Method JAVA8_DESTROY_PROCESS;
+        private static final Method JAVA_9_PROCESSHANDLE_OF;
+        private static final Method JAVA_9_PROCESSHANDLE_DESTROY;
 
         static {
             try {
-                Class<?> clazz = Class.forName("java.lang.UNIXProcess");
-                PID_FIELD = clazz.getDeclaredField("pid");
-                PID_FIELD.setAccessible(true);
-
-                if (isPreJava8()) {
-                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                if (isPostJava8()) { // Java 9+
+                    Class<?> clazz = Process.class;
+                    JAVA9_PID_METHOD = clazz.getMethod("pid");
+                    JAVA8_PID_FIELD = null;
+                    Class<?> processHandleClazz = Class.forName("java.lang.ProcessHandle");
+                    JAVA_9_PROCESSHANDLE_OF = processHandleClazz.getMethod("of", long.class);
+                    JAVA_9_PROCESSHANDLE_DESTROY = processHandleClazz.getMethod("destroy");
+                    JAVA8_DESTROY_PROCESS = null;
                 } else {
-                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
+                    Class<?> clazz = Class.forName("java.lang.UNIXProcess");
+                    JAVA8_PID_FIELD = clazz.getDeclaredField("pid");
+                    JAVA8_PID_FIELD.setAccessible(true);
+                    JAVA9_PID_METHOD = null;
+
+                    JAVA8_DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess", int.class, boolean.class);
+                    JAVA8_DESTROY_PROCESS.setAccessible(true);
+                    JAVA_9_PROCESSHANDLE_OF = null;
+                    JAVA_9_PROCESSHANDLE_DESTROY = null;
                 }
-                DESTROY_PROCESS.setAccessible(true);
-            } catch (ClassNotFoundException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
-                throw x;
-            } catch (NoSuchFieldException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
-                throw x;
-            } catch (NoSuchMethodException e) {
-                LinkageError x = new LinkageError();
-                x.initCause(e);
+            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
+                LinkageError x = new LinkageError("Cannot initialize reflection for Unix Processes", e);
                 throw x;
             }
         }
 
-        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
-            if (isPreJava8()) {
-                DESTROY_PROCESS.invoke(null, pid);
+        public static void destroy(int pid) throws IllegalAccessException,
+                InvocationTargetException {
+            if (JAVA8_DESTROY_PROCESS != null) {
+                JAVA8_DESTROY_PROCESS.invoke(null, pid, false);
             } else {
-                DESTROY_PROCESS.invoke(null, pid, false);
+                final Optional handle = (Optional)JAVA_9_PROCESSHANDLE_OF.invoke(null, pid);
+                if (handle.isPresent()) {
+                    JAVA_9_PROCESSHANDLE_DESTROY.invoke(handle.get());
+                }
             }
         }
 
-        private static boolean isPreJava8() {
-            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
-            return javaVersionAsAnInteger < 18;
+        //TODO: We ideally need to update ProcessTree APIs to Support Long (JENKINS-53799).
+        public static int pid(@Nonnull Process proc) {
+            try {
+                if (JAVA8_PID_FIELD != null) {
+                    return JAVA8_PID_FIELD.getInt(proc);
+                } else {
+                    long pid = (long)JAVA9_PID_METHOD.invoke(proc);
+                    if (pid > Integer.MAX_VALUE) {
+                        throw new IllegalAccessError("Java 9+ support error (JENKINS-53799). PID is out of Jenkins API bounds: " + pid);
+                    }
+                    return (int)pid;
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) { // impossible
+                IllegalAccessError x = new IllegalAccessError();
+                x.initCause(e);
+                throw x;
+            }
+        }
+
+        // Java 9 uses new version format
+        private static boolean isPostJava8() {
+            String javaVersion = System.getProperty("java.version");
+            return !javaVersion.startsWith("1.");
         }
     }
 
@@ -969,7 +1007,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /**
-     * Implementation for Solaris that uses <tt>/proc</tt>.
+     * Implementation for Solaris that uses {@code /proc}.
      *
      * /proc/PID/psinfo contains a psinfo_t struct. We use it to determine where the
      *     process arguments and environment are located in PID's address space.
@@ -1253,18 +1291,18 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_32;
             }
             try {
-                IntByReference _ = new IntByReference(sizeOfInt);
+                IntByReference ref = new IntByReference(sizeOfInt);
                 IntByReference size = new IntByReference(sizeOfInt);
                 Memory m;
                 int nRetry = 0;
                 while(true) {
                     // find out how much memory we need to do this
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, _)!=0)
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, ref)!=0)
                         throw new IOException("Failed to obtain memory requirement: "+LIBC.strerror(Native.getLastError()));
 
                     // now try the real call
                     m = new Memory(size.getValue());
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, _)!=0) {
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, ref)!=0) {
                         if(Native.getLastError()==ENOMEM && nRetry++<16)
                             continue; // retry
                         throw new IOException("Failed to call kern.proc.all: "+LIBC.strerror(Native.getLastError()));
@@ -1324,14 +1362,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     arguments = new ArrayList<String>();
                     envVars = new EnvVars();
 
-                    IntByReference _ = new IntByReference();
+                    IntByReference intByRef = new IntByReference();
 
                     IntByReference argmaxRef = new IntByReference(0);
                     IntByReference size = new IntByReference(sizeOfInt);
 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, intByRef)!=0)
                         throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
@@ -1369,7 +1407,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     }
                     StringArrayMemory m = new StringArrayMemory(argmax);
                     size.setValue(argmax);
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, _)!=0)
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, intByRef)!=0)
                         throw new IOException("Failed to obtain ken.procargs2: "+LIBC.strerror(Native.getLastError()));
 
 
