@@ -807,8 +807,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      to keep the client in the same config page.
      */
     public boolean configure( StaplerRequest req, JSONObject json ) throws FormException {
-        // compatibility
-        return configure(req);
+        if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class)) {
+            // compatibility
+            return configure(req);
+        }
+
+        req.bindJSON(this, json);
+        save();
+        return true;
     }
 
     public String getConfigPage() {
