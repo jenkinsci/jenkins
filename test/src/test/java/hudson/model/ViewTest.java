@@ -231,16 +231,17 @@ public class ViewTest {
         ListView view = listView("v");
         view.description = "one";
         WebClient wc = j.createWebClient();
-        String xml = wc.goToXml("view/v/config.xml").getContent();
-        assertTrue(xml, xml.contains("<description>one</description>"));
-        xml = xml.replace("<description>one</description>", "<description>two</description>");
+        //TODO: replace by XPath assert
+        String xml = wc.goToXml("view/v/config.xml").asXml();
+        assertTrue(xml, xml.contains("one"));
+        xml = xml.replace("one", "two");
         WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
         req.setRequestBody(xml);
         req.setEncodingType(null);
         wc.getPage(req);
-        assertEquals("two", view.getDescription());
+        assertTrue("New description was not set", view.getDescription().contains("two"));
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
-        assertTrue(xml, xml.contains("<description>two</description>"));
+        assertTrue(xml, xml.contains("two"));
     }
     
     @Issue("JENKINS-21017")
