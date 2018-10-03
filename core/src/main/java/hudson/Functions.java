@@ -144,6 +144,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.DefaultValue;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -1883,6 +1884,30 @@ public class Functions {
         }
         return o.toString();
     }
+
+    /**
+     * Retrieve default value to be used when setting field on type.
+     * Used by {@code <f:textbox>} to retrieve default value defined by component meta-data.
+     */
+    public String getDefaultValue(Class type, String field) {
+
+        // TODO to be replaced by DataModel API once implemented
+        try {
+            final DefaultValue defaultValue = type.getField(field).getAnnotation(DefaultValue.class);
+            if (defaultValue != null) return defaultValue.value();
+            return null;
+        } catch (NoSuchFieldException e) {
+            String setter = "set" + StringUtils.capitalize(field);
+            return Arrays.stream(type.getMethods())
+                    .filter(method -> method.getParameterCount() == 1)
+                    .filter(method -> method.getName().equals(setter))
+                    .findFirst()
+                    .map(method -> method.getParameters()[0].getAnnotation(DefaultValue.class))
+                    .map(DefaultValue::value)
+                    .orElse("");
+        }
+    }
+
 
     public List filterDescriptors(Object context, Iterable descriptors) {
         return DescriptorVisibilityFilter.apply(context,descriptors);
