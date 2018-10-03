@@ -81,6 +81,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1206,6 +1207,17 @@ public class Util {
     @Nonnull
     public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
         return s != null ? s : defaultValue;
+    }
+
+    /**
+     * Convert {@code null} to a default value lazily provided by a {@link Supplier}.
+     * @param s
+     * @param supplier
+     * @since TODO
+     */
+    public static <T> T fixNull(@CheckForNull T s, @Nonnull Supplier<T> supplier) {
+        if (s == null) return supplier.get();
+        return s;
     }
 
     /**

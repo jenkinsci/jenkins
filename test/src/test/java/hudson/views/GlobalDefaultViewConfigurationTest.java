@@ -27,6 +27,8 @@ import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
 import static org.hamcrest.Matchers.*;
 import org.junit.Assert;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,21 +48,19 @@ public class GlobalDefaultViewConfigurationTest {
     
     @Test
     @Issue("JENKINS-42717")
-    public void shouldNotFailIfTheDefaultViewIsMissing() {
+    public void shouldNotFailIfTheDefaultViewIsMissing() throws Descriptor.FormException {
         String viewName = "NonExistentView";
         GlobalDefaultViewConfiguration c = new GlobalDefaultViewConfiguration();
         
         StaplerRequest create = new MockStaplerRequestBuilder(j, "/configure").build();
         JSONObject params = new JSONObject();
         params.accumulate("primaryView", viewName);
-        try {
-            c.configure(create, params);
-        } catch(Descriptor.FormException ex) {
-            assertThat("Wrong exception message for the form failure", 
-                    ex.getMessage(), containsString(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName)));
-            return;
-        }
-        Assert.fail("Expected FormException");
+
+        // JENKINS-42717: Should *not* throw an exception
+        c.configure(create, params);
+
+        // Should have a reasonable default set
+        assertNotNull(j.jenkins.getPrimaryView());
     }
     
 }

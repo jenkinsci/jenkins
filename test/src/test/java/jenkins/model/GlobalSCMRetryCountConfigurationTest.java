@@ -32,7 +32,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.kohsuke.stapler.MockStaplerRequestBuilder;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Tests of {@link GlobalSCMRetryCountConfiguration}.
@@ -50,18 +52,20 @@ public class GlobalSCMRetryCountConfigurationTest {
             GlobalSCMRetryCountConfiguration gc = (GlobalSCMRetryCountConfiguration)
                     GlobalConfiguration.all().getDynamic("jenkins.model.GlobalSCMRetryCountConfiguration");
 
+            final StaplerRequest req = new MockStaplerRequestBuilder(j, "/configure").build();
+
             json.element("scmCheckoutRetryCount", 5);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(req, json);
             assertThat("Wrong value, it should be equal to 5",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(5));
 
             json.element("scmCheckoutRetryCount", 3);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(req, json);
             assertThat("Wrong value, it should be equal to 3",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
 
             JSONObject emptyJson = new JSONObject();
-            gc.configure(Stapler.getCurrentRequest(), emptyJson);
+            gc.configure(req, emptyJson);
         } catch (Descriptor.FormException e) {
             assertThat("Scm Retry count value changed! This shouldn't happen.",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));

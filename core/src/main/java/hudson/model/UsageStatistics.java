@@ -34,6 +34,8 @@ import static java.util.concurrent.TimeUnit.DAYS;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.DefaultValue;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.crypto.Cipher;
@@ -191,17 +193,15 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         }
     }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        try {
-            // for backward compatibility reasons, this configuration is stored in Jenkins
-            Jenkins.getInstance().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : true);
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"usageStatisticsCollected");
-        }
+    public boolean isUsageStatisticsCollected() {
+        return Jenkins.get().isUsageStatisticsCollected();
     }
 
+    @DataBoundSetter
+    public void setUsageStatisticsCollected(@DefaultValue("true") boolean usageStatisticsCollected) throws IOException {
+        Jenkins.get().setNoUsageStatistics(!usageStatisticsCollected);
+    }
+    
     /**
      * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encrypt the first block.
      *

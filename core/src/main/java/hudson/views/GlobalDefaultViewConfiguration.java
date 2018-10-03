@@ -29,6 +29,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -38,23 +39,18 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 @Extension(ordinal=300) @Symbol("defaultView")
 public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.get();
-        if (json.has("primaryView")) {
-            final String viewName = json.getString("primaryView");
-            final View newPrimaryView = j.getView(viewName);
-            if (newPrimaryView == null) {
-                throw new FormException(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName), "primaryView");
-            }
-            j.setPrimaryView(newPrimaryView);
-        } else {
-            // Fallback if the view is not specified
-            j.setPrimaryView(j.getViews().iterator().next());
+
+    public String getPrimaryViewName() {
+        return Jenkins.get().getPrimaryView().getViewName();
+    }
+
+    @DataBoundSetter
+    public void setPrimaryViewName(String viewName) throws FormException {
+        final Jenkins j = Jenkins.get();
+        if (viewName != null &&j.getView(viewName) == null) {
+            throw new FormException(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName), "primaryView");
         }
-        
-        return true;
+        j.setPrimaryView(viewName);
     }
 }
 

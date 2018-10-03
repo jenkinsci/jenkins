@@ -103,18 +103,8 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
             return Jenkins.get().getMyViewsTabBar();
         }
 
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.get();
-
-            if (json.has("myViewsTabBar")) {
-                j.setMyViewsTabBar(req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar")));
-            } else {
-                j.setMyViewsTabBar(new DefaultMyViewsTabBar());
-            }
-
-            return true;
+        public void setMyViewsTabBar(MyViewsTabBar myViewsTabBar) {
+            Jenkins.get().setMyViewsTabBar(myViewsTabBar);
         }
     }
 }

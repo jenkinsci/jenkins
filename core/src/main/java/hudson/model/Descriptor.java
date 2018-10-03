@@ -828,6 +828,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Configure descriptor instance form structured form submission where this specific descriptor is nested in
      * a larger payload, which typically happens when Descriptor doesn't have a dedicated configuration view.
+     * also collapse the structure to remain backward compatible with the JSON structure used before 1.238, as
+     * introduced by 10b20952addbdd025cb95817f5c3ad1fc6c7bcea.
      */
     public boolean configureNested( StaplerRequest req, JSONObject json) throws FormException, IOException {
         String name = getJsonSafeClassName();

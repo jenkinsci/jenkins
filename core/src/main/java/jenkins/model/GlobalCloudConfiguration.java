@@ -18,13 +18,8 @@ import java.io.IOException;
  */
 @Extension(ordinal=-100) @Symbol("cloud") // historically this was placed at the very end of the configuration page
 public class GlobalCloudConfiguration  extends GlobalConfiguration {
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        try {
-            Jenkins.get().clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"clouds");
-        }
+
+    public Jenkins.CloudList getClouds() {
+        return Jenkins.get().clouds;
     }
 }

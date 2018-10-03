@@ -23,22 +23,16 @@
  */
 package org.kohsuke.stapler;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import javax.annotation.Nonnull;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import jenkins.model.Jenkins;
-import org.eclipse.jetty.server.Request;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
-import org.springframework.web.multipart.support.DefaultMultipartHttpServletRequest;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Mocked version of {@link StaplerRequest}.
@@ -74,8 +68,14 @@ public class MockStaplerRequestBuilder{
     }
        
     public StaplerRequest build() throws AssertionError {        
-        HttpServletRequest rawRequest = Mockito.mock(HttpServletRequest.class);
-        return new RequestImpl(stapler != null ? stapler : new Stapler(), rawRequest, ancestors, tokens);
+        HttpServletRequest rawRequest = mock(HttpServletRequest.class);
+        return new RequestImpl(stapler != null ? stapler : getStapler(), rawRequest, ancestors, tokens);
     }
-       
+
+    private Stapler getStapler() {
+        final Stapler stapler = new Stapler();
+        stapler.setWebApp(new WebApp(null));
+        return stapler;
+    }
+
 }

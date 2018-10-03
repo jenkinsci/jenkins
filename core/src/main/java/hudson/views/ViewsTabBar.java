@@ -42,6 +42,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -105,18 +106,9 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
             return Jenkins.get().getViewsTabBar();
         }
 
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.get();
-
-            if (json.has("viewsTabBar")) {
-                j.setViewsTabBar(req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar")));
-            } else {
-                j.setViewsTabBar(new DefaultViewsTabBar());
-            }
-
-            return true;
+        @DataBoundSetter
+        public void setViewsTabBar(ViewsTabBar viewsTabBar) {
+            Jenkins.get().setViewsTabBar(viewsTabBar);
         }
     }
 }

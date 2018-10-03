@@ -26,6 +26,8 @@ package jenkins.model;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.DefaultValue;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -41,20 +43,8 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
         return Jenkins.get().getQuietPeriod();
     }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        int i=0;
-        try {
-            i = Integer.parseInt(json.getString("quietPeriod"));
-        } catch (NumberFormatException e) {
-            // fall through
-        }
-        try {
-            // for compatibility reasons, this value is stored in Jenkins
-            Jenkins.get().setQuietPeriod(i);
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"quietPeriod");
-        }
+    @DataBoundSetter
+    public void setQuietPeriod(@DefaultValue("0") int quietPeriod) throws IOException {
+        Jenkins.get().setQuietPeriod(quietPeriod);
     }
 }

@@ -27,8 +27,10 @@ import hudson.Extension;
 import hudson.model.Node.Mode;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnegative;
 import java.io.IOException;
 
 /**
@@ -38,6 +40,11 @@ import java.io.IOException;
  */
 @Extension(ordinal=500) @Symbol("masterBuild")
 public class MasterBuildConfiguration extends GlobalConfiguration {
+
+    public Mode getMode() {
+        return Jenkins.get().getMode();
+    }
+
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
     }
@@ -46,28 +53,19 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         return Jenkins.get().getLabelString();
     }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        Jenkins j = Jenkins.get();
-        try {
-            // for compatibility reasons, this value is stored in Jenkins
-            String num = json.getString("numExecutors");
-            if (!num.matches("\\d+")) {
-                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(),"numExecutors");
-            }
-            
-            j.setNumExecutors(json.getInt("numExecutors"));
-            if (req.hasParameter("master.mode"))
-                j.setMode(Mode.valueOf(req.getParameter("master.mode")));
-            else
-                j.setMode(Mode.NORMAL);
+    @DataBoundSetter
+    public void setMode(Mode m) throws IOException {
+        Jenkins.get().setMode(m);
+    }
 
-            j.setLabelString(json.optString("labelString", ""));
+    @DataBoundSetter
+    public void setNumExecutors(@Nonnegative int n) throws IOException, IllegalArgumentException {
+        Jenkins.get().setNumExecutors(n);
+    }
 
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"numExecutors");
-        }
+    @DataBoundSetter
+    public void setLabelString(String label) throws IOException {
+        Jenkins.get().setLabelString(label);
     }
 }
 

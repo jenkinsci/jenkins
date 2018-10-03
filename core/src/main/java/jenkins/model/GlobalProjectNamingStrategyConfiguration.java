@@ -24,11 +24,8 @@
 package jenkins.model;
 
 import hudson.Extension;
-import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
-import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Configures the project naming strategy.
@@ -38,25 +35,12 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension(ordinal = 250) @Symbol("projectNamingStrategy")
 public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguration {
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-        // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.get();
-        final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");
-        if (optJSONObject != null) {
-            final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
-            final String className = strategyObject.getString("$class");
-            try {
-                Class clazz = Class.forName(className, true, j.getPluginManager().uberClassLoader);
-                final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);
-                j.setProjectNamingStrategy(strategy);
-            } catch (ClassNotFoundException e) {
-                throw new FormException(e, "namingStrategy");
-            }
-        }
-        if (j.getProjectNamingStrategy() == null) {
-            j.setProjectNamingStrategy(DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
-        }
-        return true;
+    public ProjectNamingStrategy getProjectNamingStrategy() {
+        return Jenkins.get().getProjectNamingStrategy();
+    }
+
+    @DataBoundSetter
+    public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
+        Jenkins.get().setProjectNamingStrategy(ns);
     }
 }

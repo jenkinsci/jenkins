@@ -36,6 +36,9 @@ import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import hudson.model.*;
+import hudson.model.Messages;
+import hudson.views.GlobalDefaultViewConfiguration;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
@@ -51,58 +54,8 @@ import hudson.lifecycle.RestartNotSupportedException;
 import hudson.logging.LogRecorderManager;
 import hudson.markup.EscapedMarkupFormatter;
 import hudson.markup.MarkupFormatter;
-import hudson.model.AbstractCIBase;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.AdministrativeMonitor;
-import hudson.model.AllView;
-import hudson.model.Api;
-import hudson.model.Computer;
-import hudson.model.ComputerSet;
-import hudson.model.DependencyGraph;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.DescriptorByNameOwner;
-import hudson.model.DirectoryBrowserSupport;
-import hudson.model.Failure;
-import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
-import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.ItemGroupMixIn;
-import hudson.model.Items;
-import hudson.model.JDK;
-import hudson.model.Job;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.Label;
-import hudson.model.ListView;
-import hudson.model.LoadBalancer;
-import hudson.model.LoadStatistics;
-import hudson.model.ManagementLink;
-import hudson.model.Messages;
-import hudson.model.ModifiableViewGroup;
-import hudson.model.NoFingerprintMatch;
-import hudson.model.Node;
-import hudson.model.OverallLoadStatistics;
-import hudson.model.PaneStatusProperties;
-import hudson.model.Project;
-import hudson.model.Queue;
 import hudson.model.Queue.FlyweightTask;
-import hudson.model.RestartListener;
-import hudson.model.RootAction;
-import hudson.model.Slave;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.model.UnprotectedRootAction;
-import hudson.model.UpdateCenter;
-import hudson.model.User;
-import hudson.model.View;
-import hudson.model.ViewGroupMixIn;
-import hudson.model.WorkspaceCleanupThread;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
@@ -218,6 +171,7 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.stapler.DefaultValue;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -294,6 +248,8 @@ import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
+import static jenkins.model.ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+
 import org.kohsuke.stapler.WebMethod;
 
 /**
@@ -480,6 +436,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Active {@link Cloud}s.
      */
+    @ManagedBy(GlobalCloudConfiguration.class)
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
 
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
@@ -1313,6 +1270,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return noUsageStatistics==null || !noUsageStatistics;
     }
 
+    @ManagedBy(UsageStatistics.class)
     public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
         this.noUsageStatistics = noUsageStatistics;
         save();
@@ -1834,18 +1792,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Exported
     public View getPrimaryView() {
         return viewGroupMixIn.getPrimaryView();
-     }
+    }
 
+    /**
+     * Define {@link View} being used as default one on web UI.
+     * @since TODO
+     */
+    @ManagedBy(GlobalDefaultViewConfiguration.class)
+    public void setPrimaryView(String name) {
+        this.primaryView = name;
+    }
+
+    @Deprecated
     public void setPrimaryView(@Nonnull View v) {
-        this.primaryView = v.getViewName();
+        setPrimaryView(v.getViewName());
     }
 
     public ViewsTabBar getViewsTabBar() {
         return viewsTabBar;
     }
 
+    @ManagedBy(ViewsTabBar.GlobalConfigurationImpl.class)
     public void setViewsTabBar(ViewsTabBar viewsTabBar) {
-        this.viewsTabBar = viewsTabBar;
+        this.viewsTabBar = fixNull(viewsTabBar, DefaultViewsTabBar::new);
     }
 
     public Jenkins getItemGroup() {
@@ -1856,8 +1825,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return myViewsTabBar;
     }
 
+    @ManagedBy(MyViewsTabBar.GlobalConfigurationImpl.class)
     public void setMyViewsTabBar(MyViewsTabBar myViewsTabBar) {
-        this.myViewsTabBar = myViewsTabBar;
+        this.myViewsTabBar = fixNull(myViewsTabBar, DefaultMyViewsTabBar::new);
     }
 
     /**
@@ -2089,6 +2059,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return nodeProperties;
     }
 
+    @ManagedBy(GlobalNodePropertiesConfiguration.class)
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getGlobalNodeProperties() {
         return globalNodeProperties;
     }
@@ -2162,6 +2133,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param quietPeriod
      *      null to the default value.
      */
+    @ManagedBy(GlobalQuietPeriodConfiguration.class)
     public void setQuietPeriod(Integer quietPeriod) throws IOException {
         this.quietPeriod = quietPeriod;
         save();
@@ -2174,6 +2146,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return scmCheckoutRetryCount;
     }
 
+    @ManagedBy(GlobalSCMRetryCountConfiguration.class)
     public void setScmCheckoutRetryCount(int scmCheckoutRetryCount) throws IOException {
         this.scmCheckoutRetryCount = scmCheckoutRetryCount;
         save();
@@ -2531,11 +2504,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         authorizationStrategy = AuthorizationStrategy.UNSECURED;
     }
 
+    @ManagedBy(GlobalProjectNamingStrategyConfiguration.class)
     public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
-        if(ns == null){
-            ns = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
-        }
-        projectNamingStrategy = ns;
+        projectNamingStrategy = fixNull(ns, DEFAULT_NAMING_STRATEGY);
     }
 
     public Lifecycle getLifecycle() {
@@ -2693,6 +2664,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IOException Failed to save the configuration
      * @throws IllegalArgumentException Negative value has been passed
      */
+    @ManagedBy(MasterBuildConfiguration.class)
     public void setNumExecutors(@Nonnegative int n) throws IOException, IllegalArgumentException {
         if (n < 0) {
             throw new IllegalArgumentException("Incorrect field \"# of executors\": " + n +". It should be a non-negative number.");
@@ -2971,8 +2943,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return mode;
     }
 
+    @ManagedBy(MasterBuildConfiguration.class)
     public void setMode(Mode m) throws IOException {
-        this.mode = m;
+        this.mode = fixNull(m, Mode.NORMAL);
         save();
     }
 
@@ -2981,6 +2954,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
+    @ManagedBy(MasterBuildConfiguration.class)
     public void setLabelString(String label) throws IOException {
         this.label = label;
         save();
