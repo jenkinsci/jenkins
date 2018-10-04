@@ -485,14 +485,14 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return updateSiteIsHudsonCI() || updateSiteIsHudsonLabs();
+        return isHudsonCI() || isUpdatesFromHudsonLabs();
     }
 
-    private boolean updateSiteIsHudsonCI() {
+    private boolean isHudsonCI() {
         return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
     }
 
-    private boolean updateSiteIsHudsonLabs() {
+    private boolean isUpdatesFromHudsonLabs() {
         return url != null && url.startsWith("http://updates.hudson-labs.org/");
     }
 
