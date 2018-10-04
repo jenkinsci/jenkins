@@ -809,6 +809,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      to keep the client in the same config page.
      */
     public boolean configure( StaplerRequest req, JSONObject json ) throws FormException {
+
         if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class)) {
             // compatibility
             return configure(req);
@@ -818,8 +819,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             // Many descriptors used to override configure to implement databinding but also invoker super.configure().
             // As we introduce default implementation this would result in duplicate binding + save() being called twice
             // so, default "bindJSON" implementation is only used when configure isn't overriden.
-            req.bindJSON(this, json);
-            save();
+            try (BulkChange bc = new BulkChange(this)) {
+                req.bindJSON(this, json);
+                save();
+                bc.commit();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+            }
         }
         return true;
     }
