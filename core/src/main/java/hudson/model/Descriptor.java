@@ -798,6 +798,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Invoked when the global configuration page is submitted.
      *
+     * By default, calls {@link StaplerRequest#bindJSON(Object, JSONObject)},
+     * appropriate when your implementation has getters and setters for all fields.
      * Can be overridden to store descriptor-specific information.
      *
      * @param json
@@ -812,8 +814,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             return configure(req);
         }
 
-        req.bindJSON(this, json);
-        save();
+        if (!Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
+            // Many descriptors used to override configure to implement databinding but also invoker super.configure().
+            // As we introduce default implementation this would result in duplicate binding + save() being called twice
+            // so, default "bindJSON" implementation is only used when configure isn't overriden.
+            req.bindJSON(this, json);
+            save();
+        }
         return true;
     }
 
