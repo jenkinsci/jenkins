@@ -336,6 +336,6 @@ public class ClassFilterImpl extends ClassFilter {
         }
         LOGGER.log(Level.WARNING, message, cause);
 
-        // TODO: Integrate with Telemetry API (JEP-304) once it is available in the core
+        // TODO: add a Telemetry implementation (JEP-304)
     }
 }
