@@ -24,6 +24,7 @@
 package jenkins.telemetry.impl;
 
 import hudson.Extension;
+import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import jenkins.util.SystemProperties;
@@ -75,13 +76,25 @@ public class SecuritySystemProperties extends Telemetry {
     public JSONObject createContent() {
         Map<String, String> security = new TreeMap<>();
         putBoolean(security, "hudson.ConsoleNote.INSECURE", false);
+        putBoolean(security, "hudson.logging.LogRecorderManager.skipPermissionCheck", false);
+        putBoolean(security, "hudson.model.AbstractItem.skipPermissionCheck", false);
         putBoolean(security, "hudson.model.ParametersAction.keepUndefinedParameters", false);
+        putBoolean(security, "hudson.model.Run.skipPermissionCheck", false);
+        putBoolean(security, "hudson.model.UpdateCenter.skipPermissionCheck", false);
         putBoolean(security, "hudson.model.User.allowNonExistentUserToLogin", false);
         putBoolean(security, "hudson.model.User.allowUserCreationViaUrl", false);
         putBoolean(security, "hudson.model.User.SECURITY_243_FULL_DEFENSE", true);
+        putBoolean(security, "hudson.model.User.skipPermissionCheck", false);
+        putBoolean(security, "hudson.PluginManager.skipPermissionCheck", false);
         putBoolean(security, "hudson.remoting.URLDeserializationHelper.avoidUrlWrapping", false);
+        putBoolean(security, "hudson.search.Search.skipPermissionCheck", false);
         putBoolean(security, "jenkins.security.ClassFilterImpl.SUPPRESS_WHITELIST", false);
         putBoolean(security, "jenkins.security.ClassFilterImpl.SUPPRESS_ALL", false);
+        putBoolean(security, "org.kohsuke.stapler.Facet.allowViewNamePathTraversal", false);
+        putBoolean(security, "org.kohsuke.stapler.jelly.CustomJellyContext.escapeByDefault", true);
+
+        // not controlled by a system property for historical reasons only
+        security.put("jenkins.model.DownloadSettings.useBrowser", Boolean.toString(DownloadSettings.get().isUseBrowser()));
 
         putStringInfo(security, "hudson.model.ParametersAction.safeParameters");
         putStringInfo(security, "hudson.model.DirectoryBrowserSupport.CSP");
