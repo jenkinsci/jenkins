@@ -1,4 +1,6 @@
-# Build on Java 11 is not supported/tested so far
+# This is a Dockerfile definition for Experimental Docker builds.
+# DockerHub: https://hub.docker.com/r/jenkins/jenkins-experimental/
+# If you are looking for official images, see https://github.com/jenkinsci/docker
 FROM maven:3.5.4-jdk-8 as builder
 
 COPY .mvn/ /jenkins/src/.mvn/
@@ -19,9 +21,7 @@ RUN mvn clean install --batch-mode -Plight-test
 # All documentation is applicable
 FROM jenkins/jenkins-experimental:2.138.1-jdk11
 
-LABEL Description="This is an experimental image for Jenkins on Java 11"
-ARG JAVA_OPTS="-Dhudson.model.DownloadService.noSignatureCheck=true"
+LABEL Description="This is an experimental image for the master branch of the Jenkins core, for JDK11" Vendor="Jenkins Project"
 
 COPY --from=builder /jenkins/src/war/target/jenkins.war /usr/share/jenkins/jenkins.war
-COPY docker/jenkins2.sh /usr/local/bin/jenkins2.sh
-ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins2.sh"]
+ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins.sh"]

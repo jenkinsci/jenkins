@@ -113,7 +113,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
-    private ConsoleAnnotator createAnnotator(StaplerRequest req) throws IOException {
+    private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
         try {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64!=null) {
@@ -135,7 +135,7 @@ public class AnnotatedLargeText<T> extends LargeText {
             throw new IOException(e);
         }
         // start from scratch
-        return ConsoleAnnotator.initial(context==null ? null : context.getClass());
+        return ConsoleAnnotator.initial(context);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {
-        ConsoleAnnotationOutputStream caw = new ConsoleAnnotationOutputStream(
+        ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
         long r = super.writeLogTo(start,caw);
 
