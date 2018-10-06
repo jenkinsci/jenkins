@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
@@ -396,7 +397,7 @@ public abstract class Launcher {
          */
         @Nonnull
         public String[] envs() {
-            return envs != null ? envs.clone() : new String[0];
+            return envs != null ? envs.clone() : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         /**

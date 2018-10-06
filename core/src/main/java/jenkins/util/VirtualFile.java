@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
@@ -175,7 +176,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      */
     @Deprecated
     public @Nonnull String[] list(String glob) throws IOException {
-        return list(glob.replace('\\', '/'), null, true).toArray(new String[0]);
+        return list(glob.replace('\\', '/'), null, true).toArray(MemoryReductionUtil.EMPTY_STRING_ARRAY);
     }
 
     /**
