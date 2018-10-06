@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import hudson.model.TaskListener;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
@@ -92,7 +93,6 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -1388,7 +1388,7 @@ public class Util {
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
             Path path = fileToPath(new File(baseDir, symlinkPath));
-            Path target = Paths.get(targetPath, new String[0]);
+            Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
 
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;

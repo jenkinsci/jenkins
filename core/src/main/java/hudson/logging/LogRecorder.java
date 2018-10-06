@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
 import hudson.util.HttpResponses;
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
@@ -140,7 +141,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             candidateNames.retainAll(partCandidates);
         }
         AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-        candidates.add(candidateNames.toArray(new String[0]));
+        candidates.add(candidateNames.toArray(MemoryReductionUtil.EMPTY_STRING_ARRAY));
         return candidates;
     }
 
