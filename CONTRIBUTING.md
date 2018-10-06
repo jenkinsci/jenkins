@@ -46,6 +46,12 @@ Functional tests (`test` module) take a while even on server-grade machines.
 Most of the tests will be launched by the continuous integration instance,
 so there is no strict need to run full test suites before proposing a pull request.
 
+There are 3 profiles for tests:
+
+* `light-test` - only unit tests, no functional tests
+* `smoke-test` - run unit tests + a number of functional tests
+* `all-tests` - Runs all tests, with re-run (default)
+
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)](https://github.com/jenkinsci/acceptance-test-harness) repository.
 If you propose complex UI changes, you should create new ATH tests for them.
