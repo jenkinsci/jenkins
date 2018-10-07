@@ -52,7 +52,6 @@ public class ReloadJobCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.ReloadJobCommand_ShortDescription();
     }
 
