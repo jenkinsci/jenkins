@@ -39,7 +39,19 @@ public abstract class DirScanner implements Serializable {
         visitor.visit(f, relative);
     }
 
-    protected boolean scanSymlink(File f, String relative, FileVisitor visitor) throws IOException {
+
+    /**
+     * Pass the given file onto the given visitor if this visitor handles the symlinks.
+     * The file will be handled by {@link FileVisitor#visitSymlink}
+     * @param f the file to pass to the visitor.
+     * @param relative the path of the directory containing the file.
+     * @param visitor the visitor that will be used to treat the file.
+     * @return true if the given file was handled by the visitor, false otherwise
+     * @throws IOException
+     * @see FileVisitor#understandsSymlink()
+     * @since TODO
+     */
+    protected final boolean scanSymlink(File f, String relative, FileVisitor visitor) throws IOException {
         if (visitor.understandsSymlink()) {
             String target;
             try {
@@ -146,7 +158,7 @@ public abstract class DirScanner implements Serializable {
                     // useful for cases like archiving where the symlink to a directory should stay a symlink
                     // see JENKINS-52781
                     for(String f: ds.getNotFollowedSymlinks()) {
-                        File file = dir.toPath().relativize(Paths.get(f)).toFile();
+                        File file = Util.fileToPath(dir).relativize(Paths.get(f)).toFile();
                         scanSymlink(new File(f), file.getPath(), visitor);
                     }
                 }
