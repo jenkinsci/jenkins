@@ -188,7 +188,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * A String error message, and a boolean indicating whether it's an original error (false) or downstream from an original one (true)
      */
-    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>();
+    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>(0);
 
     /**
      * Is this plugin bundled in jenkins.war?
@@ -256,8 +256,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             int idx = s.indexOf(':');
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
-            this.shortName = s.substring(0,idx);
-            String version = s.substring(idx+1);
+            this.shortName = Util.intern(s.substring(0,idx));
+            String version = Util.intern(s.substring(idx+1));
 
             boolean isOptional = false;
             String[] osgiProperties = version.split("[;]");
@@ -300,7 +300,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
 		this.manifest = manifest;
-		this.shortName = computeShortName(manifest, archive.getName());
+		this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
