@@ -54,9 +54,12 @@ import java.util.logging.Logger;
 /**
  * Extension point for collecting JEP-214 telemetry.
  *
- * @see <a href="https://github.com/jenkinsci/jep/tree/master/jep/214">JEP-214</a>
+ * Implementations should provide a <code>description.jelly</code> file with additional details about their purpose and
+ * behavior which will be included in <code>help-usageStatisticsCollected.jelly</code> for {@link UsageStatistics}.
  *
- * @since TODO
+ * @see <a href="https://jenkins.io/jep/214">JEP-214</a>
+ *
+ * @since 2.143
  */
 public abstract class Telemetry implements ExtensionPoint {
 
@@ -68,7 +71,7 @@ public abstract class Telemetry implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(Telemetry.class.getName());
 
     /**
-     * ID of this collector, typically a basic alphanumeric string (and _- characters).
+     * ID of this collector, typically an alphanumeric string (and punctuation).
      *
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
@@ -77,7 +80,9 @@ public abstract class Telemetry implements ExtensionPoint {
      * @return ID of the collector, never null or empty
      */
     @Nonnull
-    public abstract String getId();
+    public String getId() {
+        return getClass().getName();
+    }
 
     /**
      * User friendly display name for this telemetry collector, ideally localized.
@@ -112,7 +117,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * This method is called periodically, once per content submission.
      *
-     * @return
+     * @return The JSON payload
      */
     @Nonnull
     public abstract JSONObject createContent();

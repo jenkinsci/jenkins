@@ -739,11 +739,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /*package*/ static final PasswordEncoder CLASSIC = new PasswordEncoder() {
         private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
 
-        public String encodePassword(String rawPass, Object _) throws DataAccessException {
+        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return hash(rawPass);
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
+        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             // pull out the sale from the encoded password
             int i = encPass.indexOf(':');
             if(i<0) return false;
@@ -779,11 +779,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * {@link PasswordEncoder} that uses jBCrypt.
      */
     private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
-        public String encodePassword(String rawPass, Object _) throws DataAccessException {
+        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return BCrypt.hashpw(rawPass,BCrypt.gensalt());
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
+        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             return BCrypt.checkpw(rawPass,encPass);
         }
     };

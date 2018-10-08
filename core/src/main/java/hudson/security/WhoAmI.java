@@ -8,6 +8,7 @@ import hudson.model.UnprotectedRootAction;
 import java.util.ArrayList;
 import java.util.List;
 
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.Authentication;
@@ -62,7 +63,7 @@ public class WhoAmI implements UnprotectedRootAction {
     @Exported
     public String[] getAuthorities() {
         if (auth().getAuthorities() == null) {
-            return new String[0];
+            return MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
         List <String> authorities = new ArrayList<String>();
         for (GrantedAuthority a : auth().getAuthorities()) {

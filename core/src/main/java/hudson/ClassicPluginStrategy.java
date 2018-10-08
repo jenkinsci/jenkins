@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
@@ -778,19 +779,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
                         if (c!=null)    return c;
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException ignored) {
                         //not found. try next
                     }
                 }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
-                    if(p!=null)
+                    if(p!=null) {
                         try {
                             return p.classLoader.loadClass(name);
-                        } catch (ClassNotFoundException _) {
-                            // try next
+                        } catch (ClassNotFoundException ignored) {
+                            // OK, try next
                         }
+                    }
                 }
             }
 
@@ -798,6 +800,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         @Override
+        @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS",
+                            justification = "Should not produce network overheads since the URL is local. JENKINS-53793 is a follow-up")
         protected Enumeration<URL> findResources(String name) throws IOException {
             HashSet<URL> result = new HashSet<URL>();
 

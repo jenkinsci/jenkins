@@ -80,13 +80,13 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * @return
      *      null if this factory is not going to participate in the annotation of this console.
      */
-    public abstract ConsoleAnnotator newInstance(T context);
+    public abstract ConsoleAnnotator<T> newInstance(T context);
 
     /**
      * For which context type does this annotator work?
      */
-    public Class type() {
-        Type type = Types.getBaseClass(getClass(), ConsoleAnnotator.class);
+    public Class<?> type() {
+        Type type = Types.getBaseClass(getClass(), ConsoleAnnotatorFactory.class);
         if (type instanceof ParameterizedType)
             return Types.erasure(Types.getTypeArgument(type,0));
         else
@@ -105,7 +105,7 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     }
 
     private URL getResource(String fileName) {
-        Class c = getClass();
+        Class<?> c = getClass();
         return c.getClassLoader().getResource(c.getName().replace('.','/').replace('$','/')+ fileName);
     }
 
@@ -125,6 +125,7 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     /**
      * All the registered instances.
      */
+    @SuppressWarnings("rawtypes")
     public static ExtensionList<ConsoleAnnotatorFactory> all() {
         return ExtensionList.lookup(ConsoleAnnotatorFactory.class);
     }

@@ -186,7 +186,8 @@ Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
     });
 
     // radio buttons in repeatable content
-Behaviour.specify("DIV.repeated-chunk", 'repeatable', 0, function(d) {
+// Needs to run before the radioBlock behavior so that names are already unique.
+Behaviour.specify("DIV.repeated-chunk", 'repeatable', -200, function(d) {
         var inputs = d.getElementsByTagName('INPUT');
         for (var i = 0; i < inputs.length; i++) {
             if (inputs[i].type == 'radio') {
