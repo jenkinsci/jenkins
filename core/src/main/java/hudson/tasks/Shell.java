@@ -210,12 +210,6 @@ public class Shell extends CommandInterpreter {
             return FormValidation.ok();
         }
 
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject data) throws FormException {
-            req.bindJSON(this, data);
-            return super.configure(req, data);
-        }
-
         /**
          * Check the existence of sh in the given location.
          */

@@ -3696,7 +3696,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
-                result &= configureDescriptor(req,json,d);
+                result &= d.configureNested(req,json);
             
             save();
             updateComputerList();
@@ -3725,14 +3725,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rsp.sendRedirect("foo");
-    }
-
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
-        // collapse the structure to remain backward compatible with the JSON structure before 1.
-        String name = d.getJsonSafeClassName();
-        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
-        json.putAll(js);
-        return d.configure(req, js);
     }
 
     /**

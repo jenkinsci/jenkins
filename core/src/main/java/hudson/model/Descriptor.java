@@ -815,19 +815,25 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             return configure(req);
         }
 
-        if (!Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
-            // Many descriptors used to override configure to implement databinding but also invoker super.configure().
-            // As we introduce default implementation this would result in duplicate binding + save() being called twice
-            // so, default "bindJSON" implementation is only used when configure isn't overriden.
-            try (BulkChange bc = new BulkChange(this)) {
-                req.bindJSON(this, json);
-                save();
-                bc.commit();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
-            }
+        try (BulkChange bc = new BulkChange(this)) {
+            req.bindJSON(this, json);
+            bc.commit();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }
         return true;
+    }
+
+
+    /**
+     * Configure descriptor instance form structured form submission where this specific descriptor is nested in
+     * a larger payload, which typically happens when Descriptor doesn't have a dedicated configuration view.
+     */
+    public boolean configureNested( StaplerRequest req, JSONObject json) throws FormException, IOException {
+        String name = getJsonSafeClassName();
+        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
+        json.putAll(js);
+        return configure(req, js);
     }
 
     public String getConfigPage() {

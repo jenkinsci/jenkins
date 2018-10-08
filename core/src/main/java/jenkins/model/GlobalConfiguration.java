@@ -58,17 +58,6 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     }
 
     /**
-     * By default, calls {@link StaplerRequest#bindJSON(Object, JSONObject)},
-     * appropriate when your implementation has getters and setters for all fields.
-     * <p>{@inheritDoc}
-     */
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        return true;
-    }
-
-    /**
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
     public static @Nonnull ExtensionList<GlobalConfiguration> all() {

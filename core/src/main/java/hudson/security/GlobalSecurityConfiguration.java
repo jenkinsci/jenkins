@@ -107,7 +107,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         }
     }
 
-    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
@@ -150,19 +150,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         // persist all the additional security configs
         boolean result = true;
         for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
-            result &= configureDescriptor(req,json,d);
+            result &= d.configureNested(req, json);
         }
         
         return result;
     }
-    
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
-        // collapse the structure to remain backward compatible with the JSON structure before 1.
-        String name = d.getJsonSafeClassName();
-        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
-        json.putAll(js);
-        return d.configure(req, js);
-    }    
 
     @Override
     public String getDisplayName() {

@@ -87,18 +87,11 @@ public class GlobalToolConfiguration extends ManagementLink {
 
         boolean result = true;
         for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
-            result &= configureDescriptor(req, json, d);
+            result &= d.configureNested(req, json);
         }
         j.save();
 
         return result;
-    }
-
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws Descriptor.FormException {
-        String name = d.getJsonSafeClassName();
-        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
-        json.putAll(js);
-        return d.configure(req, js);
     }
 
     public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
