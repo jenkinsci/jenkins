@@ -305,16 +305,16 @@ function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
     if(tr.tagName!=undefined && tr.parentNode!=undefined){
-      while (tr.tagName != "TR")
-	tr = tr.parentNode;
+    while (tr.tagName != "TR")
+        tr = tr.parentNode;
 
-      // then next TR that matches the CSS
-      do {
+    // then next TR that matches the CSS
+    do {
         tr = $(tr).next();
-      } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
-      return tr;
+    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
+    return tr;
     }
-    return undefined;  
+    return undefined;
 }
 
 function find(src,filter,traversalF) {
