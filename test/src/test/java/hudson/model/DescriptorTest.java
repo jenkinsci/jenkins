@@ -30,17 +30,9 @@ import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-
+import hudson.triggers.SCMTrigger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
-
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +42,14 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class DescriptorTest {
@@ -220,5 +220,13 @@ public class DescriptorTest {
             assertThat(response, containsString(cause.getClass().getCanonicalName()));
             assertThat(response, containsString(getClass().getCanonicalName()));
         }
+    }
+
+    @Test
+    public void descriptor_config_roudtrip() throws Exception {
+        final SCMTrigger.DescriptorImpl d = rule.get(SCMTrigger.DescriptorImpl.class);
+        d.setPollingThreadCount(20);
+        rule.configRoundtrip();
+        assertEquals(20, d.getPollingThreadCount());
     }
 }

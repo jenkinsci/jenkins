@@ -317,7 +317,7 @@ public class SCMTrigger extends Trigger<Item> {
             }
 
             maximumThreads = n;
-
+            save();
             resizeThreadPool();
         }
 
@@ -349,21 +349,6 @@ public class SCMTrigger extends Trigger<Item> {
         @PostConstruct
         /*package*/ synchronized void resizeThreadPool() {
             queue.setExecutors(Executors.newFixedThreadPool(maximumThreads, threadFactory()));
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            String t = json.optString("pollingThreadCount",null);
-            if (doCheckPollingThreadCount(t).kind != FormValidation.Kind.OK) {
-                setPollingThreadCount(THREADS_DEFAULT);
-            } else {
-                setPollingThreadCount(Integer.parseInt(t));
-            }
-
-            // Save configuration
-            save();
-
-            return true;
         }
 
         public FormValidation doCheckPollingThreadCount(@QueryParameter String value) {
