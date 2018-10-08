@@ -112,10 +112,12 @@ public class UserLanguages extends Telemetry {
             if (request instanceof HttpServletRequest) {
                 HttpServletRequest httpServletRequest = (HttpServletRequest) request;
                 String language = httpServletRequest.getHeader("Accept-Language");
-                if (!requestsByLanguage.containsKey(language)) {
-                    requestsByLanguage.put(language, new MutableLong(0));
+                if (language != null) {
+                    if (!requestsByLanguage.containsKey(language)) {
+                        requestsByLanguage.put(language, new MutableLong(0));
+                    }
+                    requestsByLanguage.get(language).increment();
                 }
-                requestsByLanguage.get(language).increment();
             }
             chain.doFilter(request, response);
         }
