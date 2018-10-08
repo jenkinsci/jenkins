@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import hudson.model.TaskListener;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
@@ -92,7 +93,6 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -1195,8 +1195,17 @@ public class Util {
      */
     @Nonnull
     public static String fixNull(@CheckForNull String s) {
-        if(s==null)     return "";
-        else            return s;
+        return fixNull(s, "");
+    }
+
+    /**
+     * Convert {@code null} to a default value.
+     * @param defaultValue Default value. It may be immutable or not, depending on the implementation.
+     * @since TODO
+     */
+    @Nonnull
+    public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
+        return s != null ? s : defaultValue;
     }
 
     /**
@@ -1219,24 +1228,60 @@ public class Util {
         return fixEmpty(s.trim());
     }
 
+    /**
+     *
+     * @param l list to check.
+     * @param <T>
+     *     Type of the list.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable list</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
-        return l!=null ? l : Collections.<T>emptyList();
+        return fixNull(l, Collections.<T>emptyList());
     }
 
+    /**
+     *
+     * @param l set to check.
+     * @param <T>
+     *     Type of the set.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.<T>emptySet());
     }
 
+    /**
+     *
+     * @param l collection to check.
+     * @param <T>
+     *     Type of the collection.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.<T>emptySet());
     }
 
+    /**
+     *
+     * @param l iterable to check.
+     * @param <T>
+     *     Type of the iterable.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.<T>emptySet());
     }
 
     /**
@@ -1343,7 +1388,7 @@ public class Util {
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
             Path path = fileToPath(new File(baseDir, symlinkPath));
-            Path target = Paths.get(targetPath, new String[0]);
+            Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
 
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;

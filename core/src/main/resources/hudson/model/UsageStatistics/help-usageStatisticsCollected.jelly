@@ -29,19 +29,22 @@
             Once a trial is complete, the trial results may be aggregated and shared with the developer community.
         </p>
         <p>
-            The following trials are currently set up on this instance:
+            The following trials defined on this instance are active now or in the future:
         </p>
         <j:invokeStatic className="jenkins.telemetry.Telemetry" method="all" var="collectors"/>
+        <j:invokeStatic className="java.time.LocalDate" method="now" var="now"/>
         <dl>
             <j:forEach items="${collectors}" var="collector">
-                <dt>${collector.displayName}</dt>
-                <dd>
-                    <st:include from="${collector}" optional="true" page="description.jelly"/>
-                    <p>
-                        Start date: ${collector.start}
-                        End date: ${collector.end}
-                    </p>
-                </dd>
+                <j:if test="${not collector.end.isBefore(now)}">
+                    <dt>${collector.displayName}</dt>
+                    <dd>
+                        <st:include from="${collector}" optional="true" page="description.jelly"/>
+                        <p>
+                            Start date: ${collector.start}<br/>
+                            End date: ${collector.end}
+                        </p>
+                    </dd>
+                </j:if>
             </j:forEach>
         </dl>
     </div>

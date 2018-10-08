@@ -109,7 +109,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.41</version>
+      <version>3.0.45</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -207,7 +207,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -280,7 +279,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>commons-digester</groupId>
@@ -570,8 +568,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.4</version>
-      <scope>provided</scope>
+      <version>1.8</version>
       <optional>true</optional>
     </dependency>
     <dependency>

@@ -168,6 +168,6 @@ public class ComputerStateTest {
         try {
             page.getAnchorByText(text);
             fail(text + " link should not exist");
-        } catch (ElementNotFoundException _) { /*expected*/ }
+        } catch (ElementNotFoundException ex) { /*expected*/ }
     }
 }

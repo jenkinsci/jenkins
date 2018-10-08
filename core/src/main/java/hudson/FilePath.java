@@ -2309,7 +2309,7 @@ public final class FilePath implements Serializable {
             // legacy agent.jar. Handle this gracefully
             try {
                 LOGGER.log(Level.WARNING,"Looks like an old agent.jar. Please update "+ Which.jarFile(Channel.class)+" to the new version",e);
-            } catch (IOException _) {
+            } catch (IOException ignored) {
                 // really ignore this time
             }
         }
@@ -2427,8 +2427,8 @@ public final class FilePath implements Serializable {
                     // report both errors
                     e.addSuppressed(x);
                     throw e;
-                } catch (TimeoutException _) {
-                    // remote is hanging
+                } catch (TimeoutException ignored) {
+                    // remote is hanging, just throw the original exception
                     throw e;
                 }
             }

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import hudson.remoting.Channel;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ChannelPinger.class })
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ChannelPingerTest {
 
     @Mock private Channel mockChannel;
