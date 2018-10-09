@@ -133,5 +133,11 @@ public class UserLanguages extends Telemetry {
         public boolean equals(Object obj) { // support PluginServletFilter#hasFilter
             return obj != null && obj.getClass() == AcceptLanguageFilter.class;
         }
+
+        // findbugs
+        @Override
+        public int hashCode() {
+            return 42;
+        }
     }
 }
