@@ -28,7 +28,6 @@ import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
 import jenkins.telemetry.Telemetry;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -44,6 +43,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 @Restricted(NoExternalUse.class)
 public class UserLanguages extends Telemetry {
 
-    private static Map<String, MutableLong> requestsByLanguage = new TreeMap<>();
+    private static volatile Map<String, AtomicLong> requestsByLanguage = new TreeMap<>();
     private static Logger LOGGER = Logger.getLogger(UserLanguages.class.getName());
 
     @Nonnull
@@ -82,7 +82,9 @@ public class UserLanguages extends Telemetry {
     @Override
     public JSONObject createContent() {
         JSONObject payload = new JSONObject();
-        for (Map.Entry<String, MutableLong> entry : requestsByLanguage.entrySet()) {
+        Map<String, AtomicLong> currentRequests = requestsByLanguage;
+        requestsByLanguage = new TreeMap<>();
+        for (Map.Entry<String, AtomicLong> entry : currentRequests.entrySet()) {
             payload.put(entry.getKey(), entry.getValue().longValue());
         }
         return payload;
@@ -109,14 +111,14 @@ public class UserLanguages extends Telemetry {
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-            if (request instanceof HttpServletRequest) {
+            if (request instanceof HttpServletRequest && !Telemetry.isDisabled()) {
                 HttpServletRequest httpServletRequest = (HttpServletRequest) request;
                 String language = httpServletRequest.getHeader("Accept-Language");
                 if (language != null) {
                     if (!requestsByLanguage.containsKey(language)) {
-                        requestsByLanguage.put(language, new MutableLong(0));
+                        requestsByLanguage.put(language, new AtomicLong(0));
                     }
-                    requestsByLanguage.get(language).increment();
+                    requestsByLanguage.get(language).incrementAndGet();
                 }
             }
             chain.doFilter(request, response);

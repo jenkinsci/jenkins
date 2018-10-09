@@ -76,7 +76,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
      * For a periodically updated list of all public implementations, see https://jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
-     * 
+     *
      * @return ID of the collector, never null or empty
      */
     @Nonnull
@@ -126,6 +126,14 @@ public abstract class Telemetry implements ExtensionPoint {
         return ExtensionList.lookup(Telemetry.class);
     }
 
+    /**
+     * @since TODO
+     * @return whether to collect telemetry
+     */
+    public static boolean isDisabled() {
+        return UsageStatistics.DISABLED || !Jenkins.get().isUsageStatisticsCollected();
+    }
+
     @Extension
     public static class TelemetryReporter extends AsyncPeriodicWork {
 
@@ -140,7 +148,7 @@ public abstract class Telemetry implements ExtensionPoint {
 
         @Override
         protected void execute(TaskListener listener) throws IOException, InterruptedException {
-            if (UsageStatistics.DISABLED || !Jenkins.getInstance().isUsageStatisticsCollected()) {
+            if (isDisabled()) {
                 LOGGER.info("Collection of anonymous usage statistics is disabled, skipping telemetry collection and submission");
                 return;
             }
