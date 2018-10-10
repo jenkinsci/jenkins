@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.255-SNAPSHOT</stapler.version>
+    <stapler.version>1.255-telemetry-1-SNAPSHOT</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.255-20181009.223300-3</version>
+      <version>${stapler.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -148,7 +148,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jrebel</artifactId>
-      <version>1.255-20181009.223304-3</version>
+      <version>${stapler.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
