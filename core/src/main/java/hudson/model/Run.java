@@ -2580,12 +2580,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (!SKIP_PERMISSION_CHECK) {
             // This is a bit weird, but while the Run's PermissionScope does not have READ, delegate to the parent
             if (!getParent().hasPermission(Item.DISCOVER)) {
-                // work around Stapler bug when returning null from getTarget()
-                try {
-                    Stapler.getCurrentResponse().sendError(SC_NOT_FOUND); // send same response body Stapler would send
-                } catch (IOException ex) {
-                    throw HttpResponses.notFound();
-                }
+                return null;
             }
             getParent().checkPermission(Item.READ);
         }
