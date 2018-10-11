@@ -1,5 +1,7 @@
 package jenkins;
 
+import hudson.FilePath;
+
 import javax.annotation.Nullable;
 import java.io.File;
 
@@ -31,39 +33,43 @@ public final class SoloFilePathFilter extends FilePathFilter {
             throw new SecurityException("agent may not " + op + " " + f+"\nSee https://jenkins.io/redirect/security-144 for more details");
         return true;
     }
+    
+    private File normalize(File file){
+        return new File(FilePath.normalize(file.getAbsolutePath()));
+    }
 
     @Override
     public boolean read(File f) throws SecurityException {
-        return noFalse("read",f,base.read(f));
+        return noFalse("read",f,base.read(normalize(f)));
     }
 
     @Override
     public boolean write(File f) throws SecurityException {
-        return noFalse("write",f,base.write(f));
+        return noFalse("write",f,base.write(normalize(f)));
     }
 
     @Override
     public boolean symlink(File f) throws SecurityException {
-        return noFalse("symlink",f,base.write(f));
+        return noFalse("symlink",f,base.write(normalize(f)));
     }
 
     @Override
     public boolean mkdirs(File f) throws SecurityException {
-        return noFalse("mkdirs",f,base.mkdirs(f));
+        return noFalse("mkdirs",f,base.mkdirs(normalize(f)));
     }
 
     @Override
     public boolean create(File f) throws SecurityException {
-        return noFalse("create",f,base.create(f));
+        return noFalse("create",f,base.create(normalize(f)));
     }
 
     @Override
     public boolean delete(File f) throws SecurityException {
-        return noFalse("delete",f,base.delete(f));
+        return noFalse("delete",f,base.delete(normalize(f)));
     }
 
     @Override
     public boolean stat(File f) throws SecurityException {
-        return noFalse("stat",f,base.stat(f));
+        return noFalse("stat",f,base.stat(normalize(f)));
     }
 }

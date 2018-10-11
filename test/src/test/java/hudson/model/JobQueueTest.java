@@ -79,7 +79,7 @@ public class JobQueueTest {
         if(JobQueueTest.fireCompletedFlag) {
         //Schedule the build for the project and this build should be in Queue since the state is POST_PRODUCTION
             project.scheduleBuild2(0);
-            assertTrue(project.isInQueue()); //That means its pending or its waiting or blocked
+            assertTrue(project.isInQueue()); //That means it's pending or it's waiting or blocked
             j.jenkins.getQueue().maintain();
             while(j.jenkins.getQueue().getItem(project) instanceof WaitingItem) {
                 System.out.println(j.jenkins.getQueue().getItem(project));

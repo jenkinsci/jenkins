@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACLContext;
+import jenkins.ExtensionRefreshException;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -88,6 +89,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerOverridable;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -144,6 +146,7 @@ import java.io.ByteArrayInputStream;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
@@ -176,7 +179,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class PluginManager extends AbstractModelObject implements OnMaster, StaplerOverridable {
+public abstract class PluginManager extends AbstractModelObject implements OnMaster, StaplerOverridable, StaplerProxy {
     /** Custom plugin manager system property or context param. */
     public static final String CUSTOM_PLUGIN_MANAGER = PluginManager.class.getName() + ".className";
 
@@ -920,6 +923,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // Redo who depends on who.
             resolveDependantPlugins();
 
+            try {
+                Jenkins.get().refreshExtensions();
+            } catch (ExtensionRefreshException e) {
+                throw new IOException("Failed to refresh extensions after installing " + sn + " plugin", e);
+            }
             LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
     }
@@ -1208,7 +1216,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Discover all the service provider implementations of the given class,
-     * via <tt>META-INF/services</tt>.
+     * via {@code META-INF/services}.
      * @deprecated Use {@link ServiceLoader} instead, or (more commonly) {@link ExtensionList}.
      */
     @Deprecated
@@ -1485,7 +1493,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        try (ACLContext _ = ACL.as(currentAuth)) {
+                        try (ACLContext acl = ACL.as(currentAuth)) {
                             InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                         }
                     }
@@ -1816,6 +1824,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return requestedPlugins;
     }
 
+    @Restricted(DoNotUse.class) // table.jelly
+    public MetadataCache createCache() {
+        return new MetadataCache();
+    }
+
+    @Restricted(NoExternalUse.class) // table.jelly
+    public static final class MetadataCache {
+        private final Map<String, Object> data = new HashMap<>();
+        public <T> T of(String key, Class<T> type, Supplier<T> func) {
+            return type.cast(data.computeIfAbsent(key, _ignored -> func.get()));
+        }
+    }
+
     /**
      * {@link ClassLoader} that can see all plugins.
      */
@@ -2063,4 +2084,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

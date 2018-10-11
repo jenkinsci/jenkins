@@ -38,12 +38,12 @@ import javax.annotation.CheckForNull;
  *
  * <p>
  * Some actions use the latter without the former (for example, to add a link to an external website),
- * while others do the former without the latter (for example, to just draw some graphs in <tt>floatingBox.jelly</tt>),
+ * while others do the former without the latter (for example, to just draw some graphs in {@code floatingBox.jelly}),
  * and still some others do both.
  *
  * <h2>Views</h2>
  * <p>
- * If an action has a view named <tt>floatingBox.jelly</tt>,
+ * If an action has a view named {@code floatingBox.jelly},
  * it will be displayed as a floating box on the top page of
  * the target {@link ModelObject}. (For example, this is how
  * the JUnit test result trend shows up in the project top page.
@@ -82,7 +82,7 @@ public interface Action extends ModelObject {
      *
      * @return
      *      If just a file name (like "abc.gif") is returned, it will be
-     *      interpreted as a file name inside <tt>/images/24x24</tt>.
+     *      interpreted as a file name inside {@code /images/24x24}.
      *      This is useful for using one of the stock images.
      *      <p>
      *      If an absolute file name that starts from '/' is returned (like
@@ -91,7 +91,7 @@ public interface Action extends ModelObject {
      *      image files from a plugin.
      *      <p>
      *      Finally, return null to hide it from the task list. This is normally not very useful,
-     *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
+     *      but this can be used for actions that only contribute {@code floatBox.jelly}
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
      * @see Functions#isAnonymous()

@@ -26,6 +26,275 @@ THE SOFTWARE.
   User self sign up page.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:_entryFormPage host="${app}" title="${%Sign up}" action="createAccount" captcha="${it.isEnableCaptcha()}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
+
+    <st:setHeader name="Expires" value="0"/>
+    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <j:new var="h" className="hudson.Functions"/><!-- instead of JSP functions -->
+    <!-- response contentType header -->
+    <st:contentType value="text/html;charset=UTF-8"/>
+    <!--
+    needed to generate a session if non exists,
+    without it we would add ";jsessionid=" to the url which will result in a 404
+  -->
+    <j:set var="_" value="${request.getSession()}"/>
+    <!-- get default/commong page variable -->
+    ${h.initPageVariables(context)}
+    <x:doctype name="html"/>
+    <!-- in case of error we want to surround the form elements with an error hint -->
+    <j:set var="inputClass" value="${data.errorMessage!=null ? 'danger' : 'normal'}"/>
+    <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
+    <html lang="${request.getLocale().toLanguageTag()}">
+        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+            <title>${%Create an account! [Jenkins]}</title>
+            <!-- we do not want bots on this page -->
+            <meta name="ROBOTS" content="NOFOLLOW"/>
+            <!-- css styling, will fallback to default implementation -->
+            <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+            <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css"/>
+        </head>
+        <body>
+            <div class="simple-page" role="main">
+                <div class="modal signup">
+                    <div class="signupIntroDefault">
+                        <h1>${%Create an account!}</h1>
+                        <div>
+                            ${%If you already have a Jenkins account,}&#160;<a href="${rootURL}/login" tabindex="1">${%please sign in.}</a>
+                        </div>
+                    </div>
+                    <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post" id="main-panel">
+                        <div class="formRow">
+                            <div class="inputHeader">
+                                <label
+                                    class="${data.errors.containsKey('username') ? 'alert' : 'normal'}"
+                                    for="username"
+                                >
+                                    ${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}
+                                </label>
+                            </div>
+                            <input
+                                class="${data.errors.containsKey('username') ? 'danger' : 'normal'}"
+                                value="${data.username}"
+                                tabindex="2"
+                                type="text"
+                                name="username"
+                                id="username"
+                            />
+                        </div>
+                        <div class="formRow">
+                            <div class="inputHeader">
+                                <label
+                                    class="${data.errors.containsKey('fullname') ? 'alert' : 'normal'}"
+                                    for="fullname"
+                                >
+                                    ${%Full name}${data.errors.containsKey('fullname') ? ' - ' + data.errors.get('fullname') : ''}
+                                </label>
+                            </div>
+                            <input
+                                tabindex="3"
+                                class="${data.errors.containsKey('fullname') ? 'danger' : 'normal'}"
+                                value="${data.fullname}"
+                                type="text"
+                                name="fullname"
+                                id="fullname"
+                            />
+                        </div>
+                        <j:if test="${it.mailerPluginPresent}">
+                            <div class="formRow">
+                                <div class="inputHeader">
+                                    <label
+                                        class="${data.errors.containsKey('email') ? 'alert' : 'normal'}"
+                                        for="email"
+                                    >
+                                        ${%Email}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}
+                                    </label>
+                                </div>
+                                <input
+                                    tabindex="4"
+                                    class="${data.errors.containsKey('email') ? 'danger' : 'normal'}"
+                                    value="${data.email}"
+                                    type="text"
+                                    name="email"
+                                    id="email"
+                                />
+                            </div>
+                        </j:if>
+                        <j:if test="${it.isEnableCaptcha()}">
+                            <div class="formRow">
+                                <div class="inputHeader">
+                                    <label
+                                        class="${data.errors.containsKey('captcha') ? 'alert' : 'normal'}"
+                                        for="captcha"
+                                    >${%Enter text as shown}</label>
+                                </div>
+
+                                <input
+                                    class="${data.errors.containsKey('captcha') ? 'danger' : 'normal'}"
+                                    type="text"
+                                    name="captcha"
+                                    id="captcha"
+                                    tabindex="5"
+                                    autocomplete="off"
+                                />
+                                <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
+                            </div>
+                        </j:if>
+                        <div class="formRow">
+                            <div class="inputHeader">
+                                <label
+                                        class="${data.errors.containsKey('password1') ? 'alert' : 'normal'}"
+                                        for="password1"
+                                >
+                                    ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
+                                </label>
+                                <script type="text/javascript">
+                                    const togglePasswordType = function(event) {
+                                        const passwordField = document.getElementById('password1');
+                                        const showPass = document.getElementById('showPassword');
+                                        if (showPass.checked) {
+                                            passwordField.type = 'text';
+                                        } else {
+                                            passwordField.type = 'password';
+                                        }
+                                    };
+
+                                    const passwordScore = function(password) {
+                                        var score = 0;
+                                        if (!password) {
+                                            return score
+                                        }
+                                        // award every unique letter until 5 repetitions
+                                        var letters = {};
+                                        for (var i = 0; i &lt; password.length; i++) {
+                                            letters[password[i]] = (letters[password[i]] || 0) + 1
+                                            score += 5.0 / letters[password[i]]
+                                        }
+
+                                        // bonus points for mixing it up
+                                        var variations = {
+                                            digits: /\d/.test(password),
+                                            lower: /[a-z]/.test(password),
+                                            upper: /[A-Z]/.test(password),
+                                            nonWords: /\W/.test(password)
+                                        };
+
+                                        var variationCount = 0;
+                                        for (var check in variations) {
+                                            variationCount += variations[check] === true ? 1 : 0;
+                                        }
+                                        score += (variationCount - 1) * 10;
+                                        return parseInt(score);
+                                    };
+
+                                    const passwordStrength = function(score) {
+                                        if (score > 80) {
+                                            return "${%Strong}";
+                                        }
+                                        if (score > 60) {
+                                            return "${%Moderate}";
+                                        }
+                                        if (score >= 30) {
+                                            return "${%Weak}";
+                                        }
+                                        return "${%Poor}";
+                                    };
+
+                                    const passwordStrengthColor = function(score) {
+                                        if (score > 80) {
+                                            return "#3a7911"
+                                        }
+                                        if (score > 60) {
+                                            return "#c6810e"
+                                        }
+                                        if (score >= 30) {
+                                            return "#de5912"
+                                        }
+                                        return "#c4000a"
+                                    };
+
+                                    const validatePassword = function() {
+                                        const password = document.getElementById('password1');
+                                        if (password) {
+                                            const passwordStrengthWrapper =
+                                                    document.getElementById('passwordStrengthWrapper');
+                                            passwordStrengthWrapper.hidden = false;
+                                            const score = passwordScore(password.value);
+                                            const passwordStrengthIndicator = document.getElementById('passwordStrength');
+                                            passwordStrengthIndicator.innerText = passwordStrength(score);
+                                            passwordStrengthIndicator.setAttribute('style', 'color: ' +
+                                                passwordStrengthColor(score));
+                                            document.getElementById('password2').value = password.value;
+                                        }
+                                    }
+                                </script>
+                                <div class="Checkbox Checkbox-small">
+                                    <label class="Checkbox-wrapper">
+                                        <input
+                                            type="checkbox"
+                                            id="showPassword"
+                                            onClick="togglePasswordType(this)"
+                                            name="remember_me"
+                                            tabindex="7"
+                                        />
+                                        <div class="Checkbox-indicator">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                focusable="false"
+                                                width="20"
+                                                height="20"
+                                                class="svg-icon check"
+                                                viewBox="0 0 24 24">
+                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="Checkbox-text">
+                                            ${%Show}
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <input
+                                onKeyUp="validatePassword()"
+                                class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
+                                value="${data.password1}"
+                                type="password"
+                                tabindex="6"
+                                name="password1"
+                                id="password1"
+                            />
+                            <div id="passwordStrengthWrapper">${%Strength}: <span id="passwordStrength">&#160;</span> </div>
+                            <script type="text/javascript">
+                                if (document.getElementById('passwordStrengthWrapper')) {
+                                    document.getElementById('passwordStrengthWrapper').hidden = true;
+                                }
+                            </script>
+
+                        </div>
+                        <div class="formRow">
+                            ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
+                        </div>
+                        <input
+                            class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
+                            value="${data.password2}"
+                            type="hidden"
+                            name="password2"
+                            id="password2"
+                        />
+                        <div class="submit formRow">
+                            <f:submit value="${%Create account}"/>
+                        </div>
+                        <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
+                        <j:if test="${data.errorField != null}">
+                            <script type="text/javascript">
+                                const errorField = document.getElementById('${data.errorField}');
+                                if(errorField &amp;&amp; errorField.focus) {
+                                    errorField.focus();
+                                }
+                            </script>
+                        </j:if>
+                    </form>
+                </div>
+            </div>
+        </body>
+    </html>
 </j:jelly>

@@ -36,6 +36,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.remoting.ClassFilter;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
@@ -51,6 +52,7 @@ import static org.junit.Assume.*;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.jvnet.hudson.test.BuildWatcher;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -149,6 +151,16 @@ public class ClassFilterImplTest {
         assertEquals(Collections.singleton(config), data.keySet());
         assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://jenkins.io/redirect/class-filter/")));
     }
+
+    @Test
+    @Issue("JENKINS-49543")
+    public void moduleClassesShouldBeWhitelisted() throws Exception {
+        ClassFilterImpl filter = new ClassFilterImpl();
+        filter.check("org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl");
+        filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
+        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
+    }
+
     @TestExtension("xstreamRequiresWhitelist")
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;

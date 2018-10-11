@@ -30,7 +30,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Model object used to display the generic error when Jenkins start up fails fatally during initialization.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -23,19 +23,30 @@
  */
 package hudson.model;
 
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.tasks.ArtifactArchiver;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.ArtifactManagerFactoryDescriptor;
+import jenkins.model.Jenkins;
+import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-/**
- * @author Kohsuke Kawaguchi
- */
 public class RunTest  {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -71,6 +82,35 @@ public class RunTest  {
         List<BuildBadgeAction> badgeActions = b.getBadgeActions();
         assertEquals(1, badgeActions.size());
         assertEquals(Run.KeepLogBuildBadge.class, badgeActions.get(0).getClass());
+    }
+
+    @Issue("JENKINS-51819")
+    @Test public void deleteArtifactsCustom() throws Exception {
+        ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new Mgr.Factory());
+        FreeStyleProject p = j.createFreeStyleProject();
+        j.jenkins.getWorkspaceFor(p).child("f").write("", null);
+        p.getPublishersList().add(new ArtifactArchiver("f"));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
+        b.delete();
+        assertTrue(Mgr.deleted.get());
+    }
+    private static final class Mgr extends ArtifactManager {
+        static final AtomicBoolean deleted = new AtomicBoolean();
+        @Override public boolean delete() throws IOException, InterruptedException {
+            return !deleted.getAndSet(true);
+        }
+        @Override public void onLoad(Run<?, ?> build) {}
+        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException {}
+        @Override public VirtualFile root() {
+            return VirtualFile.forFile(Jenkins.get().getRootDir()); // irrelevant
+        }
+        public static final class Factory extends ArtifactManagerFactory {
+            @DataBoundConstructor public Factory() {}
+            @Override public ArtifactManager managerFor(Run<?, ?> build) {
+                return new Mgr();
+            }
+            @TestExtension("deleteArtifactsCustom") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
+        }
     }
 
 }

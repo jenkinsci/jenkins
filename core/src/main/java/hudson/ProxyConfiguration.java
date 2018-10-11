@@ -204,7 +204,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         SaveableListener.fireOnChange(this, config);
     }
 
-    public Object readResolve() {
+    private Object readResolve() {
         if (secretPassword == null)
             // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
@@ -340,6 +340,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
                 @QueryParameter("userName") String userName, @QueryParameter("password") String password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
+
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());

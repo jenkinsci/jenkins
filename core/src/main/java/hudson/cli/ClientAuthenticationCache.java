@@ -53,16 +53,7 @@ public class ClientAuthenticationCache implements Serializable {
     final Properties props = new Properties();
 
     public ClientAuthenticationCache(Channel channel) throws IOException, InterruptedException {
-        store = (channel==null ? FilePath.localChannel :  channel).call(new MasterToSlaveCallable<FilePath, IOException>() {
-            public FilePath call() throws IOException {
-                File home = new File(System.getProperty("user.home"));
-                File hudsonHome = new File(home, ".hudson");
-                if (hudsonHome.exists()) {
-                    return new FilePath(new File(hudsonHome, "cli-credentials"));
-                }
-                return new FilePath(new File(home, ".jenkins/cli-credentials"));
-            }
-        });
+        store = (channel==null ? FilePath.localChannel :  channel).call(new CredentialsFilePathMasterToSlaveCallable());
         if (store.exists()) {
             try (InputStream istream = store.read()) {
                 props.load(istream);
@@ -150,5 +141,16 @@ public class ClientAuthenticationCache implements Serializable {
         }
         // try to protect this file from other users, if we can.
         store.chmod(0600);
+    }
+
+    private static class CredentialsFilePathMasterToSlaveCallable extends MasterToSlaveCallable<FilePath, IOException> {
+        public FilePath call() throws IOException {
+            File home = new File(System.getProperty("user.home"));
+            File hudsonHome = new File(home, ".hudson");
+            if (hudsonHome.exists()) {
+                return new FilePath(new File(hudsonHome, "cli-credentials"));
+            }
+            return new FilePath(new File(home, ".jenkins/cli-credentials"));
+        }
     }
 }

@@ -33,7 +33,7 @@ THE SOFTWARE.
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th style="width:32px"/>
-          <th>${%User Id}</th>
+          <th>${%User ID}</th>
           <th>${%Name}</th>
           <th style="width:32px"/>
         </tr>

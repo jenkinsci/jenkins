@@ -34,13 +34,14 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
-import hudson.security.csrf.CrumbIssuer;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;
@@ -62,6 +63,11 @@ public class ItemsTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
+    @Before
+    public void setupLegacyBehavior(){
+        ApiTokenTestHelper.enableLegacyBehavior();
+    }
+    
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");

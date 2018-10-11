@@ -27,11 +27,11 @@ THE SOFTWARE.
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.107-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
-  <artifactId>test</artifactId>
+  <artifactId>jenkins-test</artifactId>
 
   <name>Tests for Jenkins core</name>
   <description>Functional tests for Jenkins core</description>
@@ -53,7 +53,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.32</version>
+      <version>2.36</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -301,9 +301,17 @@ THE SOFTWARE.
 
   <profiles>
     <profile>
+      <!-- Profile, which allows skipping all integration tests -->
       <id>light-test</id>
       <properties>
         <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <!-- Profile, which runs only a number of quick integration tests so that the build takes less than 5 minutes -->
+      <id>smoke-test</id>
+      <properties>
+        <test>jenkins.model.StartupTest,jenkins.model.JenkinsTest,jenkins.install.*,jenkins.security.CustomClassFilterTest,hudson.AboutJenkinsTest,hudson.ClassicPluginStrategyTest,hudson.LauncherTest,hudson.slaves.JNLPLauncherTest,hudson.model.RunTest,hudson.model.UserTest,hudson.model.FreeStyleProjectTest,hudson.model.HudsonTest,hudson.model.ComputerTest,hudson.CLI.BuildCommandTest#sync,*.smokes</test>
       </properties>
     </profile>
     <profile>
