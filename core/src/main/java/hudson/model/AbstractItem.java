@@ -942,12 +942,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
             if (!getACL().hasPermission(Item.DISCOVER)) {
-                // work around Stapler bug when returning null from getTarget()
-                try {
-                    Stapler.getCurrentResponse().sendError(SC_NOT_FOUND); // send same response body Stapler would send
-                } catch (IOException ex) {
-                    throw HttpResponses.notFound();
-                }
+                return null;
             }
             getACL().checkPermission(Item.READ);
         }

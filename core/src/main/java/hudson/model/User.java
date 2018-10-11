@@ -1123,13 +1123,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!Jenkins.getInstance().hasPermission(Jenkins.READ)) {
-                // work around Stapler bug when returning null from getTarget()
-                try {
-                    Stapler.getCurrentResponse().sendError(SC_NOT_FOUND); // send same response body Stapler would send
-                } catch (IOException ex) {
-                    throw HttpResponses.notFound();
-                }
+            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+                return null;
             }
         }
         return this;
