@@ -639,8 +639,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.256-20181012.162708-1</version>
-      <!-- https://github.com/stapler/stapler/pull/147 -->
+      <version>1.256-20181016.115646-4</version>
+      <!-- see https://github.com/stapler/stapler/pull/147 -->
     </dependency>
     
   </dependencies>
