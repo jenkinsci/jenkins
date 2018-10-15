@@ -6,11 +6,12 @@ function updateListBox(listBox,url,config) {
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
     var status;
-    try{
+    try {
         status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
         if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error'))
             status.innerHTML = "";
-    }catch(e){
+    } 
+    catch(e) {
         console.log(e);
     }
     config.onSuccess = function (rsp) {
