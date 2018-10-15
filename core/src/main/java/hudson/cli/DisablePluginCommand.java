@@ -25,37 +25,47 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.lifecycle.RestartNotSupportedException;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Disable one or more installed plugins. If the plugin has an enabled dependant then it can't be disabled, the process
- * continues, but the exit code is 16, instead of 0. Disabling an already disabled plugin does nothing. It only restart
- * if, at least, one plugin has been disabled and the restart option was set.
- *
+ * Disable one or more installed plugins.
  * @since TODO
  */
 @Extension
 public class DisablePluginCommand extends CLICommand {
 
-    @Argument(metaVar = "plugins", required = true, usage = "Plugins to be disabled.")
+    @Argument(metaVar = "plugin1 plugin2 plugin3", required = true, usage = "Plugins to be disabled.")
     private List<String> pluginNames;
 
-    @Option(name = "-restart", usage = "Restart Jenkins after disabling plugins.")
+    @Option(name = "-restart", aliases = "-r", usage = "Restart Jenkins after disabling plugins.")
     private boolean restart;
+
+    @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = "How to process the dependant plugins. \n" +
+            "- none: if a mandatory dependant plugin exists and it is enabled, the plugin cannot be disabled (default value).\n" +
+            "- mandatory: all mandatory dependant plugins are also disabled, optional dependant plugins remain enabled.\n" +
+            "- all: all dependant plugins are also disabled, no matter if its dependency is optional or mandatory.")
+    private String strategy = PluginWrapper.PluginDisableStrategy.NONE.toString();
+
+    @Option(name = "-quiet", aliases = "-q", usage = "Be quiet, print only the error messages")
+    private boolean quiet;
+
+    private static final int INDENT_SPACE = 3;
 
     @Override
     public String getShortDescription() {
         return Messages.DisablePluginCommand_ShortDescription();
     }
+
+    // package-private access to be able to use it in the tests
+    static final int RETURN_CODE_NOT_DISABLED_DEPENDANTS = 16;
+    static final int RETURN_CODE_NO_SUCH_PLUGIN = 17;
 
     @Override
     protected void printUsageSummary(PrintStream stderr) {
@@ -68,68 +78,161 @@ public class DisablePluginCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
-        PluginManager manager = jenkins.getPluginManager();
-        int result = 0;
-        boolean somePluginDisabled = false; // to ensure we restart when it needs to
-        for (String pluginName : pluginNames) {
-            switch (disablePlugin(manager, pluginName)) {
-                case DISABLED:
-                    if(!somePluginDisabled) somePluginDisabled = true;
+        // get the strategy as an enum
+        PluginWrapper.PluginDisableStrategy strategyToUse;
+        try {
+            strategyToUse = PluginWrapper.PluginDisableStrategy.valueOf(strategy.toUpperCase());
+        } catch (IllegalArgumentException iae) {
+            throw new IllegalArgumentException(hudson.cli.Messages.DisablePluginCommand_NoSuchStrategy(strategy, String.format("%s, %s, %s", PluginWrapper.PluginDisableStrategy.NONE, PluginWrapper.PluginDisableStrategy.MANDATORY, PluginWrapper.PluginDisableStrategy.ALL)));
+        }
+
+        // disable...
+        List<PluginWrapper.PluginDisableResult> results = jenkins.pluginManager.disablePlugins(strategyToUse, pluginNames);
+
+        // print results ...
+        printResults(results);
+
+        // restart if it was required and it's necessary (some plugin was disabled in this execution)
+        restartIfNecessary(results);
+
+        // return the appropriate error code
+        return getResultCode(results);
+    }
+
+    /**
+     * Print the result of all the process
+     * @param results the list of results for the disablement of each plugin
+     */
+    private void printResults( List<PluginWrapper.PluginDisableResult> results) {
+        for (PluginWrapper.PluginDisableResult oneResult : results) {
+            printResult(oneResult, 0);
+        }
+    }
+
+    /**
+     * Print indented the arguments with the format passed beginning with the indent passed.
+     * @param indent number of spaces at the beginning.
+     * @param format format as in {@link String#format(String, Object...)}
+     * @param arguments arguments to print as in {@link String#format(String, Object...)}
+     */
+    private void printIndented(int indent, String format, String... arguments) {
+        if (indent == 0) {
+            stdout.format(format + "%n", (Object[]) arguments);
+        } else {
+            String f = "%" + indent + "s" + format + "%n";
+            String[] newArgs = new String[arguments.length + 1];
+            newArgs[0] = " "; int i = 1;
+            for (String arg: arguments ) {
+                newArgs[i] = arg;
+                i++;
+            }
+            stdout.format(f, newArgs);
+        }
+    }
+
+    /**
+     * Print the result of a plugin disablement with the indent passed.
+     * @param oneResult the result of the disablement of a plugin.
+     * @param indent the initial indent.
+     */
+    private void printResult(PluginWrapper.PluginDisableResult oneResult, int indent) {
+        PluginWrapper.PluginDisableStatus status = oneResult.getStatus();
+        if(quiet && (PluginWrapper.PluginDisableStatus.DISABLED.equals(status) || PluginWrapper.PluginDisableStatus.ALREADY_DISABLED.equals(status))) {
+            return;
+        }
+
+        printIndented(indent, Messages.DisablePluginCommand_StatusMessage(oneResult.getPlugin(), oneResult.getStatus(), oneResult.getMessage()));
+        if(oneResult.getDependantsDisableStatus().size() > 0) {
+            indent = (indent == 0) ? INDENT_SPACE : indent*2;
+            for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
+                printResult(oneDependantResult, indent);
+            }
+        }
+    }
+
+    /**
+     * Restart if at least one plugin was disabled in this process.
+     * @param results the list of results after the disablement of the plugins.
+     */
+    private void restartIfNecessary(List<PluginWrapper.PluginDisableResult> results) throws RestartNotSupportedException {
+        if (restart) {
+            for (PluginWrapper.PluginDisableResult oneResult : results) {
+                if (restartIfNecessary(oneResult)) {
                     break;
-                case NOT_DISABLED_DEPENDANTS:
-                    if(result != 16) result = 16; // Custom error code to indicate one plugin, at least, can't be disabled
+                }
+            }
+        }
+    }
+
+    /**
+     * Restart if this particular result of the disablement of a plugin and its dependant plugins (depending on the
+     * strategy used) has a plugin disablexd.
+     * @param oneResult the result of a plugin (and its dependants).
+     * @return true if it end up in restarting jenkins.
+     */
+    private boolean restartIfNecessary(PluginWrapper.PluginDisableResult oneResult) throws RestartNotSupportedException {
+        PluginWrapper.PluginDisableStatus status = oneResult.getStatus();
+        if(PluginWrapper.PluginDisableStatus.DISABLED.equals(status)) {
+            Jenkins.get().safeRestart();
+            return true;
+        }
+
+        if(oneResult.getDependantsDisableStatus().size() > 0) {
+            for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
+                if (restartIfNecessary(oneDependantResult)) {
+                    return true;
+                }
             }
         }
 
-        if (restart && somePluginDisabled) {
-            jenkins.safeRestart();
+        return false;
+    }
+
+
+    /**
+     * Calculate the result code of the full process based in what went on during the process
+     * @param results he list of results for the disablement of each plugin
+     * @return the status code. 0 if all plugins disabled. {@link #RETURN_CODE_NOT_DISABLED_DEPENDANTS} if some
+     * dependant plugin is not disabled (with strategy NONE), {@link #RETURN_CODE_NO_SUCH_PLUGIN} if some passed
+     * plugin doesn't exist. Whatever happens first.
+     */
+    private int getResultCode(List<PluginWrapper.PluginDisableResult> results) {
+        int result = 0;
+        for (PluginWrapper.PluginDisableResult oneResult : results) {
+            result = getResultCode(oneResult);
+            if (result != 0) {
+                break;
+            }
         }
 
         return result;
     }
 
     /**
-     * Try to disable a  plugin.
-     * @param manager The PluginManager.
-     * @param shortName The name of the plugin to disable.
-     * @return The result of the disabling of this plugin. See {@link DisablingStatus}
-     * @throws IOException An exception disabling the plugin. See {@link PluginWrapper#disable()}
+     * Calculate the result code of the disablement of one plugin based in what went on during the process of this one
+     * and its dependant plugins.
+     * @param result the result of the disablement of this plugin
+     * @return the status code
      */
-    private DisablingStatus disablePlugin(PluginManager manager, String shortName) throws IOException {
-        PluginWrapper plugin = manager.getPlugin(shortName);
-        if (plugin == null) {
-            throw new IllegalArgumentException(Messages.DisablePluginCommand_NoSuchPlugin(shortName)); // exit with 3
+    private int getResultCode(PluginWrapper.PluginDisableResult result) {
+        int returnCode = 0;
+        switch (result.getStatus()){
+            case NOT_DISABLED_DEPENDANTS:
+                returnCode = RETURN_CODE_NOT_DISABLED_DEPENDANTS;
+                break;
+            case NO_SUCH_PLUGIN:
+                returnCode = RETURN_CODE_NO_SUCH_PLUGIN;
         }
 
-        if (!plugin.isEnabled()) {
-            stdout.format(Messages.DisablePluginCommand_Already_Disabled(shortName));
-            stdout.println();
-            return DisablingStatus.ALREADY_DISABLED;
-        }
-
-        Set<String> dependants = plugin.getDependants();
-        for (String dependant : dependants) {
-            PluginWrapper dependantPlugin = manager.getPlugin(dependant);
-            if (dependantPlugin != null && dependantPlugin.isEnabled()) {
-                stderr.format(Messages.DisablePluginCommand_Plugin_Has_Dependant(shortName, dependant));
-                stderr.println();
-                return DisablingStatus.NOT_DISABLED_DEPENDANTS;
+        if (returnCode == 0) {
+            for (PluginWrapper.PluginDisableResult oneDependantResult : result.getDependantsDisableStatus()) {
+                returnCode = getResultCode(oneDependantResult);
+                if (returnCode != 0) {
+                    break;
+                }
             }
         }
 
-        plugin.disable();
-        stdout.format(Messages.DisablePluginCommand_Plugin_Disabled(plugin.getShortName()));
-        stdout.println();
-
-        return DisablingStatus.DISABLED;
-    }
-
-    /**
-     * An enum to hold the status of a disabling action. To do it more reader-friendly.
-     */
-    private enum DisablingStatus {
-        DISABLED,
-        ALREADY_DISABLED,
-        NOT_DISABLED_DEPENDANTS
+        return returnCode;
     }
 }
