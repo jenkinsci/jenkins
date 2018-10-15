@@ -58,7 +58,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void canDisablePluginWithOptionalDependerStNone() {
+    public void canDisablePluginWithOptionalDependerStrategyNone() {
         assertThat(disablePluginsCLiCommand("-strategy", "NONE", "dependee"), succeeded());
         assertPluginDisabled("dependee");
     }
@@ -66,7 +66,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void canDisablePluginWithDependantsDisabledStNone() throws IOException {
+    public void canDisablePluginWithDependantsDisabledStrategyNone() throws IOException {
         disablePlugin("mandatory-depender");
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "NONE", "dependee");
 
@@ -82,7 +82,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void cannotDisablePluginWithMandatoryDependerStNone() {
+    public void cannotDisablePluginWithMandatoryDependerStrategyNone() {
         assertThat(disablePluginsCLiCommand("dependee"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginEnabled("dependee");
     }
@@ -94,7 +94,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void cannotDisableDependentPluginWrongOrderStNone() {
+    public void cannotDisableDependentPluginWrongOrderStrategyNone() {
         assertThat(disablePluginsCLiCommand("dependee", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginDisabled("mandatory-depender");
         assertPluginEnabled("dependee");
@@ -107,7 +107,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void canDisableDependentPluginsRightOrderStNone() {
+    public void canDisableDependentPluginsRightOrderStrategyNone() {
         assertThat(disablePluginsCLiCommand("mandatory-depender", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginDisabled("mandatory-depender");

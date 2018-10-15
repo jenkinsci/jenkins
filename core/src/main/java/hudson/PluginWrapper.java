@@ -27,17 +27,16 @@ package hudson;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import hudson.PluginManager.PluginInstanceStore;
-import hudson.cli.DisablePluginCommand;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.YesNoMaybe;
-import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -49,8 +48,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
@@ -58,7 +55,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -233,7 +243,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Get the list of components that depend optionally on this plugin.
      * @return The list of components that depend optionally on this plugin.
      */
     public @Nonnull Set<String> getOptionalDependants() {
@@ -571,8 +580,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @throws IOException If this plugin or one dependant plugin raise this exception during its disablement. It could
      * be raised because the disable file cannot be created.
      */
-    @Nonnull
-    public PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) throws IOException {
+    public @Nonnull PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) throws IOException {
         PluginDisableResult result = new PluginDisableResult(shortName);
 
         if (!this.isEnabled()) {
@@ -587,21 +595,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         // List of dependants plugins to 'check'. 'Check' means disable for mandatory or all strategies, or review if
         // this dependant-mandatory plugin is enabled in order to return an error for the NONE strategy.
-        Set<String> dependantsToCheck;
-        switch (strategy) {
-            case MANDATORY:
-                // As of getDependants has all the dependants, we get the difference between them and only the optionals
-                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
-                break;
-            case ALL:
-                // getDependants returns all the dependant plugins, mandatory or optional.
-                dependantsToCheck = this.getDependants();
-                break;
-            case NONE:
-            default:
-                // with NONE, the process only fail if mandatory dependant plugins exists
-                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
-        }
+        Set<String> dependantsToCheck = dependantsToCheck(strategy);
 
         // Review all the dependants and add to the plugin result what happened with its dependants
         for (String dependant : dependantsToCheck) {
@@ -651,6 +645,25 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         }
 
         return result;
+    }
+
+    private Set<String> dependantsToCheck(PluginDisableStrategy strategy) {
+        Set<String> dependantsToCheck;
+        switch (strategy) {
+            case MANDATORY:
+                // As of getDependants has all the dependants, we get the difference between them and only the optionals
+                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
+                break;
+            case ALL:
+                // getDependants returns all the dependant plugins, mandatory or optional.
+                dependantsToCheck = this.getDependants();
+                break;
+            case NONE:
+            default:
+                // with NONE, the process only fail if mandatory dependant plugins exists
+                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
+        }
+        return dependantsToCheck;
     }
 
     /**
@@ -1011,7 +1024,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * An enum to hold the status of a disabling action against a plugin. To do it more reader-friendly.
      */
-    public static enum PluginDisableStatus {
+    public enum PluginDisableStatus {
         NO_SUCH_PLUGIN,
         DISABLED,
         ALREADY_DISABLED,
