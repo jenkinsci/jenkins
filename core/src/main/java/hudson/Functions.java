@@ -1830,7 +1830,7 @@ public class Functions {
         String cp = Stapler.getCurrentRequest().getContextPath();
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + getResourcePath() + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
