@@ -92,7 +92,7 @@ public class DisablePluginCommand extends CLICommand {
         // print results ...
         printResults(results);
 
-        // restart if it was required and it's necessary (some plugin was disabled in this execution)
+        // restart if it was required and it's necessary (at least one plugin was disabled in this execution)
         restartIfNecessary(results);
 
         // return the appropriate error code
@@ -103,7 +103,7 @@ public class DisablePluginCommand extends CLICommand {
      * Print the result of all the process
      * @param results the list of results for the disablement of each plugin
      */
-    private void printResults( List<PluginWrapper.PluginDisableResult> results) {
+    private void printResults(List<PluginWrapper.PluginDisableResult> results) {
         for (PluginWrapper.PluginDisableResult oneResult : results) {
             printResult(oneResult, 0);
         }
@@ -121,8 +121,9 @@ public class DisablePluginCommand extends CLICommand {
         } else {
             String f = "%" + indent + "s" + format + "%n";
             String[] newArgs = new String[arguments.length + 1];
-            newArgs[0] = " "; int i = 1;
-            for (String arg: arguments ) {
+            newArgs[0] = " ";
+            int i = 1;
+            for (String arg: arguments) {
                 newArgs[i] = arg;
                 i++;
             }
@@ -137,13 +138,13 @@ public class DisablePluginCommand extends CLICommand {
      */
     private void printResult(PluginWrapper.PluginDisableResult oneResult, int indent) {
         PluginWrapper.PluginDisableStatus status = oneResult.getStatus();
-        if(quiet && (PluginWrapper.PluginDisableStatus.DISABLED.equals(status) || PluginWrapper.PluginDisableStatus.ALREADY_DISABLED.equals(status))) {
+        if (quiet && (PluginWrapper.PluginDisableStatus.DISABLED.equals(status) || PluginWrapper.PluginDisableStatus.ALREADY_DISABLED.equals(status))) {
             return;
         }
 
         printIndented(indent, Messages.DisablePluginCommand_StatusMessage(oneResult.getPlugin(), oneResult.getStatus(), oneResult.getMessage()));
-        if(oneResult.getDependantsDisableStatus().size() > 0) {
-            indent = (indent == 0) ? INDENT_SPACE : indent*2;
+        if (oneResult.getDependantsDisableStatus().size() > 0) {
+            indent += INDENT_SPACE;
             for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
                 printResult(oneDependantResult, indent);
             }
@@ -172,12 +173,12 @@ public class DisablePluginCommand extends CLICommand {
      */
     private boolean restartIfNecessary(PluginWrapper.PluginDisableResult oneResult) throws RestartNotSupportedException {
         PluginWrapper.PluginDisableStatus status = oneResult.getStatus();
-        if(PluginWrapper.PluginDisableStatus.DISABLED.equals(status)) {
+        if (PluginWrapper.PluginDisableStatus.DISABLED.equals(status)) {
             Jenkins.get().safeRestart();
             return true;
         }
 
-        if(oneResult.getDependantsDisableStatus().size() > 0) {
+        if (oneResult.getDependantsDisableStatus().size() > 0) {
             for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
                 if (restartIfNecessary(oneDependantResult)) {
                     return true;
