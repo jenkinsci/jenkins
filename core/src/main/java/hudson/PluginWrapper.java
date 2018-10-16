@@ -76,6 +76,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
+import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
+import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
 import static java.util.logging.Level.WARNING;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
@@ -577,15 +582,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Disable this plugin using a strategy.
      * @param strategy strategy to use
      * @return an object representing the result of the disablement of this plugin and its dependants plugins.
-     * @throws IOException If this plugin or one dependant plugin raise this exception during its disablement. It could
-     * be raised because the disable file cannot be created.
      */
-    public @Nonnull PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) throws IOException {
+    public @Nonnull PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) {
         PluginDisableResult result = new PluginDisableResult(shortName);
 
         if (!this.isEnabled()) {
             result.setMessage(Messages.PluginWrapper_Already_Disabled(shortName));
-            result.setStatus(PluginDisableStatus.ALREADY_DISABLED);
+            result.setStatus(ALREADY_DISABLED);
             return result;
         }
 
@@ -603,9 +606,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
             // The dependant plugin doesn't exist, add an error to the report
             if (dependantPlugin == null) {
-                PluginDisableResult dependantStatus = new PluginDisableResult(dependant);
-                dependantStatus.setStatus(PluginDisableStatus.NO_SUCH_PLUGIN);
-                dependantStatus.setMessage(Messages.PluginWrapper_NoSuchPlugin(dependant));
+                PluginDisableResult dependantStatus = new PluginDisableResult(dependant, NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(dependant));
                 result.addDependantDisableStatus(dependantStatus);
 
             // If the strategy is none and there is some enabled dependant plugin, the plugin cannot be disabled. If
@@ -618,30 +619,41 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
             // If the strategy is not none and this dependant plugin is not enabled, add it as already disabled
             } else if (!dependantPlugin.isEnabled()) {
-                PluginDisableResult dependantStatus = new PluginDisableResult(dependant);
-                dependantStatus.setStatus(PluginDisableStatus.ALREADY_DISABLED);
-                dependantStatus.setMessage(Messages.PluginWrapper_Already_Disabled(dependant));
+                PluginDisableResult dependantStatus = new PluginDisableResult(dependant, ALREADY_DISABLED, Messages.PluginWrapper_Already_Disabled(dependant));
                 result.addDependantDisableStatus(dependantStatus);
 
             // If the strategy is not none and this dependant plugin is enabled, disable it
             } else {
                 // As there is no cycles in the plugin dependencies, the recursion shouldn't be infinite. The
                 // strategy used is the same for its dependants plugins
-                result.addDependantDisableStatus(dependantPlugin.disable(strategy));
+                PluginDisableResult dependantResult = dependantPlugin.disable(strategy);
+                PluginDisableStatus dependantStatus = dependantResult.status;
+
+                // If something wrong happened, flag this dependant plugin to set the plugin later as not-disabled due
+                // to its dependants plugins.
+                if (ERROR_DISABLING.equals(dependantStatus) || NOT_DISABLED_DEPENDANTS.equals(dependantStatus)) {
+                    aDependantNotDisabled = dependant;
+                    break; // we found a dependant plugin enabled, stop looking for dependant plugins to disable.
+                }
+                result.addDependantDisableStatus(dependantResult);
             }
         }
 
         // If there is no enabled-dependant plugin, disable this plugin and add it to the result
         if (aDependantNotDisabled == null) {
-            this.disableWithoutCheck();
-            result.setMessage(Messages.PluginWrapper_Plugin_Disabled(shortName));
-            result.setStatus(PluginDisableStatus.DISABLED);
-
+            try {
+                this.disableWithoutCheck();
+                result.setMessage(Messages.PluginWrapper_Plugin_Disabled(shortName));
+                result.setStatus(DISABLED);
+            } catch (IOException io) {
+                result.setMessage(Messages.PluginWrapper_Error_Disabling(shortName, io.toString()));
+                result.setStatus(ERROR_DISABLING);
+            }
         // if there is yet some not disabled dependant plugin (only possible with none strategy), this plugin cannot
         // be disabled.
         } else {
             result.setMessage(Messages.PluginWrapper_Plugin_Has_Dependant(shortName, aDependantNotDisabled, strategy));
-            result.setStatus(PluginDisableStatus.NOT_DISABLED_DEPENDANTS);
+            result.setStatus(NOT_DISABLED_DEPENDANTS);
         }
 
         return result;
@@ -650,17 +662,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private Set<String> dependantsToCheck(PluginDisableStrategy strategy) {
         Set<String> dependantsToCheck;
         switch (strategy) {
-            case MANDATORY:
-                // As of getDependants has all the dependants, we get the difference between them and only the optionals
-                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
-                break;
             case ALL:
                 // getDependants returns all the dependant plugins, mandatory or optional.
                 dependantsToCheck = this.getDependants();
                 break;
-            case NONE:
             default:
+                // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependant plugins exists
+                // As of getDependants has all the dependants, we get the difference between them and only the optionals
                 dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
         }
         return dependantsToCheck;
@@ -978,6 +987,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             this.plugin = plugin;
         }
 
+        public PluginDisableResult(String plugin, PluginDisableStatus status, String message) {
+            this.plugin = plugin;
+            this.status = status;
+            this.message = message;
+        }
+
         public String getPlugin() {
             return plugin;
         }
@@ -1028,13 +1043,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         NO_SUCH_PLUGIN,
         DISABLED,
         ALREADY_DISABLED,
-        NOT_DISABLED_DEPENDANTS
+        NOT_DISABLED_DEPENDANTS,
+        ERROR_DISABLING
     }
 
     /**
      * The strategies defined for disabling a plugin.
      */
-    public static enum PluginDisableStrategy {
+    public enum PluginDisableStrategy {
         NONE,
         MANDATORY,
         ALL;

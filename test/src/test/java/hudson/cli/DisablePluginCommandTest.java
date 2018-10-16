@@ -179,7 +179,7 @@ public class DisablePluginCommandTest {
         assertPluginDisabled("depender");
         assertPluginDisabled("plugin-first");
         assertPluginDisabled("mandatory-depender");
-        assertJenkinsInQuietMode(); // some plugins were disabled
+        assertJenkinsInQuietMode(); // some plugins were disabled, so it should be restarting
     }
 
     /**
