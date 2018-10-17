@@ -1847,7 +1847,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return the list of results for every plugin and their dependant plugins.
      * @throws IOException see {@link PluginWrapper#disable()}
      */
-    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(PluginWrapper.PluginDisableStrategy strategy, List<String> plugins) throws IOException {
+    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {
         // Where we store the results of each plugin disablement
         List<PluginWrapper.PluginDisableResult> results = new ArrayList<>(plugins.size());
 

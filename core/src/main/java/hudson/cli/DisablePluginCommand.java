@@ -119,14 +119,10 @@ public class DisablePluginCommand extends CLICommand {
         if (indent == 0) {
             stdout.format(format + "%n", (Object[]) arguments);
         } else {
-            String f = "%" + indent + "s" + format + "%n";
             String[] newArgs = new String[arguments.length + 1];
-            newArgs[0] = " ";
-            int i = 1;
-            for (String arg: arguments) {
-                newArgs[i] = arg;
-                i++;
-            }
+            System.arraycopy(arguments, 0, newArgs, 1, arguments.length);
+
+            String f = "%" + indent + "s" + format + "%n";
             stdout.format(f, newArgs);
         }
     }
