@@ -101,6 +101,18 @@ public class DisablePluginCommandTest {
     }
 
     /**
+     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i><all/i> strategy
+     */
+    @Test
+    @Issue("JENKINS-27177")
+    @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
+    public void canDisableDependentPluginWrongOrderStrategyAll() {
+        assertThat(disablePluginsCLiCommand("dependee", "mandatory-depender", "-strategy", "all"), succeeded());
+        assertPluginDisabled("mandatory-depender");
+        assertPluginDisabled("dependee");
+    }
+
+    /**
      * Can disable a plugin with a mandatory dependent plugin after being disabled the mandatory dependent plugin. With
      * default strategy (none).
      */
