@@ -1856,10 +1856,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             PluginWrapper plugin = this.getPlugin(pluginName);
 
             if (plugin == null) {
-                PluginWrapper.PluginDisableResult result = new PluginWrapper.PluginDisableResult(pluginName);
-                result.setMessage(Messages.PluginWrapper_NoSuchPlugin(pluginName));
-                result.setStatus(PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN);
-                results.add(result);
+                results.add(new PluginWrapper.PluginDisableResult(pluginName, PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(pluginName)));
             } else {
                 results.add(plugin.disable(strategy));
             }
