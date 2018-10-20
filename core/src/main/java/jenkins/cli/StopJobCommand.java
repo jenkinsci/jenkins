@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package jenkins.cli;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.cli.CLICommand;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
@@ -61,14 +62,11 @@ public class StopJobCommand extends CLICommand {
         names.addAll(jobNames);
         final StringBuilder resultBuilder = new StringBuilder();
         for (final String jobName : names) {
-            AbstractProject job = null;
             Item item = jenkins.getItemByFullName(jobName);
             if (item instanceof AbstractProject) {
-                job = (AbstractProject) item;
-            }
-
-            if (job != null) {
-                stopJobBuilds(job, jobName, resultBuilder);
+                stopJobBuilds((AbstractProject) item, jobName, resultBuilder);
+            } else if (item != null) {
+                resultBuilder.append("Job have not supported type.\n");
             } else {
                 resultBuilder.append(String.format("Job with name %s not found.\n", jobName));
             }

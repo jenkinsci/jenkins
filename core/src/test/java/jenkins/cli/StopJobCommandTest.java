@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package jenkins.cli;
 
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
+import jenkins.cli.StopJobCommand;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,6 +83,15 @@ public class StopJobCommandTest {
 
         verify(lastBuild, never()).doStop();
         assertThat(out.toString(), equalTo("No builds stopped for job 'jobName'\n"));
+    }
+
+    @Test
+    public void shouldReportNotSupportedType() throws Exception {
+        when(jenkins.getItemByFullName(TEST_JOB_NAME)).thenReturn(mock(AbstractItem.class));
+
+        runWith(Collections.singletonList(TEST_JOB_NAME));
+
+        assertThat(out.toString(), equalTo("Job have not supported type.\n"));
     }
 
     @Test
