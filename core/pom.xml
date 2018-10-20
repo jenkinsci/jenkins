@@ -639,7 +639,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.256-20181016.115646-4</version>
+      <version>1.256-20181020.094214-5</version>
       <!-- see https://github.com/stapler/stapler/pull/147 -->
     </dependency>
     

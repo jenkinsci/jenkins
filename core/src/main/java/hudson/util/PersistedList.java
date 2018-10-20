@@ -33,6 +33,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.Describable;
 import hudson.model.Saveable;
+import org.kohsuke.stapler.Replaceable;
 
 import java.io.IOException;
 import java.util.AbstractList;
@@ -47,7 +48,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.333
  */
-public class PersistedList<T> extends AbstractList<T> {
+public class PersistedList<T> extends AbstractList<T> implements Replaceable<Collection<? extends T>> {
     protected final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
     protected Saveable owner = Saveable.NOOP;
 
@@ -80,6 +81,7 @@ public class PersistedList<T> extends AbstractList<T> {
         return true;
     }
 
+    @Override
     public void replaceBy(Collection<? extends T> col) throws IOException {
         data.replaceBy(col);
         onModified();
