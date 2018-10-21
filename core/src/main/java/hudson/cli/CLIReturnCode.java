@@ -23,6 +23,10 @@
  */
 package hudson.cli;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.Locale;
+
 /**
  * Represent the return value of a CLI command.
  *
@@ -32,8 +36,13 @@ package hudson.cli;
  * @since TODO
  */
 public interface CLIReturnCode {
-	/**
-	 * @return The desired exit code that respect the contract described in {@link CLIReturnCode}
-	 */
-	int getCode();
+    /**
+     * @return The desired exit code that respect the contract described in {@link CLIReturnCode}
+     */
+    int getCode();
+
+    /**
+     * @return A optional human-readable message explaining why this return code was sent.
+     */
+    @CheckForNull String getReason(@Nonnull Locale locale);
 }

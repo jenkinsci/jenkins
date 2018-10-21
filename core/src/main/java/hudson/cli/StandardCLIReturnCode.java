@@ -23,6 +23,12 @@
  */
 package hudson.cli;
 
+import org.jvnet.localizer.Localizable;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.Locale;
+
 /**
  * Set of standard CLI return code
  * Jenkins standard exit codes from CLI:
@@ -42,63 +48,74 @@ package hudson.cli;
  * @since TODO
  */
 public enum StandardCLIReturnCode implements CLIReturnCode {
-	/**
-	 * Everything went ok
-	 * HTTP equivalent: 2xx
- 	 */
-	OK(0),
-	/**
-	 * Internal server error
-	 * HTTP equivalent: 500
- 	 */
-	UNKNOWN_ERROR_OCCURRED(1),
-	/**
-	 * Input cannot be decoded or are wrong
-	 * HTTP equivalent: 400
- 	 */
-	WRONG_CMD_PARAMETER(2),
-	/**
-	 * Wrong input arguments
-	 * HTTP equivalent: 400, 404
-	 * Example: job doesn't exist
- 	 */
-	ILLEGAL_ARGUMENT(3),
-	/**
-	 * Correct input but wrong state
-	 * HTTP equivalent: 400, 410
-	 * Example: build is already finished
-	 */
-	ILLEGAL_STATE(4),
-	/**
-	 * Can't continue due to an other (rare) issue
-	 */
-	ABORTED(5),
-	/**
-	 * User is authenticated but does not have sufficient permission
-	 * HTTP equivalent: 403
- 	 */
-	ACCESS_DENIED(6),
-	/**
-	 * Credentials sent but are invalid
-	 * HTTP equivalent: 401
- 	 */
-	BAD_CREDENTIALS(7),
+    /**
+     * Everything went ok
+     * HTTP equivalent: 2xx
+     */
+    OK(0, null),
+    /**
+     * Internal server error
+     * HTTP equivalent: 500
+     */
+    UNKNOWN_ERROR_OCCURRED(1, Messages._StandardCLIReturnCode_UNKNOWN_ERROR_OCCURRED()),
+    /**
+     * Input cannot be decoded or are wrong
+     * HTTP equivalent: 400
+     */
+    WRONG_CMD_PARAMETER(2, Messages._StandardCLIReturnCode_WRONG_CMD_PARAMETER()),
+    /**
+     * Wrong input arguments
+     * HTTP equivalent: 400, 404
+     * Example: job doesn't exist
+     */
+    ILLEGAL_ARGUMENT(3, Messages._StandardCLIReturnCode_ILLEGAL_ARGUMENT()),
+    /**
+     * Correct input but wrong state
+     * HTTP equivalent: 400, 410
+     * Example: build is already finished
+     */
+    ILLEGAL_STATE(4, Messages._StandardCLIReturnCode_ILLEGAL_STATE()),
+    /**
+     * Can't continue due to an other (rare) issue
+     */
+    ABORTED(5, Messages._StandardCLIReturnCode_ABORTED()),
+    /**
+     * User is authenticated but does not have sufficient permission
+     * HTTP equivalent: 403
+     */
+    ACCESS_DENIED(6, Messages._StandardCLIReturnCode_ACCESS_DENIED()),
+    /**
+     * Credentials sent but are invalid
+     * HTTP equivalent: 401
+     */
+    BAD_CREDENTIALS(7, Messages._StandardCLIReturnCode_BAD_CREDENTIALS()),
 
-	;
+    ;
 
-	private final int code;
+    private final int code;
+    private final Localizable localizable;
 
-	StandardCLIReturnCode(int code){
-		this.code = code;
-	}
+    StandardCLIReturnCode(int code, @CheckForNull Localizable localizable){
+        this.code = code;
+        this.localizable = localizable;
+    }
 
-	@Override
-	public int getCode() {
-		return code;
-	}
+    @Override
+    public int getCode() {
+        return code;
+    }
 
-	@Override
-	public String toString() {
-		return "Standard: " + code + ", " + name();
-	}
+    @Override
+    public @CheckForNull String getReason(@Nonnull Locale locale) {
+        if (localizable != null) {
+            return localizable.toString(locale);
+        }
+
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Standard: " + code + ", " + name();
+    }
 }

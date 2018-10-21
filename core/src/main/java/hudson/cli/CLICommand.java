@@ -285,7 +285,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
+
             CLIReturnCode res = execute();
+            String errorReason = res.getReason(locale);
+            if (errorReason != null) {
+                logCLIError(args, auth, errorReason);
+            }
+
             LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
                     new Object[] {getName(), args.size(), auth.getName(), res});
             return res;
@@ -327,6 +333,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 sc.setAuthentication(old);
             }
         }
+    }
+
+    private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull String errorReason){
+        LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+            getName(), args.size(), auth != null ? auth.getName() : "<unknown>"));
+        stderr.println();
+        stderr.println("ERROR: " + errorReason);
     }
 
     private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull Exception e){
