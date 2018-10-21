@@ -27,15 +27,20 @@ package hudson.cli;
  * Should only be used to wrap legacy use of {@link CLICommand#run()} inside commands
  * @since TODO
  */
-public class CLIReturnCodeLegacyWrapper implements CLIReturnCode {
+public class LegacyWrapperCLIReturnCode implements CLIReturnCode {
 	private final int legacyCode;
 
-	public CLIReturnCodeLegacyWrapper(int legacyCode){
+	public LegacyWrapperCLIReturnCode(int legacyCode){
 		this.legacyCode = legacyCode;
 	}
 
 	@Override
 	public int getCode() {
 		return legacyCode;
+	}
+
+	@Override
+	public String toString() {
+		return "LegacyWrapper: " + legacyCode;
 	}
 }
