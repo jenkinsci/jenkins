@@ -25,12 +25,28 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
-
 import hudson.ExtensionList;
 import hudson.Launcher;
+import hudson.cli.declarative.CLIRegisterer;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.Secret;
 import hudson.util.StreamTaskListener;
+import jenkins.model.JenkinsLocationConfiguration;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+
+import javax.annotation.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
@@ -38,21 +54,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.annotation.CheckForNull;
-import jenkins.model.JenkinsLocationConfiguration;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.TeeOutputStream;
-import static org.hamcrest.Matchers.containsString;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ClientAuthenticationCacheTest {
 
@@ -114,6 +122,28 @@ public class ClientAuthenticationCacheTest {
         assertCLI(0, null, jar, "login", "--username", "admin", "--password", "admin");
         try {
             assertCLI(0, "Authenticated as: admin", jar, "who-am-i");
+        } finally {
+            assertCLI(0, null, jar, "logout");
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-54176")
+    @For(CLIRegisterer.class)
+    public void overHttpAlsoForRegisterer() throws Exception {
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        r.jenkins.setSlaveAgentPort(-1);
+        assertCLI(0, null, jar, "login", "--username", "admin", "--password", "admin");
+        try {
+            FreeStyleProject project = r.createFreeStyleProject();
+            FreeStyleBuild build1 = r.buildAndAssertSuccess(project);
+            assertFalse("By default the build's log should not be kept", build1.isKeepLog());
+            
+            assertCLI(0, null, jar, "keep-build", project.getName(), build1.getNumber() + "");
+            assertTrue("After invocation the build's log should be kept", build1.isKeepLog());
         } finally {
             assertCLI(0, null, jar, "logout");
         }

@@ -32,10 +32,11 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import hudson.security.ACL;
+import hudson.security.CliAuthenticator;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.security.CliAuthenticator;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -44,8 +45,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.ClassParser;
-import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,11 +61,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import static java.util.logging.Level.SEVERE;
-
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Discover {@link CLIMethod}s and register them as {@link CLICommand} implementations.
@@ -214,8 +215,10 @@ public class CLIRegisterer extends ExtensionFinder {
                                     parser.parseArgument(args);
 
                                     Authentication auth = authenticator.authenticate();
-                                    if (auth == Jenkins.ANONYMOUS)
+                                    // isAnonymous requires non null value, but authenticate does not provide contract
+                                    if (auth == null || ACL.isAnonymous(auth)) {
                                         auth = loadStoredAuthentication();
+                                    }
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     hudson.checkPermission(Jenkins.READ);
 
