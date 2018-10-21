@@ -25,12 +25,23 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
-
 import hudson.ExtensionList;
 import hudson.Launcher;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.Secret;
 import hudson.util.StreamTaskListener;
+import jenkins.model.JenkinsLocationConfiguration;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+
+import javax.annotation.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
@@ -38,21 +49,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.annotation.CheckForNull;
-import jenkins.model.JenkinsLocationConfiguration;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.TeeOutputStream;
-import static org.hamcrest.Matchers.containsString;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class ClientAuthenticationCacheTest {
 
@@ -102,8 +103,8 @@ public class ClientAuthenticationCacheTest {
         }
     }
 
-    @Ignore("TODO fails unless CLICommand.main patched to replace (auth==Jenkins.ANONYMOUS) with (auth instanceof AnonymousAuthenticationToken), not just (Jenkins.ANONYMOUS.equals(auth)), since SecurityFilters.groovy sets userAttribute='anonymous,' so UserAttributeEditor.setAsText configures AnonymousProcessingFilter with a token with an empty authority which fails AbstractAuthenticationToken.equals")
     @Test
+    @Issue("SECURITY-466")
     public void overHttp() throws Exception {
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
