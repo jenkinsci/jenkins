@@ -777,6 +777,7 @@ LABEL.attach-previous {
   background-color: #f0f0f0;
   padding: 1em;
   margin-bottom: 1em;
+  word-break: break-word;
 }
 
 .help .from-plugin {

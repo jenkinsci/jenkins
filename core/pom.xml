@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.254.1</stapler.version>
+    <stapler.version>1.255</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -207,7 +207,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -280,7 +279,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>commons-digester</groupId>
@@ -570,8 +568,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.4</version>
-      <scope>provided</scope>
+      <version>1.8</version>
       <optional>true</optional>
     </dependency>
     <dependency>

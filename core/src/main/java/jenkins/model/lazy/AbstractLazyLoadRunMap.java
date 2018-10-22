@@ -40,6 +40,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+
+import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -188,7 +190,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         String[] kids = dir.list();
         if (kids == null) {
             // the job may have just been created
-            kids = EMPTY_STRING_ARRAY;
+            kids = MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
         SortedIntList list = new SortedIntList(kids.length / 2);
         for (String s : kids) {
@@ -585,8 +587,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public enum Direction {
         ASC, DESC, EXACT
     }
-
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
 
