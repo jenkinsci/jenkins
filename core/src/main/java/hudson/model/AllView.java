@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.util.SystemProperties;
 import org.apache.commons.lang.StringUtils;
@@ -121,7 +120,7 @@ public class AllView extends View {
      * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()} and the user has not opted out of
      * fixing the view name by setting the system property {@code hudson.mode.AllView.JENKINS-38606} to {@code false}.
      * Use this method to round-trip the primary view name, e.g.
-     * {@code primaryView = applyJenkins38606Fixup(views, primaryView)}
+     * {@code primaryView = migrateLegacyPrimaryAllViewLocalizedName(views, primaryView)}
      * <p>
      * NOTE: we can only fix the localized name of an {@link AllView} if it is the primary view as otherwise urls
      * would change, whereas the primary view is special and does not normally get accessed by the
@@ -164,7 +163,7 @@ public class AllView extends View {
                         // bingo JENKINS-38606 detected
                         LOGGER.log(Level.INFO,
                                 "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
-                                new Object[]{allView.owner.getUrl(), primaryView, DEFAULT_VIEW_NAME});
+                                new Object[] {allView.owner, primaryView, DEFAULT_VIEW_NAME});
                         allView.name = DEFAULT_VIEW_NAME;
                         return DEFAULT_VIEW_NAME;
                     }

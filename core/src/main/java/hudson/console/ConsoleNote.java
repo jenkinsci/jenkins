@@ -54,6 +54,7 @@ import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.remoting.ClassFilter;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
  * Data that hangs off from a console output.
@@ -108,7 +109,7 @@ import jenkins.util.SystemProperties;
  *
  * <h2>Behaviour, JavaScript, and CSS</h2>
  * <p>
- * {@link ConsoleNote} can have associated <tt>script.js</tt> and <tt>style.css</tt> (put them
+ * {@link ConsoleNote} can have associated {@code script.js} and {@code style.css} (put them
  * in the same resource directory that you normally put Jelly scripts), which will be loaded into
  * the HTML page whenever the console notes are used. This allows you to use minimal markup in
  * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
@@ -180,7 +181,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf))) {
+        try (ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(buf))) {
             oos.writeObject(this);
         }
 

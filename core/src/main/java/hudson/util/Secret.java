@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -64,6 +65,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Kohsuke Kawaguchi
  */
 public final class Secret implements Serializable {
+    private static final Logger LOGGER = Logger.getLogger(Secret.class.getName());
+
     private static final byte PAYLOAD_V1 = 1;
     /**
      * Unencrypted secret text.
@@ -92,6 +95,8 @@ public final class Secret implements Serializable {
     @Override
     @Deprecated
     public String toString() {
+        final String from = new Throwable().getStackTrace()[1].toString();
+        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
@@ -165,7 +170,7 @@ public final class Secret implements Serializable {
      */
     @CheckForNull
     public static Secret decrypt(@CheckForNull String data) {
-        if(data==null)      return null;
+        if(!isValidData(data))      return null;
 
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
@@ -213,6 +218,16 @@ public final class Secret implements Serializable {
                 return null;
             }
         }
+    }
+
+    private static boolean isValidData(String data) {
+        if (data == null || "{}".equals(data) || "".equals(data.trim())) return false;
+
+        if (data.startsWith("{") && data.endsWith("}")) {
+            return !"".equals(data.substring(1, data.length()-1).trim());
+        }
+
+        return true;
     }
 
     /**

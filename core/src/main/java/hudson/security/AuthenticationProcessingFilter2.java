@@ -39,7 +39,7 @@ import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
  * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
- * we can pick up the hidden "from" form field defined in <tt>login.jelly</tt>
+ * we can pick up the hidden "from" form field defined in {@code login.jelly}
  * to send the user back to where he came from, after a successful authentication.
  * 
  * @author Kohsuke Kawaguchi

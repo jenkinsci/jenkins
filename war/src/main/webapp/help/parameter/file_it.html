@@ -1,0 +1,33 @@
+<div>
+    Accetta l'invio di un file da un browser come parametro di compilazione. Il
+    file caricato sarà spostato nel percorso specificato all'interno dello
+    spazio di lavoro, a cui poi il processo di compilazione potrà accedere e
+    che potrà utilizzare.
+    <p>Ciò è utile per molti casi, come:<ol>
+    <li>Concedere agli sviluppatori di eseguire dei test sugli artefatti da loro compilati.</li>
+    <li>Automatizzare il processo di caricamento/rilascio/deployment consentendo all'utente
+    di copiare il file.</li>
+    <li>Eseguire elaborazioni di dati caricando un dataset.</li>
+    </ol>
+    <p>
+        Il nome del file inviato è disponibile nella variabile d'ambiente il
+        cui nome è identico al percorso del file. Ad esempio, se si imposta il
+        percorso del file ad <tt>abc.zip</tt>, allora <tt>${abc.zip}</tt>
+        restituirebbe il nome del file originale fornito dal browser (ad
+        esempio <tt>my.zip</tt>.) Il nome non includerà la parte del percorso
+        della directory in cui è contenuto.
+    </p>
+    <p>
+        Il caricamento di file è facoltativo. Se un utente decide di non
+        caricare alcun file, Jenkins semplicemente ometterà questo parametro e
+        non copierà nessun file (ma non eliminerà nemmeno i file già presenti
+        nello spazio di lavoro).
+    </p>
+    <p>
+        Dall'interfaccia a riga di comando, l'opzione <code>-p</code> del
+        comando <code>build</code> accetta sia nomi di file locali (solo in
+        modalità <code>-remoting</code>) o un valore vuoto per leggere i dati
+        dallo standard input.
+        (Nella seconda modalità può essere definito solo un parametro file).
+    </p>
+</div>

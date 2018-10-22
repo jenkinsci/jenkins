@@ -24,9 +24,14 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.model.Queue.Task;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildWrapper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
+
+import javax.annotation.Nonnull;
 
 /**
  * {@link Action} that contributes environment variables during a build.
@@ -40,17 +45,43 @@ import hudson.tasks.BuildWrapper;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.318
- * @see AbstractBuild#getEnvironment(TaskListener)
+ * @see Run#getEnvironment(TaskListener)
  * @see BuildWrapper
  */
 public interface EnvironmentContributingAction extends Action {
     /**
+     * Called by {@link Run} to allow plugins to contribute environment variables.
+     *
+     * @param run
+     *      The calling build. Never null.
+     * @param env
+     *      Environment variables should be added to this map.
+     * @since 2.76
+     */
+    default void buildEnvironment(@Nonnull Run<?, ?> run, @Nonnull EnvVars env) {
+        if (run instanceof AbstractBuild
+                && Util.isOverridden(EnvironmentContributingAction.class,
+                                     getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
+            buildEnvVars((AbstractBuild) run, env);
+        }
+    }
+
+    /**
      * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
+     *
+     * @deprecated Use {@link #buildEnvironment} instead
      *
      * @param build
      *      The calling build. Never null.
      * @param env
      *      Environment variables should be added to this map.
      */
-    void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env);
+    @Deprecated
+    @Restricted(ProtectedExternally.class)
+    default void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+        if (Util.isOverridden(EnvironmentContributingAction.class,
+                              getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+            buildEnvironment(build, env);
+        }
+    }
 }

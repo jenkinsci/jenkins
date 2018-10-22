@@ -77,6 +77,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * CLI entry point to Jenkins.
@@ -452,6 +453,10 @@ public class CLI implements AutoCloseable {
 
         String user = null;
         String auth = null;
+
+        String userIdEnv = System.getenv("JENKINS_USER_ID");
+        String tokenEnv = System.getenv("JENKINS_API_TOKEN");
+
         boolean strictHostKey = false;
 
         while(!args.isEmpty()) {
@@ -549,7 +554,7 @@ public class CLI implements AutoCloseable {
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     h.setLevel(level);
                 }
-                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
+                for (Logger logger : new Logger[] {LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
                 }
                 args = args.subList(2, args.size());
@@ -561,6 +566,17 @@ public class CLI implements AutoCloseable {
         if(url==null) {
             printUsage(Messages.CLI_NoURL());
             return -1;
+        }
+
+        if (auth == null) {
+            // -auth option not set
+            if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
+                auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
+            } else if (StringUtils.isNotBlank(userIdEnv) || StringUtils.isNotBlank(tokenEnv)) {
+                printUsage(Messages.CLI_BadAuth());
+                return -1;
+            } // Otherwise, none credentials were set
+
         }
 
         if (!url.endsWith("/")) {
@@ -809,9 +825,14 @@ public class CLI implements AutoCloseable {
         return authenticate(Collections.singleton(key));
     }
 
+    /** For access from {@code HelpCommand}. */
+    static String usage() {
+        return Messages.CLI_Usage();
+    }
+
     private static void printUsage(String msg) {
         if(msg!=null)   System.out.println(msg);
-        System.err.println(Messages.CLI_Usage());
+        System.err.println(usage());
     }
 
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());

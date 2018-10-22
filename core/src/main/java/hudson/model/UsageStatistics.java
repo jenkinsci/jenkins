@@ -29,7 +29,7 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.Secret;
-import static hudson.util.TimeUnit2.DAYS;
+import static java.util.concurrent.TimeUnit.DAYS;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -66,7 +66,7 @@ import jenkins.util.SystemProperties;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class UsageStatistics extends PageDecorator {
+public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private final String keyImage;
 
     /**
@@ -88,7 +88,6 @@ public class UsageStatistics extends PageDecorator {
      */
     public UsageStatistics(String keyImage) {
         this.keyImage = keyImage;
-        load();
     }
 
     /**

@@ -30,7 +30,7 @@ import java.util.Map;
  * we find out that XStream is running in pure-java mode.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

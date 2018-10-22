@@ -31,11 +31,11 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  *
  * <p>
  * We do this by computing HMAC of the agent name.
- * This code is sent to the agent inside the <tt>.jnlp</tt> file
+ * This code is sent to the agent inside the {@code .jnlp} file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Jenkins), and the agent sends this
  * token back when it connects to the master.
- * Unauthorized agents can't access the protected <tt>.jnlp</tt> file,
+ * Unauthorized agents can't access the protected {@code .jnlp} file,
  * so it can't impersonate a valid agent.
  *
  * <p>
@@ -76,7 +76,12 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return OPT_IN;
+        return true;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return true;
     }
 
     @Override
@@ -99,14 +104,4 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
-
-    /**
-     * A/B test turning off this protocol by default.
-     */
-    private static final boolean OPT_IN;
-
-    static {
-        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
-        OPT_IN = (hash % 10) == 0;
-    }
 }

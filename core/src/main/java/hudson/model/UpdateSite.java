@@ -35,8 +35,9 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
+import static jenkins.util.MemoryReductionUtil.*;
 import hudson.util.TextFile;
-import static hudson.util.TimeUnit2.*;
+import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,6 @@ import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +56,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -121,11 +122,6 @@ public class UpdateSite {
     private transient volatile long retryWindow;
 
     /**
-     * lastModified time of the data file when it was last read.
-     */
-    private transient long dataLastReadFromFile;
-
-    /**
      * Latest data as read from the data file.
      */
     private transient Data data;
@@ -136,7 +132,7 @@ public class UpdateSite {
     private final String id;
 
     /**
-     * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
+     * Path to {@code update-center.json}, like {@code http://jenkins-ci.org/update-center.json}.
      */
     private final String url;
 
@@ -226,6 +222,7 @@ public class UpdateSite {
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
+        data = new Data(o);
         return FormValidation.ok();
     }
 
@@ -309,23 +306,20 @@ public class UpdateSite {
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         dataTimestamp = 0;
+        data = null;
         return HttpResponses.ok();
     }
 
     /**
-     * Loads the update center data, if any and if modified since last read.
+     * Loads the update center data, if any.
      *
      * @return  null if no data is available.
      */
     public Data getData() {
-        TextFile df = getDataFile();
-        if (df.exists() && dataLastReadFromFile != df.file.lastModified()) {
+        if (data == null) {
             JSONObject o = getJSONObject();
-            if (o!=null) {
+            if (o != null) {
                 data = new Data(o);
-                dataLastReadFromFile = df.file.lastModified();
-            } else {
-                data = null;
             }
         }
         return data;
@@ -485,18 +479,6 @@ public class UpdateSite {
      */
     @Deprecated
     public String getDownloadUrl() {
-        /*
-            HACKISH:
-
-            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
-            The elegant way to solve the problem is to always load update center from HTTPS,
-            but our backend mirroring scheme isn't ready for that. So this hack serves regular
-            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
-
-            We'll monitor the traffic to see if we can sustain this added traffic.
-         */
-        if (url.equals("http://updates.jenkins-ci.org/update-center.json") && Jenkins.getInstance().isRootUrlSecure())
-            return "https"+url.substring(4);
         return url;
     }
 
@@ -504,7 +486,15 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals(UpdateCenter.PREDEFINED_UPDATE_SITE_ID) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
+        return isHudsonCI() || isUpdatesFromHudsonLabs();
+    }
+
+    private boolean isHudsonCI() {
+        return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
+    }
+
+    private boolean isUpdatesFromHudsonLabs() {
+        return url != null && url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
@@ -538,7 +528,7 @@ public class UpdateSite {
         public final String connectionCheckUrl;
 
         Data(JSONObject o) {
-            this.sourceId = (String)o.get("id");
+            this.sourceId = Util.intern((String)o.get("id"));
             JSONObject c = o.optJSONObject("core");
             if (c!=null) {
                 core = new Entry(sourceId, c, url);
@@ -568,7 +558,7 @@ public class UpdateSite {
                         }
                     }
                 }
-                plugins.put(e.getKey(), p);
+                plugins.put(Util.intern(e.getKey()), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -628,18 +618,26 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         /* final */ String sha1;
 
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha256;
+
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha512;
+
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
         }
 
         Entry(String sourceId, JSONObject o, String baseURL) {
             this.sourceId = sourceId;
-            this.name = o.getString("name");
-            this.version = o.getString("version");
+            this.name = Util.intern(o.getString("name"));
+            this.version = Util.intern(o.getString("version"));
 
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
             this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
+            this.sha256 = Util.fixEmptyAndTrim(o.optString("sha256"));
+            this.sha512 = Util.fixEmptyAndTrim(o.optString("sha512"));
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
@@ -659,6 +657,24 @@ public class UpdateSite {
         // TODO @Exported assuming we want this in the API
         public String getSha1() {
             return sha1;
+        }
+
+        /**
+         * The base64 encoded SHA-256 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since 2.130
+         */
+        public String getSha256() {
+            return sha256;
+        }
+
+        /**
+         * The base64 encoded SHA-512 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since 2.130
+         */
+        public String getSha512() {
+            return sha512;
         }
 
         /**
@@ -723,8 +739,8 @@ public class UpdateSite {
 
         public WarningVersionRange(JSONObject o) {
             this.name = Util.fixEmpty(o.optString("name"));
-            this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
-            this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
+            this.firstVersion = Util.intern(Util.fixEmpty(o.optString("firstVersion")));
+            this.lastVersion = Util.intern(Util.fixEmpty(o.optString("lastVersion")));
             Pattern p;
             try {
                 p = Pattern.compile(o.getString("pattern"));
@@ -821,13 +837,13 @@ public class UpdateSite {
                 this.type = Type.UNKNOWN;
             }
             this.id = o.getString("id");
-            this.component = o.getString("name");
+            this.component = Util.intern(o.getString("name"));
             this.message = o.getString("message");
             this.url = o.getString("url");
 
             if (o.has("versions")) {
-                List<WarningVersionRange> ranges = new ArrayList<>();
                 JSONArray versions = o.getJSONArray("versions");
+                List<WarningVersionRange> ranges = new ArrayList<>(versions.size());
                 for (int i = 0; i < versions.size(); i++) {
                     WarningVersionRange range = new WarningVersionRange(versions.getJSONObject(i));
                     ranges.add(range);
@@ -911,6 +927,16 @@ public class UpdateSite {
         }
     }
 
+    private static String get(JSONObject o, String prop) {
+        if(o.has(prop))
+            return o.getString(prop);
+        else
+            return null;
+    }
+
+    static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
+    static final Predicate<Object> IS_NOT_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -952,13 +978,13 @@ public class UpdateSite {
          * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
-        public final Map<String,String> dependencies = new HashMap<String,String>();
+        public final Map<String,String> dependencies;
         
         /**
          * Optional dependencies of this plugin.
          */
         @Exported
-        public final Map<String,String> optionalDependencies = new HashMap<String,String>();
+        public final Map<String,String> optionalDependencies;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -966,30 +992,31 @@ public class UpdateSite {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
-            this.requiredCore = get(o,"requiredCore");
-            this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
+            this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.requiredCore = Util.intern(get(o,"requiredCore"));
+            this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            JSONArray ja = o.getJSONArray("dependencies");
+            int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count());
+            int optionalDepCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count());
+            dependencies = getPresizedMutableMap(depCount);
+            optionalDependencies = getPresizedMutableMap(optionalDepCount);
+
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute and that the optional value isn't true.
-                if (get(depObj,"name")!=null) {
+                String depName = Util.intern(get(depObj,"name"));
+                if (depName!=null) {
                     if (get(depObj, "optional").equals("false")) {
-                        dependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        dependencies.put(depName, Util.intern(get(depObj, "version")));
                     } else {
-                        optionalDependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        optionalDependencies.put(depName, Util.intern(get(depObj, "version")));
                     }
                 }
-                
             }
 
         }
 
-        private String get(JSONObject o, String prop) {
-            if(o.has(prop))
-                return o.getString(prop);
-            else
-                return null;
-        }
+
 
         public String getDisplayName() {
             String displayName;
@@ -1106,10 +1133,19 @@ public class UpdateSite {
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
-            for (Plugin p: getNeededDependencies()) {
-                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
-            }
-            return false;
+            return isNeededDependenciesForNewerJenkins(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesForNewerJenkins(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesForNewerJenkins:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
 
         /**
@@ -1121,11 +1157,19 @@ public class UpdateSite {
          * specified, it'll return true.
          */
         public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
-            for (Plugin p: getNeededDependencies()) {
-                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
-                    return false;
-            }
-            return true;
+            return isNeededDependenciesCompatibleWithInstalledVersion(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
+            return cache.of("isNeededDependenciesCompatibleWithInstalledVersion:" + name, Boolean.class, () -> {
+                for (Plugin p : getNeededDependencies()) {
+                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         /**
@@ -1134,14 +1178,8 @@ public class UpdateSite {
         @CheckForNull
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
-            ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
-            if (list.size() == 0) {
-                return Collections.emptySet();
-            }
-
+            UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
             Set<Warning> warnings = new HashSet<>();
-
-            UpdateSiteWarningsConfiguration configuration = list.get(0);
 
             for (Warning warning: configuration.getAllWarnings()) {
                 if (configuration.isIgnored(warning)) {

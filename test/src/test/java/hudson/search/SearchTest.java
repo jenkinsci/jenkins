@@ -407,7 +407,7 @@ public class SearchTest {
 
 
         // Alice can't
-        assertFalse("no permission", j.jenkins.getView("foo").getACL().hasPermission(User.get("alice").impersonate(), View.READ));
+        assertFalse("no permission", j.jenkins.getView("foo").hasPermission(User.get("alice").impersonate(), View.READ));
         ACL.impersonate(User.get("alice").impersonate(), new Runnable() {
             @Override
             public void run() {
@@ -440,7 +440,7 @@ public class SearchTest {
         mas.grant(Jenkins.READ).onRoot().toEveryone();
         j.jenkins.setAuthorizationStrategy(mas);
 
-        try(ACLContext _ = ACL.as(User.get("alice"))) {
+        try(ACLContext acl = ACL.as(User.get("alice"))) {
             List<SearchItem> results = new ArrayList<>();
             j.jenkins.getSearchIndex().find("config", results);
             j.jenkins.getSearchIndex().find("manage", results);
@@ -453,5 +453,44 @@ public class SearchTest {
         List<SearchItem> result = new ArrayList<SearchItem>();
         index.suggest(term, result);
         return result;
+    }
+
+    @Issue("JENKINS-35459")
+    @Test
+    public void testProjectNameInAListView() throws Exception {
+        MockFolder myMockFolder = j.createFolder("folder");
+        FreeStyleProject freeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "myJob");
+
+        ListView listView = new ListView("ListView", j.jenkins);
+        listView.setRecurse(true);
+        listView.add(myMockFolder);
+        listView.add(freeStyleProject);
+
+        j.jenkins.addView(listView);
+        j.jenkins.setPrimaryView(listView);
+
+        assertEquals(2, j.jenkins.getPrimaryView().getAllItems().size());
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo("search/suggest?query=" + freeStyleProject.getName(), "application/json");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(2, jsonArray.size());
+
+        Page searchResult = wc.goTo("search?q=" + myMockFolder.getName() + "%2F" + freeStyleProject.getName());
+
+        assertNotNull(searchResult);
+        j.assertGoodStatus(searchResult);
+
+        URL resultUrl = searchResult.getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + freeStyleProject.getUrl()));
     }
 }

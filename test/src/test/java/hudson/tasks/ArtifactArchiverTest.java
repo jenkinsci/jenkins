@@ -33,6 +33,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Result;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
@@ -40,8 +41,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
+
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.util.VirtualFile;
+import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
+
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
@@ -282,4 +290,38 @@ public class ArtifactArchiverTest {
         assertEquals("[stuff]", a.getFingerprints().keySet().toString());
     }
 
+    @Test @Issue("JENKINS-21905")
+    public void archiveNotReadable() throws Exception {
+        assumeFalse(Functions.isWindows()); // No permission support
+
+        final String FILENAME = "myfile";
+        DumbSlave slave = j.createOnlineSlave(Label.get("target"));
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath file = build.getWorkspace().child(FILENAME);
+                file.act(new RemoveReadPermission());
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver(FILENAME));
+        p.setAssignedNode(slave);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        j.assertBuildStatus(Result.FAILURE, build);
+        String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
+    }
+
+    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+        @Override
+        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            assertTrue(f.createNewFile());
+            assertTrue(f.setReadable(false));
+            return null;
+        }
+    }
 }

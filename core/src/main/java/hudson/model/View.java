@@ -26,7 +26,6 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -114,9 +113,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -134,7 +133,7 @@ import org.xml.sax.SAXException;
  * <h2>Note for implementers</h2>
  * <ul>
  * <li>
- * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
+ * {@link View} subtypes need the {@code newViewDetail.jelly} page,
  * which is included in the "new view" page. This page should have some
  * description of what the view is about. 
  * </ul>
@@ -172,8 +171,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected boolean filterQueue;
     
-    protected transient List<Action> transientActions;
-
     /**
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
@@ -192,6 +189,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
+    @Nonnull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
@@ -455,25 +453,49 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return false;
     }
 
+    private final static int FILTER_LOOP_MAX_COUNT = 10;
+
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
             return base;
         }
-
         Collection<TopLevelItem> items = getItems();
-        List<Queue.Item> result = new ArrayList<Queue.Item>();
-        for (Queue.Item qi : base) {
-            if (items.contains(qi.task)) {
-                result.add(qi);
-            } else
-            if (qi.task instanceof AbstractProject<?, ?>) {
-                AbstractProject<?,?> project = (AbstractProject<?, ?>) qi.task;
-                if (items.contains(project.getRootProject())) {
-                    result.add(qi);
-                }
+        return base.stream().filter(qi -> filterQueueItemTest(qi, items))
+                .collect(Collectors.toList());
+    }
+
+    private boolean filterQueueItemTest(Queue.Item item, Collection<TopLevelItem> viewItems) {
+        // Check if the task of parent tasks are in the list of viewItems.
+        // Pipeline jobs and other jobs which allow parts require us to
+        // check owner tasks as well.
+        Queue.Task currentTask = item.task;
+        for (int count = 1;; count++) {
+            if (viewItems.contains(currentTask)) {
+                return true;
+            }
+            Queue.Task next = currentTask.getOwnerTask();
+            if (next == currentTask) {
+                break;
+            } else {
+                currentTask = next;
+            }
+            if (count == FILTER_LOOP_MAX_COUNT) {
+                LOGGER.warning(String.format(
+                        "Failed to find root task for queue item '%s' for " +
+                        "view '%s' in under %d iterations, aborting!",
+                        item.getDisplayName(), getDisplayName(),
+                        FILTER_LOOP_MAX_COUNT));
+                break;
             }
         }
-        return result;
+        // Check root project for sub-job projects (e.g. matrix jobs).
+        if (item.task instanceof AbstractProject<?, ?>) {
+            AbstractProject<?,?> project = (AbstractProject<?, ?>) item.task;
+            if (viewItems.contains(project.getRootProject())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Queue.Item> getQueueItems() {
@@ -525,21 +547,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
-    	result.addAll(getOwner().getViewActions());
-    	synchronized (this) {
-    		if (transientActions == null) {
-                updateTransientActions();
-    		}
-    		result.addAll(transientActions);
-    	}
-    	return result;
+        List<Action> result = new ArrayList<>();
+        result.addAll(getOwner().getViewActions());
+        result.addAll(TransientViewActionFactory.createAllFor(this));
+        return result;
     }
-    
-    public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this); 
-    }
-    
+
+    /**
+     * No-op. Included to maintain backwards compatibility.
+     * @deprecated This method does nothing and should not be used
+     */
+    @Restricted(DoNotUse.class)
+    @Deprecated
+    public void updateTransientActions() {}
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -577,14 +598,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public ACL getACL() {
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    public boolean hasPermission(Permission p) {
-        return getACL().hasPermission(p);
     }
 
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
@@ -977,7 +990,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
 
         save();
 
@@ -1053,11 +1065,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
+        getOwner().checkPermission(Item.CREATE);
 
         rsp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         rsp.addHeader("Pragma", "no-cache");
         rsp.addHeader("Expires", "0");
-        getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
         JellyContext ctx;
@@ -1138,7 +1150,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
@@ -1196,7 +1208,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
-            Object o = Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
+            ViewGroup oldOwner = owner; // oddly, this field is not transient
+            Object o = Jenkins.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(in), this, null, true);
             if (!o.getClass().equals(getClass())) {
                 // ensure that we've got the same view type. extending this code to support updating
                 // to different view type requires destroying & creating a new view type
@@ -1205,6 +1218,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     "the view with the new view type.");
             }
             name = oldname;
+            owner = oldOwner;
         } catch (StreamException | ConversionException | Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
         }
@@ -1349,7 +1363,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Instantiate View subtype from XML stream.
      *
-     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     * @param name Alternative name to use or {@code null} to keep the one in xml.
      */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
 

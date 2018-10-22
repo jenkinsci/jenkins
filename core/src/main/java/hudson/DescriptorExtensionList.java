@@ -31,7 +31,6 @@ import jenkins.model.Jenkins;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AdaptedIterator;
-import hudson.util.Memoizer;
 import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
 import hudson.tasks.Publisher;
@@ -41,6 +40,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -213,14 +214,12 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     /**
      * Stores manually registered Descriptor instances. Keyed by the {@link Describable} type.
      */
-    private static final Memoizer<Class,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new Memoizer<Class,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>() {
-        public CopyOnWriteArrayList compute(Class key) {
-            return new CopyOnWriteArrayList();
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
-        return (CopyOnWriteArrayList)legacyDescriptors.get(type);
+        return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
     }
 
     /**

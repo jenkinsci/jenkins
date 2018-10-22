@@ -48,7 +48,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <dl>
  * <dt>column.jelly</dt>
  * <dd>
- * Invoked from {@link ComputerSet} <tt>index.jelly</tt> to render a column.
+ * Invoked from {@link ComputerSet} {@code index.jelly} to render a column.
  * The {@link NodeMonitor} instance is accessible through the "from" variable.
  * Also see {@link #getColumnCaption()}.
  *
