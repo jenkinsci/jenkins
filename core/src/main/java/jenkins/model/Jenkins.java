@@ -4266,18 +4266,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
-        LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
-        if (rsp!=null) {
-            rsp.setStatus(HttpServletResponse.SC_OK);
-            rsp.setContentType("text/plain");
-            try (PrintWriter w = rsp.getWriter()) {
-                w.println("Shutting down");
-            }
-        }
+        new Thread("exit thread") {
+            @Override
+            public void run() {
+                try {
+                    ACL.impersonate(ACL.SYSTEM);
+                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                            getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
+                    if (rsp!=null) {
+                        rsp.setStatus(HttpServletResponse.SC_OK);
+                        rsp.setContentType("text/plain");
+                        try (PrintWriter w = rsp.getWriter()) {
+                            w.println("Shutting down");
+                        }
+                    }
 
-        cleanUp();
-        System.exit(0);
+                    cleanUp();
+                    System.exit(0);
+
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to shut down Jenkins", e);
+                }
+            }
+        }.start();
     }
 
 
