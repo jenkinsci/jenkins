@@ -25,18 +25,18 @@ package hudson.security;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.util.JSONUtils;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Permission, which represents activity that requires a security privilege.
@@ -48,21 +48,6 @@ import org.jvnet.localizer.Localizable;
  * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins">Plugins in secured Jenkins</a>
  */
 public final class Permission {
-
-    /**
-     * Comparator that orders {@link Permission} objects based on their ID.
-     */
-    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
-
-        /**
-         * {@inheritDoc}
-         */
-        // break eclipse compilation 
-        //Override
-        public int compare(@Nonnull Permission one, @Nonnull Permission two) {
-            return one.getId().compareTo(two.getId());
-        }
-    };
 
     public final @Nonnull Class owner;
 
@@ -164,7 +149,7 @@ public final class Permission {
         this.id = owner.getName() + '.' + name;
 
         group.add(this);
-        ALL.add(this);
+        PermissionRegistry.getInstance().register(this);
     }
 
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
@@ -200,10 +185,6 @@ public final class Permission {
         this(group,name,null,impliedBy);
     }
 
-    private Permission(@Nonnull PermissionGroup group, @Nonnull String name) {
-        this(group,name,null,null);
-    }
-
     /**
      * Checks if this permission is contained in the specified scope, (either directly or indirectly.)
      */
@@ -222,7 +203,7 @@ public final class Permission {
      *
      * <p>
      * This string representation is suitable for persistence.
-     * @return ID with the following format: <i>permissionClass.permissionName</i> 
+     * @return ID with the following format: <i>permissionClass.permissionName</i>
      * @see #fromId(String)
      */
     public @Nonnull String getId() {
@@ -240,28 +221,6 @@ public final class Permission {
         return getId().hashCode();
     }
 
-    /**
-     * Convert the ID representation into {@link Permission} object.
-     *
-     * @return
-     *      null if the conversion failed.
-     * @see #getId()
-     */
-    public static @CheckForNull Permission fromId(@Nonnull String id) {
-        int idx = id.lastIndexOf('.');
-        if(idx<0)   return null;
-
-        try {
-            // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.getInstance().getPluginManager().uberClassLoader);
-            PermissionGroup g = PermissionGroup.get(cl);
-            if(g ==null)  return null;
-            return g.find(id.substring(idx+1));
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
     @Override
     public String toString() {
         return "Permission["+owner+','+name+']';
@@ -274,22 +233,47 @@ public final class Permission {
     public boolean getEnabled() {
         return enabled;
     }
-    
+
+    /**
+     * Comparator that orders {@link Permission} objects based on their ID.
+     */
+    public static final Comparator<Permission> ID_COMPARATOR = Comparator.comparing(Permission::getId);
+
+    /**
+     * Convert the ID representation into {@link Permission} object.
+     *
+     * @return
+     *      null if the conversion failed.
+     * @see #getId()
+     */
+    public static @CheckForNull Permission fromId(@Nonnull String id) {
+        return PermissionRegistry.getInstance().permissionFromId(id).orElse(null);
+    }
+
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return
      *      always non-null. Read-only.
      */
     public static @Nonnull List<Permission> getAll() {
-        return ALL_VIEW;
+        return PermissionRegistry.getInstance().getPermissions();
     }
 
     /**
-     * All permissions in the system but in a single list.
+     * System property to enable or disable the {@code ADMINISTER} implies {@code RUN_SCRIPTS} feature flag.
+     * By default, this is enabled to match legacy behavior.
+     * @since TODO
      */
-    private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
+    public static final String ADMINISTER_IMPLIES_RUN_SCRIPTS = Permission.class.getName() + ".administerImpliesRunScripts";
 
-    private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
+    /**
+     * Indicates whether or not the {@code ADMINISTER} permission implies the {@code RUN_SCRIPTS} permission.
+     * @return true when ADMINISTER implies RUN_SCRIPTS, false when RUN_SCRIPTS implies ADMINISTER
+     * @since TODO
+     */
+    public static boolean administerImpliesRunScripts() {
+        return SystemProperties.getBoolean(ADMINISTER_IMPLIES_RUN_SCRIPTS, true);
+    }
 
 //
 //
@@ -305,6 +289,8 @@ public final class Permission {
      */
     @Deprecated
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
+    @Restricted(NoExternalUse.class)
+    public static final Permission RUN_SCRIPTS;
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
      *
@@ -315,7 +301,22 @@ public final class Permission {
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
     @Deprecated
-    public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
+    public static final Permission HUDSON_ADMINISTER;
+
+    @Restricted(NoExternalUse.class)
+    public static final Permission ROOT;
+
+    static {
+        if (administerImpliesRunScripts()) {
+            HUDSON_ADMINISTER  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
+            RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
+            ROOT = HUDSON_ADMINISTER;
+        } else {
+            RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
+            HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), RUN_SCRIPTS, PermissionScope.JENKINS);
+            ROOT = RUN_SCRIPTS;
+        }
+    }
 
 //
 //
@@ -332,20 +333,20 @@ public final class Permission {
      * any more, so deprecated.
      *
      * @deprecated since 2009-01-23.
-     *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
+     *      Use {@link jenkins.model.Jenkins#ROOT}.
      */
     @Deprecated
-    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
+    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, ROOT);
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",null,ROOT);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,ROOT);
 
     /**
      * Generic create access.

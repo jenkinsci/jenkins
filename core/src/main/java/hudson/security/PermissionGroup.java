@@ -41,7 +41,7 @@ import org.jvnet.localizer.Localizable;
  * Sortable by the owner class name.
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
-    private final SortedSet<Permission> permissions = new TreeSet<Permission>(Permission.ID_COMPARATOR);
+    private final SortedSet<Permission> permissions = new TreeSet<>(Permission.ID_COMPARATOR);
 
     @Nonnull
     public final Class owner;
@@ -104,7 +104,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * Lists up all the permissions in this group.
      */
     public synchronized List<Permission> getPermissions() {
-        return new ArrayList<Permission>(permissions);
+        return new ArrayList<>(permissions);
     }
 
     public synchronized boolean hasPermissionContainedBy(PermissionScope scope) {
@@ -158,9 +158,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     private static synchronized void register(PermissionGroup g) {
-        if (!PERMISSIONS.add(g)) {
-            throw new IllegalStateException("attempt to register a second PermissionGroup for " + g.getOwnerClassName());
-        }
+        PermissionRegistry.getInstance().register(g);
     }
 
     /**
@@ -169,7 +167,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      *      always non-null. Read-only.
      */
     public static synchronized List<PermissionGroup> getAll() {
-        return new ArrayList<PermissionGroup>(PERMISSIONS);
+        return PermissionRegistry.getInstance().getPermissionGroups();
     }
 
     /**
@@ -178,16 +176,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @return  null if not found.
      */
     public static synchronized @CheckForNull PermissionGroup get(Class owner) {
-        for (PermissionGroup g : PERMISSIONS) {
-            if (g.owner == owner) {
-                return g;
-            }
-        }
-        return null;
+        return PermissionRegistry.getInstance().findGroupWithOwner(owner).orElse(null);
     }
 
-    /**
-     * All the permissions in the system, keyed by their owners.
-     */
-    private static final SortedSet<PermissionGroup> PERMISSIONS = new TreeSet<PermissionGroup>();
 }

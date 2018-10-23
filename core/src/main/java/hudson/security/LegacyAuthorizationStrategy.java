@@ -40,7 +40,7 @@ import java.util.Collections;
 public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     private static final ACL LEGACY_ACL = new SparseACL(null) {{
         add(EVERYONE,Permission.READ,true);
-        add(new GrantedAuthoritySid("admin"), Jenkins.ADMINISTER,true);
+        add(new GrantedAuthoritySid("admin"), Jenkins.ROOT,true);
     }};
 
     @DataBoundConstructor

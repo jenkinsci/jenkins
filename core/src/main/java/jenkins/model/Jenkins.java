@@ -5141,7 +5141,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
-    public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
+    public static final Permission RUN_SCRIPTS = Permission.RUN_SCRIPTS;
+    /**
+     * Root level permission. This corresponds to {@link #ADMINISTER} by default, but if it is overridden by
+     * the {@link Permission#administerImpliesRunScripts()} setting, then this corresponds to {@link #RUN_SCRIPTS}.
+     *
+     * @since TODO
+     */
+    public static final Permission ROOT = Permission.ROOT;
 
     /**
      * Urls that are always visible without READ permission.

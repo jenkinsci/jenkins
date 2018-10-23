@@ -78,12 +78,12 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     private static final SparseACL ANONYMOUS_READ = new SparseACL(null);
 
     static {
-        ANONYMOUS_READ.add(ACL.EVERYONE, Jenkins.ADMINISTER,true);
-        ANONYMOUS_READ.add(ACL.ANONYMOUS, Jenkins.ADMINISTER,false);
+        ANONYMOUS_READ.add(ACL.EVERYONE, Jenkins.ROOT,true);
+        ANONYMOUS_READ.add(ACL.ANONYMOUS, Jenkins.ROOT,false);
         ANONYMOUS_READ.add(ACL.ANONYMOUS, Permission.READ,true);
         
-        AUTHENTICATED_READ.add(ACL.EVERYONE, Jenkins.ADMINISTER, true);
-        AUTHENTICATED_READ.add(ACL.ANONYMOUS, Jenkins.ADMINISTER, false);
+        AUTHENTICATED_READ.add(ACL.EVERYONE, Jenkins.ROOT, true);
+        AUTHENTICATED_READ.add(ACL.ANONYMOUS, Jenkins.ROOT, false);
     }
 
     /**

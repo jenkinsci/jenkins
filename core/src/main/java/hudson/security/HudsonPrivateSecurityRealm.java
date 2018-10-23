@@ -356,9 +356,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Try to make this user a super-user
      */
     private void tryToMakeAdmin(User u) {
-        AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy as = Jenkins.get().getAuthorizationStrategy();
         for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
-            if (adder.add(as, u, Jenkins.ADMINISTER)) {
+            if (adder.add(as, u, Jenkins.ROOT)) {
                 return;
             }
         }
