@@ -44,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
@@ -54,6 +55,7 @@ import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 
 import jenkins.security.apitoken.ApiTokenTestHelper;
@@ -68,6 +70,9 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.*;
@@ -315,6 +320,11 @@ public class JobTest {
         onLoadAfterCreation(queueJob);
     }
 
+    @Test public void onLoadAfterCreation_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
+        onLoadAfterCreation(queueJob);
+    }
+
     @Test public void onLoadAfterOneRun_LazyBuildMixin() throws Exception {
         final QueueJob queueJob = createLazyBuildMixinQueueJob();
         onLoadAfterOneRun(queueJob);
@@ -423,6 +433,86 @@ public class JobTest {
     private QueueJob createLazyBuildMixinQueueJob() throws IOException {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
         return new LazyBuildMixInQueueJob(freeStyleProject);
+    }
+
+    private static class TestQueueJob extends Job<TestQueueJob, TestQueueRun> implements QueueJob, Queue.Task, TopLevelItem {
+
+        private final SortedMap<Integer, TestQueueRun> runs;
+        TestQueueJob(final ItemGroup parent, final String name) {
+            super(parent, name);
+            final TestQueueJob finalThis = this;
+            this.runs = new RunMap<>(getBuildDir(), new RunMap.Constructor() {
+
+                @Override
+                public TestQueueRun create(final File dir) throws IOException {
+                    return new TestQueueRun(finalThis);
+                }
+            });
+        }
+
+        @Override
+        public Queue.Task getTask() {
+            return this;
+        }
+
+        @Override
+        public Job getJob() {
+            return this;
+        }
+
+        @Override
+        public boolean isBuildable() {
+            return true;
+        }
+
+        @Override
+        protected SortedMap<Integer, TestQueueRun> _getRuns() {
+            return runs;
+        }
+
+        @Override
+        protected void removeRun(final TestQueueRun run) {
+
+        }
+
+        @Override
+        public void checkAbortPermission() {
+
+        }
+
+        @Override
+        public boolean hasAbortPermission() {
+            return false;
+        }
+
+        @CheckForNull
+        @Override
+        public Queue.Executable createExecutable() throws IOException {
+            return null;
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return new DescriptorImpl();
+        }
+
+        public static class DescriptorImpl extends TopLevelItemDescriptor {
+
+            @Override
+            public TopLevelItem newInstance(final ItemGroup parent, final String name) {
+                return new TestQueueJob(parent, name);
+            }
+        }
+    }
+
+    private static class TestQueueRun extends Run<TestQueueJob, TestQueueRun> {
+        TestQueueRun(@Nonnull final TestQueueJob job) throws IOException {
+            super(job);
+        }
+    }
+
+    private QueueJob createTestQueueJob() {
+        return new TestQueueJob(j.jenkins, "TestQueueJob");
     }
 
     private void scheduleAndWait(final QueueJob queueJob) throws ExecutionException, InterruptedException {
