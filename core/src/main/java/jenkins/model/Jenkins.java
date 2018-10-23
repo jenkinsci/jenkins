@@ -4283,6 +4283,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
+        if (rsp!=null) {
+            rsp.setStatus(HttpServletResponse.SC_OK);
+            rsp.setContentType("text/plain");
+            try (PrintWriter w = rsp.getWriter()) {
+                w.println("Shutting down");
+            }
+        }
+
         new Thread("exit thread") {
             @Override
             public void run() {
@@ -4298,14 +4306,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
             }
         }.start();
-
-        if (rsp!=null) {
-            rsp.setStatus(HttpServletResponse.SC_OK);
-            rsp.setContentType("text/plain");
-            try (PrintWriter w = rsp.getWriter()) {
-                w.println("Shutting down");
-            }
-        }
     }
 
     /**
