@@ -34,6 +34,7 @@ import hudson.model.UsageStatistics;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -172,7 +173,8 @@ public abstract class Telemetry implements ExtensionPoint {
                 JSONObject wrappedData = new JSONObject();
                 wrappedData.put("type", telemetry.getId());
                 wrappedData.put("payload", data);
-                wrappedData.put("correlator", ExtensionList.lookupSingleton(Correlator.class).getCorrelationId());
+                String correlationId = ExtensionList.lookupSingleton(Correlator.class).getCorrelationId();
+                wrappedData.put("correlator", DigestUtils.sha256Hex(correlationId + telemetry.getId()));
 
                 try {
                     URL url = new URL(ENDPOINT);

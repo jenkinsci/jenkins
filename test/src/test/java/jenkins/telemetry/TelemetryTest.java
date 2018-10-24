@@ -29,7 +29,10 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public class TelemetryTest {
     @Rule
@@ -55,7 +58,8 @@ public class TelemetryTest {
         assertThat(types, hasItem("test-data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
-        assertThat(correlators.size(), is(1));
+        assertThat(correlators.size(), is(counter));
+        assertTrue(Pattern.compile("[0-9a-f]+").matcher(correlators.first()).matches());
         assertTrue("at least one request received", counter > 0); // TestTelemetry plus whatever real impls exist
     }
 
@@ -174,7 +178,7 @@ public class TelemetryTest {
         }
     }
 
-    private static Set<String> correlators = new HashSet<>();
+    private static SortedSet<String> correlators = new TreeSet<>();
     private static Set<String> types = new HashSet<>();
 
     @TestExtension
