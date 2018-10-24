@@ -169,7 +169,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 }
 
                 if (data == null) {
-                    LOGGER.log(Level.CONFIG, "No telemetry to submit for : '" + telemetry.getId() + "'");
+                    LOGGER.log(Level.CONFIG, "Skipping telemetry for '" + telemetry.getId() + "' as it has no data");
                     return;
                 }
 
