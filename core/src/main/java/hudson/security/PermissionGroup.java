@@ -41,7 +41,7 @@ import org.jvnet.localizer.Localizable;
  * Sortable by the owner class name.
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
-    private final SortedSet<Permission> permissions = new TreeSet<>(Permission.ID_COMPARATOR);
+    private final SortedSet<Permission> permissions = new TreeSet<>();
 
     @Nonnull
     public final Class owner;

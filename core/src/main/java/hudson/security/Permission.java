@@ -47,7 +47,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins">Plugins in secured Jenkins</a>
  */
-public final class Permission {
+public final class Permission implements Comparable<Permission> {
 
     public final @Nonnull Class owner;
 
@@ -234,9 +234,14 @@ public final class Permission {
         return enabled;
     }
 
+    @Override public int compareTo(@Nonnull Permission o) {
+        return getId().compareTo(o.getId());
+    }
+
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
      */
+    @Deprecated
     public static final Comparator<Permission> ID_COMPARATOR = Comparator.comparing(Permission::getId);
 
     /**
