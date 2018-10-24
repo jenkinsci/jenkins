@@ -312,15 +312,19 @@ public final class Permission implements Comparable<Permission> {
     public static final Permission ROOT;
 
     static {
+        final Permission administer, runScripts, root;
         if (administerImpliesRunScripts()) {
-            HUDSON_ADMINISTER  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
-            RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
-            ROOT = HUDSON_ADMINISTER;
+            administer  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
+            root = administer;
+            runScripts = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), root, PermissionScope.JENKINS);
         } else {
-            RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
-            HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), RUN_SCRIPTS, PermissionScope.JENKINS);
-            ROOT = RUN_SCRIPTS;
+            runScripts = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
+            root = runScripts;
+            administer = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), root, PermissionScope.JENKINS);
         }
+        RUN_SCRIPTS = runScripts;
+        HUDSON_ADMINISTER = administer;
+        ROOT = root;
     }
 
 //
