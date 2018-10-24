@@ -28,12 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 public class TelemetryTest {
     @Rule
@@ -213,7 +209,7 @@ public class TelemetryTest {
         }
     }
 
-    private static SortedSet<String> correlators = new TreeSet<>();
+    private static Set<String> correlators = new HashSet<>();
     private static Set<String> types = new HashSet<>();
 
     @TestExtension
