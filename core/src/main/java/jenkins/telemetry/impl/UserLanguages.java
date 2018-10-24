@@ -41,6 +41,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,7 +52,7 @@ import java.util.logging.Logger;
 @Restricted(NoExternalUse.class)
 public class UserLanguages extends Telemetry {
 
-    private static volatile Map<String, AtomicLong> requestsByLanguage = new TreeMap<>();
+    private static volatile Map<String, AtomicLong> requestsByLanguage = new HashMap<>();
     private static Logger LOGGER = Logger.getLogger(UserLanguages.class.getName());
 
     @Nonnull
@@ -83,8 +84,9 @@ public class UserLanguages extends Telemetry {
     public JSONObject createContent() {
         JSONObject payload = new JSONObject();
         Map<String, AtomicLong> currentRequests = requestsByLanguage;
-        requestsByLanguage = new TreeMap<>();
-        for (Map.Entry<String, AtomicLong> entry : currentRequests.entrySet()) {
+        requestsByLanguage = new HashMap<>();
+        Map<String, AtomicLong> sortedRequests = new TreeMap<>(currentRequests);
+        for (Map.Entry<String, AtomicLong> entry : sortedRequests.entrySet()) {
             payload.put(entry.getKey(), entry.getValue().longValue());
         }
         return payload;
