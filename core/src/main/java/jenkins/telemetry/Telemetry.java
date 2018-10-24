@@ -117,9 +117,8 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * This method is called periodically, once per content submission.
      *
-     * @return The JSON payload
+     * @return The JSON payload, or null if no content should be submitted.
      */
-    @Nonnull
     public abstract JSONObject createContent();
 
     public static ExtensionList<Telemetry> all() {
@@ -167,6 +166,11 @@ public abstract class Telemetry implements ExtensionPoint {
                     data = telemetry.createContent();
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
+                }
+
+                if (data == null) {
+                    LOGGER.log(Level.CONFIG, "No telemetry to submit for : '" + telemetry.getId() + "'");
+                    return;
                 }
 
                 JSONObject wrappedData = new JSONObject();
