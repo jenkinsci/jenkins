@@ -761,6 +761,7 @@ public abstract class Launcher {
                 buf.append(c);
         }
         listener.getLogger().println(buf.toString());
+        listener.getLogger().flush();
     }
 
     /**

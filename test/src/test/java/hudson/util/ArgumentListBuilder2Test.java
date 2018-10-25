@@ -27,7 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
@@ -46,7 +45,6 @@ import com.google.common.base.Joiner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
-import java.net.URL;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -71,8 +69,7 @@ public class ArgumentListBuilder2Test {
 
         StringWriter out = new StringWriter();
         assertEquals(0,s.createLauncher(new StreamTaskListener(out)).launch().cmds(args).join());
-        System.out.println(out);
-        assertTrue(out.toString().contains("$ java ********"));
+        assertThat(out.toString(), containsString("$ java ********"));
     }
 
     @Test
