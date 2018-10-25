@@ -29,7 +29,6 @@ import hudson.model.UsageStatistics;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
-import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
@@ -38,16 +37,12 @@ import org.kohsuke.stapler.EvaluationTrace;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Telemetry implementation gathering information about Stapler dispatch routes.
@@ -84,8 +79,8 @@ public class StaplerDispatches extends Telemetry {
     }
 
     private Object buildDispatches() {
-        Set<String> currentTraces = traces;
-        traces = new TreeSet<>();
+        Set<String> currentTraces = new TreeSet<>(traces);
+        traces.clear();
         return currentTraces;
     }
 
@@ -116,5 +111,5 @@ public class StaplerDispatches extends Telemetry {
         }
     }
 
-    private static volatile Set<String> traces = new TreeSet<>();
+    private static final Set<String> traces = new ConcurrentSkipListSet<>();
 }
