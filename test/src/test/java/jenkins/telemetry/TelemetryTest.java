@@ -50,6 +50,7 @@ public class TelemetryTest {
     public void prepare() throws Exception {
         correlators.clear();
         types.clear();
+        counter = 0;
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
         Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
     }
