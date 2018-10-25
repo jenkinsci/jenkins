@@ -240,9 +240,10 @@ public final class Permission implements Comparable<Permission> {
 
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
+     * @deprecated use the natural ordering of Permissions or use {@link Comparator#naturalOrder()}
      */
     @Deprecated
-    public static final Comparator<Permission> ID_COMPARATOR = Comparator.comparing(Permission::getId);
+    public static final Comparator<Permission> ID_COMPARATOR = Comparator.naturalOrder();
 
     /**
      * Convert the ID representation into {@link Permission} object.
@@ -274,8 +275,8 @@ public final class Permission implements Comparable<Permission> {
     /**
      * Indicates whether or not the {@code ADMINISTER} permission implies the {@code RUN_SCRIPTS} permission.
      * @return true when ADMINISTER implies RUN_SCRIPTS, false when RUN_SCRIPTS implies ADMINISTER
-     * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public static boolean administerImpliesRunScripts() {
         return SystemProperties.getBoolean(ADMINISTER_IMPLIES_RUN_SCRIPTS, true);
     }
@@ -294,13 +295,22 @@ public final class Permission implements Comparable<Permission> {
      */
     @Deprecated
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
+
+    /**
+     * Logical root level permission to execute arbitrary scripts in the script console.
+     * When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is enabled, all permissions are implied by this.
+     * When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is disabled, this permission is instead implied by
+     * {@link jenkins.model.Jenkins#ADMINISTER}.
+     * Access this instance via {@link jenkins.model.Jenkins#RUN_SCRIPTS} instead.
+     */
     @Restricted(NoExternalUse.class)
     public static final Permission RUN_SCRIPTS;
+
     /**
-     * {@link Permission} that represents the God-like access. Equivalent of Unix root.
-     *
-     * <p>
-     * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
+     * Legacy root level permission to access all parts of Jenkins. Unless {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is
+     * enabled, all permissions are implied by this one. When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is enabled,
+     * all permissions besides {@link #RUN_SCRIPTS}, {@link hudson.PluginManager#CONFIGURE_UPDATECENTER}, and
+     * {@link hudson.PluginManager#UPLOAD_PLUGINS} are implied by this.
      *
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
@@ -308,23 +318,22 @@ public final class Permission implements Comparable<Permission> {
     @Deprecated
     public static final Permission HUDSON_ADMINISTER;
 
+    /**
+     * Root level permission of the permission hierarchy. This refers to whichever permission is the logical
+     * root permission regardless of the state of the {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} feature flag.
+     * Access this instance via {@link jenkins.model.Jenkins#ROOT}.
+     */
     @Restricted(NoExternalUse.class)
     public static final Permission ROOT;
 
     static {
-        final Permission administer, runScripts, root;
         if (administerImpliesRunScripts()) {
-            administer  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
-            root = administer;
-            runScripts = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), root, PermissionScope.JENKINS);
+            ROOT = HUDSON_ADMINISTER  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
+            RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), ROOT, PermissionScope.JENKINS);
         } else {
-            runScripts = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
-            root = runScripts;
-            administer = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), root, PermissionScope.JENKINS);
+            ROOT = RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), null, PermissionScope.JENKINS);
+            HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), ROOT, PermissionScope.JENKINS);
         }
-        RUN_SCRIPTS = runScripts;
-        HUDSON_ADMINISTER = administer;
-        ROOT = root;
     }
 
 //
