@@ -41,9 +41,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 @Restricted(NoExternalUse.class)
 public class UserLanguages extends Telemetry {
 
-    private static volatile Map<String, AtomicLong> requestsByLanguage = new HashMap<>();
+    private static final Map<String, AtomicLong> requestsByLanguage = new ConcurrentSkipListMap<>();
     private static Logger LOGGER = Logger.getLogger(UserLanguages.class.getName());
 
     @Nonnull
@@ -82,11 +82,11 @@ public class UserLanguages extends Telemetry {
     @Nonnull
     @Override
     public JSONObject createContent() {
+        Map<String, AtomicLong> currentRequests = new TreeMap<>(requestsByLanguage);
+        requestsByLanguage.clear();
+
         JSONObject payload = new JSONObject();
-        Map<String, AtomicLong> currentRequests = requestsByLanguage;
-        requestsByLanguage = new HashMap<>();
-        Map<String, AtomicLong> sortedRequests = new TreeMap<>(currentRequests);
-        for (Map.Entry<String, AtomicLong> entry : sortedRequests.entrySet()) {
+        for (Map.Entry<String, AtomicLong> entry : currentRequests.entrySet()) {
             payload.put(entry.getKey(), entry.getValue().longValue());
         }
         return payload;
