@@ -169,7 +169,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = new PrintStream((OutputStream)in.readObject(),true);
+        out = new PrintStream((OutputStream)in.readObject(), false);
         String name = (String)in.readObject();
         charset = name==null ? null : Charset.forName(name);
     }
