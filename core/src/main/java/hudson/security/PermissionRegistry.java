@@ -40,11 +40,15 @@ import static java.util.stream.Collectors.toList;
  * @since TODO
  */
 @ParametersAreNonnullByDefault
-public enum PermissionRegistry {
-    INSTANCE;
+public class PermissionRegistry {
 
     public static PermissionRegistry getInstance() {
         return INSTANCE;
+    }
+
+    private static final PermissionRegistry INSTANCE = new PermissionRegistry();
+
+    private PermissionRegistry() {
     }
 
     private final ConcurrentMap<String, PermissionGroup> permissionGroups = new ConcurrentHashMap<>();
