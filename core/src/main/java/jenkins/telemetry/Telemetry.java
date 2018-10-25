@@ -37,6 +37,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -119,6 +120,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return The JSON payload, or null if no content should be submitted.
      */
+    @CheckForNull
     public abstract JSONObject createContent();
 
     public static ExtensionList<Telemetry> all() {
