@@ -253,7 +253,7 @@ public final class Permission implements Comparable<Permission> {
      * @see #getId()
      */
     public static @CheckForNull Permission fromId(@Nonnull String id) {
-        return PermissionRegistry.getInstance().permissionFromId(id).orElse(null);
+        return PermissionRegistry.getInstance().permissionFromId(id);
     }
 
     /**
@@ -276,8 +276,7 @@ public final class Permission implements Comparable<Permission> {
      * Indicates whether or not the {@code ADMINISTER} permission implies the {@code RUN_SCRIPTS} permission.
      * @return true when ADMINISTER implies RUN_SCRIPTS, false when RUN_SCRIPTS implies ADMINISTER
      */
-    @Restricted(NoExternalUse.class)
-    public static boolean administerImpliesRunScripts() {
+    private static boolean administerImpliesRunScripts() {
         return SystemProperties.getBoolean(ADMINISTER_IMPLIES_RUN_SCRIPTS, true);
     }
 

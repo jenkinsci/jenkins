@@ -26,6 +26,8 @@ package hudson.security;
 
 import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Optional;
@@ -62,28 +64,32 @@ public class PermissionRegistry {
         permissions.putIfAbsent(permission.getId(), permission);
     }
 
-    public List<PermissionGroup> getPermissionGroups() {
+    public @Nonnull List<PermissionGroup> getPermissionGroups() {
         return permissionGroups.values().stream().sorted().collect(toList());
     }
 
-    public Optional<PermissionGroup> findGroupWithOwner(Class<?> owner) {
+    public @Nonnull Optional<PermissionGroup> findGroupWithOwner(Class<?> owner) {
         return permissionGroups.values().stream().filter(group -> group.owner == owner).findFirst();
     }
 
-    public List<Permission> getPermissions() {
+    public @Nonnull List<Permission> getPermissions() {
         return permissions.values().stream().sorted().collect(toList());
     }
 
-    public Optional<Permission> permissionFromId(String id) {
+    public @CheckForNull Permission permissionFromId(String id) {
+        return permissions.computeIfAbsent(id, this::load);
+    }
+
+    private Permission load(String id) {
         int idx = id.lastIndexOf('.');
-        if (idx < 0) return Optional.empty();
+        if (idx < 0) return null;
 
         try {
             // force the initialization so that it will put all its permissions into the list.
             Class owner = Class.forName(id.substring(0, idx), true, Jenkins.get().getPluginManager().uberClassLoader);
-            return findGroupWithOwner(owner).flatMap(group -> Optional.ofNullable(group.find(id.substring(idx + 1))));
+            return findGroupWithOwner(owner).map(group -> group.find(id.substring(idx + 1))).orElse(null);
         } catch (ClassNotFoundException e) {
-            return Optional.empty();
+            return null;
         }
     }
 }
