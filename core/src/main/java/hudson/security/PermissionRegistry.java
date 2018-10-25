@@ -71,7 +71,7 @@ public class PermissionRegistry {
     }
 
     public List<Permission> getPermissions() {
-        return permissions.values().stream().sorted(Permission.ID_COMPARATOR).collect(toList());
+        return permissions.values().stream().sorted().collect(toList());
     }
 
     public Optional<Permission> permissionFromId(String id) {
