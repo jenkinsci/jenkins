@@ -51,3 +51,4 @@ push-build.sh
 war/node_modules/
 war/yarn-error.log
 .java-version
+.flattened-pom.xml
