@@ -58,7 +58,7 @@ If you propose complex UI changes, you should create new ATH tests for them.
 
 ## Proposing Changes
 
-The Jenkins project source code repositories are hosted GitHub.
+The Jenkins project source code repositories are hosted at GitHub.
 All proposed changes are submitted and code reviewed using the _GitHub Pull Request_ process.
 
 To submit a pull request:
