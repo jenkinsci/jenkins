@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Permission, which represents activity that requires a security privilege.
@@ -236,6 +237,9 @@ public final class Permission implements Comparable<Permission> {
         return getId().compareTo(o.getId());
     }
 
+    private static final PermissionLoader<GlobalPermission, Permission> LOADER =
+            new PermissionLoader<>(GlobalPermission.class, Permission.class);
+
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
      * @deprecated use the natural ordering of Permissions or use {@link Comparator#naturalOrder()}
@@ -251,7 +255,7 @@ public final class Permission implements Comparable<Permission> {
      * @see #getId()
      */
     public static @CheckForNull Permission fromId(@Nonnull String id) {
-        return PermissionRegistry.getInstance().permissionFromId(id);
+        return LOADER.all().filter(permission -> permission.getId().equals(id)).findFirst().orElse(null);
     }
 
     /**
@@ -260,7 +264,7 @@ public final class Permission implements Comparable<Permission> {
      *      always non-null. Read-only.
      */
     public static @Nonnull List<Permission> getAll() {
-        return PermissionRegistry.getInstance().getPermissions();
+        return LOADER.all().collect(Collectors.toList());
     }
 
     /**
@@ -268,6 +272,7 @@ public final class Permission implements Comparable<Permission> {
      * By default, this is enabled to match legacy behavior.
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public static final String ADMINISTER_IMPLIES_RUN_SCRIPTS = Permission.class.getName() + ".administerImpliesRunScripts";
 
     /**

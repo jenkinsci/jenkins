@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -149,13 +150,16 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return "PermissionGroup[" + getOwnerClassName() + "]";
     }
 
+    private static final PermissionLoader<GlobalPermissionGroup, PermissionGroup> LOADER =
+            new PermissionLoader<>(GlobalPermissionGroup.class, PermissionGroup.class);
+
     /**
      * Returns all the {@link PermissionGroup}s available in the system.
      * @return
      *      always non-null. Read-only.
      */
     public static List<PermissionGroup> getAll() {
-        return PermissionRegistry.getInstance().getPermissionGroups();
+        return LOADER.all().collect(Collectors.toList());
     }
 
     /**
@@ -164,7 +168,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @return  null if not found.
      */
     public static @CheckForNull PermissionGroup get(Class owner) {
-        return PermissionRegistry.getInstance().findGroupWithOwner(owner).orElse(null);
+        return LOADER.all().filter(group -> group.owner.equals(owner)).findFirst().orElse(null);
     }
 
 }
