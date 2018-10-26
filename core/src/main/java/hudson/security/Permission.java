@@ -346,6 +346,7 @@ public final class Permission implements Comparable<Permission> {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
+    @GlobalPermissionGroup
     public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
 
     /**
@@ -356,6 +357,7 @@ public final class Permission implements Comparable<Permission> {
      *      Use {@link jenkins.model.Jenkins#ROOT}.
      */
     @Deprecated
+    @GlobalPermission
     public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, ROOT);
 
     /**
