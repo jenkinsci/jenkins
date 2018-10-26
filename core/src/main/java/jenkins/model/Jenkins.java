@@ -5150,7 +5150,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission RUN_SCRIPTS = Permission.RUN_SCRIPTS;
     /**
      * Root level permission. This corresponds to {@link #ADMINISTER} by default, but if it is overridden by
-     * the {@link Permission#ADMINISTER_IMPLIES_RUN_SCRIPTS} setting, then this corresponds to {@link #RUN_SCRIPTS}.
+     * the {@link Functions#doesAdministerImplyRunScripts()} setting, then this corresponds to {@link #RUN_SCRIPTS}.
      *
      * @since TODO
      */

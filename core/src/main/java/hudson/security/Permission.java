@@ -24,8 +24,8 @@
 package hudson.security;
 
 import com.google.common.collect.ImmutableSet;
+import hudson.Functions;
 import hudson.model.Hudson;
-import jenkins.util.SystemProperties;
 import net.sf.json.util.JSONUtils;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -267,22 +267,6 @@ public final class Permission implements Comparable<Permission> {
         return LOADER.all().sorted().collect(Collectors.toList());
     }
 
-    /**
-     * System property to enable or disable the {@code ADMINISTER} implies {@code RUN_SCRIPTS} feature flag.
-     * By default, this is enabled to match legacy behavior.
-     * @since TODO
-     */
-    @Restricted(NoExternalUse.class)
-    public static final String ADMINISTER_IMPLIES_RUN_SCRIPTS = Permission.class.getName() + ".administerImpliesRunScripts";
-
-    /**
-     * Indicates whether or not the {@code ADMINISTER} permission implies the {@code RUN_SCRIPTS} permission.
-     * @return true when ADMINISTER implies RUN_SCRIPTS, false when RUN_SCRIPTS implies ADMINISTER
-     */
-    private static boolean administerImpliesRunScripts() {
-        return SystemProperties.getBoolean(ADMINISTER_IMPLIES_RUN_SCRIPTS, true);
-    }
-
 //
 //
 // Because of the initialization order issue, these two fields need to be defined here,
@@ -300,8 +284,8 @@ public final class Permission implements Comparable<Permission> {
 
     /**
      * Logical root level permission to execute arbitrary scripts in the script console.
-     * When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is enabled, all permissions are implied by this.
-     * When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is disabled, this permission is instead implied by
+     * When {@link Functions#doesAdministerImplyRunScripts()} is enabled, all permissions are implied by this.
+     * When {@link Functions#doesAdministerImplyRunScripts()} is disabled, this permission is instead implied by
      * {@link jenkins.model.Jenkins#ADMINISTER}.
      * Access this instance via {@link jenkins.model.Jenkins#RUN_SCRIPTS} instead.
      */
@@ -309,8 +293,8 @@ public final class Permission implements Comparable<Permission> {
     public static final Permission RUN_SCRIPTS;
 
     /**
-     * Legacy root level permission to access all parts of Jenkins. Unless {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is
-     * enabled, all permissions are implied by this one. When {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} is enabled,
+     * Legacy root level permission to access all parts of Jenkins. Unless {@link Functions#doesAdministerImplyRunScripts()} is
+     * enabled, all permissions are implied by this one. When {@link Functions#doesAdministerImplyRunScripts()} is enabled,
      * all permissions besides {@link #RUN_SCRIPTS}, {@link hudson.PluginManager#CONFIGURE_UPDATECENTER}, and
      * {@link hudson.PluginManager#UPLOAD_PLUGINS} are implied by this.
      *
@@ -322,14 +306,14 @@ public final class Permission implements Comparable<Permission> {
 
     /**
      * Root level permission of the permission hierarchy. This refers to whichever permission is the logical
-     * root permission regardless of the state of the {@link #ADMINISTER_IMPLIES_RUN_SCRIPTS} feature flag.
+     * root permission regardless of the state of the {@link Functions#doesAdministerImplyRunScripts()} feature flag.
      * Access this instance via {@link jenkins.model.Jenkins#ROOT}.
      */
     @Restricted(NoExternalUse.class)
     public static final Permission ROOT;
 
     static {
-        if (administerImpliesRunScripts()) {
+        if (Functions.doesAdministerImplyRunScripts()) {
             ROOT = HUDSON_ADMINISTER  = new Permission(HUDSON_PERMISSIONS, "Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(), null, PermissionScope.JENKINS);
             RUN_SCRIPTS = new Permission(HUDSON_PERMISSIONS, "RunScripts", hudson.model.Messages._Hudson_RunScriptsPermission_Description(), ROOT, PermissionScope.JENKINS);
         } else {

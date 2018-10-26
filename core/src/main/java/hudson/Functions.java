@@ -1925,6 +1925,15 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    /**
+     * Indicates whether or not the {@link Jenkins#ADMINISTER} permission implies the {@link Jenkins#RUN_SCRIPTS}
+     * permission.
+     * @since TODO
+     */
+    public static boolean doesAdministerImplyRunScripts() {
+        return SystemProperties.getBoolean("hudson.security.AdministerImpliesRunScripts", true);
+    }
+
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context,attributesToCapture));
     }
