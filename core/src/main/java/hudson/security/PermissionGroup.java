@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
@@ -148,6 +149,30 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
 
     @Override public String toString() {
         return "PermissionGroup[" + getOwnerClassName() + "]";
+    }
+
+    private Object writeReplace() {
+        return new Proxy(permissions, owner, title, id);
+    }
+
+    private static class Proxy {
+        private final SortedSet<Permission> permissions;
+        private final Class<?> owner;
+        private final Localizable title;
+        private final String id;
+
+        private Proxy(SortedSet<Permission> permissions, Class<?> owner, Localizable title, String id) {
+            this.permissions = new TreeSet<>(permissions);
+            this.owner = owner;
+            this.title = title;
+            this.id = id;
+        }
+
+        private Object readResolve() {
+            PermissionGroup group = new PermissionGroup(id, owner, title);
+            group.permissions.addAll(permissions);
+            return group;
+        }
     }
 
     private static final PermissionLoader<GlobalPermissionGroup, PermissionGroup> LOADER =
