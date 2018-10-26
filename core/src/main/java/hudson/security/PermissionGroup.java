@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -41,7 +41,7 @@ import org.jvnet.localizer.Localizable;
  * Sortable by the owner class name.
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
-    private final SortedSet<Permission> permissions = new TreeSet<>();
+    private final SortedSet<Permission> permissions = new ConcurrentSkipListSet<>();
 
     @Nonnull
     public final Class owner;
@@ -75,7 +75,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         this.owner = owner;
         this.title = title;
         this.id = id;
-        register(this);
+        PermissionRegistry.getInstance().register(this);
     }
 
     /**
@@ -94,7 +94,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return getPermissions().iterator();
     }
 
-    /*package*/ synchronized void add(Permission p) {
+    /*package*/ void add(Permission p) {
         if (!permissions.add(p)) {
             throw new IllegalStateException("attempt to register a second Permission for " + p.getId());
         }
@@ -103,26 +103,19 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     /**
      * Lists up all the permissions in this group.
      */
-    public synchronized List<Permission> getPermissions() {
+    public List<Permission> getPermissions() {
         return new ArrayList<>(permissions);
     }
 
-    public synchronized boolean hasPermissionContainedBy(PermissionScope scope) {
-        for (Permission p : permissions)
-            if (p.isContainedBy(scope))
-                return true;
-        return false;
+    public boolean hasPermissionContainedBy(PermissionScope scope) {
+        return permissions.stream().anyMatch(p -> p.isContainedBy(scope));
     }
 
     /**
      * Finds a permission that has the given name.
      */
-    public synchronized Permission find(String name) {
-        for (Permission p : permissions) {
-            if(p.name.equals(name))
-                return p;
-        }
-        return null;
+    public Permission find(String name) {
+        return permissions.stream().filter(p -> p.name.equals(name)).findFirst().orElse(null);
     }
 
     public int compareTo(PermissionGroup that) {
@@ -149,7 +142,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return getOwnerClassName().hashCode();
     }
 
-    public synchronized int size() {
+    public int size() {
         return permissions.size();
     }
 
@@ -157,16 +150,12 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return "PermissionGroup[" + getOwnerClassName() + "]";
     }
 
-    private static synchronized void register(PermissionGroup g) {
-        PermissionRegistry.getInstance().register(g);
-    }
-
     /**
      * Returns all the {@link PermissionGroup}s available in the system.
      * @return
      *      always non-null. Read-only.
      */
-    public static synchronized List<PermissionGroup> getAll() {
+    public static List<PermissionGroup> getAll() {
         return PermissionRegistry.getInstance().getPermissionGroups();
     }
 
@@ -175,7 +164,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      *
      * @return  null if not found.
      */
-    public static synchronized @CheckForNull PermissionGroup get(Class owner) {
+    public static @CheckForNull PermissionGroup get(Class owner) {
         return PermissionRegistry.getInstance().findGroupWithOwner(owner).orElse(null);
     }
 
