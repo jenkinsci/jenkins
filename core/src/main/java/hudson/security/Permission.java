@@ -264,7 +264,7 @@ public final class Permission implements Comparable<Permission> {
      *      always non-null. Read-only.
      */
     public static @Nonnull List<Permission> getAll() {
-        return LOADER.all().collect(Collectors.toList());
+        return LOADER.all().sorted().collect(Collectors.toList());
     }
 
     /**

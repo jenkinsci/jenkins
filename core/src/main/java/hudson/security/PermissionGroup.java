@@ -184,7 +184,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      *      always non-null. Read-only.
      */
     public static List<PermissionGroup> getAll() {
-        return LOADER.all().collect(Collectors.toList());
+        return LOADER.all().sorted().collect(Collectors.toList());
     }
 
     /**
