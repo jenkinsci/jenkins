@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  * @since 1.349
  */
 public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputStream {
-    private final Writer out;
+    private final Writer out; // not an OutputStream so cannot use LineTransformationOutputStream.Delegating
     private final T context;
     private ConsoleAnnotator<T> ann;
 
