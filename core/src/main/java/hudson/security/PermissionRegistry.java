@@ -25,14 +25,21 @@
 package hudson.security;
 
 import jenkins.model.Jenkins;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Spliterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 
@@ -49,35 +56,39 @@ public class PermissionRegistry {
     }
 
     private static final PermissionRegistry INSTANCE = new PermissionRegistry();
+    private static final Logger LOGGER = Logger.getLogger(PermissionRegistry.class.getName());
 
     private PermissionRegistry() {
     }
 
-    private final ConcurrentMap<String, PermissionGroup> permissionGroups = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Permission> permissions = new ConcurrentHashMap<>();
-
-    public void register(PermissionGroup group) {
-        permissionGroups.putIfAbsent(group.getId(), group);
-    }
-
-    public void register(Permission permission) {
-        permissions.putIfAbsent(permission.getId(), permission);
+    private static <A extends Annotation, T> Stream<T> load(Class<A> annotation, Class<T> type) {
+        Spliterator<IndexItem<A, T>> spliterator = Index.load(annotation, type, Jenkins.get().pluginManager.uberClassLoader).spliterator();
+        return StreamSupport.stream(spliterator, false)
+                .map(item -> {
+                    try {
+                        return item.instance();
+                    } catch (InstantiationException e) {
+                        LOGGER.log(Level.WARNING, e, () -> "Could not load permission group " + item);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull);
     }
 
     public @Nonnull List<PermissionGroup> getPermissionGroups() {
-        return permissionGroups.values().stream().sorted().collect(toList());
+        return load(GlobalPermissionGroup.class, PermissionGroup.class).sorted().collect(toList());
     }
 
     public @Nonnull Optional<PermissionGroup> findGroupWithOwner(Class<?> owner) {
-        return permissionGroups.values().stream().filter(group -> group.owner == owner).findFirst();
+        return load(GlobalPermissionGroup.class, PermissionGroup.class).filter(group -> group.owner == owner).findFirst();
     }
 
     public @Nonnull List<Permission> getPermissions() {
-        return permissions.values().stream().sorted().collect(toList());
+        return load(GlobalPermission.class, Permission.class).sorted().collect(toList());
     }
 
     public @CheckForNull Permission permissionFromId(String id) {
-        return permissions.computeIfAbsent(id, this::load);
+        return load(id);
     }
 
     private Permission load(String id) {

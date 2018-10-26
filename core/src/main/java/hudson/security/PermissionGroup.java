@@ -75,7 +75,6 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         this.owner = owner;
         this.title = title;
         this.id = id;
-        PermissionRegistry.getInstance().register(this);
     }
 
     /**

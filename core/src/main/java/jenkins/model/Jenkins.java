@@ -36,6 +36,8 @@ import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import hudson.security.GlobalPermission;
+import hudson.security.GlobalPermissionGroup;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
@@ -5138,9 +5140,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
 
+    @GlobalPermissionGroup
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
+    @GlobalPermission
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+    @GlobalPermission
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
+    @GlobalPermission
     public static final Permission RUN_SCRIPTS = Permission.RUN_SCRIPTS;
     /**
      * Root level permission. This corresponds to {@link #ADMINISTER} by default, but if it is overridden by

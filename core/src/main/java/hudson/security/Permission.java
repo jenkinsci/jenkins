@@ -27,16 +27,15 @@ import com.google.common.collect.ImmutableSet;
 import hudson.model.Hudson;
 import jenkins.util.SystemProperties;
 import net.sf.json.util.JSONUtils;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Permission, which represents activity that requires a security privilege.
@@ -149,7 +148,6 @@ public final class Permission implements Comparable<Permission> {
         this.id = owner.getName() + '.' + name;
 
         group.add(this);
-        PermissionRegistry.getInstance().register(this);
     }
 
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
@@ -358,30 +356,36 @@ public final class Permission implements Comparable<Permission> {
     /**
      * Generic read access.
      */
+    @GlobalPermission
     public static final Permission READ = new Permission(GROUP,"GenericRead",null,ROOT);
 
     /**
      * Generic write access.
      */
+    @GlobalPermission
     public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,ROOT);
 
     /**
      * Generic create access.
      */
+    @GlobalPermission
     public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
+    @GlobalPermission
     public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
+    @GlobalPermission
     public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
+    @GlobalPermission
     public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }

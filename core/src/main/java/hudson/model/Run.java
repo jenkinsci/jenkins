@@ -44,6 +44,9 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
+
+import hudson.security.GlobalPermission;
+import hudson.security.GlobalPermissionGroup;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -95,7 +98,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -125,7 +127,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -2517,10 +2518,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public @CheckForNull String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
 
+    @GlobalPermissionGroup
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
+    @GlobalPermission
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE, PermissionScope.RUN);
+    @GlobalPermission
     public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE, PermissionScope.RUN);
     /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
+    @GlobalPermission
     public static final Permission ARTIFACTS = new Permission(PERMISSIONS,"Artifacts",Messages._Run_ArtifactsPermission_Description(), null,
                                                               Functions.isArtifactsPermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
 
