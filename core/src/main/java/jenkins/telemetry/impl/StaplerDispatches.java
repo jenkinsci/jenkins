@@ -68,9 +68,11 @@ public class StaplerDispatches extends Telemetry {
         return "Stapler request handling";
     }
 
-    @Nonnull
     @Override
     public JSONObject createContent() {
+        if (traces.size() == 0) {
+            return null;
+        }
         Map<String, Object> info = new TreeMap<>();
         info.put("components", buildComponentInformation());
         info.put("dispatches", buildDispatches());

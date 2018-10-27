@@ -37,6 +37,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -117,9 +118,9 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * This method is called periodically, once per content submission.
      *
-     * @return The JSON payload
+     * @return The JSON payload, or null if no content should be submitted.
      */
-    @Nonnull
+    @CheckForNull
     public abstract JSONObject createContent();
 
     public static ExtensionList<Telemetry> all() {
@@ -167,6 +168,11 @@ public abstract class Telemetry implements ExtensionPoint {
                     data = telemetry.createContent();
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
+                }
+
+                if (data == null) {
+                    LOGGER.log(Level.CONFIG, "Skipping telemetry for '" + telemetry.getId() + "' as it has no data");
+                    return;
                 }
 
                 JSONObject wrappedData = new JSONObject();

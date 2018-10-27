@@ -52,11 +52,46 @@ public class TelemetryTest {
         assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
+        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));
         assertThat(types, hasItem("test-data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
+        assertThat(types, not(hasItem("empty")));
         assertThat(correlators.size(), is(1));
         assertTrue("at least one request received", counter > 0); // TestTelemetry plus whatever real impls exist
+    }
+
+    @TestExtension
+    public static class EmptyTelemetry extends Telemetry {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "empty";
+        }
+
+        @Nonnull
+        @Override
+        public String getId() {
+            return "empty";
+        }
+
+        @Nonnull
+        @Override
+        public LocalDate getStart() {
+            return LocalDate.MIN;
+        }
+
+        @Nonnull
+        @Override
+        public LocalDate getEnd() {
+            return LocalDate.MAX;
+        }
+
+        @Override
+        public JSONObject createContent() {
+            return null;
+        }
     }
 
     @TestExtension

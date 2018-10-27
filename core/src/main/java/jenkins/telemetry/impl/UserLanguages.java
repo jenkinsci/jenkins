@@ -78,10 +78,12 @@ public class UserLanguages extends Telemetry {
         return LocalDate.of(2019, 1, 1);
     }
 
-    @Nonnull
     @Override
     public JSONObject createContent() {
         JSONObject payload = new JSONObject();
+        if (requestsByLanguage.size() == 0) {
+            return null;
+        }
         Map<String, AtomicLong> currentRequests = requestsByLanguage;
         requestsByLanguage = new TreeMap<>();
         for (Map.Entry<String, AtomicLong> entry : currentRequests.entrySet()) {
