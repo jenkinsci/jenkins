@@ -710,9 +710,12 @@ public class CLI implements AutoCloseable {
                 @Override
                 public void run() {
                     try {
-                        int c;
-                        while ((c = System.in.read()) != -1) { // TODO use InputStream.available
-                           stdin.write(c);
+                        int available = System.in.available();
+                        if (available != 0) {
+                            byte[] bytes = new byte[available];
+                            while (System.in.read(bytes) != -1) {
+                                stdin.write(bytes);
+                            }
                         }
                         connection.sendEndStdin();
                     } catch (IOException x) {
