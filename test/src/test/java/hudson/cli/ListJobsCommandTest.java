@@ -42,6 +42,7 @@ import org.jvnet.hudson.test.MockFolder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 
 public class ListJobsCommandTest {
@@ -126,5 +127,15 @@ public class ListJobsCommandTest {
         assertThat(result.stdout(), containsString("job1"));
         assertThat(result.stdout(), containsString("job2"));
         assertThat(result.stdout(), containsString("mvn"));
+    }
+
+    @Issue("JENKINS-18393")
+    @Test public void failForMatrixProject() throws Exception {
+        MatrixProject matrixProject = j.createProject(MatrixProject.class, "mp");
+
+        CLICommandInvoker.Result result = command.invokeWithArgs("MatrixJob");
+        assertThat(result, CLICommandInvoker.Matcher.failedWith(3));
+        assertThat(result.stdout(), isEmptyString());
+        assertThat(result.stderr(), containsString("No view or item group with the given name 'MatrixJob' found."));
     }
 }

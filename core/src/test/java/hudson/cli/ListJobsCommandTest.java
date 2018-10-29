@@ -76,24 +76,6 @@ public class ListJobsCommandTest {
         assertThat(stdout, is(empty()));
     }
 
-    /*
-    @Test
-    @Issue("JENKINS-18393")
-    public void failForMatrixProject() throws Exception {
-
-        final MatrixProject matrix = mock(MatrixProject.class);
-        final MatrixConfiguration config = mock(MatrixConfiguration.class);
-        when(matrix.getItems()).thenReturn(Arrays.asList(config));
-
-        when(jenkins.getView("MatrixJob")).thenReturn(null);
-        when(jenkins.getItemByFullName("MatrixJob")).thenReturn(matrix);
-
-        assertThat(runWith("MatrixJob"), equalTo(-1));
-        assertThat(stdout, is(empty()));
-        assertThat(stderr.toString(), containsString("No view or item group with the given name found"));
-    }
-    */
-
     @Test
     public void getAllJobsForEmptyName() throws Exception {
 
