@@ -27,6 +27,9 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+
+import java.util.List;
+
 /**
  * Participates in the rendering of the login page
  *
@@ -67,6 +70,14 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns all login page decorators.
+     * @since TODO
+     */
+    public static List<SimplePageDecorator> all() {
+        return Jenkins.get().getDescriptorList(SimplePageDecorator.class);
     }
 
 }

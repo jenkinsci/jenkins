@@ -1779,6 +1779,14 @@ public class Functions {
         return SimplePageDecorator.first();
     }
 
+    /**
+     * Gets all {@link SimplePageDecorator}s for the login page.
+     * @since TODO
+     */
+    public static List<SimplePageDecorator> getSimplePageDecorators() {
+        return SimplePageDecorator.all();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }

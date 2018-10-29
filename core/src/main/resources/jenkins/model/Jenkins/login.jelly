@@ -49,7 +49,7 @@ THE SOFTWARE.
   <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
   <!-- in case of error we want to surround the form elements with an error hint -->
   <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-  <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
+  <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
   <!-- real deal starting here -->
   <html lang="${request.getLocale().toLanguageTag()}">
     <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
@@ -57,7 +57,9 @@ THE SOFTWARE.
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
       <!-- css styling, will fallback to default implementation -->
-      <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+      <j:forEach var="simpleDecorator" items="${simpleDecorators}">
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+      </j:forEach>
     </head>
     <body>
       <j:choose>
@@ -67,7 +69,9 @@ THE SOFTWARE.
         <j:otherwise>
           <div class="simple-page" role="main">
             <div class="modal login">
-              <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
+              <j:forEach var="simpleDecorator" items="${simpleDecorators}">
+                <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
+              </j:forEach>
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
@@ -145,8 +149,9 @@ THE SOFTWARE.
               </j:forEach>
 
               <div class="footer">
-
-                <st:include it="${simpleDecorator}" page="simple-footer.jelly" optional="true"/>
+                <j:forEach var="simpleDecorator" items="${simpleDecorators}">
+                  <st:include it="${simpleDecorator}" page="simple-footer.jelly" optional="true"/>
+                </j:forEach>
               </div>
 
             </div>
