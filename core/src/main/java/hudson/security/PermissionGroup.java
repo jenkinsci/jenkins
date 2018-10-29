@@ -175,8 +175,8 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         }
     }
 
-    private static final PermissionLoader<GlobalPermissionGroup, PermissionGroup> LOADER =
-            new PermissionLoader<>(GlobalPermissionGroup.class, PermissionGroup.class);
+    private static final PermissionLoader<DeclarePermissionGroup, PermissionGroup> LOADER =
+            new PermissionLoader<>(DeclarePermissionGroup.class, PermissionGroup.class);
 
     /**
      * Returns all the {@link PermissionGroup}s available in the system.

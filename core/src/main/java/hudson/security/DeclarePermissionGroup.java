@@ -36,5 +36,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Indexable(type = PermissionGroup.class)
-public @interface GlobalPermissionGroup {
+public @interface DeclarePermissionGroup {
 }

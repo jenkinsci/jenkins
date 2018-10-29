@@ -237,8 +237,8 @@ public final class Permission implements Comparable<Permission> {
         return getId().compareTo(o.getId());
     }
 
-    private static final PermissionLoader<GlobalPermission, Permission> LOADER =
-            new PermissionLoader<>(GlobalPermission.class, Permission.class);
+    private static final PermissionLoader<DeclarePermission, Permission> LOADER =
+            new PermissionLoader<>(DeclarePermission.class, Permission.class);
 
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
@@ -330,7 +330,7 @@ public final class Permission implements Comparable<Permission> {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
-    @GlobalPermissionGroup
+    @DeclarePermissionGroup
     public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
 
     /**
@@ -341,42 +341,42 @@ public final class Permission implements Comparable<Permission> {
      *      Use {@link jenkins.model.Jenkins#ROOT}.
      */
     @Deprecated
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, ROOT);
 
     /**
      * Generic read access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission READ = new Permission(GROUP,"GenericRead",null,ROOT);
 
     /**
      * Generic write access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,ROOT);
 
     /**
      * Generic create access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }

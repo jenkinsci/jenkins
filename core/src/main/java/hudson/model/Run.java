@@ -45,8 +45,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 
-import hudson.security.GlobalPermission;
-import hudson.security.GlobalPermissionGroup;
+import hudson.security.DeclarePermission;
+import hudson.security.DeclarePermissionGroup;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -2518,14 +2518,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public @CheckForNull String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
 
-    @GlobalPermissionGroup
+    @DeclarePermissionGroup
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE, PermissionScope.RUN);
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE, PermissionScope.RUN);
     /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
-    @GlobalPermission
+    @DeclarePermission
     public static final Permission ARTIFACTS = new Permission(PERMISSIONS,"Artifacts",Messages._Run_ArtifactsPermission_Description(), null,
                                                               Functions.isArtifactsPermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
 
