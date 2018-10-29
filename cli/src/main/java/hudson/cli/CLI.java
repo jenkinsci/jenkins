@@ -77,6 +77,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -710,13 +711,8 @@ public class CLI implements AutoCloseable {
                 @Override
                 public void run() {
                     try {
-                        int available = System.in.available();
-                        if (available != 0) {
-                            byte[] bytes = new byte[available];
-                            while (System.in.read(bytes) != -1) {
-                                stdin.write(bytes);
-                            }
-                        }
+                        String input = IOUtils.toString(System.in);
+                        stdin.write(input.getBytes());
                         connection.sendEndStdin();
                     } catch (IOException x) {
                         LOGGER.log(Level.WARNING, null, x);
