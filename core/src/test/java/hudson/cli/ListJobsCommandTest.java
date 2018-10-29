@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -120,6 +121,39 @@ public class ListJobsCommandTest {
 
         assertThat(runWith("OuterFolder"), equalTo(0));
         assertThat(stdout, listsJobs("job", "nestedJob"));
+        assertThat(stderr, is(empty()));
+    }
+
+    @Issue("JENKINS-48220")
+    @Test
+    public void getAllJobsForSubFolder() throws Exception {
+
+        abstract class Folder implements ModifiableTopLevelItemGroup, TopLevelItem {
+        }
+
+        final Folder folder = mock(Folder.class);
+        final Folder nestedFolder = mock(Folder.class);
+        final Folder subNestedFolder = mock(Folder.class);
+        when(folder.getDisplayName()).thenReturn("Folder");
+        when(nestedFolder.getDisplayName()).thenReturn("NestedFolder");
+        when(subNestedFolder.getDisplayName()).thenReturn("NestedFolder_1");
+
+        final TopLevelItem job = job("job");
+        final TopLevelItem nestedJob = job("nestedJob");
+        final TopLevelItem subNestedJob = job("subNestedJob");
+        when(job.hasPermission(Item.READ)).thenReturn(true);
+        when(nestedJob.hasPermission(Item.READ)).thenReturn(true);
+        when(subNestedJob.hasPermission(Item.READ)).thenReturn(true);
+        when(job.getRelativeNameFrom((ItemGroup<TopLevelItem>) folder)).thenReturn("job");
+        when(nestedJob.getRelativeNameFrom((ItemGroup<TopLevelItem>) nestedFolder)).thenReturn("nestedJob");
+        when(subNestedJob.getRelativeNameFrom((ItemGroup<TopLevelItem>) subNestedFolder)).thenReturn("subNestedJob");
+
+        when(folder.getItems()).thenReturn(Arrays.asList(nestedFolder, job));
+        when(nestedFolder.getItems()).thenReturn(Arrays.asList(nestedJob, subNestedFolder));
+        when(subNestedFolder.getItems()).thenReturn(Arrays.asList(subNestedJob));
+
+        assertThat(runWith("NestedFolder"), equalTo(0));
+        assertThat(stdout, listsJobs("nestedJob", "NestedFolder_1"));
         assertThat(stderr, is(empty()));
     }
 
