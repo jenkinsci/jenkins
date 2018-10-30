@@ -1774,7 +1774,9 @@ public class Functions {
     /**
      * Gets only one {@link SimplePageDecorator}.
      * @since 2.128
+     * @deprecated use {@link #getSimplePageDecorators()} instead
      */
+    @Deprecated
     public static SimplePageDecorator getSimplePageDecorator() {
         return SimplePageDecorator.first();
     }
