@@ -29,12 +29,12 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
+import hudson.security.DeclarePermission;
 import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.AbstractModelObject;
 import hudson.model.Label;
 import hudson.model.Descriptor;
 import hudson.security.ACL;
@@ -195,7 +195,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      *
      * This includes provisioning a new node, as well as removing it.
      */
-    public static final Permission PROVISION = new Permission(
+    public static final @DeclarePermission Permission PROVISION = new Permission(
             Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
     );
 }

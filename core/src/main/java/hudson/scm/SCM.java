@@ -44,6 +44,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.security.DeclarePermission;
+import hudson.security.DeclarePermissionGroup;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
@@ -716,12 +718,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         return s;
     }
 
-    public static final PermissionGroup PERMISSIONS = new PermissionGroup(SCM.class, Messages._SCM_Permissions_Title());
+    public static final @DeclarePermissionGroup PermissionGroup PERMISSIONS = new PermissionGroup(SCM.class, Messages._SCM_Permissions_Title());
     /**
      * Permission to create new tags.
      * @since 1.171
      */
-    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE, PermissionScope.ITEM);
+    public static final @DeclarePermission Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE, PermissionScope.ITEM);
 
     /**
      * Returns all the registered {@link SCMDescriptor}s.

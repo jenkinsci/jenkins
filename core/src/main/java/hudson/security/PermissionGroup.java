@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,24 +24,27 @@
 package hudson.security;
 
 import hudson.model.Hudson;
+import org.jvnet.localizer.Localizable;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
-import org.jvnet.localizer.Localizable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 /**
  * Group of {@link Permission}s that share the same {@link Permission#owner owner}.
  *
  * Sortable by the owner class name.
+ * @see DeclarePermissionGroup
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
-    private final SortedSet<Permission> permissions = new TreeSet<Permission>(Permission.ID_COMPARATOR);
+    private final SortedSet<Permission> permissions = new ConcurrentSkipListSet<>();
 
     @Nonnull
     public final Class owner;
@@ -75,7 +78,6 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         this.owner = owner;
         this.title = title;
         this.id = id;
-        register(this);
     }
 
     /**
@@ -94,7 +96,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return getPermissions().iterator();
     }
 
-    /*package*/ synchronized void add(Permission p) {
+    /*package*/ void add(Permission p) {
         if (!permissions.add(p)) {
             throw new IllegalStateException("attempt to register a second Permission for " + p.getId());
         }
@@ -103,28 +105,22 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     /**
      * Lists up all the permissions in this group.
      */
-    public synchronized List<Permission> getPermissions() {
-        return new ArrayList<Permission>(permissions);
+    public List<Permission> getPermissions() {
+        return new ArrayList<>(permissions);
     }
 
-    public synchronized boolean hasPermissionContainedBy(PermissionScope scope) {
-        for (Permission p : permissions)
-            if (p.isContainedBy(scope))
-                return true;
-        return false;
+    public boolean hasPermissionContainedBy(PermissionScope scope) {
+        return permissions.stream().anyMatch(p -> p.isContainedBy(scope));
     }
 
     /**
      * Finds a permission that has the given name.
      */
-    public synchronized Permission find(String name) {
-        for (Permission p : permissions) {
-            if(p.name.equals(name))
-                return p;
-        }
-        return null;
+    public Permission find(String name) {
+        return permissions.stream().filter(p -> p.name.equals(name)).findFirst().orElse(null);
     }
 
+    @Override
     public int compareTo(PermissionGroup that) {
         // first, sort by the 'compare order' number. This is so that
         // we can put Hudson.PERMISSIONS first.
@@ -141,35 +137,59 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return 1;
     }
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         return o instanceof PermissionGroup && getOwnerClassName().equals(((PermissionGroup) o).getOwnerClassName());
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         return getOwnerClassName().hashCode();
     }
 
-    public synchronized int size() {
+    public int size() {
         return permissions.size();
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "PermissionGroup[" + getOwnerClassName() + "]";
     }
 
-    private static synchronized void register(PermissionGroup g) {
-        if (!PERMISSIONS.add(g)) {
-            throw new IllegalStateException("attempt to register a second PermissionGroup for " + g.getOwnerClassName());
+    private Object writeReplace() {
+        return new Proxy(permissions, owner, title, id);
+    }
+
+    private static class Proxy {
+        private final SortedSet<Permission> permissions;
+        private final Class<?> owner;
+        private final Localizable title;
+        private final String id;
+
+        private Proxy(SortedSet<Permission> permissions, Class<?> owner, Localizable title, String id) {
+            this.permissions = new TreeSet<>(permissions);
+            this.owner = owner;
+            this.title = title;
+            this.id = id;
+        }
+
+        private Object readResolve() {
+            PermissionGroup group = new PermissionGroup(id, owner, title);
+            group.permissions.addAll(permissions);
+            return group;
         }
     }
+
+    private static final PermissionLoader<DeclarePermissionGroup, PermissionGroup> LOADER =
+            new PermissionLoader<>(DeclarePermissionGroup.class, PermissionGroup.class);
 
     /**
      * Returns all the {@link PermissionGroup}s available in the system.
      * @return
      *      always non-null. Read-only.
      */
-    public static synchronized List<PermissionGroup> getAll() {
-        return new ArrayList<PermissionGroup>(PERMISSIONS);
+    public static List<PermissionGroup> getAll() {
+        return LOADER.all().sorted().collect(Collectors.toList());
     }
 
     /**
@@ -178,16 +198,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @return  null if not found.
      */
     public static synchronized @CheckForNull PermissionGroup get(Class owner) {
-        for (PermissionGroup g : PERMISSIONS) {
-            if (g.owner == owner) {
-                return g;
-            }
-        }
-        return null;
+        return LOADER.all().filter(group -> group.owner.equals(owner)).findFirst().orElse(null);
     }
 
-    /**
-     * All the permissions in the system, keyed by their owners.
-     */
-    private static final SortedSet<PermissionGroup> PERMISSIONS = new TreeSet<PermissionGroup>();
 }

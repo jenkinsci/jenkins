@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
+ * Copyright (c) 2018 CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,24 +23,22 @@
  */
 package hudson.security;
 
-import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.JenkinsRule;
+import net.java.sezpoz.Indexable;
 
-import static org.junit.Assert.assertSame;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class PermissionGroupTest {
-
-    @Rule public JenkinsRule r = new JenkinsRule();
-
-    /**
-     * "Overall" permission group should be always the first.
-     */
-    @Email("http://jenkins-ci.361315.n4.nabble.com/Master-slave-refactor-tp391495.html")
-    @Test public void order() {
-        assertSame(PermissionGroup.getAll().get(0), Jenkins.PERMISSIONS);
-    }
-
+/**
+ * Declares a public static {@link PermissionGroup} field as a permission group to be shown in the UI.
+ *
+ * @since TODO
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Indexable(type = PermissionGroup.class)
+public @interface DeclarePermissionGroup {
 }

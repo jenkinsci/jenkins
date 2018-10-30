@@ -25,18 +25,15 @@ package hudson.security;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
+import org.jvnet.localizer.Localizable;
 
-import java.util.Collections;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
-import org.jvnet.localizer.Localizable;
+import java.util.stream.Collectors;
 
 /**
  * Permission, which represents activity that requires a security privilege.
@@ -46,23 +43,16 @@ import org.jvnet.localizer.Localizable;
  *
  * @author Kohsuke Kawaguchi
  * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins">Plugins in secured Jenkins</a>
+ * @see DeclarePermission
  */
-public final class Permission {
+public final class Permission implements Comparable<Permission> {
 
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
+     * @deprecated use {@link Comparator#naturalOrder()} instead
      */
-    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
-
-        /**
-         * {@inheritDoc}
-         */
-        // break eclipse compilation 
-        //Override
-        public int compare(@Nonnull Permission one, @Nonnull Permission two) {
-            return one.getId().compareTo(two.getId());
-        }
-    };
+    @Deprecated
+    public static final Comparator<Permission> ID_COMPARATOR = Comparator.naturalOrder();
 
     public final @Nonnull Class owner;
 
@@ -164,7 +154,6 @@ public final class Permission {
         this.id = owner.getName() + '.' + name;
 
         group.add(this);
-        ALL.add(this);
     }
 
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
@@ -232,34 +221,19 @@ public final class Permission {
         return id;
     }
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         return o instanceof Permission && getId().equals(((Permission) o).getId());
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         return getId().hashCode();
     }
 
-    /**
-     * Convert the ID representation into {@link Permission} object.
-     *
-     * @return
-     *      null if the conversion failed.
-     * @see #getId()
-     */
-    public static @CheckForNull Permission fromId(@Nonnull String id) {
-        int idx = id.lastIndexOf('.');
-        if(idx<0)   return null;
-
-        try {
-            // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.getInstance().getPluginManager().uberClassLoader);
-            PermissionGroup g = PermissionGroup.get(cl);
-            if(g ==null)  return null;
-            return g.find(id.substring(idx+1));
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
+    @Override
+    public int compareTo(@Nonnull Permission o) {
+        return getId().compareTo(o.getId());
     }
 
     @Override
@@ -274,22 +248,29 @@ public final class Permission {
     public boolean getEnabled() {
         return enabled;
     }
-    
+
+    private static final PermissionLoader<DeclarePermission, Permission> LOADER =
+            new PermissionLoader<>(DeclarePermission.class, Permission.class);
+
+    /**
+     * Convert the ID representation into {@link Permission} object.
+     *
+     * @return
+     *      null if the conversion failed.
+     * @see #getId()
+     */
+    public static @CheckForNull Permission fromId(@Nonnull String id) {
+        return LOADER.all().filter(permission -> permission.getId().equals(id)).findFirst().orElse(null);
+    }
+
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return
      *      always non-null. Read-only.
      */
     public static @Nonnull List<Permission> getAll() {
-        return ALL_VIEW;
+        return LOADER.all().sorted().collect(Collectors.toList());
     }
-
-    /**
-     * All permissions in the system but in a single list.
-     */
-    private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
-
-    private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
 
 //
 //
@@ -304,7 +285,7 @@ public final class Permission {
      *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
     @Deprecated
-    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
+    public static final @DeclarePermissionGroup PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
      *
@@ -315,7 +296,7 @@ public final class Permission {
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
     @Deprecated
-    public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
+    public static final @DeclarePermission Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
 //
 //
@@ -325,7 +306,7 @@ public final class Permission {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
-    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
+    public static final @DeclarePermissionGroup PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
 
     /**
      * Historically this was separate from {@link #HUDSON_ADMINISTER} but such a distinction doesn't make sense
@@ -335,35 +316,35 @@ public final class Permission {
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
     @Deprecated
-    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
+    public static final @DeclarePermission Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
+    public static final @DeclarePermission Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
+    public static final @DeclarePermission Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
+    public static final @DeclarePermission Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
+    public static final @DeclarePermission Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
+    public static final @DeclarePermission Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
+    public static final @DeclarePermission Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }
