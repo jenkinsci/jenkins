@@ -100,6 +100,7 @@ THE SOFTWARE.
                     class="${inputClass}"
                     type="password"
                     name="j_password"
+                    id="j_password"
                     placeholder="${%Password}"
                   />
                 </div>
