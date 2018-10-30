@@ -129,11 +129,16 @@ public abstract class Telemetry implements ExtensionPoint {
     }
 
     /**
-     * @since TODO
+     * @since 2.147
      * @return whether to collect telemetry
      */
     public static boolean isDisabled() {
-        return UsageStatistics.DISABLED || !Jenkins.get().isUsageStatisticsCollected();
+        if (UsageStatistics.DISABLED) {
+            return true;
+        }
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+
+        return jenkins == null || !jenkins.isUsageStatisticsCollected();
     }
 
     @Extension

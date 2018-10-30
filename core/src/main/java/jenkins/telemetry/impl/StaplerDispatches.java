@@ -104,8 +104,7 @@ public class StaplerDispatches extends Telemetry {
 
         @Override
         protected void record(StaplerRequest staplerRequest, String s) {
-            if (UsageStatistics.DISABLED || !Jenkins.get().isUsageStatisticsCollected()) {
-                // TODO use new API after jenkinsci/jenkins#3687 is merged
+            if (Telemetry.isDisabled()) {
                 // do not collect traces while usage statistics are disabled
                 return;
             }
