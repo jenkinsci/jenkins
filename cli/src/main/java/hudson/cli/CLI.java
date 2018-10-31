@@ -77,7 +77,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -706,13 +705,15 @@ public class CLI implements AutoCloseable {
             connection.sendLocale(Locale.getDefault().toString());
             connection.sendStart();
             connection.begin();
-            final OutputStream stdin = connection.streamStdin();
             new Thread("input reader") {
                 @Override
                 public void run() {
                     try {
-                        String input = IOUtils.toString(System.in);
-                        stdin.write(input.getBytes());
+                        final OutputStream stdin = connection.streamStdin();
+                        int c;
+                        while (!connection.complete && (c = System.in.read()) != -1) {
+                           stdin.write(c);
+                        }
                         connection.sendEndStdin();
                     } catch (IOException x) {
                         LOGGER.log(Level.WARNING, null, x);
