@@ -1,3 +1,12 @@
+function checkPluginsWithoutWarnings() {
+    var inputs = document.getElementsByTagName('input');
+    for(var i = 0; i < inputs.length; i++) {
+        var candidate = inputs[i];
+        if(candidate.type === "checkbox" && candidate.dataset.compatWarning === 'false') {
+            candidate.checked = true;
+        }
+    }
+}
 function showhideCategories(hdr,on) {
   var table = hdr.parentNode.parentNode.parentNode,
       newDisplay = on ? '' : 'none',
