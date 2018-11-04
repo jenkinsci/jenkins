@@ -61,7 +61,7 @@ public class GetNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/ExtendedRead permission"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -88,7 +88,7 @@ public class GetNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -97,11 +97,11 @@ public class GetNodeCommandTest {
     public void getNodeShouldFailForMaster() throws Exception {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("(master)");
         assertThat(result.stderr(), containsString("No such node '(master)'"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 

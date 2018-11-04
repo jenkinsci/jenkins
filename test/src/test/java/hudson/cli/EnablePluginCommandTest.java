@@ -106,7 +106,7 @@ public class EnablePluginCommandTest {
     @Test
     @Issue("JENKINS-52822")
     public void enableInvalidPluginFails() {
-        assertThat(enablePlugins("foobar"), failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(enablePlugins("foobar"), failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertJenkinsNotInQuietMode();
     }
 

@@ -39,7 +39,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         
         run.setDescription(description);
         
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
     
 }

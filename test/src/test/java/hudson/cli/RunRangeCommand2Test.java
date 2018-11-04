@@ -63,7 +63,7 @@ public class RunRangeCommand2Test {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("", "1");
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job ''"));
     }
@@ -75,7 +75,7 @@ public class RunRangeCommand2Test {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(" ", "1");
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job ' '"));
     }

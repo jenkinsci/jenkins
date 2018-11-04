@@ -45,7 +45,7 @@ public class UpdateJobCommand extends CLICommand {
 
     protected CLIReturnCode execute() throws Exception {
         job.updateByXml((Source)new StreamSource(stdin));
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
 

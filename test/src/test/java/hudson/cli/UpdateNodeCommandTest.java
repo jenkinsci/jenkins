@@ -62,7 +62,7 @@ public class UpdateNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -94,7 +94,7 @@ public class UpdateNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -103,11 +103,11 @@ public class UpdateNodeCommandTest {
     public void updateNodeShouldFailForMaster() throws Exception {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("(master)");
         assertThat(result.stderr(), containsString("No such node '(master)'"));
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
     }
 

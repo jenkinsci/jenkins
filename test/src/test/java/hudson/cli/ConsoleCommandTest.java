@@ -72,7 +72,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -101,7 +101,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("never_created");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
@@ -114,7 +114,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Permalink lastBuild produced no build"));
     }
@@ -127,7 +127,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
     }
@@ -140,7 +140,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1a");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\""));
 
@@ -151,7 +151,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1a");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\". Did you mean \"lastBuild\"?"));
     }
@@ -325,7 +325,7 @@ public class ConsoleCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
                 .invokeWithArgs("aProject", "1");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
     }

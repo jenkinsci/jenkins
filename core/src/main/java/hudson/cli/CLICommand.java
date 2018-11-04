@@ -285,26 +285,32 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
+
             CLIReturnCode res = execute();
+            String reason = res.getReason(locale);
+            if (reason != null) {
+                logCLIReason(args, auth, reason);
+            }
+
             LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
                     new Object[] {getName(), args.size(), auth.getName(), res});
             return res;
         } catch (CmdLineException e) {
             logCLIError(args, auth, e);
             printUsage(stderr, p);
-            return CLIReturnCodeStandard.WRONG_CMD_PARAMETER;
+            return StandardCLIReturnCode.WRONG_CMD_PARAMETER;
         } catch (IllegalStateException e) {
             logCLIError(args, auth, e);
-            return CLIReturnCodeStandard.ILLEGAL_STATE;
+            return StandardCLIReturnCode.ILLEGAL_STATE;
         } catch (IllegalArgumentException e) {
             logCLIError(args, auth, e);
-            return CLIReturnCodeStandard.ILLEGAL_ARGUMENT;
+            return StandardCLIReturnCode.ILLEGAL_ARGUMENT;
         } catch (AbortException e) {
             logCLIError(args, auth, e);
-            return CLIReturnCodeStandard.ABORTED;
+            return StandardCLIReturnCode.ABORTED;
         } catch (AccessDeniedException e) {
             logCLIError(args, auth, e);
-            return CLIReturnCodeStandard.ACCESS_DENIED;
+            return StandardCLIReturnCode.ACCESS_DENIED;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
@@ -312,7 +318,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
             stderr.println();
             stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
-            return CLIReturnCodeStandard.BAD_CREDENTIALS;
+            return StandardCLIReturnCode.BAD_CREDENTIALS;
         } catch (Throwable e) {
             final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                     getName());
@@ -320,13 +326,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
             Functions.printStackTrace(e, stderr);
-            return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED;
+            return StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED;
         } finally {
             if (sc != null) {
                 // restore previous one
                 sc.setAuthentication(old);
             }
         }
+    }
+
+    private void logCLIReason(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull String reason){
+        LOGGER.log(Level.FINE, String.format("Call to CLI command %s, with %d arguments, as user %s return the reason: %s",
+            getName(), args.size(), auth != null ? auth.getName() : "<unknown>", reason));
+        stderr.println();
+        stderr.println("REASON: " + reason);
     }
 
     private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull Exception e){
@@ -449,8 +462,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * To execute CLI method from outside, use {@link #invoke(List, Locale, InputStream, PrintStream, PrintStream)}
      *
      * @return
-     *      0 to indicate a success, otherwise a custom error code.
-     *      Error codes 1-15 shouldn;t be used in {@link #run()} as a custom error code.
+     *      {@link StandardCLIReturnCode#OK} to indicate a success, otherwise a custom error code.
+     *      If you want to return another {@link StandardCLIReturnCode} value, please use one of the following exceptions instead.
      * @throws Exception
      *      If a further unspecified exception is thrown; means: Unknown and/or unexpected issue occurred
      * @throws CmdLineException
@@ -466,12 +479,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @throws BadCredentialsException
      *      If bad credentials were provided to CLI
      * @see CLIReturnCode
+     * @see StandardCLIReturnCode
      * @since TODO
      */
     protected CLIReturnCode execute() throws Exception {
         if (Util.isOverridden(CLICommand.class, getClass(), "run")) {
             int exitCode = run();
-            return new CLIReturnCodeLegacyWrapper(exitCode);
+            return new LegacyWrapperCLIReturnCode(exitCode);
         } else {
             throw new AbstractMethodError("you must override at least one of CLICommand.run or CLICommand.execute methods");
         }

@@ -54,7 +54,7 @@ public class ReloadConfigurationCommand extends CLICommand {
             Thread.sleep(100);
         }
         if (app instanceof Jenkins) {
-            return CLIReturnCodeStandard.OK;
+            return StandardCLIReturnCode.OK;
         } else if (app instanceof JenkinsReloadFailed) {
             Throwable t = ((JenkinsReloadFailed) app).cause;
             if (t instanceof Exception) {
@@ -64,7 +64,7 @@ public class ReloadConfigurationCommand extends CLICommand {
             }
         } else {
             stderr.println("Unexpected status " + app);
-            return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED; // could throw JenkinsReloadFailed.cause if it were not deprecated
+            return StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED; // could throw JenkinsReloadFailed.cause if it were not deprecated
         }
     }
 

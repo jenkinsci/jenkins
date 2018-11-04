@@ -46,6 +46,6 @@ public class WaitNodeOnlineCommand extends CLICommand {
     @Override
     protected CLIReturnCode execute() throws Exception {
         node.toComputer().waitUntilOnline();
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

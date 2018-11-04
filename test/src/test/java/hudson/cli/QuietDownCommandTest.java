@@ -76,7 +76,7 @@ public class QuietDownCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Administer permission"));
     }
@@ -122,7 +122,7 @@ public class QuietDownCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-timeout");
-        assertThat(result, failedWith(CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.WRONG_CMD_PARAMETER.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Option \"-timeout\" takes an operand"));
     }

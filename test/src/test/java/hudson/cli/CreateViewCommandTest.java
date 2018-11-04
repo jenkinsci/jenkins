@@ -61,7 +61,7 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Create permission"));
     }
@@ -110,7 +110,7 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: View 'ViewFromXML' already exists"));
     }
@@ -123,7 +123,7 @@ public class CreateViewCommandTest {
                 .invokeWithArgs("..")
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Invalid view name"));
     }

@@ -41,6 +41,6 @@ public class VersionCommand extends CLICommand {
     protected CLIReturnCode execute() {
         // CLICommand.main checks Hudson.READ permission.. no other check needed.
         stdout.println(Jenkins.VERSION);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

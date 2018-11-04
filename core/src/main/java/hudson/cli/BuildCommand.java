@@ -48,10 +48,12 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -59,6 +61,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -153,10 +156,10 @@ public class BuildCommand extends CLICommand {
             }
             // preemptively check for a polling veto
             if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
-                return CLIReturnCodeStandard.OK;
+                return StandardCLIReturnCode.OK;
             }
             if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges()) {
-                return CLIReturnCodeStandard.OK;
+                return StandardCLIReturnCode.OK;
             }
         }
 
@@ -225,7 +228,7 @@ public class BuildCommand extends CLICommand {
             }
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     @Override
@@ -283,17 +286,24 @@ public class BuildCommand extends CLICommand {
     }
 
     private enum BuildCommandReturnCode implements CLIReturnCode {
-        COMMAND_INTERRUPTED_BUT_NOT_BACKGROUND_TASK(125);
+        COMMAND_INTERRUPTED_BUT_NOT_BACKGROUND_TASK(125, Messages._BuildCommand_BuildCommandReturnCode_COMMAND_INTERRUPTED_BUT_NOT_BACKGROUND_TASK_reason());
 
         private final int code;
+        private final Localizable localizable;
 
-        BuildCommandReturnCode(int code){
+        BuildCommandReturnCode(int code, Localizable localizable){
             this.code = code;
+            this.localizable = localizable;
         }
         
         @Override
         public int getCode() {
             return code;
+        }
+
+        @Override
+        public @CheckForNull String getReason(@Nonnull Locale locale) {
+            return localizable.toString(locale);
         }
     }
 
@@ -307,6 +317,11 @@ public class BuildCommand extends CLICommand {
         @Override
         public int getCode() {
             return result.ordinal;
+        }
+
+        @Override
+        public @CheckForNull String getReason(@Nonnull Locale locale) {
+            return Messages.BuildCommand_JobResultAsReturnCode_reason(result.ordinal);
         }
     }
 }

@@ -64,6 +64,6 @@ public class CreateViewCommand extends CLICommand {
 
         jenkins.addView(newView);
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

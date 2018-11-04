@@ -30,13 +30,13 @@ import hudson.ExtensionFinder;
 import hudson.Functions;
 import hudson.Util;
 import hudson.cli.CLICommand;
+import hudson.cli.CLIReturnCode;
 import hudson.cli.CloneableCLICommand;
+import hudson.cli.StandardCLIReturnCode;
 import hudson.model.Hudson;
 import hudson.security.CliAuthenticator;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
-import hudson.cli.CLIReturnCode;
-import hudson.cli.CLIReturnCodeStandard;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
@@ -228,23 +228,23 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 printUsage(stderr, parser);
-                                return CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode();
+                                return StandardCLIReturnCode.WRONG_CMD_PARAMETER.getCode();
                             } catch (IllegalStateException e) {
                                 stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return CLIReturnCodeStandard.ILLEGAL_STATE.getCode();
+                                return StandardCLIReturnCode.ILLEGAL_STATE.getCode();
                             } catch (IllegalArgumentException e) {
                                 stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode();
+                                return StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode();
                             } catch (AbortException e) {
                                 stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return CLIReturnCodeStandard.ABORTED.getCode();
+                                return StandardCLIReturnCode.ABORTED.getCode();
                             } catch (AccessDeniedException e) {
                                 stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
-                                return CLIReturnCodeStandard.ACCESS_DENIED.getCode();
+                                return StandardCLIReturnCode.ACCESS_DENIED.getCode();
                             } catch (BadCredentialsException e) {
                                 // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
                                 // do that to the server log instead
@@ -252,7 +252,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
                                 stderr.println();
                                 stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
-                                return CLIReturnCodeStandard.BAD_CREDENTIALS.getCode();
+                                return StandardCLIReturnCode.BAD_CREDENTIALS.getCode();
                             } catch (Throwable e) {
                                 final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                                         getName());
@@ -260,7 +260,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
                                 Functions.printStackTrace(e, stderr);
-                                return CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED.getCode();
+                                return StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED.getCode();
                             } finally {
                                 if (sc != null) {
                                     // restore previous one

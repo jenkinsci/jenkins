@@ -72,7 +72,7 @@ public class CreateNodeCommand extends CLICommand {
 
         jenkins.addNode(newNode);
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
 }

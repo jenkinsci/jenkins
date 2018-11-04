@@ -62,7 +62,7 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Create permission"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
     }
 
     @Test public void createNode() throws Exception {
@@ -131,7 +131,7 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Node 'SlaveFromXML' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
@@ -146,6 +146,6 @@ public class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Node 'ExistingSlave' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
     }
 }

@@ -203,7 +203,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("the-project");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result.stderr(), containsString("ERROR: Cannot build the-project because it is disabled."));
         assertNull("Project should not be built", project.getBuildByNumber(1));
     }
@@ -215,7 +215,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("new-one");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result.stderr(), containsString("ERROR: Cannot build new-one because its configuration has not been saved."));
         assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
@@ -258,7 +258,7 @@ public class BuildCommandTest {
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("foo", "-p", "string=value");
-        assertThat(result, failedWith(CLIReturnCodeStandard.WRONG_CMD_PARAMETER.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.WRONG_CMD_PARAMETER.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No default value for the parameter \'FOO\'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted

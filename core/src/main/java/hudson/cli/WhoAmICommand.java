@@ -47,7 +47,7 @@ public class WhoAmICommand extends CLICommand implements UnprotectedCLICommand {
         for (GrantedAuthority ga : a.getAuthorities()) {
             stdout.println("  "+ga.getAuthority());
         }
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
 

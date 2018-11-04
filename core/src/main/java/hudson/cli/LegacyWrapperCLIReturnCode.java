@@ -23,19 +23,33 @@
  */
 package hudson.cli;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.Locale;
+
 /**
  * Should only be used to wrap legacy use of {@link CLICommand#run()} inside commands
  * @since TODO
  */
-public class CLIReturnCodeLegacyWrapper implements CLIReturnCode {
-	private final int legacyCode;
+public class LegacyWrapperCLIReturnCode implements CLIReturnCode {
+    private final int legacyCode;
 
-	public CLIReturnCodeLegacyWrapper(int legacyCode){
-		this.legacyCode = legacyCode;
-	}
+    public LegacyWrapperCLIReturnCode(int legacyCode){
+        this.legacyCode = legacyCode;
+    }
 
-	@Override
-	public int getCode() {
-		return legacyCode;
-	}
+    @Override
+    public int getCode() {
+        return legacyCode;
+    }
+
+    @Override
+    public @CheckForNull String getReason(@Nonnull Locale locale) {
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "LegacyWrapper: " + legacyCode;
+    }
 }

@@ -172,7 +172,7 @@ public class InstallPluginCommand extends CLICommand {
         if (restart) {
             jenkins.safeRestart();
         }
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     private static FilePath getTargetFilePath(String name) {

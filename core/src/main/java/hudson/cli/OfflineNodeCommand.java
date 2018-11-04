@@ -89,6 +89,6 @@ public class OfflineNodeCommand extends CLICommand {
         if (errorOccurred) {
             throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

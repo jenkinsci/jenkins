@@ -51,7 +51,7 @@ public class LoginCommand extends CLICommand implements UnprotectedCLICommand {
 
         SecurityListener.fireLoggedIn(a.getName());
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
 }

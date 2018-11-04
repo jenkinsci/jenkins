@@ -52,6 +52,6 @@ public class GetNodeCommand extends CLICommand {
 
         Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

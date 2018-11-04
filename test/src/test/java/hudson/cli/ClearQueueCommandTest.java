@@ -59,7 +59,7 @@ public class ClearQueueCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ).invoke();
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
     }

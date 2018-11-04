@@ -80,7 +80,7 @@ public class ListPluginsCommand extends CLICommand {
             }
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     private void printPlugin(PluginWrapper plugin, int colWidthShortName, int colWidthDisplayName) {

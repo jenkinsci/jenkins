@@ -23,62 +23,43 @@
  */
 package hudson.cli;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.Locale;
+
 /**
- * Set of standard CLI return code
- * @since TODO
+ * Could help when a plugin wants to use an custom exception 
  */
-public enum CLIReturnCodeStandard implements CLIReturnCode {
-	/**
-	 * Everything went ok
-	 * HTTP equivalent: 2xx
- 	 */
-	OK(0),
-	/**
-	 * Internal server error
-	 * HTTP equivalent: 500
- 	 */
-	UNKNOWN_ERROR_OCCURRED(1),
-	/**
-	 * Input cannot be decoded or are wrong
-	 * HTTP equivalent: 400
- 	 */
-	WRONG_CMD_PARAMETER(2),
-	/**
-	 * Wrong input arguments
-	 * HTTP equivalent: 400, 404
-	 * Example: job doesn't exist
- 	 */
-	ILLEGAL_ARGUMENT(3),
-	/**
-	 * Correct input but wrong state
-	 * HTTP equivalent: 400, 410
-	 * Example: build is already finished
-	 */
-	ILLEGAL_STATE(4),
-	/**
-	 * Can't continue due to an other (rare) issue
-	 */
-	ABORTED(5),
-	/**
-	 * User is authenticated but does not have sufficient permission
-	 * HTTP equivalent: 403
- 	 */
-	ACCESS_DENIED(6),
-	/**
-	 * Credentials sent but are invalid
-	 * HTTP equivalent: 401
- 	 */
-	BAD_CREDENTIALS(7),
+public class ExceptionCLIReturnCode implements CLIReturnCode {
+    private final Integer code;
+    private final Throwable throwable;
 
-	;
+    public ExceptionCLIReturnCode(int code, @Nonnull Throwable throwable){
+        this.code = code;
+        this.throwable = throwable;
+    }
 
-	private final int code;
+    public ExceptionCLIReturnCode(@Nonnull Throwable throwable){
+        this.code = null;
+        this.throwable = throwable;
+    }
 
-	CLIReturnCodeStandard(int code){
-		this.code = code;
-	}
+    @Override
+    public int getCode() {
+        if (code == null) {
+            return StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED.getCode();
+        }
 
-	public int getCode() {
-		return code;
-	}
+        return code;
+    }
+
+    @Override
+    public @CheckForNull String getReason(@Nonnull Locale locale) {
+        return throwable.getMessage();
+    }
+
+    @Override
+    public String toString() {
+        return "ExceptionWrapper: " + throwable.getMessage();
+    }
 }

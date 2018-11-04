@@ -132,7 +132,7 @@ public class InstallToolCommand extends CLICommand {
 
         t = t.translate(node, EnvVars.getRemote(checkChannel()), new StreamTaskListener(stderr));
         stdout.println(t.getHome());
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     private static final class BuildIDs extends MasterToSlaveCallable<BuildIDs, IOException> {

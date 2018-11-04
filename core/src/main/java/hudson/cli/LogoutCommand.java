@@ -37,6 +37,6 @@ public class LogoutCommand extends CLICommand implements UnprotectedCLICommand {
 
         SecurityListener.fireLoggedOut(auth.getName());
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

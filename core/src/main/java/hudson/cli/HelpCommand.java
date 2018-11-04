@@ -73,7 +73,7 @@ public class HelpCommand extends CLICommand implements UnprotectedCLICommand {
             stderr.println("    "+c.getShortDescription());
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     private CLIReturnCode showCommandDetails() throws Exception {
@@ -85,6 +85,6 @@ public class HelpCommand extends CLICommand implements UnprotectedCLICommand {
 
         command.printUsage(stderr, command.getCmdLineParser());
         
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

@@ -47,6 +47,6 @@ public class UpdateViewCommand extends CLICommand {
     @Override
     protected CLIReturnCode execute() throws Exception {
         view.updateByXml(new StreamSource(stdin));
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

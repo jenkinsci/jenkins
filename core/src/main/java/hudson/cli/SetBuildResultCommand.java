@@ -51,6 +51,6 @@ public class SetBuildResultCommand extends CommandDuringBuild {
         Run r = getCurrentlyBuilding();
         r.checkPermission(Run.UPDATE);
         r.setResult(result);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

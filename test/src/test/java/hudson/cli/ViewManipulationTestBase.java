@@ -66,7 +66,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aView", "aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
@@ -80,7 +80,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ)
                 .invokeWithArgs("aView", "aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
@@ -94,7 +94,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ)
                 .invokeWithArgs("aView", "aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
     }
@@ -110,7 +110,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("All", "aProject");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result.stderr(), containsString("ERROR: 'All' view can not be modified directly"));
         assertThat(j.jenkins.getView("All").getAllItems().size(), equalTo(1));
         assertThat(j.jenkins.getView("All").contains(project), equalTo(true));
@@ -126,7 +126,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
@@ -138,7 +138,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'aProject1'; perhaps you meant 'aProject'?"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
@@ -154,7 +154,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job ''"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
     }
@@ -173,7 +173,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created", "aProject1", "aProject2");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'; perhaps you meant 'aProject1'?"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
@@ -194,7 +194,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'; perhaps you meant 'aProject1'?"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
@@ -215,7 +215,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2", "never_created");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'; perhaps you meant 'aProject1'?"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
@@ -236,7 +236,7 @@ public abstract class ViewManipulationTestBase {
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2", "never_created");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'; perhaps you meant 'aProject1'?"));
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));

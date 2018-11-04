@@ -74,7 +74,7 @@ public class CopyJobCommand extends CLICommand {
         }
 
         ig.copy(src,dst).save();
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
 

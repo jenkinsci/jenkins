@@ -83,6 +83,6 @@ public class ListJobsCommand extends CLICommand {
             stdout.println(item.getName());
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

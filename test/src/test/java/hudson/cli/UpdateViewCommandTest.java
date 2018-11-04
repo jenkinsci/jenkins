@@ -62,7 +62,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
     }
@@ -94,7 +94,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
                 ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.UNKNOWN_ERROR_OCCURRED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED.getCode()));
         assertThat(result.stderr(), containsString("Expecting view type: "+ tv.getClass()
                 + " but got: class hudson.model.ListView instead."));
     }
@@ -127,7 +127,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("not_created")
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No view named not_created inside view Jenkins"));
     }

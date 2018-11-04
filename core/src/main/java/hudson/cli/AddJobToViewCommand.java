@@ -60,6 +60,6 @@ public class AddJobToViewCommand extends CLICommand {
             ((DirectlyModifiableView) view).add(job);
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

@@ -59,7 +59,7 @@ public class SetBuildDisplayNameCommandTest {
 
         assertThat(result.stderr(), containsString("ERROR: Build #42 does not exist"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
     }
 
     @Test public void setDescriptionSuccessfully() throws Exception {

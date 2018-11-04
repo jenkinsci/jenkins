@@ -88,7 +88,7 @@ public class GroovyCommand extends CLICommand {
 
         GroovyShell groovy = new GroovyShell(jenkins.getPluginManager().uberClassLoader, binding);
         groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[remaining.size()]));
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     /**

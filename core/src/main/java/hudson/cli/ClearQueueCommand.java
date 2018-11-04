@@ -43,7 +43,7 @@ public class ClearQueueCommand extends CLICommand {
     @Override
     protected CLIReturnCode execute() {
         Jenkins.get().getQueue().clear();
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
 }

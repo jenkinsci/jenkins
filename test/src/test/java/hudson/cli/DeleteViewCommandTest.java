@@ -66,7 +66,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Delete permission"));
     }
@@ -80,7 +80,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
                 ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
@@ -105,7 +105,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("never_created")
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No view named never_created inside view Jenkins"));
     }
@@ -118,7 +118,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs(AllView.DEFAULT_VIEW_NAME)
         ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_STATE.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_STATE.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
         assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete '"+AllView.DEFAULT_VIEW_NAME+"' view"));
@@ -130,7 +130,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("")
                 ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: View name is empty"));
     }
@@ -141,7 +141,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs(" ")
                 ;
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No view named   inside view Jenkins"));
     }
@@ -171,7 +171,7 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aView1", "aView2");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -190,7 +190,7 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "never_created", "aView2");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -209,7 +209,7 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "aView2", "never_created");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
@@ -228,7 +228,7 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "never_created1", "never_created2", "aView2");
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No view named never_created1 inside view Jenkins"));
         assertThat(result.stderr(), containsString("never_created2: No view named never_created2 inside view Jenkins"));
@@ -263,7 +263,7 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "aView2", AllView.DEFAULT_VIEW_NAME);
 
-        assertThat(result, failedWith(CLIReturnCodeStandard.ABORTED.getCode()));
+        assertThat(result, failedWith(StandardCLIReturnCode.ABORTED.getCode()));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString(AllView.DEFAULT_VIEW_NAME+": Jenkins does not allow to delete '"+ AllView.DEFAULT_VIEW_NAME+"' view"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));

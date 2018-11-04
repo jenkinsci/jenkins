@@ -70,7 +70,7 @@ public class CreateJobCommand extends CLICommand {
 
         Jenkins.checkGoodName(name);
         ig.createProjectFromXML(name, stdin);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
 

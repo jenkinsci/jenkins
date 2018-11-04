@@ -45,6 +45,6 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
             r.addAction(new ParametersAction(p));
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

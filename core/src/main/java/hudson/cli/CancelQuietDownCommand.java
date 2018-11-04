@@ -43,6 +43,6 @@ public class CancelQuietDownCommand extends CLICommand {
     @Override
     protected CLIReturnCode execute() {
         Jenkins.get().doCancelQuietDown();
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

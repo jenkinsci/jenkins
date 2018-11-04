@@ -56,7 +56,7 @@ public class CreateJobCommandTest {
             grant(Item.READ).onItems(d).toAuthenticated(). // including alice
             grant(Item.CREATE).onItems(d).to("bob"));
         cmd.setTransportAuth(User.get("alice").impersonate());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         cmd.setTransportAuth(User.get("bob").impersonate());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));

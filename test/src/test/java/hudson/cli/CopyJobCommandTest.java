@@ -79,11 +79,11 @@ public class CopyJobCommandTest {
             grant(Item.CREATE).onItems(d2).to("charlie", "debbie").
             grant(Item.EXTENDED_READ).onItems(p).to("debbie"));
         copyJobCommand.setTransportAuth(User.get("alice").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ILLEGAL_ARGUMENT.getCode()));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(StandardCLIReturnCode.ILLEGAL_ARGUMENT.getCode()));
         copyJobCommand.setTransportAuth(User.get("bob").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(CLIReturnCodeStandard.ACCESS_DENIED.getCode()));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(StandardCLIReturnCode.ACCESS_DENIED.getCode()));
         copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));

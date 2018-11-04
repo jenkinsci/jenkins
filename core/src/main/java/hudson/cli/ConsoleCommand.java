@@ -90,7 +90,7 @@ public class ConsoleCommand extends CLICommand {
             w.close();
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     /**

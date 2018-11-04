@@ -18,7 +18,7 @@ public class SessionIdCommand extends CLICommand {
 
     protected CLIReturnCode execute() {
         stdout.println(Jenkins.SESSION_HASH);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
 

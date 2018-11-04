@@ -55,6 +55,6 @@ public class QuietDownCommand extends CLICommand {
     @Override
     protected CLIReturnCode execute() throws Exception {
         Jenkins.get().doQuietDown(block, timeout);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

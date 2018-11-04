@@ -42,6 +42,6 @@ public class GetJobCommand extends CLICommand {
 
     protected CLIReturnCode execute() throws Exception {
         job.writeConfigDotXml(stdout);
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

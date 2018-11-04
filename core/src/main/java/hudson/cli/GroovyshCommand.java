@@ -37,12 +37,15 @@ import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
 import org.kohsuke.args4j.Argument;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Executes Groovy shell.
@@ -146,6 +149,11 @@ public class GroovyshCommand extends CLICommand {
         @Override
         public int getCode() {
             return shellReturnCode;
+        }
+
+        @Override
+        public @CheckForNull String getReason(@Nonnull Locale locale) {
+            return null;
         }
     }
 }

@@ -67,7 +67,7 @@ public class EnablePluginCommand extends CLICommand {
         if (restart && enabledAnyPlugins) {
             jenkins.safeRestart();
         }
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 
     private boolean enablePlugin(PluginManager manager, String shortName) throws IOException {

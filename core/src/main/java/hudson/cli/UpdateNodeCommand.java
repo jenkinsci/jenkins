@@ -50,6 +50,6 @@ public class UpdateNodeCommand extends CLICommand {
     protected CLIReturnCode execute() throws IOException, ServletException {
         node.toComputer().updateByXml(stdin);
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

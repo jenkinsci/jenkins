@@ -47,6 +47,6 @@ public class GetViewCommand extends CLICommand {
         view.checkPermission(View.READ);
         view.writeXml(stdout);
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }

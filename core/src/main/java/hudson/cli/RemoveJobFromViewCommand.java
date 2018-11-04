@@ -61,6 +61,6 @@ public class RemoveJobFromViewCommand extends CLICommand {
             ((DirectlyModifiableView) view).remove(job);
         }
 
-        return CLIReturnCodeStandard.OK;
+        return StandardCLIReturnCode.OK;
     }
 }
