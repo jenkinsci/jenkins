@@ -28,28 +28,38 @@ import javax.annotation.Nonnull;
 import java.util.Locale;
 
 /**
- * Should only be used to wrap legacy use of {@link CLICommand#run()} inside commands
- * @since TODO
+ * Could help when a plugin wants to use an custom exception 
  */
-public class LegacyWrapperCLIReturnCode implements CLIReturnCode {
-    private final int legacyCode;
+public class ExceptionCLIReturnCode implements CLIReturnCode {
+    private final Integer code;
+    private final Throwable throwable;
 
-    public LegacyWrapperCLIReturnCode(int legacyCode){
-        this.legacyCode = legacyCode;
+    public ExceptionCLIReturnCode(int code, @Nonnull Throwable throwable){
+        this.code = code;
+        this.throwable = throwable;
+    }
+
+    public ExceptionCLIReturnCode(@Nonnull Throwable throwable){
+        this.code = null;
+        this.throwable = throwable;
     }
 
     @Override
     public int getCode() {
-        return legacyCode;
+        if (code == null) {
+            return StandardCLIReturnCode.UNKNOWN_ERROR_OCCURRED.getCode();
+        }
+
+        return code;
     }
 
     @Override
     public @CheckForNull String getReason(@Nonnull Locale locale) {
-        return null;
+        return throwable.getMessage();
     }
 
     @Override
     public String toString() {
-        return "LegacyWrapper: " + legacyCode;
+        return "ExceptionWrapper: " + throwable.getMessage();
     }
 }
