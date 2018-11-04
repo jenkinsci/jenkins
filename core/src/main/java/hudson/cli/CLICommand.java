@@ -287,9 +287,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                     new Object[] {getName(), args.size(), auth.getName()});
 
             CLIReturnCode res = execute();
-            String errorReason = res.getReason(locale);
-            if (errorReason != null) {
-                logCLIError(args, auth, errorReason);
+            String reason = res.getReason(locale);
+            if (reason != null) {
+                logCLIReason(args, auth, reason);
             }
 
             LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
@@ -335,11 +335,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
-    private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull String errorReason){
-        LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-            getName(), args.size(), auth != null ? auth.getName() : "<unknown>"));
+    private void logCLIReason(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull String reason){
+        LOGGER.log(Level.FINE, String.format("Call to CLI command %s, with %d arguments, as user %s return the reason: %s",
+            getName(), args.size(), auth != null ? auth.getName() : "<unknown>", reason));
         stderr.println();
-        stderr.println("ERROR: " + errorReason);
+        stderr.println("REASON: " + reason);
     }
 
     private void logCLIError(@Nonnull List<String> args, @CheckForNull Authentication auth, @Nonnull Exception e){
