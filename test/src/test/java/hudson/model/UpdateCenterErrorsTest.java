@@ -7,7 +7,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Messages;
-import hudson.PluginManagerTest;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
@@ -179,7 +178,6 @@ public class UpdateCenterErrorsTest {
         public void  doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("text/json");
             staplerResponse.setStatus(200);
-            //PrintWriter w = staplerResponse.getWriter();
             staplerResponse.serveFile(staplerRequest, UpdateCenterErrorsTest.class.getResource("update-center.json"));
         }
     }
