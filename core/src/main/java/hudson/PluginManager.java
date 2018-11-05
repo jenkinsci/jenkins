@@ -273,6 +273,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public final File rootDir;
 
     /**
+     * Hold the status of the last try to check update centers. Consumed from the check.jelly to show an
+     * error message if the last attempt failed.
+     */
+    private String lastErrorCheckUpdateCenters = null;
+
+    /**
      * If non-null, the base directory for all exploded .hpi/.jpi plugins. Controlled by the system property / servlet
      * context parameter {@literal hudson.PluginManager.workDir}.
      */
@@ -1643,26 +1649,73 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        try {
-            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
-                FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
-                if (v.kind != FormValidation.Kind.OK) {
-                    // TODO crude but enough for now
-                    return v;
+
+        int sleep = SystemProperties.getInteger(PluginManager.class.getName() + ".sleepTimeMilis", 1000);
+        int retries = SystemProperties.getInteger(PluginManager.class.getName() + ".retries", 3);
+
+        retries = retries > 0 ? retries : 3;
+        sleep = sleep > 0 ? sleep : 1000;
+
+        FormValidation response = null;
+        int i = 0;
+        boolean success = false;
+        while(i < retries && !success) {
+            i++;
+            try {
+                response = checkUpdatesServer();
+                lastErrorCheckUpdateCenters = response.getMessage(); //may be null (OK)
+                success = (response.kind == FormValidation.Kind.OK);
+            } catch (Exception e) {
+                // No matter what went on, don't show angry jenkins, just a message and see log for more info
+                lastErrorCheckUpdateCenters = e.getLocalizedMessage();
+            }
+
+            if (!success) {
+                LOGGER.warning(String.format("The attempt #%s to check updates server failed. Exception: %s", i, lastErrorCheckUpdateCenters));
+
+                if (i < retries) {
+                    LOGGER.info(String.format("Will retry after %s milliseconds", sleep));
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException ie) {
+                        LOGGER.info("The wait for a new attempt to check updates server was interrupted. Exception: " + ie);
+                    }
+                } else {
+                    LOGGER.info(String.format("Attempted to check updates server for %s times with no success, raising an error", retries));
+                    LOGGER.severe(String.format("Error checking updates server for %s times. Last exception was: %s", retries, lastErrorCheckUpdateCenters));
+                    if(!LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.severe("Change the log level to WARNING or below to see the error message of every attempt");
+                    }
+                    lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(lastErrorCheckUpdateCenters);
                 }
             }
-            for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
-                FormValidation v = d.updateNow();
-                if (v.kind != FormValidation.Kind.OK) {
-                    return v;
-                }
-            }
-            return HttpResponses.forwardToPreviousPage();
-        } catch(RuntimeException ex) {
-            throw new IOException("Unhandled exception during updates server check", ex);
         }
+
+        // Stay in the same page in any case
+        return HttpResponses.forwardToPreviousPage();
     }
 
+    private FormValidation checkUpdatesServer() throws Exception {
+        for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+            FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                return v;
+            }
+        }
+        for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
+            FormValidation v = d.updateNow();
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                return v;
+            }
+        }
+        return FormValidation.ok();
+    }
+
+    public String getLastErrorCheckUpdateCenters() {
+        return lastErrorCheckUpdateCenters;
+    }
     protected String identifyPluginShortName(File t) {
         try {
             JarFile j = new JarFile(t);
