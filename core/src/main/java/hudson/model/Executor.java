@@ -578,7 +578,7 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Same as {@link #getName()}.
+     * Human readable name of the Jenkins executor. For the Java thread name use {@link #getName()}.
      */
     public String getDisplayName() {
         return "Executor #"+getNumber();
