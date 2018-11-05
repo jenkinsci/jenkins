@@ -40,7 +40,7 @@ public class UpdateCenterErrorsTest {
      */
     @Test
     public void updateSiteReturn502Test() throws Exception {
-        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSite502/getJson", "Server returned HTTP response code: 502 for URL", true);
+        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSite502/getJson", "Server returned HTTP response code: 502 for URL", false);
     }
 
     /**
@@ -49,7 +49,7 @@ public class UpdateCenterErrorsTest {
      */
     @Test
     public void updateSiteWrongJsonTest() throws Exception {
-        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSiteWrongJson/getJson", "Unquotted string 'wrongjson'", true);
+        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSiteWrongJson/getJson", "Unquotted string 'wrongjson'", false);
     }
 
     /**
@@ -60,7 +60,8 @@ public class UpdateCenterErrorsTest {
     public void updateSiteRightJsonTest() throws Exception {
         //Avoid CertPathValidatorException: Algorithm constraints check failed on signature algorithm: MD5withRSA
         DownloadService.signatureCheck = false;
-        checkUpdateSite(UpdateCenterErrorsTest.class.getResource("update-center.json").toString(), "", false );
+        // Have to end in update-center.json or it fails. See UpdateSite#getMetadataUrlForDownloadable
+        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSiteRightJson/update-center.json", "", true );
     }
 
     private HtmlButton getCheckNow(HtmlPage page){
@@ -92,9 +93,9 @@ public class UpdateCenterErrorsTest {
         String page = pageAfterClick.getWebResponse().getContentAsString();
 
         if(isSuccess)
-            Assert.assertTrue(page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
-        else
             Assert.assertFalse(page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
+        else
+            Assert.assertTrue(page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
     }
 
     @TestExtension("updateSiteReturn502Test")
@@ -116,14 +117,13 @@ public class UpdateCenterErrorsTest {
             return "updateSite502";
         }
 
-        //@WebMethod(name = "submit")
         public HttpResponse doGetJson(StaplerRequest request) {
             return HttpResponses.error(502, "Gateway error");
         }
     }
 
     @TestExtension("updateSiteWrongJsonTest")
-    public static final class FailingWithWronJsonUpdateCenterAction implements RootAction {
+    public static final class FailingWithWrongJsonUpdateCenterAction implements RootAction {
 
         @Override
         public @CheckForNull
@@ -141,7 +141,6 @@ public class UpdateCenterErrorsTest {
             return "updateSiteWrongJson";
         }
 
-        //@WebMethod(name = "submit")
         public HttpResponse doGetJson(StaplerRequest request) {
             HttpResponse r = new HttpResponse() {
                 @Override
@@ -154,6 +153,34 @@ public class UpdateCenterErrorsTest {
             };
 
             return r;
+        }
+    }
+
+    @TestExtension("updateSiteRightJsonTest")
+    public static final class ReturnRightJsonUpdateCenterAction implements RootAction {
+
+        @Override
+        public @CheckForNull
+        String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public @CheckForNull String getDisplayName() {
+            return "Update Site returning right json";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "updateSiteRightJson";
+        }
+
+        // The url has to end in update-center.json. See: UpdateSite#getMetadataUrlForDownloadable
+        public void  doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("text/json");
+            staplerResponse.setStatus(200);
+            //PrintWriter w = staplerResponse.getWriter();
+            staplerResponse.serveFile(staplerRequest, UpdateCenterErrorsTest.class.getResource("update-center.json"));
         }
     }
 
