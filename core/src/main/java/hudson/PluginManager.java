@@ -1696,7 +1696,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     private FormValidation checkUpdatesServer() throws Exception {
-        for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
             FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
             if (v.kind != FormValidation.Kind.OK) {
                 // Stop with an error
