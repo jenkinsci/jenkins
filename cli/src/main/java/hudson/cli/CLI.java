@@ -705,13 +705,13 @@ public class CLI implements AutoCloseable {
             connection.sendLocale(Locale.getDefault().toString());
             connection.sendStart();
             connection.begin();
-            final OutputStream stdin = connection.streamStdin();
             new Thread("input reader") {
                 @Override
                 public void run() {
                     try {
+                        final OutputStream stdin = connection.streamStdin();
                         int c;
-                        while ((c = System.in.read()) != -1) { // TODO use InputStream.available
+                        while (!connection.complete && (c = System.in.read()) != -1) {
                            stdin.write(c);
                         }
                         connection.sendEndStdin();
