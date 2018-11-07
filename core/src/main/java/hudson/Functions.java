@@ -1779,6 +1779,10 @@ public class Functions {
         return SimplePageDecorator.first();
     }
 
+    public static List<SimplePageDecorator> getSimplePageDecorators() {
+        return SimplePageDecorator.all();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
