@@ -367,6 +367,7 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
             <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
+            <skipAfterFailureCount>20</skipAfterFailureCount>
           </configuration>
         </plugin>
         <plugin>
