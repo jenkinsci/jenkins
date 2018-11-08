@@ -143,8 +143,17 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * a custom {@link Job} type, so there's no separate registration
  * mechanism for custom {@link Run} types.
  *
+ * Many details of a run are contained in {@link Action} instances
+ * accessible via {@link Action#getAllActions} and {@link
+ * #getAction(Class)}. For example, build access to
+ * build parameters is obtained with
+ * <code>run.getAction(hudson.model.ParametersAction.class)</code> to
+ * get the build's {@link ParametersAction} object.
+ *
  * @author Kohsuke Kawaguchi
  * @see RunListener
+ * @see Job
+ * @see Action
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
@@ -1441,7 +1450,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Returns an input stream that reads from the log file.
-     * It will use a gzip-compressed log file (log.gz) if that exists.
+     *
+     * It will use a gzip-compressed log file (log.gz) if that exists, decompressing
+     * it on the fly to return the uncompressed data.
      *
      * @throws IOException 
      * @return An input stream from the log file. 
@@ -1469,6 +1480,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
     }
    
+    /**
+     * Returns a Reader that reads from the log file.
+     *
+     * This is the simplest way to access the job's console log.
+     *
+     * @throws IOException
+     * @return Character-oriented log file stream as a Reader
+     */
     public @Nonnull Reader getLogReader() throws IOException {
         if (charset==null)  return new InputStreamReader(getLogInputStream());
         else                return new InputStreamReader(getLogInputStream(),charset);
