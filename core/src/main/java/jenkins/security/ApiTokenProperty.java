@@ -26,6 +26,8 @@ package jenkins.security;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
+import hudson.model.RootAction;
+import hudson.security.csrf.CrumbExclusion;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -64,6 +66,10 @@ import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -354,6 +360,51 @@ public class ApiTokenProperty extends UserProperty {
     @Restricted(NoExternalUse.class)
     public ApiTokenStats getTokenStats() {
         return tokenStats;
+    }
+
+    /**
+     * It exposes /userToken/generate (requires POST).
+     * A token for the current user is returned as:
+     * <code>
+     *     {"status":"ok","data":{"tokenName":"test","tokenUuid":"a9edd227-3332-41a7-9baf-33091667b25b","tokenValue":"1142d457d1fe7628548f3215e680b31466"}}
+     * </code>
+     */
+    @Extension
+    public static class TokenGenerateAndGetREST extends CrumbExclusion implements RootAction {
+
+        @Override
+        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo != null && pathInfo.startsWith(getUrlName())) {
+                chain.doFilter(request, response);
+                return true;
+            }
+            return false;
+        }
+
+        @RequirePOST
+        public HttpResponse doGenerate(@QueryParameter String newTokenName) throws IOException {
+            // security checks are done by doGenerateNewToken
+            return new DescriptorImpl().doGenerateNewToken(User.current(), newTokenName);
+        }
+
+        @CheckForNull
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getUrlName() {
+            return "/userToken";
+        }
     }
 
     @Extension
