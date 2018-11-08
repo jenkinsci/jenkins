@@ -52,6 +52,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
+import javax.annotation.CheckReturnValue;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
@@ -138,6 +139,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         return ConsoleAnnotator.initial(context);
     }
 
+    @CheckReturnValue
     @Override
     public long writeLogTo(long start, Writer w) throws IOException {
         if (isHtml())
@@ -150,6 +152,7 @@ public class AnnotatedLargeText<T> extends LargeText {
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
      * {@inheritDoc}
      */
+    @CheckReturnValue
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
@@ -159,10 +162,12 @@ public class AnnotatedLargeText<T> extends LargeText {
      * Calls {@link LargeText#writeLogTo(long, OutputStream)} without stripping annotations as {@link #writeLogTo(long, OutputStream)} would.
      * @since 1.577
      */
+    @CheckReturnValue
     public long writeRawLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, out);
     }
 
+    @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
