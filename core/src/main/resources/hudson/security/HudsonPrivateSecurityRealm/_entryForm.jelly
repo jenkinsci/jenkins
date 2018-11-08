@@ -27,11 +27,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <h1>${title}</h1>
   <div style="margin: 2em;">
-    <j:if test="${data.errorMessage!=null}">
+    <j:forEach var="error" items="${data.errors}">
       <div class="error" style="margin-bottom:1em">
-        ${data.errorMessage}
+        ${error.value}
       </div>
-    </j:if>
+    </j:forEach>
       <table>
         <tr>
           <td>${%Username}:</td>
