@@ -518,7 +518,11 @@ function registerRegexpValidator(e,regexp,message) {
  */
 function makeButton(e,onclick) {
     var type = e.type;
-    var h = e.onclick || function (event) {
+    var h = onclick || function (event) {
+        // make sure we prevent further bubbling
+        console.log('before', event);
+        preventDefault(event);
+        console.log('after', event);
         if (type && type.toLowerCase() === 'submit') {
             var target = event.target;
             var form = findAncestor(target, "FORM");
@@ -531,16 +535,33 @@ function makeButton(e,onclick) {
     var n = e.name;
     var btn = new YAHOO.widget.Button(e,{});
     if(onclick!=null)
-        btn.addListener("click",onclick);
+        btn.addListener("click", onclick, true);
     if(h!=null)
-        btn.addListener("click",h);
+        btn.addListener("click", h, true);
     var be = btn.get("element");
     Element.addClassName(be,clsName);
     if(n) // copy the name
         be.setAttribute("name",n);
     return btn;
 }
-
+/**
+ * Trigger different styles to prevent the event from bubble up
+ * @param event you want to intercept
+ */
+function preventDefault(event) {
+    if (event && event.cancelBubble) {
+        event.cancelBubble = true;
+    }
+    if (event && event.bubbles) {
+        event.bubbles = false;
+    }
+    if (event && event.preventDefault instanceof Function) {
+        event.preventDefault();
+    }
+    if (event && event.stopPropagation instanceof Function) {
+        event.stopPropagation();
+    }
+}
 /*
     If we are inside 'to-be-removed' class, some HTML altering behaviors interact badly, because
     the behavior re-executes when the removed master copy gets reinserted later.
