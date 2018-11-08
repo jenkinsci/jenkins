@@ -519,11 +519,12 @@ function registerRegexpValidator(e,regexp,message) {
 function makeButton(e,onclick) {
     var type = e.type;
     var h = onclick || function (event) {
+        var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
         // make sure we prevent further bubbling
-        console.log('before', event);
+        console.log('before', event, isIE11);
         preventDefault(event);
         console.log('after', event);
-        if (type && type.toLowerCase() === 'submit') {
+        if (type && type.toLowerCase() === 'submit' && !isIE11) {
             var target = event.target;
             var form = findAncestor(target, "FORM");
             form.submit();
