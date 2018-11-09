@@ -370,17 +370,7 @@ public class ApiTokenProperty extends UserProperty {
      * </code>
      */
     @Extension
-    public static class TokenGenerateAndGetREST extends CrumbExclusion implements RootAction {
-
-        @Override
-        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-            String pathInfo = request.getPathInfo();
-            if (pathInfo != null && pathInfo.startsWith(getUrlName())) {
-                chain.doFilter(request, response);
-                return true;
-            }
-            return false;
-        }
+    public static class TokenGenerateAndGetREST implements RootAction {
 
         @RequirePOST
         public HttpResponse doGenerate(@QueryParameter String newTokenName) throws IOException {
