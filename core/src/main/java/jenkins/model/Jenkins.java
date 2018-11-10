@@ -3033,16 +3033,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
-        if (newWorkspacesDir != null) {
-        	Level level;
-        	if(!workspaceDir.equals(newWorkspacesDir)) {
-        		level = Level.INFO;
-        	}
-        	else {
-        		level = Level.WARNING;
-        	}
+        if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
+        	Level level = workspaceDir.equals(DEFAULT_WORKSPACES_DIR) ? Level.INFO : Level.WARNING;
             LOGGER.log(level, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
-                    new String[]{workspaceDir, newWorkspacesDir});
+                       new String[]{workspaceDir, newWorkspacesDir});
             workspaceDir = newWorkspacesDir;
             mustSave = true;
         } else if (!isDefaultWorkspaceDir()) {
