@@ -347,6 +347,11 @@ public class JobTest {
         onLoadAfterTwoRunsAndDeletion(queueJob);
     }
 
+    @Test public void onLoadAfterTwoRunsAndOutdatedFile_LazyBuildMixin() throws Exception {
+        final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRunsAndOutdatedFile(queueJob);
+    }
+
     private void onLoadAfterCreation(final JobTest.QueueJob queueJob) throws Exception {
         final Job job = queueJob.getJob();
         job.saveNextBuildNumber();
@@ -400,6 +405,19 @@ public class JobTest {
         final Job job = queueJob.getJob();
         assertEquals(3, job.getNextBuildNumber());
         job.getNextBuildNumberFile().file.delete();
+        job.nextBuildNumber = 0;
+
+        job.onLoad(j.jenkins, job.name);
+
+        assertEquals(3, job.getNextBuildNumber());
+    }
+
+    private void onLoadAfterTwoRunsAndOutdatedFile(final JobTest.QueueJob queueJob) throws Exception {
+        scheduleAndWait(queueJob);
+        scheduleAndWait(queueJob);
+        final Job job = queueJob.getJob();
+        assertEquals(3, job.getNextBuildNumber());
+        job.getNextBuildNumberFile().write("2\n");
         job.nextBuildNumber = 0;
 
         job.onLoad(j.jenkins, job.name);
