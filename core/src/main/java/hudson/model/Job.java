@@ -240,6 +240,23 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             p.setOwner(this);
     }
 
+    /**
+     * In case the nextBuildNumber file couldn't be written (because it was locked),
+     * make sure the nextBuildNumber is at least one more than the max of the runs that are there.
+     * @param builds runs sorted by their ID in decreasing order
+     * @throws IOException can be thrown if unable to write the file
+     */
+    public void fixNextBuildNumber(final SortedMap<Integer, ? extends RunT> builds) throws IOException {
+        if (builds != null && !builds.isEmpty()) {
+            int max = builds.firstKey();
+            int next = getNextBuildNumber();
+            if (next <= max) {
+                LOGGER.log(Level.WARNING, "JENKINS-27530: improper nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, this, max});
+                updateNextBuildNumber(max + 1);
+            }
+        }
+    }
+
     @Override
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
