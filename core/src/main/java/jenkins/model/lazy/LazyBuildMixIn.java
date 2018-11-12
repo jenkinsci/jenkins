@@ -102,12 +102,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     @SuppressWarnings("unchecked")
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         RunMap<RunT> _builds = createBuildRunMap();
-        int max = _builds.maxNumberOnDisk();
-        int next = asJob().getNextBuildNumber();
-        if (next <= max) {
-            LOGGER.log(Level.WARNING, "JENKINS-27530: improper nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, asJob(), max});
-            asJob().updateNextBuildNumber(max + 1);
-        }
+        asJob().fixNextBuildNumber(_builds);
         RunMap<RunT> currentBuilds = this.builds;
         if (parent != null) {
             // are we overwriting what currently exist?
