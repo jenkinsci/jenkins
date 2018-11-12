@@ -238,6 +238,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         for (JobProperty p : properties)
             p.setOwner(this);
+
+        if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
+            // LazyBuildMixIn.onLoad will call fixNextBuildNumber() at just the right time
+        } else {
+            final SortedMap<Integer, ? extends RunT> builds = _getRuns();
+            fixNextBuildNumber(builds);
+        }
     }
 
     /**

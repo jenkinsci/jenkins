@@ -332,8 +332,18 @@ public class JobTest {
         onLoadAfterOneRun(queueJob);
     }
 
+    @Test public void onLoadAfterOneRun_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
+        onLoadAfterOneRun(queueJob);
+    }
+
     @Test public void onLoadAfterTwoRuns_LazyBuildMixin() throws Exception {
         final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRuns(queueJob);
+    }
+
+    @Test public void onLoadAfterTwoRuns_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
         onLoadAfterTwoRuns(queueJob);
     }
 
@@ -342,13 +352,28 @@ public class JobTest {
         onLoadAfterTwoRunsAndCorruption(queueJob);
     }
 
+    @Test public void onLoadAfterTwoRunsAndCorruption_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
+        onLoadAfterTwoRunsAndCorruption(queueJob);
+    }
+
     @Test public void onLoadAfterTwoRunsAndDeletion_LazyBuildMixin() throws Exception {
         final QueueJob queueJob = createLazyBuildMixinQueueJob();
         onLoadAfterTwoRunsAndDeletion(queueJob);
     }
 
+    @Test public void onLoadAfterTwoRunsAndDeletion_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
+        onLoadAfterTwoRunsAndDeletion(queueJob);
+    }
+
     @Test public void onLoadAfterTwoRunsAndOutdatedFile_LazyBuildMixin() throws Exception {
         final QueueJob queueJob = createLazyBuildMixinQueueJob();
+        onLoadAfterTwoRunsAndOutdatedFile(queueJob);
+    }
+
+    @Test public void onLoadAfterTwoRunsAndOutdatedFile_TestQueueJob() throws Exception {
+        final QueueJob queueJob = createTestQueueJob();
         onLoadAfterTwoRunsAndOutdatedFile(queueJob);
     }
 
