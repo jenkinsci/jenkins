@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
@@ -58,6 +59,7 @@ import java.util.concurrent.CountDownLatch;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 
+import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -435,9 +437,10 @@ public class JobTest {
         return new LazyBuildMixInQueueJob(freeStyleProject);
     }
 
-    private static class TestQueueJob extends Job<TestQueueJob, TestQueueRun> implements QueueJob, Queue.Task, TopLevelItem {
+    public static class TestQueueJob extends Job<TestQueueJob, TestQueueRun> implements QueueJob, Queue.Task, TopLevelItem {
 
-        private final SortedMap<Integer, TestQueueRun> runs;
+        private transient final SortedMap<Integer, TestQueueRun> runs;
+
         TestQueueJob(final ItemGroup parent, final String name) {
             super(parent, name);
             final TestQueueJob finalThis = this;
@@ -488,7 +491,10 @@ public class JobTest {
         @CheckForNull
         @Override
         public Queue.Executable createExecutable() throws IOException {
-            return null;
+            final TestQueueRun run = new TestQueueRun(this);
+            runs.put(run.number, run);
+            run.save();
+            return run;
         }
 
         @Override
@@ -496,6 +502,7 @@ public class JobTest {
             return new DescriptorImpl();
         }
 
+        @Extension()
         public static class DescriptorImpl extends TopLevelItemDescriptor {
 
             @Override
@@ -505,14 +512,20 @@ public class JobTest {
         }
     }
 
-    private static class TestQueueRun extends Run<TestQueueJob, TestQueueRun> {
+    private static class TestQueueRun extends Run<TestQueueJob, TestQueueRun> implements Queue.Executable {
         TestQueueRun(@Nonnull final TestQueueJob job) throws IOException {
             super(job);
         }
+
+        @Override
+        public void run() throws AsynchronousExecution {
+
+        }
     }
 
-    private QueueJob createTestQueueJob() {
-        return new TestQueueJob(j.jenkins, "TestQueueJob");
+    private QueueJob createTestQueueJob() throws IOException {
+        final TestQueueJob testQueueJob = j.createProject(TestQueueJob.class, "test0");
+        return testQueueJob;
     }
 
     private void scheduleAndWait(final QueueJob queueJob) throws ExecutionException, InterruptedException {
