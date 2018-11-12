@@ -428,6 +428,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             String os = Util.fixNull(System.getProperty("os.name"));
             if(os.equals("Linux"))
                 return new Linux(vetoes);
+            if(os.equals("AIX"))
+                return new AIX(vetoes);
             if(os.equals("SunOS"))
                 return new Solaris(vetoes);
             if(os.equals("Mac OS X"))
@@ -1002,6 +1004,327 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return org.apache.commons.io.IOUtils.toByteArray(in);
             } finally {
                     in.close();
+            }
+        }
+    }
+
+    /**
+     * Implementation for AIX that uses {@code /proc}.
+     *
+     * /proc/PID/status contains a pstatus struct. We use it to determine if the process is 32 or 64 bit
+     *
+     * /proc/PID/psinfo contains a psinfo struct. We use it to determine where the
+     *     process arguments and environment are located in PID's address space.
+     *
+     * /proc/PID/as contains the address space of the process we are inspecting. We can
+     *     follow the pr_envp and pr_argv pointers from psinfo to find the vectors to the
+     *     environment variables and process arguments, respectvely. When following pointers
+     *     in this address space we need to make sure to use 32-bit or 64-bit pointers
+     *     depending on what sized pointers PID uses, regardless of what size pointers
+     *     the Java process uses.
+     *
+     *     Note that the size of a 64-bit address space is larger than Long.MAX_VALUE (because
+     *     longs are signed). So normal Java utilities like RandomAccessFile and FileChannel
+     *     (which use signed longs as offsets) are not able to read from the end of the address
+     *     space, where envp and argv will be. Therefore we need to use LIBC.pread() directly.
+     *     when accessing this file.
+     */
+    static class AIX extends ProcfsUnix {
+        public AIX(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
+        protected OSProcess createProcess(final int pid) throws IOException {
+            return new AIXProcess(pid);
+        }
+
+        private class AIXProcess extends UnixProcess {
+            private static final byte PR_MODEL_ILP32 = 0;
+            private static final byte PR_MODEL_LP64 = 1;
+
+            /*
+             * An arbitrary upper-limit on how many characters readLine() will
+             * try reading before giving up. This avoids having readLine() loop
+             * over the entire process address space if this class has bugs.
+             */
+            private final int LINE_LENGTH_LIMIT =
+                SystemProperties.getInteger(AIX.class.getName()+".lineLimit", 10000);
+
+            /*
+             * True if target process is 64-bit (Java process may be different).
+             */
+            private final boolean b64;
+
+            private final int ppid;
+
+            private final long pr_envp;
+            private final long pr_argp;
+            private final int argc;
+            private EnvVars envVars;
+            private List<String> arguments;
+
+            private AIXProcess(int pid) throws IOException {
+                super(pid);
+
+                RandomAccessFile pstatus = new RandomAccessFile(getFile("status"),"r");
+                try {
+					// typedef struct pstatus {
+					//    uint32_t pr_flag;                /* process flags from proc struct p_flag */
+					//    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
+					//    uint32_t pr_flags;               /* /proc flags */
+					//    uint32_t pr_nlwp;                /* number of threads in the process */
+					//    char     pr_stat;                /* process state from proc p_stat */
+					//    char     pr_dmodel;              /* data model for the process */
+					//    char     pr__pad1[6];            /* reserved for future use */
+					//    pr_sigset_t pr_sigpend;          /* set of process pending signals */
+					//    prptr64_t pr_brkbase;            /* address of the process heap */
+					//    uint64_t pr_brksize;             /* size of the process heap, in bytes */
+					//    prptr64_t pr_stkbase;            /* address of the process stack */
+					//    uint64_t pr_stksize;             /* size of the process stack, in bytes */
+					//    uint64_t pr_pid;                 /* process id */
+					//    uint64_t pr_ppid;                /* parent process id */
+					//    uint64_t pr_pgid;                /* process group id */
+					//    uint64_t pr_sid;                 /* session id */
+					//    pr_timestruc64_t pr_utime;       /* process user cpu time */
+					//    pr_timestruc64_t pr_stime;       /* process system cpu time */
+					//    pr_timestruc64_t pr_cutime;      /* sum of children's user times */
+					//    pr_timestruc64_t pr_cstime;      /* sum of children's system times */
+					//    pr_sigset_t pr_sigtrace;         /* mask of traced signals */
+					//    fltset_t pr_flttrace;            /* mask of traced hardware faults */
+					//    uint32_t pr_sysentry_offset;     /* offset into pstatus file of sysset_t
+					//                                      * identifying system calls traced on
+					//                                      * entry.  If 0, then no entry syscalls
+					//                                      * are being traced. */
+					//    uint32_t pr_sysexit_offset;      /* offset into pstatus file of sysset_t
+					//                                      * identifying system calls traced on
+					//                                      * exit.  If 0, then no exit syscalls
+					//                                      * are being traced. */
+					//    uint64_t pr__pad[8];             /* reserved for future use */
+					//    lwpstatus_t pr_lwp;              /* "representative" thread status */
+					// } pstatus_t;
+
+                    pstatus.seek(17); // offset of pr_dmodel
+
+					byte pr_dmodel = pstatus.readByte();
+
+                    if (pr_dmodel == PR_MODEL_ILP32) {
+                        b64 = false;
+                    } else if (pr_dmodel == PR_MODEL_LP64) {
+                        b64 = true;
+                    } else {
+                        throw new IOException("Unrecognized data model value"); // sanity check
+                    }
+
+                    pstatus.seek(88); // offset of pr_pid
+
+                    if (adjust((int)pstatus.readLong()) != pid)
+                        throw new IOException("pstatus PID mismatch"); // sanity check
+
+                    ppid = adjust((int)pstatus.readLong()); // AIX pids are stored as a 64 bit integer, 
+                                                            // but the first 4 bytes are always 0
+
+                } finally {
+                    pstatus.close();
+                }
+
+                RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
+                try {
+                    // typedef struct psinfo {
+                    //   uint32_t pr_flag;                /* process flags from proc struct p_flag */
+                    //   uint32_t pr_flag2;               /* process flags from proc struct p_flag2 *
+                    //   uint32_t pr_nlwp;                /* number of threads in process */
+                    //   uint32_t pr__pad1;               /* reserved for future use */
+                    //   uint64_t pr_uid;                 /* real user id */
+                    //   uint64_t pr_euid;                /* effective user id */
+                    //   uint64_t pr_gid;                 /* real group id */
+                    //   uint64_t pr_egid;                /* effective group id */
+                    //   uint64_t pr_pid;                 /* unique process id */
+                    //   uint64_t pr_ppid;                /* process id of parent */
+                    //   uint64_t pr_pgid;                /* pid of process group leader */
+                    //   uint64_t pr_sid;                 /* session id */
+                    //   uint64_t pr_ttydev;              /* controlling tty device */
+                    //   prptr64_t   pr_addr;             /* internal address of proc struct */
+                    //   uint64_t pr_size;                /* process image size in kb (1024) units */
+                    //   uint64_t pr_rssize;              /* resident set size in kb (1024) units */
+                    //   pr_timestruc64_t pr_start;       /* process start time, time since epoch */
+                    //   pr_timestruc64_t pr_time;        /* usr+sys cpu time for this process */
+                    //   cid_t    pr_cid;                 /* corral id */
+                    //   ushort_t pr__pad2;               /* reserved for future use */
+                    //   uint32_t pr_argc;                /* initial argument count */
+                    //   prptr64_t   pr_argv;             /* address of initial argument vector in
+                    //                                     * user process */
+                    //   prptr64_t   pr_envp;             /* address of initial environment vector
+                    //                                     * in user process */
+                    //   char     pr_fname[prfnsz];       /* last component of exec()ed pathname*/
+                    //   char     pr_psargs[prargsz];     /* initial characters of arg list */
+                    //   uint64_t pr__pad[8];             /* reserved for future use */
+                    //   struct   lwpsinfo pr_lwp;        /* "representative" thread info */
+                    // }
+
+                    psinfo.seek(48); // offset of pr_pid
+
+                    if (adjust((int)psinfo.readLong()) != pid)
+                        throw new IOException("psinfo PID mismatch"); // sanity check
+
+                    if (adjust((int)psinfo.readLong()) != ppid)
+                        throw new IOException("psinfo PPID mismatch"); // sanity check
+
+                    psinfo.seek(148); // offset of pr_argc
+
+                    argc = adjust(psinfo.readInt());
+                    pr_argp = adjustL(psinfo.readLong());
+                    pr_envp = adjustL(psinfo.readLong());
+                } finally {
+                    psinfo.close();
+                }
+            }
+
+            public OSProcess getParent() {
+                return get(ppid);
+            }
+
+            public synchronized List<String> getArguments() {
+                if (arguments != null)
+                    return arguments;
+
+                arguments = new ArrayList<String>(argc);
+                if (argc == 0) {
+                    return arguments;
+                }
+
+                try {
+                    int psize = b64 ? 8 : 4;
+                    Memory m = new Memory(psize);
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
+
+                    try {
+                        // Get address of the argument vector
+                        LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(pr_argp));
+                        long argp = b64 ? m.getLong(0) : to64(m.getInt(0));
+
+                        if (argp == 0) // Should never happen
+                            return arguments;
+
+                        // Itterate through argument vector
+                        for( int n=0; ; n++ ) {
+
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+(n*psize)));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
+
+                            if (addr == 0) // completed the walk
+                                break;
+
+                            // now read the null-terminated string
+                            arguments.add(readLine(fd, addr, "arg["+ n +"]"));
+                        }
+                    } finally  {
+                       LIBC.close(fd); 
+                    }
+                } catch (IOException | LastErrorException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+
+                arguments = Collections.unmodifiableList(arguments);
+                return arguments;
+            }
+
+            public synchronized EnvVars getEnvironmentVariables() {
+                if(envVars != null)
+                    return envVars;
+                envVars = new EnvVars();
+
+                if (pr_envp == 0) {
+                    return envVars;
+                }
+
+                try {
+                    int psize = b64 ? 8 : 4;
+                    Memory m = new Memory(psize);
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
+
+                    try {
+                        // Get address of the environment vector
+                        LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(pr_envp));
+                        long envp = b64 ? m.getLong(0) : to64(m.getInt(0));
+
+                        if (envp == 0) // Should never happen
+                            return envVars;
+
+                        // Itterate through environment vector
+                        for( int n=0; ; n++ ) {
+
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+(n*psize)));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
+
+                            if (addr == 0) // completed the walk
+                                break;
+
+                            // now read the null-terminated string
+                            envVars.addLine(readLine(fd, addr, "env["+ n +"]"));
+                        }
+                    } finally  {
+                       LIBC.close(fd); 
+                    }
+                } catch (IOException | LastErrorException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+                return envVars;
+            }
+
+            private String readLine(int fd, long addr, String prefix) throws IOException {
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest("Reading "+prefix+" at "+addr);
+
+                Memory m = new Memory(1);
+                byte ch = 1;
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                int i = 0;
+                while(true) {
+                    if (i++ > LINE_LENGTH_LIMIT) {
+                        LOGGER.finest("could not find end of line, giving up");
+                        throw new IOException("could not find end of line, giving up");
+                    }
+
+                    long r = LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
+                    ch = m.getByte(0);
+
+                    if (ch == 0)
+                        break;
+                    buf.write(ch);
+                    addr++;
+                }
+                String line = buf.toString();
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest(prefix+" was "+line);
+                return line;
+            }
+        }
+
+        /**
+         * int to long conversion with zero-padding.
+         */
+        private static long to64(int i) {
+            return i&0xFFFFFFFFL;
+        }
+
+        /**
+         * {@link DataInputStream} reads a value in big-endian, so
+         * convert it to the correct value on little-endian systems.
+         */
+        private static int adjust(int i) {
+            if(IS_LITTLE_ENDIAN)
+                return (i<<24) |((i<<8) & 0x00FF0000) | ((i>>8) & 0x0000FF00) | (i>>>24);
+            else
+                return i;
+        }
+
+        public static long adjustL(long i) {
+            if(IS_LITTLE_ENDIAN) {
+                return Long.reverseBytes(i);
+            } else {
+                return i;
             }
         }
     }
