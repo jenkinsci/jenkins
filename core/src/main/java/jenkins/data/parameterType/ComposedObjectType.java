@@ -2,29 +2,32 @@ package jenkins.data.parameterType;
 
 import jenkins.data.DataModel;
 
+import java.lang.reflect.Type;
 import java.util.Stack;
 
 /**
+ * {@link ParameterType} for data that are themselves composed of sub-elements, by opposition to simpler
+ * {@link AtomicType}s.
  *
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class HomogeneousObjectType extends ParameterType {
-    private final DataModel<?> model;
+public final class ComposedObjectType<T> extends ParameterType<Class<T>> {
+    private final DataModel<T> model;
 
-    HomogeneousObjectType(DataModel<?> model) {
+    ComposedObjectType(DataModel<T> model) {
         super(model.getType());
         this.model = model;
     }
 
-    public Class<?> getType() {
-        return (Class) getActualType();
+    public Class<T> getType() {
+        return getActualType();
     }
 
     /**
      * The schema representing a type of nested object.
      */
-    public DataModel<?> getSchemaType() {
+    public DataModel<T> getSchemaType() {
         return model;
     }
 

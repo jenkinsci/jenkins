@@ -1,16 +1,17 @@
 package jenkins.data.parameterType;
 
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Stack;
 
 /**
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class ArrayType extends ParameterType {
+public final class ArrayType<T extends Type> extends ParameterType<T> {
     private final ParameterType elementType;
 
-    ArrayType(Type actualClass, ParameterType elementType) {
+    ArrayType(T actualClass, ParameterType elementType) {
         super(actualClass);
         this.elementType = elementType;
     }

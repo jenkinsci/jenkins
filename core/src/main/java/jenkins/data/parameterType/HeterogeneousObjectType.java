@@ -1,5 +1,6 @@
 package jenkins.data.parameterType;
 
+import hudson.ExtensionPoint;
 import jenkins.data.DataModel;
 
 import java.util.Map;
@@ -11,21 +12,21 @@ import java.util.Stack;
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class HeterogeneousObjectType extends ParameterType {
-    private final Map<String,DataModel<?>> types;
-    HeterogeneousObjectType(Class<?> supertype, Map<String,DataModel<?>> types) {
+public final class HeterogeneousObjectType<T extends ExtensionPoint> extends ParameterType<Class<T>> {
+    private final Map<String,DataModel<T>> types;
+    HeterogeneousObjectType(Class<T> supertype, Map<String,DataModel<T>> types) {
         super(supertype);
         this.types = types;
     }
 
-    public Class<?> getType() {
-        return (Class) getActualType();
+    public Class<T> getType() {
+        return getActualType();
     }
 
     /**
      * A map from names which could be passed to {@link jenkins.data.ReflectiveDataModel#CLAZZ} to types of allowable nested objects.
      */
-    public Map<String,DataModel<?>> getTypes() {
+    public Map<String,DataModel<T>> getTypes() {
         return types;
     }
 
@@ -40,7 +41,7 @@ public final class HeterogeneousObjectType extends ParameterType {
             try {
                 b.append('{');
                 boolean first = true;
-                for (Map.Entry<String, DataModel<?>> entry : types.entrySet()) {
+                for (Map.Entry<String, DataModel<T>> entry : types.entrySet()) {
                     if (first) {
                         first = false;
                     } else {

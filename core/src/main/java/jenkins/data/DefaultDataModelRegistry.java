@@ -5,15 +5,19 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.lang.Klass;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link DataModelRegistry}.
@@ -49,14 +53,12 @@ public class DefaultDataModelRegistry implements DataModelRegistry {
     }
 
     @Override
-    public Set<Class<?>> findSubtypes(Class<?> superType) {
-        Set<Class<?>> clazzes = new HashSet<>();
+    public Set<Class> findSubtypes(Class<?> superType) {
         // Jenkins.getDescriptorList does not work well since it is limited to descriptors declaring one supertype, and does not work at all for SimpleBuildStep.
-        for (Descriptor<?> d : ExtensionList.lookup(Descriptor.class)) {
-            if (superType.isAssignableFrom(d.clazz)) {
-                clazzes.add(d.clazz);
-            }
-        }
-        return clazzes;
+        return ExtensionList.lookup(Descriptor.class).stream()
+            .filter(d -> superType.isAssignableFrom(d.clazz))
+            .map(Descriptor::getKlass)
+            .map(Klass::toJavaClass)
+            .collect(Collectors.toSet());
     }
 }

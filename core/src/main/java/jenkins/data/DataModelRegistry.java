@@ -5,7 +5,6 @@ import jenkins.model.Jenkins;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Set;
 
 /**
@@ -39,7 +38,7 @@ public interface DataModelRegistry {
      *
      * TODO: the return type not being Set<DataModel<?>> makes me feel uneasy
      */
-    Set<Class<?>> findSubtypes(Class<?> superType);
+    Set findSubtypes(Class<?> superType);
 
     /**
      * Retrieve default implementation from Jenkins
