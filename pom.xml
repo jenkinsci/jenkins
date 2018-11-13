@@ -760,5 +760,16 @@ THE SOFTWARE.
         <failIfNoTests>false</failIfNoTests>
       </properties>
     </profile>
+    <profile>
+      <id>jdk11</id>
+      <properties>
+        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <doclint>none</doclint>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+      </properties>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
+    </profile>
   </profiles>
 </project>
