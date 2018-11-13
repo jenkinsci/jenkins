@@ -49,6 +49,7 @@ import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+import hudson.util.Retrier;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
@@ -1675,42 +1676,55 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
+        // We'll check the update servers with a try-retry mechanism. The retrier is built with a builder
+        Retrier<FormValidation> updateServerRetrier = new Retrier.Builder<>(
+                // the action to perform
+                this::checkUpdatesServer,
 
-        int i = 0;
-        boolean success = false;
-        while(i < checkUpdateAttempts && !success) {
-            i++;
-            try {
-                FormValidation response = checkUpdatesServer();
-                lastErrorCheckUpdateCenters = response.getMessage(); //may be null (OK)
-                success = (response.kind == FormValidation.Kind.OK);
-            } catch (Exception e) {
-                // No matter what went on, don't show angry jenkins, just a message and see log for more info
-                // Avoid losing the type of the exception. It's interesting for some exceptions (FileNotFoundException)
-                // as the message itself is not descriptive enough (the file / url not found).
-                lastErrorCheckUpdateCenters = e.getClass().getSimpleName() + ": " + e.getLocalizedMessage();
-            }
+                // the way we know whether this attempt was right or wrong
+                (currentAttempt, result) -> result.kind == FormValidation.Kind.OK,
 
-            if (!success) {
-                LOGGER.warning(Messages.PluginManager_UpdateSiteAttemptFailed(i, lastErrorCheckUpdateCenters));
+                // the action name we are trying to perform
+                "check updates server")
 
-                if (i < checkUpdateAttempts) {
-                    LOGGER.info(Messages.PluginManager_UpdateSiteRetry(checkUpdateSleepTimeMillis));
-                    try {
-                        Thread.sleep(checkUpdateSleepTimeMillis);
-                    } catch (InterruptedException ie) {
-                        LOGGER.info(Messages.PluginManager_UpdateSiteWaitInterrupted(ie));
-                    }
-                } else {
-                    LOGGER.severe(Messages.PluginManager_UpdateSiteError(checkUpdateAttempts, lastErrorCheckUpdateCenters));
-                    if (!LOGGER.isLoggable(Level.WARNING)) {
-                        if(checkUpdateAttempts > 1) {
-                            LOGGER.severe(Messages.PluginManager_UpdateSiteChangeLogLevel());
-                        }
-                    }
-                    lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(lastErrorCheckUpdateCenters);
+                // the number of attempts to try
+                .withAttempts(checkUpdateAttempts)
+
+                // the delay between attempts
+                .withDelay(checkUpdateSleepTimeMillis)
+
+                // whatever exception raised is considered as a fail attempt (all exceptions), not a failure
+                .withDuringActionExceptions(new Class[] {Exception.class})
+
+                // what we do with a failed attempt due to an allowed exception, return an FormValidation.error with the message
+                .withDuringActionExceptionListener( (attempt, e) -> FormValidation.errorWithMarkup(e.getClass().getSimpleName() + ": " + e.getLocalizedMessage()))
+
+                // lets get our retrier object
+                .build();
+
+        try {
+            // Begin the process
+            FormValidation result = updateServerRetrier.start();
+
+            // Check how it went
+            if (!FormValidation.Kind.OK.equals(result.kind)) {
+                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(checkUpdateAttempts, result.getMessage()));
+                if (checkUpdateAttempts > 1 && !Logger.getLogger(Retrier.class.getName()).isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()));
                 }
+
+                lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(result.getMessage());
+            } else {
+                lastErrorCheckUpdateCenters = null;
             }
+
+        } catch (Exception e) {
+            // It's never going to be reached because we declared all Exceptions in the withDuringActionExceptions, so
+            // whatever exception is considered a expected failed attempt and the retries continue
+            LOGGER.log(Level.WARNING, Messages.PluginManager_UnexpectedException(), e);
+
+            // In order to leave this method as it was, rethrow as IOException
+            throw new IOException(e);
         }
 
         // Stay in the same page in any case

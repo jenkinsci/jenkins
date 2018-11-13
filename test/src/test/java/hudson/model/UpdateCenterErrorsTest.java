@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Messages;
 import hudson.PluginManager;
 import hudson.util.HttpResponses;
+import hudson.util.Retrier;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -21,18 +22,16 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
 
-import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class UpdateCenterErrorsTest {
-
-    private static final Logger LOGGER = Logger.getLogger(UpdateCenterErrorsTest.class.getName());
-
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -45,7 +44,7 @@ public class UpdateCenterErrorsTest {
      */
     @Test
     public void updateSiteReturn502Test() throws Exception {
-        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSite502/getJson", "IOException: Server returned HTTP response code: 502 for URL", false);
+        checkUpdateSite(Jenkins.get().getRootUrl() + "updateSite502/getJson", "IOException: Server returned HTTP response code: 502 for URL", false);
     }
 
     /**
@@ -54,7 +53,7 @@ public class UpdateCenterErrorsTest {
      */
     @Test
     public void updateSiteWrongJsonTest() throws Exception {
-        checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSiteWrongJson/getJson", "JSONException: Unquotted string 'wrongjson'", false);
+        checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteWrongJson/getJson", "JSONException: Unquotted string 'wrongjson'", false);
     }
 
     /**
@@ -69,7 +68,7 @@ public class UpdateCenterErrorsTest {
             //Avoid CertPathValidatorException: Algorithm constraints check failed on signature algorithm: MD5withRSA
             DownloadService.signatureCheck = false;
             // Have to end in update-center.json or it fails. See UpdateSite#getMetadataUrlForDownloadable
-            checkUpdateSite(Jenkins.getInstance().getRootUrl() + "updateSiteRightJson/update-center.json", "", true );
+            checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json", "", true );
         } finally {
             DownloadService.signatureCheck = oldValueSignatureCheck;
         }
@@ -82,12 +81,29 @@ public class UpdateCenterErrorsTest {
      */
     @Test
     public void changeLogLevelInLog() throws Exception {
-        Logger.getLogger(PluginManager.class.getName()).setLevel(Level.SEVERE);
-        PluginManager.checkUpdateAttempts = 2;
-        updateSiteWrongJsonTest();
+        Logger pmLogger = Logger.getLogger(PluginManager.class.getName());
+        Logger rLogger = Logger.getLogger(Retrier.class.getName());
 
-        Assert.assertTrue(logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteChangeLogLevel())));
+        // save current level (to avoid interfering other tests)
+        Level pmLevel = pmLogger.getLevel();
+        Level rLevel = rLogger.getLevel();
 
+        try {
+            // set level to record
+            pmLogger.setLevel(Level.SEVERE);
+            rLogger.setLevel(Level.SEVERE);
+
+            // check with more than 1 attempt and level > WARNING
+            PluginManager.checkUpdateAttempts = 2;
+            updateSiteWrongJsonTest();
+
+            // the messages has been recorded in the log
+            assertThat(logging, LoggerRule.recorded(is(Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()))));
+        } finally {
+            // restore level
+            pmLogger.setLevel(pmLevel);
+            rLogger.setLevel(rLevel);
+        }
     }
 
     private HtmlButton getCheckNow(HtmlPage page){
@@ -100,18 +116,20 @@ public class UpdateCenterErrorsTest {
      * Check the update site.
      * @param urlUpdateSite If null, use the default update site, otherwise, use this update site.
      * @param message The message that should exist or not in the page after checking the update site.
-     * @param isSuccess If true, test that PluginManager.CheckUpdateSesrverError + message doesn't exist in the page.
-     *                  If false, test that PluginManager.CheckUpdateSesrverError + message exists in the page.
+     * @param isSuccess If true, test that PluginManager.CheckUpdateServerError + message doesn't exist in the page.
+     *                  If false, test that PluginManager.CheckUpdateServerError + message exists in the page.
      * @throws IOException If an exception is thrown using the UI.
      * @throws SAXException If an exception is thrown using the UI.
      */
     private void checkUpdateSite(String urlUpdateSite, String message, boolean isSuccess) throws IOException, SAXException {
-        // Capture log messages without changing the level
-        logging.record(PluginManager.class, Logger.getLogger(PluginManager.class.getName()).getLevel()).capture(50);
+        // Capture log messages in the plugin manager and the retrier without changing the level of each logger
+        logging.record(PluginManager.class, Logger.getLogger(PluginManager.class.getName()).getLevel());
+        logging.record(Retrier.class, Logger.getLogger(Retrier.class.getName()).getLevel()).capture(50);
 
-        Jenkins.getActiveInstance().getUpdateCenter().getSites().clear();
+
+        Jenkins.get().getUpdateCenter().getSites().clear();
         UpdateSite us = new UpdateSite("CustomUpdateSite", urlUpdateSite);
-        Jenkins.getActiveInstance().getUpdateCenter().getSites().add(us);
+        Jenkins.get().getUpdateCenter().getSites().add(us);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -121,6 +139,7 @@ public class UpdateCenterErrorsTest {
 
         // Check what is shown in the web page
         Assert.assertNotEquals(isSuccess, page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
+
         // Check the logs (attempted checkUpdateAttempts times). The second argument, the exception does't matter to test the message in the log
         Assert.assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.checkUpdateAttempts, ""))));
     }
@@ -129,12 +148,12 @@ public class UpdateCenterErrorsTest {
     public static final class FailingWith502UpdateCenterAction implements RootAction {
 
         @Override
-        public @CheckForNull String getIconFileName() {
+        public String getIconFileName() {
             return "gear2.png";
         }
 
         @Override
-        public @CheckForNull String getDisplayName() {
+        public String getDisplayName() {
             return "Update Site returning 502";
         }
 
@@ -152,12 +171,12 @@ public class UpdateCenterErrorsTest {
     public static final class FailingWithWrongJsonUpdateCenterAction implements RootAction {
 
         @Override
-        public @CheckForNull String getIconFileName() {
+        public String getIconFileName() {
             return "gear2.png";
         }
 
         @Override
-        public @CheckForNull String getDisplayName() {
+        public String getDisplayName() {
             return "Update Site returning wrong json";
         }
 
@@ -177,12 +196,12 @@ public class UpdateCenterErrorsTest {
     public static final class ReturnRightJsonUpdateCenterAction implements RootAction {
 
         @Override
-        public @CheckForNull String getIconFileName() {
+        public String getIconFileName() {
             return "gear2.png";
         }
 
         @Override
-        public @CheckForNull String getDisplayName() {
+        public String getDisplayName() {
             return "Update Site returning right json";
         }
 
