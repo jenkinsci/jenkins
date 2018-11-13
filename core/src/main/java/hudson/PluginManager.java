@@ -25,9 +25,6 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.security.ACLContext;
-import jenkins.ExtensionRefreshException;
-import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
@@ -37,22 +34,26 @@ import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.Descriptor;
+import hudson.model.DownloadService;
 import hudson.model.Failure;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.UpdateCenter;
-import hudson.model.UpdateSite;
 import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateCenter.InstallationJob;
+import hudson.model.UpdateSite;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
+import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
 import jenkins.MissingDependencyException;
 import jenkins.RestartRequiredException;
@@ -60,12 +61,12 @@ import jenkins.YesNoMaybe;
 import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
+import jenkins.security.CustomClassFilter;
+import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -83,7 +84,9 @@ import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -95,6 +98,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -102,6 +109,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -109,10 +117,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -123,6 +133,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -130,32 +141,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import static hudson.init.InitMilestone.*;
-import hudson.model.DownloadService;
-import hudson.util.FormValidation;
-import java.io.ByteArrayInputStream;
-import java.net.JarURLConnection;
-import java.net.URLConnection;
-import java.util.ServiceLoader;
-import java.util.function.Supplier;
-import java.util.jar.JarEntry;
-
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import jenkins.security.CustomClassFilter;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import static java.util.logging.Level.*;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -935,8 +929,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public synchronized void resolveDependantPlugins() {
         for (PluginWrapper plugin : plugins) {
+            // Set of optional dependants plugins of plugin
+            Set<String> optionalDependants = new HashSet<>();
             Set<String> dependants = new HashSet<>();
             for (PluginWrapper possibleDependant : plugins) {
+                // No need to check if plugin is dependant of itself
+                if(possibleDependant.getShortName().equals(plugin.getShortName())) {
+                    continue;
+                }
+
                 // The plugin could have just been deleted. If so, it doesn't
                 // count as a dependant.
                 if (possibleDependant.isDeleted()) {
@@ -946,10 +947,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 for (Dependency dependency : dependencies) {
                     if (dependency.shortName.equals(plugin.getShortName())) {
                         dependants.add(possibleDependant.getShortName());
+
+                        // If, in addition, the dependency is optional, add to the optionalDependants list
+                        if (dependency.optional) {
+                            optionalDependants.add(possibleDependant.getShortName());
+                        }
+
+                        // already know possibleDependant depends on plugin, no need to continue with the rest of
+                        // dependencies. We continue with the next possibleDependant
+                        break;
                     }
                 }
             }
             plugin.setDependants(dependants);
+            plugin.setOptionalDependants(optionalDependants);
         }
     }
 
@@ -1827,6 +1838,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // table.jelly
     public MetadataCache createCache() {
         return new MetadataCache();
+    }
+
+    /**
+     * Disable a list of plugins using a strategy for their dependants plugins.
+     * @param strategy the strategy regarding how the dependant plugins are processed
+     * @param plugins the list of plugins
+     * @return the list of results for every plugin and their dependant plugins.
+     * @throws IOException see {@link PluginWrapper#disable()}
+     */
+    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {
+        // Where we store the results of each plugin disablement
+        List<PluginWrapper.PluginDisableResult> results = new ArrayList<>(plugins.size());
+
+        // Disable all plugins passed
+        for (String pluginName : plugins) {
+            PluginWrapper plugin = this.getPlugin(pluginName);
+
+            if (plugin == null) {
+                results.add(new PluginWrapper.PluginDisableResult(pluginName, PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(pluginName)));
+            } else {
+                results.add(plugin.disable(strategy));
+            }
+        }
+
+        return results;
     }
 
     @Restricted(NoExternalUse.class) // table.jelly

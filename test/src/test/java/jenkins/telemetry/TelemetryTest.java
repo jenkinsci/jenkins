@@ -7,7 +7,9 @@ import static org.junit.Assert.*;
 
 import hudson.security.csrf.CrumbExclusion;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -29,7 +31,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public class TelemetryTest {
     @Rule
@@ -40,11 +46,19 @@ public class TelemetryTest {
 
     private static int counter = 0;
 
+    @Before
+    public void prepare() throws Exception {
+        correlators.clear();
+        types.clear();
+        counter = 0;
+        j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
+        Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
+    }
+
     @Test
     public void testSubmission() throws Exception {
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
         assertEquals("no requests received", 0, counter);
-        Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
         do {
             Thread.sleep(250);
@@ -52,11 +66,63 @@ public class TelemetryTest {
         assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
+        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));
         assertThat(types, hasItem("test-data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
-        assertThat(correlators.size(), is(1));
+        assertThat(correlators.size(), is(counter));
+        assertTrue(Pattern.compile("[0-9a-f]+").matcher(correlators.first()).matches());
+        assertThat(types, not(hasItem("empty")));
         assertTrue("at least one request received", counter > 0); // TestTelemetry plus whatever real impls exist
+    }
+
+    @Test
+    public void testPerTrialCorrelator() throws Exception {
+        Correlator correlator = ExtensionList.lookupSingleton(Correlator.class);
+        String correlationId = "00000000-0000-0000-0000-000000000000";
+        correlator.setCorrelationId(correlationId);
+
+        ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
+        do {
+            Thread.sleep(250);
+        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
+
+        assertThat(types, hasItem("test-data"));
+        //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
+        assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+    }
+
+    @TestExtension
+    public static class EmptyTelemetry extends Telemetry {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "empty";
+        }
+
+        @Nonnull
+        @Override
+        public String getId() {
+            return "empty";
+        }
+
+        @Nonnull
+        @Override
+        public LocalDate getStart() {
+            return LocalDate.MIN;
+        }
+
+        @Nonnull
+        @Override
+        public LocalDate getEnd() {
+            return LocalDate.MAX;
+        }
+
+        @Override
+        public JSONObject createContent() {
+            return null;
+        }
     }
 
     @TestExtension
@@ -174,7 +240,7 @@ public class TelemetryTest {
         }
     }
 
-    private static Set<String> correlators = new HashSet<>();
+    private static SortedSet<String> correlators = new TreeSet<>();
     private static Set<String> types = new HashSet<>();
 
     @TestExtension
