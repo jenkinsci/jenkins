@@ -23,6 +23,7 @@
  */
 package jenkins.telemetry;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -54,6 +55,12 @@ public class Correlator extends Descriptor<Correlator> implements Describable<Co
 
     public String getCorrelationId() {
         return correlationId;
+    }
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
     }
 
     @Override
