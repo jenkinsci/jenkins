@@ -149,14 +149,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.init.InitMilestone.COMPLETED;
-import static hudson.init.InitMilestone.PLUGINS_LISTED;
-import static hudson.init.InitMilestone.PLUGINS_PREPARED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import static hudson.init.InitMilestone.*;
+import static java.util.logging.Level.*;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -967,8 +961,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public synchronized void resolveDependantPlugins() {
         for (PluginWrapper plugin : plugins) {
+            // Set of optional dependants plugins of plugin
+            Set<String> optionalDependants = new HashSet<>();
             Set<String> dependants = new HashSet<>();
             for (PluginWrapper possibleDependant : plugins) {
+                // No need to check if plugin is dependant of itself
+                if(possibleDependant.getShortName().equals(plugin.getShortName())) {
+                    continue;
+                }
+
                 // The plugin could have just been deleted. If so, it doesn't
                 // count as a dependant.
                 if (possibleDependant.isDeleted()) {
@@ -978,10 +979,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 for (Dependency dependency : dependencies) {
                     if (dependency.shortName.equals(plugin.getShortName())) {
                         dependants.add(possibleDependant.getShortName());
+
+                        // If, in addition, the dependency is optional, add to the optionalDependants list
+                        if (dependency.optional) {
+                            optionalDependants.add(possibleDependant.getShortName());
+                        }
+
+                        // already know possibleDependant depends on plugin, no need to continue with the rest of
+                        // dependencies. We continue with the next possibleDependant
+                        break;
                     }
                 }
             }
             plugin.setDependants(dependants);
+            plugin.setOptionalDependants(optionalDependants);
         }
     }
 
@@ -1921,6 +1932,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // table.jelly
     public MetadataCache createCache() {
         return new MetadataCache();
+    }
+
+    /**
+     * Disable a list of plugins using a strategy for their dependants plugins.
+     * @param strategy the strategy regarding how the dependant plugins are processed
+     * @param plugins the list of plugins
+     * @return the list of results for every plugin and their dependant plugins.
+     * @throws IOException see {@link PluginWrapper#disable()}
+     */
+    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {
+        // Where we store the results of each plugin disablement
+        List<PluginWrapper.PluginDisableResult> results = new ArrayList<>(plugins.size());
+
+        // Disable all plugins passed
+        for (String pluginName : plugins) {
+            PluginWrapper plugin = this.getPlugin(pluginName);
+
+            if (plugin == null) {
+                results.add(new PluginWrapper.PluginDisableResult(pluginName, PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(pluginName)));
+            } else {
+                results.add(plugin.disable(strategy));
+            }
+        }
+
+        return results;
     }
 
     @Restricted(NoExternalUse.class) // table.jelly
