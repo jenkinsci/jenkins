@@ -51,7 +51,7 @@ public final class Mapping extends HashMap<String, TreeNode> implements TreeNode
         if (!seq.isEmpty()) super.put(key, seq);
     }
 
-    public String getScalarValue(String key) throws IOException {
+    public String getScalarValue(String key) {
         return remove(key).asScalar().getValue();
     }
 

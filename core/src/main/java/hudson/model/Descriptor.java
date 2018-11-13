@@ -131,7 +131,7 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
+public abstract class Descriptor<T extends Describable<T>> implements ModelObject, Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -307,7 +307,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Historically some implementations returned null as a way of hiding the descriptor from the UI,
      * but this is generally managed by an explicit method such as {@code isEnabled} or {@code isApplicable}.
      */
-    @Nonnull
+    @Nonnull @Override
     public String getDisplayName() {
         return clazz.getSimpleName();
     }

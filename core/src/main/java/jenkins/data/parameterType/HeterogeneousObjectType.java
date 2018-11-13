@@ -1,10 +1,16 @@
 package jenkins.data.parameterType;
 
 import hudson.ExtensionPoint;
+import jenkins.data.DataContext;
 import jenkins.data.DataModel;
+import jenkins.data.SymbolLookup;
+import jenkins.data.tree.Mapping;
+import jenkins.data.tree.TreeNode;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * A parameter (or array element) which could take any of the indicated concrete object types.
@@ -13,8 +19,9 @@ import java.util.Stack;
  * @author Anderw Bayer
  */
 public final class HeterogeneousObjectType<T extends ExtensionPoint> extends ParameterType<Class<T>> {
-    private final Map<String,DataModel<T>> types;
-    HeterogeneousObjectType(Class<T> supertype, Map<String,DataModel<T>> types) {
+    private final Set<Class<T>> types;
+
+    HeterogeneousObjectType(Class<T> supertype, Set<Class<T>> types) {
         super(supertype);
         this.types = types;
     }
@@ -23,12 +30,27 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
         return getActualType();
     }
 
-    /**
-     * A map from names which could be passed to {@link jenkins.data.ReflectiveDataModel#CLAZZ} to types of allowable nested objects.
-     */
-    public Map<String,DataModel<T>> getTypes() {
-        return types;
+    public Class<T> resolve(TreeNode node, DataContext context) {
+        final Mapping mapping = node.asMapping();
+
+        // This is how Pipeline handle this
+        final String clazz = mapping.getScalarValue("$class");
+        if (clazz != null) {
+            return types.stream()
+                .filter(c -> c.getSimpleName().equals(clazz))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("no implementation for type " + getType() + " with class name "+ clazz));
+        }
+
+        // This is how CasC handle this
+        if (mapping.size() == 1) {
+            final String symbol = mapping.keySet().iterator().next();
+            return SymbolLookup.get().findDescriptor(getActualType(), symbol).getKlass().toJavaClass();
+        }
+
+        return null;
     }
+
 
     @Override
     public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
@@ -40,20 +62,7 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
             modelTypes.push(type);
             try {
                 b.append('{');
-                boolean first = true;
-                for (Map.Entry<String, DataModel<T>> entry : types.entrySet()) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        b.append(" | ");
-                    }
-                    String key = entry.getKey();
-                    DataModel<?> model = entry.getValue();
-                    if (!key.equals(model.getType().getSimpleName())) {
-                        b.append(key).append('~');
-                    }
-                    model.toString(b, modelTypes);
-                }
+                // TODO
                 b.append('}');
             } finally {
                 modelTypes.pop();

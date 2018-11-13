@@ -75,28 +75,7 @@ public abstract class ParameterType<T extends Type> {
                 return new ComposedObjectType(registry.lookupOrFail(c));
             } else {
                 // Definitely heterogeneous.
-                final Map<String, List<Class<?>>> subtypesBySimpleName = subtypes.stream()
-                        .collect(Collectors.groupingBy(Class::getSimpleName));
-
-                Map<String,DataModel<?>> types = new TreeMap<>();
-                for (Map.Entry<String,List<Class<?>>> entry : subtypesBySimpleName.entrySet()) {
-                    if (entry.getValue().size() == 1) { // normal case: unambiguous via simple name
-                        try {
-                            types.put(entry.getKey(), registry.lookupOrFail(entry.getValue().get(0)));
-                        } catch (Exception x) {
-                            LOGGER.log(FINE, "skipping subtype", x);
-                        }
-                    } else { // have to disambiguate via FQN
-                        for (Class<?> subtype : entry.getValue()) {
-                            try {
-                                types.put(subtype.getName(), registry.lookupOrFail(subtype));
-                            } catch (Exception x) {
-                                LOGGER.log(FINE, "skipping subtype", x);
-                            }
-                        }
-                    }
-                }
-                return new HeterogeneousObjectType(c, types);
+                return new HeterogeneousObjectType(c, subtypes);
             }
         } catch (Exception x) {
             // return new ErrorType(x, type) // I don't get what this is for;

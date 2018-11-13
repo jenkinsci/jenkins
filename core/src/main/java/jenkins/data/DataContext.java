@@ -1,5 +1,6 @@
 package jenkins.data;
 
+import hudson.model.Describable;
 import jenkins.data.tree.TreeNode;
 import org.kohsuke.stapler.Stapler;
 
@@ -61,7 +62,7 @@ public class DataContext implements DataModelRegistry {
 
     @Override
     @Nonnull
-    public <T> DataModel<T> lookupOrFail(Class<T> type) throws IOException {
+    public <T> DataModel<T> lookupOrFail(Class<T> type) {
         return registry.lookupOrFail(type);
     }
 
@@ -72,7 +73,7 @@ public class DataContext implements DataModelRegistry {
     }
 
     @Override
-    public Set<Class<?>> findSubtypes(Class<?> superType) {
+    public <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType) {
         return registry.findSubtypes(superType);
     }
 

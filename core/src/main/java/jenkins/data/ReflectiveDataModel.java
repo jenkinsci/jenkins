@@ -1,56 +1,44 @@
 package jenkins.data;
 
+import com.google.common.base.Defaults;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
-import jenkins.model.Jenkins;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.ObjectUtils;
-import org.codehaus.groovy.reflection.ReflectionCache;
-import org.jenkinsci.Symbol;
-import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.ClassDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.lang.Klass;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.beans.Introspector;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
  * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
  */
-class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
+class ReflectiveDataModel<T> extends DataModel<T> {
 
     /**
      * Type that this model represents.
@@ -74,36 +62,11 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      */
     private final String[] constructorParamNames;
 
-    /** Binds type parameter, preferred means of obtaining a DataModel. */
-    public static <T> DataModel<T> of(Class<T> clazz) {
-        ReflectiveDataModel mod = modelCache.get(clazz.getName());
-        if (mod != null && mod.type == clazz) {
-            return mod;
-        }
-        mod = new ReflectiveDataModel<>(clazz);
-        modelCache.put(clazz.getName(), mod);
-        return mod;
-    }
-
-    /** Map class name to cached model. */
-    static ConcurrentHashMap<String, ReflectiveDataModel> modelCache = new ConcurrentHashMap<>();
-
     /**
      * Loads a definition of the structure of a class.
-     *
-     * Use {@link #of(Class)} instead -- that will returned cached instances.
      */
     public ReflectiveDataModel(Class<T> clazz) {
         this.type = clazz;
-
-        ReflectiveDataModel mod = modelCache.get(clazz.getName());
-        if (mod != null && mod.type == clazz) {
-            constructor = mod.constructor;
-            parameters = mod.parameters;
-            constructorParamNames = mod.constructorParamNames;
-            parametersView = mod.parametersView;
-            return;
-        }
 
         if (type == ParametersDefinitionProperty.class) { // TODO pending core fix
             constructorParamNames = new String[] {"parameterDefinitions"};
@@ -140,7 +103,6 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         }
         parameters.putAll(rest);
         parametersView = Collections.unmodifiableMap(parameters);
-        modelCache.putIfAbsent(clazz.getName(), this);
     }
 
     private void addParameter(Map<String,ReflectiveDataModelParameter> props, Type type, String name, Setter setter) {
@@ -188,14 +150,10 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      */
     public @CheckForNull
     DataModelParameter getSoleRequiredParameter() {
-        DataModelParameter rp = null;
-        for (DataModelParameter p : getParameters()) {
-            if (p.isRequired()) {
-                if (rp!=null)   return null;
-                rp = p;
-            }
-        }
-        return rp;
+        return getParameters().stream()
+            .filter(ReflectiveDataModelParameter::isRequired)
+            .reduce((some, other) -> null) // if there's more than one, return null;
+            .orElse(null);
     }
 
     /**
@@ -203,12 +161,10 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
      * Otherwise null.
      */
     public @CheckForNull DataModelParameter getFirstRequiredParameter() {
-        for (DataModelParameter p : getParameters()) {
-            if (p.isRequired()) {
-                return p;
-            }
-        }
-        return null;
+        return getParameters().stream()
+            .filter(ReflectiveDataModelParameter::isRequired)
+            .findAny()
+            .orElse(null);
     }
 
     /**
@@ -226,39 +182,50 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     /**
      * Creates an instance of a class via {@link DataBoundConstructor} and {@link DataBoundSetter}.
      * <p>The arguments may be primitives (as wrappers) or {@link String}s if that is their declared type.
-     * {@link Character}s, {@link Enum}s, and {@link URL}s may be represented by {@link String}s.
-     * Other object types may be passed in “raw” as well, but JSON-like structures are encouraged instead.
-     * Specifically a {@link List} may be used to represent any list- or array-valued argument.
-     * A {@link Map} with {@link String} keys may be used to represent any class which is itself data-bound.
-     * In that case the special key {@link #CLAZZ} is used to specify the {@link Class#getName};
-     * or it may be omitted if the argument is declared to take a concrete type;
-     * or {@link Class#getSimpleName} may be used in case the argument type is {@link Describable}
-     * and only one subtype is registered (as a {@link Descriptor}) with that simple name.
+     * Stapler-convertible types may be represented by {@link String}s as well.
+     * Other object types may be passed using a nested JSON-like structure.
+     * Specifically a {@link Sequence} may be used to represent any list- or array-valued argument.
+     * A {@link Mapping} may be used to represent any class which is itself data-bound.
+     * implementations.
      */
     @Override
-    public T read(Mapping input, DataContext context) throws IOException {
-        Mapping arguments = input.asMapping();
-
-        if (arguments.containsKey(ANONYMOUS_KEY)) {
-            if (arguments.size()!=1)
+    public T read(TreeNode input, DataContext context) {
+        Mapping mapping = input.asMapping();
+        if (mapping.containsKey(ANONYMOUS_KEY)) {
+            if (mapping.size()!=1)
                 throw new IllegalArgumentException("All arguments have to be named but it has "+ANONYMOUS_KEY);
 
             DataModelParameter rp = getSoleRequiredParameter();
             if (rp==null)
                 throw new IllegalArgumentException("Arguments to "+type+" have to be explicitly named");
-            arguments = new Mapping();
-            arguments.put(rp.getName(),arguments.get(ANONYMOUS_KEY));
+            mapping = new Mapping();
+            mapping.put(rp.getName(),mapping.get(ANONYMOUS_KEY));
         }
 
         try {
-            Object[] args = buildArguments(arguments, constructor.getGenericParameterTypes(), constructorParamNames, true, context);
+            final int count = constructor.getParameterCount();
+            Object[] args = new Object[count];
+            final Type[] types = constructor.getGenericParameterTypes();
+
+            for (int i = 0; i < count; i++) {
+                final String name = constructorParamNames[i];
+                final DataModelParameter parameter = getParameter(name);
+                final Class type = parameter.getErasedType();
+                args[i] = Optional.ofNullable(mapping.get(name))
+                    .map(n -> context.lookupOrFail(type).read(n, context))
+                    .orElse(Defaults.defaultValue(type));
+            }
             T o = constructor.newInstance(args);
-            injectSetters(o, arguments, context);
+
+            // Object[] args = buildArguments(input, constructor.getGenericParameterTypes(), constructorParamNames, true, context);
+            // T o = constructor.newInstance(args);
+            injectSetters(o, mapping, context);
             return o;
         } catch (Exception x) {
-            throw new IllegalArgumentException("Could not instantiate " + arguments + " for " + this + ": " + x, x);
+            throw new IllegalArgumentException("Could not instantiate " + input + " for " + this + ": " + x, x);
         }
     }
+
 
         // adapted from RequestImpl
     @SuppressWarnings("unchecked")
@@ -288,211 +255,26 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
     }
 
     /**
-     * Give a method/constructor, take values specified in the bag and build up the arguments to invoke it with.
-     *
-     * @param types
-     *      Types of the parameters
-     * @param names
-     *      Names of the parameters
-     * @param callEvenIfNoArgs
-     *      true for constructor, false for a method call
-     * @return
-     *      null if the method shouldn't be invoked at all. IOW, there's nothing in the bag.
-     */
-    private Object[] buildArguments(Mapping bag, Type[] types, String[] names, boolean callEvenIfNoArgs, DataContext context) throws Exception {
-        assert names.length==types.length;
-
-        Object[] args = new Object[names.length];
-        boolean hasArg = callEvenIfNoArgs;
-        for (int i = 0; i < args.length; i++) {
-            String name = names[i];
-            hasArg |= bag.containsKey(name);
-            TreeNode a = bag.get(name);
-            Type type = types[i];
-            if (a != null) {
-                args[i] = coerce(this.type.getName() + "." + name, type, a, context);
-            } else if (type instanceof Class && ((Class) type).isPrimitive()) {
-                args[i] = getVmDefaultValueForPrimitiveType((Class)type);
-                if (args[i]==null && callEvenIfNoArgs)
-                    throw new UnsupportedOperationException("not yet handling @DataBoundConstructor default value of " + type + "; pass an explicit value for " + name);
-            } else {
-                // TODO this might be fine (ExecutorStep.label), or not (GenericSCMStep.scm); should inspect parameter annotations for @Nonnull and throw an UOE if found
-            }
-        }
-        return hasArg ? args : null;
-    }
-
-    /**
      * Injects via {@link DataBoundSetter}
      */
     private void injectSetters(Object o, Mapping arguments, DataContext context) throws Exception {
+
         for (ReflectiveDataModelParameter p : parameters.values()) {
             if (p.setter!=null) {
                 if (arguments.containsKey(p.getName())) {
-                    TreeNode v = arguments.get(p.getName());
-                    p.setter.set(o, coerce(p.setter.getDisplayName(), p.getRawType(), v, context));
+
+                    final Class type = p.getErasedType();
+                    Object value = Optional.ofNullable(arguments.get(p.getName()))
+                        .map(n -> context.lookupOrFail(type).read(n, context))
+                        .orElse(Defaults.defaultValue(type));
+
+                    p.setter.set(o, value);
                 }
             }
         }
     }
 
     /**
-     * Take an object of random type and tries to convert it into another type
-     *
-     * @param location
-     *      Human readable location of coercion when reporting a problem.
-     * @param type
-     *      The type to convert the object to.
-     * @param n
-     *      Source object to be converted.
-     */
-    @SuppressWarnings("unchecked")
-    private Object coerce(String location, Type type, TreeNode n, DataContext context) throws Exception {
-        Class erased = Types.erasure(type);
-
-        switch (n.getType()) {
-        case MAPPING:
-            Mapping m = n.clone().asMapping();
-            Class<?> clazz = resolveClass(erased,
-                    stringValue(m.remove(CLAZZ)),
-                    stringValue(m.remove("type")), // TODO: we acknowledge that this might collide with legitimate property names of some models
-                    context);
-            return context.lookupOrFail(clazz).read(m, context);
-        case SEQUENCE:
-            return coerceList(location,
-                    Types.getTypeArgument(Types.getBaseClass(type, Collection.class), 0, Object.class),
-                    n.asSequence(), context);
-        case SCALAR:
-            Object o = n.asScalar().getValue();
-
-            if (type instanceof Class) {
-                o = ReflectionCache.getCachedClass(erased).coerceArgument(o);
-            }
-
-            Object v = ConvertUtils.convert(o, erased);
-            if (erased.isInstance(v)) {
-                return v;
-            } else if (o==null) {
-                // TODO: is this how we deal with null?
-                return null;
-            } else if (o instanceof String && erased.isEnum()) {
-                return Enum.valueOf(erased.asSubclass(Enum.class), (String) o);
-            } else if (o instanceof String && erased == URL.class) {
-                return new URL((String) o);
-            } else if (o instanceof String && erased == Result.class) {
-                return Result.fromString((String)o);
-            } else if (o instanceof String && (erased == char.class || erased == Character.class) && ((String) o).length() == 1) {
-                return ((String) o).charAt(0);
-            } else if (o instanceof String && ClassUtils.isAssignable(ClassUtils.primitiveToWrapper(erased), Number.class)) {
-                return coerceStringToNumber(location, ClassUtils.primitiveToWrapper(erased), (String)o);
-            } else if (o instanceof String && (erased == boolean.class || erased == Boolean.class)) {
-                return Boolean.valueOf((String)o);
-            } else {
-                throw new ClassCastException(location + " expects " + type + " but received " + o.getClass());
-            }
-        default:
-            throw new AssertionError();
-        }
-    }
-
-    private String stringValue(TreeNode s) throws IOException {
-        if (s==null)    return null;
-        return s.asScalar().getValue();
-    }
-
-    private Object coerceStringToNumber(@Nonnull String context, @Nonnull Class numberClass, @Nonnull String o)
-            throws ClassCastException {
-        try {
-            if (numberClass.equals(Integer.class)) {
-                return Integer.valueOf(o);
-            } else if (numberClass.equals(Float.class)) {
-                return Float.valueOf(o);
-            } else if (numberClass.equals(Double.class)) {
-                return Double.valueOf(o);
-            } else if (numberClass.equals(Long.class)) {
-                return Long.valueOf(o);
-            } else if (numberClass.equals(Byte.class)) {
-                return Byte.valueOf(o);
-            } else if (numberClass.equals(Short.class)) {
-                return Short.valueOf(o);
-            } else {
-                // Fallback for any other Number - just return the original string.
-                return o;
-            }
-        } catch (NumberFormatException nfe) {
-            throw new ClassCastException(context + " expects " + numberClass + " but was unable to coerce the received value \"" + o + "\" to that type");
-        }
-    }
-
-    /**
-     * Resolves a class name to an actual {@link Class} object.
-     *
-     * @param symbol
-     *      {@linkplain Symbol symbol name} of the class to resolve.
-     * @param name
-     *      Either a simple name or a fully qualified class name.
-     * @param base
-     *      Signature of the type that the resolved class should be assignable to.
-     */
-    /*package*/ static Class<?> resolveClass(Class<?> base, @Nullable String name, @Nullable String symbol, DataContext context) throws ClassNotFoundException {
-        // TODO: if both name & symbol are present, should we verify its consistency?
-
-        if (name != null) {
-            if (name.contains(".")) {// a fully qualified name
-                Jenkins j = Jenkins.getInstanceOrNull();
-                ClassLoader loader = j != null ? j.getPluginManager().uberClassLoader : Thread.currentThread().getContextClassLoader();
-                return Class.forName(name, true, loader);
-            } else {
-                Class<?> clazz = null;
-                for (Class<?> c : context.findSubtypes(base)) {
-                    if (c.getSimpleName().equals(name)) {
-                        if (clazz != null) {
-                            throw new UnsupportedOperationException(name + " as a " + base + " could mean either " + clazz.getName() + " or " + c.getName());
-                        }
-                        clazz = c;
-                    }
-                }
-                if (clazz == null) {
-                    throw new UnsupportedOperationException("no known implementation of " + base + " is named " + name);
-                }
-                return clazz;
-            }
-        }
-
-        if (symbol != null) {
-            // The normal case: the Descriptor is marked, but the name applies to its Describable.
-            Descriptor d = SymbolLookup.get().findDescriptor(base, symbol);
-            if (d != null) {
-                return d.clazz;
-            }
-            throw new UnsupportedOperationException("no known implementation of " + base + " is using symbol ‘" + symbol + "’");
-        }
-
-        if (Modifier.isAbstract(base.getModifiers())) {
-            throw new UnsupportedOperationException("must specify " + CLAZZ + " with an implementation of " + base);
-        }
-        return base;
-    }
-
-    /**
-     * Apply {@link #coerce(String, Type, TreeNode, DataContext)} method to a collection item.
-     */
-    private List<Object> coerceList(String location, Type type, Sequence list, DataContext context) throws Exception {
-        List<Object> r = new ArrayList<>();
-        for (TreeNode elt : list) {
-            r.add(coerce(location, type, elt, context));
-        }
-        return r;
-    }
-
-    /**
-     * Finds a symbol for an instance if there's one, or return null.
-     */
-    /*package*/ static String symbolOf(Object o) {
-        Set<String> symbols = SymbolLookup.getSymbolValue(o);
-        return symbols.isEmpty() ? null : symbols.iterator().next();
-    }
-
     /**
      * True if this model's type is deprecated.
      *
@@ -576,9 +358,6 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
             }
         }
 
-        // TODO: this is probably not right
-        r.put(CLAZZ,symbolOf(o));
-
         return r;
     }
 
@@ -603,56 +382,14 @@ class ReflectiveDataModel<T> extends DataModel<T> implements Serializable {
         return null;
     }
 
-    private Object writeReplace() {
-        return new SerializedForm(type);
-    }
-
-    /**
-     * Serialized form of {@link ReflectiveDataModel}, which is just its class as everything else
-     * can be computed.
-     */
-    private static class SerializedForm implements Serializable {
-        private final Class type;
-
-        public SerializedForm(Class type) {
-            this.type = type;
-        }
-
-        private Object readResolve() {
-            return ReflectiveDataModel.of(type);
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-    public static final String CLAZZ = "$class";
 
     private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModel.class.getName());
 
-    private static final long serialVersionUID = 1L;
 
-    // TODO: switch to use {@link hudson.util.ReflectionUtils}
-    /**
-     * Given the primitive type, returns the VM default value for that type in a boxed form.
-     */
-    private static Object getVmDefaultValueForPrimitiveType(Class<?> type) {
-        return defaultPrimitiveValue.get(type);
-    }
-
-    private static final Map<Class,Object> defaultPrimitiveValue = new HashMap<>();
-    static {
-        defaultPrimitiveValue.put(boolean.class, false);
-        defaultPrimitiveValue.put(byte.class, (byte) 0);
-        defaultPrimitiveValue.put(short.class, (short) 0);
-        defaultPrimitiveValue.put(int.class, 0);
-        defaultPrimitiveValue.put(long.class, 0L);
-        defaultPrimitiveValue.put(float.class, 0.0f);
-        defaultPrimitiveValue.put(double.class, 0.0d);
-    }
 
     /**
      * As a short-hand, if a {@link DataModel} has only one required parameter,
-     * {@link DataModel#read(Mapping, DataContext)} accepts a single-item map whose key is this magic token.
+     * {@link DataModel#read(TreeNode, DataContext)} accepts a single-item map whose key is this magic token.
      *
      * <p>
      * To avoid clients from needing to special-case this key, {@link #write(Object, DataContext)} does not

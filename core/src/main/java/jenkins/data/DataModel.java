@@ -1,11 +1,8 @@
 package jenkins.data;
 
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.TreeNode;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import javax.xml.ws.Holder;
@@ -35,7 +32,7 @@ public abstract class DataModel<T> {
      * @param context
      *      Provides access to a bigger context in which this object is being serialized.
      */
-    public abstract Mapping write(T object, DataContext context);
+    public abstract TreeNode write(T object, DataContext context);
 
     /**
      * Instantiates an object from a tree structure and return the newly constructed instance.
@@ -43,7 +40,7 @@ public abstract class DataModel<T> {
      * @param context
      *      Provides access to a bigger context in which this object is being serialized.
      */
-    public abstract T read(Mapping input, DataContext context) throws IOException;
+    public abstract T read(TreeNode input, DataContext context);
 
     /**
      * "Schema" of this data model.

@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -53,12 +54,12 @@ public class DefaultDataModelRegistry implements DataModelRegistry {
     }
 
     @Override
-    public Set<Class> findSubtypes(Class<?> superType) {
+    public <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType) {
         // Jenkins.getDescriptorList does not work well since it is limited to descriptors declaring one supertype, and does not work at all for SimpleBuildStep.
         return ExtensionList.lookup(Descriptor.class).stream()
-            .filter(d -> superType.isAssignableFrom(d.clazz))
             .map(Descriptor::getKlass)
             .map(Klass::toJavaClass)
+            .filter(superType::isAssignableFrom)
             .collect(Collectors.toSet());
     }
 }

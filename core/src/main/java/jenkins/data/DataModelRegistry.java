@@ -1,5 +1,6 @@
 package jenkins.data;
 
+import hudson.model.Describable;
 import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
@@ -27,9 +28,9 @@ public interface DataModelRegistry {
      * @throws IOException if we don't know any {@link DataModel} for requested type
      */
     @Nonnull
-    default <T> DataModel<T> lookupOrFail(Class<T> type) throws IOException {
+    default <T> DataModel<T> lookupOrFail(Class<T> type) {
         DataModel<T> t = lookup(type);
-        if (t==null)    throw new IOException("No DataModel found for "+type);
+        if (t==null)    throw new IllegalArgumentException("No DataModel found for "+type);
         return t;
     }
 
@@ -38,7 +39,7 @@ public interface DataModelRegistry {
      *
      * TODO: the return type not being Set<DataModel<?>> makes me feel uneasy
      */
-    Set findSubtypes(Class<?> superType);
+    <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType);
 
     /**
      * Retrieve default implementation from Jenkins

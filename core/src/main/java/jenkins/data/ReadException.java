@@ -9,7 +9,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ReadException extends IOException {
+public class ReadException extends RuntimeException {
     private Source source;
 
     public ReadException() {

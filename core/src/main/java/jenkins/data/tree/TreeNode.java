@@ -15,15 +15,15 @@ public interface TreeNode extends Cloneable {
 
     Type getType();
 
-    default Mapping asMapping() throws IOException {
+    default Mapping asMapping() {
         throw new ReadException("Item isn't a Mapping").withSource(getSource());
     }
 
-    default Sequence asSequence() throws IOException {
+    default Sequence asSequence() {
         throw new ReadException("Item isn't a Sequence").withSource(getSource());
     }
 
-    default Scalar asScalar() throws IOException {
+    default Scalar asScalar() {
         throw new ReadException("Item isn't a Scalar").withSource(getSource());
     }
 
