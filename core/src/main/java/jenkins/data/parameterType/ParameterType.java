@@ -1,8 +1,9 @@
 package jenkins.data.parameterType;
 
 import com.google.common.primitives.Primitives;
-import jenkins.data.DataModel;
+import jenkins.data.DataContext;
 import jenkins.data.DataModelRegistry;
+import jenkins.data.tree.TreeNode;
 import org.apache.commons.beanutils.Converter;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Stapler;
@@ -10,21 +11,12 @@ import org.kohsuke.stapler.Stapler;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-
-import static java.util.logging.Level.*;
 
 /**
  * A type of a parameter to a class.
@@ -43,6 +35,13 @@ public abstract class ParameterType<T extends Type> {
     ParameterType(T actualType) {
         this.actualType = actualType;
     }
+
+
+    public Object from(Optional<TreeNode> treeNode, DataContext context) {
+           return treeNode.map(t -> from(t, context)).orElse(null);
+    }
+
+    public abstract Object from(TreeNode node, DataContext context);
 
     /**
      * Creates the right {@link ParameterType} tree, given a Java type.
@@ -96,4 +95,5 @@ public abstract class ParameterType<T extends Type> {
     }
 
     private static final Logger LOGGER = Logger.getLogger(ParameterType.class.getName());
+
 }

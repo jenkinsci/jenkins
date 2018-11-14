@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
@@ -209,11 +208,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
 
             for (int i = 0; i < count; i++) {
                 final String name = constructorParamNames[i];
-                final DataModelParameter parameter = getParameter(name);
-                final Class type = parameter.getErasedType();
-                args[i] = Optional.ofNullable(mapping.get(name))
-                    .map(n -> context.lookupOrFail(type).read(n, context))
-                    .orElse(Defaults.defaultValue(type));
+                args[i] = getParameter(name).getType().from(mapping.getValue(name), context);
             }
             T o = constructor.newInstance(args);
 
@@ -261,13 +256,9 @@ class ReflectiveDataModel<T> extends DataModel<T> {
 
         for (ReflectiveDataModelParameter p : parameters.values()) {
             if (p.setter!=null) {
-                if (arguments.containsKey(p.getName())) {
-
-                    final Class type = p.getErasedType();
-                    Object value = Optional.ofNullable(arguments.get(p.getName()))
-                        .map(n -> context.lookupOrFail(type).read(n, context))
-                        .orElse(Defaults.defaultValue(type));
-
+                final String name = p.getName();
+                if (arguments.containsKey(name)) {
+                    Object value = getParameter(name).getType().from(arguments.getValue(name), context);
                     p.setter.set(o, value);
                 }
             }

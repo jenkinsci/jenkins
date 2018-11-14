@@ -1,6 +1,8 @@
 package jenkins.data.parameterType;
 
+import jenkins.data.DataContext;
 import jenkins.data.DataModel;
+import jenkins.data.tree.TreeNode;
 
 import java.lang.reflect.Type;
 import java.util.Stack;
@@ -24,11 +26,9 @@ public final class ComposedObjectType<T> extends ParameterType<Class<T>> {
         return getActualType();
     }
 
-    /**
-     * The schema representing a type of nested object.
-     */
-    public DataModel<T> getSchemaType() {
-        return model;
+    @Override
+    public Object from(TreeNode node, DataContext context) {
+        return model.read(node, context);
     }
 
     /**

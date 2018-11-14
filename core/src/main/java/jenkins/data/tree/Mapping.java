@@ -2,6 +2,7 @@ package jenkins.data.tree;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -30,6 +31,9 @@ public final class Mapping extends HashMap<String, TreeNode> implements TreeNode
         return this;
     }
 
+    public Optional<TreeNode> getValue(Object key) {
+        return Optional.ofNullable(super.get(key));
+    }
 
     public void put(String key, String value) {
         super.put(key, new Scalar(value));

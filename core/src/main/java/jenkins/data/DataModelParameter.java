@@ -2,6 +2,7 @@ package jenkins.data;
 
 import hudson.model.Descriptor;
 import jenkins.data.parameterType.ParameterType;
+import jenkins.data.tree.TreeNode;
 import org.jvnet.tiger_types.Types;
 
 import javax.annotation.CheckForNull;
@@ -80,4 +81,5 @@ public abstract class DataModelParameter {
         toString(b, new Stack<Class<?>>());
         return b.toString();
     }
+
 }

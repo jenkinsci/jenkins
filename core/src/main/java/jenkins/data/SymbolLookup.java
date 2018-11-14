@@ -137,6 +137,9 @@ public class SymbolLookup {
                 return null;
             }
 
+            // TODO add casc logic to infer a "natural" symbol for non annotated descriptors
+
+            // FIXME Question: is Index.list really more efficient vs iterating over known descriptors ?
             for (Class<?> e : Index.list(Symbol.class, pluginManager.uberClassLoader, Class.class)) {
                 if (Descriptor.class.isAssignableFrom(e)) {
                     Symbol s = e.getAnnotation(Symbol.class);

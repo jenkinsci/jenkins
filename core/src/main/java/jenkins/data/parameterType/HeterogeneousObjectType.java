@@ -1,6 +1,7 @@
 package jenkins.data.parameterType;
 
 import hudson.ExtensionPoint;
+import hudson.model.Descriptor;
 import jenkins.data.DataContext;
 import jenkins.data.DataModel;
 import jenkins.data.SymbolLookup;
@@ -30,25 +31,36 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
         return getActualType();
     }
 
-    public Class<T> resolve(TreeNode node, DataContext context) {
+    @Override
+    public Object from(TreeNode node, DataContext context) {
         final Mapping mapping = node.asMapping();
 
-        // This is how Pipeline handle this
+        // Pipeline support $class - legacy ? Shall we drop this ?
         final String clazz = mapping.getScalarValue("$class");
         if (clazz != null) {
             return types.stream()
                 .filter(c -> c.getSimpleName().equals(clazz))
                 .findAny()
+                .map(c -> context.lookupOrFail(c).read(node, context))
                 .orElseThrow(() -> new IllegalArgumentException("no implementation for type " + getType() + " with class name "+ clazz));
         }
 
-        // This is how CasC handle this
-        if (mapping.size() == 1) {
-            final String symbol = mapping.keySet().iterator().next();
-            return SymbolLookup.get().findDescriptor(getActualType(), symbol).getKlass().toJavaClass();
+        // This is how Pipeline handle symbols
+        String symbol = mapping.getScalarValue("type"); // FIXME risk of collision with a legitimate parameter.
+
+        // This is how CasC handle symbols
+        if (symbol == null && mapping.size() == 1) {
+            symbol = mapping.keySet().iterator().next();
         }
 
-        return null;
+        if (symbol != null) {
+            final Descriptor<?> descriptor = SymbolLookup.get().findDescriptor(getActualType(), symbol);
+            if (descriptor == null) new IllegalArgumentException("no implementation for type " + getType() + " with symbol "+ symbol);
+            return context.lookupOrFail(descriptor.getKlass().toJavaClass()).read(node, context);
+        }
+
+
+        throw new IllegalArgumentException("need to specify symbol of a concrete "+getType()+" implementation");
     }
 
 

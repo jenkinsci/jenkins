@@ -11,14 +11,10 @@ import java.util.stream.Collectors;
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class EnumType<E extends Enum<E>> extends ParameterType<Class<E>> {
+public final class EnumType<E extends Enum<E>> extends AtomicType<E> {
 
     EnumType(Class<E> clazz) {
         super(clazz);
-    }
-
-    public Class<E> getType() {
-        return getActualType();
     }
 
     /**
@@ -32,6 +28,7 @@ public final class EnumType<E extends Enum<E>> extends ParameterType<Class<E>> {
 
     @Override
     public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
-        b.append((getActualType()).getSimpleName()).append(StringUtils.join(getValues(), ","));
+        b.append((getActualType()).getSimpleName())
+         .append(StringUtils.join(getValues(), ","));
     }
 }
