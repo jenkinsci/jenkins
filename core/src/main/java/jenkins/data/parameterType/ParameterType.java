@@ -24,15 +24,15 @@ import java.util.logging.Logger;
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public abstract class ParameterType<T extends Type> {
+public abstract class ParameterType {
     @Nonnull
-    private final T actualType;
+    private final Type actualType;
 
-    public T getActualType() {
+    public Type getActualType() {
         return actualType;
     }
 
-    ParameterType(T actualType) {
+    ParameterType(Type actualType) {
         this.actualType = actualType;
     }
 
@@ -42,6 +42,8 @@ public abstract class ParameterType<T extends Type> {
     }
 
     public abstract Object from(TreeNode node, DataContext context);
+
+    public abstract TreeNode export(Object instance, DataContext context);
 
     /**
      * Creates the right {@link ParameterType} tree, given a Java type.

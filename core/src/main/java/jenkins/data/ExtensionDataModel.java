@@ -1,13 +1,10 @@
 package jenkins.data;
 
-import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.data.tree.Mapping;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import java.beans.Introspector;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -32,8 +29,7 @@ public class ExtensionDataModel<E> extends ReflectiveDataModel<E> {
                 if (!m.getName().startsWith("set") || parameterTypes.length != 1) {
                     continue;
                 }
-                parameters.add(new ReflectiveDataModelParameter(this, m.getGenericParameterTypes()[0],
-                        Introspector.decapitalize(m.getName().substring(3)), Setter.create(m)));
+                parameters.add(new ReflectiveDataModelParameter(this, m));
             }
         }
     }

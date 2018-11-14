@@ -1,7 +1,5 @@
 package jenkins.data;
 
-import hudson.model.Describable;
-import hudson.model.ParametersDefinitionProperty;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.TreeNode;
 import net.sf.json.JSONObject;
@@ -10,10 +8,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
-import java.beans.Introspector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.List;
  * {@link org.kohsuke.stapler.RequestImpl#bindJSON(Class, JSONObject)}
  *
  */
-public class DataBoundDataModel<D extends Describable<D>> extends ReflectiveDataModel<D> {
+public class DataBoundDataModel<D> extends ReflectiveDataModel<D> {
 
     /**
      * Data-bound constructor.
@@ -33,7 +32,7 @@ public class DataBoundDataModel<D extends Describable<D>> extends ReflectiveData
     private final Constructor<D> constructor;
 
     private List<ReflectiveDataModelParameter> constructorParameters;
-    
+
     
     public DataBoundDataModel(Class<D> clazz) {
         super(clazz);
@@ -43,16 +42,16 @@ public class DataBoundDataModel<D extends Describable<D>> extends ReflectiveData
         constructor = findConstructor(constructorParamNames.length);
 
         constructorParameters = new ArrayList<>(constructorParamNames.length);
-        Type[] types = constructor.getGenericParameterTypes();
+        final Parameter[] args = constructor.getParameters();
         for (int i = 0; i < constructorParamNames.length; i++) {
-            final String name = constructorParamNames[i];
-            constructorParameters.add(new ReflectiveDataModelParameter(this, types[i], name, null));
+            constructorParameters.add(new ReflectiveDataModelParameter(this, constructorParamNames[i], args[i]));
         }
 
+        List<Member> members = new ArrayList<>();
         for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
             for (Field f : c.getDeclaredFields()) {
                 if (f.isAnnotationPresent(DataBoundSetter.class)) {
-                    parameters.add(new ReflectiveDataModelParameter(this, f.getGenericType(), f.getName(), Setter.create(f)));
+                    this.parameters.add(new ReflectiveDataModelParameter(this, f));
                 }
             }
             for (Method m : c.getMethods()) {
@@ -61,8 +60,7 @@ public class DataBoundDataModel<D extends Describable<D>> extends ReflectiveData
                     if (!m.getName().startsWith("set") || parameterTypes.length != 1) {
                         throw new IllegalStateException(m + " cannot be a @DataBoundSetter");
                     }
-                    parameters.add(new ReflectiveDataModelParameter(this, m.getGenericParameterTypes()[0],
-                            Introspector.decapitalize(m.getName().substring(3)), Setter.create(m)));
+                    this.parameters.add(new ReflectiveDataModelParameter(this, m));
                 }
             }
         }

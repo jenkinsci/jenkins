@@ -4,7 +4,6 @@ import jenkins.data.DataContext;
 import jenkins.data.DataModel;
 import jenkins.data.tree.TreeNode;
 
-import java.lang.reflect.Type;
 import java.util.Stack;
 
 /**
@@ -14,7 +13,7 @@ import java.util.Stack;
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class ComposedObjectType<T> extends ParameterType<Class<T>> {
+public final class ComposedObjectType<T> extends ParameterType {
     private final DataModel<T> model;
 
     ComposedObjectType(DataModel<T> model) {
@@ -23,12 +22,17 @@ public final class ComposedObjectType<T> extends ParameterType<Class<T>> {
     }
 
     public Class<T> getType() {
-        return getActualType();
+        return (Class<T>) getActualType();
     }
 
     @Override
     public Object from(TreeNode node, DataContext context) {
         return model.read(node, context);
+    }
+
+    @Override
+    public TreeNode export(Object instance, DataContext context) {
+        return model.write((T) instance, context);
     }
 
     /**

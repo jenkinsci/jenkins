@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Jesse Glick
  * @author Anderw Bayer
  */
-public final class HeterogeneousObjectType<T extends ExtensionPoint> extends ParameterType<Class<T>> {
+public final class HeterogeneousObjectType<T> extends ParameterType {
     private final Set<Class<T>> types;
 
     HeterogeneousObjectType(Class<T> supertype, Set<Class<T>> types) {
@@ -28,7 +28,7 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
     }
 
     public Class<T> getType() {
-        return getActualType();
+        return (Class<T>) getActualType();
     }
 
     @Override
@@ -54,7 +54,7 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
         }
 
         if (symbol != null) {
-            final Descriptor<?> descriptor = SymbolLookup.get().findDescriptor(getActualType(), symbol);
+            final Descriptor<?> descriptor = SymbolLookup.get().findDescriptor(getType(), symbol);
             if (descriptor == null) throw new IllegalArgumentException("no implementation for type " + getType() + " with symbol "+ symbol);
             return context.lookupOrFail(descriptor.getKlass().toJavaClass()).read(node, context);
         }
@@ -63,6 +63,12 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
         throw new IllegalArgumentException("need to specify symbol of a concrete "+getType()+" implementation");
     }
 
+    @Override
+    public TreeNode export(Object instance, DataContext context) {
+
+        // FIXME shall we use pipeline or casc style ?
+        return null;
+    }
 
     @Override
     public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {

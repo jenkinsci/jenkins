@@ -5,15 +5,31 @@ import hudson.model.Result;
 import jenkins.data.tree.Scalar;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.NoStaplerConstructorException;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.lang.Klass;
 
 import javax.annotation.CheckForNull;
+import java.beans.Introspector;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,12 +48,61 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
      * the value to this property. Otherwise this parameter must be injected via the constructor.
      */
     /*package*/ final Setter setter;
+    /*package*/ final Getter getter;
 
-    /*package*/ ReflectiveDataModelParameter(ReflectiveDataModel<?> parent, Type type, String name, Setter setter) {
-        super(name,type);
+    final List<Annotation> metadata;
+
+    private ReflectiveDataModelParameter(ReflectiveDataModel<?> parent, Type type, String name, AnnotatedElement metadata, Setter setter) {
+        super(name, type);
         this.parent = parent;
+        this.metadata = Arrays.asList(metadata.getAnnotations());
         this.setter = setter;
+        this.getter = findGetter();
     }
+
+    private Getter findGetter() {
+        final Class<?> clazz = parent.getType();
+        final String upname = StringUtils.capitalize(name);
+        final List<String> accessors = Arrays.asList("get" + upname, "is" + upname, "has" + upname);
+
+        for (Method method : clazz.getMethods()) {
+            if (method.getParameterCount() != 0) continue;
+            if (accessors.contains(method.getName())) {
+                return method::invoke;
+            }
+
+            final Exported exported = method.getAnnotation(Exported.class);
+            if (exported != null && exported.name().equalsIgnoreCase(name)) {
+                return method::invoke;
+            }
+        }
+
+        // If this is a public final field, developers don't define getters as jelly can use them as-is
+        final Field field = FieldUtils.getField(clazz, name, false);
+        if (field != null) {
+            return field::get;
+        }
+
+        throw new IllegalStateException(clazz + " define property " + name + " without a getter to read value");
+    }
+
+    /*package*/ ReflectiveDataModelParameter(ReflectiveDataModel parent, Field f) {
+        this(parent, f.getGenericType(), f.getName(), f, f::set);
+        f.setAccessible(true);
+    }
+
+    /*package*/ ReflectiveDataModelParameter(ReflectiveDataModel parent, Method m) {
+        this(parent, m.getGenericParameterTypes()[0],
+                Introspector.decapitalize(m.getName().substring(3)),
+                m, m::invoke);
+    }
+
+    /* package */ ReflectiveDataModelParameter(ReflectiveDataModel parent, String name, Parameter arg) {
+        this(parent, arg.getParameterizedType(), name, arg, null);
+    }
+
+
+
 
     /**
      * True if this parameter is required.
@@ -59,7 +124,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
      * A parameter is deprecated if the corresponding {@link DataBoundSetter} marked as {@link Deprecated}.
      */
     public boolean isDeprecated() {
-        return setter != null && setter.isDeprecated();
+        return metadata.stream().anyMatch(a -> a instanceof Deprecated);
     }
 
     /**
@@ -100,27 +165,10 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     }
 
     private Object getValue(Object o) {
-        Class<?> ownerClass = parent.getType();
         try {
-            try {
-                return ownerClass.getField(name).get(o);
-            } catch (NoSuchFieldException x) {
-                // OK, check for getter instead
-            }
-            try {
-                return ownerClass.getMethod("get" + getCapitalizedName()).invoke(o);
-            } catch (NoSuchMethodException x) {
-                // one more check
-            }
-            try {
-                return ownerClass.getMethod("is" + getCapitalizedName()).invoke(o);
-            } catch (NoSuchMethodException x) {
-                throw new UnsupportedOperationException("no public field ‘" + name + "’ (or getter method) found in " + ownerClass);
-            }
-        } catch (UnsupportedOperationException x) {
-            throw x;
-        } catch (Exception x) {
-            throw new UnsupportedOperationException(x);
+            return getter.get(o);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("Can't read "+name+" from "+o, e);
         }
     }
 
@@ -193,4 +241,5 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
     }
 
     private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModelParameter.class.getName());
+
 }

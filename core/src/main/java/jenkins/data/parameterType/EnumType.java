@@ -28,7 +28,7 @@ public final class EnumType<E extends Enum<E>> extends AtomicType<E> {
 
     @Override
     public void toString(StringBuilder b, Stack<Class<?>> modelTypes) {
-        b.append((getActualType()).getSimpleName())
+        b.append((getActualType()).getTypeName())
          .append(StringUtils.join(getValues(), ","));
     }
 }
