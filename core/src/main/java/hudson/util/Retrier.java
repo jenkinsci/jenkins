@@ -96,7 +96,7 @@ public class Retrier <V>{
     }
 
     /**
-     * Builder to create a {@link #Retrier(Builder)} object. The action to perform, the way of check whether is was
+     * Builder to create a Retrier object. The action to perform, the way of check whether is was
      * successful and the name of the action are required.
      * @param <V> The return type of the action to perform.
      */
@@ -167,7 +167,7 @@ public class Retrier <V>{
         }
 
         /**
-         * Create a {@link #Retrier(Builder)} object with the specification set in this builder.
+         * Create a Retrier object with the specification set in this builder.
          * @return the retrier
          */
         public @Nonnull Retrier<V> build() {
