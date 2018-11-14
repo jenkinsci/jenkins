@@ -32,9 +32,9 @@ THE SOFTWARE.
     <relativePath>../test-pom</relativePath>
   </parent>
 
-  <artifactId>jenkins-test</artifactId>
+  <artifactId>jenkins-test-jdk8</artifactId>
 
-  <name>Tests for Jenkins core</name>
-  <description>Functional tests for Jenkins core</description>
+  <name>JDK8-only tests for Jenkins core</name>
+  <description>JDK8-only Functional tests for Jenkins core</description>
 
 </project>
