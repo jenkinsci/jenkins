@@ -1,5 +1,8 @@
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
@@ -16,6 +19,9 @@ import java.util.stream.Stream;
  * listener to manage the expected exceptions happened, just in case it is helpful.
  * @param <V> The return type of the action to perform.
  */
+
+// Limit the use of this class until it is mature enough
+@Restricted(NoExternalUse.class)
 public class Retrier <V>{
     private static final Logger LOGGER = Logger.getLogger(Retrier.class.getName());
 

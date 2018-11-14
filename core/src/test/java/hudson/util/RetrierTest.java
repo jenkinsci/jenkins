@@ -4,7 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static junit.framework.TestCase.fail;
@@ -48,6 +51,63 @@ public class RetrierTest {
 
         String text = Messages.Retrier_Success(ACTION, SUCCESSFUL_ATTEMPT);
         assertTrue(String.format("The log should contain '%s'", text), handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)));
+    }
+
+    @Test
+    public void sleepWorksTest() throws Exception {
+        final int SUCCESSFUL_ATTEMPT = 2;
+        final String ACTION = "print";
+        final int SLEEP = 500;
+
+        RingBufferLogHandler handler = new RingBufferLogHandler(20);
+        Logger retrierLogger = Logger.getLogger(Retrier.class.getName());
+        // save current level, just in case it's needed in other tests
+        Level currentLogLevel = retrierLogger.getLevel();
+        retrierLogger.setLevel(Level.FINE);
+        retrierLogger.addHandler(handler);
+
+        Retrier<Boolean> r = new Retrier.Builder<>
+                // Set the required params
+                (
+                        // action to perform
+                        () -> {
+                            LOG.info("action performed");
+                            return true;
+                        },
+                        // check the result and return true if success
+                        (currentAttempt, result) -> currentAttempt == SUCCESSFUL_ATTEMPT,
+                        //name of the action
+                        ACTION
+                )
+
+                // Set the optional parameters
+                .withAttempts(SUCCESSFUL_ATTEMPT)
+
+                // The time we want to wait between attempts. Let's set less time than default (1000) to have a faster
+                // test
+                .withDelay(SLEEP)
+
+                // Construct the object
+                .build();
+
+        // Begin the process measuring how long it takes
+        Instant start = Instant.now();
+        Boolean finalResult = r.start();
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+
+        // Check delay works
+        Assert.assertTrue(timeElapsed > SLEEP);
+
+        // Check result is true
+        Assert.assertTrue(finalResult == null ? false : finalResult);
+
+        // Check the log tell us the sleep time
+        String text = Messages.Retrier_Sleeping(SLEEP, ACTION);
+        assertTrue(String.format("The log should contain '%s'", text), handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)));
+
+        // recover log level
+        retrierLogger.setLevel(currentLogLevel);
     }
 
     @Test
@@ -256,5 +316,4 @@ public class RetrierTest {
             fail(String.format("Unexpected exception: %s", e));
         }
     }
-
 }
