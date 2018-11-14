@@ -48,7 +48,7 @@ public abstract class DataModel<T> {
      * <p>
      * If you think of a {@link DataModel} as a class, then {@link DataModelParameter}s are properties.
      */
-    public abstract Collection<? extends DataModelParameter> getParameters();
+    public abstract Iterable<? extends DataModelParameter> getParameters();
 
     public DataModelParameter getParameter(String name) {
         for (DataModelParameter p : getParameters()) {
@@ -115,13 +115,14 @@ public abstract class DataModel<T> {
     }
 
     
-    
+    // FIXME I don't get why we have this, as getting a DataModel should go through DataModelFactory
 
     public static <X,Y> DataModel<Y> byTranslation(Class<X> dto, Function<X, Y> reader, Function<Y, X> writer) {
         throw new UnsupportedOperationException(); // TODO
     }
 
-    public static <T> DataModel<T> byReflection(Class<T> type) {
-        return ReflectiveDataModel.of(type);
+    protected static <Y> DataModel<Y> byReflection(Class<Y> clazz) {
+        return new ReflectiveDataModel<>(clazz);
     }
+
 }

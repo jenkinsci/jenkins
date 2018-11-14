@@ -1,6 +1,5 @@
 package jenkins.data;
 
-import com.google.common.base.Defaults;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -23,15 +22,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
@@ -44,12 +40,10 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      */
     private final Class<T> type;
 
-    private Map<String,ReflectiveDataModelParameter> parameters = new LinkedHashMap<>(4);
+    private List<ReflectiveDataModelParameter> constructorParameters;
 
-    /**
-     * Read only view to {@link #parameters}
-     */
-    private Map<String,ReflectiveDataModelParameter> parametersView;
+    private List<ReflectiveDataModelParameter> parameters;
+
 
     /**
      * Data-bound constructor.
@@ -57,36 +51,28 @@ class ReflectiveDataModel<T> extends DataModel<T> {
     private final Constructor<T> constructor;
 
     /**
-     * Name of the parameters of the {@link #constructor}
-     */
-    private final String[] constructorParamNames;
-
-    /**
      * Loads a definition of the structure of a class.
      */
     public ReflectiveDataModel(Class<T> clazz) {
         this.type = clazz;
 
-        if (type == ParametersDefinitionProperty.class) { // TODO pending core fix
-            constructorParamNames = new String[] {"parameterDefinitions"};
-        } else {
-            constructorParamNames = new ClassDescriptor(type).loadConstructorParamNames();
-        }
+        String[] constructorParamNames = new ClassDescriptor(type).loadConstructorParamNames();
+        constructorParameters = new ArrayList<>(constructorParamNames.length);
 
         constructor = findConstructor(constructorParamNames.length);
 
         Type[] types = constructor.getGenericParameterTypes();
         for (int i = 0; i < constructorParamNames.length; i++) {
-            addParameter(parameters, types[i], constructorParamNames[i], null);
+            final String name = constructorParamNames[i];
+            constructorParameters.add(new ReflectiveDataModelParameter(this, types[i], name, null));
         }
 
-        // rest of the properties will be sorted alphabetically
-        Map<String,ReflectiveDataModelParameter> rest = new TreeMap<>();
+        parameters = new ArrayList<>(constructorParameters);
 
         for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
             for (Field f : c.getDeclaredFields()) {
                 if (f.isAnnotationPresent(DataBoundSetter.class)) {
-                    addParameter(rest, f.getGenericType(), f.getName(), Setter.create(f));
+                    parameters.add(new ReflectiveDataModelParameter(this, f.getGenericType(), f.getName(), Setter.create(f)));
                 }
             }
             for (Method m : c.getDeclaredMethods()) {
@@ -95,17 +81,11 @@ class ReflectiveDataModel<T> extends DataModel<T> {
                     if (!m.getName().startsWith("set") || parameterTypes.length != 1) {
                         throw new IllegalStateException(m + " cannot be a @DataBoundSetter");
                     }
-                    addParameter(rest, m.getGenericParameterTypes()[0],
-                            Introspector.decapitalize(m.getName().substring(3)), Setter.create(m));
+                    parameters.add(new ReflectiveDataModelParameter(this, m.getGenericParameterTypes()[0],
+                            Introspector.decapitalize(m.getName().substring(3)), Setter.create(m)));
                 }
             }
         }
-        parameters.putAll(rest);
-        parametersView = Collections.unmodifiableMap(parameters);
-    }
-
-    private void addParameter(Map<String,ReflectiveDataModelParameter> props, Type type, String name, Setter setter) {
-        props.put(name, new ReflectiveDataModelParameter(this, type, name, setter));
     }
 
     /**
@@ -124,12 +104,16 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      * Sorted by the mandatory parameters first (in the order they are specified in the code),
      * followed by optional arguments.
      */
-    public Collection<ReflectiveDataModelParameter> getParameters() {
-        return parametersView.values();
+    // FIXME where|why do we need this ?
+    public Iterable<ReflectiveDataModelParameter> getParameters() {
+        return Collections.unmodifiableCollection(parameters)
     }
 
     public DataModelParameter getParameter(String name) {
-        return parameters.get(name);
+        return  Stream.concat(constructorParameters.stream(), parameters.stream())
+                .filter(p -> name.equals(p.getName()))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException(type + " as no parameter named " + name));
     }
 
     /**
@@ -149,7 +133,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      */
     public @CheckForNull
     DataModelParameter getSoleRequiredParameter() {
-        return getParameters().stream()
+        return parameters.stream()
             .filter(ReflectiveDataModelParameter::isRequired)
             .reduce((some, other) -> null) // if there's more than one, return null;
             .orElse(null);
@@ -160,7 +144,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      * Otherwise null.
      */
     public @CheckForNull DataModelParameter getFirstRequiredParameter() {
-        return getParameters().stream()
+        return parameters.stream()
             .filter(ReflectiveDataModelParameter::isRequired)
             .findAny()
             .orElse(null);
@@ -189,31 +173,26 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      */
     @Override
     public T read(TreeNode input, DataContext context) {
-        Mapping mapping = input.asMapping();
-        if (mapping.containsKey(ANONYMOUS_KEY)) {
+        final Mapping mapping = input.asMapping();
+        final TreeNode anonymous = mapping.get(ANONYMOUS_KEY);
+        if (anonymous  != null) {
             if (mapping.size()!=1)
                 throw new IllegalArgumentException("All arguments have to be named but it has "+ANONYMOUS_KEY);
 
             DataModelParameter rp = getSoleRequiredParameter();
             if (rp==null)
                 throw new IllegalArgumentException("Arguments to "+type+" have to be explicitly named");
-            mapping = new Mapping();
-            mapping.put(rp.getName(),mapping.get(ANONYMOUS_KEY));
+            mapping.clear();
+            mapping.put(rp.getName(), anonymous);
         }
 
         try {
-            final int count = constructor.getParameterCount();
-            Object[] args = new Object[count];
-            final Type[] types = constructor.getGenericParameterTypes();
+            Object[] args = constructorParameters.stream()
+                    .map(p -> p.getType().from(mapping.getValue(p.getName()), context))
+                    .toArray();
 
-            for (int i = 0; i < count; i++) {
-                final String name = constructorParamNames[i];
-                args[i] = getParameter(name).getType().from(mapping.getValue(name), context);
-            }
             T o = constructor.newInstance(args);
 
-            // Object[] args = buildArguments(input, constructor.getGenericParameterTypes(), constructorParamNames, true, context);
-            // T o = constructor.newInstance(args);
             injectSetters(o, mapping, context);
             return o;
         } catch (Exception x) {
@@ -254,11 +233,11 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      */
     private void injectSetters(Object o, Mapping arguments, DataContext context) throws Exception {
 
-        for (ReflectiveDataModelParameter p : parameters.values()) {
+        for (ReflectiveDataModelParameter p : parameters) {
             if (p.setter!=null) {
                 final String name = p.getName();
                 if (arguments.containsKey(name)) {
-                    Object value = getParameter(name).getType().from(arguments.getValue(name), context);
+                    Object value = p.getType().from(arguments.getValue(name), context);
                     p.setter.set(o, value);
                 }
             }
@@ -286,7 +265,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
         Mapping r = new Mapping();
         Mapping constructorOnlyDataBoundProps = new Mapping();
         Mapping nonDeprecatedDataBoundProps = new Mapping();
-        for (ReflectiveDataModelParameter p : parameters.values()) {
+        for (ReflectiveDataModelParameter p : parameters) {
             TreeNode v = p.inspect(o,context);
             if (p.isRequired() && v==null) {
                 // instantiate() method treats missing properties as nulls, so we don't need to keep it
@@ -310,7 +289,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
         }
 
         if (control!=null) {
-            for (ReflectiveDataModelParameter p : parameters.values()) {
+            for (ReflectiveDataModelParameter p : parameters) {
                 if (p.isRequired())
                     continue;
 
@@ -335,7 +314,7 @@ class ReflectiveDataModel<T> extends DataModel<T> {
             }
 
             if (control != null) {
-                for (ReflectiveDataModelParameter p : parameters.values()) {
+                for (ReflectiveDataModelParameter p : parameters) {
                     if (!p.isDeprecated())
                         continue;
 

@@ -13,6 +13,7 @@ import jenkins.data.exportable.APIExportable;
 import jenkins.data.exportable.APIResource;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.Scalar;
+import jenkins.data.tree.TreeNode;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkinsci.Symbol;
@@ -218,14 +219,14 @@ public class SampleDataCLITest {
         }
 
         @Override
-        public Mapping write(Banana object, DataContext context) {
+        public TreeNode write(Banana object, DataContext context) {
             Mapping m = new Mapping();
             m.put("ripe",object.yellow);
             return m;
         }
 
         @Override
-        public Banana read(Mapping input, DataContext context) throws IOException {
+        public Banana read(TreeNode input, DataContext context) {
             Mapping m = input.asMapping();
             m.put("yellow",m.get("ripe"));
             DataModel<Banana> std = DataModel.byReflection(Banana.class);
@@ -260,12 +261,12 @@ public class SampleDataCLITest {
         }
 
         @Override
-        public Mapping write(Cherry object, DataContext context) {
+        public TreeNode write(Cherry object, DataContext context) {
             return new Scalar(object.color());
         }
 
         @Override
-        public Cherry read(Mapping input, DataContext context) throws IOException {
+        public Cherry read(TreeNode input, DataContext context) {
             return new Cherry(input.asScalar().getValue());
         }
     }

@@ -6,6 +6,7 @@ import jenkins.data.DataContext;
 import jenkins.data.DataModel;
 import jenkins.data.DataModelFactory;
 import jenkins.data.tree.Mapping;
+import jenkins.data.tree.TreeNode;
 import org.jvnet.tiger_types.Types;
 
 import java.io.IOException;
@@ -40,13 +41,13 @@ public class APIExportableModelFactory implements DataModelFactory {
         }
 
         @Override
-        public Mapping write(T object, DataContext context) {
+        public TreeNode write(T object, DataContext context) {
             U r = object.toResource();
             return um.write(r, context);
         }
 
         @Override
-        public T read(Mapping input, DataContext context) throws IOException {
+        public T read(TreeNode input, DataContext context) {
             return (T)um.read(input, context).toModel();
         }
     }

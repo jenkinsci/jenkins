@@ -30,7 +30,7 @@ public class DefaultDataModelFactoryImpl implements DataModelFactory {
         // TODO: see the notes about how the type should declare its intent to participate in Data API
         // we don't know if Describable or not is the right thing to test
         if (Describable.class.isAssignableFrom(c)) {
-            return DataModel.byReflection(c);
+            new ReflectiveDataModel(c);
         }
 
         return null;

@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 abstract class Setter {
+
     /**
      * Sets the given value to the method/field that this {@link Setter} encapsulates.
      */
@@ -23,6 +24,7 @@ abstract class Setter {
      * True if this setter is {@link Deprecated}.
      */
     abstract boolean isDeprecated();
+
 
     static Setter create(final Method m) {
         m.setAccessible(true);

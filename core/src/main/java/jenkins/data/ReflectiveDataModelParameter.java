@@ -47,6 +47,7 @@ class ReflectiveDataModelParameter extends AbstractDataModelParameter {
      * Right now, all the parameters set via {@link DataBoundConstructor} is
      * considered mandatory, but this might change in the future.
      */
+    // FIXME would be valid if we had harmonious adoption for @DataBoundSetter for anything optional, which is far from being the case
     public boolean isRequired() {
         return setter==null;
     }

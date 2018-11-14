@@ -20,16 +20,16 @@ import java.util.Iterator;
 public class JsonSerializer extends Serializer {
 
     @Override
-    protected Mapping unstring(Reader in) throws IOException {
+    protected TreeNode unstring(Reader in) throws IOException {
         Mapping mapping = new Mapping();
         String json = IOUtils.toString(in);
         JSONObject o = JSONObject.fromObject(json);
-        return fromJSONObject(o).asMapping();
+        return fromJSONObject(o);
     }
 
 
     @Override
-    protected void stringify(Mapping tree, Writer out) throws IOException {
+    protected void stringify(TreeNode tree, Writer out) throws IOException {
         out.write(JSONSerializer.toJSON(tree.asMapping()).toString());
     }
 
