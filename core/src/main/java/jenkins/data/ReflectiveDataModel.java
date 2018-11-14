@@ -3,13 +3,11 @@ package jenkins.data;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.ParametersDefinitionProperty;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.Sequence;
 import jenkins.data.tree.TreeNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
-import org.kohsuke.stapler.ClassDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.lang.Klass;
@@ -17,7 +15,7 @@ import org.kohsuke.stapler.lang.Klass;
 import javax.annotation.CheckForNull;
 import java.beans.Introspector;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -25,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -33,59 +32,21 @@ import java.util.stream.Stream;
  * {@link DataModel} implementation for models that defines itself via Stapler form binding
  * like {@link DataBoundSetter} and {@link DataBoundConstructor}.
  */
-class ReflectiveDataModel<T> extends DataModel<T> {
+abstract class ReflectiveDataModel<T> extends DataModel<T> {
 
     /**
      * Type that this model represents.
      */
-    private final Class<T> type;
+    protected final Class<T> type;
 
-    private List<ReflectiveDataModelParameter> constructorParameters;
-
-    private List<ReflectiveDataModelParameter> parameters;
-
-
-    /**
-     * Data-bound constructor.
-     */
-    private final Constructor<T> constructor;
+    protected List<ReflectiveDataModelParameter> parameters;
 
     /**
      * Loads a definition of the structure of a class.
      */
     public ReflectiveDataModel(Class<T> clazz) {
         this.type = clazz;
-
-        String[] constructorParamNames = new ClassDescriptor(type).loadConstructorParamNames();
-        constructorParameters = new ArrayList<>(constructorParamNames.length);
-
-        constructor = findConstructor(constructorParamNames.length);
-
-        Type[] types = constructor.getGenericParameterTypes();
-        for (int i = 0; i < constructorParamNames.length; i++) {
-            final String name = constructorParamNames[i];
-            constructorParameters.add(new ReflectiveDataModelParameter(this, types[i], name, null));
-        }
-
-        parameters = new ArrayList<>(constructorParameters);
-
-        for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
-            for (Field f : c.getDeclaredFields()) {
-                if (f.isAnnotationPresent(DataBoundSetter.class)) {
-                    parameters.add(new ReflectiveDataModelParameter(this, f.getGenericType(), f.getName(), Setter.create(f)));
-                }
-            }
-            for (Method m : c.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(DataBoundSetter.class)) {
-                    Type[] parameterTypes = m.getGenericParameterTypes();
-                    if (!m.getName().startsWith("set") || parameterTypes.length != 1) {
-                        throw new IllegalStateException(m + " cannot be a @DataBoundSetter");
-                    }
-                    parameters.add(new ReflectiveDataModelParameter(this, m.getGenericParameterTypes()[0],
-                            Introspector.decapitalize(m.getName().substring(3)), Setter.create(m)));
-                }
-            }
-        }
+        this.parameters = new ArrayList<>();
     }
 
     /**
@@ -106,48 +67,14 @@ class ReflectiveDataModel<T> extends DataModel<T> {
      */
     // FIXME where|why do we need this ?
     public Iterable<ReflectiveDataModelParameter> getParameters() {
-        return Collections.unmodifiableCollection(parameters)
+        return Collections.unmodifiableCollection(parameters);
     }
 
     public DataModelParameter getParameter(String name) {
-        return  Stream.concat(constructorParameters.stream(), parameters.stream())
+        return  parameters.stream()
                 .filter(p -> name.equals(p.getName()))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException(type + " as no parameter named " + name));
-    }
-
-    /**
-     * Returns true if this model has one and only one required parameter.
-     *
-     * @see #ANONYMOUS_KEY
-     */
-    public boolean hasSingleRequiredParameter() {
-        return getSoleRequiredParameter()!=null;
-    }
-
-    /**
-     * If this model has one and only one required parameter, return it.
-     * Otherwise null.
-     *
-     * @see #ANONYMOUS_KEY
-     */
-    public @CheckForNull
-    DataModelParameter getSoleRequiredParameter() {
-        return parameters.stream()
-            .filter(ReflectiveDataModelParameter::isRequired)
-            .reduce((some, other) -> null) // if there's more than one, return null;
-            .orElse(null);
-    }
-
-    /**
-     * If this model has any required parameter, return the first one.
-     * Otherwise null.
-     */
-    public @CheckForNull DataModelParameter getFirstRequiredParameter() {
-        return parameters.stream()
-            .filter(ReflectiveDataModelParameter::isRequired)
-            .findAny()
-            .orElse(null);
     }
 
     /**
@@ -174,59 +101,18 @@ class ReflectiveDataModel<T> extends DataModel<T> {
     @Override
     public T read(TreeNode input, DataContext context) {
         final Mapping mapping = input.asMapping();
-        final TreeNode anonymous = mapping.get(ANONYMOUS_KEY);
-        if (anonymous  != null) {
-            if (mapping.size()!=1)
-                throw new IllegalArgumentException("All arguments have to be named but it has "+ANONYMOUS_KEY);
 
-            DataModelParameter rp = getSoleRequiredParameter();
-            if (rp==null)
-                throw new IllegalArgumentException("Arguments to "+type+" have to be explicitly named");
-            mapping.clear();
-            mapping.put(rp.getName(), anonymous);
-        }
+        T o = getInstance(mapping, context);
 
         try {
-            Object[] args = constructorParameters.stream()
-                    .map(p -> p.getType().from(mapping.getValue(p.getName()), context))
-                    .toArray();
-
-            T o = constructor.newInstance(args);
-
             injectSetters(o, mapping, context);
-            return o;
-        } catch (Exception x) {
-            throw new IllegalArgumentException("Could not instantiate " + input + " for " + this + ": " + x, x);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not configure " + input + " for " + this, e);
         }
+        return o;
     }
 
-
-        // adapted from RequestImpl
-    @SuppressWarnings("unchecked")
-    private Constructor<T> findConstructor(int length) {
-        try { // may work without this, but only if the JVM happens to return the right overload first
-            if (type == ParametersDefinitionProperty.class && length == 1) { // TODO pending core fix
-                return (Constructor<T>) ParametersDefinitionProperty.class.getConstructor(List.class);
-            }
-        } catch (NoSuchMethodException x) {
-            throw new AssertionError(x);
-        }
-        Constructor<T>[] ctrs = (Constructor<T>[]) type.getConstructors();
-        for (Constructor<T> c : ctrs) {
-            if (c.getAnnotation(DataBoundConstructor.class) != null) {
-                if (c.getParameterTypes().length != length) {
-                    throw new IllegalArgumentException(c + " has @DataBoundConstructor but it doesn't match with your .stapler file. Try clean rebuild");
-                }
-                return c;
-            }
-        }
-        for (Constructor<T> c : ctrs) {
-            if (c.getParameterTypes().length == length) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(type + " does not have a constructor with " + length + " arguments");
-    }
+    protected abstract T getInstance(Mapping input, DataContext context);
 
     /**
      * Injects via {@link DataBoundSetter}

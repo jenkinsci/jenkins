@@ -33,6 +33,10 @@ public class DefaultDataModelFactoryImpl implements DataModelFactory {
             new ReflectiveDataModel(c);
         }
 
+        if (Descriptor.class.isAssignableFrom(c)) {
+            new ReflectiveDataModel(c);
+        }
+
         return null;
     }
 }
