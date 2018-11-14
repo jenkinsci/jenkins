@@ -1,4 +1,4 @@
-package hudson.model;
+package hudson;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
@@ -6,8 +6,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.Messages;
-import hudson.PluginManager;
+import hudson.model.DownloadService;
+import hudson.model.RootAction;
+import hudson.model.UpdateSite;
+import hudson.model.UpdateSiteTest;
 import hudson.util.HttpResponses;
 import hudson.util.Retrier;
 import jenkins.model.Jenkins;
@@ -31,7 +33,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class UpdateCenterErrorsTest {
+public class PluginManagerCheckUpdateCenterTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -94,7 +96,7 @@ public class UpdateCenterErrorsTest {
             rLogger.setLevel(Level.SEVERE);
 
             // check with more than 1 attempt and level > WARNING
-            PluginManager.checkUpdateAttempts = 2;
+            PluginManager.CHECK_UPDATE_ATTEMPTS = 2;
             updateSiteWrongJsonTest();
 
             // the messages has been recorded in the log
@@ -140,8 +142,8 @@ public class UpdateCenterErrorsTest {
         // Check what is shown in the web page
         Assert.assertNotEquals(isSuccess, page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
 
-        // Check the logs (attempted checkUpdateAttempts times). The second argument, the exception does't matter to test the message in the log
-        Assert.assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.checkUpdateAttempts, ""))));
+        // Check the logs (attempted CHECK_UPDATE_ATTEMPTS times). The second argument, the exception does't matter to test the message in the log
+        Assert.assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.CHECK_UPDATE_ATTEMPTS, ""))));
     }
 
     @TestExtension("updateSiteReturn502Test")
@@ -214,7 +216,7 @@ public class UpdateCenterErrorsTest {
         public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("text/json");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest, UpdateCenterErrorsTest.class.getResource("update-center.json"));
+            staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.class.getResource("update-center.json"));
         }
     }
 

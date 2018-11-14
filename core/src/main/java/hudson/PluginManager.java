@@ -181,25 +181,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
 
     /**
-     * Time elapsed between retries to check the updates sites.
+     * Time elapsed between retries to check the updates sites. It's kind of constant, but let it so for tests
      */
-    public static int checkUpdateSleepTimeMillis;
+    /* private final */ static int CHECK_UPDATE_SLEEP_TIME_MILLIS;
 
     /**
-     * Number of attempts to check the updates sites.
+     * Number of attempts to check the updates sites. It's kind of constant, but let it so for tests
      */
-    public static int checkUpdateAttempts;
+    /* private final */ static int CHECK_UPDATE_ATTEMPTS;
 
     static {
         try {
             // Secure initialization
-            checkUpdateSleepTimeMillis = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
-            checkUpdateAttempts = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
+            CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
+            CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".CHECK_UPDATE_ATTEMPTS", 1);
         } catch(Exception e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
-            checkUpdateAttempts = checkUpdateAttempts > 0 ? checkUpdateAttempts : 1;
-            checkUpdateSleepTimeMillis = checkUpdateSleepTimeMillis > 0 ? checkUpdateSleepTimeMillis : 1000;
+            CHECK_UPDATE_ATTEMPTS = CHECK_UPDATE_ATTEMPTS > 0 ? CHECK_UPDATE_ATTEMPTS : 1;
+            CHECK_UPDATE_SLEEP_TIME_MILLIS = CHECK_UPDATE_SLEEP_TIME_MILLIS > 0 ? CHECK_UPDATE_SLEEP_TIME_MILLIS : 1000;
         }
     }
 
@@ -1699,10 +1699,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 "check updates server")
 
                 // the number of attempts to try
-                .withAttempts(checkUpdateAttempts)
+                .withAttempts(CHECK_UPDATE_ATTEMPTS)
 
                 // the delay between attempts
-                .withDelay(checkUpdateSleepTimeMillis)
+                .withDelay(CHECK_UPDATE_SLEEP_TIME_MILLIS)
 
                 // whatever exception raised is considered as a fail attempt (all exceptions), not a failure
                 .withDuringActionExceptions(new Class[] {Exception.class})
@@ -1719,8 +1719,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             // Check how it went
             if (!FormValidation.Kind.OK.equals(result.kind)) {
-                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(checkUpdateAttempts, result.getMessage()));
-                if (checkUpdateAttempts > 1 && !Logger.getLogger(Retrier.class.getName()).isLoggable(Level.WARNING)) {
+                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(CHECK_UPDATE_ATTEMPTS, result.getMessage()));
+                if (CHECK_UPDATE_ATTEMPTS > 1 && !Logger.getLogger(Retrier.class.getName()).isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()));
                 }
 
