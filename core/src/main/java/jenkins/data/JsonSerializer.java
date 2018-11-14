@@ -21,7 +21,6 @@ public class JsonSerializer extends Serializer {
 
     @Override
     protected TreeNode unstring(Reader in) throws IOException {
-        Mapping mapping = new Mapping();
         String json = IOUtils.toString(in);
         JSONObject o = JSONObject.fromObject(json);
         return fromJSONObject(o);

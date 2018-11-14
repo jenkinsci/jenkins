@@ -55,7 +55,7 @@ public final class HeterogeneousObjectType<T extends ExtensionPoint> extends Par
 
         if (symbol != null) {
             final Descriptor<?> descriptor = SymbolLookup.get().findDescriptor(getActualType(), symbol);
-            if (descriptor == null) new IllegalArgumentException("no implementation for type " + getType() + " with symbol "+ symbol);
+            if (descriptor == null) throw new IllegalArgumentException("no implementation for type " + getType() + " with symbol "+ symbol);
             return context.lookupOrFail(descriptor.getKlass().toJavaClass()).read(node, context);
         }
 

@@ -25,7 +25,7 @@ public interface DataModelRegistry {
     /**
      * null-safe flavour of {@link #lookup(Class)}.
      * @param type
-     * @throws IOException if we don't know any {@link DataModel} for requested type
+     * @throws IllegalArgumentException if we don't know any {@link DataModel} for requested type
      */
     @Nonnull
     default <T> DataModel<T> lookupOrFail(Class<T> type) {
@@ -36,10 +36,9 @@ public interface DataModelRegistry {
 
     /**
      * Finds all the valid databindable subtypes assignable to given type.
-     *
-     * TODO: the return type not being Set<DataModel<?>> makes me feel uneasy
      */
-    <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType);
+     // TODO: the return type not being Set<DataModel<?>> makes me feel uneasy
+    <T extends Describable> Set<Class> findSubtypes(Class<T> superType);
 
     /**
      * Retrieve default implementation from Jenkins

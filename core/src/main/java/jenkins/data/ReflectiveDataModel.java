@@ -241,17 +241,4 @@ abstract class ReflectiveDataModel<T> extends DataModel<T> {
 
     private static final Logger LOGGER = Logger.getLogger(ReflectiveDataModel.class.getName());
 
-
-
-    /**
-     * As a short-hand, if a {@link DataModel} has only one required parameter,
-     * {@link DataModel#read(TreeNode, DataContext)} accepts a single-item map whose key is this magic token.
-     *
-     * <p>
-     * To avoid clients from needing to special-case this key, {@link #write(Object, DataContext)} does not
-     * produce a tree that contains this magic token. Clients who want
-     * to take advantages of this should look at {@link ReflectiveDataModel#hasSingleRequiredParameter()}
-     */
-    // TODO: which layer does this belong?
-    public static final String ANONYMOUS_KEY = "<anonymous>";
 }

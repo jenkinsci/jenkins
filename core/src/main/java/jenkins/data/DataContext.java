@@ -73,7 +73,7 @@ public class DataContext implements DataModelRegistry {
     }
 
     @Override
-    public <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType) {
+    public <T extends Describable> Set<Class> findSubtypes(Class<T> superType) {
         return registry.findSubtypes(superType);
     }
 

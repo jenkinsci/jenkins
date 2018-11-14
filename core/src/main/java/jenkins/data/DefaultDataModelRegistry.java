@@ -54,7 +54,7 @@ public class DefaultDataModelRegistry implements DataModelRegistry {
     }
 
     @Override
-    public <T extends Describable> Set<Class<T>> findSubtypes(Class<T> superType) {
+    public <T extends Describable> Set findSubtypes(Class<T> superType) {
         // Jenkins.getDescriptorList does not work well since it is limited to descriptors declaring one supertype, and does not work at all for SimpleBuildStep.
         return ExtensionList.lookup(Descriptor.class).stream()
             .map(Descriptor::getKlass)

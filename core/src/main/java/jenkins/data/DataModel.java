@@ -122,7 +122,7 @@ public abstract class DataModel<T> {
     }
 
     protected static <Y> DataModel<Y> byReflection(Class<Y> clazz) {
-        return new ReflectiveDataModel<>(clazz);
+        return null; // FIXME
     }
 
 }
