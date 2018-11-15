@@ -37,9 +37,9 @@ public class RetryRule implements TestRule {
         Retry retryMethod = description.getAnnotation(Retry.class);
         int retries = 0;
         if (retryMethod != null) {
-            retries += retryMethod.value();
+            retries = retryMethod.value();
         } else if (retryForAllMethods != null) {
-            retries += retryForAllMethods.value();
+            retries = retryForAllMethods.value();
         }
         int maxEvaluationAttempts = retries + 1;
         return new Statement() {
