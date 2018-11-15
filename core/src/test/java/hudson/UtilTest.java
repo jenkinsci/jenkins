@@ -53,11 +53,12 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 
+import jenkins.junit.Retry;
+import jenkins.junit.RetryRule;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -74,6 +75,7 @@ import com.google.common.collect.Lists;
 public class UtilTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule public RetryRule retry = new RetryRule();
 
     @Test
     public void testReplaceMacro() {
@@ -353,7 +355,7 @@ public class UtilTest {
     }
 
     @Test
-    @Ignore("Frequently flaky test")
+    @Retry
     public void testDeleteContentsRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         final File dir = tmp.newFolder();
