@@ -57,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -352,6 +353,7 @@ public class UtilTest {
     }
 
     @Test
+    @Ignore("Frequently flaky test")
     public void testDeleteContentsRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         final File dir = tmp.newFolder();
