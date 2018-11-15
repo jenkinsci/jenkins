@@ -101,5 +101,12 @@
             { "name": "publish-over-ssh" },
             { "name": "ssh" }
         ]
+    },
+    {
+        "category":"Languages",
+        "plugins": [
+            { "name": "locale"},
+            { "name": "localization-zh-cn"}
+        ]
     }
 ]
