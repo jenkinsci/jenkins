@@ -82,19 +82,19 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 		});
 
 		story.then(step -> {
-			assertTrue(logLevelWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR,
+			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
 					Level.INFO));
 			setWorkspacesDirProperty("testdir2");
 		});
 
 		story.then(step -> {
-			assertTrue(logLevelWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR,
+			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
 					Level.WARNING));
 			setWorkspacesDirProperty("testdir3");
 		});
 
 		story.then(step -> {
-			assertTrue(logLevelWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR,
+			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
 					Level.WARNING));
 		});
 
@@ -292,12 +292,10 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                 .anyMatch(record -> record.getMessage().contains(searched));
     }
 
-	private boolean logLevelWasFound(String searched, Level level) {
-		return loggerRule
-				.getRecords()
-				.stream()
-				.filter(record -> record.getMessage().contains(searched)
-						&& record.getLevel().equals(level))
+	private boolean logWasFoundAtLevel(String searched, Level level) {
+		return loggerRule.getRecords().stream()
+				.filter(record -> record.getMessage().contains(searched))
+				.filter(record -> record.getLevel().equals(level))
 				.collect(Collectors.toList()).size() > 0;
 	}
 
