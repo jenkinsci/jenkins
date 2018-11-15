@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -66,7 +67,7 @@ abstract class ReflectiveDataModel<T> extends DataModel<T> {
      * followed by optional arguments.
      */
     // FIXME where|why do we need this ?
-    public Iterable<ReflectiveDataModelParameter> getParameters() {
+    public Collection<DataModelParameter> getParameters() {
         return Collections.unmodifiableCollection(parameters);
     }
 

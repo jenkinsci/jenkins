@@ -48,14 +48,12 @@ public abstract class DataModel<T> {
      * <p>
      * If you think of a {@link DataModel} as a class, then {@link DataModelParameter}s are properties.
      */
-    public abstract Iterable<? extends DataModelParameter> getParameters();
+    public abstract Collection<DataModelParameter> getParameters();
 
     public DataModelParameter getParameter(String name) {
-        for (DataModelParameter p : getParameters()) {
-            if (p.getName().equals(name))
-                return p;
-        }
-        return null;
+        return getParameters().stream()
+            .filter(p -> p.getName().equals(name))
+            .findAny().orElse(null);
     }
 
     /**

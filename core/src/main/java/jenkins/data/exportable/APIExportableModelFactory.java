@@ -5,12 +5,14 @@ import jenkins.data.CustomDataModel;
 import jenkins.data.DataContext;
 import jenkins.data.DataModel;
 import jenkins.data.DataModelFactory;
+import jenkins.data.DataModelParameter;
 import jenkins.data.tree.Mapping;
 import jenkins.data.tree.TreeNode;
 import org.jvnet.tiger_types.Types;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 
 /**
@@ -38,6 +40,11 @@ public class APIExportableModelFactory implements DataModelFactory {
             Type u = Types.getTypeArgument(t, 0);
             this.u = Types.erasure(u);
             um = DataModel.byReflection(this.u);
+        }
+
+        @Override
+        public Collection<DataModelParameter> getParameters() {
+            return um.getParameters();
         }
 
         @Override
