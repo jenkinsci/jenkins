@@ -144,9 +144,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * mechanism for custom {@link Run} types.
  *
  * Many details of a run are contained in {@link Action} instances
- * accessible via {@link Action#getAllActions} and {@link
- * #getAction(Class)}. For example, build access to
- * build parameters is obtained with
+ * accessible via {@link Action#getAllActions} and {@link#getAction(Class)}. 
+ * For example, build access to build parameters is obtained with
  * <code>run.getAction(hudson.model.ParametersAction.class)</code> to
  * get the build's {@link ParametersAction} object.
  *
