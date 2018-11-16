@@ -618,11 +618,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
      * @return Discovered {@link Plugin}. {@code null} if it cannot be found
      */
-    public @CheckForNull Plugin getPlugin(String artifactId, VersionNumber minVersion) {
+    public @CheckForNull Plugin getPlugin(String artifactId, @CheckForNull VersionNumber minVersion) {
+        if (minVersion == null) {
+            return getPlugin(artifactId);
+        }
         for (UpdateSite s : sites) {
             Plugin p = s.getPlugin(artifactId);
-            if (minVersion.isNewerThan(new VersionNumber(p.version))) continue;
-            if (p!=null) return p;
+            if (p!=null) {
+                if (minVersion.isNewerThan(new VersionNumber(p.version))) continue;
+                return p;
+            }
         }
         return null;
     }
