@@ -24,10 +24,7 @@
 package jenkins.slaves;
 
 import hudson.util.VersionNumber;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,21 +32,20 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO: Make the API public (JENKINS-48766)
 /**
  * Provides information about Remoting versions used within the core.
  * @author Oleg Nenashev
+ * @since unrestricted since 2.104, initially added in 2.100.
  */
-@Restricted(NoExternalUse.class)
 public class RemotingVersionInfo {
 
     private static final Logger LOGGER = Logger.getLogger(RemotingVersionInfo.class.getName());
     private static final String RESOURCE_NAME="remoting-info.properties";
 
-    @CheckForNull
+    @Nonnull
     private static VersionNumber EMBEDDED_VERSION;
 
-    @CheckForNull
+    @Nonnull
     private static VersionNumber MINIMUM_SUPPORTED_VERSION;
 
     private RemotingVersionInfo() {}
@@ -64,39 +60,53 @@ public class RemotingVersionInfo {
             LOGGER.log(Level.WARNING, "Failed to load Remoting Info from " + RESOURCE_NAME, e);
         }
 
-        EMBEDDED_VERSION = tryExtractVersion(props, "remoting.embedded.version");
-        MINIMUM_SUPPORTED_VERSION = tryExtractVersion(props, "remoting.minimum.supported.version");
+        EMBEDDED_VERSION = extractVersion(props, "remoting.embedded.version");
+        MINIMUM_SUPPORTED_VERSION = extractVersion(props, "remoting.minimum.supported.version");
     }
 
-    @CheckForNull
-    private static VersionNumber tryExtractVersion(@Nonnull Properties props, @Nonnull String propertyName) {
+    @Nonnull
+    private static VersionNumber extractVersion(@Nonnull Properties props, @Nonnull String propertyName)
+            throws ExceptionInInitializerError {
         String prop = props.getProperty(propertyName);
         if (prop == null) {
-            LOGGER.log(Level.FINE, "Property {0} is not defined in {1}", new Object[] {propertyName, RESOURCE_NAME});
-            return null;
+            throw new ExceptionInInitializerError(String.format(
+                    "Property %s is not defined in %s", propertyName, RESOURCE_NAME));
         }
 
         if(prop.contains("${")) { // Due to whatever reason, Maven does not nullify them
-            LOGGER.log(Level.WARNING, "Property {0} in {1} has unresolved variable(s). Raw value: {2}",
-                    new Object[] {propertyName, RESOURCE_NAME, prop});
-            return null;
+            throw new ExceptionInInitializerError(String.format(
+                    "Property %s in %s has unresolved variable(s). Raw value: %s",
+                    propertyName, RESOURCE_NAME, prop));
         }
 
         try {
             return new VersionNumber(prop);
         } catch (RuntimeException ex) {
-            LOGGER.log(Level.WARNING, String.format("Failed to parse version for for property %s in %s. Raw Value: %s",
-                    propertyName, RESOURCE_NAME, prop), ex);
-            return null;
+            throw new ExceptionInInitializerError(new IOException(
+                    String.format("Failed to parse version for for property %s in %s. Raw Value: %s",
+                    propertyName, RESOURCE_NAME, prop), ex));
         }
     }
 
-    @CheckForNull
+    /**
+     * Returns a version which is embedded into the Jenkins core.
+     * Note that this version <b>may</b> differ from one which is being really used in Jenkins.
+     * @return Remoting version
+     */
+    @Nonnull
     public static VersionNumber getEmbeddedVersion() {
         return EMBEDDED_VERSION;
     }
 
-    @CheckForNull
+    /**
+     * Gets Remoting version which is supported by the core.
+     * Jenkins core and plugins make invoke operations on agents (e.g. {@link jenkins.security.MasterToSlaveCallable})
+     * and use Remoting-internal API within them.
+     * In such case this API should be present on the remote side.
+     * This method defines a minimum expected version, so that all calls should use a compatible API.
+     * @return Minimal Remoting version for API calls.
+     */
+    @Nonnull
     public static VersionNumber getMinimumSupportedVersion() {
         return MINIMUM_SUPPORTED_VERSION;
     }

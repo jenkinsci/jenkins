@@ -1,0 +1,130 @@
+<!--
+The MIT License
+
+Copyright (c) 2018, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+
+  <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
+    <l:main-panel>
+      <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
+      <style type="text/css">
+        #configure-instance {
+          padding: 20px 100px 20px 100px;
+          margin: 8px;
+        }
+
+        #configure-instance form > div {
+          margin: 0 !important;
+        }
+
+        #configure-instance h1 {
+          font-family: 'roboto', sans-serif;
+          font-size: 48px;
+          margin-top: 30px;
+          font-weight: 500;
+        }
+
+        #configure-instance tr td {
+          padding-bottom: 2px;
+        }
+
+        #configure-instance tr td, #configure-instance input {
+          line-height: 25px;
+          margin-bottom: 6px;
+        }
+
+        #configure-instance input[type=text], #configure-instance input[type=password] {
+          border: 1px solid #ddd;
+          border-radius: 2px;
+          padding: 1px 8px;
+        }
+
+        #configure-instance tr.has-error label{
+          color: #CC0000;
+        }
+        
+        #configure-instance tr.has-error td input[type=text], 
+        #configure-instance tr.has-error td input[type=password],
+        #configure-instance tr.has-error td textarea {
+          border-color: #CC0000;
+          background-color: #fdeaea;
+        }
+        
+        #configure-instance tr td .help-text{
+          color: #999;
+          font-size: 12px;
+        }
+  
+        #configure-instance tr td .error-panel{
+          display: none;
+        }
+        #configure-instance tr.has-error td .error-panel{
+          display: block;
+        }
+      </style>
+
+     <div id="configure-instance">
+       <form action="${rootURL}/setupWizard/configureInstance" method="post">
+          <h1>${%Instance Configuration}</h1>
+          <div style="margin: 2em;">
+            <table>
+            <tr>
+              <td><label for="root-url">${%Jenkins URL}:</label></td>
+              <td>
+                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <div class="error-panel error" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <div class="help-text">${%jenkinsURL_help}</div>
+              </td>
+            </tr>
+            </table>
+          </div>
+         <script>
+            var rootUrlField = $('root-url');
+            
+            rootUrlField.focus();
+            rootUrlField.onkeydown = function(event) {
+                if (event.keyCode == 13){
+                    event.preventDefault();
+                }
+            };
+
+            (function setInitialRootUrlFieldValue(){
+              var iframeUrl = window.location.href;
+              // will let the trailing slash in the rootUrl 
+              var iframeRelativeUrl = 'setupWizard/setupWizardConfigureInstance';
+              var rootUrl = iframeUrl.substr(0, iframeUrl.length - iframeRelativeUrl.length);
+              // to keep only the root url
+              rootUrlField.value = rootUrl
+              // to adjust the width of the input,
+              rootUrlField.size = Math.min(50, rootUrl.length);
+            })();
+          </script>
+        </form>
+     </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

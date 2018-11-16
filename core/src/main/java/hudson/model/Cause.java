@@ -453,9 +453,14 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
-            listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
-                    // TODO JENKINS-48467 - better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
-                    ModelHyperlinkNote.encodeTo("/user/"+getUserIdOrUnknown(), getUserName())));
+            User user = getUserId() == null ? null : User.getById(getUserId(), false);
+            if (user != null) {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        ModelHyperlinkNote.encodeTo(user)));
+            } else {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        "unknown or anonymous"));
+            }
         }
 
         @Override

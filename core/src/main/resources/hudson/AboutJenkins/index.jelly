@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 
-  <l:layout norefresh="true" type="one-column" title="${%about(app.VERSION)}">
+  <l:layout permission="${app.ADMINISTER}" norefresh="true" type="one-column" title="${%about(app.VERSION)}">
 
     <l:main-panel>
     <div class="container-fluid">

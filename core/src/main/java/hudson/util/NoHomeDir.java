@@ -30,7 +30,7 @@ import java.io.File;
  * we couldn't create the home directory.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

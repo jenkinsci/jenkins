@@ -23,10 +23,8 @@
  */
 package jenkins.model;
 
-import static hudson.init.InitMilestone.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -45,7 +43,6 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
-import hudson.init.Initializer;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
@@ -67,6 +64,8 @@ import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 
 import jenkins.AgentProtocol;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -86,7 +85,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
+
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import javax.annotation.CheckForNull;
@@ -275,22 +274,6 @@ public class JenkinsTest {
         }
     }
     
-    @Test @Issue("JENKINS-12251")
-    public void testItemFullNameExpansion() throws Exception {
-        HtmlForm f = j.createWebClient().goTo("configure").getFormByName("config");
-        f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
-        f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        j.submit(f);
-
-        // build a dummy project
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-
-        // make sure these changes are effective
-        assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
-        assertTrue(b.getRootDir().toString().contains("test12251_builds"));
-    }
 
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
@@ -312,6 +295,8 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -340,6 +325,8 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").

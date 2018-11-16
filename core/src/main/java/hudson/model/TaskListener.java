@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
+import hudson.remoting.Channel;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 
@@ -59,7 +60,9 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
  *
  * <p>
  * {@link StreamTaskListener} is the most typical implementation of this interface.
- * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
+ *
+ * <p>
+ * Implementations are generally expected to be remotable via {@link Channel}.
  *
  * @author Kohsuke Kawaguchi
  */

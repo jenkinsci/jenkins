@@ -108,7 +108,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      *
      * @return
      *      Return the real top directory inside {@code root} that contains the meat. In the above example,
-     *      <tt>root.child("jakarta-ant")</tt> should be returned. If there's no directory to pull up,
+     *      {@code root.child("jakarta-ant")} should be returned. If there's no directory to pull up,
      *      return null. 
      */
     protected FilePath findPullUpDirectory(FilePath root) throws IOException, InterruptedException {

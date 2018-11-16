@@ -71,7 +71,7 @@ public class PrivateKeyProvider {
     /**
      * Read keys from default keyFiles
      *
-     * <tt>.ssh/id_rsa</tt>, <tt>.ssh/id_dsa</tt> and <tt>.ssh/identity</tt>.
+     * {@code .ssh/id_rsa}, {@code .ssh/id_dsa} and {@code .ssh/identity}.
      *
      * @return true if some key was read successfully.
      */

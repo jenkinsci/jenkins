@@ -33,7 +33,7 @@ THE SOFTWARE.
   </f:entry>
 
   <f:entry title="${%# of executors}" field="numExecutors">
-    <f:number clazz="positive-number" min="1" step="1" default="1"/>
+    <f:number clazz="positive-number-required" min="1" step="1" default="1"/>
   </f:entry>
 
   <f:entry title="${%Remote root directory}" field="remoteFS">

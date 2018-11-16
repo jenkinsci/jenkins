@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public class NewViewLink extends TransientViewActionFactory {
 
     @VisibleForTesting

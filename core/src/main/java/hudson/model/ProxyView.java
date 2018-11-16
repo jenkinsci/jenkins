@@ -92,6 +92,11 @@ public class ProxyView extends View implements StaplerFallback {
     }
 
     @Override
+    public TopLevelItem getItem(String name) {
+        return getProxiedView().getItem(name);
+    }
+
+    @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         String proxiedViewName = req.getSubmittedForm().getString("proxiedViewName");
         if (Jenkins.getInstance().getView(proxiedViewName) == null) {

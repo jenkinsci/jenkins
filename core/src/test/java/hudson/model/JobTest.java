@@ -11,6 +11,7 @@ import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.MockRepository;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -20,6 +21,7 @@ import hudson.util.ReflectionUtils;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Node.class, Platform.class })
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class JobTest {
 
     @Test
@@ -74,7 +76,7 @@ public class JobTest {
         Node node = PowerMockito.mock(Node.class);
         PowerMockito.doReturn(c).when(node).toComputer();
 
-        EnvVars env = job.getEnvironment(node, null);
+        EnvVars env = job.getEnvironment(node, TaskListener.NULL);
         String path = "/test";
         env.override("PATH+TEST", path);
 

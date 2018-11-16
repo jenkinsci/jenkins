@@ -7,6 +7,8 @@ import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,6 +47,8 @@ public class BasicHeaderProcessorTest {
      */
     @Test
     public void testVariousWaysToCall() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getById("foo", true);
         User.getById("bar", true);
@@ -112,6 +116,8 @@ public class BasicHeaderProcessorTest {
 
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");
         wc = j.createWebClient();

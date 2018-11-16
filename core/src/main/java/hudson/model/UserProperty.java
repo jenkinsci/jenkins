@@ -41,10 +41,10 @@ import org.kohsuke.stapler.export.ExportedBean;
  * configuration screen, and they are persisted with the user object.
  *
  * <p>
- * Configuration screen should be defined in <tt>config.jelly</tt>.
+ * Configuration screen should be defined in {@code config.jelly}.
  * Within this page, the {@link UserProperty} instance is available
- * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
- * See {@link hudson.search.UserSearchProperty}'s <tt>config.jelly</tt> for an example.
+ * as {@code instance} variable (while {@code it} refers to {@link User}.
+ * See {@link hudson.search.UserSearchProperty}'s {@code config.jelly} for an example.
  * <p>A property may also define a {@code summary.jelly} view to show in the main user screen.
  *
  * @author Kohsuke Kawaguchi
