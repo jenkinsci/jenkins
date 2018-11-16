@@ -1091,7 +1091,7 @@ public class UpdateSite {
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
                 Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     continue;
