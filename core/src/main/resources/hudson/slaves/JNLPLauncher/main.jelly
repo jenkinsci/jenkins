@@ -37,14 +37,16 @@ THE SOFTWARE.
           ${%Connect agent to Jenkins one of these ways:}
         </p>
         <ul>
-          <li>
-            <p>
-              <a href="slave-agent.jnlp" id="jnlp-link">
-                <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-              </a>
-              ${%Launch agent from browser}
-            </p>
-          </li>
+          <j:if test="${it.launcher.javaWebStartSupported}">
+            <li>
+              <p>
+                <a href="slave-agent.jnlp" id="jnlp-link">
+                  <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
+                </a>
+                ${%Launch agent from browser}
+              </p>
+            </li>
+          </j:if>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
               <li>
