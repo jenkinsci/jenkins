@@ -23,33 +23,33 @@
  */
 package hudson.model;
 
-import com.trilead.ssh2.crypto.Base64;
-import hudson.PluginWrapper;
-import hudson.Util;
-import hudson.Extension;
-import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
-import hudson.util.Secret;
 import static java.util.concurrent.TimeUnit.DAYS;
 
+import com.jcraft.jzlib.GZIPOutputStream;
+import com.trilead.ssh2.crypto.Base64;
+import hudson.BulkChange;
+import hudson.Extension;
+import hudson.PluginWrapper;
+import hudson.Util;
+import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.CipherInputStream;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.DataInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -59,12 +59,18 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
-import com.jcraft.jzlib.GZIPOutputStream;
-import jenkins.util.SystemProperties;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * @author Kohsuke Kawaguchi
  */
+@Symbol("usageStatistics")
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private final String keyImage;
@@ -79,6 +85,12 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      */
     private volatile transient long lastAttempt = -1;
 
+    /**
+     * Should we collect statistics given the current configuration?
+     */
+    private volatile transient boolean shouldCollect = Jenkins.get().isUsageStatisticsCollected();
+
+    @DataBoundConstructor
     public UsageStatistics() {
         this(DEFAULT_KEY_BYTES);
     }
@@ -95,8 +107,8 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      */
     public boolean isDue() {
         // user opted out. no data collection.
-        if(!Jenkins.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
-        
+        if(!Jenkins.get().isUsageStatisticsCollected() || !shouldCollect || DISABLED)     return false;
+
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
             lastAttempt = now;
@@ -121,7 +133,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Gets the encrypted usage stat data to be sent to the Hudson server.
      */
     public String getStatData() throws IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
 
         JSONObject o = new JSONObject();
         o.put("stat",1);
@@ -129,7 +141,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         o.put("servletContainer", j.servletContext.getServerInfo());
         o.put("version", Jenkins.VERSION);
 
-        List<JSONObject> nodes = new ArrayList<JSONObject>();
+        List<JSONObject> nodes = new ArrayList<>();
         for( Computer c : j.getComputers() ) {
             JSONObject  n = new JSONObject();
             if(c.getNode()==j) {
@@ -145,7 +157,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         }
         o.put("nodes",nodes);
 
-        List<JSONObject> plugins = new ArrayList<JSONObject>();
+        List<JSONObject> plugins = new ArrayList<>();
         for( PluginWrapper pw : j.getPluginManager().getPlugins() ) {
             if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
             JSONObject p = new JSONObject();
@@ -181,7 +193,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
             try (OutputStream cipheros = new CombinedCipherOutputStream(baos,getKey(),"AES");
                  OutputStream zipos = new GZIPOutputStream(cipheros);
-                 OutputStreamWriter w = new OutputStreamWriter(zipos, "UTF-8")) {
+                 OutputStreamWriter w = new OutputStreamWriter(zipos, StandardCharsets.UTF_8)) {
                 o.write(w);
             }
 
@@ -193,13 +205,25 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        try {
-            // for backward compatibility reasons, this configuration is stored in Jenkins
-            Jenkins.getInstance().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : true);
-            return true;
+        try (BulkChange bc = new BulkChange(this)) {
+            req.bindJSON(this, json);
+            bc.commit();
         } catch (IOException e) {
-            throw new FormException(e,"usageStatisticsCollected");
+            throw new FormException(e, "usageStatisticsCollected");
         }
+        return true;
+    }
+
+    public boolean getShouldCollect() {
+        return shouldCollect;
+    }
+
+    @DataBoundSetter
+    public void setShouldCollect(boolean shouldCollect) throws IOException {
+        // for backward compatibility reasons, this configuration is stored in Jenkins
+        Jenkins.get().setNoUsageStatistics(!shouldCollect);
+        this.shouldCollect = shouldCollect;
+        save();
     }
 
     /**

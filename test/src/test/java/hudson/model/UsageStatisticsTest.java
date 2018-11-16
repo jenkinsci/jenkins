@@ -23,12 +23,16 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
-import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -36,6 +40,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestPluginManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,15 +53,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -124,6 +132,42 @@ public class UsageStatisticsTest {
             ((JSONObject) node).remove("os"); // depends on timing of AbstractNodeMonitorDescriptor.get whether or not this will be present
         }
         compareWithFile("nodes.json", nodes);
+    }
+
+    @Test
+    public void configure_shouldSetNoUsageStatisticsOnInstance() throws Exception {
+        HtmlPage page = j.createWebClient().goTo("configure");
+        HtmlCheckBoxInput input = page.getElementByName("_.shouldCollect");
+        HtmlForm form = page.getFormByName("config");
+        HtmlElement button = Iterables.getLast(form.getHtmlElementsByTagName("button"));
+
+        UsageStatistics sut = (UsageStatistics) j.jenkins.getDescriptor(UsageStatistics.class);
+
+        input.setChecked(true);
+        button.click();
+
+        assertTrue(sut.getShouldCollect());
+        assertTrue(j.jenkins.isUsageStatisticsCollected());
+
+        input.setChecked(false);
+        button.click();
+
+        assertFalse(sut.getShouldCollect());
+        assertFalse(j.jenkins.isUsageStatisticsCollected());
+    }
+
+    @Test
+    public void setShouldCollectStatistics_shouldSetNoUsageStatisticsOnInstance() throws Exception {
+        UsageStatistics sut = (UsageStatistics) j.jenkins.getDescriptor(UsageStatistics.class);
+        assertTrue(sut.getShouldCollect());
+
+        sut.setShouldCollect(true);
+        assertTrue(j.jenkins.isUsageStatisticsCollected());
+        assertTrue(sut.getShouldCollect());
+
+        sut.setShouldCollect(false);
+        assertFalse(j.jenkins.isUsageStatisticsCollected());
+        assertFalse(sut.getShouldCollect());
     }
 
     /**

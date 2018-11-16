@@ -1,7 +1,9 @@
-package hudson.model.UsageStatistics;
+package hudson.model.UsageStatistics
 
-def f=namespace(lib.FormTagLib)
+def f = namespace(lib.FormTagLib)
 
 f.section(title: _("Usage Statistics")) {
-    f.optionalBlock(field: "usageStatisticsCollected", checked: app.usageStatisticsCollected, title: _("statsBlurb"))
+    f.block() {
+        f.checkbox(field: "shouldCollect", checked: instance.shouldCollect, title: _("statsBlurb"))
+    }
 }
