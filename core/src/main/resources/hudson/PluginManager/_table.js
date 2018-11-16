@@ -32,7 +32,6 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         ? items[i].cells[1].getAttribute('data-id')
                         : items[i].getAttribute("name");
                 if (visible && name != null) {
-                    console.log(name);
                     if (encountered[name]) {
                         visible = false;
                     }
