@@ -444,6 +444,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
+    private boolean freshStartUp = true;
 
     private volatile List<JDK> jdks = new ArrayList<JDK>();
 
@@ -3024,7 +3025,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
 
             checkRawBuildsDir(newBuildsDir);
-            LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
+            Level level = freshStartUp ? Level.INFO : Level.WARNING;
+            LOGGER.log(level, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{buildsDir, newBuildsDir});
             buildsDir = newBuildsDir;
             mustSave = true;
@@ -3034,7 +3036,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
         if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
-        	Level level = workspaceDir.equals(DEFAULT_WORKSPACES_DIR) ? Level.INFO : Level.WARNING;
+        	Level level = freshStartUp ? Level.INFO : Level.WARNING;
             LOGGER.log(level, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{workspaceDir, newWorkspacesDir});
             workspaceDir = newWorkspacesDir;
@@ -3042,6 +3044,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         } else if (!isDefaultWorkspaceDir()) {
             LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
         }
+
+    	freshStartUp = false;
 
         if (mustSave) {
             save();

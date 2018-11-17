@@ -83,14 +83,8 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
 		story.then(step -> {
 			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-					Level.INFO));
-			setWorkspacesDirProperty("testdir2");
-		});
-
-		story.then(step -> {
-			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
 					Level.WARNING));
-			setWorkspacesDirProperty("testdir3");
+			setWorkspacesDirProperty("testdir2");
 		});
 
 		story.then(step -> {
