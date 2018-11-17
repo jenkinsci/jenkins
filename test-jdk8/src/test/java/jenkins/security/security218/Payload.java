@@ -43,6 +43,7 @@ public enum Payload {
     Jdk7u21(Jdk7u21.class),
     JRMPClient(JRMPClient.class),
     JRMPListener(JRMPListener.class),
+    JSON1(JSON1.class),
     Spring1(Spring1.class),
     Spring2(Spring2.class),
     Ldap(Ldap.class),
