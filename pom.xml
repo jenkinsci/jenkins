@@ -51,6 +51,7 @@ THE SOFTWARE.
   <modules>
     <module>core</module>
     <module>war</module>
+    <module>test-pom</module>
     <module>test</module>
     <module>cli</module>
   </modules>
@@ -468,7 +469,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>9.4.5.v20170502-jenkins-1</version>
+          <version>9.4.12.v20180830-jenkins-2</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -760,7 +761,6 @@ THE SOFTWARE.
         <failIfNoTests>false</failIfNoTests>
       </properties>
     </profile>
-
     <profile>
       <id>jdk11</id>
       <properties>
@@ -770,6 +770,15 @@ THE SOFTWARE.
       </properties>
       <activation>
         <jdk>11</jdk>
+      </activation>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <modules>
+        <module>test-jdk8</module>
+      </modules>
+      <activation>
+        <jdk>1.8</jdk>
       </activation>
     </profile>
   </profiles>
