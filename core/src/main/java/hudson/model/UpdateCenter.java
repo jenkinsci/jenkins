@@ -150,8 +150,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
 
-    // TODO: Revert to the common update center before the release (JENKINS-52013)
-    private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","https://updates.jenkins.io/experimental/");
+    private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","https://updates.jenkins.io/");
 
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
