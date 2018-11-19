@@ -1066,13 +1066,13 @@ public class UpdateSite {
             List<Plugin> deps = new ArrayList<Plugin>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     LOGGER.log(Level.WARNING, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
-                
+
                 // Is the plugin installed already? If not, add it.
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -1091,11 +1091,11 @@ public class UpdateSite {
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
 
                 PluginWrapper current = depPlugin.getInstalled();
 
