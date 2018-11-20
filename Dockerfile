@@ -19,7 +19,7 @@ RUN mvn clean install --batch-mode -Plight-test
 
 # The image is based on https://github.com/jenkinsci/docker/tree/java11
 # All documentation is applicable
-FROM jenkins/jenkins-experimental:2.138.1-jdk11
+FROM jenkins/jenkins:jdk11
 
 LABEL Description="This is an experimental image for the master branch of the Jenkins core, for JDK11" Vendor="Jenkins Project"
 
