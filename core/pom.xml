@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.255</stapler.version>
+    <stapler.version>1.256</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -176,6 +176,11 @@ THE SOFTWARE.
       <version>1.4</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.stapler</groupId>
+      <artifactId>jenkins-stapler-support</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>

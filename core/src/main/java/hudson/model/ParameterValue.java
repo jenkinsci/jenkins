@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -75,6 +76,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
+@StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
