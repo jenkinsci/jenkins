@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
 import java.io.IOException;
@@ -40,9 +41,12 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -69,6 +73,9 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public final class DirectoryBrowserSupport implements HttpResponse {
+    // escape hatch for SECURITY-904 to keep legacy behavior
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static boolean ALLOW_SYMLINK_ESCAPE = Boolean.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
 
     public final ModelObject owner;
     
@@ -217,13 +224,19 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String base = _base.toString();
         String rest = _rest.toString();
 
+        if(!ALLOW_SYMLINK_ESCAPE && (root.supportIsDescendant() && !root.isDescendant(base))){
+            LOGGER.log(Level.WARNING, "Trying to access a file outside of the directory, target: "+ base);
+            rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "Trying to access a file outside of the directory, target: " + base);
+            return;
+        }
+
         // this is the base file/directory
         VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
 
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                zip(rsp.getOutputStream(), baseFile, rest);
+                zip(rsp, root, baseFile, rest);
                 return;
             }
             if (plain) {
@@ -251,8 +264,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
 
             List<List<Path>> glob = null;
-
-            if(rest.length()>0) {
+            boolean patternUsed = rest.length() > 0;
+            if(patternUsed) {
                 // the rest is Ant glob pattern
                 glob = patternScan(baseFile, rest, createBackRef(restSize));
             } else
@@ -262,13 +275,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
 
             if(glob!=null) {
+                List<List<Path>> filteredGlob = keepReadabilityOnlyOnDescendants(baseFile, patternUsed, glob);
+                
                 // serve glob
                 req.setAttribute("it", this);
                 List<Path> parentPaths = buildParentPath(base,restSize);
                 req.setAttribute("parentPath",parentPaths);
                 req.setAttribute("backPath", createBackRef(restSize));
                 req.setAttribute("topPath", createBackRef(parentPaths.size()+restSize));
-                req.setAttribute("files", glob);
+                req.setAttribute("files", filteredGlob);
                 req.setAttribute("icon", icon);
                 req.setAttribute("path", path);
                 req.setAttribute("pattern",rest);
@@ -332,6 +347,57 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
+    
+    private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){
+        Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
+            List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
+            String relativePath = "";
+            for (int i = 0; i < pathFragments.size(); i++) {
+                Path current = pathFragments.get(i);
+                if (i == 0) {
+                    relativePath = current.title;
+                } else {
+                    relativePath += "/" + current.title;
+                }
+            
+                if (!current.isReadable) {
+                    if (patternUsed) {
+                        // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
+                        return null;
+                    }
+                    mappedFragments.add(current);
+                    return mappedFragments;
+                } else {
+                    if (isDescendant(root, relativePath)) {
+                        mappedFragments.add(current);
+                    } else {
+                        if (patternUsed) {
+                            // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
+                            return null;
+                        }
+                        mappedFragments.add(Path.createNotReadableVersionOf(current));
+                        return mappedFragments;
+                    }
+                }
+            }
+            return mappedFragments;
+        });
+    
+        if (patternUsed) {
+            pathFragmentsStream = pathFragmentsStream.filter(Objects::nonNull);
+        }
+        
+        return pathFragmentsStream.collect(Collectors.toList());
+    }
+
+    private boolean isDescendant(VirtualFile root, String relativePath){
+        try {
+            return ALLOW_SYMLINK_ESCAPE || !root.supportIsDescendant() || root.isDescendant(relativePath);
+        }
+        catch (IOException e) {
+            return false;
+        }
+    }
 
     private String getPath(StaplerRequest req) {
         String path = req.getRestOfPath();
@@ -365,7 +431,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         return buf.toString();
     }
 
-    private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
+    private static void zip(StaplerResponse rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
+        OutputStream outputStream = rsp.getOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
             // TODO consider using run(Callable) here
@@ -377,18 +444,24 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 } else {
                     relativePath = n;
                 }
-                // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
-                // TODO On Linux file names can contain backslashes which should not treated as file separators.
-                //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
-                //      but not the file separator char of the (maybe remote) "dir".
-                ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
-                VirtualFile f = dir.child(n);
-                e.setTime(f.lastModified());
-                zos.putNextEntry(e);
-                try (InputStream in = f.open()) {
-                    IOUtils.copy(in, zos);
+
+                String targetFile = dir.toString().substring(root.toString().length()) + n;
+                if (!ALLOW_SYMLINK_ESCAPE && root.supportIsDescendant() && !root.isDescendant(targetFile)) {
+                    LOGGER.log(Level.INFO, "Trying to access a file outside of the directory: " + root + ", illicit target: " + targetFile);
+                } else {
+                    // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
+                    // TODO On Linux file names can contain backslashes which should not treated as file separators.
+                    //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+                    //      but not the file separator char of the (maybe remote) "dir".
+                    ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
+                    VirtualFile f = dir.child(n);
+                    e.setTime(f.lastModified());
+                    zos.putNextEntry(e);
+                    try (InputStream in = f.open()) {
+                        IOUtils.copy(in, zos);
+                    }
+                    zos.closeEntry();
                 }
-                zos.closeEntry();
             }
         }
     }
@@ -495,6 +568,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             final Calendar cal = new GregorianCalendar();
             cal.setTimeInMillis(lastModified);
             return cal;
+        }
+
+        public static Path createNotReadableVersionOf(Path that){
+            return new Path(that.href, that.title, that.isFolder, that.size, false);
         }
 
         private static final long serialVersionUID = 1L;
