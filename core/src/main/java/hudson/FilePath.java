@@ -83,8 +83,10 @@ import java.net.URLConnection;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.LinkOption;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
@@ -3303,33 +3305,61 @@ public final class FilePath implements Serializable {
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
+    
+            Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
+            Path parentRealPath;
+            try {
+                parentRealPath = parentAbsolutePath.toRealPath();
+            }
+            catch(NoSuchFileException e) {
+                throw new IllegalArgumentException("The parent does not exist");
+            }
 
-            Path parent = parentFile.getAbsoluteFile().toPath().normalize();
-
+            // example: "a/b/c" that will become "b/c" then just "c", and finally an empty string
             String remainingPath = potentialChildRelativePath;
-            File currentFile = parentFile;
+
+            Path currentFilePath = parentFile.toPath();
             while (!remainingPath.isEmpty()) {
-                File directChild = this.getDirectChild(currentFile, remainingPath);
-                File childUsingFullPath = new File(currentFile, remainingPath);
-                remainingPath = childUsingFullPath.getAbsolutePath().substring(directChild.getAbsolutePath().length());
-                
-                File childFileSymbolic = Util.resolveSymlinkToFile(directChild);
+                Path directChild = this.getDirectChild(currentFilePath, remainingPath);
+                Path childUsingFullPath = currentFilePath.resolve(remainingPath);
+                Path rel = directChild.toAbsolutePath().relativize(childUsingFullPath.toAbsolutePath());
+                remainingPath = rel.toString();
+
+                File childFileSymbolic = Util.resolveSymlinkToFile(directChild.toFile());
                 if (childFileSymbolic == null) {
-                    currentFile = directChild;
+                    currentFilePath = directChild;
                 } else {
-                    currentFile = childFileSymbolic;
+                    currentFilePath = childFileSymbolic.toPath();
+                }
+
+                Path currentFileAbsolutePath = currentFilePath.toAbsolutePath();
+                try{
+                    Path child = currentFileAbsolutePath.toRealPath();
+                    if (!child.startsWith(parentRealPath)) {
+                        return false;
+                    }
+                } catch (NoSuchFileException e) {
+                    // nonexistent file
+                    // in case this folder / file will be copied somewhere else, 
+                    // it becomes the responsibility of that system to check the isDescendant with the existing links
+                    // we are not taking the parentRealPath to avoid possible problem
+                    try {
+                        Path child = currentFileAbsolutePath.normalize();
+                        Path parent = parentAbsolutePath.normalize();
+                        return child.startsWith(parent);
+                    } catch (InvalidPathException e2) {
+                        throw new IOException(e2);
+                    }
                 }
             }
 
-            //TODO could be refactored using Util#isDescendant(File, File) from 2.80+
-            Path child = currentFile.getAbsoluteFile().toPath().normalize();
-            return child.startsWith(parent);
+            return true;
         }
 
-        private @CheckForNull File getDirectChild(File parentFile, String childPath){
-            File current = new File(parentFile, childPath);
-            while (current != null && !parentFile.equals(current.getParentFile())) {
-                current = current.getParentFile();
+        private @CheckForNull Path getDirectChild(Path parentPath, String childPath){
+            Path current = parentPath.resolve(childPath);
+            while (current != null && !parentPath.equals(current.getParent())) {
+                current = current.getParent();
             }
             return current;
         }
