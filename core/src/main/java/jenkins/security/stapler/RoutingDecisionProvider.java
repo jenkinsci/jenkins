@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
+ * Copyright (c) 2018, CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,20 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.security.stapler;
 
-import jenkins.security.stapler.StaplerAccessibleType;
+import hudson.ExtensionPoint;
 
-/**
- * A model object has a human readable name.
- *
- * And it normally has URL, but this interface doesn't define one.
- * (Since there're so many classes that define the <tt>getUrl</tt> method
- * we should have such one.)
- *
- * @author Kohsuke Kawaguchi
- */
-@StaplerAccessibleType
-public interface ModelObject {
-    String getDisplayName();
+import javax.annotation.Nonnull;
+
+public abstract class RoutingDecisionProvider implements ExtensionPoint {
+    enum Decision {
+        ACCEPTED,
+        REJECTED,
+        UNKNOWN
+    }
+
+    @Nonnull public abstract Decision decide(@Nonnull String signature);
 }
