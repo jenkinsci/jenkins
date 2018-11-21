@@ -356,6 +356,14 @@ public final class CronTab {
                     continue OUTER;
                 } else {
                     f.setTo(cal,next);
+                    //check if value was actually set
+                    if (f.valueOf(cal) != next) {
+                        // we need to roll over to the next field.
+                        f.rollUp(cal, 1);
+                        f.setTo(cal,f.first(this));
+                        // since higher order field is affected by this, we need to restart from all over
+                        continue OUTER;
+                    }
                     if (f.redoAdjustmentIfModified)
                         continue OUTER; // when we modify DAY_OF_MONTH and DAY_OF_WEEK, do it all over from the top
                 }
