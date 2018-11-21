@@ -36,6 +36,7 @@ import java.util.Collections;
 import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -62,6 +63,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
  */
+@StaplerAccessibleType
 public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances

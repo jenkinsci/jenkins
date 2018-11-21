@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
@@ -82,6 +83,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @see AgentProtocol
  */
+@StaplerAccessibleType
 public final class TcpSlaveAgentListener extends Thread {
 
     private final ServerSocketChannel serverSocket;

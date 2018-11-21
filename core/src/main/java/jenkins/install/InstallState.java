@@ -32,6 +32,7 @@ import hudson.ExtensionPoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
@@ -44,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@StaplerAccessibleType
 public class InstallState implements ExtensionPoint {
     /**
      * Need InstallState != NEW for tests by default

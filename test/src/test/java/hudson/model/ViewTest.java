@@ -23,10 +23,13 @@
  */
 package hudson.model;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.Jenkins;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -194,6 +197,18 @@ public class ViewTest {
     @Issue("JENKINS-9367")
     @Test public void allImagesCanBeLoaded() throws Exception {
         User.get("user", true);
+        
+        // as long as the cloudbees-folder is included as test dependency, its Folder will load icon
+        boolean folderPluginActive = (j.jenkins.getPlugin("cloudbees-folder") != null);
+        // link to Folder class is done here to ensure if we remove the dependency, this code will fail and so will be removed
+        boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor(Folder.class) != null);
+        // this could be written like this to avoid the hard dependency: 
+        // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
+        if (!folderPluginActive && folderPluginClassesLoaded) {
+            // reset the icon added by Folder because the plugin resources are not reachable
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+        }
+        
         WebClient webClient = j.createWebClient();
         webClient.getOptions().setJavaScriptEnabled(false);
         j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));

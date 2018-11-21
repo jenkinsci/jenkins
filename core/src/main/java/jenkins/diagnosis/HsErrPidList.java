@@ -11,6 +11,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -94,6 +95,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     /**
      * Expose files to the URL.
      */
+    @StaplerDispatchable
     public List<HsErrPidFile> getFiles() {
         return files;
     }
