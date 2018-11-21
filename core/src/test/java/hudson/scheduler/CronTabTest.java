@@ -321,4 +321,10 @@ public class CronTabTest {
         new CronTab("0 0 31 7 *").floor(cal); // would infinite loop
     }
 
+    @Issue("SECURITY-1193")
+    @Test(timeout = 1000L) public void testCeilLongMonths() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.NOVEMBER);
+        new CronTab("0 0 31 * *").ceil(cal); // would infinite loop
+    }
 }

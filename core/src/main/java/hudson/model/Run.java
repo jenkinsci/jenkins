@@ -1173,7 +1173,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return n;
     }
-
+    
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
