@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import static hudson.model.User.idStrategy;
-import static hudson.model.UserPropertyTest.InnerUserClass.TEST_FILE;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
@@ -80,7 +78,8 @@ public class UserPropertyTest {
         User user = User.get("nestedUserReference", false, emptyMap());
         assertThat("nested reference should be updated after jenkins start", user, nestedUserSet());
 
-        File testFile = new File(j.getInstance().getRootDir() + "/users/nesteduserreference/" + TEST_FILE);
+        SetUserUserProperty property = user.getProperty(SetUserUserProperty.class);
+        File testFile = property.getInnerUserClass().userFile;
         List<String> fileLines = FileUtils.readLines(testFile);
         assertThat(fileLines, hasSize(1));
 
@@ -89,7 +88,6 @@ public class UserPropertyTest {
         user = User.get("nestedUserReference", false, Collections.emptyMap());
         assertThat("nested reference should exist after user configuration change", user, nestedUserSet());
 
-        testFile = new File(j.getInstance().getRootDir() + "/users/nesteduserreference/" + TEST_FILE);
         fileLines = FileUtils.readLines(testFile);
         assertThat(fileLines, hasSize(1));
     }
@@ -167,8 +165,9 @@ public class UserPropertyTest {
      * Class that should get setUser(User) object reference update.
      */
     public static class InnerUserClass extends AbstractDescribableImpl<InnerUserClass> {
-        public static final String TEST_FILE = "test.txt";
         private transient User user;
+
+        private transient File userFile;
 
         @DataBoundConstructor
         public InnerUserClass() {
@@ -184,16 +183,16 @@ public class UserPropertyTest {
         public void setUser(User user) {
             this.user = user;
             try {
-                writeStringToFile(getUserFile(), String.valueOf(currentTimeMillis()), true);
+                File userFile = getUserFile();
+                writeStringToFile(userFile, String.valueOf(currentTimeMillis()), true);
             } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
 
         private File getUserFile() throws IOException {
-            final File usersRootDir = new File(Jenkins.getInstance().getRootDir(), "users");
-            final File userDir = new File(usersRootDir, idStrategy().filenameOf(user.getId()));
-            final File userFile = new File(userDir, TEST_FILE);
+            userFile =  File.createTempFile("user", ".txt");
+            userFile.deleteOnExit();
             if (!userFile.exists()) {
                 userFile.createNewFile();
             }
