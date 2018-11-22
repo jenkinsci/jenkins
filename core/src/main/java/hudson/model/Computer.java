@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
+import hudson.Main;
 import hudson.slaves.Cloud;
 import jenkins.security.stapler.StaplerDispatchable;
 import hudson.Util;
@@ -1174,6 +1175,32 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public Map<String,String> getEnvVars() throws IOException, InterruptedException {
         return getEnvironment();
+    }
+
+    /**
+     * Expose real full env vars map from agent for UI presentation
+     */
+    public Map<String,String> getEnvVarsFull() throws IOException, InterruptedException {
+        if(getChannel() == null) {
+            TreeMap env = new TreeMap<String,String> ();
+            env.put("N/A","N/A");
+            return env;
+        } else {
+            return getChannel().call(new ListFullEnvironment());
+        }
+    }
+
+    private static class ListFullEnvironment extends MasterToSlaveCallable<TreeMap<String,String>,IOException> {
+        public TreeMap<String,String> call() throws IOException {
+            TreeMap env = new TreeMap(System.getenv());
+            if(Main.isUnitTest || Main.isDevelopmentMode) {
+                // if unit test is launched with maven debug switch,
+                // we need to prevent forked Maven processes from seeing it, or else
+                // they'll hang
+                env.remove("MAVEN_OPTS");
+            }
+            return env;
+        }
     }
 
     /**
