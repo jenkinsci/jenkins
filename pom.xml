@@ -51,6 +51,7 @@ THE SOFTWARE.
   <modules>
     <module>core</module>
     <module>war</module>
+    <module>test-pom</module>
     <module>test</module>
     <module>cli</module>
   </modules>
@@ -75,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.152</revision>
+    <revision>2.153</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -468,7 +469,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>9.4.5.v20170502-jenkins-1</version>
+          <version>9.4.12.v20180830-jenkins-2</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -759,6 +760,26 @@ THE SOFTWARE.
       <properties>
         <failIfNoTests>false</failIfNoTests>
       </properties>
+    </profile>
+    <profile>
+      <id>jdk11</id>
+      <properties>
+        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <doclint>none</doclint>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+      </properties>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <modules>
+        <module>test-jdk8</module>
+      </modules>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
     </profile>
   </profiles>
 </project>

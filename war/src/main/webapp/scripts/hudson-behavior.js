@@ -517,16 +517,7 @@ function registerRegexpValidator(e,regexp,message) {
  *      YUI Button widget.
  */
 function makeButton(e,onclick) {
-    var type = e.type;
-    var h = e.onclick || function (event) {
-        if (type && type.toLowerCase() === 'submit') {
-            var target = event.target;
-            var form = findAncestor(target, "FORM");
-            form.submit();
-        } else {
-            //FIXME: get some usecases for else
-        }
-    };
+    var h = e.onclick;
     var clsName = e.className;
     var n = e.name;
     var btn = new YAHOO.widget.Button(e,{});
