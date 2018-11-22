@@ -128,7 +128,7 @@ public class ApiTokenProperty extends UserProperty {
             this.tokenStore = new ApiTokenStore();
         }
         if(this.tokenStats == null){
-            this.tokenStats = ApiTokenStats.load(user.getUserFolder());
+            this.tokenStats = ApiTokenStats.load(user);
         }
         if(this.apiToken != null){
             this.tokenStore.regenerateTokenFromLegacyIfRequired(this.apiToken);

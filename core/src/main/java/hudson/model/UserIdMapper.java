@@ -34,6 +34,7 @@ import jenkins.model.IdStrategy;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -75,7 +76,7 @@ public class UserIdMapper {
         return usersDirectory;
     }
 
-    File getDirectory(String userId) {
+    @CheckForNull File getDirectory(String userId) {
         String directoryName = idToDirectoryNameMap.get(getIdStrategy().keyFor(userId));
         return directoryName == null ? null : new File(usersDirectory, directoryName);
     }
