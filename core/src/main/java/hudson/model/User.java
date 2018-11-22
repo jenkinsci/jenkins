@@ -739,14 +739,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
      * Exposes implementation details that may be subject to change.
+     * 
+     * @return The folder containing the user configuration files or {@code null} if the user was not yet saved.
      *
      * @since 2.129
      */
-    public File getUserFolder() {
+    public @CheckForNull File getUserFolder() {
         return getExistingUserFolder();
     }
 
-    private File getExistingUserFolder() {
+    private @CheckForNull File getExistingUserFolder() {
         return UserIdMapper.getInstance().getDirectory(id);
     }
 
