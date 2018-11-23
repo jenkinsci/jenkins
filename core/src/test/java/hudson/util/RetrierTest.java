@@ -97,7 +97,7 @@ public class RetrierTest {
         long timeElapsed = Duration.between(start, finish).toMillis();
 
         // Check delay works
-        Assert.assertTrue(timeElapsed > SLEEP);
+        Assert.assertTrue(timeElapsed >= SLEEP);
 
         // Check result is true
         Assert.assertTrue(finalResult == null ? false : finalResult);
