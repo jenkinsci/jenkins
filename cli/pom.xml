@@ -66,6 +66,12 @@
       <version>1.7.0</version>
       <optional>true</optional> <!-- do not expose to core -->
     </dependency>
+	<!-- ed25519 algorithm, see JENKINS-45318 -->
+	<dependency>
+  	  <groupId>net.i2p.crypto</groupId>
+	  <artifactId>eddsa</artifactId>
+	  <version>0.3.0</version>
+	</dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
