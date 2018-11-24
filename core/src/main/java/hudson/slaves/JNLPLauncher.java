@@ -221,4 +221,19 @@ public class JNLPLauncher extends ComputerLauncher {
         }
     }
 
+    /**
+     * Returns true if Java Web Start button should be displayed.
+     * Java Web Start is only supported when the Jenkins server is
+     * running with Java 8.  Earlier Java versions are not supported by Jenkins.
+     * Later Java versions do not support Java Web Start.
+     *
+     * This flag is checked in {@code config.jelly} before displaying the
+     * Java Web Start button.
+     * @return {@code true} if Java Web Start button should be displayed.
+     * @since FIXME
+     */
+    @Restricted(NoExternalUse.class) // Jelly use
+    public boolean isJavaWebStartSupported() {
+        return System.getProperty("java.version", "1.8").startsWith("1.8");
+    }
 }
