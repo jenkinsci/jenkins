@@ -194,7 +194,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
-            CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".CHECK_UPDATE_ATTEMPTS", 1);
+            CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
         } catch(Exception e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
@@ -1813,7 +1813,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
             PluginWrapper pw = getPlugin(requestedPlugin.getKey());
             if (pw == null) { // install new
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
                     continue;
@@ -1826,7 +1826,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
                 jobs.add(toInstall.deploy(true));
             } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
                     continue;
