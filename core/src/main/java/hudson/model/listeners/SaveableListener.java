@@ -27,8 +27,13 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.XmlFile;
 import hudson.model.Saveable;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,6 +81,10 @@ public abstract class SaveableListener implements ExtensionPoint {
      * Fires the {@link #onChange} event.
      */
     public static void fireOnChange(Saveable o, XmlFile file) {
+        if (!Functions.isExtensionsAvailable() && !NOTIFY_DURING_STARTUP) {
+            LOGGER.info("Skipping notification for " + o + " in " + file + " as Jenkins is starting up or shutting down");
+            return;
+        }
         for (SaveableListener l : all()) {
             try {
                 l.onChange(o,file);
@@ -93,4 +102,9 @@ public abstract class SaveableListener implements ExtensionPoint {
     public static ExtensionList<SaveableListener> all() {
         return ExtensionList.lookup(SaveableListener.class);
     }
+
+    private static Logger LOGGER = Logger.getLogger(SaveableListener.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    public /* for script console */ static boolean NOTIFY_DURING_STARTUP = SystemProperties.getBoolean(SaveableListener.class.getName() + ".notifyDuringStartup");
 }
