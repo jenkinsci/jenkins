@@ -180,9 +180,10 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
+    @Deprecated
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
