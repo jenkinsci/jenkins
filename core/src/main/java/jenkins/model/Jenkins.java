@@ -1301,6 +1301,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return systemMessage;
     }
 
+    @Nonnull
     public PluginManager getPluginManager() {
         return pluginManager;
     }
