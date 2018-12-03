@@ -49,6 +49,7 @@ import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+import hudson.util.Retrier;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
@@ -177,6 +178,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /** Custom plugin manager system property or context param. */
     public static final String CUSTOM_PLUGIN_MANAGER = PluginManager.class.getName() + ".className";
 
+    private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
+
+    /**
+     * Time elapsed between retries to check the updates sites. It's kind of constant, but let it so for tests
+     */
+    /* private final */ static int CHECK_UPDATE_SLEEP_TIME_MILLIS;
+
+    /**
+     * Number of attempts to check the updates sites. It's kind of constant, but let it so for tests
+     */
+    /* private final */ static int CHECK_UPDATE_ATTEMPTS;
+
+    static {
+        try {
+            // Secure initialization
+            CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
+            CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
+        } catch(Exception e) {
+            LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
+        } finally {
+            CHECK_UPDATE_ATTEMPTS = CHECK_UPDATE_ATTEMPTS > 0 ? CHECK_UPDATE_ATTEMPTS : 1;
+            CHECK_UPDATE_SLEEP_TIME_MILLIS = CHECK_UPDATE_SLEEP_TIME_MILLIS > 0 ? CHECK_UPDATE_SLEEP_TIME_MILLIS : 1000;
+        }
+    }
+
     /** Accepted constructors for custom plugin manager, in the order they are tried. */
     private enum PMConstructor {
         JENKINS {
@@ -265,6 +291,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Plug-in root directory.
      */
     public final File rootDir;
+
+    /**
+     * Hold the status of the last try to check update centers. Consumed from the check.jelly to show an
+     * error message if the last attempt failed.
+     */
+    private String lastErrorCheckUpdateCenters = null;
 
     /**
      * If non-null, the base directory for all exploded .hpi/.jpi plugins. Controlled by the system property / servlet
@@ -1654,24 +1686,86 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        // We'll check the update servers with a try-retry mechanism. The retrier is built with a builder
+        Retrier<FormValidation> updateServerRetrier = new Retrier.Builder<>(
+                // the action to perform
+                this::checkUpdatesServer,
+
+                // the way we know whether this attempt was right or wrong
+                (currentAttempt, result) -> result.kind == FormValidation.Kind.OK,
+
+                // the action name we are trying to perform
+                "check updates server")
+
+                // the number of attempts to try
+                .withAttempts(CHECK_UPDATE_ATTEMPTS)
+
+                // the delay between attempts
+                .withDelay(CHECK_UPDATE_SLEEP_TIME_MILLIS)
+
+                // whatever exception raised is considered as a fail attempt (all exceptions), not a failure
+                .withDuringActionExceptions(new Class[] {Exception.class})
+
+                // what we do with a failed attempt due to an allowed exception, return an FormValidation.error with the message
+                .withDuringActionExceptionListener( (attempt, e) -> FormValidation.errorWithMarkup(e.getClass().getSimpleName() + ": " + e.getLocalizedMessage()))
+
+                // lets get our retrier object
+                .build();
+
         try {
-            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
-                FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
-                if (v.kind != FormValidation.Kind.OK) {
-                    // TODO crude but enough for now
-                    return v;
+            // Begin the process
+            FormValidation result = updateServerRetrier.start();
+
+            // Check how it went
+            if (!FormValidation.Kind.OK.equals(result.kind)) {
+                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(CHECK_UPDATE_ATTEMPTS, result.getMessage()));
+                if (CHECK_UPDATE_ATTEMPTS > 1 && !Logger.getLogger(Retrier.class.getName()).isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()));
                 }
+
+                lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(result.getMessage());
+            } else {
+                lastErrorCheckUpdateCenters = null;
             }
-            for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
-                FormValidation v = d.updateNow();
-                if (v.kind != FormValidation.Kind.OK) {
-                    return v;
-                }
-            }
-            return HttpResponses.forwardToPreviousPage();
-        } catch(RuntimeException ex) {
-            throw new IOException("Unhandled exception during updates server check", ex);
+
+        } catch (Exception e) {
+            // It's never going to be reached because we declared all Exceptions in the withDuringActionExceptions, so
+            // whatever exception is considered a expected failed attempt and the retries continue
+            LOGGER.log(Level.WARNING, Messages.PluginManager_UnexpectedException(), e);
+
+            // In order to leave this method as it was, rethrow as IOException
+            throw new IOException(e);
         }
+
+        // Stay in the same page in any case
+        return HttpResponses.forwardToPreviousPage();
+    }
+
+    private FormValidation checkUpdatesServer() throws Exception {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
+            FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                return v;
+            }
+        }
+        for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
+            FormValidation v = d.updateNow();
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                return v;
+            }
+        }
+        return FormValidation.ok();
+    }
+
+    /**
+     * Returns the last error raised during the update sites checking.
+     * @return the last error message
+     */
+    public String getLastErrorCheckUpdateCenters() {
+        return lastErrorCheckUpdateCenters;
     }
 
     protected String identifyPluginShortName(File t) {
@@ -1719,7 +1813,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
             PluginWrapper pw = getPlugin(requestedPlugin.getKey());
             if (pw == null) { // install new
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
                     continue;
@@ -1732,7 +1826,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
                 jobs.add(toInstall.deploy(true));
             } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
                     continue;
@@ -1990,9 +2084,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return "classLoader " +  getClass().getName();
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
-
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     public static final Permission UPLOAD_PLUGINS = new Permission(Jenkins.PERMISSIONS, "UploadPlugins", Messages._PluginManager_UploadPluginsPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
