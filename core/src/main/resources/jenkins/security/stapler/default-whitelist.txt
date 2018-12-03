@@ -123,6 +123,13 @@ method hudson.plugins.project_inheritance.projects.InheritanceProject doGetVersi
 method hudson.plugins.project_inheritance.projects.InheritanceProject doRenderSVGRelationGraph
 
 
+##########################
+# Build-Publisher Plugin #
+##########################
+# do* method with no indication it's supposed to be routable (returns void, no args, no annotations)
+method hudson.plugins.build_publisher.BuildPublisher$BuildPublisherDescriptor doReloadProxy
+
+
 ###############################################
 # Changes since last successfull build Plugin # (sic)
 ###############################################
@@ -142,6 +149,13 @@ method hudson.plugins.fitnesse.FitnesseProjectAction getTrend
 ###########################
 # Only has resources and a getter for a Graph, so needs whitelisting when not scanning
 class org.jenkins.ci.plugins.buildtimeblame.analysis.BlameReport
+
+
+#####################################
+# External Workspace Manager Plugin #
+#####################################
+# Declares Object as return type when it could declare ExternalWorkspace
+method org.jenkinsci.plugins.ewm.actions.WorkspaceBrowserRootAction getBrowse java.lang.String
 
 
 ##########################
