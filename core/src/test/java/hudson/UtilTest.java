@@ -57,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -406,6 +407,7 @@ public class UtilTest {
         assertFalse("dir exists", dir.exists());
     }
 
+    @Ignore("JENKINS-55016")
     @Test
     public void testDeleteRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
