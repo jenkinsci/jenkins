@@ -22,9 +22,16 @@ public class AtomicFileWriterPerfTest {
      * <p>
      * So using slightly more than the worse value obtained above should avoid making this flaky and still catch
      * <strong>really</strong> bad performance regressions.
+     *
+     * <p>Update December 2018: for some reason, this test started causing failures in CI suddenly.
+     * Was analyzed in https://github.com/jenkinsci/jenkins/pull/3788, to summarize the performances in ci.jenkins.io are
+     * wildly varying, to say the least, between 2.5 seconds, and 1 min 9 seconds!
+     *
+     * So bumping this here to 70 seconds, so we keep being able to catch huge regressions if someone touches the Jenkins
+     * serialization lower layers/AtomicFileWriter...
      */
     @Issue("JENKINS-34855")
-    @Test(timeout = 50 * 1000L)
+    @Test(timeout = 70 * 1000L)
     public void poorManPerformanceTestBed() throws Exception {
         int count = 1000;
         while (count-- > 0) {
