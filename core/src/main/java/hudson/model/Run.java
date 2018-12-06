@@ -1394,6 +1394,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         public long getFileSize(){
+            if (length.length() == 0) {
+                // case for symlink
+                return 0;
+            }
             return Long.decode(length);
         }
 
