@@ -1394,11 +1394,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         public long getFileSize(){
-            if (length.length() == 0) {
-                // case for symlink
+            try {
+                return Long.decode(length);
+            }
+            catch (NumberFormatException e) {
+                LOGGER.log(FINE, "The length {0} is a valid long.", length);
                 return 0;
             }
-            return Long.decode(length);
         }
 
         public String getTreeNodeId() {
