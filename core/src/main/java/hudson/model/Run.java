@@ -1398,7 +1398,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 return Long.decode(length);
             }
             catch (NumberFormatException e) {
-                LOGGER.log(FINE, "The length {0} is a valid long.", length);
+                LOGGER.log(FINE, "Cannot determine file size of the artifact {0}. The length {1} is not a valid long value", new Object[] {this, length});
                 return 0;
             }
         }
