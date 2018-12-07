@@ -38,7 +38,16 @@ public class JavaUtils {
     }
 
     /**
-     * Check whether the current JVM is running with Java 11 or above.
+     * Check whether the current JVM is running with Java 8 or below
+     * @return {@code true} if it is Java 8 or older version
+     */
+    public static boolean isRunningWithJava8OrBelow() {
+        String javaVersion = System.getProperty("java.specification.version");
+        return javaVersion.startsWith("1.");
+    }
+
+    /**
+     * Check whether the current JVM is running with Java 9 or above.
      * @return {@code true} if it is Java 9 or above
      */
     public static boolean isRunningWithPostJava8() {

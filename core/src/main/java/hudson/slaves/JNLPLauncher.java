@@ -235,6 +235,6 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {
-        return !JavaUtils.isRunningWithPostJava8();
+        return JavaUtils.isRunningWithJava8OrBelow();
     }
 }
