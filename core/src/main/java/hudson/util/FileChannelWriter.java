@@ -35,7 +35,7 @@ public class FileChannelWriter extends Writer {
 
     /**
      * {@link FileChannel#force(boolean)} is a <strong>very</strong> costly operation. This flag has been introduced mostly to
-     * accommodate Jenkins' previous behaviour, when using a simple {@link java.io.BufferedWriter}.
+     * accommodate Jenkins's previous behaviour, when using a simple {@link java.io.BufferedWriter}.
      *
      * <p>Basically, {@link BufferedWriter#flush()} does nothing, so when existing code was rewired to use
      * {@link FileChannelWriter#flush()} behind {@link AtomicFileWriter} and that method actually ends up calling

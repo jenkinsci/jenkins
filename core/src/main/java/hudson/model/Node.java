@@ -129,7 +129,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     @Override
     public void save() throws IOException {
-        // this should be a no-op unless this node instance is the node instance in Jenkins' list of nodes
+        // this should be a no-op unless this node instance is the node instance in Jenkins's list of nodes
         // thus where Jenkins.getInstance() == null there is no list of nodes, so we do a no-op
         // Nodes.updateNode(n) will only persist the node record if the node instance is in the list of nodes
         // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes

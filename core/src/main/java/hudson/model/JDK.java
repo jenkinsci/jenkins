@@ -61,7 +61,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
 
     /**
-     * Name of the “System JDK”, which is just the JDK on Jenkins' $PATH.
+     * Name of the “System JDK”, which is just the JDK on Jenkins's $PATH.
      * @since 1.577
      */
     public static final String DEFAULT_NAME = "(System)";
