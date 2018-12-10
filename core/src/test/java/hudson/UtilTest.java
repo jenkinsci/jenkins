@@ -409,7 +409,6 @@ public class UtilTest {
     }
 
     @Test
-    @Ignore("Frequently flaky test")
     public void testDeleteRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         final File dir = tmp.newFolder();
