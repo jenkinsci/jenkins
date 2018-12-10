@@ -147,7 +147,7 @@ THE SOFTWARE.
 
               <div class="footer">
                 <j:forEach var="decorator" items="${simpleDecorators}">
-                  <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
+                  <st:include it="${decorator}" page="simple-footer.jelly" optional="true" />
                 </j:forEach>
               </div>
 
