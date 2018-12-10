@@ -84,6 +84,8 @@ public class FilePathSEC904Test {
         // the intermediate path "./.." goes out of workspace and so is refused
         assertFalse(workspaceFolder.isDescendant("./../workspace"));
         assertFalse(workspaceFolder.isDescendant("./../workspace/"));
+        assertFalse(workspaceFolder.isDescendant(".\\..\\workspace"));
+        assertFalse(workspaceFolder.isDescendant(".\\..\\workspace\\"));
         assertFalse(workspaceFolder.isDescendant("./../workspace/regular.txt"));
         assertFalse(workspaceFolder.isDescendant("../workspace/regular.txt"));
         assertFalse(workspaceFolder.isDescendant("./../../root/workspace/regular.txt"));
@@ -137,8 +139,14 @@ public class FilePathSEC904Test {
         assertTrue(workspaceFolder.isDescendant("_nonexistent"));
         assertTrue(workspaceFolder.isDescendant("a"));
         assertTrue(workspaceFolder.isDescendant("a/a.txt"));
+        assertTrue(workspaceFolder.isDescendant("a/../a/a.txt"));
+        assertTrue(workspaceFolder.isDescendant("b/../a/a.txt"));
         assertTrue(workspaceFolder.isDescendant("b"));
+        assertTrue(workspaceFolder.isDescendant("./b"));
+        assertTrue(workspaceFolder.isDescendant(".\\b"));
         assertTrue(workspaceFolder.isDescendant("b/_a/a.txt"));
+        assertTrue(workspaceFolder.isDescendant("b/_a\\a.txt"));
+        assertTrue(workspaceFolder.isDescendant("b/_a/../a/a.txt"));
         assertTrue(workspaceFolder.isDescendant("b/_atxt"));
         
         // nonexistent but illegal

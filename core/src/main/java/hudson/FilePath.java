@@ -3322,8 +3322,14 @@ public final class FilePath implements Serializable {
             while (!remainingPath.isEmpty()) {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
-                Path rel = directChild.toAbsolutePath().relativize(childUsingFullPath.toAbsolutePath());
-                remainingPath = rel.toString();
+                String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
+                String directChildAbs = directChild.toAbsolutePath().toString();
+
+                if (childUsingFullPathAbs.length() == directChildAbs.length()) {
+                    remainingPath = "";
+                } else {
+                    remainingPath = childUsingFullPathAbs.substring(directChildAbs.length() + 1);
+                }
 
                 File childFileSymbolic = Util.resolveSymlinkToFile(directChild.toFile());
                 if (childFileSymbolic == null) {
