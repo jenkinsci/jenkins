@@ -3328,6 +3328,7 @@ public final class FilePath implements Serializable {
                 if (childUsingFullPathAbs.length() == directChildAbs.length()) {
                     remainingPath = "";
                 } else {
+                    // +1 to avoid the last slash
                     remainingPath = childUsingFullPathAbs.substring(directChildAbs.length() + 1);
                 }
 
