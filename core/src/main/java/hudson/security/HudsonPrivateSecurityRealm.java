@@ -392,7 +392,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
      * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
-     * SignupInfo#errors} set to a non-null value if any of the supported fields are invalid
+     * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
     private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
@@ -554,10 +554,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public String username,password1,password2,fullname,email,captcha;
 
         /**
-         * To display an error message, set it here.
+         * To display a general error message, set it here.
+         *
          */
         public String errorMessage;
 
+        /**
+         * Add field-specific error messages here.
+         * Keys are field names (e.g. {@code password2}), values are the messages.
+         */
+        // TODO i18n?
         public HashMap<String, String> errors = new HashMap<String, String>();
 
         public SignupInfo() {
