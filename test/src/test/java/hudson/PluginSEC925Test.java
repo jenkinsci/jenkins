@@ -19,7 +19,7 @@ public class PluginSEC925Test {
     @Rule
     public JenkinsRule r = new JenkinsRule();
     
-    @Ignore("TODO observed to fail in CI with 404")
+    @Ignore("TODO observed to fail in CI with 404 due to external UC issues")
     @Test
     @Issue("SECURITY-925")
     public void preventTimestamp2_toBeServed() throws Exception {
