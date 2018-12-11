@@ -29,6 +29,7 @@ import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -60,7 +61,6 @@ import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
 import org.jenkinsci.Symbol;
@@ -275,7 +275,14 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                         if (t.tabs.check(cal)) {
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
                             try {
+                                long begin_time = System.currentTimeMillis();
                                 t.run();
+                                long end_time = System.currentTimeMillis();
+                                if ((end_time - begin_time) > CRON_THRESHOLD) {
+                                    LOGGER.log(Level.WARNING, "cron trigger " + t.getClass().getName() + ".run() triggered by {0} spent too much time ({1}) in its execution, " +
+                                            "other timers can be affected",
+                                            new Object[] {p, Util.getTimeSpanString(end_time - begin_time)});
+                                }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
                                 // don't let that cancel the polling activity. report and move on.
@@ -291,6 +298,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             }
         }
     }
+
+    public static long CRON_THRESHOLD = 1000*30;    // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
 
