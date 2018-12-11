@@ -42,7 +42,7 @@ public class FilePathSEC904Test {
     
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
-
+    
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularFiles() throws IOException, InterruptedException {
