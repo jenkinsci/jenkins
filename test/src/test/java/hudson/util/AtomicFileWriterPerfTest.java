@@ -4,6 +4,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.junit.Ignore;
 
 public class AtomicFileWriterPerfTest {
 
@@ -30,8 +31,9 @@ public class AtomicFileWriterPerfTest {
      * So bumping this here to 70 seconds, so we keep being able to catch huge regressions if someone touches the Jenkins
      * serialization lower layers/AtomicFileWriter...
      */
+    @Ignore("cf https://github.com/jenkinsci/jenkins/pull/3788 : flaky in CI for low storage performance apparently")
     @Issue("JENKINS-34855")
-    @Test(timeout = 70 * 1000L)
+    @Test(timeout = 50 * 1000L)
     public void poorManPerformanceTestBed() throws Exception {
         int count = 1000;
         while (count-- > 0) {
