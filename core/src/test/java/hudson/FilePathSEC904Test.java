@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
-import org.junit.Ignore;
 
 //TODO to be merged back in FilePathTest after security release
 public class FilePathSEC904Test {
@@ -44,7 +43,6 @@ public class FilePathSEC904Test {
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
-    @Ignore("./../workspace fails on CI")
     @Test
     @Issue("SECURITY-904")
     public void isDescendant_regularFiles() throws IOException, InterruptedException {
