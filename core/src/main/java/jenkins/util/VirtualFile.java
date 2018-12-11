@@ -48,6 +48,8 @@ import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +67,7 @@ import org.apache.tools.ant.types.selectors.TokenizedPath;
 import org.apache.tools.ant.types.selectors.TokenizedPattern;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
@@ -357,6 +360,27 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     /**
+     * Determine if the implementation supports the {@link #isDescendant(String)} method
+     *
+     * TODO un-restrict it in a weekly after the patch
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean supportIsDescendant() {
+        return false;
+    }
+
+    /**
+     * Check if the relative path is really a descendant of this folder, following the symbolic links.
+     * Meant to be used in coordination with {@link #child(String)}.
+     *
+     * TODO un-restrict it in a weekly after the patch
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isDescendant(String childRelativePath) throws IOException {
+        return false;
+    }
+
+    /**
      * Creates a virtual file wrapper for a local file.
      * @param f a disk file (need not exist)
      * @return a wrapper
@@ -462,6 +486,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(e);
                 }
             }
+
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {
                 String myPath = f.toPath().toRealPath(new LinkOption[0]).toString();
@@ -477,6 +502,54 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
             return false;
         }
+
+        /**
+         * TODO un-restrict it in a weekly after the patch
+         */
+        @Override
+        @Restricted(NoExternalUse.class)
+        public boolean supportIsDescendant() {
+            return true;
+        }
+
+        /**
+         * TODO un-restrict it in a weekly after the patch
+         */
+        @Override
+        @Restricted(NoExternalUse.class)
+        public boolean isDescendant(String potentialChildRelativePath) throws IOException {
+            if (new File(potentialChildRelativePath).isAbsolute()) {
+                throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
+            }
+            
+            FilePath root = new FilePath(this.root);
+            String relativePath = computeRelativePathToRoot();
+            
+            try {
+                return root.isDescendant(relativePath + potentialChildRelativePath);
+            }
+            catch (InterruptedException e) {
+                return false;
+            }
+        }
+
+        /**
+         * To be kept in sync with {@link FilePathVF#computeRelativePathToRoot()}
+         */
+        private String computeRelativePathToRoot(){
+            if (this.root.equals(this.f)) {
+                return "";
+            }
+            
+            Deque<String> relativePath = new LinkedList<>();
+            File current = this.f;
+            while (current != null && !current.equals(this.root)) {
+                relativePath.addFirst(current.getName());
+                current = current.getParentFile();
+            }
+            
+            return String.join(File.separator, relativePath) + File.separator;
+        }
     }
 
     /**
@@ -485,12 +558,14 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @return a wrapper
      */
     public static VirtualFile forFilePath(final FilePath f) {
-        return new FilePathVF(f);
+        return new FilePathVF(f, f);
     }
     private static final class FilePathVF extends VirtualFile {
         private final FilePath f;
-        FilePathVF(FilePath f) {
+        private final FilePath root;
+        FilePathVF(FilePath f, FilePath root) {
             this.f = f;
+            this.root = root;
         }
             @Override public String getName() {
                 return f.getName();
@@ -535,7 +610,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     List<FilePath> kids = f.list();
                     VirtualFile[] vfs = new VirtualFile[kids.size()];
                     for (int i = 0; i < vfs.length; i++) {
-                        vfs[i] = forFilePath(kids.get(i));
+                        vfs[i] = new FilePathVF(kids.get(i), this.root);
                     }
                     return vfs;
                 } catch (InterruptedException x) {
@@ -550,7 +625,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             }
             @Override public VirtualFile child(String name) {
-                return forFilePath(f.child(name));
+                return new FilePathVF(f.child(name), this.root);
             }
             @Override public long length() throws IOException {
                 try {
@@ -594,6 +669,53 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
+        /**
+         * TODO un-restrict it in a weekly after the patch
+         */
+        @Override
+        @Restricted(NoExternalUse.class)
+        public boolean supportIsDescendant() {
+            return true;
+        }
+
+        /**
+         * TODO un-restrict it in a weekly after the patch
+         */
+        @Override
+        @Restricted(NoExternalUse.class)
+        public boolean isDescendant(String potentialChildRelativePath) throws IOException {
+            if (new File(potentialChildRelativePath).isAbsolute()) {
+                throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
+            }
+            
+            String relativePath = computeRelativePathToRoot();
+            
+            try {
+                return this.root.isDescendant(relativePath + potentialChildRelativePath);
+            }
+            catch (InterruptedException e) {
+                return false;
+            }
+        }
+
+        /**
+         * To be kept in sync with {@link FileVF#computeRelativePathToRoot()}
+         */
+        private String computeRelativePathToRoot(){
+            if (this.root.equals(this.f)) {
+                return "";
+            }
+
+            LinkedList<String> relativePath = new LinkedList<>();
+            FilePath current = this.f;
+            while (current != null && !current.equals(this.root)) {
+                relativePath.addFirst(current.getName());
+                current = current.getParent();
+            }
+
+            return String.join(File.separator, relativePath) + File.separator;
+        }
     }
     private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
         private final String includes, excludes;

@@ -51,7 +51,7 @@ Content-Type: application/javascript; charset=UTF-8
 ]
 </pre></blockquote>
   <p>
-    Whereas <a href="../pevalidateConfig">prevalidateConfig</a> call runs without any side-effect, you can also
+    Whereas <a href="../prevalidateConfig">prevalidateConfig</a> call runs without any side-effect, you can also
     submit the same XML to <a href="../installNecessaryPlugins">installNecessaryPlugins</a> endpoint to
     install missing plugins and updating old ones.
     This calls returns immediately after initiating plugin installation process, without waiting for the completion

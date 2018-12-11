@@ -30,6 +30,8 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
@@ -962,6 +964,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
     }
@@ -970,6 +973,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link OneOffExecutor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<OneOffExecutor> getOneOffExecutors() {
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }

@@ -32,6 +32,11 @@ THE SOFTWARE.
         ${data.errorMessage}
       </div>
     </j:if>
+    <j:forEach var="error" items="${data.errors}">
+      <div class="error" style="margin-bottom:1em">
+        ${error.value}
+      </div>
+    </j:forEach>
       <table>
         <tr>
           <td>${%Username}:</td>

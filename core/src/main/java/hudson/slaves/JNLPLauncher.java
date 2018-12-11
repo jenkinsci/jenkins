@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
+import jenkins.util.java.JavaUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -234,6 +235,6 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {
-        return System.getProperty("java.version", "1.8").startsWith("1.8");
+        return JavaUtils.isRunningWithJava8OrBelow();
     }
 }

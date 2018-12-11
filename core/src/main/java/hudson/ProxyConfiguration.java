@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
@@ -78,6 +79,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @see jenkins.model.Jenkins#proxy
  */
+@StaplerAccessibleType
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
     /**
      * Holds a default TCP connect timeout set on all connections returned from this class,
