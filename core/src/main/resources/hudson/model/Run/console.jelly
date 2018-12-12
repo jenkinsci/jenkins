@@ -34,6 +34,7 @@ THE SOFTWARE.
     <l:main-panel>
       <t:buildCaption>
         ${%Console Output}
+        (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
       </t:buildCaption>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
