@@ -16,8 +16,8 @@ def failFast = false
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
-def buildTypes = ['Linux']
-def jdks = [8]
+def buildTypes = ['Linux', 'Windows']
+def jdks = [8, 11]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
