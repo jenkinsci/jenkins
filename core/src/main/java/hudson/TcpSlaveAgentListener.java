@@ -415,7 +415,9 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
                                     new String(ping, "UTF-8"),
-                                    new String(response, 0, responseLength, "UTF-8")
+                                    responseLength > 0 && responseLength <= response.length ?
+                                        new String(response, 0, responseLength, "UTF-8") :
+                                        "bad response length " + responseLength
                             });
                             return false;
                         }
