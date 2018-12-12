@@ -195,7 +195,7 @@ public class UtilTest {
 
     @Test
     public void testSymlink() throws Exception {
-        Assume.assumeTrue(!Functions.isWindows());
+        Assume.assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
@@ -243,7 +243,7 @@ public class UtilTest {
 
     @Test
     public void testIsSymlink() throws IOException, InterruptedException {
-        Assume.assumeTrue(!Functions.isWindows());
+        Assume.assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
