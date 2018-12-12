@@ -59,6 +59,7 @@ import org.hamcrest.Description;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.Issue;
 
 import hudson.util.StreamTaskListener;
@@ -74,6 +75,8 @@ import com.google.common.collect.Lists;
 public class UtilTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testReplaceMacro() {
@@ -374,16 +377,17 @@ public class UtilTest {
             Util.GC_AFTER_FAILED_DELETE = false;
             Util.DELETION_MAX = 2;
             Util.WAIT_BETWEEN_DELETION_RETRIES = 0;
-            try {
-                Util.deleteContentsRecursive(dir);
-                fail("Expected IOException");
-            } catch (IOException x) {
-                assertFalse("d2 should not exist", d2.exists());
-                assertFalse("f1 should not exist", f1.exists());
-                assertFalse("d1f2 should not exist", d2f2.exists());
-                assertThat(x.getMessage(), containsString(dir.getPath()));
-                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), containsString("Tried 2 times (of a maximum of 2)."), not(containsString("garbage-collecting")), not(containsString("wait"))));
-            }
+            expectedException.expectMessage(allOf(
+                    containsString(dir.getPath()),
+                    not(containsString("interrupted")),
+                    containsString("Tried 2 times (of a maximum of 2)."),
+                    not(containsString("garbage-collecting")),
+                    not(containsString("wait"))
+            ));
+            Util.deleteContentsRecursive(dir);
+            assertFalse("d2 should not exist", d2.exists());
+            assertFalse("f1 should not exist", f1.exists());
+            assertFalse("d1f2 should not exist", d2f2.exists());
         } finally {
             Util.DELETION_MAX = defaultDeletionMax;
             Util.WAIT_BETWEEN_DELETION_RETRIES = defaultDeletionWait;
@@ -433,22 +437,22 @@ public class UtilTest {
             Util.DELETION_MAX = 1;
             Util.WAIT_BETWEEN_DELETION_RETRIES = 10000; // long enough to notice
             long timeWhenDeletionStarted = System.currentTimeMillis();
-            try {
-                Util.deleteRecursive(dir);
-                fail("Expected IOException");
-            } catch (IOException x) {
-                long timeWhenDeletionEnded = System.currentTimeMillis();
-                assertTrue("dir exists", dir.exists());
-                assertTrue("d1 exists", d1.exists());
-                assertTrue("d1f1 exists", d1f1.exists());
-                assertFalse("d2 should not exist", d2.exists());
-                assertFalse("f1 should not exist", f1.exists());
-                assertFalse("d1f2 should not exist", d2f2.exists());
-                assertThat(x.getMessage(), containsString(dir.getPath()));
-                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), not(containsString("maximum of")), not(containsString("garbage-collecting"))));
-                long actualTimeSpentDeleting = timeWhenDeletionEnded - timeWhenDeletionStarted;
-                assertTrue("did not wait - took " + actualTimeSpentDeleting + "ms", actualTimeSpentDeleting<1000L);
-            }
+            expectedException.expectMessage(allOf(
+                    containsString(dir.getPath()),
+                    not(containsString("interrupted")),
+                    not(containsString("maximum of")),
+                    not(containsString("garbage-collecting"))
+            ));
+            Util.deleteRecursive(dir);
+            long timeWhenDeletionEnded = System.currentTimeMillis();
+            assertTrue("dir exists", dir.exists());
+            assertTrue("d1 exists", d1.exists());
+            assertTrue("d1f1 exists", d1f1.exists());
+            assertFalse("d2 should not exist", d2.exists());
+            assertFalse("f1 should not exist", f1.exists());
+            assertFalse("d1f2 should not exist", d2f2.exists());
+            long actualTimeSpentDeleting = timeWhenDeletionEnded - timeWhenDeletionStarted;
+            assertTrue("did not wait - took " + actualTimeSpentDeleting + "ms", actualTimeSpentDeleting<1000L);
             unlockFileForDeletion(d1f1);
             // Deletes get retried if they fail 1st time around,
             // allowing the operation to succeed on subsequent attempts.
@@ -763,12 +767,8 @@ public class UtilTest {
 
         assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
 
-        try {
-            Util.modeToPermissions(01777);
-            fail("Did not detect invalid mode");
-        } catch (IOException e) {
-            assertThat(e.getMessage(), startsWith("Invalid mode"));
-        }
+        expectedException.expectMessage(startsWith("Invalid mode"));
+        Util.modeToPermissions(01777);
     }
 
     @Test
