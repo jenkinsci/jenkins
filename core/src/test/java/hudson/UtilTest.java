@@ -354,7 +354,6 @@ public class UtilTest {
 
     @Ignore("TODO often fails in CI")
     @Test
-    @Ignore("Frequently flaky test")
     public void testDeleteContentsRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         final File dir = tmp.newFolder();
