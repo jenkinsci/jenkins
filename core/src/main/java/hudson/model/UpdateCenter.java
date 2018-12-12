@@ -221,7 +221,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         } else {
             //TODO: Rollback the default for Java 11 when it goes to GA
             String experimentalJava11UC = "https://updates.jenkins.io/temporary-experimental-java11/";
-            logger.log(Level.WARNING, "Running Jenkins with Java {0} which is available in the preview mode only. " +
+            logger.log(Level.INFO, "Running Jenkins with Java {0} which is available in preview mode only. " +
                     "A custom experimental update center will be used: {1}",
                     new Object[] {System.getProperty("java.specification.version"), experimentalJava11UC});
             UPDATE_CENTER_URL = experimentalJava11UC;
