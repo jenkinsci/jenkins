@@ -1,0 +1,264 @@
+{
+  "connectionCheckUrl": "http://www.google.com/",
+  "core": {
+    "buildDate": "Dec 18, 2016",
+    "name": "core",
+    "sha1": "x4rDgtNYm9l7zJ16RVuxMRgGoQE=",
+    "url": "http://updates.jenkins-ci.org/download/war/2.37/jenkins.war",
+    "version": "2.37"
+  },
+  "id": "jenkins40494",
+  "plugins": {
+    "display-url-api": {
+      "buildDate": "Sep 22, 2016",
+      "dependencies": [
+        {
+          "name": "junit",
+          "optional": false,
+          "version": "1.3"
+        }
+      ],
+      "developers": [
+        {
+          "developerId": "jdumay",
+          "email": "jdumay@cloudbees.com",
+          "name": "James Dumay"
+        }
+      ],
+      "excerpt": "\\\\  Provides the DisplayURLProvider extension point to provide alternate URLs for use in notifications.  URLs can be requested/extended for these UI locations:  * Root page. * Job. * Run. * Run changes. * Test result.  ",
+      "gav": "org.jenkins-ci.plugins:display-url-api:0.5",
+      "labels": [],
+      "name": "display-url-api",
+      "previousTimestamp": "2016-09-22T09:35:08.00Z",
+      "previousVersion": "0.4",
+      "releaseTimestamp": "2016-09-22T10:42:00.00Z",
+      "requiredCore": "1.625.3",
+      "scm": "github.com",
+      "sha1": "QEykyLSFuZTnFyHrzZEOgzSsYcU=",
+      "title": "Display URL API",
+      "url": "http://updates.jenkins-ci.org/download/plugins/display-url-api/0.5/display-url-api.hpi",
+      "version": "0.5",
+      "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Display+URL+API+Plugin"
+    },
+    "junit": {
+      "buildDate": "Oct 17, 2016",
+      "dependencies": [
+        {
+          "name": "structs",
+          "optional": false,
+          "version": "1.2"
+        }
+      ],
+      "developers": [
+        {
+          "developerId": "ogondza"
+        }
+      ],
+      "excerpt": "Allows JUnit-format test results to be published.",
+      "gav": "org.jenkins-ci.plugins:junit:1.19",
+      "labels": [
+        "report"
+      ],
+      "name": "junit",
+      "previousTimestamp": "2016-08-08T15:10:34.00Z",
+      "previousVersion": "1.18",
+      "releaseTimestamp": "2016-10-17T12:15:20.00Z",
+      "requiredCore": "1.580.1",
+      "scm": "github.com",
+      "sha1": "f3jcYlxz6/8PK43W3KL5LFtz7ro=",
+      "title": "JUnit Plugin",
+      "url": "http://updates.jenkins-ci.org/download/plugins/junit/1.19/junit.hpi",
+      "version": "1.19",
+      "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/JUnit+Plugin"
+    },
+    "mailer": {
+      "buildDate": "Sep 04, 2016",
+      "dependencies": [
+        {
+          "name": "display-url-api",
+          "optional": false,
+          "version": "0.2"
+        }
+      ],
+      "developers": [
+        {
+          "developerId": "andresrc"
+        }
+      ],
+      "excerpt": "This plugin allows you to configure email notifications for build results. This is a break-out of the original core based email component. ",
+      "gav": "org.jenkins-ci.plugins:mailer:1.18",
+      "labels": [],
+      "name": "mailer",
+      "previousTimestamp": "2016-04-20T08:46:22.00Z",
+      "previousVersion": "1.17",
+      "releaseTimestamp": "2016-09-04T09:14:16.00Z",
+      "requiredCore": "1.625.3",
+      "scm": "github.com",
+      "sha1": "poG1EauZFM5lZE5hCBx5mqr/mMA=",
+      "title": "Jenkins Mailer Plugin",
+      "url": "http://updates.jenkins-ci.org/download/plugins/mailer/1.18/mailer.hpi",
+      "version": "1.18",
+      "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Mailer"
+    },
+    "extra-columns": {
+      "buildDate": "Apr 11, 2016",
+      "dependencies": [
+        {
+          "name": "junit",
+          "optional": false,
+          "version": "1.11"
+        }
+      ],
+      "developers": [
+        {
+          "developerId": "fredg",
+          "name": "Fred G."
+        }
+      ],
+      "excerpt": "This is a general listview-column plugin that currently contains the following columns: Test Result, Configure Project button, Disable/Enable Project button, Project Description, Build Description, SCM Type, Last/Current Build Console output, Job Type, Build Duration, Build Parameters.",
+      "gav": "org.jenkins-ci.plugins:extra-columns:1.17",
+      "labels": [
+        "listview-column"
+      ],
+      "name": "extra-columns",
+      "previousTimestamp": "2015-12-11T01:18:48.00Z",
+      "previousVersion": "1.16",
+      "releaseTimestamp": "2016-04-11T22:36:22.00Z",
+      "requiredCore": "1.475",
+      "scm": "github.com",
+      "sha1": "8y9Y91n7/Aw47G3pCxzJzTd94J0=",
+      "title": "Extra Columns Plugin",
+      "url": "http://updates.jenkins-ci.org/download/plugins/extra-columns/1.17/extra-columns.hpi",
+      "version": "1.17",
+      "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Extra+Columns+Plugin"
+    },
+    "structs": {
+      "buildDate": "Aug 30, 2016",
+      "dependencies": [],
+      "developers": [
+        {
+          "developerId": "jglick"
+        }
+      ],
+      "excerpt": "Library plugin for DSL plugins that need concise names for Jenkins extensions",
+      "gav": "org.jenkins-ci.plugins:structs:1.5",
+      "labels": [],
+      "name": "structs",
+      "previousTimestamp": "2016-08-26T14:11:44.00Z",
+      "previousVersion": "1.4",
+      "releaseTimestamp": "2016-08-30T14:10:10.00Z",
+      "requiredCore": "1.580.1",
+      "scm": "github.com",
+      "sha1": "fK+F0PEfSS//DOqmNJvX2rQYabo=",
+      "title": "Structs Plugin",
+      "url": "http://updates.jenkins-ci.org/download/plugins/structs/1.5/structs.hpi",
+      "version": "1.5",
+      "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Structs+plugin"
+    }
+  },
+  "warnings": [
+    {
+      "id": "SECURITY-208",
+      "type": "plugin",
+      "name": "google-login",
+      "message": "Authentication bypass vulnerability",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-10-12",
+      "versions": [
+        {
+          "lastVersion": "1.1",
+          "pattern": "1[.][01](|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-136",
+      "type": "plugin",
+      "name": "extra-columns",
+      "message": "Stored XSS vulnerability",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-04-11",
+      "versions": [
+        {
+          "lastVersion": "1.16",
+          "pattern": "1[.](\\d|1[0123456])(|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-258",
+      "type": "plugin",
+      "name": "extra-columns",
+      "message": "Groovy sandbox protection incomplete",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-04-11",
+      "versions": [
+        {
+          "lastVersion": "1.18",
+          "pattern": "1[.](\\d|1[012345678])(|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-85",
+      "type": "plugin",
+      "name": "tap",
+      "message": "Path traversal vulnerability",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-06-20",
+      "versions": [
+        {
+          "lastVersion": "1.24",
+          "pattern": "1[.](\\d|1\\d|2[01234])(|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-278",
+      "type": "plugin",
+      "name": "image-gallery",
+      "message": "Path traversal vulnerability",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-06-20",
+      "versions": [
+        {
+          "lastVersion": "1.3",
+          "pattern": "(0[.].*|1[.][0123])(|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-290",
+      "type": "plugin",
+      "name": "build-failure-analyzer",
+      "message": "Cross-site scripting vulnerability",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-06-20",
+      "versions": [
+        {
+          "lastVersion": "1.15.0",
+          "pattern": "1[.](\\d|1[012345])[.]\\d+(|[.-].*)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-305",
+      "type": "plugin",
+      "versions": [
+        {
+          "lastVersion": "1.7.24",
+          "pattern": "1[.]7[.](\\d(|[.-].*)|24)"
+        }
+      ]
+    },
+    {
+      "id": "SECURITY-309",
+      "type": "plugin",
+      "name": "cucumber-reports",
+      "message": "Plugin disables Content-Security-Policy for files served by Jenkins",
+      "url": "https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-07-27",
+      "versions": [
+        {
+          "firstVersion": "1.3.0",
+          "lastVersion": "2.5.1",
+          "pattern": "(1[.][34]|2[.][012345])(|[.-].*)"
+        }
+      ]
+    }
+  ],
+  "updateCenterVersion": "1"
+}

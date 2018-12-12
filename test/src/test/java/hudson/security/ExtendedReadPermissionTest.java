@@ -52,7 +52,9 @@ public class ExtendedReadPermissionTest {
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertTrue("Charlie should have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
-        JenkinsRule.WebClient wc = r.createWebClient().login("charlie","charlie");
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.withBasicCredentials("charlie");
+
         HtmlPage page = wc.goTo("job/a/configure");
         HtmlForm form = page.getFormByName("config");
         HtmlButton saveButton = r.getButtonByCaption(form,"Save");
@@ -68,7 +70,9 @@ public class ExtendedReadPermissionTest {
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Charlie should not have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
-        JenkinsRule.WebClient wc = r.createWebClient().login("charlie","charlie");
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.withBasicCredentials("charlie");
+
         wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
@@ -81,7 +85,9 @@ public class ExtendedReadPermissionTest {
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Bob should not have extended read for this test", gas.hasExplicitPermission("bob",Item.EXTENDED_READ));
 
-        JenkinsRule.WebClient wc = r.createWebClient().login("bob","bob");
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.withBasicCredentials("bob");
+
         wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 

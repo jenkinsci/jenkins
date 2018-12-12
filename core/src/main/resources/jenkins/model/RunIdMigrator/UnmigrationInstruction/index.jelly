@@ -28,8 +28,8 @@ THE SOFTWARE.
     <l:header />
     <l:main-panel>
       <p>
-        To reverse the effect of <a href="http://jenkins-ci.org/issue/24380">JENKINS-24380</a> fix, run the following command
-        on the server. See <a href="https://wiki.jenkins-ci.org/display/JENKINS/JENKINS-24380+Migration">Wiki page</a>
+        To reverse the effect of build record migration, run the following command
+        on the server. See <a href="https://jenkins.io/redirect/build-record-migration">documentation</a>
         for more details:
       </p>
       <table style="width:100%">

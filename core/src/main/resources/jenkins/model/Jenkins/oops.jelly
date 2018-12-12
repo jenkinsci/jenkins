@@ -31,9 +31,9 @@ THE SOFTWARE.
   <l:layout title="Jenkins" norefresh="true">
     <l:header />
     <l:side-panel>
-      <l:task href="http://jenkins-ci.org/" icon="icon-next icon-md" title="${%Jenkins project}"/>
-      <l:task href="http://issues.jenkins-ci.org/" icon="icon-gear2 icon-md" title="${%Bug tracker}"/>
-      <l:task href="http://jenkins-ci.org/content/mailing-lists" icon="icon-search icon-md" title="${%Mailing Lists}"/>
+      <l:task href="https://jenkins.io/" icon="icon-next icon-md" title="${%Jenkins project}"/>
+      <l:task href="https://jenkins.io/redirect/report-an-issue" icon="icon-gear2 icon-md" title="${%Bug tracker}"/>
+      <l:task href="https://jenkins.io/redirect/mailing-lists" icon="icon-search icon-md" title="${%Mailing Lists}"/>
       <l:task href="https://twitter.com/jenkinsci" icon="icon-user icon-md" title="${%Twitter: @jenkinsci}"/>
 
     </l:side-panel>

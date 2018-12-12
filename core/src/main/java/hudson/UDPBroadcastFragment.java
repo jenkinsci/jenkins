@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
 
 import java.net.SocketAddress;
 

@@ -1,0 +1,17 @@
+downloadService.post('hudson.tasks.Maven.MavenInstaller',{"list": [
+  {
+    "id": "3.3.1",
+    "name": "3.3.1",
+    "url": "http://repo1.maven.org/maven2/org/apache/maven/apache-maven/3.3.1/apache-maven-3.3.1-bin.zip"
+  },
+  {
+    "id": "3.2.5",
+    "name": "3.2.5",
+    "url": "http://repo1.maven.org/maven2/org/apache/maven/apache-maven/3.2.5/apache-maven-3.2.5-bin.zip"
+  },
+  {
+    "id": "3.2.3",
+    "name": "3.2.3",
+    "url": "http://repo1.maven.org/maven2/org/apache/maven/apache-maven/3.2.3/apache-maven-3.2.3-bin.zip"
+  }
+]})

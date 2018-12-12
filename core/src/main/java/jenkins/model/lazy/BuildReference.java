@@ -3,6 +3,7 @@ package jenkins.model.lazy;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.util.SystemProperties;
 import hudson.model.Run;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -144,7 +145,7 @@ public final class BuildReference<R> {
     @Extension(ordinal=Double.NEGATIVE_INFINITY) public static final class DefaultHolderFactory implements HolderFactory {
 
         public static final String MODE_PROPERTY = "jenkins.model.lazy.BuildReference.MODE";
-        private static final String mode = System.getProperty(MODE_PROPERTY);
+        private static final String mode = SystemProperties.getString(MODE_PROPERTY);
 
         @Override public <R> Holder<R> make(R referent) {
             if (mode == null || mode.equals("soft")) {

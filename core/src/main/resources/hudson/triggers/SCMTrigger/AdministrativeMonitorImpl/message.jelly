@@ -23,6 +23,8 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<div class='warning'>
-  ${%blurb}
-</div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:t="/lib/hudson">
+  <div class="alert alert-warning">
+    ${%blurb(rootURL)}
+  </div>
+</j:jelly>

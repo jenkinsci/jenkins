@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="${%JENKINS_HOME is almost full}" permission="${app.ADMINISTER}">
+	<l:layout title="${%JENKINS_HOME is almost full}">
 		<l:main-panel>
       <h1>
         <l:icon class="icon-warning icon-xlg"/>

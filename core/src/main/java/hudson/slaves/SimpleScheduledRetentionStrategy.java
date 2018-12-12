@@ -31,6 +31,7 @@ import hudson.model.Descriptor;
 import hudson.model.Queue;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormValidation;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -45,7 +46,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 
 /**
- * {@link RetentionStrategy} that controls the slave based on a schedule.
+ * {@link RetentionStrategy} that controls the agent based on a schedule.
  *
  * @author Stephen Connolly
  * @since 1.275
@@ -186,8 +187,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                                         new Object[]{c.getName()});
                                 c.setAcceptingTasks(true);
                             }
-                        } catch (InterruptedException e) {
-                        } catch (ExecutionException e) {
+                        } catch (InterruptedException | ExecutionException e) {
                         }
                     }
                 });
@@ -243,7 +243,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
-    @Extension
+    @Extension @Symbol("schedule")
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();

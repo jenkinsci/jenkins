@@ -98,10 +98,10 @@ public class BulkChangeTest {
     @Test
     public void nestedBulkChange() throws Exception {
         Point pt = new Point();
-        Point _ = new Point();
+        Point pt2 = new Point();
         BulkChange bc1 = new BulkChange(pt);
         try {
-            BulkChange bc2 = new BulkChange(_);
+            BulkChange bc2 = new BulkChange(pt2);
             try {
                 BulkChange bc3 = new BulkChange(pt);
                 try {

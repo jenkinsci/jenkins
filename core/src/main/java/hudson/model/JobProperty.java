@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.Plugin;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
@@ -38,22 +37,25 @@ import java.util.Collection;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
+import jenkins.model.OptionalJobProperty;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import javax.annotation.Nonnull;
 
 /**
  * Extensible property of {@link Job}.
  *
  * <p>
- * {@link Plugin}s can extend this to define custom properties
+ * Plugins can extend this to define custom properties
  * for {@link Job}s. {@link JobProperty}s show up in the user
  * configuration screen, and they are persisted with the job object.
  *
  * <p>
- * Configuration screen should be defined in <tt>config.jelly</tt>.
+ * Configuration screen should be defined in {@code config.jelly}.
  * Within this page, the {@link JobProperty} instance is available
- * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link Job}.
+ * as {@code instance} variable (while {@code it} refers to {@link Job}.
  *
  * <p>
  * Starting 1.150, {@link JobProperty} implements {@link BuildStep},
@@ -62,6 +64,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * can add actions to the new build. The {@link #perform(AbstractBuild, Launcher, BuildListener)}
  * and {@link #prebuild(AbstractBuild, BuildListener)} are invoked after those
  * of {@link Publisher}s.
+ *
+ * <p>Consider extending {@link OptionalJobProperty} instead.
  *
  * @param <J>
  *      When you restrict your job property to be only applicable to a certain
@@ -96,6 +100,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
     /**
      * {@inheritDoc}
      */
+    @Override
     public JobPropertyDescriptor getDescriptor() {
         return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
@@ -129,6 +134,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * @see ProminentProjectAction
      * @see PermalinkProjectAction
      */
+    @Nonnull
     public Collection<? extends Action> getJobActions(J job) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getJobAction(job);
@@ -150,6 +156,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * <p>
      * Invoked after {@link Publisher}s have run.
      */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
@@ -166,6 +173,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return getJobAction((J)project);
     }
 
+    @Nonnull
     public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
         return getJobActions((J)project);
     }

@@ -133,7 +133,7 @@ public abstract class FormFieldValidator {
                     throw new AccessDeniedException("No subject");
                 subject.checkPermission(permission);
             } catch (AccessDeniedException e) {
-                // if the user has hudson-wisde admin permission, all checks are allowed
+                // if the user has hudson-wide admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
                 if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                     throw e;
@@ -170,8 +170,8 @@ public abstract class FormFieldValidator {
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void error(String message) throws IOException, ServletException {
         errorWithMarkup(message==null?null:Util.escape(message));
@@ -209,8 +209,8 @@ public abstract class FormFieldValidator {
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
         _errorWithMarkup(message,"error");
@@ -350,7 +350,7 @@ public abstract class FormFieldValidator {
      * Checks the file mask (specified in the 'value' query parameter) against
      * the current workspace.
      * @since 1.90.
-     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean)} 
+     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean, boolean)} 
      */
     @Deprecated
     public static class WorkspaceFileMask extends FormFieldValidator {
@@ -481,7 +481,7 @@ public abstract class FormFieldValidator {
                     else                    warning(msg);
                 }
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(); // couldn't check
             }
         }
 
@@ -635,7 +635,7 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Verifies that the 'value' parameter is an integer >= 0.
+     * Verifies that the {@code value} parameter is an integer ≥ 0.
      *
      * @since 1.282
      * @deprecated as of 1.294

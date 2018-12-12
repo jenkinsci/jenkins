@@ -30,6 +30,7 @@ import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import java.util.Map;
+import jenkins.util.xstream.CriticalXStreamException;
 
 /**
  * Loads a {@link Map} while tolerating read errors on its keys and values.
@@ -55,6 +56,8 @@ final class RobustMapConverter extends MapConverter {
         reader.moveDown();
         try {
             return readItem(reader, context, map);
+        } catch (CriticalXStreamException x) {
+            throw x;
         } catch (XStreamException x) {
             RobustReflectionConverter.addErrorInContext(context, x);
             return ERROR;

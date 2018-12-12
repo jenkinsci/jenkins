@@ -24,13 +24,14 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.Tasks;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -371,16 +372,16 @@ public abstract class LoadStatistics {
      * 
      * Put differently, the half reduction time is {@code CLOCK*log(0.5)/log(DECAY)}
      */
-    public static final float DECAY = Float.parseFloat(System.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
+    public static final float DECAY = Float.parseFloat(SystemProperties.getString(LoadStatistics.class.getName()+".decay","0.9"));
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
-    public static int CLOCK = Integer.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
+    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
 
     /**
      * Periodically update the load statistics average.
      */
-    @Extension
+    @Extension @Symbol("loadStatistics")
     public static class LoadStatisticsUpdater extends PeriodicWork {
         public long getRecurrencePeriod() {
             return CLOCK;
@@ -390,7 +391,7 @@ public abstract class LoadStatistics {
             Jenkins j = Jenkins.getInstance();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
-            // update statistics on slaves
+            // update statistics on agents
             for( Label l : j.getLabels() ) {
                 l.loadStatistics.updateCounts(l.loadStatistics.computeSnapshot(bis));
             }
@@ -404,9 +405,11 @@ public abstract class LoadStatistics {
         private int count(List<Queue.BuildableItem> bis, Label l) {
             int q=0;
             for (Queue.BuildableItem bi : bis) {
-                for (SubTask st : Tasks.getSubTasksOf(bi.task))
-                    if (bi.getAssignedLabelFor(st)==l)
+                for (SubTask st : bi.task.getSubTasks()) {
+                    if (bi.getAssignedLabelFor(st) == l) {
                         q++;
+                    }
+                }
             }
             return q;
         }
@@ -421,7 +424,7 @@ public abstract class LoadStatistics {
         private static final long serialVersionUID = 1L;
 
         /**
-         * The total number of executors that Jenkins currently knows, this includes all off-line slaves.
+         * The total number of executors that Jenkins currently knows, this includes all off-line agents.
          */
         private final int definedExecutors;
         /**
@@ -467,7 +470,7 @@ public abstract class LoadStatistics {
         }
 
         /**
-          * The total number of executors that Jenkins currently knows, this includes all off-line slaves.
+          * The total number of executors that Jenkins currently knows, this includes all off-line agents.
           */
         @Exported
         public int getDefinedExecutors() {

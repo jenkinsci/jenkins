@@ -1,0 +1,16 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <j:if test="${it.checkEnabled}">
+        <script>
+            var url="${rootURL}/${it.url}/checkURIEncoding";
+            var params = {value : '\u57f7\u4e8b'};
+            var checkAjax = new Ajax.Updater(
+                'message', url,
+                {
+                    method: 'get', parameters: params
+                }
+            );
+        </script>
+        <span id="message"></span>
+    </j:if>
+</j:jelly>

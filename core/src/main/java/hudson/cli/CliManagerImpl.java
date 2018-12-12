@@ -44,16 +44,19 @@ import java.util.logging.Logger;
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public class CliManagerImpl implements CliEntryPoint, Serializable {
     private transient final Channel channel;
     
     private Authentication transportAuth;
 
+    //TODO: Migrate the code to Callable decorator
     /**
      * Runs callable from this CLI client with the transport authentication credential.
      */
-    private final CallableFilter authenticationFilter = new CallableFilter() {
+    private transient final CallableFilter authenticationFilter = new CallableFilter() {
         public <V> V call(Callable<V> callable) throws Exception {
             SecurityContext context = SecurityContextHolder.getContext();
             Authentication old = context.getAuthentication();

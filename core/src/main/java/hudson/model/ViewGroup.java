@@ -30,6 +30,7 @@ import hudson.views.ViewsTabBar;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * Container of {@link View}s.
@@ -70,13 +71,12 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * the view group itself.
      * <p>
      * If the view group doesn't do such rendering, this method can always return null.
-     * <p>
-     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
-     * To work around this, {@link View}s can use {@link View#getOwnerPrimaryView()}.
-     *
+     * @return by default, null
      * @since 1.417
      */
-    View getPrimaryView();
+    default View getPrimaryView() {
+        return null;
+    }
 
     /**
      * Returns the path of this group, relative to the context root,
@@ -110,14 +110,15 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * <p>
      * Generally speaking, Views render a subset of {@link TopLevelItem}s that belong to this item group.
-     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
-     * To work around this, {@link View}s can use {@link View#getOwnerItemGroup()}.
      *
      * @return
-     *      Never null. Sometimes this is {@link ModifiableItemGroup} (if the container allows arbitrary addition)
+     *      Never null. Sometimes this is {@link ModifiableItemGroup} (if the container allows arbitrary addition).
+     *      By default, {@link Jenkins#getInstance}.
      * @since 1.417
      */
-    ItemGroup<? extends TopLevelItem> getItemGroup();
+    default ItemGroup<? extends TopLevelItem> getItemGroup() {
+        return Jenkins.getInstance();
+    }
 
     /**
      * Returns actions that should be displayed in views.
@@ -126,15 +127,13 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * In this interface, the return value is used read-only. This doesn't prevent subtypes
      * from returning modifiable actions, however.
      *
-     * <p>
-     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
-     * To work around this, {@link View}s can use {@link View#getOwnerViewActions()}.
-     *
      * @return
-     *      may be empty but never null.
+     *      may be empty but never null; {@link Jenkins#getActions} by default
      * @see Actionable#getActions()
      * @since 1.417
      */
-    List<Action> getViewActions();
+    default List<Action> getViewActions() {
+        return Jenkins.getInstance().getActions();
+    }
     
 }

@@ -23,11 +23,14 @@
  */
 package hudson.util;
 
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Enumeration;
+import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link ClassLoader} that masks a specified set of classes
@@ -42,9 +45,9 @@ public class MaskingClassLoader extends ClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
-    private final List<String> masksClasses = new ArrayList<String>();
+    private final List<String> masksClasses = new CopyOnWriteArrayList<>();
 
-    private final List<String> masksResources = new ArrayList<String>();
+    private final List<String> masksResources = new CopyOnWriteArrayList<>();
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
@@ -63,7 +66,7 @@ public class MaskingClassLoader extends ClassLoader {
     }
 
     @Override
-    protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         for (String mask : masksClasses) {
             if(name.startsWith(mask))
                 throw new ClassNotFoundException();
@@ -73,19 +76,31 @@ public class MaskingClassLoader extends ClassLoader {
     }
 
     @Override
-    public synchronized URL getResource(String name) {
-        for (String mask : masksResources) {
-            if(name.startsWith(mask))
-                return null;
-        }
+    public URL getResource(String name) {
+        if (isMasked(name)) return null;
 
         return super.getResource(name);
     }
 
-    public synchronized void add(String prefix) {
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        if (isMasked(name)) return Collections.emptyEnumeration();
+
+        return super.getResources(name);
+    }
+
+    public void add(String prefix) {
         masksClasses.add(prefix);
         if(prefix !=null){
             masksResources.add(prefix.replace(".","/"));
         }
+    }
+
+    private boolean isMasked(String name) {
+        for (String mask : masksResources) {
+            if(name.startsWith(mask))
+                return true;
+        }
+        return false;
     }
 }

@@ -26,10 +26,10 @@ THE SOFTWARE.
   <st:documentation>
     Renders a single &lt;select> control for choosing a Describable.
     Depending on the currently selected value, its config.jelly will be
-    rendered below &lt;select, allowing the user to configure Describable.
+    rendered below &lt;select>, allowing the user to configure Describable.
 
     <st:attribute name="field" use="required">
-      form field name. Used for databinding.
+      Form field name. Used for databinding.
     </st:attribute>
     <st:attribute name="title" use="required">
       Human readable title of this control.
@@ -39,11 +39,16 @@ THE SOFTWARE.
       If unspecified, inferred from the type of the field.
     </st:attribute>
     <st:attribute name="default">
-      If specified, this will be chosen as the default value in case the current selection is null. The default can be an specific instance or a descriptor e.g. 
+      If specified, this will be chosen as the default value in case the current selection is null. The default can be a specific instance or a descriptor e.g.
       ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}. In the later case, the from input fields will be empty.
     </st:attribute>
+    <st:attribute name="capture">
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
+    </st:attribute>
   </st:documentation>
-  <f:prepareDatabinding /> 
+  <f:prepareDatabinding />
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
 
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">
@@ -51,13 +56,14 @@ THE SOFTWARE.
 
     <j:set var="current" value="${instance[attrs.field]}"/>
     <j:set var="current" value="${current!=null ? current : (default.descriptor!=null ? default : null)}"/>
+    <j:set var="capture" value="${attrs.capture?:''}" />
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
         selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
-        lazy="descriptor">
+        lazy="descriptor,it,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </l:ajax>
       </f:dropdownListBlock>
     </j:forEach>

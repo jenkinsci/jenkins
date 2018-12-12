@@ -30,29 +30,31 @@ import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -77,6 +79,44 @@ public class Items {
     private static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
         @Override protected Boolean initialValue() {
             return false;
+        }
+    };
+    /**
+     * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getName()}.
+     * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
+     * need to restore the sort order of a further filtered result, you probably want {@link #BY_FULL_NAME}.
+     *
+     * @since 2.37
+     */
+    public static final Comparator<Item> BY_NAME = new Comparator<Item>() {
+        @Override public int compare(Item i1, Item i2) {
+            return name(i1).compareToIgnoreCase(name(i2));
+        }
+
+        String name(Item i) {
+            String n = i.getName();
+            if (i instanceof ItemGroup) {
+                n += '/';
+            }
+            return n;
+        }
+    };
+    /**
+     * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getFullName()}.
+     *
+     * @since 2.37
+     */
+    public static final Comparator<Item> BY_FULL_NAME = new Comparator<Item>() {
+        @Override public int compare(Item i1, Item i2) {
+            return name(i1).compareToIgnoreCase(name(i2));
+        }
+
+        String name(Item i) {
+            String n = i.getFullName();
+            if (i instanceof ItemGroup) {
+                n += '/';
+            }
+            return n;
         }
     };
 
@@ -120,7 +160,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the current security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(ItemGroup c) {
         return all(Jenkins.getAuthentication(), c);
@@ -130,7 +170,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<TopLevelItemDescriptor>();
@@ -182,15 +222,21 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
-        Jenkins hudson = Jenkins.getInstance();
-
+        final Jenkins jenkins = Jenkins.getInstance();
+        
         List<T> r = new ArrayList<T>();
+        if (jenkins == null) {
+            return r;
+        }
+        
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            T item = hudson.getItem(fullName, context, type);
-            if(item!=null)
-                r.add(item);
+            if (StringUtils.isNotEmpty(fullName)) {
+                T item = jenkins.getItem(fullName, context, type);
+                if(item!=null)
+                    r.add(item);
+            }
         }
         return r;
     }
@@ -204,7 +250,7 @@ public class Items {
         String[] c = context.getFullName().split("/");
         String[] p = path.split("/");
 
-        Stack name = new Stack();
+        Stack<String> name = new Stack<String>();
         for (int i=0; i<c.length;i++) {
             if (i==0 && c[i].equals("")) continue;
             name.push(c[i]);
@@ -216,6 +262,11 @@ public class Items {
                 continue;
             }
             if (p[i].equals("..")) {
+                if (name.size() == 0) {
+                    throw new IllegalArgumentException(String.format(
+                            "Illegal relative path '%s' within context '%s'", path, context.getFullName()
+                    ));
+                }
                 name.pop();
                 continue;
             }
@@ -263,8 +314,8 @@ public class Items {
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
     static String getRelativeNameFrom(String itemFullName, String groupFullName) {
-        String[] itemFullNameA = itemFullName.isEmpty() ? new String[0] : itemFullName.split("/");
-        String[] groupFullNameA = groupFullName.isEmpty() ? new String[0] : groupFullName.split("/");
+        String[] itemFullNameA = itemFullName.isEmpty() ? MemoryReductionUtil.EMPTY_STRING_ARRAY : itemFullName.split("/");
+        String[] groupFullNameA = groupFullName.isEmpty() ? MemoryReductionUtil.EMPTY_STRING_ARRAY : groupFullName.split("/");
         for (int i = 0; ; i++) {
             if (i == itemFullNameA.length) {
                 if (i == groupFullNameA.length) {
@@ -339,7 +390,12 @@ public class Items {
     
     /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
+     * and filter them by the given type. The returned list will represent a snapshot view of the items present at some
+     * time during the call. If items are moved during the call, depending on the move, it may be possible for some
+     * items to escape the snapshot entirely.
+     * <p>
+     * If you do not need to iterate all items, or if the order of the items is not required, consider using
+     * {@link #allItems(ItemGroup, Class)} instead.
      * 
      * @since 1.512
      */
@@ -350,18 +406,8 @@ public class Items {
     }
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
         List<Item> items = new ArrayList<Item>(((ItemGroup<?>) root).getItems());
-        Collections.sort(items, new Comparator<Item>() {
-            @Override public int compare(Item i1, Item i2) {
-                return name(i1).compareToIgnoreCase(name(i2));
-            }
-            String name(Item i) {
-                String n = i.getName();
-                if (i instanceof ItemGroup) {
-                    n += '/';
-                }
-                return n;
-            }
-        });
+        // because we add items depth first, we can use the quicker BY_NAME comparison
+        Collections.sort(items, BY_NAME);
         for (Item i : items) {
             if (type.isInstance(i)) {
                 if (i.hasPermission(Item.READ)) {
@@ -375,6 +421,41 @@ public class Items {
     }
 
     /**
+     * Gets a read-only view of all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
+     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @return An {@link Iterable} for all items.
+     * @since 2.37
+     */
+    public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
+        return allItems(Jenkins.getAuthentication(), root, type);
+    }
+
+
+    /**
+     * Gets a read-only view all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied
+     * authentication without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @return An {@link Iterable} for all items.
+     * @since 2.37
+     */
+    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
+        return new AllItemsIterable<>(root, authentication, type);
+    }
+
+    /**
      * Finds an item whose name (when referenced from the specified context) is closest to the given name.
      * @param <T> the type of item being considered
      * @param type same as {@code T}
@@ -384,10 +465,9 @@ public class Items {
      * @since 1.538
      */
     public static @CheckForNull <T extends Item> T findNearest(Class<T> type, String name, ItemGroup context) {
-        List<T> projects = Jenkins.getInstance().getAllItems(type);
-        String[] names = new String[projects.size()];
-        for (int i = 0; i < projects.size(); i++) {
-            names[i] = projects.get(i).getRelativeNameFrom(context);
+        List<String> names = new ArrayList<>();
+        for (T item: Jenkins.getInstance().allItems(type)) {
+            names.add(item.getRelativeNameFrom(context));
         }
         String nearest = EditDistance.findNearest(name, names);
         return Jenkins.getInstance().getItem(nearest, context, type);
@@ -414,9 +494,7 @@ public class Items {
             throw new IllegalArgumentException();
         }
         String name = item.getName();
-        if (destination.getItem(name) != null) {
-            throw new IllegalArgumentException(name + " already exists");
-        }
+        verifyItemDoesNotAlreadyExist(destination, name, null);
         String oldFullName = item.getFullName();
         // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
         File destDir = destination.getRootDirFor(item);
@@ -427,6 +505,145 @@ public class Items {
         item.movedTo(destination, newItem, destDir);
         ItemListener.fireLocationChange(newItem, oldFullName);
         return newItem;
+    }
+
+    private static class AllItemsIterable<T extends Item> implements Iterable<T> {
+
+        /**
+         * The authentication we are iterating as.
+         */
+        private final Authentication authentication;
+        /**
+         * The root we are iterating from.
+         */
+        private final ItemGroup root;
+        /**
+         * The type of item we want to return.
+         */
+        private final Class<T> type;
+
+        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type) {
+            this.root = root;
+            this.authentication = authentication;
+            this.type = type;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Iterator<T> iterator() {
+            return new AllItemsIterator();
+        }
+
+        private class AllItemsIterator implements Iterator<T> {
+
+            /**
+             * The stack of {@link ItemGroup}s that we have left to descend into.
+             */
+            private final Stack<ItemGroup> stack = new Stack<>();
+            /**
+             * The iterator of the current {@link ItemGroup} we are iterating.
+             */
+            private Iterator<Item> delegate = null;
+            /**
+             * The next item.
+             */
+            private T next = null;
+
+            private AllItemsIterator() {
+                // put on the stack so that hasNext() is the only place that has to worry about authentication
+                // alternative would be to impersonate and populate delegate.
+                stack.push(root);
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public boolean hasNext() {
+                if (next != null) {
+                    return true;
+                }
+                while (true) {
+                    if (delegate == null || !delegate.hasNext()) {
+                        if (stack.isEmpty()) {
+                            return false;
+                        }
+                        ItemGroup group = stack.pop();
+                        // group.getItems() is responsible for performing the permission check so we will not repeat it
+                        if (Jenkins.getAuthentication() == authentication) {
+                            delegate = group.getItems().iterator();
+                        } else {
+                            // slower path because the caller has switched authentication
+                            // we need to keep the original authentication so that allItems() can be used
+                            // like getAllItems() without the cost of building the entire list up front
+                            try (ACLContext ctx = ACL.as(authentication)) {
+                                delegate = group.getItems().iterator();
+                            }
+                        }
+                    }
+                    while (delegate.hasNext()) {
+                        Item item = delegate.next();
+                        if (item instanceof ItemGroup) {
+                            stack.push((ItemGroup) item);
+                        }
+                        if (type.isInstance(item)) {
+                            next = type.cast(item);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                try {
+                    return next;
+                } finally {
+                    next = null;
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Securely check for the existence of an item before trying to create one with the same name.
+     * @param parent the folder where we are about to create/rename/move an item
+     * @param newName the proposed new name
+     * @param variant if not null, an existing item which we accept could be there
+     * @throws IllegalArgumentException if there is already something there, which you were supposed to know about
+     * @throws Failure if there is already something there but you should not be told details
+     */
+    static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
+        Item existing;
+        try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
+            existing = parent.getItem(newName);
+        }
+        if (existing != null && existing != variant) {
+            if (existing.hasPermission(Item.DISCOVER)) {
+                String prefix = parent.getFullName();
+                throw new IllegalArgumentException((prefix.isEmpty() ? "" : prefix + "/") + newName + " already exists");
+            } else {
+                // Cannot hide its existence, so at least be as vague as possible.
+                throw new Failure("");
+            }
+        }
     }
 
     /**

@@ -28,17 +28,26 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.model.View;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.MyViewsProperty;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
  *
  * <p>
- * This object must have the <tt>myViewTabs.jelly</tt>. This view
+ * This object must have the {@code myViewTabs.jelly}. This view
  * is called once when the My Views main panel is built.
  * The "views" attribute is set to the "Collection of views".
  *
@@ -63,20 +72,41 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
     }
 
     /**
+     * Sorts the views by {@link View#getDisplayName()}.
+     *
+     * @param views the views.
+     * @return the sorted views
+     * @since 2.37
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // invoked from stapler view
+    public List<View> sort(@Nonnull List<? extends View> views) {
+        List<View> result = new ArrayList<>(views);
+        Collections.sort(result, new Comparator<View>() {
+            @Override
+            public int compare(View o1, View o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        });
+        return result;
+    }
+
+    /**
      * Configures {@link ViewsTabBar} in the system configuration.
      *
      * @author Kohsuke Kawaguchi
      */
-    @Extension(ordinal=305)
+    @Extension(ordinal=305) @Symbol("myView")
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public MyViewsTabBar getMyViewsTabBar() {
-            return Jenkins.getInstance().getMyViewsTabBar();
+            return Jenkins.get().getMyViewsTabBar();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
 
             if (json.has("myViewsTabBar")) {
                 j.setMyViewsTabBar(req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar")));

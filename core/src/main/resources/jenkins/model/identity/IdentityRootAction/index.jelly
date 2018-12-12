@@ -1,0 +1,22 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${%Instance Identity}">
+    <j:choose>
+      <j:when test="${app.hasPermission(app.READ)}">
+        <st:include page="sidepanel" it="${app}"/>
+      </j:when>
+      <j:otherwise>
+        <l:side-panel/>
+      </j:otherwise>
+    </j:choose>
+    <l:main-panel>
+      <h1><l:icon class="icon-help icon-xlg"/> ${%Instance Identity}</h1>
+      <p>${%blurb}</p>
+      <h2>${%Public Key}</h2>
+      <pre id="key">${it.publicKey}</pre>
+      <h2>${%Fingerprint}</h2>
+      <pre id="fingerprint">${it.fingerprint}</pre>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

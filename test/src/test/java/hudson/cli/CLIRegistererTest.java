@@ -26,8 +26,8 @@ public class CLIRegistererTest {
         CLICommandInvoker command = new CLICommandInvoker(j, "quiet-down");
 
         Result invocation = command.invokeWithArgs("--username", "foo", "--password", "invalid");
-        assertThat(invocation, failedWith(1));
-        assertThat(invocation.stderr(), containsString("BadCredentialsException: foo"));
+        assertThat(invocation, failedWith(7));
+        assertThat(invocation.stderr(), containsString("ERROR: Bad Credentials. Search the server log for "));
         assertThat("Unauthorized command was executed", Jenkins.getInstance().isQuietingDown(), is(false));
 
         invocation = command.invokeWithArgs("--username", "foo", "--password", "foo");

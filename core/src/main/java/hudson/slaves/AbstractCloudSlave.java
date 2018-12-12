@@ -55,7 +55,7 @@ public abstract class AbstractCloudSlave extends Slave {
     public abstract AbstractCloudComputer createComputer();
 
     /**
-     * Releases and removes this slave.
+     * Releases and removes this agent.
      */
     public void terminate() throws InterruptedException, IOException {
         final Computer computer = toComputer();

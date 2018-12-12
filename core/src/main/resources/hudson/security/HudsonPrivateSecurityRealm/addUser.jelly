@@ -27,5 +27,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:_entryForm host="${it}" title="${%Create User}" action="createAccountByAdmin" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+  <local:_entryFormPage host="${it}" title="${%Create User}" action="createAccountByAdmin" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
 </j:jelly>

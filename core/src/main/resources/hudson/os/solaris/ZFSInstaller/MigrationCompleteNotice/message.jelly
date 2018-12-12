@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="info">
+  <div class="alert alert-info">
     <form method="post" action="${rootURL}/${it.url}/disable">
-      ${%Data was successfully migrated to ZFS.}
       <f:submit value="${%OK}"/>
     </form>
+    ${%Data was successfully migrated to ZFS.}
   </div>
 </j:jelly>

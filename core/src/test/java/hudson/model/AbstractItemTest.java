@@ -21,7 +21,7 @@ public class AbstractItemTest {
 
         protected StubAbstractItem() {
             // sending in null as parent as I don't care for my current tests
-            super(null, "StubAbatractItem");
+            super(null, "StubAbstractItem");
         }
 
         @SuppressWarnings("rawtypes")

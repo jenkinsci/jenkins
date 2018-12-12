@@ -66,24 +66,20 @@ THE SOFTWARE.
             ${%This file has been used in the following places}:
           </p>
           <table class="fingerprint-summary">
+            <j:set var="usages" value="${it.usages}"/>
             <j:forEach var="j" items="${it.jobs}">
               <j:set var="job" value="${app.getItemByFullName(j)}" />
-              <j:set var="range" value="${it.usages[j]}" />
-              <tr>
-                <td class="fingerprint-summary-header">
-                  <j:choose>
-                    <j:when test="${job!=null}">
-                      <a href="${rootURL}/${job.url}" class="model-link inside">${j}</a>
-                    </j:when>
-                    <j:otherwise>
-                      ${j}
-                    </j:otherwise>
-                  </j:choose>
-                </td>
-                <td>
-                  <t:buildRangeLink job="${job}" range="${range}" />
-                </td>
-              </tr>
+              <j:set var="range" value="${usages[j]}" />
+              <j:if test="${job!=null}"> <!--Otherwise we don't display links at all-->
+                <tr>
+                  <td class="fingerprint-summary-header">
+                    <a href="${rootURL}/${job.url}" class="model-link inside">${j}</a>
+                    <td>
+                      <t:buildRangeLink job="${job}" range="${range}" />
+                    </td>
+                  </td>  
+                </tr>
+              </j:if>    
             </j:forEach>
           </table>
         </j:otherwise>

@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -38,9 +39,7 @@ public class StandardOutputSwapper extends ComputerListener {
     private static final class ChannelSwapper extends MasterToSlaveCallable<Boolean,Exception> {
         public Boolean call() throws Exception {
             if (File.pathSeparatorChar==';')    return false;   // Windows
-
-            Channel c = Channel.current();
-
+            Channel c = getOpenChannelOrFail();
             StandardOutputStream sos = (StandardOutputStream) c.getProperty(StandardOutputStream.class);
             if (sos!=null) {
                 swap(sos);
@@ -74,5 +73,5 @@ public class StandardOutputSwapper extends ComputerListener {
     }
 
     private static final Logger LOGGER = Logger.getLogger(StandardOutputSwapper.class.getName());
-    public static boolean disabled = Boolean.getBoolean(StandardOutputSwapper.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(StandardOutputSwapper.class.getName()+".disabled");
 }

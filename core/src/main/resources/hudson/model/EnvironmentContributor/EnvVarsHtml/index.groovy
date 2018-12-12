@@ -17,7 +17,7 @@ html {
         dl {
             EnvironmentContributor.all().each { e -> st.include(it:e, page:"buildEnv", optional:true) }
 
-            // allow SCM classes to have buildEnv.groovy since SCM can contirbute environment variables
+            // allow SCM classes to have buildEnv.groovy since SCM can contribute environment variables
             SCM.all().each { e -> st.include(class:e.clazz, page:"buildEnv", optional:true) }
         }
     }

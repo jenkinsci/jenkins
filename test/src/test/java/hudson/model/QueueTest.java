@@ -23,12 +23,17 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
+import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
@@ -40,41 +45,37 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.queue.AbstractQueueTask;
+import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
+import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.Permission;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -83,8 +84,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
-
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -94,6 +97,7 @@ import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.mortbay.jetty.Server;
@@ -101,12 +105,44 @@ import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.jvnet.hudson.test.LoggerRule;
+
 /**
  * @author Kohsuke Kawaguchi
  */
 public class QueueTest {
 
     @Rule public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(Queue.class, Level.FINE);
 
     /**
      * Checks the persistence of queue.
@@ -265,12 +301,12 @@ public class QueueTest {
 
 
         Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
-        server.addHandler(handler);
+        server.setHandler(handler);
 
         server.start();
 
@@ -281,12 +317,13 @@ public class QueueTest {
             HtmlForm f = p.getFormByName("main");
             HtmlFileInput input = (HtmlFileInput) f.getInputByName("test");
             input.setData(testData);
-            f.submit();
+            HtmlFormUtil.submit(f);
         } finally {
             server.stop();
         }
     }
 
+    @Issue("JENKINS-33467")
     @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
@@ -330,14 +367,13 @@ public class QueueTest {
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
         assertEquals("Build causes should have all items, even duplicates",
-                "Started by user SYSTEM\nStarted by an SCM change\n"
-                + "Started by user SYSTEM\nStarted by timer\n"
+                "Started by user SYSTEM\nStarted by user SYSTEM\n"
+                + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
+                + "Started by timer\nStarted by timer\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
-                + "Started by an SCM change\n"
-                + "Started by remote host 1.2.3.4 with note: test\n"
-                + "Started by remote host 1.2.3.4 with note: foo\n"
-                + "Started by an SCM change\nStarted by timer\n",
+                + "Started by remote host 1.2.3.4 with note: foo\n",
                 causes.toString());
 
         // View for build should group duplicates
@@ -351,15 +387,20 @@ public class QueueTest {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
-        m.getBuildersList().add(new Shell("sleep 3"));
+        if (Functions.isWindows()) {
+            m.getBuildersList().add(new BatchFile("ping -n 3 127.0.0.1 >nul"));
+        } else {
+            m.getBuildersList().add(new Shell("sleep 3"));
+        }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
         List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
@@ -380,13 +421,13 @@ public class QueueTest {
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -421,6 +462,31 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
         assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-41127")
+    @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
+        Label label = r.jenkins.getSelfLabel();
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task1 = new TestFlyweightTask(cnt, label);
+        TestFlyweightTask task2 = new TestFlyweightTask(cnt, label);
+        assertFalse(task1.isConcurrentBuild());
+        assertFalse(task2.isConcurrentBuild());
+        // We need to call Queue#maintain without any interleaving Queue modification to reproduce the issue.
+        Queue.withLock(() -> {
+            r.jenkins.getQueue().schedule2(task1, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item1 = r.jenkins.getQueue().getItem(task1);
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            r.jenkins.getQueue().schedule2(task2, 0);
+            r.jenkins.getQueue().maintain();
+            Queue.Item item2 = r.jenkins.getQueue().getItem(task2);
+            // Before the fix, item1 would no longer be present in the pending items (but would
+            // still be assigned to a live executor), and item2 would not be blocked, which would
+            // allow the tasks to execute concurrently.
+            assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
+            assertTrue(item2.isBlocked());
+        });
     }
 
     @Issue("JENKINS-27256")
@@ -474,9 +540,43 @@ public class QueueTest {
     }
     
     private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
+
+    @Issue("JENKINS-28926")
+    @Test
+    public void upstreamDownstreamCycle() throws Exception {
+        FreeStyleProject trigger = r.createFreeStyleProject();
+        FreeStyleProject chain1 = r.createFreeStyleProject();
+        FreeStyleProject chain2a = r.createFreeStyleProject();
+        FreeStyleProject chain2b = r.createFreeStyleProject();
+        FreeStyleProject chain3 = r.createFreeStyleProject();
+        trigger.getPublishersList().add(new BuildTrigger(String.format("%s, %s, %s, %s", chain1.getName(), chain2a.getName(), chain2b.getName(), chain3.getName()), true));
+        trigger.setQuietPeriod(0);
+        chain1.setQuietPeriod(1);
+        chain2a.setQuietPeriod(1);
+        chain2b.setQuietPeriod(1);
+        chain3.setQuietPeriod(1);
+        chain1.getPublishersList().add(new BuildTrigger(String.format("%s, %s", chain2a.getName(), chain2b.getName()), true));
+        chain2a.getPublishersList().add(new BuildTrigger(chain3.getName(), true));
+        chain2b.getPublishersList().add(new BuildTrigger(chain3.getName(), true));
+        chain1.setBlockBuildWhenDownstreamBuilding(true);
+        chain2a.setBlockBuildWhenDownstreamBuilding(true);
+        chain2b.setBlockBuildWhenDownstreamBuilding(true);
+        chain3.setBlockBuildWhenUpstreamBuilding(true);
+        r.jenkins.rebuildDependencyGraph();
+        r.buildAndAssertSuccess(trigger);
+        // the trigger should build immediately and schedule the cycle
+        r.waitUntilNoActivity();
+        final Queue queue = r.getInstance().getQueue();
+        assertThat("The cycle should have been defanged and chain1 executed", queue.getItem(chain1), nullValue());
+        assertThat("The cycle should have been defanged and chain2a executed", queue.getItem(chain2a), nullValue());
+        assertThat("The cycle should have been defanged and chain2b executed", queue.getItem(chain2b), nullValue());
+        assertThat("The cycle should have been defanged and chain3 executed", queue.getItem(chain3), nullValue());
+    }
+
+    public static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
         Executor exec;
         private final Label assignedLabel;
-        TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
+        public TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
             super(cnt);
             this.assignedLabel = assignedLabel;
         }
@@ -490,37 +590,43 @@ public class QueueTest {
 
     @Test public void taskEquality() throws Exception {
         AtomicInteger cnt = new AtomicInteger();
-        ScheduleResult result = r.jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        TestTask originalTask = new TestTask(cnt, true);
+        ScheduleResult result = r.jenkins.getQueue().schedule2(originalTask, 0);
         assertTrue(result.isCreated());
         WaitingItem item = result.getCreateItem();
         assertFalse(r.jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        originalTask.isBlocked = false;
         item.getFuture().get();
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
     
-    private static class TestTask extends AbstractQueueTask {
+    private static class TestTask extends AbstractQueueTask implements Queue.Task {
         private final AtomicInteger cnt;
+        boolean isBlocked;
+
         TestTask(AtomicInteger cnt) {
-            this.cnt = cnt;
+            this(cnt, false);
         }
+
+        TestTask(AtomicInteger cnt, boolean isBlocked) {
+            this.cnt = cnt;
+            this.isBlocked = isBlocked;
+        }
+
         @Override public boolean equals(Object o) {
             return o instanceof TestTask && cnt == ((TestTask) o).cnt;
         }
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return false;}
-        @Override public String getWhyBlocked() {return null;}
+        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
         @Override public void checkAbortPermission() {}
         @Override public boolean hasAbortPermission() {return true;}
         @Override public String getUrl() {return "test/";}
         @Override public String getDisplayName() {return "Test";}
-        @Override public Label getAssignedLabel() {return null;}
-        @Override public Node getLastBuiltOn() {return null;}
-        @Override public long getEstimatedDuration() {return -1;}
         @Override public ResourceList getResourceList() {return new ResourceList();}
         protected void doRun() {}
         @Override public Executable createExecutable() throws IOException {
@@ -550,18 +656,17 @@ public class QueueTest {
         FreeStyleBuild b = v.waitForStart();
         assertEquals(1,b.getNumber());
         assertTrue(b.isBuilding());
-        assertSame(p,b.getProject());
+        assertSame(p, b.getProject());
 
         ev.signal();    // let the build complete
         FreeStyleBuild b2 = r.assertBuildStatusSuccess(v);
-        assertSame(b,b2);
+        assertSame(b, b2);
     }
 
     /**
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -588,7 +693,6 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -605,26 +709,30 @@ public class QueueTest {
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
-        // ACL that allow anyone to do anything except Alice can't build.
-        final SparseACL aliceCantBuild = new SparseACL(null);
-        aliceCantBuild.add(new PrincipalSid(alice), Computer.BUILD, false);
-        aliceCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
-
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {
-            @Override
-            public ACL getACL(Node node) {
-                if (node==b1.getBuiltOn())
-                    return aliceCantBuild;
-                return super.getACL(node);
-            }
-        };
-        auth.add(Jenkins.ADMINISTER,"anonymous");
-        r.jenkins.setAuthorizationStrategy(auth);
+        r.jenkins.setAuthorizationStrategy(new AliceCannotBuild(b1.getBuiltOnStr()));
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
             FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
+        }
+    }
+    private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
+        private final String blocked;
+        AliceCannotBuild(String blocked) {
+            add(Jenkins.ADMINISTER, "anonymous");
+            this.blocked = blocked;
+        }
+        @Override
+        public ACL getACL(Node node) {
+            if (node.getNodeName().equals(blocked)) {
+                // ACL that allow anyone to do anything except Alice can't build.
+                SparseACL acl = new SparseACL(null);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
+                acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
+                return acl;
+            }
+            return super.getACL(node);
         }
     }
 
@@ -646,11 +754,6 @@ public class QueueTest {
                      }
             };
         }
-
-            @Override
-            public String getDisplayName() {
-                return "simulate-error";
-            }
         };
         FreeStyleProject projectError = (FreeStyleProject) r.jenkins.createProject(descriptor, "throw-error");
         project1.setAssignedLabel(r.jenkins.getSelfLabel());
@@ -673,7 +776,6 @@ public class QueueTest {
         if(project2.getLastBuild()!=null)
             return;
         Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        e.doYank(); //restart executor
         while(!e.isIdle()){ //executor should take project2 from queue
             Thread.sleep(1000);
         }
@@ -727,12 +829,10 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       e.printStackTrace();
-                   } catch (ServletException e) {
+                   } catch (IOException | ServletException e) {
                        e.printStackTrace();
                    }
-                }
+            }
             }, 2, TimeUnit.SECONDS);
 
         try {
@@ -740,12 +840,12 @@ public class QueueTest {
             fail("Expected an CancellationException to be thrown");
         } catch (CancellationException e) {}
     }
-    
+
+    @Ignore("TODO flakes in CI")
     @Issue("JENKINS-27871")
     @Test public void testBlockBuildWhenUpstreamBuildingLock() throws Exception {
         final String prefix = "JENKINS-27871";
         r.getInstance().setNumExecutors(4);
-        r.getInstance().save();
         
         final FreeStyleProject projectA = r.createFreeStyleProject(prefix+"A");
         projectA.getBuildersList().add(new SleepBuilder(5000));
@@ -753,7 +853,7 @@ public class QueueTest {
         final FreeStyleProject projectB = r.createFreeStyleProject(prefix+"B");
         projectB.getBuildersList().add(new SleepBuilder(10000));     
         projectB.setBlockBuildWhenUpstreamBuilding(true);
-        
+
         final FreeStyleProject projectC = r.createFreeStyleProject(prefix+"C");
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
@@ -773,5 +873,235 @@ public class QueueTest {
         assertTrue("Project B build should be finished before the build of project C starts. " +
                 "B finished at " + buildBEndTime + ", C started at " + buildC.getStartTimeInMillis(), 
                 buildC.getStartTimeInMillis() >= buildBEndTime);
+    }
+
+    @Issue("JENKINS-30084")
+    @Test
+    /*
+     * When a flyweight task is restricted to run on a specific node, the node will be provisioned
+     * and the flyweight task will be executed.
+     */
+    public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
+        matrixProject.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+        Label label = LabelExpression.get("aws-linux-dummy");
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = label;
+        r.jenkins.clouds.add(dummyCloud);
+        matrixProject.setAssignedLabel(label);
+        r.assertBuildStatusSuccess(matrixProject.scheduleBuild2(0));
+        assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
+    }
+
+    @Ignore("TODO too flaky; upstream can finish before we even examine the queue")
+    @Issue("JENKINS-30084")
+    @Test
+    public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
+        matrixProject.setDisplayName("downstream");
+        matrixProject.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+
+        Label label = LabelExpression.get("aws-linux-dummy");
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = label;
+        BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
+        dummyCloud.getNodeProperties().add(property);
+        r.jenkins.clouds.add(dummyCloud);
+        matrixProject.setAssignedLabel(label);
+
+        FreeStyleProject upstreamProject = r.createFreeStyleProject("upstream");
+        upstreamProject.getBuildersList().add(new SleepBuilder(10000));
+        upstreamProject.setDisplayName("upstream");
+
+        //let's assume the flyweighttask has an upstream project and that must be blocked
+        // when the upstream project is running
+        matrixProject.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
+        matrixProject.setBlockBuildWhenUpstreamBuilding(true);
+
+        //we schedule the project but we pretend no executors are available thus
+        //the flyweight task is in the buildable queue without being executed
+        QueueTaskFuture downstream = matrixProject.scheduleBuild2(0);
+        if (downstream == null) {
+            throw new Exception("the flyweight task could not be scheduled, thus the test will be interrupted");
+        }
+        //let s wait for the Queue instance to be updated
+        while (Queue.getInstance().getBuildableItems().size() != 1) {
+            Thread.sleep(10);
+        }
+        //in this state the build is not blocked, it's just waiting for an available executor
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+
+        //we start the upstream project that should block the downstream one
+        QueueTaskFuture upstream = upstreamProject.scheduleBuild2(0);
+        if (upstream == null) {
+            throw new Exception("the upstream task could not be scheduled, thus the test will be interrupted");
+        }
+        //let s wait for the Upstream to enter the buildable Queue
+        Thread.sleep(1000);
+        boolean enteredTheQueue = false;
+        while (!enteredTheQueue) {
+            for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                if (item.task.getDisplayName() != null && item.task.getDisplayName().equals(upstreamProject.getDisplayName())) {
+                    enteredTheQueue = true;
+                }
+            }
+            Thread.sleep(10);
+        }
+        //let's wait for the upstream project to actually start so that we're sure the Queue has been updated
+        //when the upstream starts the downstream has already left the buildable queue and the queue is empty
+        while (!Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertTrue(Queue.getInstance().getItems()[0].isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+
+        //once the upstream is completed, the downstream can join the buildable queue again.
+        r.assertBuildStatusSuccess(upstream);
+        while (Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
+        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+    }
+
+    //let's make sure that the downstream project is not started before the upstream --> we want to simulate
+    // the case: buildable-->blocked-->buildable
+    public static class BlockDownstreamProjectExecution extends NodeProperty<Slave> {
+        @Override
+        public CauseOfBlockage canTake(Queue.BuildableItem item) {
+            if (item.task.getName().equals("downstream")) {
+                return new CauseOfBlockage() {
+                    @Override
+                    public String getShortDescription() {
+                        return "slave not provisioned";
+                    }
+                };
+            }
+            return null;
+        }
+
+        @TestExtension("shouldBeAbleToBlockFlyWeightTaskOnLastMinute")
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
+    }
+
+    @Issue({"SECURITY-186", "SECURITY-618"})
+    @Test
+    public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
+        str.add(Jenkins.READ, "bob");
+        str.add(Jenkins.READ, "alice");
+        str.add(Jenkins.READ, "james");
+        r.jenkins.setAuthorizationStrategy(str);
+
+        FreeStyleProject project = r.createFreeStyleProject("project");
+
+        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Item.READ, Collections.singleton("bob"));
+        permissions.put(Item.DISCOVER, Collections.singleton("james"));
+        AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
+        project.addProperty(prop1);
+        project.getBuildersList().add(new SleepBuilder(10));
+        project.scheduleBuild2(0);
+
+        User alice = User.getById("alice", true);
+        User bob = User.getById("bob", true);
+        User james = User.getById("james", true);
+
+        JenkinsRule.WebClient webClient = r.createWebClient();
+        webClient.withBasicApiToken(bob);
+        XmlPage p = webClient.goToXml("queue/api/xml");
+
+        //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
+        for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
+            if (element.getNodeName().equals("task")) {
+                for (DomNode child: ((DomElement) element).getChildNodes()) {
+                    if (child.getNodeName().equals("name")) {
+                        assertEquals(child.asText(), "project");
+                    } else if (child.getNodeName().equals("url")) {
+                        assertNotNull(child.asText());
+                    }
+                }
+            }
+        }
+
+        webClient = r.createWebClient();
+        webClient.withBasicApiToken(alice);
+        XmlPage p2 = webClient.goToXml("queue/api/xml");
+        //alice does not have permission on the project and will not see it in the queue.
+        assertTrue(p2.getByXPath("/queue/node()").isEmpty());
+
+        webClient = r.createWebClient();
+        webClient.withBasicApiToken(james);
+        XmlPage p3 = webClient.goToXml("queue/api/xml");
+
+        //james has DISCOVER permission on the project and will only be able to see the task name.
+        List projects = p3.getByXPath("/queue/discoverableItem/task/name/text()");
+        assertEquals(1, projects.size());
+        assertEquals("project", projects.get(0).toString());
+
+        // Also check individual item exports.
+        String url = project.getQueueItem().getUrl() + "api/xml";
+        r.createWebClient().withBasicApiToken(bob).goToXml(url); // OK, 200
+        r.createWebClient().withBasicApiToken(james).assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
+        r.createWebClient().withBasicApiToken(alice).assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
+    }
+
+    //we force the project not to be executed so that it stays in the queue
+    @TestExtension("queueApiOutputShouldBeFilteredByUserPermission")
+    public static class MyQueueTaskDispatcher extends QueueTaskDispatcher {
+        @Override
+        public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
+            return new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "blocked by canTake";
+                }
+            };
+        }
+    }
+
+    @Test
+    public void testGetCauseOfBlockageForNonConcurrentFreestyle() throws Exception {
+        Queue queue = r.getInstance().getQueue();
+        FreeStyleProject t1 = r.createFreeStyleProject("project");
+        t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
+        t1.setConcurrentBuild(false);
+
+        t1.scheduleBuild2(0).waitForStart();
+        t1.scheduleBuild2(0);
+
+        queue.maintain();
+
+        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
+        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
+        CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
+
+        assertEquals(expected.getShortDescription(), actual.getShortDescription());
+    }
+
+    @Test @LocalData
+    public void load_queue_xml() {
+        Queue q = r.getInstance().getQueue();
+        Queue.Item[] items = q.getItems();
+        assertEquals(Arrays.asList(items).toString(), 11, items.length);
+        assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+    }
+
+    @TestExtension("load_queue_xml")
+    public static final class QueueSaveSniffer extends SaveableListener {
+        private static int count = 0;
+        @Override public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof Queue) {
+                count++;
+            }
+        }
     }
 }

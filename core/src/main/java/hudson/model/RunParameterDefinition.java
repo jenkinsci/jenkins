@@ -26,6 +26,7 @@ package hudson.model;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -91,7 +92,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
         if (defaultValue instanceof RunParameterValue) {
             RunParameterValue value = (RunParameterValue) defaultValue;
-            return new RunParameterDefinition(getName(), value.getRunId(), getDescription(), getFilter());
+            return new RunParameterDefinition(getName(), getProjectName(), value.getRunId(), getDescription(), getFilter());
         } else {
             return this;
         }
@@ -133,7 +134,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
-    @Extension
+    @Extension @Symbol({"run","runParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

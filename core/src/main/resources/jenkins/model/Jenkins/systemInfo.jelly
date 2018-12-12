@@ -47,7 +47,6 @@ THE SOFTWARE.
                 <th class="pane-header" initialSortDir="down">${%Name}</th>
                 <th class="pane-header">${%Version}</th>
                 <th class="pane-header">${%Enabled}</th>
-                <th class="pane-header">${%Pinned}</th>
               </tr>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
                 <j:set var="state" value="${p.enabled?'true':'false'}"/>
@@ -55,7 +54,6 @@ THE SOFTWARE.
                   <td class="pane"><st:out value="${p.shortName}"/></td>
                   <td class="pane"><st:out value="${p.version}"/></td>
                   <td class="pane"><st:out value="${state}"/></td>
-                  <td class="pane"><st:out value="${p.pinned}"/></td>
                 </tr>
               </j:forEach>
             </j:otherwise>

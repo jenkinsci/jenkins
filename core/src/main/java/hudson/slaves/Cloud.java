@@ -26,8 +26,10 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
+import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
@@ -41,31 +43,31 @@ import hudson.security.Permission;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.concurrent.Future;
 
 /**
- * Creates {@link Node}s to dynamically expand/shrink the slaves attached to Hudson.
+ * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
  *
  * <p>
  * Put another way, this class encapsulates different communication protocols
- * needed to start a new slave programmatically.
+ * needed to start a new agent programmatically.
  *
  * <h2>Notes for implementers</h2>
- * <h4>Automatically delete idle slaves</h4>
- * <p>
+ * <h3>Automatically delete idle agents</h3>
  * Nodes provisioned from a cloud do not automatically get released just because it's created from {@link Cloud}.
  * Doing so requires a use of {@link RetentionStrategy}. Instantiate your {@link Slave} subtype with something
  * like {@link CloudSlaveRetentionStrategy} so that it gets automatically deleted after some idle time.
  *
- * <h4>Freeing an external resource when a slave is removed</h4>
- * <p>
+ * <h3>Freeing an external resource when an agent is removed</h3>
  * Whether you do auto scale-down or not, you often want to release an external resource tied to a cloud-allocated
- * slave when it is removed.
+ * agent when it is removed.
  *
  * <p>
  * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
  * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} <tt>configure-entries.jelly</tt> and read it back in through {@link DataBoundConstructor}.
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -76,12 +78,18 @@ import java.util.Collection;
  * the resource (such as shutting down a virtual machine.) {@link Computer} needs to own this handle information
  * because by the time this happens, a {@link Slave} object is already long gone.
  *
+ * <h3>Views</h3>
+ *
+ * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide {@code top} or {@code main} view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their {@code summary}
+ * views displayed. Actions further contribute to {@code sidepanel} with {@code box} views. All mentioned views are
+ * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
@@ -99,20 +107,25 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return name;
     }
 
-    public String getSearchUrl() {
-        return "cloud/"+name;
+    /**
+     * Get URL of the cloud.
+     *
+     * @since 2.64
+     * @return Jenkins relative URL.
+     */
+    public @Nonnull String getUrl() {
+        return "cloud/" + name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public @Nonnull String getSearchUrl() {
+        return getUrl();
     }
 
     public ACL getACL() {
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public final void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public final boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     /**
@@ -136,8 +149,8 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      for jobs that don't have any tie to any label.
      * @param excessWorkload
      *      Number of total executors needed to meet the current demand.
-     *      Always >= 1. For example, if this is 3, the implementation
-     *      should launch 3 slaves with 1 executor each, or 1 slave with
+     *      Always ≥ 1. For example, if this is 3, the implementation
+     *      should launch 3 agents with 1 executor each, or 1 agent with
      *      3 executors, etc.
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
@@ -175,10 +188,14 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
     }
 
+    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);
+
     /**
      * Permission constant to control mutation operations on {@link Cloud}.
      *
      * This includes provisioning a new node, as well as removing it.
      */
-    public static final Permission PROVISION = Jenkins.ADMINISTER;
+    public static final Permission PROVISION = new Permission(
+            Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
+    );
 }

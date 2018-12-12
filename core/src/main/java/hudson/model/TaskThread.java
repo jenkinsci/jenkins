@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.util.StreamTaskListener;
 
@@ -131,7 +132,7 @@ public abstract class TaskThread extends Thread {
         } catch (InterruptedException e) {
             listener.getLogger().println("Aborted");
         } catch (Exception e) {
-            e.printStackTrace(listener.getLogger());
+            Functions.printStackTrace(e, listener.getLogger());
         } finally {
             listener = null;
             isRunning =false;

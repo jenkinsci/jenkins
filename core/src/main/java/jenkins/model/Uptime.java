@@ -27,7 +27,7 @@ public class Uptime {
     }
 
     @Initializer(after=InitMilestone.JOB_LOADED)
-    public static void init() {
-        ExtensionList.lookup(Uptime.class).get(0).startTime = System.currentTimeMillis();
+    public void init() {
+        startTime = System.currentTimeMillis();
     }
 }

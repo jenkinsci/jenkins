@@ -15,6 +15,31 @@
         return errorMessage;
       }
     }
+    
+    function isIgnoringConfirm(element){
+      if(element.hasClassName('force-dirty')){
+        return false;
+      }
+      if(element.hasClassName('ignore-dirty')){
+        return true;
+      }
+      // to allow sub-section of the form to ignore confirm
+      // especially useful for "pure" JavaScript area
+      // we try to gather the first parent with a marker, 
+      var dirtyPanel = element.up('.ignore-dirty-panel,.force-dirty-panel');
+      if(!dirtyPanel){
+        return false;
+      }
+      
+      if(dirtyPanel.hasClassName('force-dirty-panel')){
+        return false;
+      }
+      if(dirtyPanel.hasClassName('ignore-dirty-panel')){
+        return true;
+      }
+      
+      return false;
+    }
 
     function isModifyingButton(btn) {
       // TODO don't consider hetero list 'add' buttons
@@ -27,15 +52,16 @@
         // don't consider 'advanced' buttons
         return false;
       }
+      
+      if(isIgnoringConfirm(btn)){
+        return false;
+      }
 
       // default to true
       return true;
     }
 
     function initConfirm() {
-      // Timeout is needed since some events get sent on page load for some reason.
-      // Shouldn't hurt anything for this to only start monitoring events after a few millis;.
-      setTimeout(function() {
       var configForm = document.getElementsByName("config");
       if (configForm.length > 0) {
         configForm = configForm[0]
@@ -48,37 +74,46 @@
       var buttons = configForm.getElementsByTagName("button");
       var name;
       for ( var i = 0; i < buttons.length; i++) {
-        name = buttons[i].parentNode.parentNode.getAttribute('name');
+        var button = buttons[i];
+        name = button.parentNode.parentNode.getAttribute('name');
         if (name == "Submit" || name == "Apply" || name == "OK") {
-          $(buttons[i]).on('click', function() {
+          $(button).on('click', function() {
             needToConfirm = false;
           });
         } else {
-          if (isModifyingButton(buttons[i])) {
-            $(buttons[i]).on('click', confirm);
+          if (isModifyingButton(button)) {
+            $(button).on('click', confirm);
           }
         }
       }
 
       var inputs = configForm.getElementsByTagName("input");
       for ( var i = 0; i < inputs.length; i++) {
-        if (inputs[i].type == 'checkbox' || inputs[i].type == 'radio') {
-          $(inputs[i]).on('click', confirm);
-        } else {
-          $(inputs[i]).on('input', confirm);
+        var input = inputs[i];
+        if(!isIgnoringConfirm(input)){
+          if (input.type == 'checkbox' || input.type == 'radio') {
+            $(input).on('click', confirm);
+          } else {
+            $(input).on('input', confirm);
+          }
         }
       }
 
       inputs = configForm.getElementsByTagName("select");
       for ( var i = 0; i < inputs.length; i++) {
-        $(inputs[i]).on('change', confirm);
+        var input = inputs[i];
+        if(!isIgnoringConfirm(input)){
+          $(input).on('change', confirm);
+        }
       }
 
       inputs = configForm.getElementsByTagName("textarea");
       for ( var i = 0; i < inputs.length; i++) {
-        $(inputs[i]).on('input', confirm);
+        var input = inputs[i];
+        if(!isIgnoringConfirm(input)){
+          $(input).on('input', confirm);
+        }
       }
-      }, 100);
     }
 
     window.onbeforeunload = confirmExit;

@@ -49,12 +49,7 @@ public class LabelAtomPropertyTest {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends LabelAtomPropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Test label atom property";
-            }
-        }
+        public static class DescriptorImpl extends LabelAtomPropertyDescriptor {}
     }
 
     /**

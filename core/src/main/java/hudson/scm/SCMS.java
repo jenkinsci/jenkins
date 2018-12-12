@@ -54,14 +54,14 @@ public class SCMS {
      * @param target
      *      The project for which this SCM is configured to.
      */
+    @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, ServletException {
-        String scm = req.getParameter("scm");
-        if(scm==null)   return new NullSCM();
-
-        int scmidx = Integer.parseInt(scm);
-        SCMDescriptor<?> d = SCM._for(target).get(scmidx);
-        d.generation++;
-        return d.newInstance(req, req.getSubmittedForm().getJSONObject("scm"));
+        SCM scm = SCM.all().newInstanceFromRadioList(req.getSubmittedForm().getJSONObject("scm"));
+        if (scm == null) {
+            scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
+        }
+        scm.getDescriptor().generation++;
+        return scm;
     }
 
     /**

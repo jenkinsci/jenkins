@@ -131,7 +131,7 @@ public class MarkupText extends AbstractMarkupText {
         }
 
         /**
-         * Surrounds this subtext with &lt;a>...&lt;/a>. 
+         * Surrounds this subtext with {@code <a>…</a>}.
          */
         public void href(String url) {
             addHyperlink(0,length(),url);
@@ -292,8 +292,8 @@ public class MarkupText extends AbstractMarkupText {
      * Returns the fully marked-up text.
      *
      * @param preEscape
-     *      If true, the escaping is for the &lt;PRE> context. This leave SP and CR/LF intact.
-     *      If false, the escape is for the normal HTML, thus SP becomes &amp;nbsp; and CR/LF becomes &lt;BR>
+     *      If true, the escaping is for the {@code <PRE>} context. This leave SP and CR/LF intact.
+     *      If false, the escape is for the normal HTML, thus SP becomes &amp;nbsp; and CR/LF becomes {@code <BR>}
      */
     public String toString(boolean preEscape) {
         if(tags.isEmpty())

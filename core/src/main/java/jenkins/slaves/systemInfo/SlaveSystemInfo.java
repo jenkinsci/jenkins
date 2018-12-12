@@ -3,13 +3,12 @@ package jenkins.slaves.systemInfo;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
-import jenkins.model.Jenkins;
 
 /**
  * Extension point that contributes to the system information page of {@link Computer}.
  *
  * <h2>Views</h2>
- * Subtypes must have <tt>systemInfo.groovy/.jelly</tt> view.
+ * Subtypes must have {@code systemInfo.groovy/.jelly} view.
  * This view will have the "it" variable that refers to {@link Computer} object, and "instance" variable
  * that refers to {@link SlaveSystemInfo} object.
  *

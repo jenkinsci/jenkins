@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.TransientActionFactory;

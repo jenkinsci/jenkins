@@ -1,7 +1,6 @@
 package hudson.init;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
-import org.jvnet.hudson.reactor.Task;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -12,6 +11,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ * Like {@link Initializer} but used during the shut down.
+ *
  * @author Kohsuke Kawaguchi
  */
 @Indexed
@@ -51,7 +52,7 @@ public @interface Terminator {
     String[] attains() default {};
 
     /**
-     * Key in <tt>Messages.properties</tt> that represents what this task is about. Used for rendering the progress.
+     * Key in {@code Messages.properties} that represents what this task is about. Used for rendering the progress.
      * Defaults to "${short class name}.${method Name}".
      */
     String displayName() default "";

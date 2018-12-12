@@ -45,7 +45,7 @@ THE SOFTWARE.
         </tr>
       </table>
       <div>
-        <form action="${rootURL}/ignore">
+        <form method="post" action="${rootURL}/ignore">
           <f:submit value="${%label}" />
         </form>
       </div>

@@ -23,7 +23,7 @@
  */
 package hudson.diagnosis;
 
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.ColorPalette;
 import hudson.Extension;
 import hudson.model.PeriodicWork;
@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -46,7 +47,7 @@ import org.kohsuke.stapler.QueryParameter;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("memoryUsage")
 public final class MemoryUsageMonitor extends PeriodicWork {
     /**
      * A memory group is conceptually a set of memory pools. 
@@ -115,7 +116,7 @@ public final class MemoryUsageMonitor extends PeriodicWork {
     }
 
     public long getRecurrencePeriod() {
-        return TimeUnit2.SECONDS.toMillis(10);
+        return TimeUnit.SECONDS.toMillis(10);
     }
 
     protected void doRun() {

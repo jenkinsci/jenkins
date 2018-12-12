@@ -23,6 +23,8 @@
  */
 package hudson.cli;
 
+import hudson.remoting.ClassFilter;
+import hudson.remoting.ObjectInputStreamEx;
 import hudson.remoting.SocketChannelStream;
 import org.apache.commons.codec.binary.Base64;
 
@@ -53,7 +55,11 @@ import java.security.Signature;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
+/**
+ * Used by Jenkins core only in deprecated Remoting-based CLI.
+ */
 public class Connection {
     public final InputStream in;
     public final OutputStream out;
@@ -97,7 +103,7 @@ public class Connection {
      * Sends a serializable object.
      */
     public void writeObject(Object o) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(out);
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(out);
         oos.writeObject(o);
         // don't close oss, which will close the underlying stream
         // no need to flush either, given the way oos is implemented
@@ -107,7 +113,8 @@ public class Connection {
      * Receives an object sent by {@link #writeObject(Object)}
      */
     public <T> T readObject() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(in);
+        ObjectInputStream ois = new ObjectInputStreamEx(in,
+                getClass().getClassLoader(), ClassFilter.DEFAULT);
         return (T)ois.readObject();
     }
 

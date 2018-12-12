@@ -34,7 +34,7 @@ THE SOFTWARE.
       <l:task contextMenu="false" href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
       <l:task contextMenu="false" href="${url}" icon="icon-attribute icon-md" title="${%Overview}"/>
       <j:if test="${it.atom}">
-        <l:task href="${url}/configure" icon="icon-setting icon-md" title="${%Configure}" permission="${app.ADMINISTER}" />
+        <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%Configure}" permission="${app.ADMINISTER}" />
       </j:if>
       <l:task href="${url}/load-statistics" icon="icon-monitor icon-md" title="${%Load Statistics}"/>
       <st:include page="actions.jelly" />

@@ -34,8 +34,12 @@ import java.util.Set;
 import java.io.IOException;
 
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Checks the health of a subsystem of Jenkins and if there's something
@@ -61,10 +65,10 @@ import org.kohsuke.stapler.StaplerResponse;
  * <dl>
  * <dt>message.jelly</dt>
  * <dd>
- * If {@link #isActivated()} returns true, Jenkins will use the <tt>message.jelly</tt>
+ * If {@link #isActivated()} returns true, Jenkins will use the {@code message.jelly}
  * view of this object to render the warning text. This happens in the
- * <tt>http://SERVER/jenkins/manage</tt> page. This view should typically render
- * a DIV box with class='error' or class='warning' with a human-readable text
+ * {@code http://SERVER/jenkins/manage} page. This view should typically render
+ * a DIV box with class='alert alert-error' or class='alert alert-warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
  * about the problem.
  * </dd>
@@ -75,7 +79,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see Jenkins#administrativeMonitors
  */
 @LegacyInstancesAreScopedToHudson
-public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint {
+public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -143,10 +147,19 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * URL binding to disable this monitor.
      */
+    @RequirePOST
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
+    }
+
+    /**
+     * Requires ADMINISTER permission for any operation in here.
+     */
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        return this;
     }
 
     /**

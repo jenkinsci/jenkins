@@ -1,0 +1,68 @@
+
+<!--
+The MIT License
+
+Copyright (c) 2011, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Test JSON structure submitted from rowSet">
+  <l:main-panel>
+    <f:form method="post" name="config" action="submitTest1">
+      <f:entry title="a" field="a">
+        <f:textbox value="aaa" />
+      </f:entry>
+      
+      <f:rowSet><!-- rowSet without name will be just inlined -->
+        <f:entry title="b" field="b">
+          <f:textbox value="bbb" />
+        </f:entry>
+      </f:rowSet>
+      
+      <f:rowSet name="c"><!-- creates an intermediate node -->
+        <f:entry title="c1" field="c1">
+          <f:textbox value="ccc1" />
+        </f:entry>
+        <f:entry title="c2" field="c2">
+          <f:textbox value="ccc2" />
+        </f:entry>
+      </f:rowSet>
+      
+      <f:entry title="d" field="d">
+        <f:checkbox id="d-checkbox" checked="true" />
+      </f:entry>
+      <f:rowSet ref="d-checkbox"><!-- this puts  -->
+        <f:entry title="d1" field="d1">
+          <f:textbox value="d1"/>
+        </f:entry>
+        <f:entry title="d2" field="d2">
+          <f:textbox value="d2"/>
+        </f:entry>
+      </f:rowSet>
+
+      <f:bottomButtonBar>
+        <f:submit value="${%Save}"/>
+      </f:bottomButtonBar>
+    </f:form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

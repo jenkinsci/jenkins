@@ -35,6 +35,8 @@ import hudson.model.ManagementLink;
 import hudson.util.FormApply;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,10 +45,16 @@ import javax.servlet.ServletException;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Security configuration.
@@ -55,7 +63,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal = Integer.MAX_VALUE - 210)
+@Extension(ordinal = Integer.MAX_VALUE - 210) @Symbol("securityConfig")
 public class GlobalSecurityConfiguration extends ManagementLink implements Describable<GlobalSecurityConfiguration> {
     
     private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
@@ -68,10 +76,24 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().getSlaveAgentPort();
     }
 
+    /**
+     * @since 2.24
+     * @return true if the slave agent port is enforced on this instance.
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isSlaveAgentPortEnforced() {
+        return Jenkins.getInstance().isSlaveAgentPortEnforced();
+    }
+
+    public Set<String> getAgentProtocols() {
+        return Jenkins.getInstance().getAgentProtocols();
+    }
+
     public boolean isDisableRememberMe() {
         return Jenkins.getInstance().isDisableRememberMe();
     }
 
+    @RequirePOST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         BulkChange bc = new BulkChange(Jenkins.getInstance());
@@ -93,12 +115,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             JSONObject security = json.getJSONObject("useSecurity");
             j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
-            j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-            try {
-                j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
-            } catch (IOException e) {
-                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
-            }
+            j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));    
         } else {
             j.disableSecurity();
         }
@@ -108,6 +125,27 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         } else {
             j.setMarkupFormatter(null);
         }
+        
+        // Agent settings
+        if (!isSlaveAgentPortEnforced()) {
+            try {
+                j.setSlaveAgentPort(new ServerTcpPort(json.getJSONObject("slaveAgentPort")).getPort());
+            } catch (IOException e) {
+                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
+            }
+        }
+        Set<String> agentProtocols = new TreeSet<>();
+        if (json.has("agentProtocol")) {
+            Object protocols = json.get("agentProtocol");
+            if (protocols instanceof JSONArray) {
+                for (int i = 0; i < ((JSONArray) protocols).size(); i++) {
+                    agentProtocols.add(((JSONArray) protocols).getString(i));
+                }
+            } else {
+                agentProtocols.add(protocols.toString());
+            }
+        }
+        j.setAgentProtocols(agentProtocols);
 
         // persist all the additional security configs
         boolean result = true;
@@ -167,7 +205,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
     
-    @Extension
+    @Extension @Symbol("security")
     public static final class DescriptorImpl extends Descriptor<GlobalSecurityConfiguration> {
         @Override
         public String getDisplayName() {

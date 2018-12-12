@@ -44,7 +44,7 @@ THE SOFTWARE.
 
       <l:hasPermission permission="${it.CONNECT}">
         <j:choose>
-          <j:when test="${it.online}">
+          <j:when test="${it.channel != null}">
             <h2>${it.oSDescription} slave, version ${it.slaveVersion}</h2>
 
             <j:forEach var="instance" items="${it.systemInfoExtensions}">
@@ -53,7 +53,7 @@ THE SOFTWARE.
             </j:forEach>
           </j:when>
           <j:otherwise>
-            ${%System Information is unavailable when slave is offline.}
+            ${%System Information is unavailable when agent is offline.}
           </j:otherwise>
         </j:choose>
       </l:hasPermission>

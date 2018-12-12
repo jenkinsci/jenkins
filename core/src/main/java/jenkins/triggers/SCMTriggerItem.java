@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ParameterizedJobMixIn;
+import jenkins.scm.SCMDecisionHandler;
 
 /**
  * The item type accepted by {@link SCMTrigger}.
@@ -56,7 +57,7 @@ public interface SCMTriggerItem {
     /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#getQuietPeriod */
     int getQuietPeriod();
 
-    /** @see ParameterizedJobMixIn#scheduleBuild2 */
+    /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#scheduleBuild2 */
     @CheckForNull QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions);
 
     /**
@@ -65,6 +66,9 @@ public interface SCMTriggerItem {
      * <p>
      * The implementation is responsible for ensuring mutual exclusion between polling and builds
      * if necessary.
+     * <p>
+     * The implementation is responsible for checking the {@link SCMDecisionHandler} before proceeding
+     * with the actual polling.
      */
     @Nonnull PollingResult poll(@Nonnull TaskListener listener);
 
@@ -76,6 +80,21 @@ public interface SCMTriggerItem {
      * @return a possibly empty collection
      */
     @Nonnull Collection<? extends SCM> getSCMs();
+
+    /**
+     * Schedules a polling of this project.
+     */
+    default boolean schedulePolling() {
+        if (this instanceof ParameterizedJobMixIn.ParameterizedJob && ((ParameterizedJobMixIn.ParameterizedJob) this).isDisabled()) {
+            return false;
+        }
+        SCMTrigger scmt = getSCMTrigger();
+        if (scmt == null) {
+            return false;
+        }
+        scmt.run();
+        return true;
+    }
 
     /**
      * Utilities.
@@ -116,6 +135,11 @@ public interface SCMTriggerItem {
                 return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
             }
             @Override public PollingResult poll(TaskListener listener) {
+                SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(asItem());
+                if (veto != null && !veto.shouldPoll(asItem())) {
+                    listener.getLogger().println(Messages.SCMTriggerItem_PollingVetoed(veto));
+                    return PollingResult.NO_CHANGES;
+                }
                 return delegate.poll(listener);
             }
             @Override public SCMTrigger getSCMTrigger() {

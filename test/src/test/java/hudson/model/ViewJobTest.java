@@ -69,10 +69,6 @@ public class ViewJobTest {
 
         @TestExtension public static final class DescriptorImpl extends TopLevelItemDescriptor {
 
-            @Override public String getDisplayName() {
-                return "J";
-            }
-
             @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new J(parent, name);
             }

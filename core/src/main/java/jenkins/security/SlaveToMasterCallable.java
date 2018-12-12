@@ -1,16 +1,14 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
-import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 
-import java.util.Collection;
 
 /**
- * Convenient {@link Callable} that are meant to run on the master (sent by slave/CLI/etc).
- *
+ * Convenient {@link Callable} that are meant to run on the master (sent by agent/CLI/etc).
+ * Note that any serializable fields must either be defined in your plugin or included in the stock JEP-200 whitelist.
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V,T> {
     @Override

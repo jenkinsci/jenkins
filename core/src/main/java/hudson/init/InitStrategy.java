@@ -10,14 +10,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.PluginManager;
+import jenkins.util.SystemProperties;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
-import hudson.util.Service;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 /**
  * Strategy pattern of the various key decision making during the Jenkins initialization.
@@ -50,15 +51,6 @@ public class InitStrategy {
         // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
         // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
-        Iterator<File> it = r.iterator();
-        while (it.hasNext()) {
-            File f = it.next();
-            if (new File(pm.rootDir, f.getName().replace(".hpi", ".jpi") + ".pinned").isFile()) {
-                // Cf. PluginManager.copyBundledPlugin, which is not called in this case.
-                LOGGER.log(Level.INFO, "ignoring {0} since this plugin is pinned", f);
-                it.remove();
-            }
-        }
 
         // similarly, we prefer *.jpi over *.hpi
         listPluginFiles(pm, ".jpl", r); // linked plugin. for debugging.
@@ -84,7 +76,7 @@ public class InitStrategy {
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
     protected void getBundledPluginsFromProperty(final List<File> r) {
-        String hplProperty = System.getProperty("hudson.bundled.plugins");
+        String hplProperty = SystemProperties.getString("hudson.bundled.plugins");
         if (hplProperty != null) {
             for (String hplLocation : hplProperty.split(",")) {
                 File hpl = new File(hplLocation.trim());
@@ -122,11 +114,12 @@ public class InitStrategy {
      * Obtains the instance to be used.
      */
     public static InitStrategy get(ClassLoader cl) throws IOException {
-        List<InitStrategy> r = Service.loadInstances(cl, InitStrategy.class);
-        if (r.isEmpty())    return new InitStrategy();      // default
-
-        InitStrategy s = r.get(0);
-        LOGGER.fine("Using "+s+" as InitStrategy");
+        Iterator<InitStrategy> it = ServiceLoader.load(InitStrategy.class, cl).iterator();
+        if (!it.hasNext()) {
+            return new InitStrategy(); // default
+        }
+        InitStrategy s = it.next();
+        LOGGER.log(Level.FINE, "Using {0} as InitStrategy", s);
         return s;
     }
 

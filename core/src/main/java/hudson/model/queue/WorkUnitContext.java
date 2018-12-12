@@ -67,10 +67,10 @@ public final class WorkUnitContext {
         this.item = item;
         this.task = item.task;
         this.future = (FutureImpl)item.getFuture();
-        this.actions = new ArrayList<Action>(item.getAllActions());
-        
+        // JENKINS-51584 do not use item.getAllActions() here.
+        this.actions = new ArrayList<Action>(item.getActions());
         // +1 for the main task
-        int workUnitSize = Tasks.getSubTasksOf(task).size();
+        int workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
             @Override
             protected void onCriteriaMet() {
@@ -88,14 +88,9 @@ public final class WorkUnitContext {
     }
 
     /**
-     * Called by the executor that executes a member {@link SubTask} that belongs to this task
-     * to create its {@link WorkUnit}.
+     * Called within the queue maintenance process to create a {@link WorkUnit} for the given {@link SubTask}
      */
     public WorkUnit createWorkUnit(SubTask execUnit) {
-        Executor executor = Executor.currentExecutor();
-        if (executor != null) { // TODO is it legal for this to be called by a non-executor thread?
-            future.addExecutor(executor);
-        }
         WorkUnit wu = new WorkUnit(this, execUnit);
         workUnits.add(wu);
         return wu;

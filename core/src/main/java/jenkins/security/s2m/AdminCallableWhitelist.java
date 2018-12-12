@@ -2,6 +2,7 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.Callable;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 
@@ -19,7 +20,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=-100)
+@Extension(ordinal=-100) @Symbol("admin")
 public class AdminCallableWhitelist extends CallableWhitelist {
     @Inject
     AdminWhitelistRule rule;

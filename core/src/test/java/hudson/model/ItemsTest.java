@@ -3,16 +3,13 @@ package hudson.model;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 /**
- * @author: <a hef="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @author: <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
 public class ItemsTest {
 
@@ -44,6 +41,27 @@ public class ItemsTest {
         assertEquals("foo/bar", Items.getCanonicalName(foo, "./bar"));
         assertEquals("foo/bar/baz/qux", Items.getCanonicalName(foo_bar, "baz/qux"));
         assertEquals("foo/baz/qux", Items.getCanonicalName(foo_bar, "../baz/qux"));
+
+        try {
+            Items.getCanonicalName(root, "..");
+            fail();
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Illegal relative path '..' within context ''", ex.getMessage());
+        }
+
+        try {
+            Items.getCanonicalName(foo, "../..");
+            fail();
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Illegal relative path '../..' within context 'foo'", ex.getMessage());
+        }
+
+        try {
+            Items.getCanonicalName(root, "foo/../..");
+            fail();
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Illegal relative path 'foo/../..' within context ''", ex.getMessage());
+        }
     }
 
     @Test

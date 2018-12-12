@@ -5,6 +5,7 @@ import hudson.model.AdministrativeMonitor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.io.IOException;
  * If {@link AdminWhitelistRule#masterKillSwitch} is on, warn the user.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 @Extension
 public class MasterKillSwitchWarning extends AdministrativeMonitor {
@@ -28,6 +29,12 @@ public class MasterKillSwitchWarning extends AdministrativeMonitor {
         return rule.getMasterKillSwitch() && config.isRelevant();
     }
 
+    @Override
+    public String getDisplayName() {
+        return Messages.MasterKillSwitchWarning_DisplayName();
+    }
+
+    @RequirePOST
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {
         if(dismiss!=null) {
             disable(true);

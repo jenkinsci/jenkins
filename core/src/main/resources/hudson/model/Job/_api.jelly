@@ -27,6 +27,14 @@ THE SOFTWARE.
 
   <st:include page="/hudson/model/AbstractItem/_api.jelly"/>
 
+  <h2>Retrieving all builds</h2>
+  <p>
+    To prevent Jenkins from having to load all builds from disk when someone accesses the job API, the <code>builds</code>
+    tree only contains the 50 newest builds. If you really need to get all builds, access the <code>allBuilds</code> tree,
+    e.g. by fetching <code>…/api/xml?tree=allBuilds[…]</code>. Note that this may result in significant performance degradation
+    if you have a lot of builds in this job.
+  </p>
+
   <h2>Fetch/Update job description</h2>
   <p>
     <a href="../description">this URL</a>

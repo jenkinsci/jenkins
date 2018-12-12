@@ -58,7 +58,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
     /**
      * Data object that represents the context menu.
      *
-     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that &lt;l:breadcrumb/> understands.
+     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that {@code <l:breadcrumb/>} understands.
      */
     @ExportedBean
     public class ContextMenu implements HttpResponse {
@@ -180,7 +180,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * 
          * <p>
          * This method uses {@code sidepanel.groovy} to run the side panel generation, captures
-         * the use of &lt;l:task> tags, and then converts those into {@link MenuItem}s. This is
+         * the use of {@code <l:task>} tags, and then converts those into {@link MenuItem}s. This is
          * supposed to make this work with most existing {@link ModelObject}s that follow the standard
          * convention.
          * 

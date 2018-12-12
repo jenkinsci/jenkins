@@ -6,10 +6,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 
+import hudson.model.User;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -40,7 +44,7 @@ public class LoginTest {
 
     private void verifyNotError(WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("loginError");
-        URL url = p.getWebResponse().getUrl();
+        URL url = p.getUrl();
         System.out.println(url);
         assertFalse(url.toExternalForm().contains("login"));
     }
@@ -51,11 +55,13 @@ public class LoginTest {
     @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void loginErrorRedirect2() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         // in a secured Hudson, the error page should render.
         WebClient wc = j.createWebClient();
         wc.assertFails("loginError", SC_UNAUTHORIZED);
         // but not once the user logs in.
-        verifyNotError(wc.login("alice"));
+        verifyNotError(wc.withBasicApiToken(User.getById("alice", true)));
     }
 
     private HtmlForm prepareLoginFormWithRememberMeChecked(WebClient wc) throws IOException, org.xml.sax.SAXException {
@@ -84,7 +90,7 @@ public class LoginTest {
     public void loginRememberMe() throws Exception {
         WebClient wc = j.createWebClient();
 
-        prepareLoginFormWithRememberMeChecked(wc).submit(null);
+        HtmlFormUtil.submit(prepareLoginFormWithRememberMeChecked(wc), null);
 
         assertNotNull(getRememberMeCookie(wc));
     }
@@ -100,7 +106,7 @@ public class LoginTest {
 
         HtmlForm form = prepareLoginFormWithRememberMeChecked(wc);
         j.jenkins.setDisableRememberMe(true);
-        form.submit(null);
+        HtmlFormUtil.submit(form, null);
 
         assertNull(getRememberMeCookie(wc));
     }

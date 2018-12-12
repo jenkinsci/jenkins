@@ -1,0 +1,48 @@
+downloadService.post('hudson.plugins.cmake.CmakeInstaller',{"list": [
+  {
+    "id": "2.6.1",
+    "name": "2.6.1",
+    "variants":     [
+      {
+        "arch": "x86",
+        "os": "win32",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-win32-x86.zip"
+      },
+      {
+        "arch": "sparc",
+        "os": "SunOS",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-SunOS-sparc.tar.gz"
+      },
+      {
+        "arch": "i386",
+        "os": "Linux",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-Linux-i386.tar.gz"
+      },
+      {
+        "arch": "n32",
+        "os": "IRIX64",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-IRIX64-n32.tar.gz"
+      },
+      {
+        "arch": "64",
+        "os": "IRIX64",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-IRIX64-64.tar.gz"
+      },
+      {
+        "arch": "9000_785",
+        "os": "HP-UX",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-HP-UX-9000_785.tar.gz"
+      },
+      {
+        "arch": "universal",
+        "os": "Darwin",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-Darwin-universal.tar.gz"
+      },
+      {
+        "arch": "powerpc",
+        "os": "AIX",
+        "url": "https://cmake.org/files/v2.6/cmake-2.6.1-AIX-powerpc.tar.gz"
+      }
+    ]
+  }
+]})

@@ -26,7 +26,7 @@ public class ByteArrayOutputStream2 extends ByteArrayOutputStream {
     public void readFrom(InputStream is) throws IOException {
         while(true) {
             if(count==buf.length) {
-                // realllocate
+                // reallocate
                 byte[] data = new byte[buf.length*2];
                 System.arraycopy(buf,0,data,0,buf.length);
                 buf = data;

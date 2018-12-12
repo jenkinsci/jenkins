@@ -1,0 +1,12 @@
+<!DOCTYPE jboss-web>
+<jboss-web xmlns="http://www.jboss.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.jboss.org/schema/jbossas
+    http://www.jboss.org/schema/jbossas/jboss-web_7_2.xsd">
+    <!-- Configure usage of the security domain "other" -->
+    <session-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+</jboss-web>
+
+

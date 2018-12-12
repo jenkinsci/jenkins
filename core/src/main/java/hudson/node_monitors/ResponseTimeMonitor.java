@@ -23,9 +23,7 @@
  */
 package hudson.node_monitors;
 
-import hudson.Util;
 import hudson.Extension;
-import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;
@@ -41,13 +39,14 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Monitors the round-trip response time to this slave.
+ * Monitors the round-trip response time to this agent.
  *
  * @author Kohsuke Kawaguchi
  */
 public class ResponseTimeMonitor extends NodeMonitor {
     @Extension
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
+
         @Override
         protected Callable<Data,IOException> createCallable(Computer c) {
             return new Step1(get(c));
@@ -55,25 +54,31 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
         @Override
         protected Map<Computer, Data> monitor() throws InterruptedException {
-            Map<Computer, Data> base = super.monitor();
-            for (Entry<Computer, Data> e : base.entrySet()) {
+            Result<Data> base = monitorDetailed();
+            Map<Computer, Data> monitoringData = base.getMonitoringData();
+            for (Entry<Computer, Data> e : monitoringData.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
+                if (base.getSkipped().contains(c)) {
+                    assert d == null;
+                    continue;
+                }
+
                 if (d ==null) {
                     // if we failed to monitor, put in the special value that indicates a failure
                     e.setValue(d=new Data(get(c),-1L));
                 }
 
                 if(d.hasTooManyTimeouts() && !isIgnored()) {
-                    // unlike other monitors whose failure still allow us to communicate with the slave,
+                    // unlike other monitors whose failure still allow us to communicate with the agent,
                     // the failure in this monitor indicates that we are just unable to make any requests
-                    // to this slave. So we should severe the connection, as opposed to marking it temporarily
+                    // to this agent. So we should severe the connection, as opposed to marking it temporarily
                     // off line, which still keeps the underlying channel open.
                     c.disconnect(d);
                     LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
                 }
             }
-            return base;
+            return monitoringData;
         }
 
         public String getDisplayName() {
@@ -188,7 +193,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         /**
-         * HTML rendering of the data
+         * String rendering of the data
          */
         @Override
         public String toString() {
@@ -200,7 +205,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 //            return buf.toString();
             int fc = failureCount();
             if(fc>0)
-                return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
+                return Messages.ResponseTimeMonitor_TimeOut(fc);
             return getAverage()+"ms";
         }
 

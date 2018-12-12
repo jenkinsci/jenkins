@@ -26,8 +26,6 @@ package hudson.util;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
-import hudson.util.ProcessTree.OSProcess;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,7 +38,7 @@ import java.io.Serializable;
  * <p>
  * Each implementation of {@link ProcessKiller} is instantiated once on the master.
  * Whenever a process needs to be killed, those implementations are serialized and sent over
- * to the appropriate slave, then the {@link #kill(ProcessTree.OSProcess)} method is invoked
+ * to the appropriate agent, then the {@link #kill(ProcessTree.OSProcess)} method is invoked
  * to attempt to kill the process.
  *
  * <p>

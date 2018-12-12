@@ -52,7 +52,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         // this command. If that is the case, there's nothing we can do about it.
         int r = exec("restart!");
         throw new IOException("Restart failure. '"+exe+" restart' completed with "+r+" but I'm still alive!  "
-                               + "See https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds#Distributedbuilds-Windowsslaveserviceupgrades"
+                               + "See https://jenkins.io/redirect/troubleshooting/windows-agent-restart"
                                + " for a possible explanation and solution");
     }
 

@@ -79,7 +79,7 @@ public class JobQueueTest {
         if(JobQueueTest.fireCompletedFlag) {
         //Schedule the build for the project and this build should be in Queue since the state is POST_PRODUCTION
             project.scheduleBuild2(0);
-            assertTrue(project.isInQueue()); //That means its pending or its waiting or blocked
+            assertTrue(project.isInQueue()); //That means it's pending or it's waiting or blocked
             j.jenkins.getQueue().maintain();
             while(j.jenkins.getQueue().getItem(project) instanceof WaitingItem) {
                 System.out.println(j.jenkins.getQueue().getItem(project));
@@ -89,7 +89,7 @@ public class JobQueueTest {
             assertTrue(j.jenkins.getQueue().getItem(project) instanceof BlockedItem); //check is it is blocked
         }
         else {
-            fail("The maximum attemps for checking if the job is in POST_PRODUCTION State have reached");
+            fail("The maximum attempts for checking if the job is in POST_PRODUCTION State have reached");
         }
         count=0;
         while(!JobQueueTest.fireFinalizeFlag && count<100) {
@@ -104,7 +104,7 @@ public class JobQueueTest {
             assertFalse(j.jenkins.getQueue().getItem(project) instanceof BlockedItem);
         }
         else {
-            fail("The maximum attemps for checking if the job is in COMPLETED State have reached");
+            fail("The maximum attempts for checking if the job is in COMPLETED State have reached");
         }
         Thread.sleep(1000); //Sleep till job completes.
     }

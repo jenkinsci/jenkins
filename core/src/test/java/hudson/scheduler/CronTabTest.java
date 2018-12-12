@@ -27,7 +27,6 @@ import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
@@ -315,4 +314,17 @@ public class CronTabTest {
         assertEquals("[35, 56]", times.toString());
     }
 
+    @Issue("SECURITY-790")
+    @Test(timeout = 1000L) public void testLongMonths() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.JULY);
+        new CronTab("0 0 31 7 *").floor(cal); // would infinite loop
+    }
+
+    @Issue("SECURITY-1193")
+    @Test(timeout = 1000L) public void testCeilLongMonths() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.NOVEMBER);
+        new CronTab("0 0 31 * *").ceil(cal); // would infinite loop
+    }
 }

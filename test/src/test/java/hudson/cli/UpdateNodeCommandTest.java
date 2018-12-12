@@ -38,6 +38,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateNodeCommandTest {
@@ -60,8 +61,8 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Configure permission"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -92,8 +93,22 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void updateNodeShouldFailForMaster() throws Exception {
+        CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
+        assertThat(result.stderr(), containsString("No such node ''"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("(master)");
+        assertThat(result.stderr(), containsString("No such node '(master)'"));
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+    }
+
 }

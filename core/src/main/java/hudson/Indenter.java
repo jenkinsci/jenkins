@@ -26,7 +26,7 @@ package hudson;
 import hudson.model.Job;
 
 /**
- * Used by <tt>projectView.jelly</tt> to indent modules.
+ * Used by {@code projectView.jelly} to indent modules.
  *
  * @author Kohsuke Kawaguchi
  */

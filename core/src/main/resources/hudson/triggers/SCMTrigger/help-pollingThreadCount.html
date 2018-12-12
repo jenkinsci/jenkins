@@ -1,9 +1,5 @@
 <div>
-  If you use SCM polling to trigger a new build for a large number of projects,
-  you may want to limit the number of concurrent polling activities to avoid
-  overloading the server.
-
+  This option configures the maximum number of concurrent threads that are used by Jenkins to poll for SCM changes.
   <p>
-  Setting a positive number sets the upper bound to the number of concurrent polling.
-  Leaving the field empty will make it unbounded.
+  Depending on your network connection, SCM service, and Jenkins configuration, you may need to increase or decrease the number of threads to achieve optimal results.
 </div>

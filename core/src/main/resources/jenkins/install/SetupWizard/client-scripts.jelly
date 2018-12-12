@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <j:if test="${!app.installState.setupComplete}">
+    <script src="${resURL}/jsbundles/pluginSetupWizard.js" type="text/javascript"/>
+    <link rel="stylesheet" href="${resURL}/jsbundles/pluginSetupWizard.css" type="text/css" />
+  </j:if>
+</j:jelly>

@@ -26,8 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!-- view tab bar -->
   <l:tabBar>
-    <j:forEach var="v" items="${views}">
-      <l:tab name="${v.viewName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
+    <j:forEach var="v" items="${it.sort(views)}">
+      <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
     </j:forEach>
     <j:if test="${currentView.hasPermission(currentView.CREATE)}">
       <l:tab name="+" href="${rootURL}/${currentView.owner.url}newView" active="false"

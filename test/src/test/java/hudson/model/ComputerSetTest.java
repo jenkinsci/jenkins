@@ -23,13 +23,13 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertTrue;
-
-import hudson.cli.CLI;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -64,16 +64,20 @@ public class ComputerSetTest {
     public void nodeOfflineCli() throws Exception {
         DumbSlave s = j.createSlave();
 
-        CLI cli = new CLI(j.getURL());
-        try {
-            assertTrue(cli.execute("wait-node-offline","xxx")!=0);
-            assertTrue(cli.execute("wait-node-online",s.getNodeName())==0);
+        assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
+        assertThat(new CLICommandInvoker(j, "wait-node-online").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());
 
-            s.toComputer().disconnect().get();
+        s.toComputer().disconnect(null).get();
 
-            assertTrue(cli.execute("wait-node-offline",s.getNodeName())==0);
-        } finally {
-            cli.close();
-        }
+        assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());
+    }
+
+    @Test
+    public void getComputerNames() throws Exception {
+        assertThat(ComputerSet.getComputerNames(), is(empty()));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
+        j.createSlave("anAnotherNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 }

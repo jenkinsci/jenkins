@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import hudson.util.HttpResponses;
 
 import java.io.IOException;
 

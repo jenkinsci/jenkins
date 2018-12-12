@@ -24,7 +24,7 @@
 
 package lib.layout;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class LayoutTest {
     @Test public void rejectedLinks() throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
         String prefix = r.contextPath + '/';
-        for (HtmlElement e : wc.goTo("login").getElementsByTagName("link")) {
+        for (DomElement e : wc.goTo("login").getElementsByTagName("link")) {
             String href = ((HtmlLink) e).getHrefAttribute();
             if (!href.startsWith(prefix)) {
                 System.err.println("ignoring " + href);

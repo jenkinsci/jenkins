@@ -32,12 +32,16 @@ import hudson.model.ComputerSet;
 import hudson.model.Environment;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link NodeProperty} that sets additional environment variables.
@@ -47,7 +51,7 @@ import java.util.List;
 public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     /**
-     * Slave-specific environment variables
+     * Agent-specific environment variables
      */
     private final EnvVars envVars;
     
@@ -64,6 +68,14 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     	return envVars;
     }
 
+    /**
+     * @return environment variables using same data type as constructor parameter.
+     * @since 2.136
+     */
+    public List<Entry> getEnv() {
+        return envVars.entrySet().stream().map(Entry::new).collect(Collectors.toList());
+    }
+
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
@@ -75,7 +87,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
         env.putAll(envVars);
     }
 
-    @Extension
+    @Extension @Symbol("envVars")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         @Override
@@ -98,6 +110,10 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	
 	public static class Entry {
 		public String key, value;
+
+		private Entry(Map.Entry<String,String> e) {
+		    this(e.getKey(), e.getValue());
+        }
 
 		@DataBoundConstructor
 		public Entry(String key, String value) {

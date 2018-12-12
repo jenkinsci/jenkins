@@ -8,10 +8,12 @@ import hudson.model.UnprotectedRootAction;
 import java.util.ArrayList;
 import java.util.List;
 
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -21,7 +23,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Ryan Campbell
  *
  */
-@Extension
+@Extension @Symbol("whoAmI")
 @ExportedBean
 public class WhoAmI implements UnprotectedRootAction {
     
@@ -61,7 +63,7 @@ public class WhoAmI implements UnprotectedRootAction {
     @Exported
     public String[] getAuthorities() {
         if (auth().getAuthorities() == null) {
-            return new String[0];
+            return MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
         List <String> authorities = new ArrayList<String>();
         for (GrantedAuthority a : auth().getAuthorities()) {

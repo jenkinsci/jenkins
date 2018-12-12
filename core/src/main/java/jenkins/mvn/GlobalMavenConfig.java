@@ -1,25 +1,24 @@
 package jenkins.mvn;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
-import net.sf.json.JSONObject;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.tools.ToolConfigurationCategory;
 
-import org.kohsuke.stapler.StaplerRequest;
+import org.jenkinsci.Symbol;
+
+import javax.annotation.Nonnull;
 
 //as close as it gets to the global Maven Project configuration
-@Extension(ordinal = 50)
-public class GlobalMavenConfig extends GlobalConfiguration {
+@Extension(ordinal = 50) @Symbol("maven")
+public class GlobalMavenConfig extends GlobalConfiguration  implements PersistentDescriptor {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;
 
-    public GlobalMavenConfig() {
-        load();
-    }
-
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        return true;
+    public @Nonnull ToolConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
     public void setGlobalSettingsProvider(GlobalSettingsProvider globalSettingsProvider) {
@@ -40,8 +39,8 @@ public class GlobalMavenConfig extends GlobalConfiguration {
         return settingsProvider != null ? settingsProvider : new DefaultSettingsProvider();
     }
 
-    public static GlobalMavenConfig get() {
-        return GlobalConfiguration.all().get(GlobalMavenConfig.class);
+    public static @Nonnull GlobalMavenConfig get() {
+        return GlobalConfiguration.all().getInstance(GlobalMavenConfig.class);
     }
 
 }

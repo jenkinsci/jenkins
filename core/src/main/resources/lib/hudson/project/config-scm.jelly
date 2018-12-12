@@ -26,14 +26,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="${%Source Code Management}">
-    <j:set var="scms" value="${h.getSCMDescriptors(it)}" />
-    <j:forEach var="idx" begin="0" end="${size(scms)-1}">
-      <j:set var="descriptor" value="${scms[idx]}" />
+    <!-- Could use f:descriptorRadioList were it not for scm/scmd compatibility code; pending JENKINS-20959 would not help with performance -->
+    <j:forEach var="descriptor" items="${h.getSCMDescriptors(instance)}" varStatus="loop">
       <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->
-      <f:radioBlock name="scm" value="${idx}" title="${scmd.displayName}" checked="${it.scm.descriptor==scmd}">
-        <j:set var="instance" value="${it.scm.descriptor==descriptor ? it.scm : null}"/>
+      <f:radioBlock name="scm" help="${descriptor.helpFile}" value="${loop.index}" title="${descriptor.displayName}" checked="${instance.scm.descriptor == descriptor}">
+        <j:set var="instance" value="${instance.scm.descriptor == descriptor ? it.scm : null}"/>
         <j:set var="scm" value="${instance}" /><!-- backward compatibility with <1.238 -->
-        <st:include from="${scmd}" page="${scmd.configPage}"/>
+        <f:class-entry descriptor="${descriptor}" />
+        <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
       </f:radioBlock>
     </j:forEach>
   </f:section>

@@ -25,7 +25,6 @@ package hudson.model;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Represents things that {@link hudson.model.Queue.Executable} uses while running.

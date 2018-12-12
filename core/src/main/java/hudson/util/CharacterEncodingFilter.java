@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import jenkins.util.SystemProperties;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,13 +49,13 @@ public class CharacterEncodingFilter implements Filter {
     private static final String ENCODING = "UTF-8";
 
     private static final Boolean DISABLE_FILTER
-            = Boolean.getBoolean(CharacterEncodingFilter.class.getName() + ".disableFilter");
+            = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".disableFilter");
 
     /**
      * The character encoding sets forcibly?
      */
     private static final Boolean FORCE_ENCODING
-            = Boolean.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
+            = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
 
     public void init(FilterConfig filterConfig) throws ServletException {
         LOGGER.log(Level.FINE,
@@ -89,7 +90,7 @@ public class CharacterEncodingFilter implements Filter {
 
         // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
         // decoding with UTF-8. This will ensure we get it right.
-        // but doing this for config.xml submission could potentiall overwrite valid
+        // but doing this for config.xml submission could potentially overwrite valid
         // "text/xml;charset=xxx"
         String contentType = req.getContentType();
         if (contentType != null) {

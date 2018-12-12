@@ -41,7 +41,7 @@ import hudson.model.JDK;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-import hudson.slaves.CommandLauncher;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
@@ -87,9 +87,6 @@ public class SimpleBuildWrapperTest {
             context.env("PATH+STUFF", workspace.child("bin").getRemote());
         }
         @TestExtension("envOverride") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithEnvOverride";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
@@ -123,16 +120,13 @@ public class SimpleBuildWrapperTest {
             context.env("PATH+EXTRA", "${EXTRA}/bin");
         }
         @TestExtension("envOverrideExpand") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithEnvOverrideExpand";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
         }
     }
     private static class SpecialEnvSlave extends Slave {
-        SpecialEnvSlave(File remoteFS, CommandLauncher launcher) throws Descriptor.FormException, IOException {
+        SpecialEnvSlave(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
         }
         @Override public Computer createComputer() {
@@ -167,9 +161,6 @@ public class SimpleBuildWrapperTest {
             }
         }
         @TestExtension("disposer") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithDisposer";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
@@ -205,9 +196,6 @@ public class SimpleBuildWrapperTest {
             }
         }
         @TestExtension("loggerDecorator") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithLogger";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }

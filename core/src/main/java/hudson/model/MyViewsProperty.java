@@ -39,12 +39,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -52,6 +56,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A UserProperty that remembers user-private views.
@@ -59,6 +64,12 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Tom Huybrechts
  */
 public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback {
+
+    /**
+     * Name of the primary view defined by the user.
+     * {@code null} means that the View is not defined.
+     */
+    @CheckForNull
     private String primaryViewName;
 
     /**
@@ -69,22 +80,29 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     private transient ViewGroupMixIn viewGroupMixIn;
 
     @DataBoundConstructor
-    public MyViewsProperty(String primaryViewName) {
+    public MyViewsProperty(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
+        readResolve(); // initialize fields
     }
 
     private MyViewsProperty() {
-        readResolve();
+        this(null);
     }
 
+    @Restricted(NoExternalUse.class)
     public Object readResolve() {
         if (views == null)
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
             views = new CopyOnWriteArrayList<View>();
 
-        if (views.isEmpty())
+        if (views.isEmpty()) {
             // preserve the non-empty invariant
-            views.add(new AllView(Messages.Hudson_ViewName(), this));
+            views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
+        }
+        if (primaryViewName != null) {
+            // It may happen when the default constructor is invoked
+            primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
+        }
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
@@ -95,11 +113,17 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return this;
     }
 
+    @CheckForNull
     public String getPrimaryViewName() {
         return primaryViewName;
     }
 
-    public void setPrimaryViewName(String primaryViewName) {
+    /**
+     * Sets the primary view.
+     * @param primaryViewName Name of the primary view to be set.
+     *                        {@code null} to make the primary view undefined.
+     */
+    public void setPrimaryViewName(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
     }
 
@@ -149,6 +173,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return new HttpRedirect("view/" + Util.rawEncode(getPrimaryView().getViewName()) + "/");
     }
 
+    @RequirePOST
     public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
@@ -180,14 +205,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return user.getACL();
     }
 
-    public void checkPermission(Permission permission) throws AccessDeniedException {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     ///// Action methods /////
     public String getDisplayName() {
         return Messages.MyViewsProperty_DisplayName();
@@ -201,7 +218,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return "my-views";
     }
 
-    @Extension
+    @Extension @Symbol("myView")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
         @Override
@@ -225,10 +242,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.getInstance().getViewsTabBar();
     }
 
-    public ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Jenkins.getInstance();
-    }
-
     public List<Action> getViewActions() {
         // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
         return Collections.emptyList();
@@ -242,7 +255,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.getInstance().getMyViewsTabBar();
     }
     
-    @Extension
+    @Extension @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
 		public String getDisplayName() {

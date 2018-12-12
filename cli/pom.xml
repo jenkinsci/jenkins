@@ -4,14 +4,19 @@
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>1.616</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>cli</artifactId>
 
   <name>Jenkins cli</name>
   <description>Command line interface for Jenkins</description>
+
+  <properties>
+    <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
+    <findbugs.threshold>Medium</findbugs.threshold>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -21,13 +26,24 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>access-modifier-annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -42,12 +58,38 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.23</version>
+      <version>1.24</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>1.7.0</version>
+      <optional>true</optional> <!-- do not expose to core -->
+    </dependency>
+	<!-- ed25519 algorithm, see JENKINS-45318 -->
+	<dependency>
+  	  <groupId>net.i2p.crypto</groupId>
+	  <artifactId>eddsa</artifactId>
+	  <version>0.3.0</version>
+	</dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <optional>true</optional> <!-- ditto -->
+    </dependency>
+    <dependency> <!-- TODO remove and replace PrivateKeyProvider with SecurityUtils.createFileKeyPairProvider() as in SshClient -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
       <version>build214-jenkins-1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
     </dependency>
   </dependencies>
 
@@ -59,17 +101,19 @@
         <executions>
           <execution>
             <goals>
-              <goal>attached</goal>
+              <goal>single</goal>
             </goals>
             <phase>package</phase>
             <configuration>
-              <descriptorId>jar-with-dependencies</descriptorId>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
               <archive>
                 <manifest>
                   <mainClass>hudson.cli.CLI</mainClass>
                 </manifest>
                 <manifestEntries>
-                  <Jenkins-CLI-Version>${build.version}</Jenkins-CLI-Version>
+                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
                 </manifestEntries>
               </archive>
             </configuration>
@@ -88,9 +132,14 @@
             <configuration>
               <fileMask>Messages.properties</fileMask>
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
+              <accessModifierAnnotations>true</accessModifierAnnotations>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

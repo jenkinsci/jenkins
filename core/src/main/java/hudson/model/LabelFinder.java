@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.labels.LabelAtom;
-import jenkins.model.Jenkins;
 
 import java.util.Collection;
 

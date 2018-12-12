@@ -1,0 +1,17 @@
+downloadService.post('hudson.tasks.Ant.AntInstaller',{"list": [
+  {
+  "id": "1.9.4",
+  "name": "1.9.4",
+  "url": "http://archive1.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
+  },
+  {
+  "id": "1.9.2",
+  "name": "1.9.2",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.2-bin.zip"
+  },
+  {
+  "id": "1.9.1",
+  "name": "1.9.1",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.1-bin.zip"
+  }
+]})

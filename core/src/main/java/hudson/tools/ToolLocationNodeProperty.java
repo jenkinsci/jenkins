@@ -35,6 +35,7 @@ import hudson.slaves.NodeSpecific;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
@@ -115,7 +116,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
         return installation.getHome();
     }
 
-    @Extension
+    @Extension @Symbol("toolLocation")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         public String getDisplayName() {

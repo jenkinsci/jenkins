@@ -1,5 +1,6 @@
 package hudson.util;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +23,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class SequentialExecutionQueue implements Executor {
     /**
-     * Access is sycnhronized by {@code Queue.this}
+     * Access is synchronized by {@code Queue.this}
      */
     private final Map<Runnable,QueueEntry> entries = new HashMap<Runnable,QueueEntry>();
     private ExecutorService executors;
@@ -58,7 +59,7 @@ public class SequentialExecutionQueue implements Executor {
     }
 
 
-    public synchronized void execute(Runnable item) {
+    public synchronized void execute(@Nonnull Runnable item) {
         QueueEntry e = entries.get(item);
         if(e==null) {
             e = new QueueEntry(item);

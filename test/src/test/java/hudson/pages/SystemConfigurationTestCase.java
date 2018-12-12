@@ -74,11 +74,6 @@ public class SystemConfigurationTestCase {
             return true;
         }
 
-        @Override
-        public String getDisplayName() {
-            return "PageDecoratorImpl";
-        }
-
         public String getDecoratorId() {
             return decoratorId;
         }

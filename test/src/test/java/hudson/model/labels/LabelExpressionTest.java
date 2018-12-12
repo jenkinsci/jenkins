@@ -24,8 +24,10 @@
 package hudson.model.labels;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -47,6 +49,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -189,6 +192,7 @@ public class LabelExpressionTest {
 
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
+        assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
         DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
                 j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
@@ -262,5 +266,17 @@ public class LabelExpressionTest {
                 return null;
             }
         });
+    }
+
+    @Test
+    public void parseLabel() throws Exception {
+        Set<LabelAtom> result = Label.parse("one two three");
+        String[] expected = {"one", "two", "three"};
+
+        for(String e : expected) {
+            assertTrue(result.contains(new LabelAtom(e)));
+        }
+
+        assertEquals(result.size(), expected.length);
     }
 }

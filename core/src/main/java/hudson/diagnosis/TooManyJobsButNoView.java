@@ -26,8 +26,10 @@ package hudson.diagnosis;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 
@@ -39,8 +41,14 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("tooManyJobsButNoView")
 public class TooManyJobsButNoView extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.TooManyJobsButNoView_DisplayName();
+    }
+
     public boolean isActivated() {
         Jenkins h = Jenkins.getInstance();
         return h.getViews().size()==1 && h.getItemMap().size()> THRESHOLD;
@@ -49,6 +57,7 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
         if(req.hasParameter("no")) {
             disable(true);

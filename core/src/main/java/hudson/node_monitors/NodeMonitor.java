@@ -48,7 +48,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <dl>
  * <dt>column.jelly</dt>
  * <dd>
- * Invoked from {@link ComputerSet} <tt>index.jelly</tt> to render a column.
+ * Invoked from {@link ComputerSet} {@code index.jelly} to render a column.
  * The {@link NodeMonitor} instance is accessible through the "from" variable.
  * Also see {@link #getColumnCaption()}.
  *
@@ -114,11 +114,11 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     /**
-     * True if this monitoring shouldn't mark the slaves offline.
+     * True if this monitoring shouldn't mark the agents offline.
      *
      * <p>
      * Many {@link NodeMonitor}s implement a logic that if the value goes above/below
-     * a threshold, the slave will be marked offline as a preventive measure.
+     * a threshold, the agent will be marked offline as a preventive measure.
      * This flag controls that.
      *
      * <p>

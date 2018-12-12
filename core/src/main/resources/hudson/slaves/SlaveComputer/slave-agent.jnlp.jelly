@@ -37,7 +37,7 @@ THE SOFTWARE.
         codebase="${rootURL}computer/${h.encode(it.node.nodeName)}/">
 
       <information>
-        <title>Slave Agent for ${it.displayName}</title>
+        <title>Agent for ${it.displayName}</title>
         <vendor>Jenkins project</vendor>
         <homepage href="https://jenkins-ci.org/"/>
       </information>
@@ -46,26 +46,43 @@ THE SOFTWARE.
         <all-permissions/>
       </security>
 
+      <j:set var="launcher" value="${it.delegatedLauncher}"/>
+
       <resources>
         <j:set var="port" value="${request.getParameter('debugPort')}"/>
         <j:choose>
           <j:when test="${port!=null}">
-            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
+            <j2se version="1.8+" java-vm-args="${launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
           </j:when>
           <j:otherwise>
-            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs}"/>
+            <j2se version="1.8+" java-vm-args="${launcher.vmargs}"/>
           </j:otherwise>
         </j:choose>
         <jar href="${rootURL}jnlpJars/remoting.jar"/>
-        <property name="hudson.showWindowsServiceInstallLink" value="true" />
       </resources>
 
       <application-desc main-class="hudson.remoting.jnlp.Main">
         <argument>${it.jnlpMac}</argument>
         <argument>${it.node.nodeName}</argument>
-        <j:if test="${it.launcher.tunnel!=null}">
+        <j:if test="${launcher.tunnel!=null}">
           <argument>-tunnel</argument>
-          <argument>${it.launcher.tunnel}</argument>
+          <argument>${launcher.tunnel}</argument>
+        </j:if>
+        <j:if test="${not launcher.workDirSettings.disabled}">
+          <argument>-workDir</argument>
+          <j:choose>
+            <j:when test="${launcher.workDirSettings.useAgentRootDir}">
+              <argument>${it.node.remoteFS}</argument>
+            </j:when>
+            <j:otherwise>
+              <argument>${launcher.workDirSettings.workDirPath}</argument>
+            </j:otherwise>
+          </j:choose>
+          <argument>-internalDir</argument>
+          <argument>${launcher.workDirSettings.internalDir}</argument>
+          <j:if test="${launcher.workDirSettings.failIfWorkDirIsMissing}">
+            <argument>-failIfWorkDirIsMissing</argument>
+          </j:if>
         </j:if>
 
         <argument>-url</argument>

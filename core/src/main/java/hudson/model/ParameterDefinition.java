@@ -75,19 +75,18 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterDefinition}s are persisted into job <tt>config.xml</tt>
+ * Instances of {@link ParameterDefinition}s are persisted into job {@code config.xml}
  * through XStream.
  *
  *
- * <h2>Assocaited Views</h2>
- * <h4>config.jelly</h4>
- * <p>
- * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to contribute a form
+ * <h2>Associated Views</h2>
+ * <h3>config.jelly</h3>
+ * {@link ParameterDefinition} class uses {@code config.jelly} to contribute a form
  * fragment in the job configuration screen. Values entered there are fed back to
  * {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)} to create {@link ParameterDefinition}s.
  *
- * <h4>index.jelly</h4>
- * The <tt>index.jelly</tt> view contributes a form fragment in the page where the user
+ * <h3>index.jelly</h3>
+ * The {@code index.jelly} view contributes a form fragment in the page where the user
  * enters actual values of parameters for a build. The result of this form submission
  * is then fed to {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)} to
  * create {@link ParameterValue}s.
@@ -155,6 +154,7 @@ public abstract class ParameterDefinition implements
     /**
      * {@inheritDoc}
      */
+    @Override
     public ParameterDescriptor getDescriptor() {
         return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
@@ -193,12 +193,11 @@ public abstract class ParameterDefinition implements
      * Create a parameter value from the string given in the CLI.
      *
      * @param command
-     *      This is the command that got the parameter. You can use its {@link CLICommand#checkChannel()}
-     *      for interacting with the CLI JVM.
+     *      This is the command that got the parameter.
      * @throws AbortException
      *      If the CLI processing should be aborted. Hudson will report the error message
      *      without stack trace, and then exits this command. Useful for graceful termination.
-     * @throws Exception
+     * @throws RuntimeException
      *      All the other exceptions cause the stack trace to be dumped, and then
      *      the command exits with an error code.
      * @since 1.334

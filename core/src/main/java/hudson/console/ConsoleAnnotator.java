@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Annotates one line of console output.
@@ -71,21 +73,51 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
      * Annotates one line.
      *
      * @param context
-     *      The object that owns the console output. Never null.
+     *      The object that owns the console output. Never {@code null}.
      * @param text
      *      Contains a single line of console output, and defines convenient methods to add markup.
-     *      The callee should put markup into this object. Never null.
+     *      The callee should put markup into this object. Never {@code null}.
      * @return
      *      The {@link ConsoleAnnotator} object that will annotate the next line of the console output.
-     *      To indicate that you are not interested in the following lines, return null.
+     *      To indicate that you are not interested in the following lines, return {@code null}.
      */
-    public abstract ConsoleAnnotator annotate(T context, MarkupText text );
+    @CheckForNull
+    public abstract ConsoleAnnotator<T> annotate(@Nonnull T context, @Nonnull MarkupText text );
 
     /**
      * Cast operation that restricts T.
      */
+    @SuppressWarnings("unchecked")
     public static <T> ConsoleAnnotator<T> cast(ConsoleAnnotator<? super T> a) {
         return (ConsoleAnnotator)a;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"}) // unclear to jglick what is going on here
+    private static final class ConsoleAnnotatorAggregator<T> extends ConsoleAnnotator<T> {
+        List<ConsoleAnnotator<T>> list;
+
+        ConsoleAnnotatorAggregator(Collection list) {
+            this.list = new ArrayList<>(list);
+        }
+
+        @Override
+        public ConsoleAnnotator annotate(T context, MarkupText text) {
+            ListIterator<ConsoleAnnotator<T>> itr = list.listIterator();
+            while (itr.hasNext()) {
+                ConsoleAnnotator a =  itr.next();
+                ConsoleAnnotator b = a.annotate(context,text);
+                if (a!=b) {
+                    if (b==null)    itr.remove();
+                    else            itr.set(b);
+                }
+            }
+
+            switch (list.size()) {
+                case 0:     return null;    // no more annotator left
+                case 1:     return list.get(0); // no point in aggregating
+                default:    return this;
+            }
+        }
     }
 
     /**
@@ -97,32 +129,7 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
         case 1:     return  cast(all.iterator().next()); // just one
         }
 
-        class Aggregator extends ConsoleAnnotator<T> {
-            List<ConsoleAnnotator<T>> list;
-
-            Aggregator(Collection list) {
-                this.list = new ArrayList<ConsoleAnnotator<T>>(list);
-            }
-
-            public ConsoleAnnotator annotate(T context, MarkupText text) {
-                ListIterator<ConsoleAnnotator<T>> itr = list.listIterator();
-                while (itr.hasNext()) {
-                    ConsoleAnnotator a =  itr.next();
-                    ConsoleAnnotator b = a.annotate(context,text);
-                    if (a!=b) {
-                        if (b==null)    itr.remove();
-                        else            itr.set(b);
-                    }
-                }
-
-                switch (list.size()) {
-                case 0:     return null;    // no more annotator left
-                case 1:     return list.get(0); // no point in aggregating
-                default:    return this;
-                }
-            }
-        }
-        return new Aggregator(all);
+        return new ConsoleAnnotatorAggregator<>(all);
     }
 
     /**
@@ -136,8 +143,9 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
     /**
      * List all the console annotators that can work for the specified context type.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"}) // reflective
     public static <T> List<ConsoleAnnotator<T>> _for(T context) {
-        List<ConsoleAnnotator<T>> r  = new ArrayList<ConsoleAnnotator<T>>();
+        List<ConsoleAnnotator<T>> r  = new ArrayList<>();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             if (f.type().isInstance(context)) {
                 ConsoleAnnotator ca = f.newInstance(context);

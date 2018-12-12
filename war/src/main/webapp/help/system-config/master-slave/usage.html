@@ -3,27 +3,32 @@
 
   <dl>
     <dt><b>
-      Utilize this node as much as possible
+      Use this node as much as possible
     </b></dt>
     <dd>
-      This is the default and normal setting.
+      This is the default setting.
+      <br>
       In this mode, Jenkins uses this node freely. Whenever there is a build
       that can be done by using this node, Jenkins will use it.
     </dd>
 
     <dt><b>
-      Only build jobs with label restrictions matching this node
+      Only build jobs with label expressions matching this node
     </b></dt>
     <dd>
       In this mode, Jenkins will only build a project on this node when
       that project is restricted to certain nodes using a label expression,
       and that expression matches this node&apos;s name and/or labels.
-
-      This allows a slave to be reserved for certain kinds of jobs.
-      For example, to run performance tests continuously from Jenkins,
-      you can use this setting with # of executors as 1, so that only one performance
-      test runs at any given time, and that one executor won't be blocked
-      by other builds that can be done on other nodes.
+      <p>
+      This allows a node to be reserved for certain kinds of jobs.
+      For example, if you have jobs that run performance tests, you may want
+      them to only run on a specially configured machine, while preventing all
+      other jobs from using that machine. To do so, you would restrict where the
+      test jobs may run by giving them a label expression matching that machine.
+      <br>
+      Furthermore, if you set the <i># of executors</i> value to <tt>1</tt>, you
+      can ensure that only one performance test will execute at any given time
+      on that machine; no other builds will interfere.
     </dd>
   </dl>
 </div>

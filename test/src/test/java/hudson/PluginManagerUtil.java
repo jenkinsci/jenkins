@@ -26,6 +26,8 @@ package hudson;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.junit.runner.Description;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
@@ -47,10 +49,26 @@ public class PluginManagerUtil {
         };
     }
 
+    public static RestartableJenkinsRule newRestartableJenkinsRule() {
+        return new RestartableJenkinsRule() {
+            @Override
+            public JenkinsRule createJenkinsRule(Description description) {
+                return newJenkinsRule();
+            }
+        };
+    }
+
     public static void dynamicLoad(String plugin, Jenkins jenkins) throws IOException, InterruptedException, RestartRequiredException {
+        dynamicLoad(plugin, jenkins, false);
+    }
+
+    public static void dynamicLoad(String plugin, Jenkins jenkins, boolean disable) throws IOException, InterruptedException, RestartRequiredException {
         URL src = PluginManagerTest.class.getClassLoader().getResource("plugins/" + plugin);
         File dest = new File(jenkins.getRootDir(), "plugins/" + plugin);
         FileUtils.copyURLToFile(src, dest);
+        if (disable) {
+            new File(dest.getPath() + ".disabled").createNewFile();
+        }
         jenkins.pluginManager.dynamicLoad(dest);
     }
 }

@@ -31,11 +31,18 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
+import java.io.IOException;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -50,12 +57,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
+ * Instances of {@link ParameterValue}s are persisted into build's {@code build.xml}
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
  * <h2>Associated Views</h2>
- * <h4>value.jelly</h4>
- * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
+ * <h3>value.jelly</h3>
+ * The {@code value.jelly} view contributes a UI fragment to display the parameter
  * values used for a build.
  *
  * <h2>Notes</h2>
@@ -69,7 +76,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
+@StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
+
     protected final String name;
 
     private String description;
@@ -89,6 +100,16 @@ public abstract class ParameterValue implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Restricted(DoNotUse.class) // for value.jelly
+    public String getFormattedDescription() {
+        try {
+            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+        } catch (IOException e) {
+            LOGGER.warning("failed to translate description using configured markup formatter");
+            return "";
+        }
     }
 
     /**
@@ -115,10 +136,10 @@ public abstract class ParameterValue implements Serializable {
      * expected to add more values to this map (or do nothing)
      *
      * <p>
-     * <strike>Environment variables should be by convention all upper case.
+     * Formerly, environment variables would be by convention all upper case.
      * (This is so that a Windows/Unix heterogeneous environment
      * won't get inconsistent result depending on which platform to
-     * execute.)</strike> (see {@link EnvVars} why upper casing is a bad idea.)
+     * execute.) But now see {@link EnvVars} why upper casing is a bad idea.
      *
      * @param env
      *      never null.
@@ -198,7 +219,7 @@ public abstract class ParameterValue implements Serializable {
      * Returns a {@link VariableResolver} so that other components like {@link Builder}s
      * can perform variable substitution to reflect parameter values into the build process.
      *
-     * <p.
+     * <p>
      * This is yet another means in which a {@link ParameterValue} can influence
      * a build.
      *
@@ -258,7 +279,7 @@ public abstract class ParameterValue implements Serializable {
      *
      * <P>
      * This message is used as a tooltip to describe jobs in the queue. The text should be one line without
-     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returend.)
+     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returned.)
      *
      * @since 1.323
      */
@@ -284,9 +305,11 @@ public abstract class ParameterValue implements Serializable {
      * Returns the most natural Java object that represents the actual value, like
      * boolean, string, etc.
      *
-     * If there's nothing that really fits the bill, the callee can return {@code this}.
+     * @return if there is no natural value for this parameter type, {@code this} may be used;
+     *         {@code null} may be used when the value is normally defined but missing in this case for various reasons
      * @since 1.568
      */
+    @CheckForNull
     public Object getValue() {
         return null;
     }

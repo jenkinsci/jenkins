@@ -31,9 +31,7 @@ import java.net.UnknownHostException;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams; 
-import org.apache.commons.httpclient.protocol.ControllerThreadSocketFactory;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
-import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
 
 /**
  * A SecureProtocolSocketFactory that creates sockets without binding to a specific interface.

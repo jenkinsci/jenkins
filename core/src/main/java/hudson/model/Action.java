@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.Functions;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
  * (more specifically {@link Actionable} objects, which most interesting {@link ModelObject}s are.)
@@ -36,12 +38,12 @@ import hudson.Functions;
  *
  * <p>
  * Some actions use the latter without the former (for example, to add a link to an external website),
- * while others do the former without the latter (for example, to just draw some graphs in <tt>floatingBox.jelly</tt>),
+ * while others do the former without the latter (for example, to just draw some graphs in {@code floatingBox.jelly}),
  * and still some others do both.
  *
  * <h2>Views</h2>
  * <p>
- * If an action has a view named <tt>floatingBox.jelly</tt>,
+ * If an action has a view named {@code floatingBox.jelly},
  * it will be displayed as a floating box on the top page of
  * the target {@link ModelObject}. (For example, this is how
  * the JUnit test result trend shows up in the project top page.
@@ -54,11 +56,11 @@ import hudson.Functions;
  * tweak from there. One of the use cases of this is to show nested actions, like where
  * Jenkins show the option to wipe out the workspace inside the workspace link:
  *
- * <pre>
- * &lt;l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
- *   &lt;l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
- * &lt;/l:task>
- * </pre>
+ * <pre>{@code
+ * <l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
+ *   <l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
+ * </l:task>
+ * }</pre>
  *
  * <h2>Persistence</h2>
  * <p>
@@ -66,6 +68,11 @@ import hudson.Functions;
  * (for example with {@link Build}) via XStream. In some other cases,
  * {@link Action}s are transient and not persisted (such as
  * when it's used with {@link Job}).
+ * <p>
+ * The {@link Actionable#replaceAction(Action)}, {@link Actionable#addOrReplaceAction(Action)}, and
+ * {@link Actionable#removeAction(Action)} methods use {@link Object#equals} to determine whether to update
+ * or replace or remove an {@link Action}. As such, {@link Action} subclasses that provide a deep
+ * {@link Object#equals} will assist in reducing the need for unnecessary persistence.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -75,7 +82,7 @@ public interface Action extends ModelObject {
      *
      * @return
      *      If just a file name (like "abc.gif") is returned, it will be
-     *      interpreted as a file name inside <tt>/images/24x24</tt>.
+     *      interpreted as a file name inside {@code /images/24x24}.
      *      This is useful for using one of the stock images.
      *      <p>
      *      If an absolute file name that starts from '/' is returned (like
@@ -84,21 +91,23 @@ public interface Action extends ModelObject {
      *      image files from a plugin.
      *      <p>
      *      Finally, return null to hide it from the task list. This is normally not very useful,
-     *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
+     *      but this can be used for actions that only contribute {@code floatBox.jelly}
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
      * @see Functions#isAnonymous()
      * @see Functions#getIconFilePath(Action)
      */
-    String getIconFileName();
+    @CheckForNull String getIconFileName();
 
     /**
      * Gets the string to be displayed.
      *
      * The convention is to capitalize the first letter of each word,
-     * such as "Test Result". 
+     * such as "Test Result".
+     *
+     * @return Can be null in case the action is hidden.
      */
-    String getDisplayName();
+    @CheckForNull String getDisplayName();
 
     /**
      * Gets the URL path name.
@@ -124,5 +133,5 @@ public interface Action extends ModelObject {
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
      */
-    String getUrlName();
+    @CheckForNull String getUrlName();
 }

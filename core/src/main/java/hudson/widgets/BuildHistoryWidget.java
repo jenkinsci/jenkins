@@ -26,7 +26,9 @@ package hudson.widgets;
 import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
+import jenkins.widgets.HistoryPageFilter;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -60,11 +62,21 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      */
     public List<Item> getQueuedItems() {
         LinkedList<Item> list = new LinkedList<Item>();
-        for (Item item : Jenkins.getInstance().getQueue().getApproximateItemsQuickly()) {
+        for (Item item : Jenkins.getInstance().getQueue().getItems()) {
             if (item.task == owner) {
                 list.addFirst(item);
             }
         }
     	return list;
+    }
+
+    @Override
+    public HistoryPageFilter getHistoryPageFilter() {
+        final HistoryPageFilter<T> historyPageFilter = newPageFilter();
+
+        historyPageFilter.add(baseList, getQueuedItems());
+        historyPageFilter.widget = this;
+
+        return updateFirstTransientBuildKey(historyPageFilter);
     }
 }

@@ -38,9 +38,9 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * Called to clean up a workspace that may potentially belong to this {@link FileSystemProvisioner}.
      *
      * <p>
-     * Because users may modify the file system behind Hudson, and slaves may come and go when
-     * configuration changes hapen, in general case Hudson is unable to keep track of which jobs
-     * have workspaces in which slaves.
+     * Because users may modify the file system behind Hudson, and agents may come and go when
+     * configuration changes happen, in general case Hudson is unable to keep track of which jobs
+     * have workspaces in which agents.
      *
      * <p>
      * So instead we rey on a garbage collection mechanism, to look at workspaces left in the file system
@@ -50,12 +50,12 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * This method is called to do this, after Hudson determines that the workspace should be deleted
      * to reclaim disk space. The implementation of this method is expected to sniff the contents of
      * the workspace, and if it looks like the one created by {@link FileSystemProvisioner#prepareWorkspace(AbstractBuild, FilePath, TaskListener)},
-     * perform the necessary deletion operation, and return <tt>true</tt>.
+     * perform the necessary deletion operation, and return {@code true}.
      *
      * <p>
      * If the workspace isn't the one created by this {@link FileSystemProvisioner}, or if the
      * workspace can be simply deleted by {@link FilePath#deleteRecursive()}, then simply
-     * return <tt>false</tt> to give other {@link FileSystemProvisionerDescriptor}s a chance to
+     * return {@code false} to give other {@link FileSystemProvisionerDescriptor}s a chance to
      * discard them.
      *
      * @param ws
@@ -63,7 +63,7 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * @param listener
      *      The status of the operation, error message, etc., should go here.
      * @return
-     *      true if this {@link FileSystemProvisionerDescriptor} is responsible for de-alocating the workspace.
+     *      true if this {@link FileSystemProvisionerDescriptor} is responsible for de-allocating the workspace.
      *      false otherwise, in which case the other {@link FileSystemProvisionerDescriptor}s are asked to
      *      clean up the workspace.
      */

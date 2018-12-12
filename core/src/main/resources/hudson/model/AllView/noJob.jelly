@@ -32,7 +32,7 @@ THE SOFTWARE.
   <j:choose xmlns:j="jelly:core">
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-    <j:when test="${h.hasPermission(permission)}">
+    <j:when test="${h.hasPermission(it.owner, permission)}">
       <div class="call-to-action">${%newJob}</div>
     </j:when>
     <j:otherwise>

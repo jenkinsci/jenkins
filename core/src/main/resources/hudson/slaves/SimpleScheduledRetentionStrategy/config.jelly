@@ -35,7 +35,7 @@ THE SOFTWARE.
                name="retentionStrategy.upTimeMins" value="${instance.upTimeMins}"
                checkMessage="${%Scheduled Uptime is mandatory and must be a number.}"/>
     </f:entry>
-    <f:entry title="${%Keep on-line while jobs are running}">
+    <f:entry title="${%Keep online while jobs are running}"  help="/help/system-config/master-slave/demand/keepUpWhenActive.html">
       <f:checkbox name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}"/>
     </f:entry>
 </j:jelly>

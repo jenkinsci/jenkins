@@ -3,6 +3,7 @@ package jenkins.widgets;
 import hudson.Extension;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 /**
  * Show the default build queue.
@@ -12,7 +13,7 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  * @since 1.514
  */
-@Extension(ordinal=200) // historically this was the top most widget
+@Extension(ordinal=200) @Symbol("buildQueue") // historically this was the top most widget
 public class BuildQueueWidget extends Widget {
 
 }

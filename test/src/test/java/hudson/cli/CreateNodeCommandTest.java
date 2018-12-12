@@ -60,9 +60,9 @@ public class CreateNodeCommandTest {
                 .invoke()
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Create permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Create permission"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
     }
 
     @Test public void createNode() throws Exception {
@@ -129,9 +129,9 @@ public class CreateNodeCommandTest {
                 .invoke()
         ;
 
-        assertThat(result.stderr(), containsString("Node 'SlaveFromXML' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: Node 'SlaveFromXML' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
@@ -144,8 +144,8 @@ public class CreateNodeCommandTest {
                 .invokeWithArgs("ExistingSlave")
         ;
 
-        assertThat(result.stderr(), containsString("Node 'ExistingSlave' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: Node 'ExistingSlave' already exists"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
     }
 }

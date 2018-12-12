@@ -121,7 +121,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         });
 
         if (e.hasClassName("one-each")) {
-            // does this container already has a ocnfigured instance of the specified descriptor ID?
+            // does this container already has a configured instance of the specified descriptor ID?
             function has(id) {
                 return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
             }

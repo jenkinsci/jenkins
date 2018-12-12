@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.tasks.BuildStep;
-import jenkins.model.Jenkins;
 
 /**
  * Receives events that happen as a build executes {@link BuildStep}s.

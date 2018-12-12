@@ -101,7 +101,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      * to include their execution time in the total build time.
      *
      * <p>
-     * So normally, that is the preferrable behavior, but in a few cases
+     * So normally, that is the preferable behavior, but in a few cases
      * this is problematic. One of such cases is when a publisher needs to
      * trigger other builds, which in turn need to see this build as a
      * completed build. Those plugins that need to do this can return true

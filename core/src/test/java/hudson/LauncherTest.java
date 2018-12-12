@@ -26,14 +26,16 @@ package hudson;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
+
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,10 +48,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test public void remoteKill() throws Exception {
-        if (File.pathSeparatorChar != ':') {
-            System.err.println("Skipping, currently Unix-specific test");
-            return;
-        }
+        Assume.assumeFalse("Skipping, currently Unix-specific test", Functions.isWindows());
 
         File tmp = temp.newFile();
 
@@ -62,8 +61,9 @@ public class LauncherTest {
             p.kill();
             assertTrue(p.join()!=0);
             long end = System.currentTimeMillis();
-            assertTrue("join finished promptly", (end - start < 15000));
-            channels.french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
+            long terminationTime = end - start;
+            assertTrue("Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s", terminationTime < 15000);
+            channels.french.call(new NoopCallable()); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
 
@@ -76,11 +76,11 @@ public class LauncherTest {
             // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
     }
 
-    private static final Callable<Object,RuntimeException> NOOP = new MasterToSlaveCallable<Object,RuntimeException>() {
+    private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
         public Object call() throws RuntimeException {
             return null;
         }
-    };
+    }
 
     @Issue("JENKINS-15733")
     @Test public void decorateByEnv() throws Exception {

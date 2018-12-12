@@ -62,7 +62,7 @@ public abstract class SU {
     }
 
     /**
-     * Returns a {@link VirtualChannel} that's connected to the priviledge-escalated environment.
+     * Returns a {@link VirtualChannel} that's connected to the privilege-escalated environment.
      *
      * @param listener
      *      What this method is doing (such as what process it's invoking) will be sent here.
@@ -122,7 +122,7 @@ public abstract class SU {
     }
 
     /**
-     * Starts a new priviledge-escalated environment, execute a closure, and shut it down.
+     * Starts a new privilege-escalated environment, execute a closure, and shut it down.
      */
     public static <V,T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
         VirtualChannel ch = start(listener, rootUsername, rootPassword);
@@ -152,7 +152,7 @@ public abstract class SU {
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
             if(slaveJar.isFile())
                 args.add("-jar").add(slaveJar);
-            else // in production code this never happens, but during debugging this is convenientud    
+            else // in production code this never happens, but during debugging this is convenient    
                 args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
             if(rootPassword==null) {

@@ -23,7 +23,9 @@
  */
 package hudson.util;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,6 +36,9 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -314,12 +319,13 @@ public class Iterators {
      * <p>
      * That is, this creates {A,B,C,D} from {A,B},{C,D}.
      */
+    @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
         return new Iterable<T>() {
             public Iterator<T> iterator() {
-                return new FlattenIterator<T,Iterable<? extends T>>(Arrays.asList(iterables)) {
+                return new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
                     protected Iterator<T> expand(Iterable<? extends T> iterable) {
-                        return cast(iterable).iterator();
+                        return Iterators.<T>cast(iterable).iterator();
                     }
                 };
             }
@@ -350,8 +356,9 @@ public class Iterators {
         };
     }
 
+    @SafeVarargs
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
-        return com.google.common.collect.Iterators.concat(iterators);
+        return com.google.common.collect.Iterators.<T>concat(iterators);
     }
 
     /**
@@ -400,4 +407,20 @@ public class Iterators {
     public interface CountingPredicate<T> {
         boolean apply(int index, T input);
     }
+
+    /**
+     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * @param iterator some iterator
+     * @param count a nonnegative count
+     */
+    @Restricted(NoExternalUse.class)
+    public static void skip(@Nonnull Iterator<?> iterator, int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException();
+        }
+        while (iterator.hasNext() && count-- > 0) {
+            iterator.next();
+        }
+    }
+
 }

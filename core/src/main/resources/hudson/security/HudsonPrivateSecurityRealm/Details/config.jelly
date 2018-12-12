@@ -24,12 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${descriptor.enabled}">
     <f:entry title="${%Password}:">
       <input name="user.password" type="password" value="${instance.protectedPassword}" />
     </f:entry>
     <f:entry title="${%Confirm Password}:">
       <input name="user.password2" type="password" value="${instance.protectedPassword}" />
     </f:entry>
-  </j:if>
 </j:jelly>

@@ -25,7 +25,9 @@ package hudson.slaves;
 
 import hudson.FilePath;
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
+import hudson.model.DirectoryBrowserSupport;
 import java.io.Closeable;
 
 import java.util.Date;
@@ -283,10 +285,29 @@ public final class WorkspaceList {
         };
     }
 
+    /**
+     * Locates a conventional temporary directory to be associated with a workspace.
+     * <p>This directory is suitable for temporary files to be deleted later in the course of a build,
+     * or caches and local repositories which should persist across builds done in the same workspace.
+     * (If multiple workspaces are present for a single job built concurrently, via {@link #allocate(FilePath)}, each will get its own temporary directory.)
+     * <p>It may also be used for security-sensitive files which {@link DirectoryBrowserSupport} ought not serve,
+     * acknowledging that these will be readable by builds of other jobs done on the same node.
+     * <p>Each plugin using this directory is responsible for specifying sufficiently unique subdirectory/file names.
+     * {@link FilePath#createTempFile} may be used for this purpose if desired.
+     * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs} on it if you need it to.
+     * It may be deleted alongside the workspace itself during cleanup actions.
+     * @param ws a directory such as a build workspace
+     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}
+     * @since 1.652
+     */
+    public static FilePath tempDir(FilePath ws) {
+        return ws.sibling(ws.getName() + COMBINATOR + "tmp");
+    }
+
     private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
 
     /**
      * The token that combines the project name and unique number to create unique workspace directory.
      */
-    private static final String COMBINATOR = System.getProperty(WorkspaceList.class.getName(),"@");
+    private static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(),"@");
 }

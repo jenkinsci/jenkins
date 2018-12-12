@@ -14,8 +14,15 @@ out
 .project
 build
 
+# VSCode workspace file
+*.code-workspace
+
 # vim
 *~
+*.swp
+
+# ctags
+tags
 
 # OS X
 .DS_Store
@@ -45,4 +52,5 @@ jenkins_*.changes
 *.zip
 push-build.sh
 war/node_modules/
+war/yarn-error.log
 .java-version

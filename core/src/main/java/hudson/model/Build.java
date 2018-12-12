@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -115,7 +116,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * @deprecated as of 1.467
-     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      Override the {@link #run()} method by calling {@link #execute(hudson.model.Run.RunExecution)} with
      *      proper execution object.
      */
     @Restricted(NoExternalUse.class)
@@ -195,7 +196,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 performAllBuildSteps(listener, project.getPublishersList(), false);
                 performAllBuildSteps(listener, project.getProperties(), false);
             } catch (Exception x) {
-                x.printStackTrace(listener.error(Messages.Build_post_build_steps_failed()));
+                Functions.printStackTrace(x, listener.error(Messages.Build_post_build_steps_failed()));
             }
             super.cleanUp(listener);
         }

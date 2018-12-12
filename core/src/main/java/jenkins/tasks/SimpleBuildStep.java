@@ -52,7 +52,7 @@ import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A build step (like a {@link Builder} or {@link Publisher}) which may be called at an arbitrary time during a build (or multiple times), run, and be done.
@@ -81,33 +81,41 @@ public interface SimpleBuildStep extends BuildStep {
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      */
-    void perform(@Nonnull Run<?,?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException;
+    void perform(@Nonnull Run<?,?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+                 @Nonnull TaskListener listener) throws InterruptedException, IOException;
 
     /**
-     * Marker for explicitly added build actions (as {@link Run#addAction}) which should imply a transient project action ({@link Job#getActions}) when present on the {@link Job#getLastSuccessfulBuild}.
-     * This can serve as a substitute for {@link BuildStep#getProjectActions} which does not assume that the project can enumerate the steps it would run before they are actually run.
+     * Marker for explicitly added build actions (as {@link Run#addAction}) which should imply a transient project
+     * action ({@link Job#getActions}) when present on the {@link Job#getLastSuccessfulBuild}.
+     * This can serve as a substitute for {@link BuildStep#getProjectActions} which does not assume that the project
+     * can enumerate the steps it would run before they are actually run.
      * (Use {@link InvisibleAction} as a base class if you do not need to show anything in the build itself.)
      */
     interface LastBuildAction extends Action {
 
         /**
          * Optionally add some actions to the project owning this build.
-         * @return zero or more transient actions; if you need to know the {@link Job}, implement {@link RunAction2} and use {@link Run#getParent}
+         * @return zero or more transient actions;
+         * if you need to know the {@link Job}, implement {@link RunAction2} and use {@link Run#getParent}
          */
         Collection<? extends Action> getProjectActions();
 
     }
 
     @SuppressWarnings("rawtypes")
-    @Restricted(DoNotUse.class)
-    @Extension public static final class LastBuildActionFactory extends TransientActionFactory<Job> {
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static final class LastBuildActionFactory extends TransientActionFactory<Job> {
 
-        @Override public Class<Job> type() {
+        @Override
+        public Class<Job> type() {
             return Job.class;
         }
 
-        @Override public Collection<? extends Action> createFor(Job j) {
-            List<Action> actions = new LinkedList<Action>();
+        @Nonnull
+        @Override
+        public Collection<? extends Action> createFor(@Nonnull Job j) {
+            List<Action> actions = new LinkedList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {
                 for (LastBuildAction a : r.getActions(LastBuildAction.class)) {
@@ -115,7 +123,8 @@ public interface SimpleBuildStep extends BuildStep {
                 }
             }
             // TODO should there be an option to check lastCompletedBuild even if it failed?
-            // Not useful for, say, TestResultAction, since if you have a build that fails before recording test results, the job would then have no TestResultProjectAction.
+            // Not useful for, say, TestResultAction, since if you have a build that fails before recording test
+            // results, the job would then have no TestResultProjectAction.
             return actions;
         }
 

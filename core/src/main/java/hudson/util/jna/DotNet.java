@@ -46,7 +46,7 @@ public class DotNet {
         try {
             // see http://support.microsoft.com/?scid=kb;en-us;315291 for the basic algorithm
             // observation in my registry shows that the actual key name can be things like "v2.0 SP1"
-            // or "v2.0.50727", so the regexp is written to accomodate this.
+            // or "v2.0.50727", so the regexp is written to accommodate this.
             RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Microsoft\\.NETFramework");
             try {
                 for( String keyName : key.getSubKeys() ) {

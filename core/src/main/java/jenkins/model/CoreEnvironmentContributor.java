@@ -11,6 +11,7 @@ import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins.MasterComputer;
+import org.jenkinsci.Symbol;
 
 import java.io.IOException;
 
@@ -20,7 +21,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=-100)
+@Extension(ordinal=-100) @Symbol("core")
 public class CoreEnvironmentContributor extends EnvironmentContributor {
     @Override
     public void buildEnvironmentFor(Run r, EnvVars env, TaskListener listener) throws IOException, InterruptedException {

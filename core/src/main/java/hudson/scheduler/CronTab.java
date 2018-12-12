@@ -92,7 +92,7 @@ public final class CronTab {
 
     /**
      * @param timezone
-     *      Used to schedule cron in a differnt timezone. Null to use the default system 
+     *      Used to schedule cron in a different timezone. Null to use the default system 
      *      timezone
      * @since 1.615
      */
@@ -204,7 +204,7 @@ public final class CronTab {
         }
 
         void setTo(Calendar c, int i) {
-            c.set(field,i-offset);
+            c.set(field,Math.min(i-offset, c.getActualMaximum(field)));
         }
 
         void clear(Calendar c) {
@@ -309,7 +309,7 @@ public final class CronTab {
      * More precisely, given the time 't', computes another smallest time x such that:
      *
      * <ul>
-     * <li>x >= t (inclusive)
+     * <li>x ≥ t (inclusive)
      * <li>x matches this crontab
      * </ul>
      *
@@ -326,10 +326,19 @@ public final class CronTab {
      * See {@link #ceil(long)}.
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years after it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar ceil(Calendar cal) {
+        Calendar twoYearsFuture = (Calendar) cal.clone();
+        twoYearsFuture.add(Calendar.YEAR, 2);
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsFuture) > 0) {
+                // we went too far into the future
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.ceil(this,cur);
@@ -347,6 +356,14 @@ public final class CronTab {
                     continue OUTER;
                 } else {
                     f.setTo(cal,next);
+                    //check if value was actually set
+                    if (f.valueOf(cal) != next) {
+                        // we need to roll over to the next field.
+                        f.rollUp(cal, 1);
+                        f.setTo(cal,f.first(this));
+                        // since higher order field is affected by this, we need to restart from all over
+                        continue OUTER;
+                    }
                     if (f.redoAdjustmentIfModified)
                         continue OUTER; // when we modify DAY_OF_MONTH and DAY_OF_WEEK, do it all over from the top
                 }
@@ -378,10 +395,20 @@ public final class CronTab {
      * See {@link #floor(long)}
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years before it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar floor(Calendar cal) {
+        Calendar twoYearsAgo = (Calendar) cal.clone();
+        twoYearsAgo.add(Calendar.YEAR, -2);
+
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsAgo) < 0) {
+                // we went too far into the past
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.floor(this,cur);
@@ -512,5 +539,18 @@ public final class CronTab {
             }
             return null;
         }
+    }
+
+    /**
+     * Returns the configured time zone, or null if none is configured
+     *
+     * @return the configured time zone, or null if none is configured
+     * @since 2.54
+     */
+    @CheckForNull public TimeZone getTimeZone() {
+        if (this.specTimezone == null) {
+            return null;
+        }
+        return TimeZone.getTimeZone(this.specTimezone);
     }
 }

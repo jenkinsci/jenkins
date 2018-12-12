@@ -38,7 +38,7 @@ import jenkins.model.Jenkins;
  * Extension point for adding Captcha Support to User Registration Page {@link CaptchaSupport}.
  *
  * <p>
- * This object can have an optional <tt>config.jelly</tt> to configure the Captcha Support
+ * This object can have an optional {@code config.jelly} to configure the Captcha Support
  * <p>
  * A default constructor is needed to create CaptchaSupport in
  * the default configuration.

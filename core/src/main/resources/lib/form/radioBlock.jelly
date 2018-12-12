@@ -54,11 +54,11 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
 
-	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+	<tr class="radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
       <label>
 	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control" checked="${checked?'true':null}" />
+             class="radio-block-control block-control" checked="${checked?'true':null}" />
         ${title}
       </label>
     </td>
@@ -69,5 +69,5 @@ THE SOFTWARE.
   </j:if>
 	<d:invokeBody />
 	<!-- end marker -->
-	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none" />
 </j:jelly>

@@ -23,11 +23,16 @@
  */
 package hudson.model;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.Jenkins;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
@@ -44,20 +49,34 @@ import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import hudson.security.ACL;
+import hudson.security.AccessDeniedException2;
 import hudson.slaves.DumbSlave;
+import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -66,10 +85,32 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class ViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
+    }
+
+    @Issue("JENKINS-43848")
+    @Test public void testNoCacheHeadersAreSet() throws Exception {
+        List<NameValuePair> responseHeaders = j.createWebClient()
+                .goTo("view/all/itemCategories", "application/json")
+                .getWebResponse()
+                .getResponseHeaders();
+
+
+        final Map<String, String> values = new HashMap<>();
+
+        for(NameValuePair p : responseHeaders) {
+            values.put(p.getName(), p.getValue());
+        }
+
+        String resp = values.get("Cache-Control");
+        assertThat(resp, is("no-cache, no-store, must-revalidate"));
+        assertThat(values.get("Expires"), is("0"));
+        assertThat(values.get("Pragma"), is("no-cache"));
     }
 
     /**
@@ -100,7 +141,7 @@ public class ViewTest {
 
         WebClient wc = j.createWebClient();
         HtmlPage userPage = wc.goTo("user/me");
-        HtmlAnchor privateViewsLink = userPage.getFirstAnchorByText("My Views");
+        HtmlAnchor privateViewsLink = userPage.getAnchorByText("My Views");
         assertNotNull("My Views link not available", privateViewsLink);
 
         HtmlPage privateViewsPage = (HtmlPage) privateViewsLink.click();
@@ -156,8 +197,20 @@ public class ViewTest {
     @Issue("JENKINS-9367")
     @Test public void allImagesCanBeLoaded() throws Exception {
         User.get("user", true);
+        
+        // as long as the cloudbees-folder is included as test dependency, its Folder will load icon
+        boolean folderPluginActive = (j.jenkins.getPlugin("cloudbees-folder") != null);
+        // link to Folder class is done here to ensure if we remove the dependency, this code will fail and so will be removed
+        boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor(Folder.class) != null);
+        // this could be written like this to avoid the hard dependency: 
+        // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
+        if (!folderPluginActive && folderPluginClassesLoaded) {
+            // reset the icon added by Folder because the plugin resources are not reachable
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+        }
+        
         WebClient webClient = j.createWebClient();
-        webClient.setJavaScriptEnabled(false);
+        webClient.getOptions().setJavaScriptEnabled(false);
         j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 
@@ -196,14 +249,33 @@ public class ViewTest {
         String xml = wc.goToXml("view/v/config.xml").getContent();
         assertTrue(xml, xml.contains("<description>one</description>"));
         xml = xml.replace("<description>one</description>", "<description>two</description>");
-        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
         req.setRequestBody(xml);
+        req.setEncodingType(null);
         wc.getPage(req);
         assertEquals("two", view.getDescription());
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertTrue(xml, xml.contains("<description>two</description>"));
     }
     
+    @Issue("JENKINS-21017")
+    @Test public void doConfigDotXmlReset() throws Exception {
+        ListView view = listView("v");
+        view.description = "one";
+        WebClient wc = j.createWebClient();
+        String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
+        assertThat(xml, containsString("<description>one</description>"));
+        xml = xml.replace("<description>one</description>", "");
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        req.setRequestBody(xml);
+        req.setEncodingType(null);
+        wc.getPage(req);
+        assertEquals(null, view.getDescription()); // did not work
+        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        assertThat(xml, not(containsString("<description>"))); // did not work
+        assertEquals(j.jenkins, view.getOwner());
+    }
+
     @Test
     public void testGetQueueItems() throws IOException, Exception{
         ListView view1 = listView("view1");
@@ -215,7 +287,7 @@ public class ViewTest {
         inView1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
         view1.add(inView1);
 
-        MatrixProject inView2 = j.createMatrixProject("in-view2");
+        MatrixProject inView2 = j.jenkins.createProject(MatrixProject.class, "in-view2");
         inView2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
         view2.add(inView2);
 
@@ -277,7 +349,7 @@ public class ViewTest {
         view1.add(freestyleJob);
         freestyleJob.setAssignedLabel(j.jenkins.getLabel("label0||label2"));
 
-        MatrixProject matrixJob = j.createMatrixProject("matrix");
+        MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
                 new LabelAxis("label", Arrays.asList("label1"))
@@ -346,7 +418,7 @@ public class ViewTest {
     public void testGetItem() throws Exception{
         ListView view = listView("foo");
         FreeStyleProject job1 = j.createFreeStyleProject("free");
-        MatrixProject job2 = j.createMatrixProject("matrix");
+        MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
         FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
@@ -362,7 +434,7 @@ public class ViewTest {
         ListView view2 = listView("foo");
         try{
             view2.rename("renamed");
-            fail("Attemt to rename job with a name used by another view with the same owner should throw exception");
+            fail("Attempt to rename job with a name used by another view with the same owner should throw exception");
         }
         catch(Exception Exception){
         }
@@ -372,14 +444,14 @@ public class ViewTest {
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwnerItemGroup());
+        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
     
     @Test
     public void testGetOwnerPrimaryView() throws Exception{
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwnerPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
     }
     
     @Test
@@ -401,9 +473,9 @@ public class ViewTest {
         View view = listView("foo");
         Thread.sleep(100000);
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
-        ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Test property']")).click();
+        ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
-        assertNotNull("View should contains ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
+        assertNotNull("View should contain ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
     }
 
     private ListView listView(String name) throws IOException {
@@ -428,4 +500,117 @@ public class ViewTest {
             }
         }
     }
+
+    @Issue("JENKINS-20509")
+    @Test public void checkJobName() throws Exception {
+        j.createFreeStyleProject("topprj");
+        final MockFolder d1 = j.createFolder("d1");
+        d1.createProject(FreeStyleProject.class, "subprj");
+        final MockFolder d2 = j.createFolder("d2");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("admin").
+            grant(Jenkins.READ).everywhere().toEveryone().
+            grant(Job.READ).everywhere().toEveryone().
+            grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
+        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                return null;
+            }
+        });
+        ACL.impersonate(User.get("dev").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                try {
+                    assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
+                return null;
+            }
+        });
+        ACL.impersonate(User.get("admin").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(j.jenkins, "d1", FormValidation.Kind.ERROR);
+                assertCheckJobName(j.jenkins, "topprj", FormValidation.Kind.ERROR);
+                assertCheckJobName(d1, "subprj", FormValidation.Kind.ERROR);
+                assertCheckJobName(j.jenkins, "", FormValidation.Kind.OK);
+                assertCheckJobName(j.jenkins, "foo/bie", FormValidation.Kind.ERROR);
+                assertCheckJobName(d2, "New", FormValidation.Kind.OK);
+                j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("[a-z]+", "", true));
+                assertCheckJobName(d2, "New", FormValidation.Kind.ERROR);
+                assertCheckJobName(d2, "new", FormValidation.Kind.OK);
+                return null;
+            }
+        });
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin");
+        assertEquals("original ${rootURL}/checkJobName still supported", "<div/>", wc.goTo("checkJobName?value=stuff").getWebResponse().getContentAsString());
+        assertEquals("but now possible on a view in a folder", "<div/>", wc.goTo("job/d1/view/All/checkJobName?value=stuff").getWebResponse().getContentAsString());
+    }
+
+    private void assertCheckJobName(ViewGroup context, String name, FormValidation.Kind expected) {
+        assertEquals(expected, context.getPrimaryView().doCheckJobName(name).kind);
+    }
+
+    @Issue("JENKINS-41825")
+    @Test
+    public void brokenGetItems() throws Exception {
+        logging.capture(100).record("", Level.INFO);
+        j.jenkins.addView(new BrokenView());
+        j.createWebClient().goTo("view/broken/");
+        boolean found = false;
+        LOGS: for (LogRecord record : logging.getRecords()) {
+            for (Throwable t = record.getThrown(); t != null; t = t.getCause()) {
+                if (t instanceof IllegalStateException && BrokenView.ERR.equals(t.getMessage())) {
+                    found = true;
+                    break LOGS;
+                }
+            }
+        }
+        assertTrue(found);
+    }
+    private static class BrokenView extends ListView {
+        static final String ERR = "oops I cannot retrieve items";
+        BrokenView() {
+            super("broken");
+        }
+        @Override
+        public List<TopLevelItem> getItems() {
+            throw new IllegalStateException(ERR);
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewCreatedIfNoPrimary() throws Exception {
+        assertNotNull(j.getInstance().getView("All"));
+    }
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewNotCreatedIfPrimary() throws Exception {
+        assertNull(j.getInstance().getView("All"));
+    }
+
 }

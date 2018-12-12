@@ -14,32 +14,37 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.junit.Assume;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.ToolInstallations;
 
 public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	public static final String DUMMY_LOCATION_VARNAME = "TOOLS_DUMMY_LOCATION";
 
 	private DumbSlave slaveEnv = null;
 	private DumbSlave slaveRegular = null;
+    private TemporaryFolder tmp = new TemporaryFolder();
 
 	public void setUp() throws Exception {
 		super.setUp();
+        tmp.create(); // until we can switch to JenkinsRule and tmp becomes a @Rule itself
 
 		JDK defaultJDK = jenkins.getJDK(null);
 		JDK varJDK = new JDK("varJDK", withVariable(defaultJDK.getHome()));
 		jenkins.getJDKs().add(varJDK);
 
 		// Maven with a variable in its path
-		configureDefaultMaven();
+		ToolInstallations.configureDefaultMaven();
 		MavenInstallation defaultMaven = jenkins.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations()[0];
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
 				withVariable(defaultMaven.getHome()), NO_PROPERTIES);
 		jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
 
 		// Ant with a variable in its path
-        AntInstallation ant = configureDefaultAnt();
+        AntInstallation ant = ToolInstallations.configureDefaultAnt(tmp);
         AntInstallation antInstallation = new AntInstallation("varAnt",
                 withVariable(ant.getHome()),NO_PROPERTIES);
         jenkins.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
@@ -49,6 +54,12 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		slaveEnv = createSlave(new LabelAtom("slaveEnv"), additionalEnv);
 		slaveRegular = createSlave(new LabelAtom("slaveRegular"));
 	}
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        tmp.delete();
+    }
 
 	private String withVariable(String s) {
 		return s + "${" + DUMMY_LOCATION_VARNAME + "}";
@@ -92,10 +103,11 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	}
 
 	public void testFreeStyleAntOnSlave() throws Exception {
-        if (jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0) {
-            System.out.println("Cannot do testFreeStyleAntOnSlave without ANT_HOME");
-            return;
-        }
+		Assume.assumeFalse(
+				"Cannot do testFreeStyleAntOnSlave without ANT_HOME",
+				jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0
+		);
+
 		FreeStyleProject project = createFreeStyleProject();
 		project.setJDK(jenkins.getJDK("varJDK"));
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -171,7 +183,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	}
 
     public void testNativeMavenOnSlave() throws Exception {
-        MavenModuleSet project = createMavenProject();
+        MavenModuleSet project = jenkins.createProject(MavenModuleSet.class, "p");
         project.setJDK(jenkins.getJDK("varJDK"));
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));

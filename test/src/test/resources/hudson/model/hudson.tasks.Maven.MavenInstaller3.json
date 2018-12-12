@@ -1,0 +1,12 @@
+downloadService.post('hudson.tasks.Maven.MavenInstaller',{"list": [
+  {
+    "id": "3.3.1",
+    "name": "3.3.1",
+    "url": "http://repo2.maven.org/maven2/org/apache/maven/apache-maven/3.3.1/apache-maven-3.3.1-bin.zip"
+  },
+  {
+  "id": "3.0.4",
+  "name": "3.0.4",
+  "url": "http://archive.apache.org/dist/maven/binaries/apache-maven-3.0.4-bin.zip"
+  }
+]})

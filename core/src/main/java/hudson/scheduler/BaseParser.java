@@ -31,12 +31,13 @@ import antlr.Token;
 import antlr.TokenBuffer;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 abstract class BaseParser extends LLkParser {
-    // lower/uppser bounds of fields (inclusive)
+    // lower/upper bounds of fields (inclusive)
     static final int[] LOWER_BOUNDS = new int[] {0,0,1,1,0};
     static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 
@@ -145,7 +146,7 @@ abstract class BaseParser extends LLkParser {
     /**
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
      */
-    public static boolean HASH_TOKENS = !"false".equals(System.getProperty(BaseParser.class.getName()+".hash"));
+    public static boolean HASH_TOKENS = !"false".equals(SystemProperties.getString(BaseParser.class.getName()+".hash"));
 
     /**
      * Constant that indicates no step value.

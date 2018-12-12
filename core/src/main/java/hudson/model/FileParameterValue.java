@@ -30,12 +30,13 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import javax.servlet.ServletException;
 
 import org.apache.commons.fileupload.FileItem;
@@ -45,6 +46,8 @@ import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -61,6 +64,16 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterValue extends ParameterValue {
+    private static final String FOLDER_NAME = "fileParameters";
+
+    /**
+     * Escape hatch for SECURITY-1074, fileParameter used to escape their expected folder.
+     * It's not recommended to enable for security reasons. That option is only present for backward compatibility.
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
+            Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
+
     private transient final FileItem file;
 
     /**
@@ -70,6 +83,9 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Overrides the location in the build to place this file. Initially set to {@link #getName()}
+     * The location could be directly the filename or also a hierarchical path. 
+     * The intermediate folders will be created automatically.
+     * Take care that no escape from the current directory is allowed and will result in the failure of the build.
      */
     private String location;
 
@@ -142,7 +158,16 @@ public class FileParameterValue extends ParameterValue {
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
             	    listener.getLogger().println("Copying file to "+location);
-                    FilePath locationFilePath = build.getWorkspace().child(location);
+                    FilePath ws = build.getWorkspace();
+                    if (ws == null) {
+                        throw new IllegalStateException("The workspace should be created when setUp method is called");
+                    }
+                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && !ws.isDescendant(location)) {
+                        listener.error("Rejecting file path escaping base directory with relative path: " + location);
+                        // force the build to fail
+                        return null;
+                    }
+                    FilePath locationFilePath = ws.child(location);
                     locationFilePath.getParent().mkdirs();
             	    locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
@@ -163,7 +188,7 @@ public class FileParameterValue extends ParameterValue {
 
 	/**
 	 * Compares file parameters (existing files will be considered as different).
-	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
+	 * @since 1.586 Function has been modified in order to avoid <a href="https://jenkins-ci.org/issue/19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -204,9 +229,20 @@ public class FileParameterValue extends ParameterValue {
         if (("/" + originalFileName).equals(request.getRestOfPath())) {
             AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
             File fileParameter = getLocationUnderBuild(build);
+
+            if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE) {
+                File fileParameterFolder = getFileParameterFolderUnderBuild(build);
+
+                //TODO can be replaced by Util#isDescendant in 2.80+
+                Path child = fileParameter.getAbsoluteFile().toPath().normalize();
+                Path parent = fileParameterFolder.getAbsoluteFile().toPath().normalize();
+                if (!child.startsWith(parent)) {
+                    throw new IllegalStateException("The fileParameter tried to escape the expected folder: " + location);
+                }
+            }
+
             if (fileParameter.isFile()) {
-                InputStream data = new FileInputStream(fileParameter);
-                try {
+                try (InputStream data = Files.newInputStream(fileParameter.toPath())) {
                     long lastModified = fileParameter.lastModified();
                     long contentLength = fileParameter.length();
                     if (request.hasParameter("view")) {
@@ -214,8 +250,8 @@ public class FileParameterValue extends ParameterValue {
                     } else {
                         response.serveFile(request, data, lastModified, contentLength, originalFileName);
                     }
-                } finally {
-                    IOUtils.closeQuietly(data);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             }
         }
@@ -228,7 +264,11 @@ public class FileParameterValue extends ParameterValue {
      * @return the location to store the file parameter
      */
     private File getLocationUnderBuild(AbstractBuild build) {
-        return new File(build.getRootDir(), "fileParameters/" + location);
+        return new File(getFileParameterFolderUnderBuild(build), location);
+    }
+
+    private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build){
+        return new File(build.getRootDir(), FOLDER_NAME);
     }
 
     /**
@@ -245,7 +285,11 @@ public class FileParameterValue extends ParameterValue {
         }
 
         public InputStream getInputStream() throws IOException {
-            return new FileInputStream(file);
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
 
         public String getContentType() {
@@ -266,13 +310,10 @@ public class FileParameterValue extends ParameterValue {
 
         public byte[] get() {
             try {
-                FileInputStream inputStream = new FileInputStream(file);
-                try {
+                try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                     return IOUtils.toByteArray(inputStream);
-                } finally {
-                    inputStream.close();
                 }
-            } catch (IOException e) {
+            } catch (IOException | InvalidPathException e) {
                 throw new Error(e);
             }
         }
@@ -309,7 +350,11 @@ public class FileParameterValue extends ParameterValue {
 
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
-            return new FileOutputStream(file);
+            try {
+                return Files.newOutputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
 
         @Override

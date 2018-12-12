@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<slave>
+    <temporaryOfflineCause class="hudson.slaves.OfflineCause$UserCause">
+        <timestamp>1479196265920</timestamp>
+        <description>
+            <holder>
+                <owner>hudson.slaves.Messages</owner>
+            </holder>
+            <key>SlaveComputer.DisconnectedBy</key>
+            <args>
+                <string>username</string>
+                <string> : msg</string>
+            </args>
+        </description>
+        <user>
+            <fullName>username</fullName>
+            <properties>
+                <jenkins.security.ApiTokenProperty>
+                    <apiToken>wPfVKd4HGJzRoEpazbTu35nXXfI34cguPjm+5JPO7pZDFLFgpFLviQsS3NdJndax</apiToken>
+                </jenkins.security.ApiTokenProperty>
+                <hudson.tasks.Mailer_-UserProperty/>
+                <hudson.model.MyViewsProperty>
+                    <views>
+                        <hudson.model.AllView>
+                            <owner class="hudson.model.MyViewsProperty" reference="../../.."/>
+                            <name>All</name>
+                            <filterExecutors>false</filterExecutors>
+                            <filterQueue>false</filterQueue>
+                            <properties class="hudson.model.View$PropertyList"/>
+                        </hudson.model.AllView>
+                    </views>
+                </hudson.model.MyViewsProperty>
+                <hudson.model.PaneStatusProperties>
+                    <collapsed/>
+                </hudson.model.PaneStatusProperties>
+                <hudson.search.UserSearchProperty>
+                    <insensitiveSearch>false</insensitiveSearch>
+                </hudson.search.UserSearchProperty>
+            </properties>
+        </user>
+    </temporaryOfflineCause>
+    <name>deserialized</name>
+    <description>dummy</description>
+    <remoteFS>...</remoteFS>
+    <numExecutors>1</numExecutors>
+    <mode>NORMAL</mode>
+    <retentionStrategy class="hudson.slaves.RetentionStrategy$2">
+        <DESCRIPTOR>
+            <outer-class reference="../.."/>
+        </DESCRIPTOR>
+    </retentionStrategy>
+    <launcher/>
+    <label></label>
+    <nodeProperties/>
+    <userId>SYSTEM</userId>
+</slave>

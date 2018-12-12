@@ -32,7 +32,7 @@ import org.apache.commons.io.FileUtils;
  * <blockquote>
  *     Given a job J, permalink is a function F that computes a build B.
  *     A peephole permalink is a subset of this function that can be
- *     deduced to the "peep-hole" function G(B)->bool:
+ *     deduced to the "peep-hole" function G(B)→bool:
  *
  *     <pre>
  *         F(J) = { newest B | G(B)==true }

@@ -61,7 +61,7 @@ import java.util.TreeMap;
  * Various remoting operations related to diagnostics.
  *
  * <p>
- * These code are useful wherever {@link VirtualChannel} is used, such as master, slaves, Maven JVMs, etc.
+ * These code are useful wherever {@link VirtualChannel} is used, such as master, agents, Maven JVMs, etc.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.175
@@ -143,7 +143,7 @@ public final class RemotingDiagnostics {
                 if(output!=null)
                 pw.println("Result: "+output);
             } catch (Throwable t) {
-                t.printStackTrace(pw);
+                Functions.printStackTrace(t, pw);
             }
             return out.toString();
         }
@@ -153,7 +153,10 @@ public final class RemotingDiagnostics {
      * Obtains the heap dump in an HPROF file.
      */
     public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new MasterToSlaveCallable<FilePath, IOException>() {
+        return channel.call(new GetHeapDump());
+    }
+    private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
+            @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");
                 hprof.delete();
@@ -169,7 +172,6 @@ public final class RemotingDiagnostics {
             }
 
             private static final long serialVersionUID = 1L;
-        });
     }
 
     /**

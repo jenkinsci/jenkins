@@ -171,7 +171,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
     BeanConfiguration getBeanConfig(String name);
 
     /**
-     * Creates and returns the BeanDefinition that is regsitered within the given name or returns null
+     * Creates and returns the BeanDefinition that is registered within the given name or returns null
      *
      * @param name The name of the bean definition
      * @return A BeanDefinition

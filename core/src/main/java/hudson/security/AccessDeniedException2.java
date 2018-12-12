@@ -6,12 +6,17 @@ import org.acegisecurity.GrantedAuthority;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import jenkins.util.SystemProperties;
 
 /**
  * {@link AccessDeniedException} with more information.
  * @author Kohsuke Kawaguchi
  */
 public class AccessDeniedException2 extends AccessDeniedException {
+
+    /** If true, report {@code X-You-Are-In-Group} headers. Disabled due to JENKINS-39402; use {@code /whoAmI} etc. to diagnose permission issues. */
+    private static /* not final */ boolean REPORT_GROUP_HEADERS = SystemProperties.getBoolean(AccessDeniedException2.class.getName() + ".REPORT_GROUP_HEADERS");
+
     /**
      * This object represents the user being authenticated.
      */
@@ -38,8 +43,12 @@ public class AccessDeniedException2 extends AccessDeniedException {
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
         rsp.addHeader("X-You-Are-Authenticated-As",authentication.getName());
-        for (GrantedAuthority auth : authentication.getAuthorities()) {
-            rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
+        if (REPORT_GROUP_HEADERS) {
+            for (GrantedAuthority auth : authentication.getAuthorities()) {
+                rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
+            }
+        } else {
+            rsp.addHeader("X-You-Are-In-Group-Disabled", "JENKINS-39402: use -Dhudson.security.AccessDeniedException2.REPORT_GROUP_HEADERS=true or use /whoAmI to diagnose");
         }
         rsp.addHeader("X-Required-Permission", permission.getId());
         for (Permission p=permission.impliedBy; p!=null; p=p.impliedBy) {

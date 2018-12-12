@@ -71,10 +71,6 @@ public class ComboBoxTest extends HudsonTestCase {
                 }
                 return new ComboBoxModel(abc, xyz);
             }
-
-            public String getDisplayName() {
-                return "Compound Field used to populate combobox";
-            }
         }
 
         public CompoundField getCompoundField() {
@@ -109,9 +105,7 @@ public class ComboBoxTest extends HudsonTestCase {
         }
         
         @Extension
-        public static final class DescriptorImpl extends Descriptor<CompoundField> {
-            public String getDisplayName() { return ""; }
-        }
+        public static final class DescriptorImpl extends Descriptor<CompoundField> {}
     }
 
     /**

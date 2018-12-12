@@ -2,6 +2,7 @@ package hudson;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -37,6 +38,7 @@ public class ProcTest {
      */
     @Test
     public void remoteProcOutputSync() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         VirtualChannel ch = createSlaveChannel();
 
         // keep the pipe fairly busy
@@ -96,11 +98,13 @@ public class ProcTest {
 
     @Test
     public void ioPumpingWithLocalLaunch() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         doIoPumpingTest(new LocalLauncher(new StreamTaskListener(System.out, Charset.defaultCharset())));
     }
 
     @Test
     public void ioPumpingWithRemoteLaunch() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         doIoPumpingTest(new RemoteLauncher(
                 new StreamTaskListener(System.out, Charset.defaultCharset()),
                 createSlaveChannel(), true));

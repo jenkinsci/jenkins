@@ -50,11 +50,10 @@ public class CopyJobCommand extends CLICommand {
     public String dst;
 
     protected int run() throws Exception {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.getActiveInstance();
 
         if (jenkins.getItemByFullName(dst)!=null) {
-            stderr.println("Job '"+dst+"' already exists");
-            return -1;
+            throw new IllegalStateException("Job '"+dst+"' already exists");
         }
 
         ModifiableTopLevelItemGroup ig = jenkins;
@@ -69,7 +68,7 @@ public class CopyJobCommand extends CLICommand {
             if (item instanceof ModifiableTopLevelItemGroup) {
                 ig = (ModifiableTopLevelItemGroup) item;
             } else {
-                throw new IllegalArgumentException("Can't create job from CLI in " + group);
+                throw new IllegalStateException("Can't create job from CLI in " + group);
             }
             dst = dst.substring(i + 1);
         }

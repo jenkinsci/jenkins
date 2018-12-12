@@ -40,7 +40,10 @@ public abstract class BootFailure extends ErrorObject {
         LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",this);
 
         WebApp.get(context).setApp(this);
-        new GroovyHookScript("boot-failure")
+        if (home == null) {
+            return;
+        }
+        new GroovyHookScript("boot-failure", context, home, BootFailure.class.getClassLoader())
                 .bind("exception",this)
                 .bind("home",home)
                 .bind("servletContext", context)
@@ -57,8 +60,7 @@ public abstract class BootFailure extends ErrorObject {
             File f = getBootFailureFile(home);
             try {
                 if (f.exists()) {
-                    BufferedReader failureFileReader = new BufferedReader(new FileReader(f));
-                    try {
+                    try (BufferedReader failureFileReader = new BufferedReader(new FileReader(f))) {
                         String line;
                         while ((line=failureFileReader.readLine())!=null) {
                             try {
@@ -67,8 +69,6 @@ public abstract class BootFailure extends ErrorObject {
                                 // ignore any parse error
                             }
                         }
-                    } finally {
-                        failureFileReader.close();
                     }
                 }
             } catch (IOException e) {

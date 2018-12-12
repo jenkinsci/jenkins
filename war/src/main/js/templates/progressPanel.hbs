@@ -1,0 +1,26 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{translations.installWizard_installing_title}}</h4>
+</div>
+<div class="modal-body installing-body">
+	<div class="jumbotron welcome-panel installing-panel">
+		<h1>{{translations.installWizard_installing_title}}</h1>
+		<div class="progress">
+		  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+		    <span class="sr-only">{{translations.installWizard_installing_title}}</span>
+		  </div>
+		</div>
+	</div>
+
+	<div class="selected-plugin-progress">
+		{{#each installingPlugins}}
+		<div class="selected-plugin {{installStatus}}" id="installing-{{id name}}" data-tooltip="{{errorMessage}}">{{title}}</div>
+		{{/each}}
+	</div>
+
+	<div class="install-console">
+	  <div class="install-console-scroll">
+	    <div class="install-text"></div>
+	  </div>
+	  <div class="dependency-legend">{{translations.installWizard_installingConsole_dependencyIndicatorNote}}</div>
+	</div>
+</div>

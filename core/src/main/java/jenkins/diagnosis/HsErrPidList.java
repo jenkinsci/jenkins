@@ -6,7 +6,12 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -16,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -24,13 +30,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 
 /**
  * Finds crash dump reports and show them in the UI.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(optional=true) // TODO why would an extension using a built-in extension point need to be marked optional?
+@Extension(optional=true) @Symbol("hsErrPid")
+// TODO why would an extension using a built-in extension point need to be marked optional?
 public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.
@@ -47,14 +55,10 @@ public class HsErrPidList extends AdministrativeMonitor {
             return;
         }
         try {
-            FileChannel ch = null;
-            try {
-                ch = new FileInputStream(getSecretKeyFile()).getChannel();
+            try (FileChannel ch = FileChannel.open(getSecretKeyFile().toPath(), StandardOpenOption.READ)) {
                 map = ch.map(MapMode.READ_ONLY,0,1);
-            } finally {
-                if (ch != null) {
-                    ch.close();
-                }
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
                 
             scan("./hs_err_pid%p.log");
@@ -91,6 +95,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     /**
      * Expose files to the URL.
      */
+    @StaplerDispatchable
     public List<HsErrPidFile> getFiles() {
         return files;
     }
@@ -124,9 +129,8 @@ public class HsErrPidList extends AdministrativeMonitor {
     private void scanFile(File log) {
         LOGGER.fine("Scanning "+log);
 
-        BufferedReader r=null;
-        try {
-            r = new BufferedReader(new FileReader(log));
+        try (Reader rawReader = new FileReader(log);
+             BufferedReader r = new BufferedReader(rawReader)) {
 
             if (!findHeader(r))
                 return;
@@ -145,8 +149,6 @@ public class HsErrPidList extends AdministrativeMonitor {
         } catch (IOException e) {
             // not a big enough deal.
             LOGGER.log(Level.FINE, "Failed to parse hs_err_pid file: " + log, e);
-        } finally {
-            IOUtils.closeQuietly(r);
         }
     }
 

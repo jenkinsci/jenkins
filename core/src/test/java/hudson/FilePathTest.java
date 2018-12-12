@@ -25,13 +25,13 @@ package hudson;
 
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
+import hudson.os.PosixAPI;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,8 +41,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,18 +55,29 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
@@ -130,12 +146,12 @@ public class FilePathTest {
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
-        FileOutputStream os = new FileOutputStream(file);
-        byte[] buf = new byte[size];
-        for (int i=0; i<buf.length; i++)
-            buf[i] = (byte)(i%256);
-        os.write(buf);
-        os.close();
+        try (OutputStream os = Files.newOutputStream(file.toPath())) {
+            byte[] buf = new byte[size];
+            for (int i = 0; i < buf.length; i++)
+                buf[i] = (byte) (i % 256);
+            os.write(buf);
+        }
     }
     
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
@@ -237,7 +253,7 @@ public class FilePathTest {
                     throw x;
                 }
             } finally {
-                toF.chmod(700);
+                toF.chmod(0700);
             }
     }
 
@@ -340,7 +356,7 @@ public class FilePathTest {
     }
             
     /**
-     * Checks that big files (>8GB) can be archived and then unpacked.
+     * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
      * The actual file size limit is 8589934591 bytes.
      * @throws Exception test failure
@@ -365,13 +381,13 @@ public class FilePathTest {
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(tmpDir);
-        int tar = tmpDirPath.tar(new FileOutputStream(tarFile), tempFile.getName());
+        int tar = tmpDirPath.tar(Files.newOutputStream(tarFile.toPath()), tempFile.getName());
         assertEquals("One file should have been compressed", 1, tar);
 
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        tmpDirPath.child( filePrefix + ".tar").untar(outDir, TarCompression.NONE);
+        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
     }
@@ -463,8 +479,27 @@ public class FilePathTest {
             }
     }
 
+    @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
+        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        File tmp = temp.getRoot();
+        File original = new File(tmp,"original");
+        FilePath originalP = new FilePath(channels.french, original.getPath());
+        originalP.touch(0);
+        PosixAPI.jnr().chmod(original.getAbsolutePath(), 02777); // Read/write/execute for everyone and setuid.
+
+        File sameChannelCopy = new File(tmp,"sameChannelCopy");
+        FilePath sameChannelCopyP = new FilePath(channels.french, sameChannelCopy.getPath());
+        originalP.copyToWithPermission(sameChannelCopyP);
+        assertEquals("Special permissions should be copied on the same machine", 02777, PosixAPI.jnr().stat(sameChannelCopy.getAbsolutePath()).mode() & 07777);
+
+        File diffChannelCopy = new File(tmp,"diffChannelCopy");
+        FilePath diffChannelCopyP = new FilePath(channels.british, diffChannelCopy.getPath());
+        originalP.copyToWithPermission(diffChannelCopyP);
+        assertEquals("Special permissions should not be copied across machines", 00777, PosixAPI.jnr().stat(diffChannelCopy.getAbsolutePath()).mode() & 07777);
+    }
+
     @Test public void symlinkInTar() throws Exception {
-        if (Functions.isWindows())  return; // can't test on Windows
+        assumeFalse("can't test on Windows", Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
@@ -538,6 +573,25 @@ public class FilePathTest {
                 // good
             }
     }
+    
+    @Issue("JENKINS-5253")
+    public void testValidateCaseSensitivity() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(channels.french, tmp.getPath());
+            d.child("d1/d2/d3").mkdirs();
+            d.child("d1/d2/d3/f.txt").touch(0);
+            d.child("d1/d2/d3/f.html").touch(0);
+            d.child("d1/d2/f.txt").touch(0);
+            
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+            assertEquals(Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive("**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
    
     @Issue("JENKINS-15418")
     @Test public void deleteLongPathOnWindows() throws Exception {
@@ -575,7 +629,7 @@ public class FilePathTest {
             when(con.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
-            assertFalse(d.installIfNecessaryFrom(url, null, null));
+            assertFalse(d.installIfNecessaryFrom(url, null, "message if failed"));
 
             verify(con).setIfModifiedSince(123000);
     }
@@ -594,7 +648,7 @@ public class FilePathTest {
             when(con.getInputStream())
               .thenReturn(someZippedContent());
 
-            assertTrue(d.installIfNecessaryFrom(url, null, null));
+            assertTrue(d.installIfNecessaryFrom(url, null, "message if failed"));
     }
 
     @Issue("JENKINS-26196")
@@ -614,6 +668,28 @@ public class FilePathTest {
         String log = baos.toString();
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
+    }
+
+    @Issue("JENKINS-23507")
+    @Test public void installIfNecessaryFollowsRedirects() throws Exception{
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+        FilePath.UrlFactory urlFactory = mock(FilePath.UrlFactory.class);
+        d.setUrlFactory(urlFactory);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final HttpURLConnection con2 = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_MOVED_TEMP);
+        URL url2 = someUrlToZipFile(con2);
+        String someUrl = url2.toExternalForm();
+        when(con.getHeaderField("Location")).thenReturn(someUrl);
+        when(urlFactory.newURL(someUrl)).thenReturn(url2);
+        when(con2.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(con2.getInputStream()).thenReturn(someZippedContent());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String message = "going ahead";
+        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
@@ -658,5 +734,149 @@ public class FilePathTest {
             
             // test conflict subdir
             src.moveAllChildrenTo(dst);
+    }
+
+    @Issue("JENKINS-10629")
+    @Test
+    public void testEOFbrokenFlush() throws IOException, InterruptedException {
+        final File srcFolder = temp.newFolder("src");
+        // simulate magic structure with magic sizes:
+        // |- dir/pom.xml   (2049)
+        // |- pom.xml       (2049)
+        // \- small.tar     (1537)
+        final File smallTar = new File(srcFolder, "small.tar");
+        givenSomeContentInFile(smallTar, 1537);
+        final File dir = new File(srcFolder, "dir");
+        dir.mkdirs();
+        final File pomFile = new File(dir, "pom.xml");
+        givenSomeContentInFile(pomFile, 2049);
+        FileUtils.copyFileToDirectory(pomFile, srcFolder);
+
+        final File archive = temp.newFile("archive.tar");
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(srcFolder);
+        int tarred = tmpDirPath.tar(Files.newOutputStream(archive.toPath()), "**");
+        assertEquals("One file should have been compressed", 3, tarred);
+
+        // Decompress
+        final File dstFolder = temp.newFolder("dst");
+        dstFolder.mkdirs();
+        FilePath outDir = new FilePath(dstFolder);
+        // and now fail when flush is bad!
+        tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
+
+    @Test
+    public void chmod() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFile("file");
+        FilePath fp = new FilePath(f);
+        int prevMode = fp.mode();
+        assertEquals(0400, chmodAndMode(fp, 0400));
+        assertEquals(0412, chmodAndMode(fp, 0412));
+        assertEquals(0777, chmodAndMode(fp, 0777));
+        assertEquals(prevMode, chmodAndMode(fp, prevMode));
+    }
+
+    @Test
+    public void chmodInvalidPermissions() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFolder("folder");
+        FilePath fp = new FilePath(f);
+        int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
+        try {
+            chmodAndMode(fp, invalidMode);
+            fail("Setting sticky bit should fail");
+        } catch (IOException e) {
+            assertEquals("Invalid mode: " + invalidMode, e.getMessage());
+        }
+    }
+
+    private int chmodAndMode(FilePath path, int mode) throws Exception {
+        path.chmod(mode);
+        return path.mode();
+    }
+
+    @Issue("JENKINS-48227")
+    @Test
+    public void testCreateTempDir() throws IOException, InterruptedException  {
+        final File srcFolder = temp.newFolder("src");
+        final FilePath filePath = new FilePath(srcFolder);
+        FilePath x = filePath.createTempDir("jdk", "dmg");
+        FilePath y = filePath.createTempDir("jdk", "pkg");
+        FilePath z = filePath.createTempDir("jdk", null);
+
+        assertNotNull("FilePath x should not be null", x);
+        assertNotNull("FilePath y should not be null", y);
+        assertNotNull("FilePath z should not be null", z);
+
+        assertTrue(x.getName().contains("jdk.dmg"));
+        assertTrue(y.getName().contains("jdk.pkg"));
+        assertTrue(z.getName().contains("jdk.tmp"));
+    }
+
+    @Test public void deleteRecursiveOnUnix() throws Exception {
+        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("target").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("symlink target should not be deleted", Files.exists(targetDir));
+        assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Test public void deleteRecursiveOnWindows() throws Exception {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("targetDir").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Process p = new ProcessBuilder()
+                .directory(toDelete.toFile())
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        assumeThat("unable to create junction", p.waitFor(), is(0));
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("junction target should not be deleted", Files.exists(targetDir));
+        assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Issue("JENKINS-13128")
+    @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
+        assumeFalse("windows doesn't support posix file permissions", Functions.isWindows());
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
+        Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
+        Set<PosixFilePermission> allRWX = EnumSet.allOf(PosixFilePermission.class);
+        Files.setPosixFilePermissions(sourceFile, allRWX);
+        FilePath f = new FilePath(src);
+        f.copyRecursiveTo(new FilePath(dst));
+        Path destinationFile = dst.toPath().resolve("test-file");
+        assertTrue("file was not copied", Files.exists(destinationFile));
+        Set<PosixFilePermission> destinationPermissions = Files.getPosixFilePermissions(destinationFile);
+        assertEquals("file permissions not copied", allRWX, destinationPermissions);
+    }
+
+    @Issue("JENKINS-13128")
+    @Test public void copyRecursivePreservesLastModifiedTime() throws Exception {
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
+        Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
+        FileTime mtime = FileTime.from(42L, TimeUnit.SECONDS);
+        Files.setLastModifiedTime(sourceFile, mtime);
+        FilePath f = new FilePath(src);
+        f.copyRecursiveTo(new FilePath(dst));
+        Path destinationFile = dst.toPath().resolve("test-file");
+        assertTrue("file was not copied", Files.exists(destinationFile));
+        assertEquals("file mtime was not preserved", mtime, Files.getLastModifiedTime(destinationFile));
     }
 }

@@ -3,9 +3,7 @@ package hudson.util;
 import hudson.Util;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -30,7 +28,7 @@ public abstract class CyclicGraphDetector<N> {
 
     /**
      * Returns all the nodes in the topologically sorted order.
-     * That is, if there's an edge a->b, b always come earlier than a.
+     * That is, if there's an edge a → b, b always come earlier than a.
      */
     public List<N> getSorted() {
         return topologicalOrder;

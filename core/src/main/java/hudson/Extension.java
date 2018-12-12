@@ -74,7 +74,8 @@ public @interface Extension {
     /**
      * Used for sorting extensions.
      *
-     * Extensions will be sorted in the descending order of the ordinal.
+     * Extensions will be sorted in the descending order of the ordinal. In other words,
+     * the extensions with the highest numbers will be chosen first.
      * This is a rather poor approach to the problem, so its use is generally discouraged.
      *
      * @since 1.306

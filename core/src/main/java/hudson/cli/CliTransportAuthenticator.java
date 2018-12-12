@@ -4,7 +4,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import hudson.security.SecurityRealm;
-import jenkins.model.Jenkins;
 
 /**
  * Perform {@link SecurityRealm} independent authentication.
@@ -21,7 +20,9 @@ import jenkins.model.Jenkins;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.419
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public abstract class CliTransportAuthenticator implements ExtensionPoint {
     /**
      * Checks if this implementation supports the specified protocol.
