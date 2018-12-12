@@ -47,7 +47,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 
-@Ignore("TODO being run multiple times, TBD why")
 public class DisablePluginCommandTest {
 
     @Rule
@@ -130,6 +129,7 @@ public class DisablePluginCommandTest {
     /**
      * Can disable a plugin without dependents plugins and Jenkins restart after it if -restart argument is passed.
      */
+    @Ignore("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
@@ -182,6 +182,7 @@ public class DisablePluginCommandTest {
     /**
      * If some plugins are disabled, Jenkins will restart even though the status code isn't 0 (is 16).
      */
+    @Ignore("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
