@@ -279,9 +279,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 t.run();
                                 long end_time = System.currentTimeMillis();
                                 if ((end_time - begin_time) > CRON_THRESHOLD) {
-                                    LOGGER.log(Level.WARNING, "cron trigger " + t.getClass().getName() + ".run() triggered by {0} spent too much time ({1}) in its execution, " +
-                                            "other timers can be affected",
-                                            new Object[] {p, Util.getTimeSpanString(end_time - begin_time)});
+                                    LOGGER.log(Level.WARNING, "cron trigger {0}.run() triggered by {1} spent too "
+                                            + " much time ({2}) in its execution, other timers can be affected",
+                                            new Object[] {t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time)});
                                 }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
