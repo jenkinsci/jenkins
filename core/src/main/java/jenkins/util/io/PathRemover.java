@@ -24,7 +24,9 @@
 
 package jenkins.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
+import hudson.Util;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -45,13 +47,21 @@ import java.util.Set;
 @Restricted(NoExternalUse.class)
 public class PathRemover {
 
-    private final RetryStrategy retryStrategy;
-
-    public PathRemover() {
-        this(ignored -> false);
+    public static PathRemover newSimpleRemover() {
+        return new PathRemover(ignored -> false);
     }
 
-    public PathRemover(@Nonnull RetryStrategy retryStrategy) {
+    public static PathRemover newRemoverWithStrategy(@Nonnull RetryStrategy retryStrategy) {
+        return new PathRemover(retryStrategy);
+    }
+
+    public static PathRemover newRobustRemover(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries));
+    }
+
+    private final RetryStrategy retryStrategy;
+
+    private PathRemover(@Nonnull RetryStrategy retryStrategy) {
         this.retryStrategy = retryStrategy;
     }
 
@@ -97,6 +107,80 @@ public class PathRemover {
                     .append(" time");
             if (retryCount != 1) sb.append('s');
             sb.append('.');
+            return sb.toString();
+        }
+    }
+
+    private static class PausingGCRetryStrategy implements RetryStrategy {
+        private final int maxRetries;
+        private final boolean gcAfterFailedRemove;
+        private final long waitBetweenRetries;
+        private final ThreadLocal<Boolean> interrupted = ThreadLocal.withInitial(() -> false);
+
+        private PausingGCRetryStrategy(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+            this.maxRetries = maxRetries;
+            this.gcAfterFailedRemove = gcAfterFailedRemove;
+            this.waitBetweenRetries = waitBetweenRetries;
+        }
+
+        @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection happens only when "
+                + "GC_AFTER_FAILED_DELETE is true. It's an experimental feature in Jenkins.")
+        private void gcIfEnabled() {
+            /* If the Jenkins process had the file open earlier, and it has not
+             * closed it then Windows won't let us delete it until the Java object
+             * with the open stream is Garbage Collected, which can result in builds
+             * failing due to "file in use" on Windows despite working perfectly
+             * well on other OSs. */
+            if (gcAfterFailedRemove) System.gc();
+        }
+
+        @Override
+        public boolean shouldRetry(int retriesAttempted) {
+            if (retriesAttempted >= maxRetries) return false;
+            gcIfEnabled();
+            long delayMillis = waitBetweenRetries >= 0 ? waitBetweenRetries : -retriesAttempted * waitBetweenRetries;
+            if (delayMillis <= 0) return !Thread.interrupted();
+            try {
+                Thread.sleep(delayMillis);
+                return true;
+            } catch (InterruptedException e) {
+                interrupted.set(true);
+                return false;
+            }
+        }
+
+        @Override
+        public String failureMessage(@Nonnull Path fileToRemove, int retryCount) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unable to delete '");
+            sb.append(fileToRemove);
+            sb.append("'. Tried ");
+            sb.append(retryCount);
+            sb.append(" time");
+            if (retryCount != 1) sb.append('s');
+            if (maxRetries > 0) {
+                sb.append(" (of a maximum of ");
+                sb.append(maxRetries + 1);
+                sb.append(')');
+                if (gcAfterFailedRemove)
+                    sb.append(" garbage-collecting");
+                if (waitBetweenRetries != 0 && gcAfterFailedRemove)
+                    sb.append(" and");
+                if (waitBetweenRetries != 0) {
+                    sb.append(" waiting ");
+                    sb.append(Util.getTimeSpanString(Math.abs(waitBetweenRetries)));
+                    if (waitBetweenRetries < 0) {
+                        sb.append("-");
+                        sb.append(Util.getTimeSpanString(Math.abs(waitBetweenRetries) * (maxRetries + 1)));
+                    }
+                }
+                if (waitBetweenRetries != 0 || gcAfterFailedRemove)
+                    sb.append(" between attempts");
+            }
+            if (interrupted.get())
+                sb.append(". The delete operation was interrupted before it completed successfully");
+            sb.append('.');
+            interrupted.set(false);
             return sb.toString();
         }
     }

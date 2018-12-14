@@ -52,7 +52,7 @@ public class PathRemoverTest {
         File file = tmp.newFile();
         touchWithFileName(file);
 
-        PathRemover remover = new PathRemover();
+        PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
         assertFalse(file.exists());
@@ -66,7 +66,7 @@ public class PathRemoverTest {
             touchWithFileName(file);
             locker.acquireLock(file);
 
-            PathRemover remover = new PathRemover();
+            PathRemover remover = PathRemover.newSimpleRemover();
             expectedException.expectMessage(containsString(file.getPath()));
 
             remover.forceRemoveFile(file.toPath());
@@ -81,7 +81,7 @@ public class PathRemoverTest {
         assertTrue(file.setWritable(false));
         assertTrue(dir.setWritable(false));
 
-        PathRemover remover = new PathRemover();
+        PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
         assertFalse(file.exists());
@@ -93,7 +93,7 @@ public class PathRemoverTest {
         File file = new File(dir, "invalid.file");
         assertFalse(file.exists());
 
-        PathRemover remover = new PathRemover();
+        PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
         assertFalse(file.exists());
@@ -110,7 +110,7 @@ public class PathRemoverTest {
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
 
-        PathRemover remover = new PathRemover();
+        PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveDirectoryContents(dir.toPath());
 
         assertTrue(dir.exists());
@@ -132,7 +132,7 @@ public class PathRemoverTest {
         touchWithFileName(f1, d1f1, d2f2);
         try (FileLocker locker = new FileLocker()) {
             locker.acquireLock(d1f1);
-            PathRemover remover = new PathRemover(retriesAttempted -> retriesAttempted < 1);
+            PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> retriesAttempted < 1);
             expectedException.expectMessage(allOf(
                     containsString(dir.getPath()),
                     containsString("Tried 1 time.")
@@ -155,7 +155,7 @@ public class PathRemoverTest {
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
 
-        PathRemover remover = new PathRemover();
+        PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveRecursive(dir.toPath());
 
         assertFalse(dir.exists());
@@ -178,7 +178,7 @@ public class PathRemoverTest {
             // but still deletes everything it can
             // even if we are not retrying deletes.
             try (AutoCloseable ignored = locker.acquireLock(d1f1)) {
-                PathRemover remover = new PathRemover();
+                PathRemover remover = PathRemover.newSimpleRemover();
                 expectedException.expectMessage(containsString(dir.getPath()));
                 remover.forceRemoveRecursive(dir.toPath());
                 assertTrue(dir.exists());
@@ -207,7 +207,7 @@ public class PathRemoverTest {
                     } catch (Exception ignored) {
                     }
                 }).start();
-                PathRemover remover = new PathRemover(retriesAttempted -> {
+                PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
                     if (retriesAttempted == 0) {
                         lockedFileExists.set(d2f2.exists());
                         readyToUnlockSignal.notifyAll();
@@ -233,7 +233,7 @@ public class PathRemoverTest {
                 locker.acquireLock(d1f1);
                 AtomicReference<InterruptedException> interrupted = new AtomicReference<>();
                 AtomicReference<IOException> removed = new AtomicReference<>();
-                PathRemover remover = new PathRemover(retriesAttempted -> {
+                PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
                     try {
                         TimeUnit.SECONDS.sleep(retriesAttempted + 1);
                         return true;
