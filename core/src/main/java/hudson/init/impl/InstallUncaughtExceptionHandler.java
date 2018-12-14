@@ -33,7 +33,7 @@ public class InstallUncaughtExceptionHandler {
                 }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
-                    WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, Jenkins.get(), "/oops");
+                    WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
                         throw x;
