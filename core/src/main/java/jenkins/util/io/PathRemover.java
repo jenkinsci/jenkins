@@ -189,7 +189,7 @@ public class PathRemover {
     
     private static Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
-            removeOrMakeRemovableThenMove(path);
+            removeOrMakeRemovableThenRemove(path);
             return Optional.empty();
         } catch (IOException e) {
             return Optional.of(e);
@@ -216,7 +216,7 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private static void removeOrMakeRemovableThenMove(@Nonnull Path path) throws IOException {
+    private static void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
