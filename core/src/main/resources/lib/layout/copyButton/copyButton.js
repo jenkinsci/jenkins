@@ -17,10 +17,10 @@ Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         el.select();
         document.execCommand('copy');
 
-        //remove textarea element
+        //remove the textarea element
         document.body.removeChild(el);
 
-        //show notification
+        //show the notification
         notificationBar.show(e.getAttribute("message"));
     });
 });
