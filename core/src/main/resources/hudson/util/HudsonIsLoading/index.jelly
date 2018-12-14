@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
-    <j:new var="h" className="hudson.Functions"/><!-- instead of JSP functions -->
+    <j:new var="h" className="hudson.Functions" />
     <st:statusCode value="503"/><!-- SERVICE NOT AVAILABLE -->
     <st:setHeader name="Expires" value="0"/>
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
