@@ -138,7 +138,7 @@ public class PathRemover {
         public boolean shouldRetry(int retriesAttempted) {
             if (retriesAttempted >= maxRetries) return false;
             gcIfEnabled();
-            long delayMillis = waitBetweenRetries >= 0 ? waitBetweenRetries : -retriesAttempted * waitBetweenRetries;
+            long delayMillis = waitBetweenRetries >= 0 ? waitBetweenRetries : -(retriesAttempted + 1) * waitBetweenRetries;
             if (delayMillis <= 0) return !Thread.interrupted();
             try {
                 Thread.sleep(delayMillis);
