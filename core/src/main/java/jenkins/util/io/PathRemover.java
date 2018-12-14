@@ -43,6 +43,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Restricted(NoExternalUse.class)
 public class PathRemover {
@@ -187,8 +189,7 @@ public class PathRemover {
     
     private static Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
-            makeRemovable(path);
-            Files.deleteIfExists(path);
+            removeOrMakeRemovableThenMove(path);
             return Optional.empty();
         } catch (IOException e) {
             return Optional.of(e);
@@ -213,6 +214,27 @@ public class PathRemover {
             accumulatedErrors.add(e);
         }
         return accumulatedErrors;
+    }
+
+    private static void removeOrMakeRemovableThenMove(@Nonnull Path path) throws IOException {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            makeRemovable(path);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e2) {
+                // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
+                // I suspect other processes putting files in this directory
+                if (Files.isDirectory(path)) {
+                    List<String> entries;
+                    try (Stream<Path> children = Files.list(path)) {
+                        entries = children.map(Path::toString).collect(Collectors.toList());
+                    }
+                    throw new CompositeIOException("Unable to remove directory " + path + " with directory contents: " + entries, e, e2);
+                }
+            }
+        }
     }
 
     private static void makeRemovable(@Nonnull Path path) throws IOException {
