@@ -24,17 +24,23 @@
 
 package jenkins.util.io;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.List;
 
 public class CompositeIOException extends IOException {
     private final List<IOException> exceptions;
 
-    public CompositeIOException(String message, List<IOException> exceptions) {
+    public CompositeIOException(String message, @Nonnull List<IOException> exceptions) {
         super(message);
         this.exceptions = exceptions;
+    }
+
+    public CompositeIOException(String message, IOException... exceptions) {
+        this(message, Arrays.asList(exceptions));
     }
 
     public List<IOException> getExceptions() {
