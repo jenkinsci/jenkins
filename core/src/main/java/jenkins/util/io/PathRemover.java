@@ -155,7 +155,7 @@ public class PathRemover {
             sb.append("Unable to delete '");
             sb.append(fileToRemove);
             sb.append("'. Tried ");
-            sb.append(retryCount);
+            sb.append(retryCount + 1);
             sb.append(" time");
             if (retryCount != 1) sb.append('s');
             if (maxRetries > 0) {
