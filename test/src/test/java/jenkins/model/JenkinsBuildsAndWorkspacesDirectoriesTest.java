@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
@@ -204,6 +205,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
         );
     }
 
+    @Ignore("TODO calling restart seems to break Surefire")
     @Issue("JENKINS-50164")
     @LocalData
     @Test
