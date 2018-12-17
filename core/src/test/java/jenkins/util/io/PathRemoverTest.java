@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -46,6 +47,7 @@ public class PathRemoverTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
     @Rule public ExpectedException expectedException = ExpectedException.none();
+    @Rule public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
 
     @Test
     public void testForceRemoveFile() throws IOException {
