@@ -60,13 +60,10 @@ import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -295,24 +292,28 @@ public class Util {
 
     @Restricted(NoExternalUse.class)
     public static boolean isSymlink(@Nonnull Path path) {
-        /*
-         *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
-         *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
-         *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
-         *  you have to go through BasicFileAttributes and do the following check:
-         *     isSymbolicLink() || isOther()
-         *  The isOther() call will include Windows reparse points, of which a directory junction is.
-         *  It also includes includes devices, but reading the attributes of a device with NIO fails
-         *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
-         *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
-         *  calling readAttributes.
-         */
-        try {
-            return path.compareTo(path.toRealPath()) != 0;
-        } catch (NoSuchFileException e) {
-            return false;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        if (Functions.isWindows()) {
+            /*
+             *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
+             *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
+             *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
+             *  you have to go through BasicFileAttributes and do the following check:
+             *     isSymbolicLink() || isOther()
+             *  The isOther() call will include Windows reparse points, of which a directory junction is.
+             *  It also includes includes devices, but reading the attributes of a device with NIO fails
+             *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
+             *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
+             *  calling readAttributes.
+             */
+            try {
+                return path.compareTo(path.toRealPath()) != 0;
+            } catch (NoSuchFileException ignored) {
+                return false;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        } else {
+            return Files.isSymbolicLink(path);
         }
     }
 
