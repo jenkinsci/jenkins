@@ -297,7 +297,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Returns the root directory of the checked-out module.
      * <p>
-     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * This is usually where {@code pom.xml}, {@code build.xml}
      * and so on exists.
      */
     public final FilePath getModuleRoot() {
@@ -801,20 +801,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             return true;
         }
-    }
-
-    /**
-     * get the fingerprints associated with this build
-     *
-     * @return never null
-     */
-    @Exported(name = "fingerprint", inline = true, visibility = -1)
-    public Collection<Fingerprint> getBuildFingerprints() {
-        FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
-        if (fingerprintAction != null) {
-            return fingerprintAction.getFingerprints().values();
-        }
-        return Collections.<Fingerprint>emptyList();
     }
 
 	/*

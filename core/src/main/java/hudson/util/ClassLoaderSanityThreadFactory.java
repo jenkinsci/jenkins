@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
  *
  *  Commonly this is a problem for Groovy use, where this may result in memory leaks.
  *  @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-49206">JENKINS-49206</a>
+ * @since 2.105
  */
 public class ClassLoaderSanityThreadFactory implements ThreadFactory {
     private final ThreadFactory delegate;

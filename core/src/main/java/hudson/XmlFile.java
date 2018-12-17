@@ -72,12 +72,12 @@ import org.apache.commons.io.IOUtils;
  * not have any data, the newly added field is left to the VM-default
  * value (if you let XStream create the object, such as
  * {@link #read()} &mdash; which is the majority), or to the value initialized by the
- * constructor (if the object is created via <tt>new</tt> and then its
+ * constructor (if the object is created via {@code new} and then its
  * value filled by XStream, such as {@link #unmarshal(Object)}.)
  *
  * <p>
  * Removing a field requires that you actually leave the field with
- * <tt>transient</tt> keyword. When you read the old XML, XStream
+ * {@code transient} keyword. When you read the old XML, XStream
  * will set the value to this field. But when the data is saved,
  * the field will no longer will be written back to XML.
  * (It might be possible to tweak XStream so that we can simply
@@ -85,13 +85,13 @@ import org.apache.commons.io.IOUtils;
  *
  * <p>
  * Changing the data structure is usually a combination of the two
- * above. You'd leave the old data store with <tt>transient</tt>,
+ * above. You'd leave the old data store with {@code transient},
  * and then add the new data. When you are reading the old XML,
  * only the old field will be set. When you are reading the new XML,
  * only the new field will be set. You'll then need to alter the code
  * so that it will be able to correctly handle both situations,
  * and that as soon as you see data in the old field, you'll have to convert
- * that into the new data structure, so that the next <tt>save</tt> operation
+ * that into the new data structure, so that the next {@code save} operation
  * will write the new data (otherwise you'll end up losing the data, because
  * old fields will be never written back.)
  *
@@ -154,7 +154,7 @@ public final class XmlFile {
      * Loads the contents of this file into an existing object.
      *
      * @return
-     *      The unmarshalled object. Usually the same as <tt>o</tt>, but would be different
+     *      The unmarshalled object. Usually the same as {@code o}, but would be different
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {

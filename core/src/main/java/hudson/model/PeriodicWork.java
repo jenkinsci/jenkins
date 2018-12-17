@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.ExtensionListListener;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
 import hudson.ExtensionPoint;
@@ -30,6 +31,8 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.util.Timer;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.Random;
@@ -99,9 +102,15 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     @Initializer(after= JOB_LOADED)
     public static void init() {
         // start all PeriodicWorks
-        for (PeriodicWork p : PeriodicWork.all()) {
-            Timer.get().scheduleAtFixedRate(p, p.getInitialDelay(), p.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+        ExtensionList<PeriodicWork> extensionList = all();
+        extensionList.addListener(new PeriodicWorkExtensionListListener(extensionList));
+        for (PeriodicWork p : extensionList) {
+            schedulePeriodicWork(p);
         }
+    }
+
+    private static void schedulePeriodicWork(PeriodicWork p) {
+        Timer.get().scheduleAtFixedRate(p, p.getInitialDelay(), p.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 
     // time constants
@@ -110,4 +119,32 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     protected static final long DAY = 24*HOUR;
 
     private static final Random RANDOM = new Random();
+
+    /**
+     * ExtensionListener that will kick off any new AperiodWork extensions from plugins that are dynamically
+     * loaded.
+     */
+    private static class PeriodicWorkExtensionListListener extends ExtensionListListener {
+
+        private final Set<PeriodicWork> registered = new HashSet<>();
+
+        PeriodicWorkExtensionListListener(ExtensionList<PeriodicWork> initiallyRegistered) {
+            for (PeriodicWork p : initiallyRegistered) {
+                registered.add(p);
+            }
+        }
+
+        @Override
+        public void onChange() {
+            synchronized (registered) {
+                for (PeriodicWork p : PeriodicWork.all()) {
+                    // it is possibly to programatically remove Extensions but that is rarely used.
+                    if (!registered.contains(p)) {
+                        schedulePeriodicWork(p);
+                        registered.add(p);
+                    }
+                }
+            }
+        }
+    }
 }

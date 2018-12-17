@@ -25,28 +25,27 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
+
 /**
  * List of configured {@link ArtifactManagerFactory}s.
  * @since 1.532
  */
 @Extension @Symbol("artifactManager")
-public class ArtifactManagerConfiguration extends GlobalConfiguration {
+public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     
-    public static ArtifactManagerConfiguration get() {
-        return Jenkins.getInstance().getInjector().getInstance(ArtifactManagerConfiguration.class);
+    public static @Nonnull ArtifactManagerConfiguration get() {
+        return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);
     }
 
     private final DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor>(this);
-
-    public ArtifactManagerConfiguration() {
-        load();
-    }
 
     private Object readResolve() {
         artifactManagerFactories.setOwner(this);

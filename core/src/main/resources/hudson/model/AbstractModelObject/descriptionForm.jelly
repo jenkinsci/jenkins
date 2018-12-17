@@ -39,7 +39,7 @@ THE SOFTWARE.
         </f:entry>
       </table>
       <div align="right">
-        <f:submit value="${%Submit}" />
+        <f:submit />
       </div>
     </form>
   </l:ajax>

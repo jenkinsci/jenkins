@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
@@ -82,6 +83,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @see AgentProtocol
  */
+@StaplerAccessibleType
 public final class TcpSlaveAgentListener extends Thread {
 
     private final ServerSocketChannel serverSocket;
@@ -413,7 +415,9 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
                                     new String(ping, "UTF-8"),
-                                    new String(response, 0, responseLength, "UTF-8")
+                                    responseLength > 0 && responseLength <= response.length ?
+                                        new String(response, 0, responseLength, "UTF-8") :
+                                        "bad response length " + responseLength
                             });
                             return false;
                         }

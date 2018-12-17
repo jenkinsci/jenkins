@@ -572,7 +572,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
      * at the top of the checked out module (in the above case, that would
-     * be <tt>xyz/build.xml</tt>), yet the builder doesn't know the "xyz"
+     * be {@code xyz/build.xml}), yet the builder doesn't know the "xyz"
      * part; that comes from SCM.
      *
      * <p>
@@ -678,7 +678,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * The returned object will be used to parse <tt>changelog.xml</tt>.
+     * The returned object will be used to parse {@code changelog.xml}.
      */
     public abstract ChangeLogParser createChangeLogParser();
 

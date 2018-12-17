@@ -694,11 +694,17 @@ var jenkinsRules = {
     "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
 // validate form values to be an integer
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
-    "INPUT.non-negative-number" : function(e) {
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
+    "INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
+
+    "INPUT.non-negative-number-required" : function(e) {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     },
+
     "INPUT.positive-number" : function(e) {
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
+    },
+    "INPUT.positive-number-required" : function(e) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     },
 
@@ -1839,7 +1845,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     var wrap = blockWrap(buildDetails, buildControls);
                     indentMultiline(wrap);
                     Element.addClassName(wrap, "build-details-controls");
-                    $(displayName).setStyle({width: '100%'});
                     detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
                     expandLeftWithRight(detailsOverflowParams, controlsOverflowParams);
                     setBuildControlWidths();
@@ -2367,6 +2372,7 @@ function createSearchBox(searchURL) {
     ac.typeAhead = false;
     ac.autoHighlight = false;
     ac.formatResult = ac.formatEscapedResult;
+    ac.maxResultsDisplayed = 25;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
@@ -2582,7 +2588,12 @@ function buildFormTree(form) {
                     addProperty(p, e.name.substring(r), e.value);
                 }
                 break;
-
+            case "password":
+                p = findParent(e);
+                addProperty(p, e.name, e.value);
+                // must be kept in sync with RedactSecretJsonForTraceSanitizer.REDACT_KEY
+                addProperty(p, "$redact", shortenName(e.name));
+                break;
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);

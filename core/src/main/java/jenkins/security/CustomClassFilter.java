@@ -44,7 +44,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -83,7 +82,7 @@ public interface CustomClassFilter extends ExtensionPoint {
      * Entries may also be preceded by {@code !} to blacklist.
      * Example: {@code -Dhudson.remoting.ClassFilter=com.google.common.collect.LinkedListMultimap,!com.acme.illadvised.YoloReflectionFactory$Handle}
      */
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     @Extension
     public class Static implements CustomClassFilter {
 

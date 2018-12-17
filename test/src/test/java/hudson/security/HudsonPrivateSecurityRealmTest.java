@@ -47,11 +47,17 @@ import java.util.List;
 import jenkins.security.ApiTokenProperty;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.*;
 
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.lang.StringUtils;
+
+import java.lang.reflect.Field;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +66,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 import javax.annotation.Nonnull;
 
@@ -76,32 +81,11 @@ public class HudsonPrivateSecurityRealmTest {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
-    /**
-     * Tests the data compatibility with Hudson before 1.283.
-     * Starting 1.283, passwords are now stored hashed.
-     */
-    @Test
-    @Issue("JENKINS-2381")
-    @LocalData
-    public void dataCompatibilityWith1_282() throws Exception {
-        // make sure we can login with the same password as before
-        WebClient wc = j.createWebClient().login("alice", "alice");
-
-        try {
-            // verify the sanity that the password is really used
-            // this should fail
-            j.createWebClient().login("bob", "bob");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401,e.getStatusCode());
-        }
-
-        // resubmit the config and this should force the data store to be rewritten
-        HtmlPage p = wc.goTo("user/alice/configure");
-        j.submit(p.getFormByName("config"));
-
-        // verify that we can still login
-        j.createWebClient().login("alice", "alice");
+    @Before
+    public void setup() throws Exception {
+        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
+        field.setAccessible(true);
+        field.set(null, null);
     }
 
     @Test
@@ -167,6 +151,8 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         
@@ -385,5 +371,120 @@ public class HudsonPrivateSecurityRealmTest {
         protected void loggedIn(@Nonnull String username) {
             loggedInUsernames.add(username);
         }
+    }
+
+    @Issue("SECURITY-786")
+    @Test
+    public void controlCharacterAreNoMoreValid() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        
+        String password = "testPwd";
+        String email = "test@test.com";
+        int i = 0;
+        
+        // regular case = only accepting a-zA-Z0-9 + "-_"
+        checkUserCanBeCreatedWith(securityRealm, "test" + i, password, "Test" + i, email);
+        assertNotNull(User.getById("test" + i, false));
+        i++;
+        checkUserCanBeCreatedWith(securityRealm, "te-st_123" + i, password, "Test" + i, email);
+        assertNotNull(User.getById("te-st_123" + i, false));
+        i++;
+        {// user id that contains invalid characters
+            checkUserCannotBeCreatedWith(securityRealm, "test " + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "te@st" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "test.com" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "test,com" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "test,com" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "testécom" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "Stargåte" + i, password, "Test" + i, email);
+            i++;
+            checkUserCannotBeCreatedWith(securityRealm, "te\u0000st" + i, password, "Test" + i, email);
+            i++;
+        }
+    }
+    
+    @Issue("SECURITY-786")
+    @Test
+    public void controlCharacterAreNoMoreValid_CustomRegex() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        
+        String currentRegex = "^[A-Z]+[0-9]*$";
+        
+        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
+        field.setAccessible(true);
+        field.set(null, currentRegex);
+        
+        String password = "testPwd";
+        String email = "test@test.com";
+        int i = 0;
+        
+        // regular case = only accepting a-zA-Z0-9 + "-_"
+        checkUserCanBeCreatedWith(securityRealm, "TEST" + i, password, "Test" + i, email);
+        assertNotNull(User.getById("TEST" + i, false));
+        i++;
+        checkUserCanBeCreatedWith(securityRealm, "TEST123" + i, password, "Test" + i, email);
+        assertNotNull(User.getById("TEST123" + i, false));
+        i++;
+        {// user id that do not follow custom regex
+            checkUserCannotBeCreatedWith_custom(securityRealm, "test " + i, password, "Test" + i, email, currentRegex);
+            i++;
+            checkUserCannotBeCreatedWith_custom(securityRealm, "@" + i, password, "Test" + i, email, currentRegex);
+            i++;
+            checkUserCannotBeCreatedWith_custom(securityRealm, "T2A" + i, password, "Test" + i, email, currentRegex);
+            i++;
+        }
+        { // we can even change regex on the fly
+            currentRegex = "^[0-9]*$";
+            field.set(null, currentRegex);
+    
+            checkUserCanBeCreatedWith(securityRealm, "125213" + i, password, "Test" + i, email);
+            assertNotNull(User.getById("125213" + i, false));
+            i++;
+            checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
+            i++;
+        }
+    }
+    
+    private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername(id);
+        signup.enterPassword(password);
+        signup.enterFullName(fullName);
+        signup.enterEmail(email);
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
+    
+    private void checkUserCannotBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername(id);
+        signup.enterPassword(password);
+        signup.enterFullName(fullName);
+        signup.enterEmail(email);
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), not(containsString("Success")));
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString(Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharacters()));
+    }
+    
+    private void checkUserCannotBeCreatedWith_custom(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email, String regex) throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername(id);
+        signup.enterPassword(password);
+        signup.enterFullName(fullName);
+        signup.enterEmail(email);
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), not(containsString("Success")));
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString(regex));
     }
 }

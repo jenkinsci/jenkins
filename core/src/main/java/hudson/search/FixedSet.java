@@ -50,7 +50,7 @@ public class FixedSet implements SearchIndex {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {
             String name = i.getSearchName();
-            if (name.equals(token) || (caseInsensitive && name.equalsIgnoreCase(token))) {
+            if (name != null && (name.equals(token) || (caseInsensitive && name.equalsIgnoreCase(token)))) {
                 result.add(i);
             }
         }
@@ -60,7 +60,7 @@ public class FixedSet implements SearchIndex {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {
             String name = i.getSearchName();
-            if (name.contains(token) || (caseInsensitive && StringUtils.containsIgnoreCase(name, token))) {
+            if (name != null && (name.contains(token) || (caseInsensitive && StringUtils.containsIgnoreCase(name, token)))) {
                 result.add(i);
             }
         }
