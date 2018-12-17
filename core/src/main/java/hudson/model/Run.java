@@ -2367,6 +2367,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
+     *
+     * <p>
+     * Implementation note: {@link AbstractBuild#getEnvironment(TaskListener)} does not amend these but composes independent
+     * map instead. Changes performed here might be desirable to perform there as well.
      * 
      * @return the map with the environmental variables.
      * @since 1.305
@@ -2381,11 +2385,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
-        if (!(this instanceof AbstractBuild)) {
-            for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
-                a.buildEnvironment(this, env);
-            }
-        } // else for compatibility reasons, handled in override after buildEnvironments
+        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
+            a.buildEnvironment(this, env);
+        }
 
         env.putAll(getCharacteristicEnvVars());
         return env;

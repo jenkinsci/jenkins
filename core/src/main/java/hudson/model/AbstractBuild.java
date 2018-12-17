@@ -868,7 +868,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
-    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+    public @Nonnull EnvVars getEnvironment(@Nonnull TaskListener log) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
         Node n = c==null ? null : c.getNode();
         EnvVars env = getParent().getEnvironment(n,log);
