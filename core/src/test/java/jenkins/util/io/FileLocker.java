@@ -44,12 +44,11 @@ import static org.junit.Assert.assertTrue;
 public class FileLocker implements AutoCloseable {
     private final Map<File, AutoCloseable> locks = new HashMap<>();
 
-    public synchronized AutoCloseable acquireLock(File file) throws IOException {
+    public synchronized void acquireLock(File file) throws IOException {
         assertTrue(Functions.isWindows());
         assertThat(file + " is already locked.", locks, not(hasKey(file)));
         AutoCloseable lock = new FileInputStream(file);
         locks.put(file, lock);
-        return lock;
     }
 
     public synchronized void releaseLock(File file) throws Exception {

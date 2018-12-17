@@ -164,7 +164,7 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive_LockedFiles() throws Exception {
+    public void testForceRemoveRecursive_DeletesAsMuchAsPossibleWithLockedFiles() throws Exception {
         assumeTrue(Functions.isWindows());
         File dir = tmp.newFolder();
         File d1 = new File(dir, "d1");
@@ -176,97 +176,106 @@ public class PathRemoverTest {
         touchWithFileName(f1, d1f1, d2f2);
 
         try (FileLocker locker = new FileLocker()) {
-            // Test: If we cannot delete a file, we throw
-            // but still deletes everything it can
-            // even if we are not retrying deletes.
-            try (AutoCloseable ignored = locker.acquireLock(d1f1)) {
-                PathRemover remover = PathRemover.newSimpleRemover();
-                expectedException.expectMessage(containsString(dir.getPath()));
-                remover.forceRemoveRecursive(dir.toPath());
-                assertTrue(dir.exists());
-                assertTrue(d1.exists());
-                assertTrue(d1f1.exists());
-                assertFalse(d2.exists());
-                assertFalse(d2f2.exists());
-                assertFalse(f1.exists());
-            }
+            locker.acquireLock(d1f1);
+            PathRemover remover = PathRemover.newSimpleRemover();
+            expectedException.expectMessage(containsString(dir.getPath()));
+            remover.forceRemoveRecursive(dir.toPath());
+            assertTrue(dir.exists());
+            assertTrue(d1.exists());
+            assertTrue(d1f1.exists());
+            assertFalse(d2.exists());
+            assertFalse(d2f2.exists());
+            assertFalse(f1.exists());
+        }
+    }
 
-            // Deletes get retried if they fail 1st time around,
-            // allowing the operation to succeed on subsequent attempts.
-            // Note: This is what bug JENKINS-15331 is all about.
-            {
-                mkdirs(dir, d1, d2);
-                touchWithFileName(f1, d1f1, d2f2);
-                locker.acquireLock(d2f2);
-                Object readyToUnlockSignal = new Object();
-                Object readyToDeleteSignal = new Object();
-                AtomicBoolean lockedFileExists = new AtomicBoolean();
-                Thread thread = new Thread(() -> {
+    @Test
+    public void testForceRemoveRecursive_RetryOnFailure() throws Exception {
+        assumeTrue(Functions.isWindows());
+        File dir = tmp.newFolder();
+        File d1 = new File(dir, "d1");
+        File d2 = new File(dir, "d2");
+        File f1 = new File(dir, "f1");
+        File d1f1 = new File(d1, "d1f1");
+        File d2f2 = new File(d2, "d1f2");
+        mkdirs(d1, d2);
+        touchWithFileName(f1, d1f1, d2f2);
+        try (FileLocker locker = new FileLocker()) {
+            locker.acquireLock(d2f2);
+            Object readyToUnlockSignal = new Object();
+            Object readyToDeleteSignal = new Object();
+            AtomicBoolean lockedFileExists = new AtomicBoolean();
+            Thread thread = new Thread(() -> {
+                try {
+                    readyToUnlockSignal.wait();
+                    locker.releaseLock(d2f2);
+                    readyToDeleteSignal.notifyAll();
+                } catch (Exception ignored) {
+                }
+            });
+            thread.start();
+            PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
+                if (retriesAttempted == 0) {
+                    lockedFileExists.set(d2f2.exists());
+                    readyToUnlockSignal.notifyAll();
                     try {
-                        readyToUnlockSignal.wait();
-                        locker.releaseLock(d2f2);
-                        readyToDeleteSignal.notifyAll();
-                    } catch (Exception ignored) {
-                    }
-                });
-                thread.start();
-                PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
-                    if (retriesAttempted == 0) {
-                        lockedFileExists.set(d2f2.exists());
-                        readyToUnlockSignal.notifyAll();
-                        try {
-                            readyToDeleteSignal.wait();
-                            return true;
-                        } catch (InterruptedException e) {
-                            return false;
-                        }
-                    }
-                    return false;
-                });
-                remover.forceRemoveRecursive(dir.toPath());
-                thread.join();
-                assertTrue(lockedFileExists.get());
-                assertFalse(dir.exists());
-            }
-
-            // An interrupt aborts the delete and makes it fail, even
-            // if we had been told to retry a lot.
-            {
-                mkdirs(dir, d1, d2);
-                touchWithFileName(f1, d1f1, d2f2);
-                locker.acquireLock(d1f1);
-                AtomicReference<InterruptedException> interrupted = new AtomicReference<>();
-                AtomicReference<IOException> removed = new AtomicReference<>();
-                PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(retriesAttempted + 1);
+                        readyToDeleteSignal.wait();
                         return true;
                     } catch (InterruptedException e) {
-                        interrupted.set(e);
                         return false;
                     }
-                });
-                Thread thread = new Thread(() -> {
-                    try {
-                        remover.forceRemoveRecursive(dir.toPath());
-                    } catch (IOException e) {
-                        removed.set(e);
-                    }
-                });
-                thread.start();
-                TimeUnit.MILLISECONDS.sleep(100);
-                thread.interrupt();
-                thread.join();
-                assertFalse(thread.isAlive());
-                assertTrue(d1f1.exists());
-                IOException ioException = removed.get();
-                assertNotNull(ioException);
-                assertThat(ioException.getMessage(), containsString(dir.getPath()));
-                assertNotNull(interrupted.get());
-            }
+                }
+                return false;
+            });
+            remover.forceRemoveRecursive(dir.toPath());
+            thread.join();
+            assertTrue(lockedFileExists.get());
+            assertFalse(dir.exists());
         }
+    }
 
-
+    @Test
+    public void testForceRemoveRecursive_FailsWhenInterrupted() throws Exception {
+        assumeTrue(Functions.isWindows());
+        File dir = tmp.newFolder();
+        File d1 = new File(dir, "d1");
+        File d2 = new File(dir, "d2");
+        File f1 = new File(dir, "f1");
+        File d1f1 = new File(d1, "d1f1");
+        File d2f2 = new File(d2, "d1f2");
+        mkdirs(d1, d2);
+        touchWithFileName(f1, d1f1, d2f2);
+        try (FileLocker locker = new FileLocker()) {
+            locker.acquireLock(d1f1);
+            AtomicReference<InterruptedException> interrupted = new AtomicReference<>();
+            AtomicReference<IOException> removed = new AtomicReference<>();
+            PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
+                try {
+                    TimeUnit.SECONDS.sleep(retriesAttempted + 1);
+                    return true;
+                } catch (InterruptedException e) {
+                    interrupted.set(e);
+                    return false;
+                }
+            });
+            Thread thread = new Thread(() -> {
+                try {
+                    remover.forceRemoveRecursive(dir.toPath());
+                } catch (IOException e) {
+                    removed.set(e);
+                }
+            });
+            thread.start();
+            TimeUnit.MILLISECONDS.sleep(100);
+            thread.interrupt();
+            thread.join();
+            assertFalse(thread.isAlive());
+            assertTrue(d1f1.exists());
+            IOException ioException = removed.get();
+            assertNotNull(ioException);
+            assertThat(ioException.getMessage(), containsString(dir.getPath()));
+            assertNotNull(interrupted.get());
+        }
     }
 
     private static void mkdirs(File... dirs) {
