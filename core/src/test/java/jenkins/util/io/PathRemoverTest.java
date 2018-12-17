@@ -199,14 +199,15 @@ public class PathRemoverTest {
                 Object readyToUnlockSignal = new Object();
                 Object readyToDeleteSignal = new Object();
                 AtomicBoolean lockedFileExists = new AtomicBoolean();
-                new Thread(() -> {
+                Thread thread = new Thread(() -> {
                     try {
                         readyToUnlockSignal.wait();
                         locker.releaseLock(d2f2);
                         readyToDeleteSignal.notifyAll();
                     } catch (Exception ignored) {
                     }
-                }).start();
+                });
+                thread.start();
                 PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
                     if (retriesAttempted == 0) {
                         lockedFileExists.set(d2f2.exists());
@@ -221,6 +222,7 @@ public class PathRemoverTest {
                     return false;
                 });
                 remover.forceRemoveRecursive(dir.toPath());
+                thread.join();
                 assertTrue(lockedFileExists.get());
                 assertFalse(dir.exists());
             }
