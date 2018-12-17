@@ -290,6 +290,11 @@ public class Util {
      * Checks if the given file represents a symlink.
      */
     public static boolean isSymlink(@Nonnull File file) throws IOException {
+        return isSymlink(fileToPath(file));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isSymlink(@Nonnull Path path) {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
          *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
@@ -303,21 +308,11 @@ public class Util {
          *  calling readAttributes.
          */
         try {
-            Path path = fileToPath(file);
-            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-            if (attrs.isSymbolicLink()) {
-                return true;
-            } else if (attrs instanceof DosFileAttributes) {
-                /* Returns true for non-symbolic link reparse points and devices. We could call
-                 * WindowsFileAttributes#isReparsePoint with reflection instead to exclude devices,
-                 * but as mentioned in the above comment this does not appear to be an issue.
-                 */
-                return attrs.isOther();
-            } else {
-                return false;
-            }
+            return path.compareTo(path.toRealPath()) != 0;
         } catch (NoSuchFileException e) {
             return false;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

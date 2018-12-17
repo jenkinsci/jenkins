@@ -197,7 +197,7 @@ public class PathRemover {
     }
 
     private static List<IOException> tryRemoveRecursive(@Nonnull Path path) {
-        List<IOException> accumulatedErrors = Files.isSymbolicLink(path) ? new ArrayList<>() :
+        List<IOException> accumulatedErrors = Util.isSymlink(path) ? new ArrayList<>() :
                 tryRemoveDirectoryContents(path);
         tryRemoveFile(path).ifPresent(accumulatedErrors::add);
         return accumulatedErrors;
