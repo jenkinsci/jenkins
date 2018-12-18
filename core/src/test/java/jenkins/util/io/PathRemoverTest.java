@@ -34,6 +34,7 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -196,14 +197,14 @@ public class PathRemoverTest {
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
         locker.acquireLock(d2f2);
-        Object readyToUnlockSignal = new Object();
-        Object readyToDeleteSignal = new Object();
+        CountDownLatch unlockLatch = new CountDownLatch(1);
+        CountDownLatch deleteLatch = new CountDownLatch(1);
         AtomicBoolean lockedFileExists = new AtomicBoolean();
         Thread thread = new Thread(() -> {
             try {
-                readyToUnlockSignal.wait();
+                unlockLatch.await();
                 locker.releaseLock(d2f2);
-                readyToDeleteSignal.notifyAll();
+                deleteLatch.countDown();
             } catch (Exception ignored) {
             }
         });
@@ -211,9 +212,9 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
             if (retriesAttempted == 0) {
                 lockedFileExists.set(d2f2.exists());
-                readyToUnlockSignal.notifyAll();
+                unlockLatch.countDown();
                 try {
-                    readyToDeleteSignal.wait();
+                    deleteLatch.await();
                     return true;
                 } catch (InterruptedException e) {
                     return false;
