@@ -25,11 +25,17 @@
 package jenkins.util.io;
 
 import hudson.Functions;
+import org.junit.rules.ExternalResource;
 
+import javax.annotation.Nonnull;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.hasKey;
@@ -41,25 +47,34 @@ import static org.junit.Assert.assertTrue;
  * Helper class for tracking which files are locked.
  * Only useful in Windows environments as POSIX seems to allow locked files to be deleted.
  */
-public class FileLocker implements AutoCloseable {
-    private final Map<File, AutoCloseable> locks = new HashMap<>();
+public class FileLockerRule extends ExternalResource {
+    private final Map<File, Closeable> locks = new HashMap<>();
 
-    public synchronized void acquireLock(File file) throws IOException {
+    @Override
+    protected void after() {
+        List<IOException> exceptions = new ArrayList<>();
+        Iterator<Closeable> it = locks.values().iterator();
+        while (it.hasNext()) {
+            try (Closeable ignored = it.next()) {
+                it.remove();
+            } catch (IOException e) {
+                exceptions.add(e);
+            }
+        }
+        if (!exceptions.isEmpty())
+            throw new CompositeIOException("Could not unlock all files", exceptions).asUncheckedIOException();
+    }
+
+    public synchronized void acquireLock(@Nonnull File file) throws IOException {
         assertTrue(Functions.isWindows());
         assertThat(file + " is already locked.", locks, not(hasKey(file)));
-        AutoCloseable lock = new FileInputStream(file);
+        Closeable lock = new FileInputStream(file);
         locks.put(file, lock);
     }
 
-    public synchronized void releaseLock(File file) throws Exception {
+    public synchronized void releaseLock(@Nonnull File file) throws Exception {
+        assertTrue(Functions.isWindows());
         assertThat(file + " is not locked.", locks, hasKey(file));
-        locks.get(file).close();
-    }
-
-    @Override
-    public synchronized void close() throws Exception {
-        while (!locks.isEmpty()) {
-            releaseLock(locks.keySet().iterator().next());
-        }
+        locks.remove(file).close();
     }
 }

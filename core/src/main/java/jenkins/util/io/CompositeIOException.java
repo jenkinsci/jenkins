@@ -24,13 +24,18 @@
 
 package jenkins.util.io;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
 
+@Restricted(NoExternalUse.class)
 public class CompositeIOException extends IOException {
     private final List<IOException> exceptions;
 
@@ -61,5 +66,9 @@ public class CompositeIOException extends IOException {
         for (IOException exception : exceptions) {
             exception.printStackTrace(s);
         }
+    }
+
+    public UncheckedIOException asUncheckedIOException() {
+        return new UncheckedIOException(this);
     }
 }
