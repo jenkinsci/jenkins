@@ -34,14 +34,7 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFileAttributes;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Arrays;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,35 +78,18 @@ public class PathRemoverTest {
 
     @Test
     public void testForceRemoveFile_ReadOnly() throws IOException {
-        Path dir = Files.createTempDirectory("remover");
-        Path file = dir.resolve("file.tmp");
-        touchWithFileName(file.toFile());
-        makeReadOnly(file);
-        makeReadOnly(dir);
-        assertFalse("Unable to make file read-only: " + file, Files.isWritable(file));
-        assertFalse("Unable to make directory read-only: " + dir, Files.isWritable(dir));
+        File dir = tmp.newFolder();
+        File file = new File(dir, "file.tmp");
+        touchWithFileName(file);
+        file.setWritable(false);
+        dir.setWritable(false);
+        assertFalse("Unable to make file read-only: " + file, Files.isWritable(file.toPath()));
+        assertFalse("Unable to make directory read-only: " + dir, Files.isWritable(dir.toPath()));
 
         PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file);
+        remover.forceRemoveFile(file.toPath());
 
-        assertTrue("Unable to delete file: " + file, Files.notExists(file));
-    }
-
-    private static void makeReadOnly(Path path) {
-        try {
-            PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
-            Set<PosixFilePermission> permissions = attrs.permissions();
-            permissions.removeAll(Arrays.asList(PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_WRITE, PosixFilePermission.OTHERS_WRITE));
-            Files.setPosixFilePermissions(path, permissions);
-        } catch (NoSuchFileException ignored) {
-            return;
-        } catch (UnsupportedOperationException ignored) {
-            // retry with setWritable
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        // fallback method for filesystems that don't support POSIX attributes
-        path.toFile().setWritable(false);
+        assertFalse("Unable to delete file: " + file, file.exists());
     }
 
     @Test
