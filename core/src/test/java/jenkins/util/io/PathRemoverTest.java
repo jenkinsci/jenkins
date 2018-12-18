@@ -34,6 +34,7 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,7 +60,7 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse(file.exists());
+        assertFalse("Unable to delete file: " + file, file.exists());
     }
 
     @Test
@@ -70,7 +71,7 @@ public class PathRemoverTest {
         locker.acquireLock(file);
 
         PathRemover remover = PathRemover.newSimpleRemover();
-        expectedException.expectMessage(containsString(file.getPath()));
+        expectedException.expect(IOException.class);
 
         remover.forceRemoveFile(file.toPath());
     }
@@ -80,13 +81,15 @@ public class PathRemoverTest {
         File dir = tmp.newFolder();
         File file = new File(dir, "file.tmp");
         touchWithFileName(file);
-        assertTrue(file.setWritable(false));
-        assertTrue(dir.setWritable(false));
+        file.setWritable(false);
+        dir.setWritable(false);
+        assertFalse("Unable to make file read-only: " + file, Files.isWritable(file.toPath()));
+        assertFalse("Unable to make directory read-only: " + dir, Files.isWritable(dir.toPath()));
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse(file.exists());
+        assertFalse("Unable to delete file: " + file, file.exists());
     }
 
     @Test
@@ -98,7 +101,7 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse(file.exists());
+        assertFalse("Unable to delete file: " + file, file.exists());
     }
 
     @Test
