@@ -97,7 +97,9 @@ builds.ath = {
             metadataPath = pwd() + "/essentials.yml"
         }
         dir("ath") {
-            runATH jenkins: fileUri, athRevision: "d917fee6683bf83cc9b40cac6ad1f5ade5b54cfc", metadataFile: metadataPath
+            runATH jenkins: fileUri,
+                   athRevision: "d917fee6683bf83cc9b40cac6ad1f5ade5b54cfc",
+                   metadataFile: metadataPath
         }
     }
 }
