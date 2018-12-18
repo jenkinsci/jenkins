@@ -34,6 +34,9 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -70,9 +74,22 @@ public class PathRemoverTest {
         locker.acquireLock(file);
 
         PathRemover remover = PathRemover.newSimpleRemover();
-        expectedException.expect(IOException.class);
+        try {
+            remover.forceRemoveFile(file.toPath());
+            fail("Should not have been deleted: " + file);
+        } catch (IOException e) {
+            assertThat(calcExceptionHierarchy(e), hasItem(FileSystemException.class));
+            assertThat(e.getMessage(), containsString(file.getPath()));
+        }
 
-        remover.forceRemoveFile(file.toPath());
+    }
+
+    private static List<Class<?>> calcExceptionHierarchy(Throwable t) {
+        List<Class<?>> hierarchy = new ArrayList<>();
+        for (; t != null; t = t.getCause()) {
+            hierarchy.add(t.getClass());
+        }
+        return hierarchy;
     }
 
     @Test
