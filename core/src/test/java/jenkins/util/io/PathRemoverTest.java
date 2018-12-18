@@ -34,7 +34,6 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,10 +80,7 @@ public class PathRemoverTest {
         File dir = tmp.newFolder();
         File file = new File(dir, "file.tmp");
         touchWithFileName(file);
-        file.setWritable(false);
-        dir.setWritable(false);
-        assertFalse("Unable to make file read-only: " + file, Files.isWritable(file.toPath()));
-        assertFalse("Unable to make directory read-only: " + dir, Files.isWritable(dir.toPath()));
+        assertTrue("Unable to make file read-only: " + file, file.setWritable(false));
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
