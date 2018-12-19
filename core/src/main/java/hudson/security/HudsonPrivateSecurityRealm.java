@@ -103,7 +103,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * in Java {@code \w} is equivalent to {@code [A-Za-z0-9_]} (take care of "_")
      */
     private static final String DEFAULT_ID_REGEX = "^[\\w-]+$";
-    
+
+    /**
+     * Magic header used to detect if a password is bcrypt hashed.
+     */
+    private static final String JBCRYPT_HEADER = "#jbcrypt:";
+
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -497,10 +502,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /**
      * Creates a new user account by registering a password to the user.
+     *
+     * Supports bcrypt hashed passwords if the password begins with the characters
+     * <code>#jbcrypt:</code>
      */
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
-        user.addProperty(Details.fromPlainPassword(password));
+        if (password.startsWith(JBCRYPT_HEADER)) {
+            user.addProperty(Details.fromHashedPassword(password));
+        } else {
+            user.addProperty(Details.fromPlainPassword(password));
+        }
         return user;
     }
 
@@ -791,6 +803,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     };
 
+
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
@@ -826,7 +839,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return CLASSIC.isPasswordValid(encPass,rawPass,salt);
         }
 
-        private static final String JBCRYPT_HEADER = "#jbcrypt:";
     };
 
     @Extension @Symbol("local")

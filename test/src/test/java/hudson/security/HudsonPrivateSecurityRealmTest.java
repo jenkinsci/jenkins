@@ -66,6 +66,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.annotation.Nonnull;
 
@@ -451,6 +452,29 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
             i++;
         }
+    }
+
+    @Test
+    public void createAccountSupportsHashedPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User userUnhashed = securityRealm.createAccount("user_unhashed", "password");
+        User userHashed = securityRealm.createAccount("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
+
+        WebClient wc1 = j.createWebClient();
+        wc1.login("user_unhashed", "password");
+
+        WebClient wc2 = j.createWebClient();
+        wc2.login("userhashed", "password");
+
+
+        // Check both users can use their token
+        XmlPage w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(w1, hasXPath("//name", is("user_unhashed")));
+
+        XmlPage w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(w2, hasXPath("//name", is("user_hashed")));
     }
     
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
