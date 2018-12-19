@@ -32,6 +32,7 @@ import hudson.security.Permission;
 import hudson.util.FormApply;
 import jenkins.model.Jenkins;
 import jenkins.util.SessionListener;
+import org.acegisecurity.context.SecurityContext;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -41,12 +42,16 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.annotation.CheckForNull;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+
+import static org.acegisecurity.context.HttpSessionContextIntegrationFilter.ACEGI_SECURITY_CONTEXT_KEY;
 
 @Restricted(NoExternalUse.class)
 @Extension
@@ -158,17 +163,32 @@ public class HttpSessionManager extends ManagementLink implements SessionListene
     @Restricted(NoExternalUse.class)
     public static class SessionDetails implements ModelObject {
         private final String sessionId;
+        private final String userId;
         private final Instant creationTime;
         private final Instant lastAccessedTime;
 
         private SessionDetails(HttpSession session) {
             sessionId = session.getId();
+            userId = extractUserId(session);
             creationTime = Instant.ofEpochMilli(session.getCreationTime());
             lastAccessedTime = Instant.ofEpochMilli(session.getLastAccessedTime());
         }
 
+        private static String extractUserId(HttpSession session) {
+            return Optional.ofNullable(session.getAttribute(ACEGI_SECURITY_CONTEXT_KEY))
+                    .filter(SecurityContext.class::isInstance)
+                    .map(SecurityContext.class::cast)
+                    .flatMap(context -> Optional.ofNullable(context.getAuthentication()))
+                    .map(Principal::getName)
+                    .orElse("anonymous");
+        }
+
         public String getSessionId() {
             return sessionId;
+        }
+
+        public String getUserId() {
+            return userId;
         }
 
         public Instant getCreationTime() {
@@ -181,7 +201,7 @@ public class HttpSessionManager extends ManagementLink implements SessionListene
 
         @Override
         public String getDisplayName() {
-            return sessionId;
+            return userId + ": " + sessionId;
         }
     }
 }

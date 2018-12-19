@@ -23,13 +23,15 @@
   ~ THE SOFTWARE.
   -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
     <l:layout title="${it.displayName}" permission="${it.requiredPermission}">
+        <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>${it.displayName}</h1>
             <table class="pane sortable bigtable">
                 <tr>
                     <th class="pane-header">Session Identifier</th>
+                    <th class="pane-header">User</th>
                     <th class="pane-header">Creation Time</th>
                     <th class="pane-header" initialSortDir="down">Last Accessed Time</th>
                     <th class="pane-header">Invalidate Session</th>
@@ -37,6 +39,7 @@
                 <j:forEach items="${it.activeSessions}" var="session">
                     <tr>
                         <td class="pane">${session.sessionId}</td>
+                        <td class="pane"><a href="${rootURL}/user/${session.userId}">${session.userId}</a></td>
                         <td class="pane">${session.creationTime}</td>
                         <td class="pane">${session.lastAccessedTime}</td>
                         <td class="pane">
