@@ -459,14 +459,14 @@ public class HudsonPrivateSecurityRealmTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
-        User userUnhashed = securityRealm.createAccount("user_unhashed", "password");
-        User userHashed = securityRealm.createAccount("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
+        securityRealm.createAccount("user_unhashed", "password");
+        securityRealm.createAccount("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
 
         WebClient wc1 = j.createWebClient();
         wc1.login("user_unhashed", "password");
 
         WebClient wc2 = j.createWebClient();
-        wc2.login("userhashed", "password");
+        wc2.login("user_hashed", "password");
 
 
         // Check both users can use their token
