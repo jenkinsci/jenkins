@@ -233,6 +233,7 @@ public class PathRemover {
                     }
                     throw new CompositeIOException("Unable to remove directory " + path + " with directory contents: " + entries, e, e2);
                 }
+                throw new CompositeIOException("Unable to remove file " + path, e, e2);
             }
         }
     }
