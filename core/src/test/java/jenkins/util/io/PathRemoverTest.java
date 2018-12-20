@@ -34,7 +34,11 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -47,6 +51,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 public class PathRemoverTest {
 
@@ -68,10 +74,22 @@ public class PathRemoverTest {
 
     @Test
     public void testForceRemoveFile_LockedFile() throws Exception {
-        assumeTrue(Functions.isWindows());
-        File file = tmp.newFile();
-        touchWithFileName(file);
-        locker.acquireLock(file);
+        String filename = "/var/lock/jenkins.lock";
+        File file = mock(File.class);
+        Path path = mock(Path.class);
+        FileSystem fs = mock(FileSystem.class);
+        FileSystemProvider fsProvider = mock(FileSystemProvider.class);
+        BasicFileAttributes attributes = mock(BasicFileAttributes.class);
+
+        given(file.getPath()).willReturn(filename);
+        given(file.toPath()).willReturn(path);
+        given(path.toString()).willReturn(filename);
+        given(path.toFile()).willReturn(file);
+        given(path.getFileSystem()).willReturn(fs);
+        given(fs.provider()).willReturn(fsProvider);
+        given(fsProvider.deleteIfExists(path)).willThrow(new FileSystemException(filename));
+        given(fsProvider.readAttributes(path, BasicFileAttributes.class)).willReturn(attributes);
+        given(attributes.isDirectory()).willReturn(false);
 
         PathRemover remover = PathRemover.newSimpleRemover();
         try {
@@ -79,7 +97,7 @@ public class PathRemoverTest {
             fail("Should not have been deleted: " + file);
         } catch (IOException e) {
             assertThat(calcExceptionHierarchy(e), hasItem(FileSystemException.class));
-            assertThat(e.getMessage(), containsString(file.getPath()));
+            assertThat(e.getMessage(), containsString(filename));
         }
 
     }
@@ -88,6 +106,11 @@ public class PathRemoverTest {
         List<Class<?>> hierarchy = new ArrayList<>();
         for (; t != null; t = t.getCause()) {
             hierarchy.add(t.getClass());
+            // with a composite exception, we might be hiding some other causes
+            if (t instanceof CompositeIOException) {
+                CompositeIOException e = (CompositeIOException) t;
+                e.getExceptions().forEach(ex -> hierarchy.addAll(calcExceptionHierarchy(ex)));
+            }
         }
         return hierarchy;
     }
