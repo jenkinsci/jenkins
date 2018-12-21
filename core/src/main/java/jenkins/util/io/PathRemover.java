@@ -39,7 +39,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -204,8 +203,8 @@ public class PathRemover {
     }
 
     private static List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
-        if (!Files.isDirectory(path)) return Collections.emptyList();
         List<IOException> accumulatedErrors = new ArrayList<>();
+        if (!Files.isDirectory(path)) return accumulatedErrors;
         try (DirectoryStream<Path> children = Files.newDirectoryStream(path)) {
             for (Path child : children) {
                 accumulatedErrors.addAll(tryRemoveRecursive(child));
