@@ -60,7 +60,6 @@ import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
@@ -284,7 +283,9 @@ public class Util {
      * limitations under the License.
      */
     /**
-     * Checks if the given file represents a symlink.
+     * Checks if the given file represents a symlink. Unlike {@link Files#isSymbolicLink(Path)}, this method also
+     * considers <a href="https://en.wikipedia.org/wiki/NTFS_junction_point">NTFS junction points</a> as symbolic
+     * links.
      */
     public static boolean isSymlink(@Nonnull File file) throws IOException {
         return isSymlink(fileToPath(file));
@@ -292,28 +293,16 @@ public class Util {
 
     @Restricted(NoExternalUse.class)
     public static boolean isSymlink(@Nonnull Path path) {
-        if (Functions.isWindows()) {
-            /*
-             *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
-             *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
-             *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
-             *  you have to go through BasicFileAttributes and do the following check:
-             *     isSymbolicLink() || isOther()
-             *  The isOther() call will include Windows reparse points, of which a directory junction is.
-             *  It also includes includes devices, but reading the attributes of a device with NIO fails
-             *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
-             *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
-             *  calling readAttributes.
-             */
-            try {
-                return path.compareTo(path.toRealPath()) != 0;
-            } catch (NoSuchFileException ignored) {
-                return false;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        } else {
-            return Files.isSymbolicLink(path);
+        if (Files.isSymbolicLink(path)) return true;
+        /*
+        In Windows, a directory junction is not considered a symbolic link despite being nearly the same feature.
+        To avoid relying directly on Windows-specific filesystem API calls, we can instead determine if a path is
+        logically a symbolic link by comparing its absolute path to its real path.
+         */
+        try {
+            return path.toAbsolutePath().compareTo(path.toRealPath()) != 0;
+        } catch (IOException ignored) {
+            return false;
         }
     }
 
