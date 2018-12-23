@@ -290,6 +290,43 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.loggedInUsernames.get(0).equals("bob"));
     }
 
+    @Issue("JENKINS-55307")
+    @Test
+    public void selfRegistrationTriggerUserCreation() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        j.jenkins.setCrumbIssuer(null);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        selfRegistration("bob");
+        selfRegistration("charlie");
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("bob"));
+        assertTrue(spySecurityListener.createdUsers.get(1).equals("charlie"));
+    }
+
+    @Issue("JENKINS-55307")
+    @Test
+    public void userCreationFromRealm() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        User u1 = securityRealm.createAccount("alice", "alicePassword");
+        u1.setFullName("Alice User");
+        u1.save();
+
+        User u2 = securityRealm.createAccount("debbie", "debbiePassword");
+        u2.setFullName("Debbie User");
+        u2.save();
+
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("alice"));
+        assertTrue(spySecurityListener.createdUsers.get(1).equals("debbie"));
+    }
+
     private void createFirstAccount(String login) throws Exception {
         assertNull(User.getById(login, false));
 
@@ -366,11 +403,15 @@ public class HudsonPrivateSecurityRealmTest {
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
         private List<String> loggedInUsernames = new ArrayList<>();
+        private List<String> createdUsers = new ArrayList<String>();
 
         @Override
         protected void loggedIn(@Nonnull String username) {
             loggedInUsernames.add(username);
         }
+
+        @Override
+        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")
