@@ -33,6 +33,7 @@ public class InstallUncaughtExceptionHandler {
                 }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
+                    getInfoJava11(e);
                     WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
@@ -46,10 +47,10 @@ public class InstallUncaughtExceptionHandler {
         }
         catch (SecurityException ex) {
             LOGGER.log(Level.SEVERE,
-                                                       "Failed to set the default UncaughtExceptionHandler.  " + 
+                                                       "Failed to set the default UncaughtExceptionHandler.  " +
                                                        "If any threads die due to unhandled coding errors then there will be no logging of this information.  " +
-                                                       "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " + 
-                                                       "It is highly recommended that you consult the documentation that comes with you servlet container on how to allow the " + 
+                                                       "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " +
+                                                       "It is highly recommended that you consult the documentation that comes with you servlet container on how to allow the " +
                                                        "`setDefaultUncaughtExceptionHandler` permission and enable it.", ex);
         }
     }
@@ -74,8 +75,28 @@ public class InstallUncaughtExceptionHandler {
                        "A thread (" + t.getName() + '/' + t.getId()
                                      + ") died unexpectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicative of a bug in the code.",
                        ex);
+
+            getInfoJava11(ex);
         }
 
+    }
+
+    private static void getInfoJava11(Throwable e){
+        if (e.getCause() != null && e.getCause() instanceof ClassNotFoundException) {
+            String notFoundClass = e.getCause().getMessage();
+            if (notFoundClass != null) {
+                String[] removedClasses = new String[] {"java.sql.", "javax.activation.", "javax.annotation.",
+                        "javax.jws.", "javax.lang.model.", "javax.rmi.", "javax.script.", "javax.smartcardio.",
+                        "javax.sql.", "javax.tools.", "javax.transaction.xa.", "javax.xml.bind.", "javax.xml.crypto.",
+                        "javax.xml.soap.", "javax.xml.ws."};
+                if (Stream.of(removedClasses).anyMatch(clazz -> notFoundClass.startsWith(clazz))) {
+                    LOGGER.log(Level.SEVERE, "Class removed on Java 11 not found: " + notFoundClass, e);
+                } else {
+                    LOGGER.log(Level.INFO, "Class NOT removed on Java 11 not found: " + notFoundClass, e);
+                }
+
+            }
+        }
     }
 
     private InstallUncaughtExceptionHandler() {}
