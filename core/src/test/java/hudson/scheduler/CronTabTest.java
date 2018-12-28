@@ -308,7 +308,7 @@ public class CronTabTest {
         CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
         List<Integer> times = new ArrayList<Integer>();
         for (int i = 0; i < 60; i++) {
-            GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("Australia/Sydney"));
+            GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             calendar.set(2013, Calendar.APRIL, 3, 11, i, 0);
             if (tabs.check(calendar)) {
                 times.add(i);
