@@ -176,7 +176,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @Override
     protected Object getLoadLock() {
-        return this;
+        return getDescriptorExtensionList().getLoadLock();
     }
 
     /**
