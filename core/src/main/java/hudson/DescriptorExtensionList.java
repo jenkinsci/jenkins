@@ -161,13 +161,13 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     @Override
     public boolean add(D d) {
         boolean r = super.add(d);
-        hudson.getExtensionList(Descriptor.class).add(d);
+        getDescriptorExtensionList().add(d);
         return r;
     }
 
     @Override
     public boolean remove(Object o) {
-        hudson.getExtensionList(Descriptor.class).remove(o);
+        getDescriptorExtensionList().remove(o);
         return super.remove(o);
     }
 
@@ -189,7 +189,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
             LOGGER.log(Level.WARNING, "Cannot load extension components, because Jenkins instance has not been assigned yet");
             return Collections.emptyList();
         }
-        return _load(jenkins.getExtensionList(Descriptor.class).getComponents());
+        return _load(getDescriptorExtensionList().getComponents());
     }
 
     @Override
@@ -209,6 +209,10 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
             }
         }
         return r;
+    }
+
+    private ExtensionList<Descriptor> getDescriptorExtensionList() {
+        return jenkins.getExtensionList(Descriptor.class);
     }
 
     /**
