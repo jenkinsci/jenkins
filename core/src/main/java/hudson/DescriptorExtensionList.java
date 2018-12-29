@@ -212,7 +212,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     private ExtensionList<Descriptor> getDescriptorExtensionList() {
-        return jenkins.getExtensionList(Descriptor.class);
+        return ExtensionList.lookup(Descriptor.class);
     }
 
     /**
