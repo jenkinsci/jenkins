@@ -43,6 +43,8 @@
 
 use strict;
 use File::Find;
+# to install the module: cpan install Config::Properties
+use Config::Properties;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter) = (undef, undef, "./", undef, undef, undef, undef, undef, undef);
 my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
@@ -192,8 +194,7 @@ sub processFile {
       foreach (keys %keys) {
          if (!$okeys{$_}) {
             if (!defined($okeys{$_})) {
-               print F "# $ekeys{$_}\n" if ($ekeys{$_} && $ekeys{$_} ne "");
-               print F "$_=\n";
+               print F "$_=";
                if (defined($cache{$_})) {
                   print F $cache{$_}."\n";
                } else {
@@ -276,23 +277,13 @@ sub loadJellyFile {
 
 # Fill a hash with key/value pairs from a .properties file
 sub loadPropertiesFile {
-   my $file = shift;
-   my %ret;
-   if (open(F, "$file")) {
-      my ($cont, $key, $val) = (0, undef, undef);
-      while(<F>){
-         s/[\r\n]+//;
-         $ret{$key} .= " \n# $1" if ($cont && /\s*(.*)[\\\s]*$/);
-         if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
-           ($key, $val) = (trim($1), trim($2));
-           $ret{$key}=$val;
-         }
-         $cont = (/\\\s*$/) ? 1 : 0;
-      }
-      close(F);
-      $ret{$key} .= " \n# $1" if ($cont && /\s*(.*)[\\\s]*$/);
-   }
-   return %ret;
+   my $filename = shift;
+   my $properties = Config::Properties->new();
+
+   open my $file, '<', $filename or die "unable to open property file: ". $filename;
+   $properties->load($file);
+   close(F);
+   return $properties->properties;
 }
 
 # remove unused keys from a file
