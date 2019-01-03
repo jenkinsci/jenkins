@@ -42,6 +42,7 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import jenkins.security.SecurityListener;
+import jenkins.security.seed.UserSeedProperty;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -693,6 +694,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     if(data.startsWith(prefix))
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                 }
+
+                User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
+                // the UserSeedProperty is not touched by the configure page
+                UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
+                if (userSeedProperty != null) {
+                    userSeedProperty.renewSeed();
+                }
+
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
