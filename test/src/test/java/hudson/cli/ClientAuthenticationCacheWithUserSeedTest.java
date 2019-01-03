@@ -35,6 +35,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -49,6 +50,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -68,6 +70,18 @@ public class ClientAuthenticationCacheWithUserSeedTest {
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(ClientAuthenticationCache.class, Level.FINER);
+
+    @Before
+    public void enableCLIProtocol2() {
+        // especially required when the CLI2-connect is disabled by default
+        Set<String> protocols = r.jenkins.getAgentProtocols();
+        protocols.add(CliProtocol.all().stream()
+                .filter(prot -> prot instanceof CliProtocol2)
+                .findFirst().orElseThrow(() -> new AssertionError("CLI2-connect must be present"))
+                .getName());
+        
+        r.jenkins.setAgentProtocols(protocols);
+    }
 
     @Test
     @Issue("SECURITY-1247")
