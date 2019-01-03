@@ -19,7 +19,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -272,6 +274,19 @@ public class SetupWizard extends PageDecorator {
                 Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
                 a = securityRealm.getSecurityComponents().manager.authenticate(a);
                 SecurityContextHolder.getContext().setAuthentication(a);
+
+                HttpSession session = req.getSession(false);
+                if (session != null) {
+                    // avoid session fixation
+                    session.invalidate();
+                }
+                HttpSession newSession = req.getSession(true);
+
+                UserSeedProperty userSeed = u.getProperty(UserSeedProperty.class);
+                String sessionSeed = userSeed.getSeed();
+                // include the new seed
+                newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+
                 CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
                 JSONObject data = new JSONObject();
                 if (crumbIssuer != null) {
