@@ -94,6 +94,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -1729,6 +1731,19 @@ public class Util {
         return Math.max(0, daysBetween(date, new Date()));
     }
     
+    /**
+     * Find the specific ancestor, or throw an exception.
+     * Useful for an ancestor we know is inside the URL to ease readability
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull <T> T getNearestAncestorOfTypeOrThrow(@Nonnull StaplerRequest request, @Nonnull Class<T> clazz) {
+        T t = request.findAncestorObject(clazz);
+        if (t == null) {
+            throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
+        }
+        return t;
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
