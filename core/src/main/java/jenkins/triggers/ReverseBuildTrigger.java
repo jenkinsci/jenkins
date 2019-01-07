@@ -251,7 +251,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
                 for (Job<?, ?> downstream : Jenkins.getInstance().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
@@ -312,7 +312,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     public static class ItemListenerImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 for (Job<?, ?> p : Jenkins.getInstance().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {

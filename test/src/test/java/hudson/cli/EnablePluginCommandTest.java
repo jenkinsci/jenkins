@@ -38,6 +38,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 public class EnablePluginCommandTest {
 
@@ -119,6 +120,7 @@ public class EnablePluginCommandTest {
         assertJenkinsNotInQuietMode();
     }
 
+    @Ignore("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-52950")
     public void enablePluginWithRestart() throws IOException {

@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -325,16 +326,14 @@ public class Search implements StaplerProxy {
     static final class TokenList {
         private final String[] tokens;
 
-        private final static String[] EMPTY = new String[0];
-
         public TokenList(String tokenList) {
-            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : EMPTY;
+            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         public int length() { return tokens.length; }
 
         /**
-         * Returns {@link List} such that its <tt>get(end)</tt>
+         * Returns {@link List} such that its {@code get(end)}
          * returns the concatenation of [token_start,...,token_end]
          * (both end inclusive.)
          */

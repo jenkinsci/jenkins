@@ -38,6 +38,11 @@ import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
+import jenkins.security.stapler.DoActionFilter;
+import jenkins.security.stapler.StaplerFilteredActionListener;
+import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
+import jenkins.security.stapler.TypedFilter;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -797,7 +802,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Secret key generated once and used for a long time, beyond
-     * container start/stop. Persisted outside <tt>config.xml</tt> to avoid
+     * container start/stop. Persisted outside {@code config.xml} to avoid
      * accidental exposure.
      */
     private transient final String secretKey;
@@ -893,8 +898,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (pluginManager==null)
                 pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
+            WebApp webApp = WebApp.get(servletContext);
             // JSON binding needs to be able to see all the classes from all the plugins
-            WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
+            webApp.setClassLoader(pluginManager.uberClassLoader);
+            webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
+
+            TypedFilter typedFilter = new TypedFilter();
+            webApp.setFilterForGetMethods(typedFilter);
+            webApp.setFilterForFields(typedFilter);
+            webApp.setFilterForDoActions(new DoActionFilter());
+
+            StaplerFilteredActionListener actionListener = new StaplerFilteredActionListener();
+            webApp.setFilteredGetterTriggerListener(actionListener);
+            webApp.setFilteredDoActionTriggerListener(actionListener);
+            webApp.setFilteredFieldTriggerListener(actionListener);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
@@ -1298,6 +1315,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return systemMessage;
     }
 
+    @Nonnull
     public PluginManager getPluginManager() {
         return pluginManager;
     }
@@ -1508,6 +1526,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      If the descriptor is missing.
      * @since 1.326
      */
+    @Nonnull
     public Descriptor getDescriptorOrDie(Class<? extends Describable> type) {
         Descriptor d = getDescriptor(type);
         if (d==null)
@@ -1557,7 +1576,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the plugin object from its short name.
-     * This allows URL <tt>hudson/plugin/ID</tt> to be served by the views
+     * This allows URL {@code hudson/plugin/ID} to be served by the views
      * of the plugin class.
      * @param shortName Short name of the plugin
      * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
@@ -1644,6 +1663,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
+    @StaplerDispatchable
     public FederatedLoginService getFederatedLoginService(String name) {
         for (FederatedLoginService fls : FederatedLoginService.all()) {
             if (fls.getUrlName().equals(name))
@@ -2569,6 +2589,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.349
      */
+    @StaplerDispatchable
     public ExtensionList getExtensionList(String extensionType) throws ClassNotFoundException {
         return getExtensionList(pluginManager.uberClassLoader.loadClass(extensionType));
     }
@@ -2938,6 +2959,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     // if no finger print matches, display "not found page".
+    @StaplerDispatchable
     public Object getFingerprint( String md5sum ) throws IOException {
         Fingerprint r = fingerprintMap.get(md5sum);
         if(r==null)     return new NoFingerprintMatch(md5sum);
@@ -4086,6 +4108,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * End point that intentionally throws an exception to test the error behaviour.
      * @since 1.467
      */
+    @StaplerDispatchable
     public void doException() {
         throw new RuntimeException();
     }
@@ -4179,12 +4202,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return HttpResponses.redirectToDot();
     }
 
+    private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
+        if (Main.isUnitTest) {
+            throw new RestartNotSupportedException("Restarting the master JVM is not supported in JenkinsRule-based tests");
+        }
+        Lifecycle lifecycle = Lifecycle.get();
+        lifecycle.verifyRestartable();
+        return lifecycle;
+    }
+
     /**
      * Performs a restart.
      */
     public void restart() throws RestartNotSupportedException {
-        final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.verifyRestartable(); // verify that Jenkins is restartable
+        final Lifecycle lifecycle = restartableLifecycle();
         servletContext.setAttribute("app", new HudsonIsRestarting());
 
         new Thread("restart thread") {
@@ -4212,8 +4243,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.332
      */
     public void safeRestart() throws RestartNotSupportedException {
-        final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.verifyRestartable(); // verify that Jenkins is restartable
+        final Lifecycle lifecycle = restartableLifecycle();
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
 
@@ -4280,8 +4310,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
-        LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
@@ -4290,10 +4318,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 
-        cleanUp();
-        System.exit(0);
-    }
+        new Thread("exit thread") {
+            @Override
+            public void run() {
+                try {
+                    ACL.impersonate(ACL.SYSTEM);
+                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
+                            getAuthentication().getName(), req != null ? req.getRemoteAddr() : "???"));
 
+                    cleanUp();
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to shut down Jenkins", e);
+                }
+            }
+        }.start();
+    }
 
     /**
      * Shutdown the system safely.
@@ -4618,7 +4658,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
     
     /**
-     * Exposes the current user to <tt>/me</tt> URL.
+     * Exposes the current user to {@code /me} URL.
      */
     public User getMe() {
         User u = User.current();
@@ -4634,6 +4674,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Plugins who wish to contribute boxes on the side panel can add widgets
      * by {@code getWidgets().add(new MyWidget())} from {@link Plugin#start()}.
      */
+    @StaplerDispatchable // some plugins use this to add views to widgets
     public List<Widget> getWidgets() {
         return widgets;
     }
@@ -5030,7 +5071,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (idx > 0) {
                     return new VersionNumber(versionString.substring(0,idx));
                 }
-            } catch (NumberFormatException _) {
+            } catch (NumberFormatException ignored) {
                 // fall through
             }
 

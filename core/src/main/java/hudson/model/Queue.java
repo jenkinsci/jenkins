@@ -69,6 +69,7 @@ import java.nio.file.Files;
 
 import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -1897,6 +1898,18 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
+         * Returns task-specific key which is used by the {@link LoadBalancer} to choose one particular executor
+         * amongst all the free executors on all possibly suitable nodes.
+         * NOTE: To be able to re-use the same node during the next run this key should not change from one run to
+         * another. You probably want to compute that key based on the job's name.
+         * <p>
+         * @return by default: {@link #getFullDisplayName()}
+         *
+         * @see hudson.model.LoadBalancer
+         */
+        default String getAffinityKey() { return getFullDisplayName(); }
+
+        /**
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
          * <p>
@@ -2004,9 +2017,10 @@ public class Queue extends ResourceController implements Saveable {
      *
      * <h2>Views</h2>
      * <p>
-     * Implementation must have <tt>executorCell.jelly</tt>, which is
+     * Implementation must have {@code executorCell.jelly}, which is
      * used to render the HTML that indicates this executable is executing.
      */
+    @StaplerAccessibleType
     public interface Executable extends Runnable {
         /**
          * Task from which this executable was created.
@@ -3036,7 +3050,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Schedule <tt>Queue.save()</tt> call for near future once items change. Ignore all changes until the time the save
+     * Schedule {@code Queue.save()} call for near future once items change. Ignore all changes until the time the save
      * takes place.
      *
      * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not

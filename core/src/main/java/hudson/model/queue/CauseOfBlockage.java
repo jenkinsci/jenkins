@@ -19,7 +19,7 @@ import org.jvnet.localizer.Localizable;
  * has expanded beyond queues.
  *
  * <h2>View</h2>
- * <tt>summary.jelly</tt> should do one-line HTML rendering to be used showing the cause
+ * {@code summary.jelly} should do one-line HTML rendering to be used showing the cause
  * to the user. By default it simply renders {@link #getShortDescription()} text.
  *
  * <p>

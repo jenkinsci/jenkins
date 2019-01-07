@@ -160,7 +160,7 @@ public class FingerprintTest {
         setJobPermissionsOnce(project1, "user1", Item.READ, Item.DISCOVER);
         setJobPermissionsOnce(project2, "user2", Item.READ, Item.DISCOVER);
 
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             Fingerprint.BuildPtr original = fp.getOriginal();
             assertThat("user1 should be able to see the origin", fp.getOriginal(), notNullValue());
             assertEquals("user1 should be able to see the origin's project name", project1.getName(), original.getName());
@@ -169,13 +169,13 @@ public class FingerprintTest {
             assertEquals("Only project1 should be visible to user1", project1.getFullName(), fp._getUsages().get(0).name);
         }
 
-        try (ACLContext _ = ACL.as(user2)) {
+        try (ACLContext acl = ACL.as(user2)) {
             assertThat("user2 should be unable to see the origin", fp.getOriginal(), nullValue());
             assertEquals("Only one usage should be visible to user2", 1, fp._getUsages().size());
             assertEquals("Only project2 should be visible to user2", project2.getFullName(), fp._getUsages().get(0).name);
         }
 
-        try (ACLContext _ = ACL.as(user3)) {
+        try (ACLContext acl = ACL.as(user3)) {
             Fingerprint.BuildPtr original = fp.getOriginal();
             assertThat("user3 should be unable to see the origin", fp.getOriginal(), nullValue());
             assertEquals("All usages should be invisible for user3", 0, fp._getUsages().size());
@@ -193,7 +193,7 @@ public class FingerprintTest {
         User user1 = User.get("user1");   
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
 
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             Fingerprint.BuildPtr original = fingerprint.getOriginal();
             assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
             assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
@@ -216,7 +216,7 @@ public class FingerprintTest {
         folder.setPermissions("user1", Item.READ);
         
         // Ensure we can read the original from user account
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             assertTrue("Test framework issue: User1 should be able to read the folder", folder.hasPermission(Item.READ));
 
             Fingerprint.BuildPtr original = fingerprint.getOriginal();
@@ -241,7 +241,7 @@ public class FingerprintTest {
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
         
         // Ensure we can read the original from user account
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             assertFalse("Test framework issue: User1 should be unable to read the folder", folder.hasPermission(Item.READ));
             assertThat("user1 should be unable to see the origin", fingerprint.getOriginal(), nullValue());
             assertEquals("No jobs should be visible to user1", 0, fingerprint._getUsages().size());
@@ -266,7 +266,7 @@ public class FingerprintTest {
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.READ, Item.DISCOVER);
         project.delete();
 
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             assertThat("user1 should be unable to see the origin", fp.getOriginal(), nullValue());
             assertEquals("No jobs should be visible to user1", 0, fp._getUsages().size());
         }
@@ -284,7 +284,7 @@ public class FingerprintTest {
         setupProjectMatrixAuthStrategy(Jenkins.ADMINISTER);
         project.delete();
 
-        try (ACLContext _ = ACL.as(user1)) {
+        try (ACLContext acl = ACL.as(user1)) {
             Fingerprint.BuildPtr original = fingerprint.getOriginal();
             assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
             assertThat("Job has been deleted, so Job reference should return null", fingerprint.getOriginal().getJob(), nullValue());

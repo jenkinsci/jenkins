@@ -14,6 +14,9 @@ out
 .project
 build
 
+# VSCode workspace file
+*.code-workspace
+
 # vim
 *~
 *.swp
