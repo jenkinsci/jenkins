@@ -508,12 +508,33 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
-        if (password.startsWith(JBCRYPT_HEADER)) {
-            user.addProperty(Details.fromHashedPassword(password));
-        } else {
-            user.addProperty(Details.fromPlainPassword(password));
-        }
+        user.addProperty(Details.fromPlainPassword(password));
         return user;
+    }
+
+    /**
+     * Creates a new user account by registering a JBCrypt Hashed password with the user.
+     *
+     * @param userName The user's name
+     * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
+     */
+    public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
+        if (!hashedPassword.startsWith(JBCRYPT_HEADER)) {
+            throw new IllegalArgumentException("Hashed passwords must start with: "+ JBCRYPT_HEADER);
+        }
+        User user = User.getById(userName, true);
+        user.addProperty(Details.fromHashedPassword(hashedPassword));
+        return user;
+    }
+
+    /**
+     * Returns true if the supplied password starts with a prefix indicating it is already hashed.
+     */
+    public static boolean isPasswordHashed(String password) {
+        if (password == null) {
+            return false;
+        }
+        return password.startsWith(JBCRYPT_HEADER);
     }
 
     /**

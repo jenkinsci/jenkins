@@ -459,24 +459,30 @@ public class HudsonPrivateSecurityRealmTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
-        securityRealm.createAccount("user_unhashed", "password");
-        securityRealm.createAccount("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
+        securityRealm.createAccountWithHashedPassword("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
 
-        WebClient wc1 = j.createWebClient();
-        wc1.login("user_unhashed", "password");
-
-        WebClient wc2 = j.createWebClient();
-        wc2.login("user_hashed", "password");
+        WebClient wc = j.createWebClient();
+        wc.login("user_hashed", "password");
 
 
-        // Check both users can use their token
-        XmlPage w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
-        assertThat(w1, hasXPath("//name", is("user_unhashed")));
-
-        XmlPage w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
+        XmlPage w2 = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user_hashed")));
     }
-    
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createAccountWithHashedPasswordRequiresPrefix() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt()));
+    }
+
+    @Test
+    public void hashedPasswordTest() {
+        assertTrue("password is hashed", HudsonPrivateSecurityRealm.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
+        assertFalse("password is not hashed", HudsonPrivateSecurityRealm.isPasswordHashed("password"));
+    }
+
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
