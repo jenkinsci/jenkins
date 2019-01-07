@@ -973,7 +973,7 @@ public class UpdateSite {
          * @since TODO
          */
         @Exported
-        public final String requiredJava;
+        public final String minimumJavaVersion;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
@@ -1000,6 +1000,7 @@ public class UpdateSite {
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.requiredCore = Util.intern(get(o,"requiredCore"));
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
@@ -1134,7 +1135,7 @@ public class UpdateSite {
          */
         public boolean isForNewerJava() {
             try {
-                return requiredJava != null && new VersionNumber(requiredJava).isNewerThan(
+                return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
                         new VersionNumber(System.getProperty("java.specification.version")));
             } catch (NumberFormatException nfe) {
                 return false; // plugin doesn't declare a minimum Java version
@@ -1162,15 +1163,16 @@ public class UpdateSite {
          *
          * @since TODO
          */
-        public VersionNumber getNeededDependenciesRequiredJava() {
+        @CheckForNull
+        public VersionNumber getNeededDependenciesMinimumJavaVersion() {
             VersionNumber versionNumber = null;
             try {
-                versionNumber = requiredJava == null ? null : new VersionNumber(requiredJava);
+                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
             } catch (NumberFormatException nfe) {
                 // unable to parse version
             }
             for (Plugin p: getNeededDependencies()) {
-                VersionNumber v = p.getNeededDependenciesRequiredJava();
+                VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
                 if (v == null) {
                     continue;
                 }

@@ -496,13 +496,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Returns the required Java version of this plugin.
-     * @return the required Java version of this plugin.
+     * Returns the minimumJava version of this plugin.
+     * @return the minimum Java version of this plugin.
      *
      * @since TODO
      */
     @Exported
-    public @CheckForNull String getRequiredJavaVersion() {
+    public @CheckForNull String getMinimumJavaVersion() {
         return manifest.getMainAttributes().getValue("Minimum-Java-Version");
     }
 
@@ -757,12 +757,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 }
             }
 
-            String requiredJavaVersion = getRequiredJavaVersion();
-            if (requiredJavaVersion != null) {
+            String minimumJavaVersion = getMinimumJavaVersion();
+            if (minimumJavaVersion != null) {
                 // TODO replace with calls to Runtime.version() once we're on Java 9+
                 VersionNumber actualVersion = new VersionNumber(System.getProperty("java.specification.version"));
-                if (actualVersion.isOlderThan(new VersionNumber(requiredJavaVersion))) {
-                    versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), requiredJavaVersion), actualVersion.toString(), requiredJavaVersion);
+                if (actualVersion.isOlderThan(new VersionNumber(minimumJavaVersion))) {
+                    versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), minimumJavaVersion), actualVersion.toString(), minimumJavaVersion);
                 }
             }
         }
