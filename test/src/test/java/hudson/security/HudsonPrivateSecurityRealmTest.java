@@ -479,8 +479,8 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     public void hashedPasswordTest() {
-        assertTrue("password is hashed", HudsonPrivateSecurityRealm.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
-        assertFalse("password is not hashed", HudsonPrivateSecurityRealm.isPasswordHashed("password"));
+        assertTrue("password is hashed", HudsonPrivateSecurityRealm.PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
+        assertFalse("password is not hashed", HudsonPrivateSecurityRealm.PASSWORD_ENCODER.isPasswordHashed("password"));
     }
 
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {

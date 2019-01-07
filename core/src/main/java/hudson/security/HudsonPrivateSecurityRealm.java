@@ -105,11 +105,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     private static final String DEFAULT_ID_REGEX = "^[\\w-]+$";
 
     /**
-     * Magic header used to detect if a password is bcrypt hashed.
-     */
-    private static final String JBCRYPT_HEADER = "#jbcrypt:";
-
-    /**
      * If true, sign up is not allowed.
      * <p>
      * This is a negative switch so that the default value 'false' remains compatible with older installations.
@@ -519,23 +514,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
      */
     public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
-        if (!hashedPassword.startsWith(JBCRYPT_HEADER)) {
-            throw new IllegalArgumentException("Hashed passwords must start with: "+ JBCRYPT_HEADER);
+        if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
+            throw new IllegalArgumentException("this method should only be called with a pre-hashed password");
         }
         User user = User.getById(userName, true);
         user.addProperty(Details.fromHashedPassword(hashedPassword));
         return user;
     }
 
-    /**
-     * Returns true if the supplied password starts with a prefix indicating it is already hashed.
-     */
-    public static boolean isPasswordHashed(String password) {
-        if (password == null) {
-            return false;
-        }
-        return password.startsWith(JBCRYPT_HEADER);
-    }
 
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
@@ -843,6 +829,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
      */
     public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
+        /**
+         * Magic header used to detect if a password is bcrypt hashed.
+         */
+        private static final String JBCRYPT_HEADER = "#jbcrypt:";
+
         /*
             CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
             to designate JBCRYPT-format hash.
@@ -854,10 +845,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
-            if (encPass.startsWith(JBCRYPT_HEADER))
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()),rawPass,salt);
-            else
-                return CLASSIC.isPasswordValid(encPass,rawPass,salt);
+            if (isPasswordHashed(encPass)) {
+                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()), rawPass, salt);
+            } else {
+                return CLASSIC.isPasswordValid(encPass, rawPass, salt);
+            }
+        }
+
+        /**
+         * Returns true if the supplied password starts with a prefix indicating it is already hashed.
+         */
+        public boolean isPasswordHashed(String password) {
+            if (password == null) {
+                return false;
+            }
+            return password.startsWith(JBCRYPT_HEADER);
         }
 
     };
