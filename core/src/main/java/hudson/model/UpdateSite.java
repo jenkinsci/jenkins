@@ -1169,7 +1169,8 @@ public class UpdateSite {
             try {
                 versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
             } catch (NumberFormatException nfe) {
-                // unable to parse version
+                LOGGER.log(Level.WARNING, "'minimumJavaVersion' was specified for plugin '{0}' but unparseable (received {1})",
+                           new String[]{this.name, minimumJavaVersion});
             }
             for (Plugin p: getNeededDependencies()) {
                 VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
