@@ -808,7 +808,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return buf.toString();
         }
     };
-    
+
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
