@@ -808,11 +808,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return buf.toString();
         }
     };
-
+    
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
-    private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
+    private static class JBCryptEncoder implements PasswordEncoder {
         private final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2[ayb]\\$.{56}$");
 
         public String encodePassword(String rawPass, Object obj) throws DataAccessException {
@@ -831,14 +831,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public boolean isHashValid(String hash) {
             return BCRYPT_PATTERN.matcher(hash).matches();
         }
+    }
 
-    };
+    /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
     /**
      * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
      * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
      */
-    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
+    /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
         /**
          * Magic header used to detect if a password is bcrypt hashed.
          */
@@ -873,6 +874,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
     };
+    
+    public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
