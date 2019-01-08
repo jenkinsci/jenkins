@@ -82,6 +82,8 @@ import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -103,7 +105,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * in Java {@code \w} is equivalent to {@code [A-Za-z0-9_]} (take care of "_")
      */
     private static final String DEFAULT_ID_REGEX = "^[\\w-]+$";
-
+    
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -497,9 +499,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /**
      * Creates a new user account by registering a password to the user.
-     *
-     * Supports bcrypt hashed passwords if the password begins with the characters
-     * <code>#jbcrypt:</code>
      */
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
@@ -810,11 +809,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     };
 
-
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
     private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
+        private final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2[ayb]\\$.{56}$");
+
         public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return BCrypt.hashpw(rawPass,BCrypt.gensalt());
         }
@@ -822,6 +822,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             return BCrypt.checkpw(rawPass,encPass);
         }
+
+        /**
+         * Returns true if the supplied hash looks like a bcrypt encoded hash value, based off of the
+         * implementation defined in jBCrypt and: https://en.wikipedia.org/wiki/Bcrypt.
+         *
+         */
+        public boolean isHashValid(String hash) {
+            return BCRYPT_PATTERN.matcher(hash).matches();
+        }
+
     };
 
     /**
@@ -859,7 +869,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             if (password == null) {
                 return false;
             }
-            return password.startsWith(JBCRYPT_HEADER);
+            return password.startsWith(JBCRYPT_HEADER) && JBCRYPT_ENCODER.isHashValid(password.substring(JBCRYPT_HEADER.length()));
         }
 
     };
