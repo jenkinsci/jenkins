@@ -1138,8 +1138,7 @@ public class UpdateSite {
                 return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
                         new VersionNumber(System.getProperty("java.specification.version")));
             } catch (NumberFormatException nfe) {
-                logBadMinJavaVersion("'minimumJavaVersion' was specified for plugin ''{0}'' but unparseable (received {1})", this.name,
-                                     minimumJavaVersion);
+                logBadMinJavaVersion(minimumJavaVersion);
                 return false; // treat this as undeclared minimum Java version
             }
         }
@@ -1171,8 +1170,7 @@ public class UpdateSite {
             try {
                 versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
             } catch (NumberFormatException nfe) {
-                logBadMinJavaVersion("'minimumJavaVersion' was specified for plugin ''{0}'' but unparseable (received {1})", this.name,
-                                     minimumJavaVersion);
+                logBadMinJavaVersion(minimumJavaVersion);
             }
             for (Plugin p: getNeededDependencies()) {
                 VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
@@ -1186,8 +1184,9 @@ public class UpdateSite {
             return versionNumber;
         }
 
-        private void logBadMinJavaVersion(String s, String pluginName, String minimumJavaVersion) {
-            LOGGER.log(Level.WARNING, s, new String[]{pluginName, minimumJavaVersion});
+        private void logBadMinJavaVersion(String minimumJavaVersion) {
+            LOGGER.log(Level.WARNING, "'minimumJavaVersion' was specified for plugin ''{0}'' but unparseable (received {1})",
+                       new String[]{this.name, minimumJavaVersion});
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
