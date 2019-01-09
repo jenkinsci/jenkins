@@ -1128,9 +1128,6 @@ public class UpdateSite {
 
         /**
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         *
-         * @return true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         *
          * @since TODO
          */
         public boolean isForNewerJava() {
@@ -1159,9 +1156,6 @@ public class UpdateSite {
 
         /**
          * Returns the minimum Java version needed to use the plugin and all its dependencies.
-         *
-         * @return the minimum Java version needed to use the plugin and all its dependencies.
-         *
          * @since TODO
          */
         @CheckForNull

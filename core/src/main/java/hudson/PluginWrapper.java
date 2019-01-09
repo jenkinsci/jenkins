@@ -497,7 +497,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns the minimum Java version of this plugin.
-     * @return the minimum Java version of this plugin.
      *
      * @since TODO
      */
