@@ -1157,6 +1157,7 @@ public class UpdateSite {
         /**
          * Returns the minimum Java version needed to use the plugin and all its dependencies.
          * @since TODO
+         * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
          */
         @CheckForNull
         public VersionNumber getNeededDependenciesMinimumJavaVersion() {
