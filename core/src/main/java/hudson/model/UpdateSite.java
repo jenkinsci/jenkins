@@ -70,6 +70,7 @@ import jenkins.model.DownloadSettings;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -1132,8 +1133,9 @@ public class UpdateSite {
          */
         public boolean isForNewerJava() {
             try {
+                final VersionNumber currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
                 return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
-                        new VersionNumber(System.getProperty("java.specification.version")));
+                        currentRuntimeJavaVersion);
             } catch (NumberFormatException nfe) {
                 logBadMinJavaVersion();
                 return false; // treat this as undeclared minimum Java version

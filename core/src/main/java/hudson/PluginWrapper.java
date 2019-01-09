@@ -35,6 +35,7 @@ import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
+import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
@@ -762,8 +763,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
             String minimumJavaVersion = getMinimumJavaVersion();
             if (minimumJavaVersion != null) {
-                // TODO replace with calls to Runtime.version() once we're on Java 9+
-                VersionNumber actualVersion = new VersionNumber(System.getProperty("java.specification.version"));
+                VersionNumber actualVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
                 if (actualVersion.isOlderThan(new VersionNumber(minimumJavaVersion))) {
                     versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), minimumJavaVersion), actualVersion.toString(), minimumJavaVersion);
                 }
