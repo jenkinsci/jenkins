@@ -24,6 +24,7 @@
 package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -42,6 +43,7 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import jenkins.security.SecurityListener;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -82,6 +84,7 @@ import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kohsuke.accmod.Restricted;
@@ -813,7 +816,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * {@link PasswordEncoder} that uses jBCrypt.
      */
     private static class JBCryptEncoder implements PasswordEncoder {
-        private final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2[ayb]\\$.{56}$");
+        // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
+        // and for 18, it's "only" 20s
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int MAXIMUM_BCRYPT_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumBCryptLogRound", 18);
+
+        private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
         public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return BCrypt.hashpw(rawPass,BCrypt.gensalt());
@@ -829,7 +838,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          *
          */
         public boolean isHashValid(String hash) {
-            return BCRYPT_PATTERN.matcher(hash).matches();
+            Matcher matcher = BCRYPT_PATTERN.matcher(hash);
+            if (matcher.matches()) {
+                String logNumOfRound = matcher.group(1);
+                // no number format exception due to the expression
+                int logNumOfRoundInt = Integer.parseInt(logNumOfRound);
+                if (logNumOfRoundInt > 0 && logNumOfRoundInt <= MAXIMUM_BCRYPT_LOG_ROUND) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
