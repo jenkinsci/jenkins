@@ -153,6 +153,7 @@ public class UpdateSiteTest {
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
 
+    @Issue("JENKINS-55048")
     @Test public void minimumJavaVersion() throws Exception {
         // TODO: factor out the sites init
         PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
