@@ -58,7 +58,7 @@ import java.security.spec.X509EncodedKeySpec;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
- * Used by Jenkins core only in deprecated Remoting-based CLI.
+ * @deprecated No longer used.
  */
 public class Connection {
     public final InputStream in;

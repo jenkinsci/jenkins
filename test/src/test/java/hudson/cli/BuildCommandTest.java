@@ -48,12 +48,9 @@ import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.output.TeeOutputStream;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.ClassRule;
@@ -95,13 +92,10 @@ public class BuildCommandTest {
             }
         });
 
-        // this should be asynchronous
-        try (CLI cli = new CLI(j.getURL())) {
-            assertEquals(0, cli.execute("build", p.getName()));
-            started.block();
-            assertTrue(p.getBuildByNumber(1).isBuilding());
-            completed.signal();
-        }
+        assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs(p.getName()), CLICommandInvoker.Matcher.succeeded());
+        started.block();
+        assertTrue(p.getBuildByNumber(1).isBuilding());
+        completed.signal();
     }
 
     /**
@@ -112,10 +106,8 @@ public class BuildCommandTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("sleep 3"));
 
-        try (CLI cli = new CLI(j.getURL())) {
-            cli.execute("build", "-s", p.getName());
-            assertFalse(p.getBuildByNumber(1).isBuilding());
-        }
+        assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", p.getName()), CLICommandInvoker.Matcher.succeeded());
+        assertFalse(p.getBuildByNumber(1).isBuilding());
     }
 
     /**
@@ -126,10 +118,8 @@ public class BuildCommandTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("sleep 3"));
 
-        try (CLI cli = new CLI(j.getURL())) {
-            cli.execute("build", "-s", "-v", "-r", "5", p.getName());
-            assertFalse(p.getBuildByNumber(1).isBuilding());
-        }
+        assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", "-r", "5", p.getName()), CLICommandInvoker.Matcher.succeeded());
+        assertFalse(p.getBuildByNumber(1).isBuilding());
     }
 
     @Test
@@ -137,11 +127,9 @@ public class BuildCommandTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", null)));
 
-        try (CLI cli = new CLI(j.getURL())) {
-            cli.execute("build", "-s", "-p", "key=foobar", p.getName());
-            FreeStyleBuild b = j.assertBuildStatusSuccess(p.getBuildByNumber(1));
-            assertEquals("foobar", b.getAction(ParametersAction.class).getParameter("key").getValue());
-        }
+        assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-p", "key=foobar", p.getName()), CLICommandInvoker.Matcher.succeeded());
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.getBuildByNumber(1));
+        assertEquals("foobar", b.getAction(ParametersAction.class).getParameter("key").getValue());
     }
 
     @Test
@@ -149,35 +137,29 @@ public class BuildCommandTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", "default"), new StringParameterDefinition("key2", "default2")));
 
-        try (CLI cli = new CLI(j.getURL())) {
-            cli.execute("build", "-s", "-p", "key=foobar", p.getName());
-            FreeStyleBuild b = j.assertBuildStatusSuccess(p.getBuildByNumber(1));
-            assertEquals("foobar", b.getAction(ParametersAction.class).getParameter("key").getValue());
-            assertEquals("default2", b.getAction(ParametersAction.class).getParameter("key2").getValue());
-        }
+        assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-p", "key=foobar", p.getName()), CLICommandInvoker.Matcher.succeeded());
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.getBuildByNumber(1));
+        assertEquals("foobar", b.getAction(ParametersAction.class).getParameter("key").getValue());
+        assertEquals("default2", b.getAction(ParametersAction.class).getParameter("key2").getValue());
     }
 
     // TODO randomly fails: Started test0 #1
     @Test
     public void consoleOutput() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        try (CLI cli = new CLI(j.getURL())) {
-            ByteArrayOutputStream o = new ByteArrayOutputStream();
-            cli.execute(Arrays.asList("build", "-s", "-v", p.getName()), System.in, new TeeOutputStream(System.out, o), System.err);
-            j.assertBuildStatusSuccess(p.getBuildByNumber(1));
-            assertThat(o.toString(), allOf(containsString("Started from command line by anonymous"), containsString("Finished: SUCCESS")));
-        }
+        CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
+        assertThat(r, CLICommandInvoker.Matcher.succeeded());
+        j.assertBuildStatusSuccess(p.getBuildByNumber(1));
+        assertThat(r.stdout(), allOf(containsString("Started from command line by anonymous"), containsString("Finished: SUCCESS")));
     }
 
     // TODO randomly fails: Started test0 #1
     @Test
     public void consoleOutputWhenBuildSchedulingRefused() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        try (CLI cli = new CLI(j.getURL())) {
-            ByteArrayOutputStream o = new ByteArrayOutputStream();
-            cli.execute(Arrays.asList("build", "-s", "-v", p.getName()), System.in, System.out, new TeeOutputStream(System.err, o));
-            assertThat(o.toString(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
-        }
+        CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
+        assertThat(r, CLICommandInvoker.Matcher.failedWith(4));
+        assertThat(r.stderr(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
     }
     // <=>
     @TestExtension("consoleOutputWhenBuildSchedulingRefused")

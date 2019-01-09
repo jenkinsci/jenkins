@@ -36,7 +36,6 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -57,7 +56,7 @@ public class InstallPluginCommand extends CLICommand {
         return Messages.InstallPluginCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file (‘-remoting’ mode only), that file will be installed. " +
+    @Argument(metaVar="SOURCE",required=true,usage=
             "If this is an URL, Jenkins downloads the URL and installs that as a plugin. " +
             "If it is the string ‘=’, the file will be read from standard input of the command, and ‘-name’ must be specified. " +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
@@ -96,19 +95,6 @@ public class InstallPluginCommand extends CLICommand {
                     pm.dynamicLoad(f);
                 }
                 continue;
-            }
-
-            // is this a file?
-            if (channel!=null) {
-                FilePath f = new FilePath(channel, source);
-                if (f.exists()) {
-                    stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
-                    String n = name != null ? name : f.getBaseName();
-                    f.copyTo(getTargetFilePath(n));
-                    if (dynamicLoad)
-                        pm.dynamicLoad(getTargetFile(n));
-                    continue;
-                }
             }
 
             // is this an URL?

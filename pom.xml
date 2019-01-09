@@ -49,11 +49,10 @@ THE SOFTWARE.
   </licenses>
 
   <modules>
+    <module>cli</module>
     <module>core</module>
     <module>war</module>
-    <module>test-pom</module>
     <module>test</module>
-    <module>cli</module>
   </modules>
 
   <scm>
@@ -770,15 +769,6 @@ THE SOFTWARE.
       </properties>
       <activation>
         <jdk>11</jdk>
-      </activation>
-    </profile>
-    <profile>
-      <id>jdk8</id>
-      <modules>
-        <module>test-jdk8</module>
-      </modules>
-      <activation>
-        <jdk>1.8</jdk>
       </activation>
     </profile>
   </profiles>

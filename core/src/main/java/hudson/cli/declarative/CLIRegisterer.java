@@ -35,7 +35,6 @@ import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.security.CliAuthenticator;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -43,7 +42,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
@@ -207,15 +205,11 @@ public class CLIRegisterer extends ExtensionFinder {
                                 Authentication old = sc.getAuthentication();
                                 try {
                                     // authentication
-                                    CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator, parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = authenticator.authenticate();
-                                    if (auth == Jenkins.ANONYMOUS)
-                                        auth = loadStoredAuthentication();
+                                    Authentication auth = getTransportAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     hudson.checkPermission(Jenkins.READ);
 
