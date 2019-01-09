@@ -1180,7 +1180,7 @@ public class UpdateSite {
         }
 
         private void logBadMinJavaVersion(String minimumJavaVersion) {
-            LOGGER.log(Level.WARNING, "'minimumJavaVersion' was specified for plugin ''{0}'' but unparseable (received {1})",
+            LOGGER.log(Level.WARNING, "minimumJavaVersion was specified for plugin {0} but unparseable (received {1})",
                        new String[]{this.name, minimumJavaVersion});
         }
 
