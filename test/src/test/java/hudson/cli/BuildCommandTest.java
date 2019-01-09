@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Launcher;
 import static hudson.cli.CLICommandInvoker.Matcher.*;
 import hudson.model.AbstractBuild;
@@ -45,6 +46,7 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
 import hudson.slaves.DumbSlave;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
@@ -104,7 +106,7 @@ public class BuildCommandTest {
     @Test
     public void sync() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("sleep 3"));
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
         assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", p.getName()), CLICommandInvoker.Matcher.succeeded());
         assertFalse(p.getBuildByNumber(1).isBuilding());
@@ -116,7 +118,7 @@ public class BuildCommandTest {
     @Test
     public void syncWOutputStreaming() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("sleep 3"));
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
         assertThat(new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", "-r", "5", p.getName()), CLICommandInvoker.Matcher.succeeded());
         assertFalse(p.getBuildByNumber(1).isBuilding());
