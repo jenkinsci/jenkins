@@ -1201,9 +1201,7 @@ public class UpdateSite {
         }
 
         /**
-         * Returns true iff any of it the plugin dependencies require a newer Java than Jenkins is running on.
-         *
-         * @return true iff any of it the plugin dependencies require a newer Java than Jenkins is running on.
+         * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
          *
          * @since TODO
          */
