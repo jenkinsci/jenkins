@@ -964,7 +964,7 @@ public class Util {
     /**
      * Convert {@code null} to a default value.
      * @param defaultValue Default value. It may be immutable or not, depending on the implementation.
-     * @since TODO
+     * @since 2.144
      */
     @Nonnull
     public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
