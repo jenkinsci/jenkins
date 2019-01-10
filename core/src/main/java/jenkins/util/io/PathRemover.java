@@ -188,7 +188,7 @@ public class PathRemover {
     
     private static Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
-            removeOrMakeRemovableThenRemove(path);
+            removeOrMakeRemovableThenRemove(path.normalize());
             return Optional.empty();
         } catch (IOException e) {
             return Optional.of(e);
@@ -196,16 +196,18 @@ public class PathRemover {
     }
 
     private static List<IOException> tryRemoveRecursive(@Nonnull Path path) {
-        List<IOException> accumulatedErrors = Util.isSymlink(path) ? new ArrayList<>() :
-                tryRemoveDirectoryContents(path);
-        tryRemoveFile(path).ifPresent(accumulatedErrors::add);
+        Path normalized = path.normalize();
+        List<IOException> accumulatedErrors = Util.isSymlink(normalized) ? new ArrayList<>() :
+                tryRemoveDirectoryContents(normalized);
+        tryRemoveFile(normalized).ifPresent(accumulatedErrors::add);
         return accumulatedErrors;
     }
 
     private static List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
+        Path normalized = path.normalize();
         List<IOException> accumulatedErrors = new ArrayList<>();
-        if (!Files.isDirectory(path)) return accumulatedErrors;
-        try (DirectoryStream<Path> children = Files.newDirectoryStream(path)) {
+        if (!Files.isDirectory(normalized)) return accumulatedErrors;
+        try (DirectoryStream<Path> children = Files.newDirectoryStream(normalized)) {
             for (Path child : children) {
                 accumulatedErrors.addAll(tryRemoveRecursive(child));
             }
@@ -254,7 +256,7 @@ public class PathRemover {
          $ rm x
          rm: x not removed: Permission denied
          */
-        Path parent = path.getParent();
+        Path parent = path.getParent().normalize();
         if (parent != null && !Files.isWritable(parent)) {
             makeWritable(parent);
         }

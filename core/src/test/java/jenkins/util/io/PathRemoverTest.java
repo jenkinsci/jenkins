@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
+import org.jvnet.hudson.test.Issue;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -39,6 +40,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
@@ -344,6 +346,23 @@ public class PathRemoverTest {
         for (File file : Arrays.asList(d1, d1f1, f2)) {
             assertTrue("Should not have deleted target: " + file, file.exists());
         }
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_ContainsDotPath() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path path = Paths.get(d1.getPath(), "..", "d1");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(path);
+
+        assertTrue("Unable to delete directory: " + folder, Files.notExists(path));
     }
 
     private static void mkdirs(File... dirs) {
