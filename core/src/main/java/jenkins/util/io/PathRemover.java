@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,23 +49,23 @@ import java.util.stream.Stream;
 public class PathRemover {
 
     public static PathRemover newSimpleRemover() {
-        return new PathRemover(ignored -> false, ignored -> true);
+        return new PathRemover(ignored -> false, PathChecker.ALLOW_ALL);
     }
 
     public static PathRemover newRemoverWithStrategy(@Nonnull RetryStrategy retryStrategy) {
-        return new PathRemover(retryStrategy, ignored -> true);
+        return new PathRemover(retryStrategy, PathChecker.ALLOW_ALL);
     }
 
-    public static PathRemover newFilteredRobustRemover(@Nonnull Predicate<Path> pathFilter, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathFilter);
+    public static PathRemover newFilteredRobustRemover(@Nonnull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathChecker);
     }
 
     private final RetryStrategy retryStrategy;
-    private final Predicate<Path> pathFilter;
+    private final PathChecker pathChecker;
 
-    private PathRemover(@Nonnull RetryStrategy retryStrategy, @Nonnull Predicate<Path> pathFilter) {
+    private PathRemover(@Nonnull RetryStrategy retryStrategy, @Nonnull PathChecker pathChecker) {
         this.retryStrategy = retryStrategy;
-        this.pathFilter = pathFilter;
+        this.pathChecker = pathChecker;
     }
 
     public void forceRemoveFile(@Nonnull Path path) throws IOException {
@@ -95,6 +94,14 @@ public class PathRemover {
             if (retryStrategy.shouldRetry(retryAttempt)) continue;
             throw new CompositeIOException(retryStrategy.failureMessage(path, retryAttempt), errors);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @FunctionalInterface
+    public interface PathChecker {
+        void check(@Nonnull Path path) throws SecurityException;
+
+        PathChecker ALLOW_ALL = path -> {};
     }
 
     @Restricted(NoExternalUse.class)
@@ -188,7 +195,7 @@ public class PathRemover {
             return sb.toString();
         }
     }
-    
+
     private Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
             removeOrMakeRemovableThenRemove(path.normalize());
@@ -221,7 +228,7 @@ public class PathRemover {
     }
 
     private void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
-        if (!pathFilter.test(path)) return;
+        pathChecker.check(path);
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {

@@ -245,18 +245,18 @@ public class Util {
      *      if the operation fails.
      */
     public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
-        deleteContentsRecursive(fileToPath(file), path -> true);
+        deleteContentsRecursive(fileToPath(file), PathRemover.PathChecker.ALLOW_ALL);
     }
 
     /**
-     * Deletes the given directory contents (but not the directory itself) recursively using a filter.
+     * Deletes the given directory contents (but not the directory itself) recursively using a PathChecker.
      * @param path a directory to delete
-     * @param pathFilter a predicate that when evaluated to true will delete that path; when false, will ignore that path
+     * @param pathChecker a security check to validate a path before deleting
      * @throws IOException if the operation fails
      */
     @Restricted(NoExternalUse.class)
-    public static void deleteContentsRecursive(@Nonnull Path path, @Nonnull Predicate<Path> pathFilter) throws IOException {
-        newPathRemover(pathFilter).forceRemoveDirectoryContents(path);
+    public static void deleteContentsRecursive(@Nonnull Path path, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveDirectoryContents(path);
     }
 
     /**
@@ -267,7 +267,7 @@ public class Util {
      * @throws IOException if it exists but could not be successfully deleted
      */
     public static void deleteFile(@Nonnull File f) throws IOException {
-        newPathRemover(path -> true).forceRemoveFile(fileToPath(f));
+        newPathRemover(PathRemover.PathChecker.ALLOW_ALL).forceRemoveFile(fileToPath(f));
     }
 
     /**
@@ -279,18 +279,18 @@ public class Util {
      * if the operation fails.
      */
     public static void deleteRecursive(@Nonnull File dir) throws IOException {
-        deleteRecursive(fileToPath(dir), path -> true);
+        deleteRecursive(fileToPath(dir), PathRemover.PathChecker.ALLOW_ALL);
     }
 
     /**
      * Deletes the given directory and contents recursively using a filter.
      * @param dir a directory to delete
-     * @param pathFilter a predicate that when evaluated to true will delete that path; when false, will ignore that path
+     * @param pathChecker a security check to validate a path before deleting
      * @throws IOException if the operation fails
      */
     @Restricted(NoExternalUse.class)
-    public static void deleteRecursive(@Nonnull Path dir, @Nonnull Predicate<Path> pathFilter) throws IOException {
-        newPathRemover(pathFilter).forceRemoveRecursive(dir);
+    public static void deleteRecursive(@Nonnull Path dir, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveRecursive(dir);
     }
 
     /*
@@ -1593,8 +1593,8 @@ public class Util {
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
-    private static PathRemover newPathRemover(@Nonnull Predicate<Path> pathFilter) {
-        return PathRemover.newFilteredRobustRemover(pathFilter, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
     /**

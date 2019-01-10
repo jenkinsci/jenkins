@@ -1271,7 +1271,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteRecursive(fileToPath(f), path -> deleting(path.toFile()).delete());
+            Util.deleteRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
     }
@@ -1286,7 +1286,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteContentsRecursive(fileToPath(f), path -> deleting(path.toFile()).delete());
+            Util.deleteContentsRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
     }
