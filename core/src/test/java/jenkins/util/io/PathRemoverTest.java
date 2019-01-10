@@ -91,6 +91,7 @@ public class PathRemoverTest {
         given(path.toString()).willReturn(filename);
         given(path.toFile()).willReturn(file);
         given(path.getFileSystem()).willReturn(fs);
+        given(path.normalize()).willReturn(path);
         given(fs.provider()).willReturn(fsProvider);
         given(fsProvider.deleteIfExists(path)).willThrow(new FileSystemException(filename));
         given(fsProvider.readAttributes(path, BasicFileAttributes.class)).willReturn(attributes);

@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,21 +50,23 @@ import java.util.stream.Stream;
 public class PathRemover {
 
     public static PathRemover newSimpleRemover() {
-        return new PathRemover(ignored -> false);
+        return new PathRemover(ignored -> false, ignored -> true);
     }
 
     public static PathRemover newRemoverWithStrategy(@Nonnull RetryStrategy retryStrategy) {
-        return new PathRemover(retryStrategy);
+        return new PathRemover(retryStrategy, ignored -> true);
     }
 
-    public static PathRemover newRobustRemover(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries));
+    public static PathRemover newFilteredRobustRemover(@Nonnull Predicate<Path> pathFilter, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathFilter);
     }
 
     private final RetryStrategy retryStrategy;
+    private final Predicate<Path> pathFilter;
 
-    private PathRemover(@Nonnull RetryStrategy retryStrategy) {
+    private PathRemover(@Nonnull RetryStrategy retryStrategy, @Nonnull Predicate<Path> pathFilter) {
         this.retryStrategy = retryStrategy;
+        this.pathFilter = pathFilter;
     }
 
     public void forceRemoveFile(@Nonnull Path path) throws IOException {
@@ -186,7 +189,7 @@ public class PathRemover {
         }
     }
     
-    private static Optional<IOException> tryRemoveFile(@Nonnull Path path) {
+    private Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
             removeOrMakeRemovableThenRemove(path.normalize());
             return Optional.empty();
@@ -195,7 +198,7 @@ public class PathRemover {
         }
     }
 
-    private static List<IOException> tryRemoveRecursive(@Nonnull Path path) {
+    private List<IOException> tryRemoveRecursive(@Nonnull Path path) {
         Path normalized = path.normalize();
         List<IOException> accumulatedErrors = Util.isSymlink(normalized) ? new ArrayList<>() :
                 tryRemoveDirectoryContents(normalized);
@@ -203,7 +206,7 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private static List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
+    private List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
         Path normalized = path.normalize();
         List<IOException> accumulatedErrors = new ArrayList<>();
         if (!Files.isDirectory(normalized)) return accumulatedErrors;
@@ -217,7 +220,8 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private static void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
+    private void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
+        if (!pathFilter.test(path)) return;
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
@@ -256,9 +260,9 @@ public class PathRemover {
          $ rm x
          rm: x not removed: Permission denied
          */
-        Path parent = path.getParent().normalize();
-        if (parent != null && !Files.isWritable(parent)) {
-            makeWritable(parent);
+        Optional<Path> maybeParent = Optional.ofNullable(path.getParent()).map(Path::normalize).filter(p -> !Files.isWritable(p));
+        if (maybeParent.isPresent()) {
+            makeWritable(maybeParent.get());
         }
     }
 
