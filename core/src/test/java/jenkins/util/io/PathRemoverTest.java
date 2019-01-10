@@ -36,6 +36,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
@@ -138,6 +140,19 @@ public class PathRemoverTest {
         remover.forceRemoveFile(file.toPath());
 
         assertFalse("Unable to delete file: " + file, file.exists());
+    }
+
+    @Test
+    public void testForceRemoveFile_SymbolicLink() throws IOException {
+        File file = tmp.newFile();
+        touchWithFileName(file);
+        Path link = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("test-link"), file.toPath());
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(link);
+
+        assertTrue("Unable to delete symbolic link: " + link, Files.notExists(link, LinkOption.NOFOLLOW_LINKS));
+        assertTrue("Should not have deleted target file: " + file, file.exists());
     }
 
     @Test
