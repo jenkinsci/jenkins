@@ -366,6 +366,25 @@ public class PathRemoverTest {
         assertTrue("Unable to delete directory: " + folder, Files.notExists(path));
     }
 
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path symlink = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("linked"), folder.toPath());
+        Path d1p = symlink.resolve("d1");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(d1p);
+
+        assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
+        assertFalse(d1.exists());
+    }
+
     private static void mkdirs(File... dirs) {
         for (File dir : dirs) {
             assertTrue("Could not mkdir " + dir, dir.mkdir());
