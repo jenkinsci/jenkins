@@ -63,6 +63,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
+import hudson.model.Cause.UpstreamCause;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
@@ -1787,10 +1788,46 @@ public class Queue extends ResourceController implements Saveable {
      * Checks whether a task should not be scheduled because {@link Jenkins#isQuietingDown()}.
      * @param task some queue task
      * @return true if {@link Jenkins#isQuietingDown()} unless this is a {@link NonBlockingTask}
+     *  or a task started by another (thus earlier allowed) task, to avoid stalling the server
      * @since 1.598
      */
     public static boolean isBlockedByShutdown(Task task) {
-        return Jenkins.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
+        if (! Jenkins.getInstance().isQuietingDown()) {
+            // Server is not quieting down, blocking not applicable
+            return false;
+        }
+
+        if (task instanceof NonBlockingTask) {
+            return false;
+        }
+
+        if (task instanceof Item) {
+            Item i = (Item) task;
+            for (Cause c : i.getCauses()) {
+                if (c instanceof UpstreamCause) {
+                    /* FIXME? Iterate into upstream job instance(s)
+                     * referenced by the object to verify they are
+                     * running and so (maybe) blocked waiting for
+                     * this child task - which is why we let it pass
+                     */
+                    UpstreamCause uc = (UpstreamCause) c;
+                    LOGGER.log(Level.FINE, "Task {0} is not blocked by pending " +
+                        "shutdown though it normally would be, because an " +
+                        "already allowed task {1} #{2} is waiting for it",
+                        new Object[] { task, uc.getUpstreamProject(), uc.getUpstreamBuild() });
+                    return false;
+                }
+            }
+        }
+
+        /* FIXME? Allow manually-scheduled jobs, maybe with
+         * some (interactive?) enforcement option to do run
+         * despite shutdown in progress?
+         */
+
+        // Server is queting down, and task is not non-blocking,
+        // and it is not spawned from an already running task
+        return true;
     }
 
     public Api getApi() {
