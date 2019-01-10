@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -322,6 +323,27 @@ public class PathRemoverTest {
         assertNotNull(ioException);
         assertThat(ioException.getMessage(), containsString(dir.getPath()));
         assertNotNull(interrupted.get());
+    }
+
+    @Test
+    public void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path path = tmp.newFolder().toPath();
+        Files.createSymbolicLink(path.resolve("sym-dir"), d1.toPath());
+        Files.createSymbolicLink(path.resolve("sym-file"), f2.toPath());
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(path);
+
+        assertTrue("Unable to delete directory: " + path, Files.notExists(path));
+        for (File file : Arrays.asList(d1, d1f1, f2)) {
+            assertTrue("Should not have deleted target: " + file, file.exists());
+        }
     }
 
     private static void mkdirs(File... dirs) {
