@@ -1303,7 +1303,7 @@ public class Util {
      * Escapes a Windows cmd argument. Cmd supports escaping characters with carats which simplifies nested escapes.
      * @param arg argument to escape
      * @return the quoted argument for use in cmd.exe
-     * @see <a href="https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/>Everyone quotes command line arguments the wrong way</a>
+     * @see <a href="https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way">Everyone quotes command line arguments the wrong way</a>
      */
     @VisibleForTesting
     static String escapeCmdArgument(String arg) {
