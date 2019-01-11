@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
 
+// adapted from:
+// https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 public class WindowsUtil {
     /**
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
