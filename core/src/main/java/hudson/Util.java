@@ -30,7 +30,6 @@ import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
 
 import jenkins.util.io.PathRemover;
-import jenkins.util.os.windows.WindowsCommandLineFormatter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -1275,28 +1274,6 @@ public class Util {
         } catch (Exception x) {
             throw new IOException(x);
         }
-    }
-
-    /**
-     * Creates an NTFS junction point if supported. Similar to symbolic links, NTFS provides junction points which
-     * provide different features than symbolic links. This method is primarily useful for unit testing on Windows.
-     * @param junction NTFS junction point to create
-     * @param target target directory to junction
-     * @return the newly created junction point
-     * @throws IOException if the call to mklink exits with a non-zero status code
-     * @throws InterruptedException if the call to mklink is interrupted before completing
-     * @throws AssertionError if this method is called on a non-Windows platform
-     */
-    static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
-        if (!Functions.isWindows()) throw new AssertionError("Cannot create junctions on non-Windows platforms");
-        String command = "cmd.exe /C mklink /J " +
-                WindowsCommandLineFormatter.quoteArgumentForCmd(junction.getAbsolutePath()) +
-                ' ' +
-                WindowsCommandLineFormatter.quoteArgumentForCmd(target.getAbsolutePath());
-        Process process = Runtime.getRuntime().exec(command);
-        int result = process.waitFor();
-        if (result != 0) throw new IOException("Command `" + command + "` failed with status code " + result);
-        return junction;
     }
 
     /**

@@ -43,6 +43,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 
+import hudson.os.WindowsUtil;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
@@ -262,7 +263,7 @@ public class UtilTest {
         Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
         File targetDir = tmp.newFolder("targetDir");
         File d = tmp.newFolder("dir");
-        File junction = Util.createJunction(new File(d, "junction"), targetDir);
+        File junction = WindowsUtil.createJunction(new File(d, "junction"), targetDir);
         assertTrue(Util.isSymlink(junction));
     }
 
@@ -274,7 +275,7 @@ public class UtilTest {
         File file = new File(targetDir, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
         File dir = tmp.newFolder();
-        File junction = Util.createJunction(new File(dir, "junction"), targetDir);
+        File junction = WindowsUtil.createJunction(new File(dir, "junction"), targetDir);
 
         assertTrue(Util.isSymlink(junction));
         assertFalse(Util.isSymlink(file));

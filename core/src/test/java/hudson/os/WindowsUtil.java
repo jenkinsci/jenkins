@@ -22,24 +22,21 @@
  * THE SOFTWARE.
  */
 
-package jenkins.util.os.windows;
+package hudson.os;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import hudson.Functions;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-/**
- * Provides formatting utilities for Windows command line processes.
- *
- * @see <a href="https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way">Everyone quotes command line arguments the wrong way</a>
- */
-@Restricted(NoExternalUse.class)
-public final class WindowsCommandLineFormatter {
-    private WindowsCommandLineFormatter() {
-    }
+import static org.junit.Assert.assertTrue;
 
+public class WindowsUtil {
     /**
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
      */
@@ -83,4 +80,33 @@ public final class WindowsCommandLineFormatter {
         return CMD_METACHARS.matcher(quoteArgument(argument)).replaceAll("^$0");
     }
 
+    /**
+     * Executes a command and arguments using {@code cmd.exe /C ...}.
+     */
+    public static @Nonnull Process execCmd(String... argv) throws IOException {
+        String command = Arrays.stream(argv).map(WindowsUtil::quoteArgumentForCmd).collect(Collectors.joining(" "));
+        return Runtime.getRuntime().exec(new String[]{"cmd.exe", "/C", command});
+    }
+
+    /**
+     * Creates an NTFS junction point if supported. Similar to symbolic links, NTFS provides junction points which
+     * provide different features than symbolic links.
+     * @param junction NTFS junction point to create
+     * @param target target directory to junction
+     * @return the newly created junction point
+     * @throws IOException if the call to mklink exits with a non-zero status code
+     * @throws InterruptedException if the call to mklink is interrupted before completing
+     * @throws AssertionError if this method is called on a non-Windows platform
+     */
+    public static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
+        assertTrue(Functions.isWindows());
+        Process mklink = execCmd("mklink", "/J", junction.getAbsolutePath(), target.getAbsolutePath());
+        int result = mklink.waitFor();
+        if (result != 0) {
+            String stderr = IOUtils.toString(mklink.getErrorStream());
+            String stdout = IOUtils.toString(mklink.getInputStream());
+            throw new IOException("Process exited with " + result + "\nStandard Output:\n" + stdout + "\nError Output:\n" + stderr);
+        }
+        return junction;
+    }
 }

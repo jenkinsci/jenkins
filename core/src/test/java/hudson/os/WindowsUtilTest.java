@@ -22,19 +22,21 @@
  * THE SOFTWARE.
  */
 
-package jenkins.util.os.windows;
+package hudson.os;
 
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class WindowsCommandLineFormatterTest {
-
+/**
+ * Test the test utility code, too!
+ */
+public class WindowsUtilTest {
     @Test
     public void testQuoteArgument() {
         String input = "C:\\Programs and \"Settings\"\\System32\\\\";
         String expected = "\"C:\\Programs and \\\"Settings\\\"\\System32\\\\\\\\\"";
-        String actual = WindowsCommandLineFormatter.quoteArgument(input);
+        String actual = WindowsUtil.quoteArgument(input);
         assertEquals(expected, actual);
     }
 
@@ -42,7 +44,7 @@ public class WindowsCommandLineFormatterTest {
     public void testQuoteArgumentForCmd() {
         String input = "hello \"\\world&";
         String expected = "^\"hello \\^\"\\world^&^\"";
-        String actual = WindowsCommandLineFormatter.quoteArgumentForCmd(input);
+        String actual = WindowsUtil.quoteArgumentForCmd(input);
         assertEquals(expected, actual);
     }
 }
