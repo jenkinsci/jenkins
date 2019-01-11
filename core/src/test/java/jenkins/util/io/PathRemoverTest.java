@@ -160,6 +160,39 @@ public class PathRemoverTest {
     }
 
     @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveFile_DotsInPath() throws IOException {
+        Path folder = tmp.newFolder().toPath();
+        File test = tmp.newFile("test");
+        touchWithFileName(test);
+        Path path = folder.resolve("../test");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(path);
+
+        assertTrue("Unable to delete file: " + path, Files.notExists(path));
+        assertFalse(test.exists());
+        assertTrue("Should not have deleted directory: " + folder, Files.exists(folder));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
+        Path realParent = tmp.newFolder().toPath();
+        Path path = realParent.resolve("test-file");
+        touchWithFileName(path.toFile());
+        Path symParent = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("sym-parent"), realParent);
+        Path toDelete = symParent.resolve("test-file");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(toDelete);
+
+        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete));
+        assertTrue("Should not have deleted directory: " + realParent, Files.exists(realParent));
+        assertTrue("Should not have deleted symlink: " + symParent, Files.exists(symParent, LinkOption.NOFOLLOW_LINKS));
+    }
+
+    @Test
     public void testForceRemoveDirectoryContents() throws IOException {
         File dir = tmp.newFolder();
         File d1 = new File(dir, "d1");

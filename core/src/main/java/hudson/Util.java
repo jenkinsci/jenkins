@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.model.TaskListener;
 import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
@@ -1275,6 +1276,38 @@ public class Util {
         } catch (Exception x) {
             throw new IOException(x);
         }
+    }
+
+    /**
+     * Creates an NTFS junction point if supported. Similar to symbolic links, NTFS provides junction points which
+     * provide different features than symbolic links. This method is primarily useful for unit testing on Windows.
+     * @param junction NTFS junction point to create
+     * @param target target directory to junction
+     * @return the newly created junction point
+     * @throws IOException if the call to mklink exits with a non-zero status code
+     * @throws InterruptedException if the call to mklink is interrupted before completing
+     * @throws AssertionError if this method is called on a non-Windows platform
+     */
+    static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
+        if (!Functions.isWindows()) throw new AssertionError("Cannot create junctions on non-Windows platforms");
+        String command = "mklink /J " + escapeCmdArgument(junction.getAbsolutePath()) + ' ' + escapeCmdArgument(target.getAbsolutePath());
+        Process process = new ProcessBuilder("cmd.exe", "/C", command).start();
+        int result = process.waitFor();
+        if (result != 0) throw new IOException("Command `" + command + "` failed with status code " + result);
+        return junction;
+    }
+
+    private static final Pattern CMD_METACHARS = Pattern.compile("[()%!^\"<>&|]");
+
+    /**
+     * Escapes a Windows cmd argument. Cmd supports escaping characters with carats which simplifies nested escapes.
+     * @param arg argument to escape
+     * @return the quoted argument for use in cmd.exe
+     * @see <a href="https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/>Everyone quotes command line arguments the wrong way</a>
+     */
+    @VisibleForTesting
+    static String escapeCmdArgument(String arg) {
+        return CMD_METACHARS.matcher('"' + arg + '"').replaceAll("^$0");
     }
 
     /**

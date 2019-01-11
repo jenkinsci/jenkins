@@ -836,17 +836,14 @@ public class FilePathTest {
         Path targetDir = temp.newFolder("targetDir").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
-        Process p = new ProcessBuilder()
-                .directory(toDelete.toFile())
-                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
-                .start();
-        assumeThat("unable to create junction", p.waitFor(), is(0));
+        File junction = Util.createJunction(toDelete.resolve("junction").toFile(), targetDir.toFile());
         Files.createFile(toDelete.resolve("foo"));
         Files.createFile(toDelete.resolve("bar"));
         FilePath f = new FilePath(toDelete.toFile());
         f.deleteRecursive();
         assertTrue("junction target should not be deleted", Files.exists(targetDir));
         assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete junction", junction.exists());
         assertFalse("could not delete target", Files.exists(toDelete));
     }
 

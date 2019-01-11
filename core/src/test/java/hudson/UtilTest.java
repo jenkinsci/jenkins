@@ -24,6 +24,8 @@
  */
 package hudson;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -256,16 +258,46 @@ public class UtilTest {
     }
 
     @Test
+    public void testEscapeCmdArgument() {
+        String raw = "hello \"\\world&";
+        String expected = "^\"hello ^\"\\world^&^\"";
+        String actual = Util.escapeCmdArgument(raw);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testIsSymlink_onWindows_junction() throws Exception {
         Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
-        tmp.newFolder("targetDir");
+        File targetDir = tmp.newFolder("targetDir");
         File d = tmp.newFolder("dir");
-        Process p = new ProcessBuilder()
-                .directory(d)
-                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
-                .start();
-        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
-        assertTrue(Util.isSymlink(new File(d, "junction")));
+        File junction = Util.createJunction(new File(d, "junction"), targetDir);
+        assertTrue(Util.isSymlink(junction));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        File targetDir = tmp.newFolder();
+        File file = new File(targetDir, "test-file");
+        new FilePath(file).touch(System.currentTimeMillis());
+        File dir = tmp.newFolder();
+        File junction = Util.createJunction(new File(dir, "junction"), targetDir);
+
+        assertTrue(Util.isSymlink(junction));
+        assertFalse(Util.isSymlink(file));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
+        File folder = tmp.newFolder();
+        File file = new File(folder, "test-file");
+        new FilePath(file).touch(System.currentTimeMillis());
+        Path link = tmp.getRoot().toPath().resolve("sym-link");
+        Path pathWithSymlinkParent = Files.createSymbolicLink(link, folder.toPath()).resolve("test-file");
+        assertTrue(Util.isSymlink(link));
+        assertFalse(Util.isSymlink(pathWithSymlinkParent));
     }
 
     @Test
