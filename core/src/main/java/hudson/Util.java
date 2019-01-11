@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.annotations.VisibleForTesting;
 import hudson.model.TaskListener;
 import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
@@ -31,6 +30,7 @@ import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
 
 import jenkins.util.io.PathRemover;
+import jenkins.util.os.windows.WindowsCommandLineFormatter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -79,7 +79,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1290,24 +1289,14 @@ public class Util {
      */
     static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
         if (!Functions.isWindows()) throw new AssertionError("Cannot create junctions on non-Windows platforms");
-        String command = "mklink /J " + escapeCmdArgument(junction.getAbsolutePath()) + ' ' + escapeCmdArgument(target.getAbsolutePath());
-        Process process = new ProcessBuilder("cmd.exe", "/C", command).start();
+        String command = "cmd.exe /C mklink /J " +
+                WindowsCommandLineFormatter.quoteArgumentForCmd(junction.getAbsolutePath()) +
+                ' ' +
+                WindowsCommandLineFormatter.quoteArgumentForCmd(target.getAbsolutePath());
+        Process process = Runtime.getRuntime().exec(command);
         int result = process.waitFor();
         if (result != 0) throw new IOException("Command `" + command + "` failed with status code " + result);
         return junction;
-    }
-
-    private static final Pattern CMD_METACHARS = Pattern.compile("[()%!^\"<>&|]");
-
-    /**
-     * Escapes a Windows cmd argument. Cmd supports escaping characters with carats which simplifies nested escapes.
-     * @param arg argument to escape
-     * @return the quoted argument for use in cmd.exe
-     * @see <a href="https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way">Everyone quotes command line arguments the wrong way</a>
-     */
-    @VisibleForTesting
-    static String escapeCmdArgument(String arg) {
-        return CMD_METACHARS.matcher('"' + arg + '"').replaceAll("^$0");
     }
 
     /**

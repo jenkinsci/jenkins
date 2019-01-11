@@ -258,14 +258,6 @@ public class UtilTest {
     }
 
     @Test
-    public void testEscapeCmdArgument() {
-        String raw = "hello \"\\world&";
-        String expected = "^\"hello ^\"\\world^&^\"";
-        String actual = Util.escapeCmdArgument(raw);
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void testIsSymlink_onWindows_junction() throws Exception {
         Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
         File targetDir = tmp.newFolder("targetDir");
