@@ -26,6 +26,8 @@ package hudson.os;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
@@ -41,10 +43,24 @@ public class WindowsUtilTest {
     }
 
     @Test
+    public void testQuoteArgument_OnlyQuotesWhenNecessary() {
+        for (String arg : Arrays.asList("", "foo", "foo-bar", "C:\\test\\path", "http://www.example.com/")) {
+            assertEquals(arg, WindowsUtil.quoteArgument(arg));
+        }
+    }
+
+    @Test
     public void testQuoteArgumentForCmd() {
         String input = "hello \"\\world&";
         String expected = "^\"hello \\^\"\\world^&^\"";
         String actual = WindowsUtil.quoteArgumentForCmd(input);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testQuoteArgumentForCmd_OnlyQuotesWhenNecessary() {
+        for (String arg : Arrays.asList("", "foo", "foo-bar", "C:\\test\\path", "http://www.example.com/")) {
+            assertEquals(arg, WindowsUtil.quoteArgumentForCmd(arg));
+        }
     }
 }

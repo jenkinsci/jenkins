@@ -39,10 +39,13 @@ import static org.junit.Assert.assertTrue;
 // adapted from:
 // https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 public class WindowsUtil {
+    private static final Pattern NEEDS_QUOTING = Pattern.compile("[\\s\"]");
+
     /**
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
      */
     public static @Nonnull String quoteArgument(@Nonnull String argument) {
+        if (!NEEDS_QUOTING.matcher(argument).find()) return argument;
         StringBuilder sb = new StringBuilder();
         sb.append('"');
         int end = argument.length();
