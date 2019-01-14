@@ -515,7 +515,7 @@ public class SetupWizard extends PageDecorator {
                                         for (UpdateSite site : jenkins.getUpdateCenter().getSiteList()) {
                                             UpdateSite.Plugin sitePlug = site.getPlugin(pluginName);
                                             if (sitePlug != null
-                                                    && !sitePlug.isForNewerHudson()
+                                                    && !sitePlug.isForNewerHudson() && !sitePlug.isForNewerJava()
                                                     && !sitePlug.isNeededDependenciesForNewerJenkins()) {
                                                 foundCompatibleVersion = true;
                                                 break;

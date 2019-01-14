@@ -70,6 +70,7 @@ import jenkins.model.DownloadSettings;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -968,6 +969,13 @@ public class UpdateSite {
         @Exported
         public final String requiredCore;
         /**
+         * Version of Java this plugin requires to run.
+         *
+         * @since TODO
+         */
+        @Exported
+        public final String minimumJavaVersion;
+        /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
          */
@@ -993,6 +1001,7 @@ public class UpdateSite {
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.requiredCore = Util.intern(get(o,"requiredCore"));
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
@@ -1118,6 +1127,21 @@ public class UpdateSite {
             }
         }
 
+        /**
+         * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
+         * @since TODO
+         */
+        public boolean isForNewerJava() {
+            try {
+                final VersionNumber currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
+                        currentRuntimeJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+                return false; // treat this as undeclared minimum Java version
+            }
+        }
+
         public VersionNumber getNeededDependenciesRequiredCore() {
             VersionNumber versionNumber = null;
             try {
@@ -1130,6 +1154,36 @@ public class UpdateSite {
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
+        }
+
+        /**
+         * Returns the minimum Java version needed to use the plugin and all its dependencies.
+         * @since TODO
+         * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
+         */
+        @CheckForNull
+        public VersionNumber getNeededDependenciesMinimumJavaVersion() {
+            VersionNumber versionNumber = null;
+            try {
+                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+            }
+            for (Plugin p: getNeededDependencies()) {
+                VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
+                if (v == null) {
+                    continue;
+                }
+                if (versionNumber == null || v.isNewerThan(versionNumber)) {
+                    versionNumber = v;
+                }
+            }
+            return versionNumber;
+        }
+
+        private void logBadMinJavaVersion() {
+            LOGGER.log(Level.WARNING, "minimumJavaVersion was specified for plugin {0} but unparseable (received {1})",
+                       new String[]{this.name, this.minimumJavaVersion});
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
@@ -1146,6 +1200,20 @@ public class UpdateSite {
                 }
                 return false;
             });
+        }
+
+        /**
+         * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
+         *
+         * @since TODO
+         */
+        public boolean isNeededDependenciesForNewerJava() {
+            for (Plugin p: getNeededDependencies()) {
+                if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**

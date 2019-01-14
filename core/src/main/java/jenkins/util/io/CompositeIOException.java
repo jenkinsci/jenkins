@@ -21,35 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.util.xstream;
 
-import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.converters.basic.URLConverter;
-import hudson.remoting.URLDeserializationHelper;
+package jenkins.util.io;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLStreamHandler;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
+import java.util.List;
 
-/**
- * Wrap the URL handler during deserialization into a specific one that does not generate DNS query on the hostname
- * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}. 
- * Required to protect against SECURITY-637
- * 
- * @since 2.121.3
- */
 @Restricted(NoExternalUse.class)
-public class SafeURLConverter extends URLConverter {
-    
+public class CompositeIOException extends IOException {
+    private final List<IOException> exceptions;
+
+    public CompositeIOException(String message, @Nonnull List<IOException> exceptions) {
+        super(message);
+        this.exceptions = exceptions;
+    }
+
+    public CompositeIOException(String message, IOException... exceptions) {
+        this(message, Arrays.asList(exceptions));
+    }
+
+    public List<IOException> getExceptions() {
+        return exceptions;
+    }
+
     @Override
-    public Object fromString(String str) {
-        URL url = (URL) super.fromString(str);
-        try {
-            return URLDeserializationHelper.wrapIfRequired(url);
-        } catch (IOException e) {
-            throw new ConversionException(e);
+    public void printStackTrace(PrintStream s) {
+        super.printStackTrace(s);
+        for (IOException exception : exceptions) {
+            exception.printStackTrace(s);
         }
+    }
+
+    @Override
+    public void printStackTrace(PrintWriter s) {
+        super.printStackTrace(s);
+        for (IOException exception : exceptions) {
+            exception.printStackTrace(s);
+        }
+    }
+
+    public UncheckedIOException asUncheckedIOException() {
+        return new UncheckedIOException(this);
     }
 }
