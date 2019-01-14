@@ -1,13 +1,11 @@
 package hudson.triggers;
 
 import hudson.ExtensionList;
-import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -17,8 +15,6 @@ import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
 
 public class TriggerAdminMonitor extends AdministrativeMonitor {
 
