@@ -282,6 +282,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                     LOGGER.log(Level.WARNING, "cron trigger {0}.run() triggered by {1} spent too "
                                             + " much time ({2}) in its execution, other timers can be affected",
                                             new Object[] {t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time)});
+                                    ADMIN_MONITOR.report(t.getClass().getName(),
+                                            String.format("Trigger %s.run() triggered by %s spent too much time "
+                                                + "(%s) in its execution, other timers can be affected",
+                                                t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time)));
                                 }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
@@ -343,4 +347,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
         return r;
     }
+
+    @Extension
+    public static final TriggerAdminMonitor ADMIN_MONITOR = new TriggerAdminMonitor();
 }
