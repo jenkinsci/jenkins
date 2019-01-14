@@ -13,11 +13,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 
-@For(Util.class)
-// https://superuser.com/q/343074
 public class RemoveWindowsDirectoryJunctionTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
