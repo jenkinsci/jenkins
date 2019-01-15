@@ -8,7 +8,6 @@ import hudson.model.Item;
 import hudson.triggers.Messages;
 import hudson.triggers.TimerTrigger;
 import hudson.triggers.Trigger;
-import hudson.triggers.TriggerAdminMonitor;
 import hudson.triggers.TriggerDescriptor;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,13 +45,6 @@ public class TriggerTest {
         assertThat(l.getMessages().toArray(new String[0]) [0],
                 containsString("cron trigger " + BadTimerTrigger.class.getName()
                         + ".run() triggered by " + p.toString() + " spent too  much time "));
-        j.interactiveBreak();
-    }
-
-    @Test
-    public void myTest() throws Exception {
-        TriggerAdminMonitor.getInstance().report("Test", "Test message");
-        j.interactiveBreak();
     }
 
     public static class BadTimerTrigger extends TimerTrigger {

@@ -2,9 +2,6 @@ package hudson.triggers.TriggerAdminMonitor
 
 import hudson.triggers.TriggerAdminMonitor
 
-def j = namespace(lib.JenkinsTagLib)
-def f = namespace(lib.FormTagLib)
-def st = namespace("jelly:stapler")
 TriggerAdminMonitor tam = my
 
 style("""
