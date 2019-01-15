@@ -69,31 +69,29 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
         Stream.of(Jenkins.BUILDS_DIR_PROP, Jenkins.WORKSPACES_DIR_PROP)
                 .forEach(System::clearProperty);
     }
-    
-	@Issue("JENKINS-53284")
-	@Test
-	public void changeWorkspacesDirLog() throws Exception {
-		loggerRule.record(Jenkins.class, Level.WARNING)
-				.record(Jenkins.class, Level.INFO).capture(1000);
 
-		story.then(step -> {
-			assertFalse(logWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR));
-			setWorkspacesDirProperty("testdir1");
-		});
+    @Issue("JENKINS-53284")
+    @Test
+    public void changeWorkspacesDirLog() throws Exception {
+        loggerRule.record(Jenkins.class, Level.WARNING)
+                .record(Jenkins.class, Level.INFO).capture(1000);
 
-		story.then(step -> {
-			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-					Level.WARNING));
-			setWorkspacesDirProperty("testdir2");
-		});
+        story.then(step -> {
+            assertFalse(logWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR));
+            setWorkspacesDirProperty("testdir1");
+        });
 
-		story.then(step -> {
-			assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-					Level.WARNING));
-		});
+        story.then(step -> {
+            assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
+                                          Level.WARNING));
+            setWorkspacesDirProperty("testdir2");
+        });
 
-	}
-    
+        story.then(step -> {
+            assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
+                                          Level.WARNING));
+        });
+    }
 
     @Issue("JENKINS-50164")
     @Test
