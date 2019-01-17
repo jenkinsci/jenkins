@@ -66,6 +66,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.annotation.Nonnull;
 
@@ -492,6 +493,68 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
             i++;
         }
+    }
+
+    @Test
+    public void createAccountSupportsHashedPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        securityRealm.createAccountWithHashedPassword("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
+
+        WebClient wc = j.createWebClient();
+        wc.login("user_hashed", "password");
+
+
+        XmlPage w2 = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(w2, hasXPath("//name", is("user_hashed")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createAccountWithHashedPasswordRequiresPrefix() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt()));
+    }
+
+    @Test
+    public void hashedPasswordTest() {
+        assertTrue("password is hashed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
+        assertFalse("password is not hashed", PASSWORD_ENCODER.isPasswordHashed("password"));
+        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$blah"));
+        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:password"));
+
+        // real examples
+        // password = a
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+        // password = a
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$12$8NJH3LsPrANStV6XtBakCez0cKHXVxmvxIlcz785vxAIZrihHZpeS"));
+
+        // password = password
+        assertFalse("too big number of iterations", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a208$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+
+        // until https://github.com/jeremyh/jBCrypt/pull/16 is merged, the lib released and the dep updated, only the version 2a is supported
+        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
+        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2y$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+
+        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$3t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+    }
+
+    @Test
+    public void ensureHashingVersion_2a_isSupported() {
+        assertTrue("version 2a is supported", BCrypt.checkpw("a", "$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureHashingVersion_2x_isNotSupported() {
+        BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureHashingVersion_2y_isNotSupported() {
+        BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V.");
     }
     
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
