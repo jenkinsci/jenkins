@@ -75,7 +75,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public final class DirectoryBrowserSupport implements HttpResponse {
     // escape hatch for SECURITY-904 to keep legacy behavior
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static boolean ALLOW_SYMLINK_ESCAPE = Boolean.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
+    public static boolean ALLOW_SYMLINK_ESCAPE = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
 
     public final ModelObject owner;
     
