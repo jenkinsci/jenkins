@@ -38,7 +38,7 @@ import java.net.URLStreamHandler;
  * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}. 
  * Required to protect against SECURITY-637
  * 
- * @since TODO
+ * @since 2.121.3
  */
 @Restricted(NoExternalUse.class)
 public class SafeURLConverter extends URLConverter {

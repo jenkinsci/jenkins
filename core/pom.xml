@@ -119,7 +119,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build-217-jenkins-11</version>
+      <version>build-217-jenkins-14</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -646,7 +646,6 @@ THE SOFTWARE.
         <plugin>
          <groupId>org.codehaus.mojo</groupId>
          <artifactId>build-helper-maven-plugin</artifactId>
-         <version>1.7</version>
          <executions>
              <execution>
                  <id>add-source</id>
