@@ -72,7 +72,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     /**
      * @since TODO
      *
-     * Fired when a new user account has been created.
+     * Fired after a new user account has been created and saved to disk.
      *
      * @param username the user
      */

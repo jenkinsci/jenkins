@@ -328,6 +328,20 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.createdUsers.get(1).equals("debbie"));
     }
 
+    @Issue("JENKINS-55307")
+    @Test
+    public void userCreationWithHashedPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        securityRealm.createAccountWithHashedPassword("charlie_hashed", "#jbcrypt:" + BCrypt.hashpw("charliePassword", BCrypt.gensalt()));
+
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("charlie_hashed"));
+    }
+
     private void createFirstAccount(String login) throws Exception {
         assertNull(User.getById(login, false));
 
