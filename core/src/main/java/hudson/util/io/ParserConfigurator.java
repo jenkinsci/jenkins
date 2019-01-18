@@ -52,7 +52,9 @@ import java.util.Collections;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.416
+ * @deprecated No longer used.
  */
+@Deprecated
 public abstract class ParserConfigurator implements ExtensionPoint, Serializable {
     private static final long serialVersionUID = -2523542286453177108L;
 
