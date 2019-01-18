@@ -1271,7 +1271,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            deleteRecursive(deleting(f));
+            Util.deleteRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
     }
@@ -1286,32 +1286,9 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            deleteContentsRecursive(f);
+            Util.deleteContentsRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
-    }
-
-    private void deleteRecursive(File dir) throws IOException {
-        if(!isSymlink(dir))
-            deleteContentsRecursive(dir);
-        try {
-            deleteFile(deleting(dir));
-        } catch (IOException e) {
-            // if some of the child directories are big, it might take long enough to delete that
-            // it allows others to create new files, causing problems like JENKINS-10113
-            // so give it one more attempt before we give up.
-            if(!isSymlink(dir))
-                deleteContentsRecursive(dir);
-            deleteFile(deleting(dir));
-        }
-    }
-
-    private void deleteContentsRecursive(File file) throws IOException {
-        File[] files = file.listFiles();
-        if(files==null)
-            return;     // the directory didn't exist in the first place
-        for (File child : files)
-            deleteRecursive(child);
     }
 
     /**
