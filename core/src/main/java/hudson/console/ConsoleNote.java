@@ -186,7 +186,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         try (OutputStream gzos = new GZIPOutputStream(buf);
-             ObjectOutputStream oos = new ObjectOutputStream(JenkinsJVM.isJenkinsJVM() ? AnonymousClassWarnings.checkingObjectOutputStream(gzos) : gzos)) {
+             ObjectOutputStream oos = JenkinsJVM.isJenkinsJVM() ? AnonymousClassWarnings.checkingObjectOutputStream(gzos) : new ObjectOutputStream(gzos)) {
             oos.writeObject(this);
         }
 
