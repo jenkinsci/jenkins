@@ -56,6 +56,8 @@ import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Data that hangs off from a console output.
@@ -131,7 +133,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Disables checking of {@link #MAC} so do not set this flag unless you completely trust all users capable of affecting build output,
      * which in practice means that all SCM committers as well as all Jenkins users with any non-read-only access are consider administrators.
      */
-    static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties.getBoolean(ConsoleNote.class.getName() + ".INSECURE");
+    @Restricted(NoExternalUse.class)
+    public static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties.getBoolean(ConsoleNote.class.getName() + ".INSECURE");
 
     /**
      * When the line of a console output that this annotation is attached is read by someone,
