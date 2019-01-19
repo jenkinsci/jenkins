@@ -507,6 +507,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
         user.addProperty(Details.fromPlainPassword(password));
+        SecurityListener.fireUserCreated(user.getId());
         return user;
     }
 
@@ -522,6 +523,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
         User user = User.getById(userName, true);
         user.addProperty(Details.fromHashedPassword(hashedPassword));
+        SecurityListener.fireUserCreated(user.getId());
         return user;
     }
 
