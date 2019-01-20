@@ -24,9 +24,11 @@
 package hudson;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.SmokeTest;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@Category(SmokeTest.class)
 public class AboutJenkinsTest {
     
     @Rule

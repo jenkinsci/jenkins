@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import jenkins.AgentProtocolTest;
+import jenkins.SmokeTest;
 import jenkins.slaves.DeprecatedAgentProtocolMonitor;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
@@ -43,6 +44,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -53,6 +55,7 @@ import org.jvnet.hudson.test.Issue;
  * Tests of {@link SetupWizard}.
  * @author Oleg Nenashev
  */
+@Category(SmokeTest.class)
 public class SetupWizardTest {
     
     @Rule

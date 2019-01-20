@@ -51,6 +51,8 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import jenkins.SmokeTest;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -58,9 +60,11 @@ import static org.junit.Assume.*;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+@Category(SmokeTest.class)
 public class LauncherTest {
 
     @Rule

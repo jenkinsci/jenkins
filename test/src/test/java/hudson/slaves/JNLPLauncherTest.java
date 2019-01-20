@@ -35,12 +35,14 @@ import hudson.remoting.Which;
 import hudson.slaves.DelegatingComputerLauncher;
 import hudson.util.ArgumentListBuilder;
 
+import jenkins.SmokeTest;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
 
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -66,6 +68,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
  * Tests of {@link JNLPLauncher}.
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class JNLPLauncherTest {
     @Rule public JenkinsRule j = new JenkinsRule();
     

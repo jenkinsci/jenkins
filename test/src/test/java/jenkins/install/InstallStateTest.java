@@ -24,6 +24,7 @@
 package jenkins.install;
 
 import hudson.ExtensionList;
+import jenkins.SmokeTest;
 import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -31,6 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -40,6 +42,7 @@ import org.jvnet.hudson.test.JenkinsRule;
  * honor Jenkins extension points and hooks, which may influence the behavior.
  * @author Oleg Nenashev
  */
+@Category(SmokeTest.class)
 public class InstallStateTest {
     
     @Rule

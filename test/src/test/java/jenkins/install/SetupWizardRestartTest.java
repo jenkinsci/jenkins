@@ -5,9 +5,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import jenkins.SmokeTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
@@ -15,6 +17,7 @@ import org.jvnet.hudson.test.RestartableJenkinsRule;
 import hudson.Main;
 import jenkins.model.Jenkins;
 
+@Category(SmokeTest.class)
 public class SetupWizardRestartTest {
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
