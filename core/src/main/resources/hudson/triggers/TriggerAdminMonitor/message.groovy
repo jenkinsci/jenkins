@@ -1,8 +1,8 @@
 package hudson.triggers.TriggerAdminMonitor
 
-import hudson.triggers.TriggerAdminMonitor
+import hudson.triggers.SlowTriggerAdminMonitor
 
-TriggerAdminMonitor tam = my
+SlowTriggerAdminMonitor tam = my
 
 style("""
         #cron-triggers-warning-table th {
@@ -27,7 +27,7 @@ div("class": "warning") {
                 th("Message")
             }
 
-            tam.errors.each { String trigger, TriggerAdminMonitor.Value val ->
+            tam.errors.each { String trigger, SlowTriggerAdminMonitor.Value val ->
                 tr {
                     td(trigger)
                     td(val.time)
