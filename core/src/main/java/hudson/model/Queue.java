@@ -2490,7 +2490,7 @@ public class Queue extends ResourceController implements Saveable {
             if (diff >= 0)
                 return CauseOfBlockage.fromMessage(Messages._Queue_InQuietPeriod(Util.getTimeSpanString(diff)));
             else
-                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
+                return CauseOfBlockage.fromMessage(Messages._Queue_FinishedWaiting());
         }
 
         @Override
