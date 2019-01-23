@@ -2028,7 +2028,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Reads this file into a string, by using the current system encoding.
+     * Reads this file into a string, by using the current system encoding on the remote machine.
      */
     public String readToString() throws IOException, InterruptedException {
         return act(new ReadToString());
@@ -2080,7 +2080,7 @@ public final class FilePath implements Serializable {
      * Overwrites this file by placing the given String as the content.
      *
      * @param encoding
-     *      Null to use the platform default encoding.
+     *      Null to use the platform default encoding on the remote machine.
      * @since 1.105
      */
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
