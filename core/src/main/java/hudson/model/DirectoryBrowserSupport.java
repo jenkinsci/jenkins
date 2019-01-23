@@ -39,8 +39,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -59,7 +61,6 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -436,32 +437,78 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
             // TODO consider using run(Callable) here
-            for (String n : dir.list(glob.isEmpty() ? "**" : glob, null, /* TODO what is the user expectation? */true)) {
-                String relativePath;
-                if (glob.length() == 0) {
-                    // JENKINS-19947: traditional behavior is to prepend the directory name
-                    relativePath = dir.getName() + '/' + n;
-                } else {
-                    relativePath = n;
-                }
 
-                String targetFile = dir.toString().substring(root.toString().length()) + n;
-                if (!ALLOW_SYMLINK_ESCAPE && root.supportIsDescendant() && !root.isDescendant(targetFile)) {
-                    LOGGER.log(Level.FINE, "Trying to access a file outside of the directory: " + root + ", illicit target: " + targetFile);
-                } else {
-                    // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
-                    // TODO On Linux file names can contain backslashes which should not treated as file separators.
-                    //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
-                    //      but not the file separator char of the (maybe remote) "dir".
-                    ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
-                    VirtualFile f = dir.child(n);
-                    e.setTime(f.lastModified());
-                    zos.putNextEntry(e);
-                    try (InputStream in = f.open()) {
-                        IOUtils.copy(in, zos);
-                    }
-                    zos.closeEntry();
+            if (glob.isEmpty()) {
+                if (!root.supportQuickRecursiveListing()) {
+                    // avoid slow listing when the Glob can do a quicker job
+                    glob = "**";
                 }
+            }
+            
+            if (glob.isEmpty()) {
+                Map<String, VirtualFile> nameToVirtualFiles = collectRecursivelyAllLegalChildren(dir);
+                sendZipUsingMap(zos, dir, nameToVirtualFiles);
+            } else {
+                Collection<String> listOfFile = dir.list(glob, null, /* TODO what is the user expectation? */true);
+                sendZipUsingListOfNames(zos, dir, listOfFile);
+            }
+        }
+    }
+
+    private static void sendZipUsingMap(ZipOutputStream zos, VirtualFile dir, Map<String, VirtualFile> nameToVirtualFiles) throws IOException {
+        for (Map.Entry<String, VirtualFile> entry : nameToVirtualFiles.entrySet()) {
+            String n = entry.getKey();
+
+            String relativePath;
+            // JENKINS-19947: traditional behavior is to prepend the directory name
+            relativePath = dir.getName() + '/' + n;
+
+            VirtualFile f = entry.getValue();
+            sendOneZipEntry(zos, f, relativePath);
+        }
+    }
+
+    private static void sendZipUsingListOfNames(ZipOutputStream zos, VirtualFile dir, Collection<String> listOfFileNames) throws IOException {
+        for (String relativePath : listOfFileNames) {
+            VirtualFile f = dir.child(relativePath);
+            sendOneZipEntry(zos, f, relativePath);
+        }
+    }
+
+    private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
+        // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
+        // TODO On Linux file names can contain backslashes which should not treated as file separators.
+        //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+        //      but not the file separator char of the (maybe remote) "dir".
+        ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
+
+        e.setTime(vf.lastModified());
+        zos.putNextEntry(e);
+        try (InputStream in = vf.open()) {
+            IOUtils.copy(in, zos);
+        }
+        zos.closeEntry();
+    }
+
+    private static Map<String, VirtualFile> collectRecursivelyAllLegalChildren(VirtualFile dir) throws IOException {
+        Map<String, VirtualFile> nameToFiles = new LinkedHashMap<>();
+        collectRecursivelyAllLegalChildren(dir, "", nameToFiles);
+        return nameToFiles;
+    }
+
+    private static void collectRecursivelyAllLegalChildren(VirtualFile currentDir, String currentPrefix, Map<String, VirtualFile> nameToFiles) throws IOException {
+        if (currentDir.isFile()) {
+            if (currentDir.isDescendant("")) {
+                nameToFiles.put(currentPrefix, currentDir);
+            }
+        } else {
+            if (!currentPrefix.isEmpty()) {
+                currentPrefix += "/";
+            }
+            List<VirtualFile> children = currentDir.listOnlyDescendants();
+            for (int i = 0; i < children.size(); i++) {
+                VirtualFile child = children.get(i);
+                collectRecursivelyAllLegalChildren(child, currentPrefix + child.getName(), nameToFiles);
             }
         }
     }
