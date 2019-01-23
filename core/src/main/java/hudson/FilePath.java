@@ -2045,9 +2045,15 @@ public final class FilePath implements Serializable {
      * Reads this file into a string, by using the current system encoding.
      */
     public String readToString() throws IOException, InterruptedException {
-        try (InputStream in = read()) {
-            return org.apache.commons.io.IOUtils.toString(in);
+        return act(new ReadToString());
+    }
+    private final class ReadToString extends SecureFileCallable<String> {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            return new String(Files.readAllBytes(fileToPath(reading(f))));
         }
+
     }
 
     /**
