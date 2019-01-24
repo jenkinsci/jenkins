@@ -35,7 +35,6 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import java.io.File;
 
-import jenkins.SmokeTest;
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
@@ -46,6 +45,7 @@ import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 @Category(SmokeTest.class)

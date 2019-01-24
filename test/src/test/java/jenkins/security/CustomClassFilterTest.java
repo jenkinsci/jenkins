@@ -31,7 +31,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-import jenkins.SmokeTest;
 import jenkins.util.BuildListenerAdapter;
 import jenkins.util.TreeString;
 import jenkins.util.TreeStringBuilder;
@@ -44,6 +43,7 @@ import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
 @Category(SmokeTest.class)

@@ -24,7 +24,6 @@
 package jenkins.install;
 
 import hudson.ExtensionList;
-import jenkins.SmokeTest;
 import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -35,6 +34,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 
 /**
  * Tests of {@link InstallState}.

@@ -26,7 +26,6 @@ package jenkins.model;
 import java.util.Collections;
 import java.util.logging.Level;
 
-import jenkins.SmokeTest;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.ClassRule;
@@ -34,6 +33,7 @@ import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.SmokeTest;
 
 @Category(SmokeTest.class)
 public class StartupTest {

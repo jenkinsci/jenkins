@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import jenkins.AgentProtocolTest;
-import jenkins.SmokeTest;
 import jenkins.slaves.DeprecatedAgentProtocolMonitor;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
@@ -50,6 +49,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.SmokeTest;
 
 /**
  * Tests of {@link SetupWizard}.

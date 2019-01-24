@@ -1,6 +1,5 @@
 package jenkins.install;
 
-import jenkins.SmokeTest;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 
@@ -13,6 +12,7 @@ import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.Main;
+import org.jvnet.hudson.test.SmokeTest;
 
 import java.io.File;
 import java.io.IOException;

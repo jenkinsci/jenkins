@@ -25,10 +25,10 @@
 package hudson;
 
 import hudson.model.Hudson;
-import jenkins.SmokeTest;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.Recipe;
 

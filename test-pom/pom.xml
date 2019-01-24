@@ -322,7 +322,7 @@ THE SOFTWARE.
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <groups>jenkins.SmokeTest</groups>
+              <groups>org.jvnet.hudson.test.SmokeTest</groups>
             </configuration>
           </plugin>
         </plugins>
