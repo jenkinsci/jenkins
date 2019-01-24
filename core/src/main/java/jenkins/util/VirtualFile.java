@@ -816,6 +816,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     // inside the root directory
                 }
                 catch (InterruptedException e) {
+                    return false;
                 }
             }
             
