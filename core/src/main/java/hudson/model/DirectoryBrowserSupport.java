@@ -487,7 +487,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         try (InputStream in = vf.open()) {
             IOUtils.copy(in, zos);
         }
-        zos.closeEntry();
+        finally {
+            zos.closeEntry();
+        }
     }
 
     private static Map<String, VirtualFile> collectRecursivelyAllLegalChildren(VirtualFile dir) throws IOException {

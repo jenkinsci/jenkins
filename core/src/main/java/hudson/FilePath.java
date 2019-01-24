@@ -142,6 +142,8 @@ import static hudson.Util.deleteFile;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -3351,7 +3353,8 @@ public final class FilePath implements Serializable {
                     } catch (InvalidPathException e2) {
                         throw new IOException(e2);
                     }
-                } catch(FileSystemException e){
+                } catch(FileSystemException e) {
+                    LOGGER.log(WARNING, String.format("Problem during call to the method toRealPath on %s", currentFileAbsolutePath), e);
                     return false;
                 }
             }
