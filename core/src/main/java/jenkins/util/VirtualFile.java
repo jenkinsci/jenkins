@@ -587,7 +587,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             
             try {
                 boolean isDescendant = root.isDescendant(relativePath + potentialChildRelativePath);
-                if (isDescendant && potentialChildRelativePath.equals("")) {
+                if (isDescendant && potentialChildRelativePath.isEmpty()) {
                     // in DirectoryBrowserSupport#zip, multiple calls to isDescendant are done for the same VirtualFile
                     cacheDescendant = true;
                 }
