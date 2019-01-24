@@ -81,7 +81,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.LinkOption;
@@ -3306,13 +3305,9 @@ public final class FilePath implements Serializable {
                     // in case this folder / file will be copied somewhere else, 
                     // it becomes the responsibility of that system to check the isDescendant with the existing links
                     // we are not taking the parentRealPath to avoid possible problem
-                    try {
-                        Path child = currentFileAbsolutePath.normalize();
-                        Path parent = parentAbsolutePath.normalize();
-                        return child.startsWith(parent);
-                    } catch (InvalidPathException e2) { // TODO which method would throw this?
-                        throw new IOException(e2);
-                    }
+                    Path child = currentFileAbsolutePath.normalize();
+                    Path parent = parentAbsolutePath.normalize();
+                    return child.startsWith(parent);
                 }
             }
 
