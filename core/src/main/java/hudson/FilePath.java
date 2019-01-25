@@ -88,6 +88,7 @@ import java.nio.file.Path;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -1650,7 +1651,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException {
-            return stating(f).isDirectory();
+            return Files.readAttributes(fileToPath(stating(f)), BasicFileAttributes.class).isDirectory();
         }
     }
     
