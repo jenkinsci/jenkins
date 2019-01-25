@@ -10,3 +10,6 @@ script-security command-launcher
 script-security matrix-auth
 script-security matrix-project
 script-security windows-slaves
+script-security jaxb
+command-launcher jaxb
+jdk-tool jaxb

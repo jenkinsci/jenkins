@@ -1,10 +1,12 @@
 package jenkins.plugins;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
+import jenkins.util.java.JavaUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -36,11 +38,12 @@ import java.util.stream.Stream;
 public class DetachedPluginsManager {
     private static final Logger LOGGER = Logger.getLogger(DetachedPluginsManager.class.getName());
 
-
     /**
      * Record of which plugins which removed from core and when.
      */
-    private static final List<DetachedPlugin> DETACHED_LIST;
+    @VisibleForTesting
+    static final List<DetachedPlugin> DETACHED_LIST;
+
     /**
      * Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins.
      */
@@ -50,7 +53,12 @@ public class DetachedPluginsManager {
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
             DETACHED_LIST = ImmutableList.copyOf(configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
-                return new DetachedPluginsManager.DetachedPlugin(pieces[0], pieces[1] + ".*", pieces[2]);
+
+                // defaults to Java 1.0 to install unconditionally if unspecified
+                return new DetachedPluginsManager.DetachedPlugin(pieces[0],
+                                                                 pieces[1] + ".*",
+                                                                 pieces[2],
+                                                                 pieces.length == 4 ? pieces[3] : "1.0");
             }).collect(Collectors.toList()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
@@ -73,7 +81,7 @@ public class DetachedPluginsManager {
     @Nonnull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         List<PluginWrapper.Dependency> out = new ArrayList<>();
-        for (DetachedPlugin detached : DETACHED_LIST) {
+        for (DetachedPlugin detached : getDetachedPlugins()) {
             // don't fix the dependency for itself, or else we'll have a cycle
             if (detached.shortName.equals(pluginName)) {
                 continue;
@@ -93,14 +101,17 @@ public class DetachedPluginsManager {
     }
 
     /**
-     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core.
+     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core, applicable to the current Java runtime.
      *
      * @return A {@link List} of {@link DetachedPlugin}s.
+     * @see JavaUtils#getCurrentJavaRuntimeVersionNumber()
      */
     @Restricted(NoExternalUse.class)
     public static @Nonnull
     List<DetachedPlugin> getDetachedPlugins() {
-        return DETACHED_LIST;
+        return DETACHED_LIST.stream()
+                .filter(plugin -> JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerOrEqualTo(plugin.getMinJavaVersion()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -108,19 +119,14 @@ public class DetachedPluginsManager {
      *
      * @param since The Jenkins version.
      * @return A {@link List} of {@link DetachedPlugin}s.
+     * @see #getDetachedPlugins()
      */
     @Restricted(NoExternalUse.class)
     public static @Nonnull
     List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
-        List<DetachedPlugin> detachedPlugins = new ArrayList<>();
-
-        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
-            if (!detachedPlugin.getSplitWhen().isOlderThan(since)) {
-                detachedPlugins.add(detachedPlugin);
-            }
-        }
-
-        return detachedPlugins;
+        return getDetachedPlugins().stream()
+                .filter(detachedPlugin -> !detachedPlugin.getSplitWhen().isOlderThan(since))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -132,7 +138,7 @@ public class DetachedPluginsManager {
      */
     @Restricted(NoExternalUse.class)
     public static boolean isDetachedPlugin(@Nonnull String pluginId) {
-        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+        for (DetachedPlugin detachedPlugin : getDetachedPlugins()) {
             if (detachedPlugin.getShortName().equals(pluginId)) {
                 return true;
             }
@@ -171,11 +177,13 @@ public class DetachedPluginsManager {
          */
         private final VersionNumber splitWhen;
         private final String requiredVersion;
+        private final VersionNumber minJavaVersion;
 
-        private DetachedPlugin(String shortName, String splitWhen, String requiredVersion) {
+        private DetachedPlugin(String shortName, String splitWhen, String requiredVersion, String minJavaVersion) {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
             this.requiredVersion = requiredVersion;
+            this.minJavaVersion = new VersionNumber(minJavaVersion);
         }
 
         /**
@@ -209,6 +217,11 @@ public class DetachedPluginsManager {
         @Override
         public String toString() {
             return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
+        }
+
+        @Nonnull
+        public VersionNumber getMinJavaVersion() {
+            return minJavaVersion;
         }
     }
 }
