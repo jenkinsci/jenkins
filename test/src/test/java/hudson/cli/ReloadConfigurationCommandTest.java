@@ -107,19 +107,21 @@ public class ReloadConfigurationCommandTest {
 
     @Test
     public void reloadUserConfig() throws Exception {
+        String originalName = "oldName";
+        String temporaryName = "newName";
         {
         User user = User.get("some_user", true, null);
-        user.setFullName("oldName");
+        user.setFullName(originalName);
         user.save();
+        assertThat(user.getFullName(), equalTo(originalName));
 
-        replace("users/some_user/config.xml", "oldName", "newName");
-
-        assertThat(user.getFullName(), equalTo("oldName"));
+        user.setFullName(temporaryName);
+        assertThat(user.getFullName(), equalTo(temporaryName));
         }
         reloadJenkinsConfigurationViaCliAndWait();
         {
         User user = User.getById("some_user", false);
-        assertThat(user.getFullName(), equalTo("newName"));
+        assertThat(user.getFullName(), equalTo(originalName));
         }
     }
 

@@ -76,7 +76,7 @@ public class StringParameterValue extends ParameterValue {
      
     /**
      * Trimming for value
-     * @since TODO
+     * @since 2.90
      */
     public void doTrim() {
         if (value != null) {

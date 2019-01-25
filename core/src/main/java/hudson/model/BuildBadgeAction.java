@@ -32,7 +32,7 @@ package hudson.model;
  * with {@link Run}. 
  *
  * <p>
- * Actions with this marker should have a view <tt>badge.jelly</tt>,
+ * Actions with this marker should have a view {@code badge.jelly},
  * which will be called to render the badges. The expected visual appearance
  * of a badge is a 16x16 icon.
  *

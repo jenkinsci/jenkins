@@ -26,7 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.xml.Xpp3Driver;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -39,7 +39,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
@@ -73,12 +72,12 @@ import org.apache.commons.io.IOUtils;
  * not have any data, the newly added field is left to the VM-default
  * value (if you let XStream create the object, such as
  * {@link #read()} &mdash; which is the majority), or to the value initialized by the
- * constructor (if the object is created via <tt>new</tt> and then its
+ * constructor (if the object is created via {@code new} and then its
  * value filled by XStream, such as {@link #unmarshal(Object)}.)
  *
  * <p>
  * Removing a field requires that you actually leave the field with
- * <tt>transient</tt> keyword. When you read the old XML, XStream
+ * {@code transient} keyword. When you read the old XML, XStream
  * will set the value to this field. But when the data is saved,
  * the field will no longer will be written back to XML.
  * (It might be possible to tweak XStream so that we can simply
@@ -86,13 +85,13 @@ import org.apache.commons.io.IOUtils;
  *
  * <p>
  * Changing the data structure is usually a combination of the two
- * above. You'd leave the old data store with <tt>transient</tt>,
+ * above. You'd leave the old data store with {@code transient},
  * and then add the new data. When you are reading the old XML,
  * only the old field will be set. When you are reading the new XML,
  * only the new field will be set. You'll then need to alter the code
  * so that it will be able to correctly handle both situations,
  * and that as soon as you see data in the old field, you'll have to convert
- * that into the new data structure, so that the next <tt>save</tt> operation
+ * that into the new data structure, so that the next {@code save} operation
  * will write the new data (otherwise you'll end up losing the data, because
  * old fields will be never written back.)
  *
@@ -155,14 +154,29 @@ public final class XmlFile {
      * Loads the contents of this file into an existing object.
      *
      * @return
-     *      The unmarshalled object. Usually the same as <tt>o</tt>, but would be different
+     *      The unmarshalled object. Usually the same as {@code o}, but would be different
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
+        return unmarshal(o, false);
+    }
 
+    /**
+     * Variant of {@link #unmarshal(Object)} applying {@link XStream2#unmarshal(HierarchicalStreamReader, Object, DataHolder, boolean)}.
+     * @since 2.99
+     */
+    public Object unmarshalNullingOut(Object o) throws IOException {
+        return unmarshal(o, true);
+    }
+
+    private Object unmarshal(Object o, boolean nullOut) throws IOException {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
-            return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
+            if (nullOut) {
+                return ((XStream2) xs).unmarshal(DEFAULT_DRIVER.createReader(in), o, null, true);
+            } else {
+                return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
+            }
         } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
@@ -172,7 +186,7 @@ public final class XmlFile {
         mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
         try {
-            w.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+            w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
             writing.set(file);
             try {
@@ -337,13 +351,14 @@ public final class XmlFile {
     /**
      * {@link XStream} instance is supposed to be thread-safe.
      */
-    private static final XStream DEFAULT_XSTREAM = new XStream2();
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final Xpp3Driver DEFAULT_DRIVER = new Xpp3Driver();
+    private static final HierarchicalStreamDriver DEFAULT_DRIVER = XStream2.getDefaultDriver();
+
+    private static final XStream DEFAULT_XSTREAM = new XStream2(DEFAULT_DRIVER);
 
     static {
         JAXP.setNamespaceAware(true);

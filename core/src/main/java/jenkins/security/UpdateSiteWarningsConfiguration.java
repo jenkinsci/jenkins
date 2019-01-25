@@ -26,6 +26,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.PluginWrapper;
+import hudson.model.PersistentDescriptor;
 import hudson.model.UpdateSite;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -50,17 +51,13 @@ import java.util.Set;
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
+public class UpdateSiteWarningsConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     private HashSet<String> ignoredWarnings = new HashSet<>();
 
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
-    }
-
-    public UpdateSiteWarningsConfiguration() {
-        load();
     }
 
     @Nonnull
@@ -77,14 +74,14 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
         if (warning.type != UpdateSite.Warning.Type.PLUGIN) {
             return null;
         }
-        return Jenkins.getInstance().getPluginManager().getPlugin(warning.component);
+        return Jenkins.get().getPluginManager().getPlugin(warning.component);
     }
 
     @Nonnull
     public Set<UpdateSite.Warning> getAllWarnings() {
         HashSet<UpdateSite.Warning> allWarnings = new HashSet<>();
 
-        for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
             UpdateSite.Data data = site.getData();
             if (data != null) {
                 allWarnings.addAll(data.getWarnings());

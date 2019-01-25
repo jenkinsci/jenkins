@@ -13,7 +13,7 @@ This page provides information about contributing code to the Jenkins core codeb
     - In Jenkins project we usually use [OpenJDK](http://openjdk.java.net/),
   but you can use other JDKs as well.
     - Java 9 is **not supported** in Jenkins.
-  * Maven 3.3.9 or above. You can download it [here](https://maven.apache.org/download.cgi)
+  * Maven 3.5.3 or above. You can download it [here](https://maven.apache.org/download.cgi)
   * Any IDE which supports importing Maven projects
 4. Setup your development environment as described in [Preparing for Plugin Development](https://jenkins.io/doc/developer/tutorial/prepare/)
 
@@ -30,7 +30,7 @@ Building and debugging process is described [here](https://jenkins.io/doc/develo
 
 If you want simply to have the `jenkins.war` file as fast as possible without tests, run:
 
-    mvn clean package -pl war -am -DskipTests
+    mvn clean package -pl war -am -DskipTests -Dfindbugs.skip
 
 The WAR file will be created in `war/target/jenkins.war`.
 After that you can start Jenkins using Java CLI ([guide](https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins)).
@@ -46,13 +46,19 @@ Functional tests (`test` module) take a while even on server-grade machines.
 Most of the tests will be launched by the continuous integration instance,
 so there is no strict need to run full test suites before proposing a pull request.
 
+There are 3 profiles for tests:
+
+* `light-test` - only unit tests, no functional tests
+* `smoke-test` - run unit tests + a number of functional tests
+* `all-tests` - Runs all tests, with re-run (default)
+
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)](https://github.com/jenkinsci/acceptance-test-harness) repository.
 If you propose complex UI changes, you should create new ATH tests for them.
 
 ## Proposing Changes
 
-The Jenkins project source code repositories are hosted GitHub.
+The Jenkins project source code repositories are hosted at GitHub.
 All proposed changes are submitted and code reviewed using the _GitHub Pull Request_ process.
 
 To submit a pull request:

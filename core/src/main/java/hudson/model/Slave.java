@@ -84,7 +84,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * Information about a Hudson agent node.
  *
  * <p>
- * Ideally this would have been in the <tt>hudson.slaves</tt> package,
+ * Ideally this would have been in the {@code hudson.slaves} package,
  * but for compatibility reasons, it can't.
  *
  * <p>
@@ -146,8 +146,8 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
 
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
-                                    new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties =
+            new DescribableList<>(this);
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -180,9 +180,10 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
+    @Deprecated
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -493,19 +494,19 @@ public abstract class Slave extends Node implements Serializable {
             // RemoteLauncher requires an active Channel instance to operate correctly
             final Channel channel = c.getChannel();
             if (channel == null) { 
-                reportLauncerCreateError("The agent has not been fully initialized yet",
+                reportLauncherCreateError("The agent has not been fully initialized yet",
                                          "No remoting channel to the agent OR it has not been fully initialized yet", listener);
                 return new Launcher.DummyLauncher(listener);
             }
             if (channel.isClosingOrClosed()) {
-                reportLauncerCreateError("The agent is being disconnected",
+                reportLauncherCreateError("The agent is being disconnected",
                                          "Remoting channel is either in the process of closing down or has closed down", listener);
                 return new Launcher.DummyLauncher(listener);
             }
             final Boolean isUnix = c.isUnix();
             if (isUnix == null) {
                 // isUnix is always set when the channel is not null, so it should never happen
-                reportLauncerCreateError("The agent has not been fully initialized yet",
+                reportLauncherCreateError("The agent has not been fully initialized yet",
                                          "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
                                          "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
                                          listener);
@@ -516,7 +517,7 @@ public abstract class Slave extends Node implements Serializable {
         }
     }
     
-    private void reportLauncerCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
+    private void reportLauncherCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
         String message = "Issue with creating launcher for agent " + name + ". " + humanReadableMsg;
         listener.error(message);
         if (LOGGER.isLoggable(Level.WARNING)) {
@@ -529,7 +530,12 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Gets the corresponding computer object.
+     *
+     * @return
+     *      this method can return null if there's no {@link Computer} object for this node,
+     *      such as when this node has no executors at all.
      */
+    @CheckForNull
     public SlaveComputer getComputer() {
         return (SlaveComputer)toComputer();
     }
@@ -554,7 +560,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     protected Object readResolve() {
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+            nodeProperties = new DescribableList<>(this);
         return this;
     }
 

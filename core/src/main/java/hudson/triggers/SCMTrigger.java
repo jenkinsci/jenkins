@@ -37,6 +37,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.PersistentDescriptor;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -83,6 +84,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import javax.annotation.PostConstruct;
 
 import static java.util.logging.Level.WARNING;
 
@@ -211,7 +214,7 @@ public class SCMTrigger extends Trigger<Item> {
     }
 
     @Extension @Symbol("pollSCM")
-    public static class DescriptorImpl extends TriggerDescriptor {
+    public static class DescriptorImpl extends TriggerDescriptor implements PersistentDescriptor {
 
         private static ThreadFactory threadFactory() {
             return new NamingThreadFactory(Executors.defaultThreadFactory(), "SCMTrigger");
@@ -235,13 +238,18 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * Max number of threads for SCM polling.
-         * 0 for unbounded.
          */
-        private int maximumThreads;
+        private int maximumThreads = 10;
 
-        public DescriptorImpl() {
-            load();
-            resizeThreadPool();
+        private static final int THREADS_LOWER_BOUND = 5;
+        private static final int THREADS_UPPER_BOUND = 100;
+        private static final int THREADS_DEFAULT= 10;
+
+        private Object readResolve() {
+            if (maximumThreads == 0) {
+                maximumThreads = THREADS_DEFAULT;
+            }
+            return this;
         }
 
         public boolean isApplicable(Item item) {
@@ -290,8 +298,6 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Gets the number of concurrent threads used for polling.
          *
-         * @return
-         *      0 if unlimited.
          */
         public int getPollingThreadCount() {
             return maximumThreads;
@@ -299,12 +305,16 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * Sets the number of concurrent threads used for SCM polling and resizes the thread pool accordingly
-         * @param n number of concurrent threads, zero or less means unlimited, maximum is 100
+         * @param n number of concurrent threads in the range 5..100, outside values will set the to the nearest bound
          */
         public void setPollingThreadCount(int n) {
             // fool proof
-            if(n<0)     n=0;
-            if(n>100)   n=100;
+            if (n < THREADS_LOWER_BOUND) {
+                n = THREADS_LOWER_BOUND;
+            }
+            if (n > THREADS_UPPER_BOUND) {
+                n = THREADS_UPPER_BOUND;
+            }
 
             maximumThreads = n;
 
@@ -313,7 +323,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Restricted(NoExternalUse.class)
         public boolean isPollingThreadCountOptionVisible() {
-            if (getPollingThreadCount() != 0) {
+            if (getPollingThreadCount() != THREADS_DEFAULT) {
                 // this is a user who already configured the option
                 return true;
             }
@@ -336,18 +346,19 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Update the {@link ExecutorService} instance.
          */
+        @PostConstruct
         /*package*/ synchronized void resizeThreadPool() {
-            queue.setExecutors(
-                    (maximumThreads==0 ? Executors.newCachedThreadPool(threadFactory()) : Executors.newFixedThreadPool(maximumThreads, threadFactory())));
+            queue.setExecutors(Executors.newFixedThreadPool(maximumThreads, threadFactory()));
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             String t = json.optString("pollingThreadCount",null);
-            if(t==null || t.length()==0)
-                setPollingThreadCount(0);
-            else
+            if (doCheckPollingThreadCount(t).kind != FormValidation.Kind.OK) {
+                setPollingThreadCount(THREADS_DEFAULT);
+            } else {
                 setPollingThreadCount(Integer.parseInt(t));
+            }
 
             // Save configuration
             save();
@@ -356,9 +367,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         public FormValidation doCheckPollingThreadCount(@QueryParameter String value) {
-            if (value != null && "".equals(value.trim()))
-                return FormValidation.ok();
-            return FormValidation.validateNonNegativeInteger(value);
+            return FormValidation.validateIntegerInRange(value, THREADS_LOWER_BOUND, THREADS_UPPER_BOUND);
         }
 
         /**
@@ -462,7 +471,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
         
         /**
-         * Used from <tt>polling.jelly</tt> to write annotated polling log to the given output.
+         * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support

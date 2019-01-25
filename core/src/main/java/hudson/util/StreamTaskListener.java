@@ -44,6 +44,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 // TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
 // The change needs API deprecation policy or external usages cleanup.
 
@@ -56,7 +59,9 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
+    @Nonnull
     private PrintStream out;
+    @CheckForNull
     private Charset charset;
 
     /**
@@ -66,15 +71,15 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
-    public StreamTaskListener(PrintStream out) {
+    public StreamTaskListener(@Nonnull PrintStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out) {
+    public StreamTaskListener(@Nonnull OutputStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out, Charset charset) {
+    public StreamTaskListener(@Nonnull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
                 this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
@@ -87,18 +92,18 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         }
     }
 
-    public StreamTaskListener(File out) throws IOException {
+    public StreamTaskListener(@Nonnull File out) throws IOException {
         this(out,null);
     }
 
-    public StreamTaskListener(File out, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
         this(Files.newOutputStream(asPath(out)), charset);
     }
 
-    private static Path asPath(File out) throws IOException {
+    private static Path asPath(@Nonnull File out) throws IOException {
         try {
             return out.toPath();
         } catch (InvalidPathException e) {
@@ -115,7 +120,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      * @throws IOException if the file could not be opened.
      * @since 1.651
      */
-    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, boolean append, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
@@ -127,7 +132,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         );
     }
 
-    public StreamTaskListener(Writer w) throws IOException {
+    public StreamTaskListener(@Nonnull Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
 
@@ -155,7 +160,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     @Override
     public Charset getCharset() {
-        return charset;
+        return charset != null ? charset : Charset.defaultCharset();
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

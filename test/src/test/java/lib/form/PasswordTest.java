@@ -40,6 +40,8 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -95,6 +97,8 @@ public class PasswordTest {
     @Issue({"SECURITY-266", "SECURITY-304"})
     @Test
     public void testExposedCiphertext() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {

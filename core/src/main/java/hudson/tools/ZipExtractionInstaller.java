@@ -42,9 +42,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
@@ -95,7 +97,10 @@ public class ZipExtractionInstaller extends ToolInstaller {
             return Messages.ZipExtractionInstaller_DescriptorImpl_displayName();
         }
 
+        @RequirePOST
         public FormValidation doCheckUrl(@QueryParameter String value) {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            
             try {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();

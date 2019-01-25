@@ -117,6 +117,8 @@ public class InstallUtilTest {
      */
     @Test
     public void test_getLastExecVersion() throws Exception {
+        Main.isUnitTest = true;
+
         // Delete the config file, forcing getLastExecVersion to return
         // the default/unset version value.
         InstallUtil.getConfigFile().delete();

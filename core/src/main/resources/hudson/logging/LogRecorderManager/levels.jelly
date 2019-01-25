@@ -68,7 +68,7 @@ THE SOFTWARE.
         <option>all</option>
       </select>
       <st:nbsp/>
-      <f:submit value="${%Submit}"/>
+      <f:submit />
     </form>
   </l:main-panel>
 </l:layout>

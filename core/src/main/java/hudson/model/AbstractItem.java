@@ -36,12 +36,14 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
+import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import java.util.Iterator;
@@ -56,6 +58,8 @@ import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -72,12 +76,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
@@ -90,6 +98,8 @@ import javax.xml.transform.stream.StreamSource;
 import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -103,7 +113,7 @@ import org.kohsuke.stapler.Ancestor;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -226,6 +236,114 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     protected void doSetName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Controls whether the default rename action is available for this item.
+     *
+     * @return whether {@link #name} can be modified by a user
+     * @see #checkRename
+     * @see #renameTo
+     * @since 2.110
+     */
+    public boolean isNameEditable() {
+        return false;
+    }
+
+    /**
+     * Renames this item
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doConfirmRename(@QueryParameter String newName) throws IOException {
+        newName = newName == null ? null : newName.trim();
+        FormValidation validationError = doCheckNewName(newName);
+        if (validationError.kind != FormValidation.Kind.OK) {
+            throw new Failure(validationError.getMessage());
+        }
+
+        renameTo(newName);
+        // send to the new job page
+        // note we can't use getUrl() because that would pick up old name in the
+        // Ancestor.getUrl()
+        return HttpResponses.redirectTo("../" + newName);
+    }
+
+    /**
+     * Called by {@link #doConfirmRename} and {@code rename.jelly} to validate renames.
+     * @return {@link FormValidation#ok} if this item can be renamed as specified, otherwise
+     * {@link FormValidation#error} with a message explaining the problem.
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
+        // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
+        if (!hasPermission(Item.CONFIGURE)) {
+            if (parent instanceof AccessControlled) {
+                ((AccessControlled)parent).checkPermission(Item.CREATE);
+            }
+            checkPermission(Item.DELETE);
+        }
+
+        newName = newName == null ? null : newName.trim();
+        try {
+            Jenkins.checkGoodName(newName);
+            assert newName != null; // Would have thrown Failure
+            if (newName.equals(name)) {
+                return FormValidation.warning(Messages.AbstractItem_NewNameUnchanged());
+            }
+            Jenkins.get().getProjectNamingStrategy().checkName(newName);
+            checkIfNameIsUsed(newName);
+            checkRename(newName);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
+    }
+
+    /**
+     * Check new name for job
+     * @param newName - New name for job.
+     */
+    private void checkIfNameIsUsed(@Nonnull String newName) throws Failure {
+        try {
+            Item item = getParent().getItem(newName);
+            if (item != null) {
+                throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
+            }
+            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+                item = getParent().getItem(newName);
+                if (item != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                                "User {2} has no {3} permission for existing job with the same name",
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext().getAuthentication().getName(), Item.DISCOVER.name} );
+                    }
+                    // Don't explicitly mention that there is another item with the same name.
+                    throw new Failure(Messages.Jenkins_NotAllowedName(newName));
+                }
+            }
+        } catch(AccessDeniedException ex) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                        "User {2} has {3} permission, but no {4} for existing job with the same name",
+                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name} );
+            }
+            throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
+        }
+    }
+
+    /**
+     * Allows subclasses to block renames for domain-specific reasons. Generic validation of the new name
+     * (e.g., null checking, checking for illegal characters, and checking that the name is not in use)
+     * always happens prior to calling this method.
+     *
+     * @param newName the new name for the item
+     * @throws Failure if the rename should be blocked
+     * @since 2.110
+     * @see Job#checkRename
+     */
+    protected void checkRename(@Nonnull String newName) throws Failure {
+
     }
 
     /**
@@ -675,7 +793,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
@@ -752,7 +870,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
             if (o!=this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
@@ -818,6 +936,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Override public String toString() {
         return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            if (!getACL().hasPermission(Item.DISCOVER)) {
+                return null;
+            }
+            getACL().checkPermission(Item.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.
