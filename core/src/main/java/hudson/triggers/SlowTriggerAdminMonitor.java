@@ -5,9 +5,11 @@ import hudson.model.AdministrativeMonitor;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -21,11 +23,13 @@ import java.util.logging.Logger;
 @Restricted(NoExternalUse.class)
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
-    private final @Nonnull
-    Map<String, Value> errors = new CopyOnWriteMap.Hash<>();
+    @Nonnull
+    private final Map<String, Value> errors = new CopyOnWriteMap.Hash<>();
 
+    @Nonnull
     private static final Logger LOGGER = Logger.getLogger(SlowTriggerAdminMonitor.class.getName());
 
+    @Nonnull
     public static SlowTriggerAdminMonitor getInstance() {
         return ExtensionList.lookup(SlowTriggerAdminMonitor.class).get(0);
     }
@@ -39,7 +43,8 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     }
 
     @Override
-    public @Nonnull String getDisplayName() {
+    @Nonnull
+    public String getDisplayName() {
         return "Cron triggers monitor";
     }
 
@@ -51,31 +56,38 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         errors.put(trigger, new Value(msg));
     }
 
-    public @Nonnull Map<String, Value> getErrors() {
+    @Nonnull
+    public Map<String, Value> getErrors() {
         return new HashMap<>(errors);
     }
 
+    @Restricted(DoNotUse.class)
+    @RequirePOST
+    @Nonnull
     public HttpResponse doClear() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         LOGGER.info("Called clearing...");
         clear();
-        return HttpResponses.redirectToDot();
+        return HttpResponses.redirectViaContextPath("/manage");
     }
 
-    private class Value {
-        private String time;
-        private String msg;
+    public class Value {
 
-        Value(String msg) {
+        private final String time;
+        private final String msg;
+
+        Value(@Nonnull String msg) {
             this.msg = msg;
             this.time = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());
         }
 
-        String getTime() {
+        @Nonnull
+        public String getTime() {
             return time;
         }
 
-        String getMsg() {
+        @Nonnull
+        public String getMsg() {
             return msg;
         }
     }
