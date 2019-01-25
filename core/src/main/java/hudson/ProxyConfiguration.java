@@ -134,7 +134,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.secretPassword = Secret.fromString(password);
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
         this.testUrl = Util.fixEmptyAndTrim(testUrl);
-        authenticator = newAuthenticator();
+        this.authenticator = newAuthenticator();
     }
 
     private Authenticator newAuthenticator() {
