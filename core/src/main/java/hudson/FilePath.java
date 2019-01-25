@@ -2031,14 +2031,13 @@ public final class FilePath implements Serializable {
      */
     public String readToString() throws IOException, InterruptedException {
         return act(new ReadToString());
-    }
+    } 
     private final class ReadToString extends SecureFileCallable<String> {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;       
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return new String(Files.readAllBytes(fileToPath(reading(f))));
         }
-
     }
 
     /**
