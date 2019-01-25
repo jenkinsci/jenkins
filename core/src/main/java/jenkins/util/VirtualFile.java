@@ -582,7 +582,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
             @Override public boolean isDirectory() throws IOException {
                 try {
-                    return f.isDirectory();
+                    return exists() && f.isDirectory();
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
