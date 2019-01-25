@@ -163,30 +163,36 @@ public class CLIRegisterer extends ExtensionFinder {
                         /**
                          * Envelope an annotated CLI command
                          *
-                         * @param args   Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
-                         *               then "foo" is the sub-command and the argument list is ["bar","zot"].
-                         * @param locale Locale of the client (which can be different from that of the server.) Good behaving command implementation
-                         *               would use this locale for formatting messages.
-                         * @param stdin  Connected to the stdin of the CLI client.
-                         * @param stdout Connected to the stdout of the CLI client.
-                         * @param stderr Connected to the stderr of the CLI client.
-                         * @return Exit code from the CLI command execution
-                         * <p>
-                         * <p>
-                         * Jenkins standard exit codes from CLI:
-                         * 0 means everything went well.
-                         * 1 means further unspecified exception is thrown while performing the command.
-                         * 2 means CmdLineException is thrown while performing the command.
-                         * 3 means IllegalArgumentException is thrown while performing the command.
-                         * 4 mean IllegalStateException is thrown while performing the command.
-                         * 5 means AbortException is thrown while performing the command.
-                         * 6 means AccessDeniedException is thrown while performing the command.
-                         * 7 means BadCredentialsException is thrown while performing the command.
-                         * 8-15 are reserved for future usage
-                         * 16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
-                         * <p>
-                         * <p>
-                         * Note: For details - see JENKINS-32273
+                         * @param args
+                         *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
+                         *      then "foo" is the sub-command and the argument list is ["bar","zot"].
+                         * @param locale
+                         *      Locale of the client (which can be different from that of the server.) Good behaving command implementation
+                         *      would use this locale for formatting messages.
+                         * @param stdin
+                         *      Connected to the stdin of the CLI client.
+                         * @param stdout
+                         *      Connected to the stdout of the CLI client.
+                         * @param stderr
+                         *      Connected to the stderr of the CLI client.
+                         * @return
+                         *      Exit code from the CLI command execution
+                         *
+                         *      <p>
+                         *      Jenkins standard exit codes from CLI:
+                         *      0 means everything went well.
+                         *      1 means further unspecified exception is thrown while performing the command.
+                         *      2 means CmdLineException is thrown while performing the command.
+                         *      3 means IllegalArgumentException is thrown while performing the command.
+                         *      4 mean IllegalStateException is thrown while performing the command.
+                         *      5 means AbortException is thrown while performing the command.
+                         *      6 means AccessDeniedException is thrown while performing the command.
+                         *      7 means BadCredentialsException is thrown while performing the command.
+                         *      8-15 are reserved for future usage
+                         *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
+                         *
+                         *      <p>
+                         *      Note: For details - see JENKINS-32273
                          */
                         @Override
                         public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
