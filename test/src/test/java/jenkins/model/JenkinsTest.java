@@ -47,6 +47,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.InvisibleAction;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
@@ -389,15 +390,8 @@ public class JenkinsTest {
     }
 
     @TestExtension("testUnprotectedRootAction")
-    public static class ProtectedRootActionImpl implements RootAction {
-        public String getIconFileName() {
-            return null;
-        }
-
-        public String getDisplayName() {
-            return null;
-        }
-
+    public static class ProtectedRootActionImpl extends InvisibleAction implements RootAction {
+        @Override
         public String getUrlName() {
             return "foobar-zot";
         }
