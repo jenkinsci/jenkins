@@ -8,13 +8,16 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 import hudson.Main;
 import jenkins.model.Jenkins;
+import org.jvnet.hudson.test.SmokeTest;
 
+@Category(SmokeTest.class)
 public class SetupWizardRestartTest {
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();

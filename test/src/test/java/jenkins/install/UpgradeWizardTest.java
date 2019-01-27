@@ -8,9 +8,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.Main;
+import org.jvnet.hudson.test.SmokeTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import static org.junit.Assert.*;
 /**
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class UpgradeWizardTest {
     @Rule
     public final JenkinsRule j = new JenkinsRule();

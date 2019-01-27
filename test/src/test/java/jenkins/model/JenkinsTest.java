@@ -68,10 +68,12 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
@@ -95,6 +97,7 @@ import javax.annotation.CheckForNull;
  * @see Jenkins
  * @see JenkinsRule
  */
+@Category(SmokeTest.class)
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
