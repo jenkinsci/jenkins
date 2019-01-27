@@ -31,7 +31,6 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.List;
 import java.util.HashSet;
-import java.util.logging.Logger;
 
 /**
  * CLI command, which deletes a job or multiple jobs.
@@ -56,7 +55,7 @@ public class DeleteJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final HashSet<String> hs = new HashSet<>();
         hs.addAll(jobs);
 
         for (String job_s: hs) {

@@ -56,7 +56,7 @@ public class GroovyshCommand extends CLICommand {
         return Messages.GroovyshCommand_ShortDescription();
     }
 
-    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<String>();
+    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<>();
 
     @Override
     protected int run() {
