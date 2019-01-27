@@ -59,7 +59,6 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 
-import static java.util.logging.Level.FINE;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -82,11 +81,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.LinkOption;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
@@ -137,10 +134,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
-import static hudson.Util.deleteFile;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
-import static hudson.Util.isSymlink;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -1600,11 +1595,7 @@ public final class FilePath implements Serializable {
             @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(!f.exists()) {
-                    try {
-                        Files.newOutputStream(creating(f).toPath()).close();
-                    } catch (InvalidPathException e) {
-                        throw new IOException(e);
-                    }
+                    Files.newOutputStream(fileToPath(creating(f))).close();
                 }
                 if(!stating(f).setLastModified(timestamp))
                     throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
@@ -1947,11 +1938,7 @@ public final class FilePath implements Serializable {
      */
     public InputStream read() throws IOException, InterruptedException {
         if(channel==null) {
-            try {
-                return Files.newInputStream(reading(new File(remote)).toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newInputStream(fileToPath(reading(new File(remote))));
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
@@ -1967,11 +1954,9 @@ public final class FilePath implements Serializable {
         }
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            try (InputStream fis = Files.newInputStream(reading(f).toPath());
+            try (InputStream fis = Files.newInputStream(fileToPath(reading(f)));
                     OutputStream out = p.getOut()) {
                 org.apache.commons.io.IOUtils.copy(fis, out);
-            } catch (InvalidPathException e) {
-                p.error(new IOException(e));
             } catch (Exception x) {
                 p.error(x);
             }
@@ -2042,11 +2027,16 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Reads this file into a string, by using the current system encoding.
+     * Reads this file into a string, by using the current system encoding on the remote machine.
      */
     public String readToString() throws IOException, InterruptedException {
-        try (InputStream in = read()) {
-            return org.apache.commons.io.IOUtils.toString(in);
+        return act(new ReadToString());
+    } 
+    private final class ReadToString extends SecureFileCallable<String> {
+        private static final long serialVersionUID = 1L;       
+        @Override
+        public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            return new String(Files.readAllBytes(fileToPath(reading(f))));
         }
     }
 
@@ -2069,11 +2059,7 @@ public final class FilePath implements Serializable {
         if(channel==null) {
             File f = new File(remote).getAbsoluteFile();
             mkdirs(f.getParentFile());
-            try {
-                return Files.newOutputStream(writing(f).toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newOutputStream(fileToPath(writing(f)));
         }
 
         return act(new WritePipe());
@@ -2084,12 +2070,7 @@ public final class FilePath implements Serializable {
             public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
                 f = f.getAbsoluteFile();
                 mkdirs(f.getParentFile());
-                try {
-                    OutputStream fos = Files.newOutputStream(writing(f).toPath());
-                    return new RemoteOutputStream(fos);
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
+                return new RemoteOutputStream(Files.newOutputStream(fileToPath(writing(f))));
             }
     }
 
@@ -2097,7 +2078,7 @@ public final class FilePath implements Serializable {
      * Overwrites this file by placing the given String as the content.
      *
      * @param encoding
-     *      Null to use the platform default encoding.
+     *      Null to use the platform default encoding on the remote machine.
      * @since 1.105
      */
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
@@ -2114,11 +2095,9 @@ public final class FilePath implements Serializable {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             mkdirs(f.getParentFile());
-            try (OutputStream fos = Files.newOutputStream(writing(f).toPath());
+            try (OutputStream fos = Files.newOutputStream(fileToPath(writing(f)));
                     Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
                 w.write(content);
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             }
             return null;
         }
@@ -2264,11 +2243,9 @@ public final class FilePath implements Serializable {
         }
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            try (InputStream fis = Files.newInputStream(reading(f).toPath())) {
+            try (InputStream fis = Files.newInputStream(fileToPath(reading(f)))) {
                 org.apache.commons.io.IOUtils.copy(fis, out);
                 return null;
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             } finally {
                 out.close();
             }
@@ -3327,13 +3304,9 @@ public final class FilePath implements Serializable {
                     // in case this folder / file will be copied somewhere else, 
                     // it becomes the responsibility of that system to check the isDescendant with the existing links
                     // we are not taking the parentRealPath to avoid possible problem
-                    try {
-                        Path child = currentFileAbsolutePath.normalize();
-                        Path parent = parentAbsolutePath.normalize();
-                        return child.startsWith(parent);
-                    } catch (InvalidPathException e2) {
-                        throw new IOException(e2);
-                    }
+                    Path child = currentFileAbsolutePath.normalize();
+                    Path parent = parentAbsolutePath.normalize();
+                    return child.startsWith(parent);
                 }
             }
 
