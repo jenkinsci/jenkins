@@ -40,12 +40,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
+import jenkins.util.MemoryReductionUtil;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.DataWriter;
@@ -63,7 +67,7 @@ import org.kohsuke.stapler.export.Flavor;
  * @author Kohsuke Kawaguchi
  * @see SearchableModelObject
  */
-public class Search {
+public class Search implements StaplerProxy {
     @Restricted(NoExternalUse.class) // used from stapler views only
     public static String encodeQuery(String query) throws UnsupportedEncodingException {
         return URLEncoder.encode(query, "UTF-8");
@@ -140,7 +144,7 @@ public class Search {
     public SearchResult getSuggestions(StaplerRequest req, String query) {
         Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
-        int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 20;
+        int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
         SearchableModelObject smo = findClosestSearchableModelObject(req);
         for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
             if(r.size()>=max) {
@@ -153,7 +157,7 @@ public class Search {
         return r;
     }
 
-    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);
@@ -323,16 +327,14 @@ public class Search {
     static final class TokenList {
         private final String[] tokens;
 
-        private final static String[] EMPTY = new String[0];
-
         public TokenList(String tokenList) {
-            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : EMPTY;
+            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         public int length() { return tokens.length; }
 
         /**
-         * Returns {@link List} such that its <tt>get(end)</tt>
+         * Returns {@link List} such that its {@code get(end)}
          * returns the concatenation of [token_start,...,token_end]
          * (both end inclusive.)
          */
@@ -406,6 +408,21 @@ public class Search {
 
         return paths[tokens.length()];
     }
-    
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.getInstance().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
+
     private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

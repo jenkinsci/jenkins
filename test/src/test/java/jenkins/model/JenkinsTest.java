@@ -25,7 +25,6 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -48,6 +47,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.InvisibleAction;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
@@ -65,13 +65,18 @@ import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 
 import jenkins.AgentProtocol;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -83,6 +88,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import javax.annotation.CheckForNull;
@@ -92,6 +98,7 @@ import javax.annotation.CheckForNull;
  * @see Jenkins
  * @see JenkinsRule
  */
+@Category(SmokeTest.class)
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -271,22 +278,6 @@ public class JenkinsTest {
         }
     }
     
-    @Test @Issue("JENKINS-12251")
-    public void testItemFullNameExpansion() throws Exception {
-        HtmlForm f = j.createWebClient().goTo("configure").getFormByName("config");
-        f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
-        f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        j.submit(f);
-
-        // build a dummy project
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-
-        // make sure these changes are effective
-        assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
-        assertTrue(b.getRootDir().toString().contains("test12251_builds"));
-    }
 
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
@@ -308,6 +299,8 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -336,6 +329,8 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -395,15 +390,8 @@ public class JenkinsTest {
     }
 
     @TestExtension("testUnprotectedRootAction")
-    public static class ProtectedRootActionImpl implements RootAction {
-        public String getIconFileName() {
-            return null;
-        }
-
-        public String getDisplayName() {
-            return null;
-        }
-
+    public static class ProtectedRootActionImpl extends InvisibleAction implements RootAction {
+        @Override
         public String getUrlName() {
             return "foobar-zot";
         }
@@ -682,5 +670,12 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber nullVersion = Jenkins.getStoredVersion();
         assertNull(nullVersion);
+    }
+
+    @Issue("JENKINS-47406")
+    @Test
+    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
+    public void jobCreatedByInitializerIsRetained() {
+        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
     }
 }

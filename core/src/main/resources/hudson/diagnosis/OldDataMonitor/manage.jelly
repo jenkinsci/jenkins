@@ -34,15 +34,22 @@ THE SOFTWARE.
       <tr><th>${%Type}</th><th>${%Name}</th><th>${%Version}</th><th></th></tr>
       <j:forEach var="item" items="${it.data.entrySet()}">
         <j:set var="obj" value="${item.key}"/>
-        <j:set var="range" value="${item.value}"/>
         <j:choose>
-          <j:when test="${range!=''}">
-            <j:if test="${range.isOld(150)}"><j:set var="range"><b>${range}</b></j:set></j:if>
+          <j:when test="${item.value!=''}">
             <tr>
               <td>${obj.class.name}</td>
               <!-- fullName is first to avoid calling User.get(String) for User object -->
               <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
-              <td>${range}</td>
+              <td>
+                <j:choose>
+                  <j:when test="${item.value.isOld(150)}">
+                    <b title="${%Very old version}">${item.value}</b>
+                  </j:when>
+                  <j:otherwise>
+                    ${item.value}
+                  </j:otherwise>
+                </j:choose>
+              </td>
               <td style="white-space:normal">${item.value.extra}</td>
             </tr>
           </j:when>

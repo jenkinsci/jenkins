@@ -41,7 +41,9 @@ import jenkins.slaves.RemotingWorkDirSettings;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.File;
@@ -66,6 +68,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
  * Tests of {@link JNLPLauncher}.
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class JNLPLauncherTest {
     @Rule public JenkinsRule j = new JenkinsRule();
     
@@ -148,10 +151,9 @@ public class JNLPLauncherTest {
     
     @Test
     @Issue("JENKINS-44112")
+    @SuppressWarnings("deprecation")
     public void testDefaults() throws Exception {
-        String errorMsg = "Work directory should be disabled for agents created via old API";
-        assertTrue(errorMsg, new JNLPLauncher().getWorkDirSettings().isDisabled());
-        assertTrue(errorMsg, new JNLPLauncher(null, null).getWorkDirSettings().isDisabled());
+        assertTrue("Work directory should be disabled for agents created via old API", new JNLPLauncher().getWorkDirSettings().isDisabled());
     }
 
     @Test
@@ -286,8 +288,12 @@ public class JNLPLauncherTest {
         DumbSlave s = j.createSlave();
         JNLPLauncher original = new JNLPLauncher("a", "b");
         s.setLauncher(original);
+        j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), RemotingWorkDirSettings.getEnabledDefaults());
+        RemotingWorkDirSettings custom = new RemotingWorkDirSettings(false, null, "custom", false);
+        ((JNLPLauncher) s.getLauncher()).setWorkDirSettings(custom);
         HtmlPage p = j.createWebClient().getPage(s, "configure");
         j.submit(p.getFormByName("config"));
         j.assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
+        j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), custom);
     }
 }

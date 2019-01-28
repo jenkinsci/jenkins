@@ -43,16 +43,19 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.SmokeTest;
 
 /**
  * Tests of {@link SetupWizard}.
  * @author Oleg Nenashev
  */
+@Category(SmokeTest.class)
 public class SetupWizardTest {
     
     @Rule

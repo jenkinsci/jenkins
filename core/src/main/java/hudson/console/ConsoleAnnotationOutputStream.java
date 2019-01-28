@@ -72,7 +72,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
         this.lineOut = new WriterOutputStream(line,charset);
     }
 
-    public ConsoleAnnotator getConsoleAnnotator() {
+    public ConsoleAnnotator<T> getConsoleAnnotator() {
         return ann;
     }
 
@@ -80,6 +80,8 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
      * Called after we read the whole line of plain text, which is stored in {@link #buf}.
      * This method performs annotations and send the result to {@link #out}.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"}) // appears to be unsound
+    @Override
     protected void eol(byte[] in, int sz) throws IOException {
         line.reset();
         final StringBuffer strBuf = line.getStringBuffer();
@@ -109,9 +111,10 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     final ConsoleNote a = ConsoleNote.readFrom(new DataInputStream(b));
                     if (a!=null) {
                         if (annotators==null)
-                            annotators = new ArrayList<ConsoleAnnotator<T>>();
+                            annotators = new ArrayList<>();
                         annotators.add(new ConsoleAnnotator<T>() {
-                            public ConsoleAnnotator annotate(T context, MarkupText text) {
+                            @Override
+                            public ConsoleAnnotator<T> annotate(T context, MarkupText text) {
                                 return a.annotate(context,text,charPos);
                             }
                         });

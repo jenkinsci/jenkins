@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -53,6 +54,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
+import jenkins.util.xstream.SafeURLConverter;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
@@ -97,7 +99,18 @@ public class XStream2 extends XStream {
      */
     private MapperInjectionPoint mapperInjectionPoint;
 
+    /**
+     * Convenience method so we only have to change the driver in one place
+     * if we switch to something new in the future
+     *
+     * @return a new instance of the HierarchicalStreamDriver we want to use
+     */
+    public static HierarchicalStreamDriver getDefaultDriver() {
+        return new KXml2Driver();
+    }
+
     public XStream2() {
+        super(getDefaultDriver());
         init();
         classOwnership = null;
     }
@@ -109,6 +122,7 @@ public class XStream2 extends XStream {
     }
 
     XStream2(ClassOwnership classOwnership) {
+        super(getDefaultDriver());
         init();
         this.classOwnership = classOwnership;
     }
@@ -235,6 +249,8 @@ public class XStream2 extends XStream {
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
+        // SECURITY-637 against URL deserialization
+        registerConverter(new SafeURLConverter(),10); 
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
@@ -293,7 +309,7 @@ public class XStream2 extends XStream {
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
         Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }
 

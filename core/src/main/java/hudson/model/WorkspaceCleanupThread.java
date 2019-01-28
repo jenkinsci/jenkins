@@ -139,6 +139,15 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             }
         }
 
+        // TODO this may only check the last build in fact:
+        if (item instanceof Job<?,?>) {
+            Job<?,?> j = (Job<?,?>) item;
+            if (j.isBuilding()) {
+                LOGGER.log(Level.FINE, "Job {0} is building, so not deleting", item.getFullDisplayName());
+                return false;
+            }
+        }
+
         LOGGER.log(Level.FINER, "Going to delete directory {0}", dir);
         return true;
     }
