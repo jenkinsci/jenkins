@@ -2,6 +2,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.model.User;
+import hudson.security.UserDetailsHelper;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -33,9 +34,20 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
             Authentication auth;
             try {
                 UserDetails userDetails = u.getUserDetailsForImpersonation();
-                auth = u.impersonate(userDetails);
+                if (UserDetailsHelper.isFullyActive(userDetails)) {
+                    auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
+                    SecurityListener.fireAuthenticated(userDetails);
+                } else {
+                    LOGGER.log(INFO, "API token matched for user {0} but the account is [enable={1}, accountNonExpired={2}, accountNonLocked={3}, credentialsNonExpired={4}]", new Object[]{
+                            username,
+                            userDetails.isEnabled(),
+                            userDetails.isAccountNonExpired(),
+                            userDetails.isAccountNonLocked(),
+                            userDetails.isCredentialsNonExpired()
+                    });
+                    return null;
+                }
             } catch (UsernameNotFoundException x) {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.

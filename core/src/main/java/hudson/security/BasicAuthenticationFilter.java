@@ -45,6 +45,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.INFO;
 
 /**
  * Implements the dual authentication mechanism.
@@ -89,6 +92,8 @@ import java.net.URLEncoder;
  * @author Kohsuke Kawaguchi
  */
 public class BasicAuthenticationFilter implements Filter {
+    private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getName());
+
     private ServletContext servletContext;
 
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -140,17 +145,27 @@ public class BasicAuthenticationFilter implements Filter {
             User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
             if(u != null){
                 UserDetails userDetails = u.getUserDetailsForImpersonation();
-                Authentication auth = u.impersonate(userDetails);
+                if (UserDetailsHelper.isFullyActive(userDetails)) {
+                    Authentication auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
+                    SecurityListener.fireAuthenticated(userDetails);
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                try {
-                    chain.doFilter(request,response);
-                } finally {
-                    SecurityContextHolder.clearContext();
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    try {
+                        chain.doFilter(request,response);
+                    } finally {
+                        SecurityContextHolder.clearContext();
+                    }
+                    return;
+                } else {
+                    LOGGER.log(INFO, "API token matched for user {0} but the account is [enable={1}, accountNonExpired={2}, accountNonLocked={3}, credentialsNonExpired={4}]", new Object[]{
+                            username,
+                            userDetails.isEnabled(),
+                            userDetails.isAccountNonExpired(),
+                            userDetails.isAccountNonLocked(),
+                            userDetails.isCredentialsNonExpired()
+                    });
                 }
-                return;
             }
         }
 
