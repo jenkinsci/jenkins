@@ -574,7 +574,7 @@ public class SlaveComputer extends Computer {
         @Override public Long call() {
             Channel c = Channel.current();
             if (c == null) {
-                return (long) -1;
+                return -1L;
             }
             return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
         }
