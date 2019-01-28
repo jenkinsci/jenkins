@@ -447,7 +447,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
                 String targetFile = dir.toString().substring(root.toString().length()) + n;
                 if (!ALLOW_SYMLINK_ESCAPE && root.supportIsDescendant() && !root.isDescendant(targetFile)) {
-                    LOGGER.log(Level.FINE, "Trying to access a file outside of the directory: " + root + ", illicit target: " + targetFile);
+                    LOGGER.log(Level.FINE, "Trying to access a file outside of the directory: {0}, forbidden target: {1}", new Object[] {root, targetFile});
                 } else {
                     // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
                     // TODO On Linux file names can contain backslashes which should not treated as file separators.
