@@ -432,6 +432,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private static void zip(StaplerResponse rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
+        boolean messageAlreadyPutInLog = false;
         OutputStream outputStream = rsp.getOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
@@ -447,7 +448,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
                 String targetFile = dir.toString().substring(root.toString().length()) + n;
                 if (!ALLOW_SYMLINK_ESCAPE && root.supportIsDescendant() && !root.isDescendant(targetFile)) {
-                    LOGGER.log(Level.FINE, "Trying to access a file outside of the directory: {0}, forbidden target: {1}", new Object[] {root, targetFile});
+                    if (!messageAlreadyPutInLog) {
+                        messageAlreadyPutInLog = true;
+                        LOGGER.log(Level.FINE, "Trying to access a file outside of the directory: {0}, forbidden target: {1}. This message is only sent once per request.", new Object[] {root, targetFile});
+                    }
                 } else {
                     // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
                     // TODO On Linux file names can contain backslashes which should not treated as file separators.
