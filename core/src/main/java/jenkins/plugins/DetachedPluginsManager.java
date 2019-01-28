@@ -106,7 +106,6 @@ public class DetachedPluginsManager {
      * @return A {@link List} of {@link DetachedPlugin}s.
      * @see JavaUtils#getCurrentJavaRuntimeVersionNumber()
      */
-    @Restricted(NoExternalUse.class)
     public static @Nonnull
     List<DetachedPlugin> getDetachedPlugins() {
         return DETACHED_LIST.stream()
@@ -121,7 +120,6 @@ public class DetachedPluginsManager {
      * @return A {@link List} of {@link DetachedPlugin}s.
      * @see #getDetachedPlugins()
      */
-    @Restricted(NoExternalUse.class)
     public static @Nonnull
     List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
         return getDetachedPlugins().stream()
@@ -136,7 +134,6 @@ public class DetachedPluginsManager {
      * @return {@code true} if the plugin is a plugin that was detached from Jenkins at some
      * point in the past, otherwise {@code false}.
      */
-    @Restricted(NoExternalUse.class)
     public static boolean isDetachedPlugin(@Nonnull String pluginId) {
         for (DetachedPlugin detachedPlugin : getDetachedPlugins()) {
             if (detachedPlugin.getShortName().equals(pluginId)) {
