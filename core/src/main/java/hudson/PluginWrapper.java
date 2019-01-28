@@ -229,11 +229,27 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * @deprecated Please use {@link setDependents}.
+     */
+    @Deprecated
+    public void setDependants(@Nonnull Set<String> dependents) {
+        setDependents(dependents);
+    }
+
+    /**
      * Set the list of components that depend optionally on this plugin.
      * @param optionalDependents The list of components that depend optionally on this plugin.
      */
     public void setOptionalDependents(@Nonnull Set<String> optionalDependents) {
         this.optionalDependents = optionalDependents;
+    }
+
+    /**
+     * @deprecated Please use {@link setOptionalDependents}.
+     */
+    @Deprecated
+    public void setOptionalDependants(@Nonnull Set<String> optionalDependents) {
+        setOptionalDependents(dependents);
     }
 
     /**
@@ -249,10 +265,26 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * @deprecated Please use {@link getDependents}.
+     */
+    @Deprecated
+    public @Nonnull Set<String> getDependants() {
+        return getDependents();
+    }
+
+    /**
      * @return The list of components that depend optionally on this plugin.
      */
     public @Nonnull Set<String> getOptionalDependents() {
         return optionalDependents;
+    }
+
+    /**
+     * @deprecated Please use {@link getOptionalDependents}.
+     */
+    @Deprecated
+    public @Nonnull Set<String> getOptionalDependants() {
+        return getOptionalDependents();
     }
 
     /**
@@ -265,6 +297,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * @deprecated Please use {@link hasDependents}.
+     */
+    @Deprecated
+    public boolean hasDependants() {
+        return hasDependents();
+    }
+
+    /**
      * Does this plugin have anything that depends optionally on it.
      * @return {@code true} if something (Jenkins core, or another plugin) depends optionally on this
      * plugin, otherwise {@code false}.
@@ -273,6 +313,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return !optionalDependents.isEmpty();
     }
 
+    /**
+     * @deprecated Please use {@link hasOptionalDependents}.
+     */
+    @Deprecated
+    public boolean hasOptionalDependants() {
+        return hasOptionalDependents();
+    }
 
     /**
      * Does this plugin depend on any other plugins.
