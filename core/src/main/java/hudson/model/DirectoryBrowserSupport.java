@@ -439,7 +439,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             // TODO consider using run(Callable) here
 
             if (glob.isEmpty()) {
-                if (!root.supportQuickRecursiveListing()) {
+                if (!root.supportsQuickRecursiveListing()) {
                     // avoid slow listing when the Glob can do a quicker job
                     glob = "**";
                 }

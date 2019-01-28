@@ -176,7 +176,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public abstract @Nonnull VirtualFile[] list() throws IOException;
 
     @Restricted(NoExternalUse.class)
-    public boolean supportQuickRecursiveListing() {
+    public boolean supportsQuickRecursiveListing() {
         return false;
     }
     
@@ -468,7 +468,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return vfs;
             }
 
-            @Override public boolean supportQuickRecursiveListing() {
+            @Override public boolean supportsQuickRecursiveListing() {
                 return true;
             }
 
@@ -480,7 +480,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 if (children == null) {
                     return Collections.emptyList();
                 }
-                List<VirtualFile> legalChildren = new ArrayList<>();
+                List<VirtualFile> legalChildren = new ArrayList<>(children.length);
                 for (File child : children) {
                     if (isDescendant(child.getName())) {
                         FileVF legalChild = new FileVF(child, root);
@@ -686,7 +686,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             }
 
-            @Override public boolean supportQuickRecursiveListing() {
+            @Override public boolean supportsQuickRecursiveListing() {
                 return this.f.getChannel() == FilePath.localChannel;
             }
 
@@ -697,7 +697,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     }
 
                     List<FilePath> children = f.list();
-                    List<VirtualFile> legalChildren = new ArrayList<>();
+                    List<VirtualFile> legalChildren = new ArrayList<>(children.size());
                     for (FilePath child : children){
                         if (isDescendant(child.getName())) {
                             FilePathVF legalChild = new FilePathVF(child, this.root);
@@ -712,13 +712,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             }
 
-            /*@Override*/ public Collection<String> list_old(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
-                try {
-                    return f.act(new Scanner(includes, excludes, useDefaultExcludes));
-                } catch (InterruptedException x) {
-                    throw new IOException(x);
-                }
-            }
         @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
             try {
                 return f.act(new Scanner(includes, excludes, useDefaultExcludes));
@@ -726,13 +719,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 throw new IOException(x);
             }
         }
-//        @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
-//            try {
-//                return f.act(new Scanner2(includes, excludes, useDefaultExcludes));
-//            } catch (InterruptedException x) {
-//                throw new IOException(x);
-//            }
-//        }
             @Override public VirtualFile child(String name) {
                 return new FilePathVF(f.child(name), this.root);
             }
