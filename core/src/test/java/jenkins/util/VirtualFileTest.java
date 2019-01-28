@@ -24,14 +24,24 @@
 
 package jenkins.util;
 
+import com.google.common.collect.ImmutableSet;
+import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
@@ -66,6 +76,122 @@ public class VirtualFileTest {
             fail();
         } catch (FileNotFoundException | NoSuchFileException x) {
             // OK
+        }
+    }
+
+    @Issue("JENKINS-26810")
+    @Test public void mode() throws Exception {
+        File f = tmp.newFile();
+        VirtualFile vf = VirtualFile.forFile(f);
+        FilePath fp = new FilePath(f);
+        VirtualFile vfp = VirtualFile.forFilePath(fp);
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
+        fp.chmod(0755); // no-op on Windows, but harmless
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
+    }
+    private static String modeString(int mode) throws IOException {
+        return mode == -1 ? "N/A" : PosixFilePermissions.toString(Util.modeToPermissions(mode));
+    }
+
+    @Issue("JENKINS-26810")
+    @Test public void list() throws Exception {
+        File root = tmp.getRoot();
+        FilePath rootF = new FilePath(root);
+        Set<String> paths = ImmutableSet.of("top.txt", "sub/mid.txt", "sub/subsub/lowest.txt", ".hg/config.txt", "very/deep/path/here");
+        for (String path : paths) {
+            rootF.child(path).write("", null);
+        }
+        for (VirtualFile vf : new VirtualFile[] {VirtualFile.forFile(root), VirtualFile.forFilePath(rootF), new Ram(paths.stream().map(p -> "/" + p).collect(Collectors.toSet()), "")}) {
+            System.err.println("testing " + vf.getClass().getName());
+            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, true)).toString());
+            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", null, false)).toString());
+            assertEquals("[]", new TreeSet<>(vf.list("", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
+            assertEquals("[.hg/config.txt, sub/mid.txt]", new TreeSet<>(vf.list("**/mid*,**/conf*", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
+            assertEquals("[top.txt]", new TreeSet<>(vf.list("*.txt", null, false)).toString());
+            assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
+        }
+    }
+    /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */
+    private static final class Ram extends VirtualFile {
+        private final Set<String> paths; // e.g., [/very/deep/path/here]
+        private final String path; // e.g., empty string or /very or /very/deep/path/here
+        Ram(Set<String> paths, String path) {
+            this.paths = paths;
+            this.path = path;
+        }
+        @Override
+        public String getName() {
+            return path.replaceFirst(".*/", "");
+        }
+        @Override
+        public URI toURI() {
+            return URI.create("ram:" + path);
+        }
+        @Override
+        public VirtualFile getParent() {
+            return new Ram(paths, path.replaceFirst("/[^/]+$", ""));
+        }
+        @Override
+        public boolean isDirectory() throws IOException {
+            return paths.stream().anyMatch(p -> p.startsWith(path + "/"));
+        }
+        @Override
+        public boolean isFile() throws IOException {
+            return paths.contains(path);
+        }
+        @Override
+        public boolean exists() throws IOException {
+            return isFile() || isDirectory();
+        }
+        @Override
+        public VirtualFile[] list() throws IOException {
+            return paths.stream().filter(p -> p.startsWith(path + "/")).map(p -> new Ram(paths, p.replaceFirst("(\\Q" + path + "\\E/[^/]+)/.+", "$1"))).toArray(VirtualFile[]::new);
+        }
+        @Override
+        public VirtualFile child(String name) {
+            return new Ram(paths, path + "/" + name);
+        }
+        @Override
+        public long length() throws IOException {
+            return 0;
+        }
+        @Override
+        public long lastModified() throws IOException {
+            return 0;
+        }
+        @Override
+        public boolean canRead() throws IOException {
+            return isFile();
+        }
+        @Override
+        public InputStream open() throws IOException {
+            return new NullInputStream(0);
+        }
+    }
+
+    @Issue("JENKINS-26810")
+    @Test public void readLink() throws Exception {
+        assumeFalse("Symlinks do not work well on Windows", Functions.isWindows());
+        File root = tmp.getRoot();
+        FilePath rootF = new FilePath(root);
+        rootF.child("plain").write("", null);
+        rootF.child("link").symlinkTo("physical", TaskListener.NULL);
+        for (VirtualFile vf : new VirtualFile[] {VirtualFile.forFile(root), VirtualFile.forFilePath(rootF)}) {
+            assertNull(vf.readLink());
+            assertNull(vf.child("plain").readLink());
+            VirtualFile link = vf.child("link");
+            assertEquals("physical", link.readLink());
+            assertFalse(link.isFile());
+            assertFalse(link.isDirectory());
+            // not checking .exists() for now
         }
     }
 

@@ -1,0 +1,191 @@
+# This file contains the built-in whitelist for Stapler request dispatching.
+# It's a tool for retaining compatibility with unusual plugin behavior after introducing the SECURITY-595 security fix.
+# To provide your own custom whitelist, create/edit $JENKINS_HOME/stapler-whitelist.txt
+
+# Determine the whitelist entries for methods in a known class from the script console:
+# com.acme.package.ClassName.class.methods.each {
+#   println new org.kohsuke.stapler.Function.InstanceFunction(it).signature
+# }
+# com.acme.package.ClassName.class.fields.each {
+#   println org.kohsuke.stapler.lang.FieldRef.wrap(it).signature
+# }
+# return
+
+#######################################################################################################################
+###################################################### Whitelist ######################################################
+#######################################################################################################################
+
+
+######################
+# Credentials Plugin #
+######################
+# Used where credentials are used (e.g. SCM config), without this, 'Add' button will break as its dialog is at:
+# /descriptor/….CredentialsSelectHelper/resolver/….CredentialsSelectHelper$SystemContextResolver/provider/….SystemCredentialsProvider$ProviderImpl/context/jenkins/dialog
+method com.cloudbees.plugins.credentials.CredentialsSelectHelper getResolver java.lang.String
+method com.cloudbees.plugins.credentials.CredentialsSelectHelper$WrappedContextResolver getProvider java.lang.String
+# Used by Credentials Plugin's FingerprintTest and Git Plugin's GitSCMTest, as well as others:
+method com.cloudbees.plugins.credentials.CredentialsStoreAction$DomainWrapper getCredentials
+
+
+################
+# JUnit Plugin #
+################
+# Allow various #getHistory() as these only have resources and #getGraph()
+class hudson.tasks.junit.History
+
+
+##################
+# Metrics Plugin #
+##################
+# Method returns Object for no clear reason
+method jenkins.metrics.api.MetricsRootAction getCurrentUser
+
+
+#########################
+# Pipeline Plugin Suite #
+#########################
+# Used in the 'Pipeline Steps' UI, the Execution has Nodes but no UI of its own
+method org.jenkinsci.plugins.workflow.job.WorkflowRun getExecution
+# FlowGraphTable only has a Jelly view, and nothing else that would indicate Stapler-routability
+method org.jenkinsci.plugins.workflow.job.views.FlowGraphTableAction getFlowGraph
+
+
+############################
+# Maven Integration Plugin #
+############################
+# Advertised in https://github.com/jenkinsci/maven-plugin/blob/7ac83fa85fda0c4d1d02663059644f0655823879/src/main/resources/hudson/maven/reporters/MavenArtifactRecord/_api.jelly#L31
+field hudson.maven.reporters.MavenArtifactRecord attachedArtifacts
+
+
+###########################################
+# Static Analysis Plugins (analysis-core) #
+###########################################
+# Methods return Object for no clear reason
+method hudson.plugins.analysis.core.AbstractProjectAction getTrendGraph
+method hudson.plugins.analysis.core.AbstractProjectAction getTrendDetails
+method hudson.plugins.analysis.core.AbstractProjectAction getTrendDetails org.kohsuke.stapler.StaplerRequest org.kohsuke.stapler.StaplerResponse
+
+
+###########################
+# Blue Ocean Plugin Suite #
+###########################
+# Methods return Object for no clear reason
+method io.jenkins.blueocean.service.embedded.rest.AbstractRunImpl getLog
+method io.jenkins.blueocean.service.embedded.rest.QueuedBlueRun getLog
+method io.jenkins.blueocean.rest.impl.pipeline.PipelineNodeImpl getLog
+method io.jenkins.blueocean.rest.impl.pipeline.PipelineStepImpl getLog
+
+
+##########################
+# Promoted Builds Plugin #
+##########################
+# Only subtypes look Stapler-relevant
+method hudson.plugins.promoted_builds.PromotionProcess getPromotionCondition java.lang.String
+
+
+##########################
+# Robot Framework Plugin #
+##########################
+# Unsure whether this is needed, but RobotSuiteResult is supposed to be reachable.
+method hudson.plugins.robot.model.RobotResult getSuites
+
+
+########################
+# Maven Invoker Plugin #
+########################
+# MavenInvokerResult only has an index view, and nothing else that would indicate Stapler-routability
+method org.jenkinsci.plugins.maveninvoker.MavenInvokerBuildAction getResult java.lang.String
+
+
+###########################
+# Cloud Statistics Plugin #
+###########################
+# Used via CloudStatistics#getUrl(ProvisioningActivity, PhaseExecution, PhaseExecutionAttachment) for attempts.groovy
+method org.jenkinsci.plugins.cloudstats.CloudStatistics getActivity java.lang.String
+method org.jenkinsci.plugins.cloudstats.ProvisioningActivity getPhase java.lang.String
+
+
+####################
+# SLOCCount Plugin #
+####################
+# Support various getters in the same type
+class hudson.plugins.sloccount.SloccountResult
+
+
+##############################
+# Project Inheritance Plugin #
+##############################
+# do* methods with no indication they're supposed to be routable (return String, no args, no annotations)
+method hudson.plugins.project_inheritance.projects.InheritanceProject doGetParamDefaultsAsXML
+method hudson.plugins.project_inheritance.projects.InheritanceProject doGetParamExpansionsAsXML
+method hudson.plugins.project_inheritance.projects.InheritanceProject doGetVersionsAsCompressedXML
+method hudson.plugins.project_inheritance.projects.InheritanceProject doGetVersionsAsXML
+method hudson.plugins.project_inheritance.projects.InheritanceProject doRenderSVGRelationGraph
+
+
+##########################
+# Build-Publisher Plugin #
+##########################
+# do* method with no indication it's supposed to be routable (returns void, no args, no annotations)
+method hudson.plugins.build_publisher.BuildPublisher$BuildPublisherDescriptor doReloadProxy
+
+
+###############################################
+# Changes since last successfull build Plugin # (sic)
+###############################################
+# Only has an index.jelly view, so needs to be explicit
+class com.cloudbees.jenkins.plugins.changelog.Changes
+
+
+###################
+# Fitnesse Plugin #
+###################
+# return hudson.plugins.fitnesse.History with only getters for hudson.util.Graph, like analysis-core
+method hudson.plugins.fitnesse.FitnesseProjectAction getTrend
+
+
+###########################
+# Build Time Blame Plugin #
+###########################
+# Only has resources and a getter for a Graph, so needs whitelisting when not scanning
+class org.jenkins.ci.plugins.buildtimeblame.analysis.BlameReport
+
+
+#####################################
+# External Workspace Manager Plugin #
+#####################################
+# Declares Object as return type when it could declare ExternalWorkspace
+method org.jenkinsci.plugins.ewm.actions.WorkspaceBrowserRootAction getBrowse java.lang.String
+
+
+##########################
+# Azure VM Agents Plugin #
+##########################
+# Declared to return String, no args, and always returns null…?
+method com.microsoft.azure.vmagent.AzureVMAgentTemplate$DescriptorImpl doFillImageReferenceTypeItems
+
+
+################################
+# TestComplete support plug-in #
+################################
+method com.smartbear.jenkins.plugins.testcomplete.TcSummaryAction getReports
+
+
+#####################
+# Job Cacher Plugin #
+#####################
+# UI linking to this is ArbitraryFileCache/cache-entry.jelly, used from CacheProjectAction/index.jelly, and ultimately handled by ArbitraryFileCache#doDynamic
+method jenkins.plugins.jobcacher.CacheProjectAction getCaches
+
+
+#########################
+# Dimensions SCM Plugin #
+#########################
+# Needs whitelisting due to not following the usual naming scheme
+method hudson.plugins.dimensionsscm.DimensionsSCM$DescriptorImpl domanadatoryFieldCheck org.kohsuke.stapler.StaplerRequest org.kohsuke.stapler.StaplerResponse
+
+
+##############################
+# Google Health Check Plugin #
+##############################
+method com.google.jenkins.plugins.health.lib.DerivedPageAction getZone java.lang.String

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 
 import hudson.EnvVars;
 import hudson.Functions;
@@ -13,6 +14,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Slave;
 import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
@@ -27,6 +29,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import com.google.common.collect.ImmutableMap;
 
+
 public class ProcessTreeKillerTest {
 
     @Rule
@@ -35,6 +38,7 @@ public class ProcessTreeKillerTest {
     
     @After
     public void tearDown() throws Exception {
+        ProcessTree.vetoersExist = null;
         if (null != process)
             process.destroy();
     }    
@@ -136,8 +140,44 @@ public class ProcessTreeKillerTest {
             // Means the process is still running
         }
     }
+    
+    @Test
+    @Issue("JENKINS-9104")
+    public void considersKillingVetosOnSlave() throws Exception {
+        // on some platforms where we fail to list any processes, this test will
+        // just not work
+        assumeTrue(ProcessTree.get() != ProcessTree.DEFAULT);
+        
+        // Define a process we (shouldn't) kill
+        ProcessBuilder pb = new ProcessBuilder();
+        pb.environment().put("cookie", "testKeepDaemonsAlive");
+        
+        if (File.pathSeparatorChar == ';') {
+            pb.command("cmd");
+        } else {
+            pb.command("sleep", "5m");
+        }
+        
+        // Create a slave so we can tell it to kill the process
+        Slave s = j.createSlave();
+        s.toComputer().connect(false).get();
+        
+        // Start the process
+        process = pb.start();
+        
+        // Call killall (somewhat roundabout though) to (not) kill it
+        StringWriter out = new StringWriter();
+        s.createLauncher(new StreamTaskListener(out)).kill(ImmutableMap.of("cookie", "testKeepDaemonsAlive"));
+        
+        try {
+            process.exitValue();
+            fail("Process should have been excluded from the killing");
+        } catch (IllegalThreadStateException e) {
+            // Means the process is still running
+        }
+    }
 
-    @TestExtension("considersKillingVetos")
+    @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})
     public static class VetoAllKilling extends ProcessKillingVeto {
         @Override
         public VetoCause vetoProcessKilling(IOSProcess p) {

@@ -39,13 +39,13 @@ THE SOFTWARE.
     </st:documentation>
     <j:choose>
       <j:when test="${confirm == null}">
-        <a class="stop-button-link" href="${href}" onclick='new Ajax.Request("${href}"); return false;'>
-          <l:icon class="icon-stop icon-sm"/>
+        <a class="stop-button-link" href="${href}" onclick='new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
+          <l:icon class="icon-stop icon-sm" alt="${alt}"/>
         </a>
       </j:when>
       <j:otherwise>
-          <a class="stop-button-link" href="${href}" onclick='if(confirm("${confirm}"))new Ajax.Request("${href}"); return false;'>
-            <l:icon class="icon-stop icon-sm"/>
+          <a class="stop-button-link" href="${href}" onclick='if(confirm("${h.jsStringEscape(confirm)}"))new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
+            <l:icon class="icon-stop icon-sm" alt="${alt}"/>
           </a>
       </j:otherwise>
     </j:choose>

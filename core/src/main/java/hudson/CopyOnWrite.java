@@ -43,7 +43,7 @@ import java.lang.annotation.Target;
  *
  * <p>
  * The field marked with this annotation usually needs to be marked as
- * <tt>volatile</tt>.
+ * {@code volatile}.
  *
  * @author Kohsuke Kawaguchi
  */

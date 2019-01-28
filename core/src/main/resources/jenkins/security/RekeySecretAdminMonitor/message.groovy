@@ -26,34 +26,33 @@ package jenkins.security.RekeySecretAdminMonitor;
 def f = namespace(lib.FormTagLib)
 
 if (!my.isDone()) {
-    div(class:"error") {
-        raw _("pleaseRekeyAsap",app.rootDir,my.url)
+    div(class:"alert alert-danger") {
+        raw _("pleaseRekeyAsap", app.rootDir, my.url)
     }
 }
 
 if (my.isFixingActive()) {
-    div(class:"info") {
-        raw _("rekeyInProgress",my.url)
+    div(class:"alert alert-info") {
+        raw _("rekeyInProgress", my.url)
     }
 } else if (my.logFile.exists()) {
     if (my.isDone()) {
-        div(class:"info") {
-            raw _("rekeySuccessful",my.url)
+        div(class:"alert alert-info") {
+            raw _("rekeySuccessful", my.url)
         }
     } else {
-        div(class:"warning") {
-            raw _("rekeyHadProblems",my.url)
+        div(class:"alert alert-warning") {
+            raw _("rekeyHadProblems", my.url)
         }
     }
 }
 
-form(method:"POST",action:"${my.url}/scan",style:"text-align:center; margin-top:0.5em;",name:"rekey") {
-    f.submit(name:"background",value:_("Re-key in background now"))
+form(method: "post", action: "${rootURL}/${my.url}/scan", name:"rekey") {
+    f.submit(name: "background", value:_("Re-key in background now"))
     if (my.isScanOnBoot()) {
-        input(type:"button",class:"yui-button",disabled:"true",
-                value:_("Re-keying currently scheduled during the next startup"))
+        input(type: "button", class: "yui-button", disabled: "true", value:_("Re-keying currently scheduled during the next startup"))
     } else {
-        f.submit(name:"schedule",  value:_("Schedule a re-key during the next startup"))
+        f.submit(name: "schedule", value:_("Schedule a re-key during the next startup"))
     }
-    f.submit(name:"dismiss",   value:_("Dismiss this message"))
+    f.submit(name: "dismiss", value:_("Dismiss"))
 }

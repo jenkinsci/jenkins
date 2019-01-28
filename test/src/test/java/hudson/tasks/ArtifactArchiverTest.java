@@ -163,7 +163,7 @@ public class ArtifactArchiverTest {
         assertFalse(kids[0].isDirectory());
         assertFalse(kids[0].isFile());
         assertFalse(kids[0].exists());
-        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
+        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     static class CreateArtifact extends TestBuilder {

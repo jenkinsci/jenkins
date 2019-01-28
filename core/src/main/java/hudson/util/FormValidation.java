@@ -66,7 +66,7 @@ import static hudson.Util.*;
  * Represents the result of the form field validation.
  *
  * <p>
- * Use one of the factory methods to create an instance, then return it from your <tt>doCheckXyz</tt>
+ * Use one of the factory methods to create an instance, then return it from your {@code doCheckXyz}
  * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse}.)
  * This way of designing form field validation allows you to reuse {@code doCheckXyz()} methods
  * programmatically as well (by using {@link #kind}.
@@ -77,7 +77,7 @@ import static hudson.Util.*;
  * that you may be able to reuse.
  *
  * <p>
- * Also see <tt>doCheckCvsRoot</tt> in <tt>CVSSCM</tt> as an example.
+ * Also see {@code doCheckCvsRoot} in {@code CVSSCM} as an example.
  *
  * <p>
  * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
@@ -136,8 +136,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public static FormValidation error(String message) {
         return errorWithMarkup(message==null?null: Util.escape(message));
@@ -245,8 +245,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public static FormValidation errorWithMarkup(String message) {
         return _errorWithMarkup(message,Kind.ERROR);
@@ -387,6 +387,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
         try {
             if(Integer.parseInt(value)<0)
                 return error(hudson.model.Messages.Hudson_NotANonNegativeNumber());
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
+     * Make sure that the given string is an integer in the range specified by the lower and upper bounds (both inclusive)
+     *
+     * @param value the value to check
+     * @param lower the lower bound (inclusive)
+     * @param upper the upper bound (inclusive)
+     *
+     * @since 2.104
+     */
+    public static FormValidation validateIntegerInRange(String value, int lower, int upper) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (intValue < lower) {
+                return error(hudson.model.Messages.Hudson_MustBeAtLeast(lower));
+            }
+            if (intValue > upper) {
+                return error(hudson.model.Messages.Hudson_MustBeAtMost(upper));
+            }
             return ok();
         } catch (NumberFormatException e) {
             return error(hudson.model.Messages.Hudson_NotANumber());

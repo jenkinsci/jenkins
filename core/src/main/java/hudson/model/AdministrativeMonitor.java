@@ -65,10 +65,10 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <dl>
  * <dt>message.jelly</dt>
  * <dd>
- * If {@link #isActivated()} returns true, Jenkins will use the <tt>message.jelly</tt>
+ * If {@link #isActivated()} returns true, Jenkins will use the {@code message.jelly}
  * view of this object to render the warning text. This happens in the
- * <tt>http://SERVER/jenkins/manage</tt> page. This view should typically render
- * a DIV box with class='error' or class='warning' with a human-readable text
+ * {@code http://SERVER/jenkins/manage} page. This view should typically render
+ * a DIV box with class='alert alert-error' or class='alert alert-warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
  * about the problem.
  * </dd>

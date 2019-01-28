@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Testing the effect of validateButton">
+  <l:main-panel>
+    <f:form method="post" name="config" action="">
+      <f:entry title="a">
+        <f:textbox name="a" value="avalue" />
+      </f:entry>
+      <f:advanced>
+        <f:section title="foo">
+          <f:entry title="b">
+            <f:textbox name="b" value="bvalue" />
+          </f:entry>
+        </f:section>
+      </f:advanced>
+      <f:submit value="submit" />
+    </f:form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

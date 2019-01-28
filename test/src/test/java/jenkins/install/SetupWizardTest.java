@@ -43,16 +43,19 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.SmokeTest;
 
 /**
  * Tests of {@link SetupWizard}.
  * @author Oleg Nenashev
  */
+@Category(SmokeTest.class)
 public class SetupWizardTest {
     
     @Rule
@@ -91,7 +94,7 @@ public class SetupWizardTest {
     @Issue("JENKINS-34833")
     public void shouldReturnUpdateSiteJSONIfSpecified() throws Exception {
         // Init the update site
-        CustomUpdateSite us = new CustomUpdateSite(tmpdir);
+        CustomUpdateSite us = new CustomUpdateSite(tmpdir.getRoot());
         us.init();
         j.jenkins.getUpdateCenter().getSites().add(us);
         
@@ -148,15 +151,15 @@ public class SetupWizardTest {
     
     private static final class CustomUpdateSite extends UpdateSite {
         
-        private final TemporaryFolder tmpdir;
+        private final File tmpdir;
         
-        public CustomUpdateSite(TemporaryFolder tmpdir) throws MalformedURLException {
-            super("custom-uc", tmpdir.getRoot().toURI().toURL().toString() + "update-center.json");
+        CustomUpdateSite(File tmpdir) throws MalformedURLException {
+            super("custom-uc", tmpdir.toURI().toURL().toString() + "update-center.json");
             this.tmpdir = tmpdir;
         }
 
         public void init() throws IOException {
-            File newFile = tmpdir.newFile("platform-plugins.json");
+            File newFile = new File(tmpdir, "platform-plugins.json");
             FileUtils.write(newFile, "[ { "
                     + "\"category\":\"Organization and Administration\", "
                     + "\"plugins\": [ { \"name\": \"dashboard-view\"}, { \"name\": \"antisamy-markup-formatter\" } ]"

@@ -34,11 +34,14 @@ import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.empty;
@@ -49,6 +52,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@Category(SmokeTest.class)
 public class LoadDetachedPluginsTest {
 
     @Rule public RestartableJenkinsRule rr = PluginManagerUtil.newRestartableJenkinsRule();
@@ -116,6 +120,25 @@ public class LoadDetachedPluginsTest {
             assertThat("Script-security should be installed", scriptSecurity, notNullValue());
             assertThat("Dependencies of detached plugins should be upgraded to the required version",
                     scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.18.1")));
+            assertNoFailedPlugins(r);
+        });
+    }
+
+    @Issue("JENKINS-48899")
+    @Test
+    @LocalData
+    public void upgradeFromJenkins2WithNewerPlugin() {
+        // @LocalData has command-launcher 1.2 installed, which should not be downgraded to the detached version: 1.0.
+        VersionNumber since = new VersionNumber("2.0");
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
+            assertThat("Plugins have been detached since the pre-upgrade version",
+                    detachedPlugins.size(), greaterThan(1));
+            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
+                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            Plugin commandLauncher = r.jenkins.getPlugin("command-launcher");
+            assertThat("Installed detached plugins should not be overwritten by older versions",
+                    commandLauncher.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.2")));
             assertNoFailedPlugins(r);
         });
     }

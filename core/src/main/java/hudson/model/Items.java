@@ -35,6 +35,7 @@ import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
@@ -313,8 +314,8 @@ public class Items {
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
     static String getRelativeNameFrom(String itemFullName, String groupFullName) {
-        String[] itemFullNameA = itemFullName.isEmpty() ? new String[0] : itemFullName.split("/");
-        String[] groupFullNameA = groupFullName.isEmpty() ? new String[0] : groupFullName.split("/");
+        String[] itemFullNameA = itemFullName.isEmpty() ? MemoryReductionUtil.EMPTY_STRING_ARRAY : itemFullName.split("/");
+        String[] groupFullNameA = groupFullName.isEmpty() ? MemoryReductionUtil.EMPTY_STRING_ARRAY : groupFullName.split("/");
         for (int i = 0; ; i++) {
             if (i == itemFullNameA.length) {
                 if (i == groupFullNameA.length) {

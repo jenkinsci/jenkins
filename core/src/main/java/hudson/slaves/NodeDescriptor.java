@@ -50,8 +50,8 @@ import javax.servlet.ServletException;
  *
  * <h2>Views</h2>
  * <p>
- * This object needs to have <tt>newInstanceDetail.jelly</tt> view, which shows up in
- * <tt>http://server/hudson/computers/new</tt> page as an explanation of this job type.
+ * This object needs to have {@code newInstanceDetail.jelly} view, which shows up in
+ * {@code http://server/hudson/computers/new} page as an explanation of this job type.
  *
  * <h2>Other Implementation Notes</h2>
  *

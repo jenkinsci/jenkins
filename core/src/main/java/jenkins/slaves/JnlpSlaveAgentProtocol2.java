@@ -47,7 +47,7 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return false;
+        return true;
     }
 
     @Override
