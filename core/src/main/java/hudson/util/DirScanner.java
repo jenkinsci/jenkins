@@ -176,7 +176,7 @@ public abstract class DirScanner implements Serializable {
                         return false;
                     }
                 }
-                catch (IOException | InterruptedException e){
+                catch (IOException | InterruptedException e) {
                     return true;
                 }
             } else {
