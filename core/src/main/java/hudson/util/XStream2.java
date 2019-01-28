@@ -54,6 +54,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
+import jenkins.util.xstream.SafeURLConverter;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
@@ -248,6 +249,8 @@ public class XStream2 extends XStream {
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
+        // SECURITY-637 against URL deserialization
+        registerConverter(new SafeURLConverter(),10); 
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.

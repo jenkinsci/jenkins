@@ -1,0 +1,2 @@
+Root CA for the Jenkins community. Used to generate official update center.
+This is the v2 key generated in preparation for the expiration of the v1 key.

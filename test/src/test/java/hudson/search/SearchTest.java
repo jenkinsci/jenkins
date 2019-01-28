@@ -440,7 +440,7 @@ public class SearchTest {
         mas.grant(Jenkins.READ).onRoot().toEveryone();
         j.jenkins.setAuthorizationStrategy(mas);
 
-        try(ACLContext _ = ACL.as(User.get("alice"))) {
+        try(ACLContext acl = ACL.as(User.get("alice"))) {
             List<SearchItem> results = new ArrayList<>();
             j.jenkins.getSearchIndex().find("config", results);
             j.jenkins.getSearchIndex().find("manage", results);

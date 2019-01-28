@@ -777,6 +777,7 @@ LABEL.attach-previous {
   background-color: #f0f0f0;
   padding: 1em;
   margin-bottom: 1em;
+  word-break: break-word;
 }
 
 .help .from-plugin {
@@ -1493,7 +1494,7 @@ DIV.yahooTree td {
 
 #search-box-completion .yui-ac-content {
   border: 1px solid black;
-  width:25em;
+  width:35em;
   background-color: white;
   overflow: hidden;
 }

@@ -101,7 +101,7 @@ public class TextFile {
      * <code>LinesStream</code>.
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
-     * @since TODO
+     * @since 2.111
      */
     @CreatesObligation
     public @Nonnull LinesStream linesStream() throws IOException {

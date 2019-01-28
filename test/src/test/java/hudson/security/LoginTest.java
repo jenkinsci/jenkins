@@ -12,6 +12,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 
 import hudson.model.User;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -53,6 +55,8 @@ public class LoginTest {
     @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void loginErrorRedirect2() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         // in a secured Hudson, the error page should render.
         WebClient wc = j.createWebClient();
         wc.assertFails("loginError", SC_UNAUTHORIZED);

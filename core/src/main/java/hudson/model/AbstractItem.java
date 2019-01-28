@@ -58,6 +58,8 @@ import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -96,6 +98,8 @@ import javax.xml.transform.stream.StreamSource;
 import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -109,7 +113,7 @@ import org.kohsuke.stapler.Ancestor;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -240,7 +244,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @return whether {@link #name} can be modified by a user
      * @see #checkRename
      * @see #renameTo
-     * @since FIXME
+     * @since 2.110
      */
     public boolean isNameEditable() {
         return false;
@@ -335,7 +339,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *
      * @param newName the new name for the item
      * @throws Failure if the rename should be blocked
-     * @since FIXME
+     * @since 2.110
      * @see Job#checkRename
      */
     protected void checkRename(@Nonnull String newName) throws Failure {
@@ -789,7 +793,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
@@ -932,6 +936,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Override public String toString() {
         return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            if (!getACL().hasPermission(Item.DISCOVER)) {
+                return null;
+            }
+            getACL().checkPermission(Item.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.

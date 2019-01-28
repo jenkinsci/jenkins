@@ -20,7 +20,6 @@ import javax.annotation.Nullable;
 
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
-import jenkins.security.security218.ysoserial.ExecBlockingSecurityManager.ExecException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

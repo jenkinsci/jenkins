@@ -23,7 +23,7 @@ Non-source downloads such as WAR files and several Linux packages can be found o
 Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
 
 # Contributing to Jenkins
-Follow [contributing](CONTRIBUTING.md) file.
+Follow the [contributing](CONTRIBUTING.md) file.
 
 # News and Website
 All information about Jenkins can be found on our [website]. Follow us on Twitter [@jenkinsci].

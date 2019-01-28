@@ -59,7 +59,7 @@ public class FormFieldValidatorTest {
                 return true;
             }
 
-            public void doCheckXyz() {
+            public FormValidation doCheckXyz() {
                 throw new Error("doCheckXyz is broken");
             }
         }

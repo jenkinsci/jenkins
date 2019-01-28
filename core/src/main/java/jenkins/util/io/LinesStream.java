@@ -58,7 +58,7 @@ import javax.annotation.Nullable;
  * obtain a second or subsequent <code>Iterator</code> throws
  * <code>IllegalStateException</code>.
  *
- * @since TODO
+ * @since 2.111
  */
 @CleanupObligation
 public class LinesStream implements Closeable, Iterable<String> {

@@ -41,11 +41,14 @@ import hudson.slaves.OfflineCause;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+@Category(SmokeTest.class)
 public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();

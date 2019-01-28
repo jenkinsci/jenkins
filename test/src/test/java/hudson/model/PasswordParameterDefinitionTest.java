@@ -30,6 +30,9 @@ import hudson.Launcher;
 import java.io.IOException;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.assertEquals;
+
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -50,6 +53,8 @@ public class PasswordParameterDefinitionTest {
 
     @Issue("JENKINS-36476")
     @Test public void defaultValueAlwaysAvailable() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").

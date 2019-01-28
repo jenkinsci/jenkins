@@ -28,13 +28,13 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.40</version>
+    <version>1.51</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.112-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -51,6 +51,7 @@ THE SOFTWARE.
   <modules>
     <module>core</module>
     <module>war</module>
+    <module>test-pom</module>
     <module>test</module>
     <module>cli</module>
   </modules>
@@ -59,7 +60,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>HEAD</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <distributionManagement>
@@ -75,10 +76,12 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
+    <revision>2.163</revision>
+    <changelist>-SNAPSHOT</changelist>
+
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <build.type>private</build.type>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -93,7 +96,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <access-modifier.version>1.13</access-modifier.version>
+    <access-modifier.version>1.14</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
@@ -103,13 +106,15 @@ THE SOFTWARE.
 
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
+    <!-- Bundled Remoting version -->
+    <remoting.version>3.28</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.version>3.17</remoting.version>
-    <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
 
+    <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
     <findbugs.effort>Max</findbugs.effort>
     <findbugs.threshold>High</findbugs.threshold>
-    <findbugs.excludeFilterFile>../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+    <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -145,26 +150,26 @@ THE SOFTWARE.
       </dependency>
 
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
       </dependency>
 
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.10.19</version>
+        <version>2.22.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.6.6</version>
+        <version>2.0.0-beta.5</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito</artifactId>
-        <version>1.6.6</version>
+        <artifactId>powermock-api-mockito2</artifactId>
+        <version>2.0.0-beta.5</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
@@ -268,6 +273,12 @@ THE SOFTWARE.
         <artifactId>commons-codec</artifactId>
         <version>1.9</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>annotation-indexer</artifactId>
+        <version>1.12</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -283,6 +294,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+      <version>1.3</version>
     </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
@@ -306,50 +318,6 @@ THE SOFTWARE.
     </resources>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.7</version>
-          <executions>
-            <execution>
-              <id>timestamp-property</id>
-              <goals>
-                <goal>timestamp-property</goal>
-              </goals>
-              <configuration>
-                <name>now</name>
-                <pattern>MM/dd/yyyy HH:mm z</pattern>
-                <locale>en_US</locale>
-              </configuration>
-            </execution>
-            <execution>
-            <id>user.name</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>user.name.escaped</name>
-              <value>${user.name}</value>
-              <regex>([$\\])</regex>
-              <replacement>\\$1</replacement>
-              <failIfNoMatch>false</failIfNoMatch>
-            </configuration>
-          </execution>
-          <execution>
-              <id>version-property</id>
-              <goals>
-                <goal>regex-property</goal>
-              </goals>
-              <configuration>
-                <name>build.version</name>
-                <value>${project.version}</value>
-                <regex>-SNAPSHOT</regex>
-                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name.escaped})</replacement>
-                <failIfNoMatch>false</failIfNoMatch>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
@@ -502,7 +470,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>9.4.5.v20170502-jenkins-1</version>
+          <version>9.4.12.v20180830-jenkins-2</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -510,19 +478,8 @@ THE SOFTWARE.
           <version>0.6.2</version>
         </plugin>
         <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>org.kohsuke</groupId>
-              <artifactId>doxia-module-markdown</artifactId>
-              <version>1.0</version>
-            </dependency>
-          </dependencies>
         </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -563,17 +520,13 @@ THE SOFTWARE.
 
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy javadoc:aggregate</goals>
+          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
@@ -672,30 +625,6 @@ THE SOFTWARE.
   </build>
 
   <profiles>
-    <profile>
-      <id>rc</id>
-      <properties>
-        <build.type>rc</build.type>
-      </properties>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>build-helper-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>version-property</id>
-                  <configuration>
-                    <replacement>-RC (${now})</replacement>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
     <profile>
       <id>metrics</id>
       <build>
@@ -832,6 +761,26 @@ THE SOFTWARE.
       <properties>
         <failIfNoTests>false</failIfNoTests>
       </properties>
+    </profile>
+    <profile>
+      <id>jdk11</id>
+      <properties>
+        <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
+        <doclint>none</doclint>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+      </properties>
+      <activation>
+        <jdk>11</jdk>
+      </activation>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <modules>
+        <module>test-jdk8</module>
+      </modules>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
     </profile>
   </profiles>
 </project>

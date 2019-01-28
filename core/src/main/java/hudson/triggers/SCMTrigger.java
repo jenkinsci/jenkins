@@ -37,6 +37,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.PersistentDescriptor;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -83,6 +84,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import javax.annotation.PostConstruct;
 
 import static java.util.logging.Level.WARNING;
 
@@ -211,7 +214,7 @@ public class SCMTrigger extends Trigger<Item> {
     }
 
     @Extension @Symbol("pollSCM")
-    public static class DescriptorImpl extends TriggerDescriptor {
+    public static class DescriptorImpl extends TriggerDescriptor implements PersistentDescriptor {
 
         private static ThreadFactory threadFactory() {
             return new NamingThreadFactory(Executors.defaultThreadFactory(), "SCMTrigger");
@@ -242,15 +245,11 @@ public class SCMTrigger extends Trigger<Item> {
         private static final int THREADS_UPPER_BOUND = 100;
         private static final int THREADS_DEFAULT= 10;
 
-        public DescriptorImpl() {
-            load();
-            resizeThreadPool();
-        }
-
-        private void readResolve() {
+        private Object readResolve() {
             if (maximumThreads == 0) {
                 maximumThreads = THREADS_DEFAULT;
             }
+            return this;
         }
 
         public boolean isApplicable(Item item) {
@@ -347,6 +346,7 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Update the {@link ExecutorService} instance.
          */
+        @PostConstruct
         /*package*/ synchronized void resizeThreadPool() {
             queue.setExecutors(Executors.newFixedThreadPool(maximumThreads, threadFactory()));
         }
@@ -471,7 +471,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
         
         /**
-         * Used from <tt>polling.jelly</tt> to write annotated polling log to the given output.
+         * Used from {@code polling.jelly} to write annotated polling log to the given output.
          */
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support

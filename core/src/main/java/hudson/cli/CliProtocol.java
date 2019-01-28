@@ -39,7 +39,7 @@ public class CliProtocol extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return OPT_IN;
+        return true;
     }
 
     @Override
@@ -108,15 +108,5 @@ public class CliProtocol extends AgentProtocol {
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
-    }
-
-    /**
-     * A/B test turning off this protocol by default.
-     */
-    private static final boolean OPT_IN;
-
-    static {
-        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
-        OPT_IN = (hash % 10) == 0;
     }
 }

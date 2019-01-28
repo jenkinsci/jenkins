@@ -129,18 +129,23 @@ public class ClassFilterImpl extends ClassFilter {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
             Boolean r = f.permits(_c);
             if (r != null) {
-                LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), r});
+                if (r) {
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), true});
+                } else {
+                    notifyRejected(_c, _c.getName(), String.format("%s specifies a policy for %s: %s ", f, _c.getName(), r));
+                }
                 return !r;
             }
         }
         return cache.computeIfAbsent(_c, c -> {
-            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true: only the name overload is overridden
-                return true;
-            }
             String name = c.getName();
             if (Main.isUnitTest && (name.contains("$$EnhancerByMockitoWithCGLIB$$") || name.contains("$$FastClassByMockitoWithCGLIB$$") || name.startsWith("org.mockito."))) {
                 mockOff();
                 return false;
+            }
+            if (ClassFilter.STANDARD.isBlacklisted(c)) { // currently never true, but may issue diagnostics
+                notifyRejected(_c, _c.getName(), String.format("%s is not permitted ", _c.getName()));
+                return true;
             }
             if (c.isArray()) {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);
@@ -156,13 +161,6 @@ public class ClassFilterImpl extends ClassFilter {
             }
             String location = codeSource(c);
             if (location != null) {
-                if (c.isAnonymousClass()) { // e.g., pkg.Outer$1
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize anonymous " + c + " in " + location);
-                } else if (c.isLocalClass()) { // e.g., pkg.Outer$1Local
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize local " + c + " in " + location);
-                } else if (c.isSynthetic()) { // e.g., pkg.Outer$$Lambda$1/12345678
-                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize synthetic " + c + " in " + location);
-                }
                 if (isLocationWhitelisted(location)) {
                     LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
                     return false;
@@ -179,10 +177,13 @@ public class ClassFilterImpl extends ClassFilter {
                 return false;
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
-                LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
+                notifyRejected(_c, null,
+                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+
                 return false;
             }
-            LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
+            notifyRejected(_c, null,
+                    String.format("%s in %s might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
             return true;
         });
     }
@@ -236,12 +237,12 @@ public class ClassFilterImpl extends ClassFilter {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
                 }
             }
-            if (loc.endsWith("/target/classes/")) {
+            if (loc.endsWith("/target/classes/") || loc.matches(".+/build/classes/[^/]+/main/")) {
                 LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
                 return true;
             }
             if (Main.isUnitTest) {
-                if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar")) {
+                if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar") || loc.matches(".+/build/classes/[^/]+/test/")) {
                     LOGGER.log(Level.FINE, "{0} seems to be test classes, OK", loc);
                     return true;
                 }
@@ -302,21 +303,39 @@ public class ClassFilterImpl extends ClassFilter {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
             Boolean r = f.permits(name);
             if (r != null) {
-                LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, r});
+                if (r) {
+                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, true});
+                } else {
+                    notifyRejected(null, name,
+                            String.format("%s specifies a policy for %s: %s", f, name, r));
+                }
+
                 return !r;
             }
         }
         // could apply a cache if the pattern search turns out to be slow
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
             if (SUPPRESS_ALL) {
-                LOGGER.log(Level.WARNING, "would normally reject {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+                notifyRejected(null, name,
+                        String.format("would normally reject %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
                 return false;
             }
-            LOGGER.log(Level.WARNING, "rejecting {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+            notifyRejected(null, name,
+                    String.format("rejecting %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
             return true;
         } else {
             return false;
         }
     }
 
+    private void notifyRejected(@CheckForNull Class<?> clazz, @CheckForNull String clazzName, String message) {
+        Throwable cause = null;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            cause = new SecurityException("Class rejected by the class filter: " +
+                    (clazz != null ? clazz.getName() : clazzName));
+        }
+        LOGGER.log(Level.WARNING, message, cause);
+
+        // TODO: add a Telemetry implementation (JEP-304)
+    }
 }

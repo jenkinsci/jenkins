@@ -69,6 +69,7 @@ import java.nio.file.Files;
 
 import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -459,6 +460,9 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void save() {
         if(BulkChange.contains(this))  return;
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
 
         XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
         lock.lock();
@@ -504,11 +508,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private File getQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.txt");
+        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "queue.xml");
+        return new File(Jenkins.get().getRootDir(), "queue.xml");
     }
 
     /**
@@ -757,7 +761,9 @@ public class Queue extends ResourceController implements Saveable {
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
-            cancel(item);
+            if(item.hasCancelPermission()){
+                cancel(item);
+            }
         } // else too late, ignore (JENKINS-14813)
         return HttpResponses.forwardToPreviousPage();
     }
@@ -1107,7 +1113,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Gets the information about the queue item for the given project.
      *
-     * @return null if the project is not in the queue.
+     * @return empty if the project is not in the queue.
      */
     public List<Item> getItems(Task t) {
         Snapshot snapshot = this.snapshot;
@@ -1450,6 +1456,10 @@ public class Queue extends ResourceController implements Saveable {
      * and it also gets invoked periodically (see {@link Queue.MaintainTask}.)
      */
     public void maintain() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return;
+        }
         lock.lock();
         try { try {
 
@@ -1460,8 +1470,8 @@ public class Queue extends ResourceController implements Saveable {
 
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
-                for (Computer c : Jenkins.getInstance().getComputers()) {
-                    for (Executor e : c.getExecutors()) {
+                for (Computer c : jenkins.getComputers()) {
+                    for (Executor e : c.getAllExecutors()) {
                         if (e.isInterrupted()) {
                             // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set
                             // we need to clear lost pendings as we cannot know what work unit was on this executor
@@ -1560,8 +1570,15 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            if (s != null)
-                s.sortBuildableItems(buildables);
+            if (s != null) {
+                try {
+                    s.sortBuildableItems(buildables);
+                } catch (Throwable e) {
+                    // We don't really care if the sort doesn't sort anything, we still should
+                    // continue to do our job. We'll complain about it and continue.
+                    LOGGER.log(Level.WARNING, "s.sortBuildableItems() threw Throwable: {0}", e);
+                }
+            }
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
@@ -1881,6 +1898,18 @@ public class Queue extends ResourceController implements Saveable {
         String getFullDisplayName();
 
         /**
+         * Returns task-specific key which is used by the {@link LoadBalancer} to choose one particular executor
+         * amongst all the free executors on all possibly suitable nodes.
+         * NOTE: To be able to re-use the same node during the next run this key should not change from one run to
+         * another. You probably want to compute that key based on the job's name.
+         * <p>
+         * @return by default: {@link #getFullDisplayName()}
+         *
+         * @see hudson.model.LoadBalancer
+         */
+        default String getAffinityKey() { return getFullDisplayName(); }
+
+        /**
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
          * <p>
@@ -1988,9 +2017,10 @@ public class Queue extends ResourceController implements Saveable {
      *
      * <h2>Views</h2>
      * <p>
-     * Implementation must have <tt>executorCell.jelly</tt>, which is
+     * Implementation must have {@code executorCell.jelly}, which is
      * used to render the HTML that indicates this executable is executing.
      */
+    @StaplerAccessibleType
     public interface Executable extends Runnable {
         /**
          * Task from which this executable was created.
@@ -2189,8 +2219,10 @@ public class Queue extends ResourceController implements Saveable {
             for (Action action: actions) addAction(action);
         }
 
+        @SuppressWarnings("deprecation") // JENKINS-51584
         protected Item(Item item) {
-        	this(item.task, new ArrayList<Action>(item.getAllActions()), item.id, item.future, item.inQueueSince);
+            // do not use item.getAllActions() here as this will persist actions from a TransientActionFactory
+            this(item.task, new ArrayList<Action>(item.getActions()), item.id, item.future, item.inQueueSince);
         }
 
         /**
@@ -2256,7 +2288,9 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         @RequirePOST
         public HttpResponse doCancelQueue() throws IOException, ServletException {
-        	Jenkins.getInstance().getQueue().cancel(this);
+            if(hasCancelPermission()){
+                Jenkins.getInstance().getQueue().cancel(this);
+            }
             return HttpResponses.forwardToPreviousPage();
         }
 
@@ -2453,10 +2487,10 @@ public class Queue extends ResourceController implements Saveable {
 
         public CauseOfBlockage getCauseOfBlockage() {
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
-            if (diff > 0)
+            if (diff >= 0)
                 return CauseOfBlockage.fromMessage(Messages._Queue_InQuietPeriod(Util.getTimeSpanString(diff)));
             else
-                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
+                return CauseOfBlockage.fromMessage(Messages._Queue_FinishedWaiting());
         }
 
         @Override
@@ -3016,7 +3050,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Schedule <tt>Queue.save()</tt> call for near future once items change. Ignore all changes until the time the save
+     * Schedule {@code Queue.save()} call for near future once items change. Ignore all changes until the time the save
      * takes place.
      *
      * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not

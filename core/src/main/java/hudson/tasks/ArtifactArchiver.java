@@ -141,9 +141,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     // Backwards compatibility for older builds
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
-    public Object readResolve() {
+    protected Object readResolve() {
         if (allowEmptyArchive == null) {
             this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
         }

@@ -84,7 +84,7 @@ import javax.annotation.Nonnull;
  * <h2>How does a CLI command work</h2>
  * <p>
  * The users starts {@linkplain CLI the "CLI agent"} on a remote system, by specifying arguments, like
- * <tt>"java -jar jenkins-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
+ * {@code "java -jar jenkins-cli.jar command arg1 arg2 arg3"}. The CLI agent creates
  * a remoting channel with the server, and it sends the entire arguments to the server, along with
  * the remoted stdin/out/err.
  *
@@ -183,7 +183,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Gets the command name.
      *
      * <p>
-     * For example, if the CLI is invoked as <tt>java -jar cli.jar foo arg1 arg2 arg4</tt>,
+     * For example, if the CLI is invoked as {@code java -jar cli.jar foo arg1 arg2 arg4},
      * on the server side {@link CLICommand} that returns "foo" from {@link #getName()}
      * will be invoked.
      *
@@ -260,6 +260,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
+        Authentication auth = null;
         try {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
@@ -268,33 +269,50 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(getTransportAuthentication());
             new ClassParser().parse(authenticator,p);
 
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[args.size()]));
-            Authentication auth = authenticator.authenticate();
+            auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
-            if (!(this instanceof LoginCommand || this instanceof HelpCommand))
+            if (!(this instanceof LoginCommand || this instanceof LogoutCommand || this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
-            return run();
+            LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
+                    new Object[] {getName(), args.size(), auth.getName()});
+            int res = run();
+            LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
+                    new Object[] {getName(), args.size(), auth.getName(), res});
+            return res;
         } catch (CmdLineException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 4;
         } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 3;
         } catch (AbortException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             // signals an error without stack trace
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 5;
         } catch (AccessDeniedException e) {
+            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             stderr.println("");
             stderr.println("ERROR: " + e.getMessage());
             return 6;
@@ -618,9 +636,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Key for {@link Channel#getProperty(Object)} that links to the {@link Authentication} object
      * which captures the identity of the client given by the transport layer.
      */
-    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<Authentication>(Authentication.class,"transportAuthentication");
+    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<>(Authentication.class, "transportAuthentication");
 
-    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<CLICommand>();
+    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<>();
 
     /*package*/ static CLICommand setCurrent(CLICommand cmd) {
         CLICommand old = getCurrent();
@@ -638,7 +656,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        Jenkins j = Jenkins.getActiveInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j!=null) {// only when running on the master
             cls.put(j.getPluginManager().uberClassLoader);
 

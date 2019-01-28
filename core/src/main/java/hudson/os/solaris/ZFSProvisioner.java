@@ -53,9 +53,11 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
     private final String rootDataset;
 
     public ZFSProvisioner(Node node) throws IOException, InterruptedException {
-        rootDataset = node.getRootPath().act(new MasterToSlaveFileCallable<String>() {
+        rootDataset = node.getRootPath().act(new GetName());
+    }
+    private static class GetName extends MasterToSlaveFileCallable<String> {
             private static final long serialVersionUID = -2142349338699797436L;
-
+            @Override
             public String invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return fs.getName();
@@ -63,15 +65,22 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
                 // TODO: for now, only support agents that are already on ZFS.
                 throw new IOException("Not on ZFS");
             }
-        });
     }
 
     public void prepareWorkspace(AbstractBuild<?,?> build, FilePath ws, final TaskListener listener) throws IOException, InterruptedException {
         final String name = build.getProject().getFullName();
         
-        ws.act(new MasterToSlaveFileCallable<Void>() {
+        ws.act(new PrepareWorkspace(name, listener));
+    }
+    private class PrepareWorkspace extends MasterToSlaveFileCallable<Void> {
+        private final String name;
+        private final TaskListener listener;
+        PrepareWorkspace(String name, TaskListener listener) {
+            this.name = name;
+            this.listener = listener;
+        }
             private static final long serialVersionUID = 2129531727963121198L;
-
+            @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return null;    // already on ZFS
@@ -84,20 +93,20 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
                 fs.mount();
                 return null;
             }
-        });
     }
 
     public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
-        ws.act(new MasterToSlaveFileCallable<Void>() {
+        ws.act(new DiscardWorkspace());
+    }
+    private static class DiscardWorkspace extends MasterToSlaveFileCallable<Void> {
             private static final long serialVersionUID = 1916618107019257530L;
-
+            @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)
                     fs.destory(true);
                 return null;
             }
-        });
     }
 
     /**

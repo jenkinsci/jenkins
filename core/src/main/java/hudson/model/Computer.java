@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
+import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -65,7 +66,9 @@ import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ImpersonatingExecutorService;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
@@ -324,6 +327,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
+        checkPermission(CONNECT);
         return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
@@ -904,6 +908,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private void addNewExecutorIfNecessary() {
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
         Set<Integer> availableNumbers  = new HashSet<Integer>();
         for (int i = 0; i < numExecutors; i++)
             availableNumbers.add(i);
@@ -957,6 +964,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
     }
@@ -965,6 +973,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link OneOffExecutor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<OneOffExecutor> getOneOffExecutors() {
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }
@@ -1352,9 +1361,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
+        new ImpersonatingExecutorService(
             Executors.newCachedThreadPool(
-                    new ExceptionCatchingThreadFactory(
-                            new NamingThreadFactory(new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))));
+                new ExceptionCatchingThreadFactory(
+                    new NamingThreadFactory(
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
 
 //
 //
@@ -1486,7 +1497,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)

@@ -31,8 +31,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 
 /**
  * Tests of {@link InstallState}.
@@ -40,6 +42,7 @@ import org.jvnet.hudson.test.JenkinsRule;
  * honor Jenkins extension points and hooks, which may influence the behavior.
  * @author Oleg Nenashev
  */
+@Category(SmokeTest.class)
 public class InstallStateTest {
     
     @Rule

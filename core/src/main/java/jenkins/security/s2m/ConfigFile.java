@@ -50,7 +50,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     /**
      * Loads the configuration from the configuration file.
      * @throws IOException if the configuration file could not be read.
-     * @since TODO
+     * @since 2.111
      */
     public synchronized void load2() throws IOException {
         COL result = create();

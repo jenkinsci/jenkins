@@ -31,10 +31,12 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import hudson.model.ViewGroup;
 import hudson.model.View;
-
+import hudson.security.ACL;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,11 +46,13 @@ import org.kohsuke.args4j.spi.Setter;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @PrepareForTest(Jenkins.class)
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ViewOptionHandlerTest {
 
     @Mock private Setter<View> setter;
@@ -83,6 +87,12 @@ public class ViewOptionHandlerTest {
         PowerMockito.when(Jenkins.getActiveInstance()).thenReturn(jenkins);
         when(jenkins.getView("outer")).thenReturn(outer);
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
+        when(jenkins.getACL()).thenReturn(new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission p) {
+                return true;
+            }
+        });
     }
 
     @Test public void resolveTopLevelView() throws Exception {

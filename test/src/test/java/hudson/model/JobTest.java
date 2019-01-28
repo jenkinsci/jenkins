@@ -53,6 +53,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.ProjectNamingStrategy;
 
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -210,8 +212,10 @@ public class JobTest {
     }
 
     @LocalData
-    @Test
+    @Test 
     public void configDotXmlPermission() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
