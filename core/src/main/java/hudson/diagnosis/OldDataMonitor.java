@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
@@ -88,13 +89,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @Nonnull
     static OldDataMonitor get(Jenkins j) throws IllegalStateException {
-        AdministrativeMonitor monitor = j.getAdministrativeMonitor("OldData");
-        if (monitor == null) {
-            throw new IllegalStateException("Cannot find OldData administrative monitor");
-        } else if (!(monitor instanceof OldDataMonitor)) {
-            throw new IllegalStateException("Wrong type of the OldData administrative monitor. Got: " + monitor.getClass());
-        }
-        return (OldDataMonitor)monitor;
+        return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
 
     public OldDataMonitor() {
