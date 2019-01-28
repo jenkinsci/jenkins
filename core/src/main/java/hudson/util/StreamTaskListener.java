@@ -24,8 +24,6 @@
 package hudson.util;
 
 import hudson.CloseProofOutputStream;
-import hudson.console.ConsoleNote;
-import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import java.io.Closeable;
@@ -34,21 +32,23 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
+// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
+// The change needs API deprecation policy or external usages cleanup.
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -58,8 +58,10 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener extends AbstractTaskListener implements Serializable, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
+    @Nonnull
     private PrintStream out;
+    @CheckForNull
     private Charset charset;
 
     /**
@@ -69,15 +71,15 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
      *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
-    public StreamTaskListener(PrintStream out) {
+    public StreamTaskListener(@Nonnull PrintStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out) {
+    public StreamTaskListener(@Nonnull OutputStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out, Charset charset) {
+    public StreamTaskListener(@Nonnull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
                 this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
@@ -90,18 +92,18 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         }
     }
 
-    public StreamTaskListener(File out) throws IOException {
+    public StreamTaskListener(@Nonnull File out) throws IOException {
         this(out,null);
     }
 
-    public StreamTaskListener(File out, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
         this(Files.newOutputStream(asPath(out)), charset);
     }
 
-    private static Path asPath(File out) throws IOException {
+    private static Path asPath(@Nonnull File out) throws IOException {
         try {
             return out.toPath();
         } catch (InvalidPathException e) {
@@ -118,7 +120,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
      * @throws IOException if the file could not be opened.
      * @since 1.651
      */
-    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, boolean append, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
@@ -130,7 +132,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         );
     }
 
-    public StreamTaskListener(Writer w) throws IOException {
+    public StreamTaskListener(@Nonnull Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
 
@@ -151,44 +153,14 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         return new StreamTaskListener(System.err,Charset.defaultCharset());
     }
 
+    @Override
     public PrintStream getLogger() {
         return out;
     }
 
-    private PrintWriter _error(String prefix, String msg) {
-        out.print(prefix);
-        out.println(msg);
-
-        // the idiom in Jenkins is to use the returned writer for writing stack trace,
-        // so put the marker here to indicate an exception. if the stack trace isn't actually written,
-        // HudsonExceptionNote.annotate recovers gracefully.
-        try {
-            annotate(new HudsonExceptionNote());
-        } catch (IOException e) {
-            // for signature compatibility, we have to swallow this error
-        }
-        return new PrintWriter(
-            charset!=null ? new OutputStreamWriter(out,charset) : new OutputStreamWriter(out),true);
-    }
-
-    public PrintWriter error(String msg) {
-        return _error("ERROR: ",msg);
-    }
-
-    public PrintWriter error(String format, Object... args) {
-        return error(String.format(format,args));
-    }
-
-    public PrintWriter fatalError(String msg) {
-        return _error("FATAL: ",msg);
-    }
-
-    public PrintWriter fatalError(String format, Object... args) {
-        return fatalError(String.format(format,args));
-    }
-
-    public void annotate(ConsoleNote ann) throws IOException {
-        ann.encodeTo(out);
+    @Override
+    public Charset getCharset() {
+        return charset != null ? charset : Charset.defaultCharset();
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -202,6 +174,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         charset = name==null ? null : Charset.forName(name);
     }
 
+    @Override
     public void close() throws IOException {
         out.close();
     }

@@ -407,6 +407,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
+    @Exported(name="labelExpression")
     public String getAssignedLabelString() {
         if (canRoam || assignedNode==null)    return null;
         try {
@@ -572,7 +573,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Returns the root directory of the checked-out module.
      * <p>
-     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * This is usually where {@code pom.xml}, {@code build.xml}
      * and so on exists.
      *
      * @deprecated as of 1.319
@@ -641,7 +642,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Used in <tt>sidepanel.jelly</tt> to decide whether to display
+     * Used in {@code sidepanel.jelly} to decide whether to display
      * the config/delete/build links.
      */
     public boolean isConfigurable() {
@@ -750,7 +751,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Returns the live list of all {@link Publisher}s configured for this project.
      *
      * <p>
-     * This method couldn't be called <tt>getPublishers()</tt> because existing methods
+     * This method couldn't be called {@code getPublishers()} because existing methods
      * in sub-classes return different inconsistent types.
      */
     public abstract DescribableList<Publisher,Descriptor<Publisher>> getPublishersList();
@@ -1068,7 +1069,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
-        if (isLogUpdated() && !isConcurrentBuild()) {
+        if (!isConcurrentBuild() && isLogUpdated()) {
             final R lastBuild = getLastBuild();
             if (lastBuild != null) {
                 return new BlockedBecauseOfBuildInProgress(lastBuild);
@@ -1197,7 +1198,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
+        if(workspace!=null){
+            workspace.mkdirs();
+        } else {
+            throw new AbortException("Cannot checkout SCM, workspace is not defined");
+        }
+
 
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {

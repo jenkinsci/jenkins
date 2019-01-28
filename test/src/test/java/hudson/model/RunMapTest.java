@@ -98,7 +98,7 @@ public class RunMapTest {
     }
 
     public static class BombAction extends InvisibleAction {
-        public Object readResolve() {
+        private Object readResolve() {
             bombed = true;
             throw new NullPointerException();
         }

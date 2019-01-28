@@ -31,12 +31,15 @@ import hudson.Proc;
 import hudson.cli.util.ScriptLoader;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -84,9 +87,11 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Email("http://markmail.org/message/on4wkjdaldwi2atx")
     @Test
     public void anonymousCanAlwaysLoadJARs() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage p = wc.login("alice").goTo("computer/test/");
+        HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
 
         // this fresh WebClient doesn't have a login cookie and represent JNLP launcher
         JenkinsRule.WebClient jnlpAgent = r.createWebClient();
@@ -138,7 +143,7 @@ public class JnlpAccessWithSecuredHudsonTest {
             assertTrue(f.exists());
             try {
                 fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
-            } catch (SecurityException x) {
+            } catch (Exception x) {
                 assertThat(Functions.printThrowable(x), containsString("https://jenkins.io/redirect/security-144"));
             }
         } finally {
@@ -153,7 +158,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         }
         @Override
         public String call() throws Exception {
-            return Channel.current().call(new ScriptLoader(path));
+            return getChannelOrFail().call(new ScriptLoader(path));
         }
     }
 

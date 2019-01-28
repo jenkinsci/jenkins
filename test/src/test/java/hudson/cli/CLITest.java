@@ -73,6 +73,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.junit.Ignore;
 
 public class CLITest {
 
@@ -255,6 +256,31 @@ public class CLITest {
             assertEquals(0, ret);
         }
     }
+
+    @Ignore("TODO sometimes fails, in CI & locally")
+    @Test
+    @Issue("JENKINS-54310")
+    public void readInputAtOnce() throws Exception {
+        home = tempHome();
+        grabCliJar();
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+            int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr())
+                    .launch()
+                    .cmds("java",
+                            "-Duser.home=" + home,
+                            "-jar", jar.getAbsolutePath(),
+                            "-s", r.getURL().toString(),
+                            "list-plugins") // This CLI Command needs -auth option, so when we omit it, the CLI stops before reading the input.
+                    .stdout(baos)
+                    .stderr(baos)
+                    .stdin(CLITest.class.getResourceAsStream("huge-stdin.txt"))
+                    .join();
+            assertThat(baos.toString(), not(containsString("java.io.IOException: Stream is closed")));
+            assertEquals(0, ret);
+        }
+    }
+
     @TestExtension("redirectToEndpointShouldBeFollowed")
     public static final class CliProxyAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
 

@@ -76,13 +76,13 @@ if (!$lang || $lang eq "en") {
   exit();
 }
 
-print STDERR "\rFinding files ...";
+print STDERR "Finding files ...\n";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
+print STDERR "Found ".(scalar keys @files)." files\n";
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
-print STDERR "\r             ";
 
 ## process each file
 foreach (@files) {
@@ -192,8 +192,7 @@ sub processFile {
       foreach (keys %keys) {
          if (!$okeys{$_}) {
             if (!defined($okeys{$_})) {
-               print F "# $ekeys{$_}\n" if ($ekeys{$_} && $ekeys{$_} ne "");
-               print F "$_=\n";
+               print F "$_=";
                if (defined($cache{$_})) {
                   print F $cache{$_}."\n";
                } else {
@@ -280,9 +279,9 @@ sub loadPropertiesFile {
    my %ret;
    if (open(F, "$file")) {
       my ($cont, $key, $val) = (0, undef, undef);
-      while(<F>){
+      while (<F>) {
          s/[\r\n]+//;
-         $ret{$key} .= " \n# $1" if ($cont && /\s*(.*)[\\\s]*$/);
+         $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
          if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
            ($key, $val) = (trim($1), trim($2));
            $ret{$key}=$val;
@@ -290,7 +289,7 @@ sub loadPropertiesFile {
          $cont = (/\\\s*$/) ? 1 : 0;
       }
       close(F);
-      $ret{$key} .= " \n# $1" if ($cont && /\s*(.*)[\\\s]*$/);
+      $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
    }
    return %ret;
 }

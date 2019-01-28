@@ -28,20 +28,33 @@ import hudson.Util;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
 import hudson.model.ProminentProjectAction;
 import hudson.model.queue.FoldableAction;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matchers;
-import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+
+import javax.annotation.Nonnull;
+
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 public class TransientActionFactoryTest {
 
@@ -147,6 +160,45 @@ public class TransientActionFactoryTest {
         }
     }
 
-    private static class MyProminentProjectAction extends InvisibleAction implements ProminentProjectAction {}
+    @Issue("JENKINS-51584")
+    @Test
+    public void transientActionsAreNotPersistedOnQueueItems() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild build = r.buildAndAssertSuccess(p);
+        // MyProminentProjectAction is only added via the TransientActionFactory and should never be persisted.
+        assertThat(Util.filter(build.getActions(), MyProminentProjectAction.class), is(empty()));
+        assertThat(Util.filter(build.getAllActions(), MyProminentProjectAction.class), hasSize(1));
+    }
+
+    @TestExtension("transientActionsAreNotPersistedOnQueueItems")
+    public static class AllFactory extends TransientActionFactory<Actionable> {
+
+        @Override
+        public Class<Actionable> type() {
+            return Actionable.class;
+        }
+
+        @Nonnull
+        @Override
+        public Collection<? extends Action> createFor(@Nonnull Actionable target) {
+            return Collections.singleton(new MyProminentProjectAction());
+        }
+    }
+
+    private static class MyProminentProjectAction extends InvisibleAction implements ProminentProjectAction {
+
+        private String allocation;
+
+        public MyProminentProjectAction() {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            new Exception("MyProminentProjectAction allocated at: ").printStackTrace(pw);
+            allocation = sw.toString();
+        }
+
+        public String toString() {
+            return allocation;
+        }
+    }
 
 }

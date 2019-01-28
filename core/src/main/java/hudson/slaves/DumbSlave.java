@@ -53,9 +53,10 @@ public final class DumbSlave extends Slave {
     }
     
     /**
-     * @deprecated as of 1.XXX.
+     * @deprecated as of 2.2.
      *      Use {@link #DumbSlave(String, String, ComputerLauncher)} and configure the rest through setters.
      */
+    @Deprecated
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws IOException, FormException {
     	super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
     }
@@ -65,8 +66,8 @@ public final class DumbSlave extends Slave {
         super(name, remoteFS, launcher);
     }
 
-    @Extension @Symbol({"dumb",
-            "slave"/*because this is in effect the canonical slave type*/})
+    @Extension @Symbol({"permanent" /*because this is in effect the canonical slave type*/, 
+            "dumb", "slave"})
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();

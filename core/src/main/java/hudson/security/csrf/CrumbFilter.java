@@ -8,6 +8,11 @@ package hudson.security.csrf;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -39,6 +44,15 @@ public class CrumbFilter implements Filter {
         Jenkins h = Jenkins.getInstanceOrNull();
         if(h==null)     return null;    // before Jenkins is initialized?
         return h.getCrumbIssuer();
+    }
+
+    @Restricted(NoExternalUse.class)
+    @MetaInfServices
+    public static class ErrorCustomizer implements RequirePOST.ErrorCustomizer {
+        @Override
+        public ForwardToView getForwardView() {
+            return new ForwardToView(CrumbFilter.class, "retry");
+        }
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {

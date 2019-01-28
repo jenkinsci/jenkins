@@ -28,8 +28,8 @@ THE SOFTWARE.
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>pom</artifactId>
-    <version>2.88-SNAPSHOT</version>
+    <artifactId>jenkins-parent</artifactId>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,11 +39,9 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.253</stapler.version>
+    <stapler.version>1.256</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.11</groovy.version>
-    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
-    <findbugs.failOnError>true</findbugs.failOnError>
+    <groovy.version>2.4.12</groovy.version>
   </properties>
 
   <dependencies>
@@ -111,7 +109,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.41</version>
+      <version>3.0.45</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -121,7 +119,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build-217-jenkins-11</version>
+      <version>build-217-jenkins-14</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -179,6 +177,17 @@ THE SOFTWARE.
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.jenkins.stapler</groupId>
+      <artifactId>jenkins-stapler-support</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.infradna.tool</groupId>
@@ -203,17 +212,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>1.8</version>
+      <version>2.0-beta-2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -240,6 +248,20 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
+    <!--
+    still including the xpp3 driver to ensure backwards compatibilty
+    for other plugins that may be depending on it
+    -->
+    <dependency>
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.kxml</groupId>
+      <artifactId>kxml2</artifactId>
+      <version>2.3.0</version>
+    </dependency>
     <dependency>
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
@@ -262,7 +284,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>commons-digester</groupId>
@@ -447,11 +468,6 @@ THE SOFTWARE.
       <version>${spring.version}</version>
     </dependency>
     <dependency>
-      <groupId>xpp3</groupId>
-      <artifactId>xpp3</artifactId>
-      <version>1.1.4c</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -468,7 +484,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
@@ -502,7 +518,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.25</version>
+      <version>1.27</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -522,7 +538,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>4.2.1</version>
+      <version>4.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -532,7 +548,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.8</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -547,7 +563,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.12</version>
+      <version>1.13</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -557,8 +573,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.4</version>
-      <scope>provided</scope>
+      <version>1.8</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -585,7 +600,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -764,7 +778,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>2.1.2</version>
+                  <version>2.2.0</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -795,25 +809,6 @@ THE SOFTWARE.
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin><!-- run unit test in src/test/java -->
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -888,42 +883,6 @@ THE SOFTWARE.
         <!-- In the default profile we always fail the build if there FindBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
-    </profile>
-    <profile>
-      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
-      <id>cobertura</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.gmaven</groupId>
-            <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <!-- run unit test -->
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <scriptpath>
-                    <element>${project.basedir}/src/build-script</element>
-                  </scriptpath>
-                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- unit tests are run by GMaven through Ant. -->
-            <artifactId>maven-surefire-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

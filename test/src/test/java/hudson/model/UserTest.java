@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  * Vincent Latombe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,8 +25,12 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
+import hudson.ExtensionList;
 
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -40,15 +44,18 @@ import hudson.security.UserMayOrMayNotExistException;
 import hudson.tasks.MailAddressResolver;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Arrays;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -58,20 +65,21 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+@Category(SmokeTest.class)
 public class UserTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -80,11 +88,11 @@ public class UserTest {
 
         private final String testString;
         private UserPropertyDescriptor descriptorImpl = new UserPropertyDescriptorImpl();
-        
+
         public UserPropertyImpl(String testString) {
             this.testString = testString;
         }
-        
+
         public String getTestString() {
             return testString;
         }
@@ -93,7 +101,7 @@ public class UserTest {
         public UserPropertyDescriptor getDescriptor() {
             return descriptorImpl;
         }
-        
+
         public String getIconFileName() {
           return "/images/24x24/gear.png";
         }
@@ -105,7 +113,7 @@ public class UserTest {
         public String getUrlName() {
           return "userpropertyimpl";
         }
-        
+
         public static class UserPropertyDescriptorImpl extends UserPropertyDescriptor {
           @Override
           public UserProperty newInstance(User user) {
@@ -116,20 +124,20 @@ public class UserTest {
 
     @Issue("JENKINS-2331")
     @Test public void userPropertySummaryAndActionAreShownInUserPage() throws Exception {
-        
+
         UserProperty property = new UserPropertyImpl("NeedleInPage");
         UserProperty.all().add(property.getDescriptor());
-        
+
         User user = User.get("user-test-case");
         user.addProperty(property);
-        
+
         HtmlPage page = j.createWebClient().goTo("user/user-test-case");
-        
+
         WebAssert.assertTextPresentInElement(page, "NeedleInPage", "main-panel");
         WebAssert.assertTextPresentInElement(page, ((Action) property).getDisplayName(), "side-panel");
-        
+
     }
-    
+
     /**
      * Asserts that the default user avatar can be fetched (ie no 404)
      */
@@ -165,7 +173,7 @@ public class UserTest {
             seccon.setAuthentication(orig);
         }
     }
-   
+
     @Test
     public void testGetUser() throws Exception {
         {
@@ -190,10 +198,8 @@ public class UserTest {
         User user = User.get("john smith");
         User user2 = User.get("John Smith");
         assertSame("Users should have the same id.", user.getId(), user2.getId());
-        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
-        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
-    
+
     @Test
     public void caseSensitivity() {
         j.jenkins.setSecurityRealm(new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseSensitive()));
@@ -201,11 +207,7 @@ public class UserTest {
         User user2 = User.get("John Smith");
         assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
         assertEquals("john smith", User.idStrategy().keyFor(user.getId()));
-        assertEquals("john smith", User.idStrategy().filenameOf(user.getId()));
         assertEquals("John Smith", User.idStrategy().keyFor(user2.getId()));
-        assertEquals("~john ~smith", User.idStrategy().filenameOf(user2.getId()));
-        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
-        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
 
     @Test
@@ -215,15 +217,10 @@ public class UserTest {
         User user2 = User.get("John.Smith@acme.org");
         assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user.getId()));
-        assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user.getId()));
         assertEquals("John.Smith@acme.org", User.idStrategy().keyFor(user2.getId()));
-        assertEquals("~john.~smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
         user2 = User.get("john.smith@ACME.ORG");
         assertEquals("Users should have the same id.", user.getId(), user2.getId());
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user2.getId()));
-        assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
-        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
-        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
 
     private static class IdStrategySpecifyingSecurityRealm extends HudsonPrivateSecurityRealm {
@@ -238,21 +235,10 @@ public class UserTest {
         }
     }
 
-    @Issue("JENKINS-24317")
-    @LocalData
-    @Test public void migration() throws Exception {
-        assumeFalse("was not a problem on a case-insensitive FS to begin with", new File(j.jenkins.getRootDir(), "users/bob").isDirectory());
-        User bob = User.get("bob");
-        assertEquals("Bob Smith", bob.getFullName());
-        assertEquals("Bob Smith", User.get("Bob").getFullName());
-        assertEquals("nonexistent", User.get("nonexistent").getFullName());
-        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()));
-    }
-
     @Test
     public void testAddAndGetProperty() throws Exception {
         {
-        User user = User.get("John Smith");  
+        User user = User.get("John Smith");
         UserProperty prop = new SomeUserProperty();
         user.addProperty(prop);
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
@@ -268,15 +254,15 @@ public class UserTest {
     @Test
     public void testImpersonateAndCurrent() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User user = User.get("John Smith"); 
+        User user = User.get("John Smith");
         assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertEquals("User John Smith should be the current user.", user.getId(), User.current().getId());
     }
 
     @Test
     public void testGetUnknown() {
-        User user = User.get("John Smith"); 
+        User user = User.get("John Smith");
         assertNotNull("User should not be null.", user);
     }
 
@@ -292,22 +278,19 @@ public class UserTest {
         assertNotNull("User John Smith should be created.", user);
         assertTrue("Jenkins should contain user John Smith.", User.getAll().contains(user));
     }
-    
+
     @Test
     public void testReload() throws Exception {
-        {
-        User user = User.get("John Smith", true, Collections.emptyMap());
+        String originalName = "John Smith";
+        User user = User.get(originalName, true, Collections.emptyMap());
         user.save();
-        String config = user.getConfigFile().asString();
-        config = config.replace("John Smith", "Alice Smith");
-        PrintStream st = new PrintStream(user.getConfigFile().getFile());
-        st.print(config);
-        }
+        String temporaryName = "Alice Smith";
+        user.setFullName(temporaryName);
+
         j.jenkins.reload();
-        {
-        User user = User.get("John Smith", false, Collections.emptyMap());
-        assertEquals("User should have full name Alice Smith.", "Alice Smith", user.getFullName());
-        }
+
+        user = User.get(originalName, false, Collections.emptyMap());
+        assertEquals("User should have original name.", originalName, user.getFullName());
     }
 
     @Test
@@ -377,8 +360,9 @@ public class UserTest {
         {
          User user = User.get("John Smith", true, Collections.emptyMap());
          user.save();
+         File configFolder = user.getUserFolder();
          user.delete();
-         assertFalse("User should be deleted with his persistent data.", user.getConfigFile().exists());
+         assertFalse("User should be deleted with his persistent data.", configFolder.exists());
          assertFalse("User should be deleted from memory.", User.getAll().contains(user));
          user = User.get("John Smith", false, Collections.emptyMap());
          assertNull("User should be deleted from memory.", user);
@@ -398,7 +382,7 @@ public class UserTest {
 
     @Test
     public void testDoConfigSubmit() throws Exception {
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -409,7 +393,7 @@ public class UserTest {
         auth.add(Jenkins.ADMINISTER, user.getId());
         auth.add(Jenkins.READ, user2.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
-        HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+        HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
@@ -423,8 +407,8 @@ public class UserTest {
                fail("AccessDeniedException should be thrown.");
             }
         }
-        form = j.createWebClient().login(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        
+        form = j.createWebClient().withBasicCredentials(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+
         form.getInputByName("_.fullName").setValueAttribute("John");
         j.submit(form);
         assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
@@ -434,7 +418,7 @@ public class UserTest {
     /* TODO cannot follow what this is purporting to test
     @Test
     public void testDoDoDelete() throws Exception {
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -480,7 +464,7 @@ public class UserTest {
 
     @Test
     public void testHasPermission() throws IOException {
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -499,7 +483,7 @@ public class UserTest {
 
     @Test
     public void testCanDelete() throws IOException {
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -525,6 +509,8 @@ public class UserTest {
     @Test
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+        
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -622,6 +608,7 @@ public class UserTest {
         assertEquals("victim2 is a real (canonical) user ID", "victim2", User.get("Victim2").getId());
 
     }
+
     private static class ExternalSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -722,8 +709,39 @@ public class UserTest {
         }
     }
 
-     public static class SomeUserProperty extends UserProperty {
-         
+    @Test
+    @LocalData
+    public void differentUserIdInConfigFileIsIgnored() {
+        String fredUserId = "fred";
+        User fred = User.getById(fredUserId, false);
+        assertThat(fred, notNullValue());
+        assertThat(fred.getId(), is(fredUserId));
+        assertThat(fred.getFullName(), is("Fred Smith"));
+        User jane = User.getById("jane", false);
+        assertThat(jane, nullValue());
+    }
+
+    @Test
+    @LocalData
+    public void corruptConfigFile() {
+        String fredUserId = "fred";
+        User fred = User.getById(fredUserId, true);
+        assertThat(fred, notNullValue());
+        assertThat(fred.getFullName(), is("fred"));
+    }
+
+    @Test
+    public void parentDirectoryUserDoesNotExist() {
+        String userId = "admin";
+        User admin = User.getById(userId, true);
+        assertNotNull(admin);
+        assertThat(admin.getId(), is(userId));
+        User parentDirectoryUserId = User.getById("../" + admin, false);
+        assertThat(parentDirectoryUserId, nullValue());
+    }
+
+    public static class SomeUserProperty extends UserProperty {
+
         @TestExtension
         public static class DescriptorImpl extends UserPropertyDescriptor {
             @Override
@@ -731,6 +749,31 @@ public class UserTest {
                 return new SomeUserProperty();
             }
         }
+    }
+
+    @Issue("JENKINS-45977")
+    @Test
+    public void missingDescriptor() throws Exception {
+        ExtensionList.lookup(Descriptor.class).remove(j.jenkins.getDescriptor(SomeUserProperty.class));
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
+        User alice = User.get("alice");
+        alice.addProperty(new SomeUserProperty());
+        assertThat(alice.getProperties().values(), not(empty()));
+        JenkinsRule.WebClient wc = j.createWebClient();
+        final List<URL> failingResources = new ArrayList<>();
+        new WebConnectionWrapper(wc) { // https://stackoverflow.com/a/18853796/12916
+            @Override
+            public WebResponse getResponse(WebRequest request) throws IOException {
+                WebResponse r = super.getResponse(request);
+                if (r.getStatusCode() >= 400) {
+                    failingResources.add(request.getUrl());
+                }
+                return r;
+            }
+        };
+        wc.login("alice").goTo("me/configure");
+        assertThat(failingResources, empty());
     }
 
 }

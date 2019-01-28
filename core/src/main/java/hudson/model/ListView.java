@@ -209,7 +209,7 @@ public class ListView extends View implements DirectlyModifiableView {
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         Iterable<? extends TopLevelItem> candidates;
         if (recurse) {
-            candidates = Items.getAllItems(parent, TopLevelItem.class);
+            candidates = parent.getAllItems(TopLevelItem.class);
         } else {
             candidates = parent.getItems();
         }
@@ -444,7 +444,7 @@ public class ListView extends View implements DirectlyModifiableView {
             jobNames.clear();
             Iterable<? extends TopLevelItem> items;
             if (recurse) {
-                items = Items.getAllItems(getOwner().getItemGroup(), TopLevelItem.class);
+                items = getOwner().getItemGroup().getAllItems(TopLevelItem.class);
             } else {
                 items = getOwner().getItemGroup().getItems();
             }
@@ -518,7 +518,7 @@ public class ListView extends View implements DirectlyModifiableView {
     public static final class Listener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 locationChanged(oldFullName, newFullName);
             }
         }
@@ -563,7 +563,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
         @Override
         public void onDeleted(final Item item) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 deleted(item);
             }
         }
