@@ -1,0 +1,14 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<hudson.model.UserIdMapper>
+  <idToDirectoryNameMap>
+    <entry>
+      <string>admin</string>
+      <string>admin</string>
+    </entry>
+    <entry>
+      <string>user1</string>
+      <string>user1</string>
+    </entry>
+
+  </idToDirectoryNameMap>
+</hudson.model.UserIdMapper>
