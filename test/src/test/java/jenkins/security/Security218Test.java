@@ -67,7 +67,7 @@ public class Security218Test implements Serializable {
     }
 
     /**
-     * The attack scenario here is that a master sends a normal command to an agent and a slave
+     * The attack scenario here is that a master sends a normal command to an agent and
      * inserts a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
