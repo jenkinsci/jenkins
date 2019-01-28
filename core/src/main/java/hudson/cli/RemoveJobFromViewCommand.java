@@ -31,7 +31,6 @@ import hudson.model.DirectlyModifiableView;
 import hudson.model.View;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza

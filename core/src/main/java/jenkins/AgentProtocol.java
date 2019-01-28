@@ -68,7 +68,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
     /**
      * Checks if the protocol is deprecated.
      * 
-     * @since TODO
+     * @since 2.75
      */
     public boolean isDeprecated() {
         return false;

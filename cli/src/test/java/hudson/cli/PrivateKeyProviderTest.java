@@ -47,7 +47,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CLI.class) // When mocking new operator caller has to be @PreparedForTest, not class itself
+@PrepareForTest({CLI.class, CLIConnectionFactory.class}) // When mocking new operator caller has to be @PreparedForTest, not class itself
 public class PrivateKeyProviderTest {
 
     @Test
@@ -113,15 +113,9 @@ public class PrivateKeyProviderTest {
 
     private Iterable<KeyPair> withKeyPairs(final KeyPair... expected) {
         return Mockito.argThat(new ArgumentMatcher<Iterable<KeyPair>>() {
-            @Override public void describeTo(Description description) {
-                description.appendText(Arrays.asList(expected).toString());
-            }
 
-            @Override public boolean matches(Object argument) {
-                if (!(argument instanceof Iterable)) throw new IllegalArgumentException("Not an instance of Iterrable");
-
-                @SuppressWarnings("unchecked")
-                final Iterable<KeyPair> actual = (Iterable<KeyPair>) argument;
+            @Override
+            public boolean matches(Iterable<KeyPair> actual) {
                 int i = 0;
                 for (KeyPair akp: actual) {
                     if (!eq(expected[i].getPublic(), akp.getPublic())) return false;

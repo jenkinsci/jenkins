@@ -25,8 +25,10 @@
 package hudson;
 
 import hudson.model.Hudson;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.Recipe;
 
@@ -40,6 +42,7 @@ import java.util.Set;
 /**
  * @author Alan Harder
  */
+@Category(SmokeTest.class)
 public class ClassicPluginStrategyTest extends HudsonTestCase {
 
     @Override

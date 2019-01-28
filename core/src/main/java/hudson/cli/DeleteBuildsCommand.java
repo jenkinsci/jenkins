@@ -31,14 +31,14 @@ import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Deletes builds records in a bulk.
  *
  * @author Kohsuke Kawaguchi
  */
-@Restricted(DoNotUse.class) // command implementation only
+@Restricted(NoExternalUse.class) // command implementation only
 @Extension
 public class DeleteBuildsCommand extends RunRangeCommand {
     @Override
@@ -57,7 +57,7 @@ public class DeleteBuildsCommand extends RunRangeCommand {
     protected int act(List<Run<?, ?>> builds) throws IOException {
         job.checkPermission(Run.DELETE);
 
-        final HashSet<Integer> hsBuilds = new HashSet<Integer>();
+        final HashSet<Integer> hsBuilds = new HashSet<>();
 
         for (Run<?, ?> build : builds) {
             if (!hsBuilds.contains(build.number)) {

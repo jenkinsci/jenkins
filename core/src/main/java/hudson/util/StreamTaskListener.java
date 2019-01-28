@@ -46,6 +46,12 @@ import java.util.logging.Logger;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
+// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
+// The change needs API deprecation policy or external usages cleanup.
+
 /**
  * {@link TaskListener} that generates output into a single stream.
  *
@@ -54,8 +60,10 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener implements TaskListener, SerializableOnlyOverRemoting, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, SerializableOnlyOverRemoting, Closeable {
+    @Nonnull
     private PrintStream out;
+    @CheckForNull
     private Charset charset;
 
     /**
@@ -65,15 +73,15 @@ public class StreamTaskListener implements TaskListener, SerializableOnlyOverRem
      *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
-    public StreamTaskListener(PrintStream out) {
+    public StreamTaskListener(@Nonnull PrintStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out) {
+    public StreamTaskListener(@Nonnull OutputStream out) {
         this(out,null);
     }
 
-    public StreamTaskListener(OutputStream out, Charset charset) {
+    public StreamTaskListener(@Nonnull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
                 this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
@@ -86,18 +94,18 @@ public class StreamTaskListener implements TaskListener, SerializableOnlyOverRem
         }
     }
 
-    public StreamTaskListener(File out) throws IOException {
+    public StreamTaskListener(@Nonnull File out) throws IOException {
         this(out,null);
     }
 
-    public StreamTaskListener(File out, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
         this(Files.newOutputStream(asPath(out)), charset);
     }
 
-    private static Path asPath(File out) throws IOException {
+    private static Path asPath(@Nonnull File out) throws IOException {
         try {
             return out.toPath();
         } catch (InvalidPathException e) {
@@ -114,7 +122,7 @@ public class StreamTaskListener implements TaskListener, SerializableOnlyOverRem
      * @throws IOException if the file could not be opened.
      * @since 1.651
      */
-    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+    public StreamTaskListener(@Nonnull File out, boolean append, @CheckForNull Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
@@ -126,7 +134,7 @@ public class StreamTaskListener implements TaskListener, SerializableOnlyOverRem
         );
     }
 
-    public StreamTaskListener(Writer w) throws IOException {
+    public StreamTaskListener(@Nonnull Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
 
@@ -154,7 +162,7 @@ public class StreamTaskListener implements TaskListener, SerializableOnlyOverRem
 
     @Override
     public Charset getCharset() {
-        return charset;
+        return charset != null ? charset : Charset.defaultCharset();
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

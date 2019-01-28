@@ -121,7 +121,7 @@ public class ComputerConfigDotXmlTest {
         computer.doConfigDotXml(req, rsp);
 
         final String out = outputStream.toString();
-        assertThat(out, startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
         assertThat(out, containsString("<description>dummy</description>"));
     }

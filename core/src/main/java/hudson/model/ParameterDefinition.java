@@ -75,18 +75,18 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterDefinition}s are persisted into job <tt>config.xml</tt>
+ * Instances of {@link ParameterDefinition}s are persisted into job {@code config.xml}
  * through XStream.
  *
  *
  * <h2>Associated Views</h2>
  * <h3>config.jelly</h3>
- * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to contribute a form
+ * {@link ParameterDefinition} class uses {@code config.jelly} to contribute a form
  * fragment in the job configuration screen. Values entered there are fed back to
  * {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)} to create {@link ParameterDefinition}s.
  *
  * <h3>index.jelly</h3>
- * The <tt>index.jelly</tt> view contributes a form fragment in the page where the user
+ * The {@code index.jelly} view contributes a form fragment in the page where the user
  * enters actual values of parameters for a build. The result of this form submission
  * is then fed to {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)} to
  * create {@link ParameterValue}s.

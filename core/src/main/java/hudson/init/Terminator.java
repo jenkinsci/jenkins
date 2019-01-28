@@ -52,7 +52,7 @@ public @interface Terminator {
     String[] attains() default {};
 
     /**
-     * Key in <tt>Messages.properties</tt> that represents what this task is about. Used for rendering the progress.
+     * Key in {@code Messages.properties} that represents what this task is about. Used for rendering the progress.
      * Defaults to "${short class name}.${method Name}".
      */
     String displayName() default "";

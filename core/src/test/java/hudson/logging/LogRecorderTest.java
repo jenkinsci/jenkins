@@ -25,6 +25,9 @@
 package hudson.logging;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.junit.Test;
@@ -124,6 +127,38 @@ public class LogRecorderTest {
     private static Boolean matches(String target, String logger, Level loggerLevel) {
         LogRecord r = createLogRecord(logger, loggerLevel, "whatever");
         return new LogRecorder.Target(target, Level.INFO).matches(r);
+    }
+
+    @Test
+    public void autocompletionTest() throws Exception {
+        List<String> loggers = Arrays.asList(
+                "com.company.whatever.Foo", "com.foo.Bar", "com.foo.Baz",
+                "org.example.app.Main", "org.example.app.impl.xml.Parser", "org.example.app.impl.xml.Validator");
+
+        Set<String> candidates = LogRecorder.getAutoCompletionCandidates(loggers);
+
+        isCandidate(candidates, "com");
+        isCandidate(candidates, "com.company.whatever.Foo");
+        isCandidate(candidates, "com.foo");
+        isCandidate(candidates, "com.foo.Bar");
+        isCandidate(candidates, "com.foo.Baz");
+        isCandidate(candidates, "org.example.app");
+        isCandidate(candidates, "org.example.app.Main");
+        isCandidate(candidates, "org.example.app.impl.xml");
+        isCandidate(candidates, "org.example.app.impl.xml.Parser");
+        isCandidate(candidates, "org.example.app.impl.xml.Validator");
+
+        isNotCandidate(candidates, "org");
+        isNotCandidate(candidates, "org.example");
+
+        assertEquals("expected number of items", 10, candidates.size());
+    }
+
+    private static void isCandidate(Set<String> candidates, String candidate) {
+        assertTrue(candidate, candidates.contains(candidate));
+    }
+    private static void isNotCandidate(Set<String> candidates, String candidate) {
+        assertFalse(candidate, candidates.contains(candidate));
     }
 
 }

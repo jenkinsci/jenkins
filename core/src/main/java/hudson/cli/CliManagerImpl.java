@@ -92,7 +92,7 @@ public class CliManagerImpl implements CliEntryPoint, SerializableOnlyOverRemoti
             cmd.channel = Channel.currentOrFail();
             final CLICommand old = CLICommand.setCurrent(cmd);
             try {
-                transportAuth = cmd.channel.getProperty(CLICommand.TRANSPORT_AUTHENTICATION);
+                transportAuth = Channel.currentOrFail().getProperty(CLICommand.TRANSPORT_AUTHENTICATION);
                 cmd.setTransportAuth(transportAuth);
                 return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
             } finally {
@@ -101,7 +101,7 @@ public class CliManagerImpl implements CliEntryPoint, SerializableOnlyOverRemoti
         }
 
         err.println("No such command: "+subCmd);
-        new HelpCommand().main(Collections.<String>emptyList(), locale, stdin, out, err);
+        new HelpCommand().main(Collections.emptyList(), locale, stdin, out, err);
         return -1;
     }
 

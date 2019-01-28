@@ -407,7 +407,7 @@ public class SearchTest {
 
 
         // Alice can't
-        assertFalse("no permission", j.jenkins.getView("foo").getACL().hasPermission(User.get("alice").impersonate(), View.READ));
+        assertFalse("no permission", j.jenkins.getView("foo").hasPermission(User.get("alice").impersonate(), View.READ));
         ACL.impersonate(User.get("alice").impersonate(), new Runnable() {
             @Override
             public void run() {
@@ -440,7 +440,7 @@ public class SearchTest {
         mas.grant(Jenkins.READ).onRoot().toEveryone();
         j.jenkins.setAuthorizationStrategy(mas);
 
-        try(ACLContext _ = ACL.as(User.get("alice"))) {
+        try(ACLContext acl = ACL.as(User.get("alice"))) {
             List<SearchItem> results = new ArrayList<>();
             j.jenkins.getSearchIndex().find("config", results);
             j.jenkins.getSearchIndex().find("manage", results);

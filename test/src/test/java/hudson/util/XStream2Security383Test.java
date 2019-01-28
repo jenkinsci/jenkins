@@ -19,8 +19,11 @@ import javax.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import jenkins.security.ClassFilterImpl;
 
 import static org.junit.Assert.assertFalse;
+import org.jvnet.hudson.test.LoggerRule;
 import static org.mockito.Mockito.when;
 
 public class XStream2Security383Test {
@@ -30,6 +33,9 @@ public class XStream2Security383Test {
 
     @Rule
     public TemporaryFolder f = new TemporaryFolder();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     @Mock
     private StaplerRequest req;
@@ -64,7 +70,7 @@ public class XStream2Security383Test {
             try {
                 Items.load(j.jenkins, tempJobDir);
             } catch (Exception e) {
-                // ignore
+                e.printStackTrace();
             }
             assertFalse("no file should be created here", exploitFile.exists());
         } finally {
@@ -97,7 +103,7 @@ public class XStream2Security383Test {
             try {
                 j.jenkins.doCreateItem(req, rsp);
             } catch (Exception e) {
-                // don't care
+                e.printStackTrace();
             }
 
             assertFalse("no file should be created here", exploitFile.exists());
