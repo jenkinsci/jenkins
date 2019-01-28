@@ -737,14 +737,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public People(Jenkins parent) {
             this.parent = parent;
             // for Hudson, really load all users
-            Map<User, UserInfo> users = getUserInfo(parent.getItems());
-            User unknown = User.getUnknown();
-            for (User u : User.getAll()) {
-                if (u == unknown)  continue;   // skip the special 'unknown' user
-                if (!users.containsKey(u))
-                    users.put(u, new UserInfo(u, null, null));
-            }
-            this.users = toList(users);
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
         public People(View parent) {
@@ -853,7 +846,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Override protected void compute() throws Exception {
             int itemCount = 0;
             for (Item item : items) {
-                for (Job<?, ?> job : item.getAllJobs()) {
+              if (!item.hasPermission(Item.READ)) {
+                  continue;
+              }
+              for (Job<?, ?> job : item.getAllJobs()) {
+                  if (!item.hasPermission(Item.READ)) {
+                      continue;
+                  }
                     RunList<? extends Run<?, ?>> builds = job.getBuilds();
                     int buildCount = 0;
                     for (Run<?, ?> r : builds) {
@@ -895,27 +894,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 itemCount++;
                 progress(1.0 * itemCount / (items.size() + /* handling User.getAll */1));
             }
-            if (unknown != null) {
-                if (canceled()) {
-                    return;
-                }
-                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
-                    if (canceled()) {
-                        return;
-                    }
-                    if (u == unknown) {
-                        continue;
-                    }
-                    if (!users.containsKey(u)) {
-                        UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
-                        synchronized (this) {
-                            users.put(u, userInfo);
-                            modified.add(u);
-                        }
-                    }
-                }
-            }
+        }
+
+        // for testing purpose
+        @Restricted(NoExternalUse.class)
+        Set<User> getModified() {
+            return modified;
         }
 
         @NonNull
