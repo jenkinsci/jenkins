@@ -176,6 +176,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @Override
     protected Object getLoadLock() {
+        // Get a lock for the singleton extension list to prevent deadlocks (JENKINS-55361)
         return getDescriptorExtensionList().getLoadLock();
     }
 
