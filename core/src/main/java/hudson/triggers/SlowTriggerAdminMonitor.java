@@ -1,5 +1,6 @@
 package hudson.triggers;
 
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.CopyOnWriteMap;
@@ -21,10 +22,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 @Restricted(NoExternalUse.class)
+@Extension
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
     @Nonnull
     private final Map<String, Value> errors = new CopyOnWriteMap.Hash<>();
+
+    public static int MAX_ENTRIES = 10;
 
     @Nonnull
     private static final Logger LOGGER = Logger.getLogger(SlowTriggerAdminMonitor.class.getName());
@@ -45,7 +49,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @Override
     @Nonnull
     public String getDisplayName() {
-        return "Cron triggers monitor";
+        return Messages.SlowTriggerAdminMonitor_DisplayName();
     }
 
     public void clear() {
@@ -53,6 +57,18 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     }
 
     public void report(@Nonnull String trigger, @Nonnull String msg) {
+        if (errors.size() >= MAX_ENTRIES) {
+            String oldest_trigger = null;
+            LocalDateTime oldest_time = null;
+            for (String local_trigger : errors.keySet()) {
+                if (oldest_trigger == null
+                        || errors.get(local_trigger).getTimeLDT().compareTo(oldest_time) < 0) {
+                    oldest_trigger = local_trigger;
+                    oldest_time = errors.get(local_trigger).getTimeLDT();
+                }
+            }
+            errors.remove(oldest_trigger);
+        }
         errors.put(trigger, new Value(msg));
     }
 
@@ -73,16 +89,21 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
     public class Value {
 
-        private final String time;
+        private final LocalDateTime time;
         private final String msg;
 
         Value(@Nonnull String msg) {
             this.msg = msg;
-            this.time = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());
+            this.time = LocalDateTime.now();
         }
 
         @Nonnull
         public String getTime() {
+            return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(time);
+        }
+
+        @Nonnull
+        protected LocalDateTime getTimeLDT() {
             return time;
         }
 

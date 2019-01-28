@@ -6,6 +6,7 @@ import hudson.model.BuildableItem;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.triggers.Messages;
+import hudson.triggers.SlowTriggerAdminMonitor;
 import hudson.triggers.TimerTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TriggerTest {
@@ -42,6 +44,7 @@ public class TriggerTest {
             Thread.sleep(100);
         }
         j.waitUntilNoActivity();
+        j.interactiveBreak();
         assertThat(l.getMessages().toArray(new String[0]) [0],
                 containsString("Trigger " + BadTimerTrigger.class.getName()
                         + ".run() triggered by " + p.toString() + " spent too much time "));
@@ -78,6 +81,32 @@ public class TriggerTest {
             public String getDisplayName() {
                 return Messages.TimerTrigger_DisplayName();
             }
+        }
+    }
+
+    @Test
+    public void testSlowTriggerAdminMonitorMaxExtries() throws Exception {
+        SlowTriggerAdminMonitor stam = SlowTriggerAdminMonitor.getInstance();
+        SlowTriggerAdminMonitor.MAX_ENTRIES = 5;
+        stam.clear();
+        for (int i = 1; i <= SlowTriggerAdminMonitor.MAX_ENTRIES; i++) {
+            stam.report("Test"+i, "Test"+i);
+            Thread.sleep(1000);
+        }
+        slowTriggerAdminMonitorCheck(stam, 1, SlowTriggerAdminMonitor.MAX_ENTRIES);
+        stam.report("Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 1),
+                "Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 1));
+        slowTriggerAdminMonitorCheck(stam, 2, SlowTriggerAdminMonitor.MAX_ENTRIES + 1);
+        stam.report("Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 2),
+                "Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 2));
+        slowTriggerAdminMonitorCheck(stam, 3, SlowTriggerAdminMonitor.MAX_ENTRIES + 2);
+    }
+
+    private void slowTriggerAdminMonitorCheck(final SlowTriggerAdminMonitor stam, final int start, final int number) {
+        assertThat(stam.getErrors().size(), equalTo(number - start + 1));
+        for (int i = start; i <= number; i++) {
+            assertThat("should contain a 'Test" + i + "' entry",
+                    stam.getErrors().containsKey("Test" + i), equalTo(true));
         }
     }
 }

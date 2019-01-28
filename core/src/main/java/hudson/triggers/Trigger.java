@@ -283,7 +283,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                                     + "(%s) in its execution, other timers can be affected",
                                             t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time));
                                     LOGGER.log(Level.WARNING, msg);
-                                    ADMIN_MONITOR.report(t.getClass().getName(), msg);
+                                    SlowTriggerAdminMonitor.getInstance().report(t.getClass().getName(), msg);
                                 }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
@@ -345,7 +345,4 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
         return r;
     }
-
-    @Extension
-    public static final SlowTriggerAdminMonitor ADMIN_MONITOR = new SlowTriggerAdminMonitor();
 }
