@@ -44,6 +44,8 @@ import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.Stapler;
@@ -201,6 +203,15 @@ public abstract class ProgressiveRendering {
         } catch (Exception x) {
             LOG.log(Level.WARNING, "cannot mock Stapler request", x);
         }
+    }
+
+    /**
+     * @return whether the computation has finished.
+     */
+    // for testing purpose
+    @Restricted(NoExternalUse.class)
+    public boolean isFinished() {
+        return (status < 0 || status >= 1);
     }
 
     /**
