@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Disable one or more installed plugins.
- * @since TODO
+ * @since 2.151
  */
 @Extension
 public class DisablePluginCommand extends CLICommand {

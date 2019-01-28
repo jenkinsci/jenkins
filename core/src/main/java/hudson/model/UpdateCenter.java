@@ -63,6 +63,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -153,7 +154,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
 
-    private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","https://updates.jenkins.io/");
+    private static final Logger LOGGER;
+    private static final String UPDATE_CENTER_URL;
 
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
@@ -206,6 +208,25 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private UpdateCenterConfiguration config;
 
     private boolean requiresRestart;
+
+    static {
+        Logger logger = Logger.getLogger(UpdateCenter.class.getName());
+        LOGGER = logger;
+        String ucOverride = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl");
+        if (ucOverride != null) {
+            logger.log(Level.INFO, "Using a custom update center defined by the system property: {0}", ucOverride);
+            UPDATE_CENTER_URL = ucOverride;
+        } else if (JavaUtils.isRunningWithJava8OrBelow()) {
+            UPDATE_CENTER_URL = "https://updates.jenkins.io/";
+        } else {
+            //TODO: Rollback the default for Java 11 when it goes to GA
+            String experimentalJava11UC = "https://updates.jenkins.io/temporary-experimental-java11/";
+            logger.log(Level.WARNING, "Running Jenkins with Java {0} which is available in the preview mode only. " +
+                    "A custom experimental update center will be used: {1}",
+                    new Object[] {System.getProperty("java.specification.version"), experimentalJava11UC});
+            UPDATE_CENTER_URL = experimentalJava11UC;
+        }
+    }
 
     /**
      * Simple connection status enum.
@@ -2374,8 +2395,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Sequence number generator.
      */
     private static final AtomicInteger iota = new AtomicInteger();
-
-    private static final Logger LOGGER = Logger.getLogger(UpdateCenter.class.getName());
 
     /**
      * @deprecated as of 1.333

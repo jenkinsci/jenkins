@@ -26,11 +26,9 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
 import hudson.model.Item;
 
 import hudson.model.Items;
-import hudson.model.TopLevelItem;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -64,7 +62,7 @@ public class ReloadJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final HashSet<String> hs = new HashSet<>();
         hs.addAll(jobs);
 
         for (String job_s: hs) {

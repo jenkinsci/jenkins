@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "06caf67d37d945ec5228a80d73714fac692c28d3"
-  athImage: "jenkins/ath:acceptance-test-harness-1.62"
+  athRevision: "8c3126005c0d5394ed225a5c9f3eab99ab385afe"
+  athImage: "jenkins/ath@sha256:284c2fdfaf1a51e95783126367c0a88c07af83ff9234063d12ba3001959628e8"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest

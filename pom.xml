@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.49</version>
+    <version>1.51</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.155</revision>
+    <revision>2.163</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -107,7 +107,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.27</remoting.version>
+    <remoting.version>3.28</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
 
@@ -294,6 +294,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+      <version>1.3</version>
     </dependency>
     <dependency>
       <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->

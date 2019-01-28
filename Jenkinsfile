@@ -49,7 +49,7 @@ for(j = 0; j < jdks.size(); j++) {
 
                             if(isUnix()) {
                                 sh mvnCmd
-                                sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
+                                sh 'git add . && git diff --exit-code HEAD'
                             } else {
                                 bat mvnCmd
                             }
@@ -61,6 +61,7 @@ for(j = 0; j < jdks.size(); j++) {
                 stage("${buildType} Publishing") {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
                     if (buildType == 'Linux') {
                         def changelist = readFile(changelistF)

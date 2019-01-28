@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2019, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 
-  <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${it.displayName} Config">
+  <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
 
     <l:js src="jsbundles/config-scrollspy.js" />
     <l:css src="jsbundles/config-scrollspy.css" />

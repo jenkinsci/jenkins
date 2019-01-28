@@ -449,6 +449,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
 
+    /**
+     * Use this to know during startup if this is a fresh one, aka first-time, startup, or a later one.
+     * A file will be created at the very end of the Jenkins initialization process.
+     * I.e. if the file is present, that means this is *NOT* a fresh startup.
+     *
+     * <code>
+     *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
+     * </code>
+     */
+    private transient static FileBoolean STARTUP_MARKER_FILE;
+
     private volatile List<JDK> jdks = new ArrayList<JDK>();
 
     private transient volatile DependencyGraph dependencyGraph;
@@ -842,7 +853,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         oldJenkinsJVM = JenkinsJVM.isJenkinsJVM(); // capture to restore in cleanUp()
         JenkinsJVMAccess._setJenkinsJVM(true); // set it for unit tests as they will not have gone through WebAppMain
         long start = System.currentTimeMillis();
-
+        STARTUP_MARKER_FILE = new FileBoolean(new File(root, ".lastStarted"));
         // As Jenkins is starting, grant this process full control
         ACL.impersonate(ACL.SYSTEM);
         try {
@@ -998,6 +1009,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
+
+            STARTUP_MARKER_FILE.on();
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -3039,10 +3052,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
         boolean mustSave = false;
         String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
+        boolean freshStartup = STARTUP_MARKER_FILE.isOff();
         if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
 
             checkRawBuildsDir(newBuildsDir);
-            LOGGER.log(Level.WARNING, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
+            Level level = freshStartup ? Level.INFO : Level.WARNING;
+            LOGGER.log(level, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{buildsDir, newBuildsDir});
             buildsDir = newBuildsDir;
             mustSave = true;
@@ -3052,7 +3067,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
         if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
-            LOGGER.log(Level.WARNING, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
+            Level level = freshStartup ? Level.INFO : Level.WARNING;
+            LOGGER.log(level, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
                        new String[]{workspaceDir, newWorkspacesDir});
             workspaceDir = newWorkspacesDir;
             mustSave = true;
@@ -4202,12 +4218,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return HttpResponses.redirectToDot();
     }
 
+    private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
+        if (Main.isUnitTest) {
+            throw new RestartNotSupportedException("Restarting the master JVM is not supported in JenkinsRule-based tests");
+        }
+        Lifecycle lifecycle = Lifecycle.get();
+        lifecycle.verifyRestartable();
+        return lifecycle;
+    }
+
     /**
      * Performs a restart.
      */
     public void restart() throws RestartNotSupportedException {
-        final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.verifyRestartable(); // verify that Jenkins is restartable
+        final Lifecycle lifecycle = restartableLifecycle();
         servletContext.setAttribute("app", new HudsonIsRestarting());
 
         new Thread("restart thread") {
@@ -4235,8 +4259,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.332
      */
     public void safeRestart() throws RestartNotSupportedException {
-        final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.verifyRestartable(); // verify that Jenkins is restartable
+        final Lifecycle lifecycle = restartableLifecycle();
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
 

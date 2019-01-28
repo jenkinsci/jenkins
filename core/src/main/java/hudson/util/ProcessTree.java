@@ -40,6 +40,7 @@ import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
 import jenkins.security.SlaveToMasterCallable;
+import jenkins.util.java.JavaUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
@@ -852,7 +853,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         static {
             try {
-                if (isPostJava8()) { // Java 9+
+                if (JavaUtils.isRunningWithPostJava8()) {
                     Class<?> clazz = Process.class;
                     JAVA9_PID_METHOD = clazz.getMethod("pid");
                     JAVA8_PID_FIELD = null;
@@ -906,12 +907,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 x.initCause(e);
                 throw x;
             }
-        }
-
-        // Java 9 uses new version format
-        private static boolean isPostJava8() {
-            String javaVersion = System.getProperty("java.version");
-            return !javaVersion.startsWith("1.");
         }
     }
 
