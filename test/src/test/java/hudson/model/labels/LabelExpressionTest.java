@@ -75,7 +75,7 @@ public class LabelExpressionTest {
         FreeStyleProject p1 = j.createFreeStyleProject();
         p1.getBuildersList().add(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                seq.phase(0); // first, make sure the w32 slave is occupied
+                seq.phase(0); // first, make sure the w32 agent is occupied
                 seq.phase(2);
                 seq.done();
                 return true;
@@ -91,7 +91,7 @@ public class LabelExpressionTest {
 
         Future<FreeStyleBuild> f1 = p1.scheduleBuild2(0);
 
-        seq.phase(1); // we schedule p2 build after w32 slave is occupied
+        seq.phase(1); // we schedule p2 build after w32 agent is occupied
         Future<FreeStyleBuild> f2 = p2.scheduleBuild2(0);
 
         Thread.sleep(1000); // time window to ensure queue has tried to assign f2 build
