@@ -33,7 +33,6 @@ public class BuildAuthorizationTokenTest {
                                                     .grant(Item.READ).everywhere().toEveryone());
     }
 
-
     @Test
     public void triggerJobWithTokenShouldSucceedWithPost() throws Exception {
         FreeStyleProject project = createFreestyleProjectWithToken();
