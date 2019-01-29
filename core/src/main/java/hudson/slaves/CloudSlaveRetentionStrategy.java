@@ -47,7 +47,7 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
      * To actually deallocate the resource tied to this {@link Node}, implement {@link Computer#onRemoved()}.
      */
     protected void kill(Node n) throws IOException {
-        Jenkins.getInstance().removeNode(n);
+        Jenkins.get().removeNode(n);
     }
 
     /**
