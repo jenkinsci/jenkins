@@ -170,6 +170,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Lists children of this directory. Only one level deep.
+     * 
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -181,7 +182,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
     
     /**
-     * Lists only the children that are descendant of the root directory. Only one level deep.
+     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile). 
+     * Only one level deep.
+     * 
      * @return a list of descendant children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -840,29 +843,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         private final String includes, excludes;
         private final boolean useDefaultExcludes;
         Scanner(String includes, String excludes, boolean useDefaultExcludes) {
-            this.includes = includes;
-            this.excludes = excludes;
-            this.useDefaultExcludes = useDefaultExcludes;
-        }
-        @Override public List<String> invoke(File f, VirtualChannel channel) throws IOException {
-            if (includes.isEmpty()) { // see Glob class Javadoc, and list(String, String, boolean) note
-                return Collections.emptyList();
-            }
-            final List<String> paths = new ArrayList<String>();
-            new DirScanner.Glob(includes, excludes, useDefaultExcludes).scan(f, new FileVisitor() {
-                @Override
-                public void visit(File f, String relativePath) throws IOException {
-                    paths.add(relativePath.replace('\\', '/'));
-                }
-            });
-            return paths;
-        }
-
-    }
-    private static final class Scanner2 extends MasterToSlaveFileCallable<List<String>> {
-        private final String includes, excludes;
-        private final boolean useDefaultExcludes;
-        Scanner2(String includes, String excludes, boolean useDefaultExcludes) {
             this.includes = includes;
             this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;

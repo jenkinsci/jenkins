@@ -459,9 +459,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         for (Map.Entry<String, VirtualFile> entry : nameToVirtualFiles.entrySet()) {
             String n = entry.getKey();
 
-            String relativePath;
             // JENKINS-19947: traditional behavior is to prepend the directory name
-            relativePath = dir.getName() + '/' + n;
+            String relativePath = dir.getName() + '/' + n;
 
             VirtualFile f = entry.getValue();
             sendOneZipEntry(zos, f, relativePath);
@@ -508,8 +507,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 currentPrefix += "/";
             }
             List<VirtualFile> children = currentDir.listOnlyDescendants();
-            for (int i = 0; i < children.size(); i++) {
-                VirtualFile child = children.get(i);
+            for (VirtualFile child : children) {
                 collectRecursivelyAllLegalChildren(child, currentPrefix + child.getName(), nameToFiles);
             }
         }
