@@ -1484,7 +1484,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * This is the simplest way to access the job's console log.
      *
-     * @throws IOException
+     * @throws IOException Log access error
      * @return Character-oriented log file stream as a Reader
      */
     public @Nonnull Reader getLogReader() throws IOException {
