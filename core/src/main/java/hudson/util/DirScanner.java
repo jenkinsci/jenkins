@@ -155,7 +155,9 @@ public abstract class DirScanner implements Serializable {
         public boolean isSelected(File basedir, String filename, File file) throws BuildException {
             String parentName = file.getParent();
             if (parentName.length() > baseDirPathLength) {
-                String parentRelativeName = parentName.substring(baseDirPathLength + File.separator.length());
+                // remove the trailing slash
+                String parentRelativeName = parentName.substring(baseDirPathLength + 1);
+
                 // as the visit is done following depth-first approach, we just have to check the parent once
                 // and then simply using the set
                 // in case something went wrong with the order, the isDescendant is called with just a lost
