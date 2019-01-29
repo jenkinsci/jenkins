@@ -941,7 +941,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
+            // avoid double installation of the handler. JNLP agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {
@@ -958,7 +958,7 @@ public class SlaveComputer extends Computer {
             }
 
             try {
-                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
             } catch (ChannelClosedException e) {
                 throw new IllegalStateException(e);
             }
