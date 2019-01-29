@@ -406,6 +406,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public boolean isDescendant(String childRelativePath) throws IOException {
         return false;
     }
+    
+    String joinWithForwardSlashes(Collection<String> relativePath){
+        // instead of File.separator that is specific to the master, the / has the advantage to be supported
+        // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
+        return String.join("/", relativePath) + "/";
+    }
 
     /**
      * Creates a virtual file wrapper for a local file.
@@ -616,9 +622,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 current = current.getParentFile();
             }
 
-            // instead of File.separator that is specific to the master, the / has the advantage to be supported
-            // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
-            return String.join("/", relativePath) + "/";
+            return joinWithForwardSlashes(relativePath);
         }
     }
 
@@ -834,9 +838,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 current = current.getParent();
             }
 
-            // instead of File.separator that is specific to the master, the / has the advantage to be supported
-            // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
-            return String.join("/", relativePath) + "/";
+            return joinWithForwardSlashes(relativePath);
         }
     }
     private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {

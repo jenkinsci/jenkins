@@ -141,9 +141,9 @@ public abstract class DirScanner implements Serializable {
     }
     
     private static class DescendantFileSelector implements FileSelector{
-        private Set<String> alreadyDeselected;
-        private FilePath baseDirFP;
-        private int baseDirPathLength;
+        private final Set<String> alreadyDeselected;
+        private final FilePath baseDirFP;
+        private final int baseDirPathLength;
 
         private DescendantFileSelector(File basedir){
             this.baseDirFP = new FilePath(basedir);
