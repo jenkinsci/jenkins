@@ -1182,7 +1182,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public Map<String,String> getEnvVarsFull() throws IOException, InterruptedException {
         if(getChannel() == null) {
-            TreeMap env = new TreeMap<String,String> ();
+            Map<String, String> env = new TreeMap<> ();
             env.put("N/A","N/A");
             return env;
         } else {
@@ -1190,9 +1190,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    private static class ListFullEnvironment extends MasterToSlaveCallable<TreeMap<String,String>,IOException> {
-        public TreeMap<String,String> call() throws IOException {
-            TreeMap env = new TreeMap(System.getenv());
+    private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+        public Map<String,String> call() throws IOException {
+            Map<String, String> env = new TreeMap(System.getenv());
             if(Main.isUnitTest || Main.isDevelopmentMode) {
                 // if unit test is launched with maven debug switch,
                 // we need to prevent forked Maven processes from seeing it, or else
