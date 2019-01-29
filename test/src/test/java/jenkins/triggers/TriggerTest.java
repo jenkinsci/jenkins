@@ -94,11 +94,17 @@ public class TriggerTest {
             Thread.sleep(1000);
         }
         slowTriggerAdminMonitorCheck(stam, 1, SlowTriggerAdminMonitor.MAX_ENTRIES);
+
+        // Replace the oldest entries
         stam.report("Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 1),
                 "Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 1));
         slowTriggerAdminMonitorCheck(stam, 2, SlowTriggerAdminMonitor.MAX_ENTRIES + 1);
         stam.report("Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 2),
                 "Test" + (SlowTriggerAdminMonitor.MAX_ENTRIES + 2));
+        slowTriggerAdminMonitorCheck(stam, 3, SlowTriggerAdminMonitor.MAX_ENTRIES + 2);
+
+        // Replace other entry
+        stam.report("Test5", "Test5");
         slowTriggerAdminMonitorCheck(stam, 3, SlowTriggerAdminMonitor.MAX_ENTRIES + 2);
     }
 

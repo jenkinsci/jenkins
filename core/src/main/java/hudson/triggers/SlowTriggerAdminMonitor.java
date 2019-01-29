@@ -56,8 +56,8 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         errors.clear();
     }
 
-    public void report(@Nonnull String trigger, @Nonnull String msg) {
-        if (errors.size() >= MAX_ENTRIES) {
+    public void report(@Nonnull final String trigger, @Nonnull final String msg) {
+        if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
             String oldest_trigger = null;
             LocalDateTime oldest_time = null;
             for (String local_trigger : errors.keySet()) {
