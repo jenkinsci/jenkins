@@ -871,9 +871,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public @Nonnull EnvVars getEnvironment(@Nonnull TaskListener log) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
         Node n = c==null ? null : c.getNode();
-        EnvVars env = getParent().getEnvironment(n,log);
+        EnvVars env = new EnvVars();
 
-        env.putAll(getParent().getEnvironment(n,log));
+        if (n != null) {
+            env.putAll(getParent().getEnvironment(n,log));
+        }
 
         FilePath ws = getWorkspace();
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
