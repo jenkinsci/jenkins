@@ -20,7 +20,7 @@ public class DetachedPluginsManagerTest {
 
         DetachedPluginsManager.DetachedPlugin jaxb = plugins.get(0);
 
-        assertEquals(new VersionNumber("11"), jaxb.getMinJavaVersion());
+        assertEquals(new VersionNumber("11"), jaxb.getMinimumJavaVersion());
 
         final List<DetachedPluginsManager.DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins();
         if (JavaUtils.isRunningWithJava8OrBelow()) {
