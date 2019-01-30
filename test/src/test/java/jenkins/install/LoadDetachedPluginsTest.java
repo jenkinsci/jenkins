@@ -24,8 +24,8 @@
 
 package jenkins.install;
 
-import jenkins.plugins.DetachedPluginsManager;
-import jenkins.plugins.DetachedPluginsManager.DetachedPlugin;
+import jenkins.plugins.DetachedPluginsUtil;
+import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
@@ -63,7 +63,7 @@ public class LoadDetachedPluginsTest {
     public void upgradeFromJenkins1() throws IOException {
         VersionNumber since = new VersionNumber("1.550");
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins(since);
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(4));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
@@ -78,7 +78,7 @@ public class LoadDetachedPluginsTest {
     public void upgradeFromJenkins2() {
         VersionNumber since = new VersionNumber("2.0");
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins(since);
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
@@ -93,7 +93,7 @@ public class LoadDetachedPluginsTest {
     public void upgradeFromJenkins2WithNewerDependency() {
         VersionNumber since = new VersionNumber("2.0");
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins(since);
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
@@ -111,7 +111,7 @@ public class LoadDetachedPluginsTest {
     public void upgradeFromJenkins2WithOlderDependency() {
         VersionNumber since = new VersionNumber("2.0");
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins(since);
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
@@ -131,7 +131,7 @@ public class LoadDetachedPluginsTest {
         // @LocalData has command-launcher 1.2 installed, which should not be downgraded to the detached version: 1.0.
         VersionNumber since = new VersionNumber("2.0");
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins(since);
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
@@ -146,14 +146,14 @@ public class LoadDetachedPluginsTest {
     @Test
     public void newInstallation() {
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins();
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
             assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
             assertThat("Detached plugins should not be installed on a new instance",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
             assertNoFailedPlugins(r);
         });
         rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins();
+            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
             assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
             assertThat("Detached plugins should not be installed after restarting",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());

@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * Dedicated class to handle the logic related to so-called <em>detached plugins</em>.
  *
  * <p>Originally, some features were directly in Jenkins core. Over time, more and more features got extracted in dedicated plugins.
- * Issue is: many plugins had started depending on these features, that now were not in the core anymore. FIXME
+ * Issue is: many plugins had started depending on these features, that now were not in the core anymore.
  * So the chosen design strategy has been that the jenkins.war would embed these plugins, and automatically install them and mark them as optional dependencies.
  * This way, older plugins would keep working without having to be modified.</p>
  * <p>
@@ -35,8 +35,8 @@ import java.util.stream.Stream;
  * @since TODO
  */
 @Restricted(NoExternalUse.class)
-public class DetachedPluginsManager {
-    private static final Logger LOGGER = Logger.getLogger(DetachedPluginsManager.class.getName());
+public class DetachedPluginsUtil {
+    private static final Logger LOGGER = Logger.getLogger(DetachedPluginsUtil.class.getName());
 
     /**
      * Record of which plugins which removed from core and when.
@@ -55,10 +55,10 @@ public class DetachedPluginsManager {
                 String[] pieces = line.split(" ");
 
                 // defaults to Java 1.0 to install unconditionally if unspecified
-                return new DetachedPluginsManager.DetachedPlugin(pieces[0],
-                                                                 pieces[1] + ".*",
-                                                                 pieces[2],
-                                                                 pieces.length == 4 ? pieces[3] : "1.0");
+                return new DetachedPluginsUtil.DetachedPlugin(pieces[0],
+                                                              pieces[1] + ".*",
+                                                              pieces[2],
+                                                              pieces.length == 4 ? pieces[3] : "1.0");
             }).collect(Collectors.toList()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
@@ -70,7 +70,7 @@ public class DetachedPluginsManager {
         }
     }
 
-    private DetachedPluginsManager() {
+    private DetachedPluginsUtil() {
     }
 
     /**

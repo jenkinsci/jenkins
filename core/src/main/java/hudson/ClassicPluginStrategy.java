@@ -34,7 +34,7 @@ import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
-import jenkins.plugins.DetachedPluginsManager;
+import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
@@ -257,16 +257,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (jenkinsVersion==null)
             jenkinsVersion = atts.getValue("Hudson-Version");
         
-        optionalDependencies.addAll(DetachedPluginsManager.getImpliedDependencies(pluginName, jenkinsVersion));
+        optionalDependencies.addAll(DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion));
     }
 
     /**
-     * @see DetachedPluginsManager#getImpliedDependencies(String, String)
+     * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
      */
     @Deprecated // since TODO
     @Nonnull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
-        return DetachedPluginsManager.getImpliedDependencies(pluginName, jenkinsVersion);
+        return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
     }
 
     @Deprecated

@@ -9,20 +9,20 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
-public class DetachedPluginsManagerTest {
+public class DetachedPluginsUtilTest {
     @Test
     public void checkJaxb() {
-        final List<DetachedPluginsManager.DetachedPlugin> plugins =
-                DetachedPluginsManager.DETACHED_LIST.stream()
+        final List<DetachedPluginsUtil.DetachedPlugin> plugins =
+                DetachedPluginsUtil.DETACHED_LIST.stream()
                         .filter(plugin -> plugin.getShortName().equals("jaxb"))
                         .collect(Collectors.toList());
         assertEquals(1, plugins.size());
 
-        DetachedPluginsManager.DetachedPlugin jaxb = plugins.get(0);
+        DetachedPluginsUtil.DetachedPlugin jaxb = plugins.get(0);
 
         assertEquals(new VersionNumber("11"), jaxb.getMinimumJavaVersion());
 
-        final List<DetachedPluginsManager.DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins();
+        final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
         if (JavaUtils.isRunningWithJava8OrBelow()) {
             assertEquals(0, detachedPlugins.stream()
                     .filter(plugin -> plugin.getShortName().equals("jaxb"))
@@ -32,8 +32,8 @@ public class DetachedPluginsManagerTest {
                     .filter(plugin -> plugin.getShortName().equals("jaxb"))
                     .collect(Collectors.toList()).size());
 
-            final List<DetachedPluginsManager.DetachedPlugin> detachedPluginsSince2_161 =
-                    DetachedPluginsManager.getDetachedPlugins(new VersionNumber("2.161"));
+            final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
+                    DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
 
             assertEquals(1, detachedPluginsSince2_161.size());
             assertEquals("jaxb", detachedPluginsSince2_161.get(0).getShortName());
