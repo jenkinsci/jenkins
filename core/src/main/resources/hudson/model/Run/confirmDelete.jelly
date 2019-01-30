@@ -36,7 +36,7 @@ THE SOFTWARE.
 
       <j:if test="${msg==null}">
         <form method="post" action="doDelete">
-          ${%Are you sure about deleting the build?}
+          ${%delete.build(it.displayName)}
           <f:submit value="${%Yes}"/>
         </form>
       </j:if>

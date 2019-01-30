@@ -29,7 +29,7 @@ THE SOFTWARE.
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <form method="post" action="doDelete" name="delete">
-		    ${%Are you sure about deleting the view?}
+		    ${%delete.view(it.displayName)}
 		    <f:submit value="${%Yes}" />
 		  </form>
 		</l:main-panel>
