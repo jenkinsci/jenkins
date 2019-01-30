@@ -1,6 +1,5 @@
 package jenkins.plugins;
 
-import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
 import jenkins.util.java.JavaUtils;
 import org.junit.Test;
@@ -23,10 +22,21 @@ public class DetachedPluginsManagerTest {
 
         assertEquals(new VersionNumber("11"), jaxb.getMinJavaVersion());
 
+        final List<DetachedPluginsManager.DetachedPlugin> detachedPlugins = DetachedPluginsManager.getDetachedPlugins();
         if (JavaUtils.isRunningWithJava8OrBelow()) {
-            assertEquals(0, DetachedPluginsManager.getDetachedPlugins().stream()
+            assertEquals(0, detachedPlugins.stream()
                     .filter(plugin -> plugin.getShortName().equals("jaxb"))
                     .collect(Collectors.toList()).size());
+        } else if (JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerOrEqualTo(new VersionNumber("11.0.2"))) {
+            assertEquals(1, detachedPlugins.stream()
+                    .filter(plugin -> plugin.getShortName().equals("jaxb"))
+                    .collect(Collectors.toList()).size());
+
+            final List<DetachedPluginsManager.DetachedPlugin> detachedPluginsSince2_161 =
+                    DetachedPluginsManager.getDetachedPlugins(new VersionNumber("2.161"));
+
+            assertEquals(1, detachedPluginsSince2_161.size());
+            assertEquals("jaxb", detachedPluginsSince2_161.get(0).getShortName());
         }
     }
 
