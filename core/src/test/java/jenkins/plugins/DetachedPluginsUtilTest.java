@@ -27,7 +27,7 @@ public class DetachedPluginsUtilTest {
             assertEquals(0, detachedPlugins.stream()
                     .filter(plugin -> plugin.getShortName().equals("jaxb"))
                     .collect(Collectors.toList()).size());
-        } else if (JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerOrEqualTo(new VersionNumber("11.0.2"))) {
+        } else if (JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(new VersionNumber("11.0.2"))) {
             assertEquals(1, detachedPlugins.stream()
                     .filter(plugin -> plugin.getShortName().equals("jaxb"))
                     .collect(Collectors.toList()).size());

@@ -109,7 +109,7 @@ public class DetachedPluginsUtil {
     public static @Nonnull
     List<DetachedPlugin> getDetachedPlugins() {
         return DETACHED_LIST.stream()
-                .filter(plugin -> JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerOrEqualTo(plugin.getMinimumJavaVersion()))
+                .filter(plugin -> JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(plugin.getMinimumJavaVersion()))
                 .collect(Collectors.toList());
     }
 
