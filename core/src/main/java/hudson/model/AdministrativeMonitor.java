@@ -131,7 +131,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * he wants to ignore.
      */
     public boolean isEnabled() {
-        return !((AbstractCIBase)Jenkins.get()).disabledAdministrativeMonitors.contains(id);
+        return !(Jenkins.get()).getDisabledAdministrativeMonitors().contains(id);
     }
 
     /**
