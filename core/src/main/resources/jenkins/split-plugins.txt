@@ -1,6 +1,6 @@
 # See ClassicPluginStrategy.DETACHED_LIST. As of JENKINS-47634 also used by plugin-compat-tester.
 
-# Columns are: plugin ID, last core release still containing the plugin's functionality, plugin version that's implied, min jdk version where to install the plugin
+# Columns are: plugin ID, last core release still containing the plugin's functionality, plugin version that's implied, minimum Java specification version where to install the plugin
 
 # Note that all split plugins between and including matrix-auth and jdk-tool incorrectly use the first
 # core release without the plugin's functionality when they should use the immediately prior release.
