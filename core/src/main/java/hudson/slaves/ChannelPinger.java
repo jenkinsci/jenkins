@@ -44,7 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Establish a periodic ping to keep connections between {@link Slave slaves}
+ * Establish a periodic ping to keep connections between {@link Slave agents}
  * and the main Jenkins node alive. This prevents network proxies from
  * terminating connections that are idle for too long.
  *

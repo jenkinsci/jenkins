@@ -46,7 +46,7 @@ public class ReloadConfigurationCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         // Or perhaps simpler to inline the thread body of doReload?
         j.doReload();
         Object app;

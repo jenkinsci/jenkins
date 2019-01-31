@@ -28,6 +28,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!it.building}">
-    <l:task href="${buildUrl.baseUrl}/confirmDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete this build}"/>
+    <l:task href="${buildUrl.baseUrl}/confirmDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%delete.build(it.displayName)}"/>
   </j:if>
 </j:jelly>

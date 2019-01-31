@@ -136,7 +136,11 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.secretPassword = Secret.fromString(password);
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
         this.testUrl = Util.fixEmptyAndTrim(testUrl);
-        authenticator = new Authenticator() {
+        this.authenticator = newAuthenticator();
+    }
+
+    private Authenticator newAuthenticator() {
+        return new Authenticator() {
             @Override
             public PasswordAuthentication getPasswordAuthentication() {
                 String userName = getUserName();
@@ -225,6 +229,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
+        authenticator = newAuthenticator();
         return this;
     }
 
