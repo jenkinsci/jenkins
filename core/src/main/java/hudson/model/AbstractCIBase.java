@@ -92,7 +92,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     * Package-protected, but accessed API
     * ============================================================================================================== */
 
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
+    /*package*/ 
+    @Restricted(NoExternalUse.class)
+    public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
+    	return new CopyOnWriteArraySet<String>();
+    }
 
     /* =================================================================================================================
      * Implementation provided
