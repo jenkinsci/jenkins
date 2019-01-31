@@ -1,0 +1,29 @@
+<div>
+  Per impostazione predefinita, Jenkins salva tutti i propri dati in questa
+  directory sul filesystem.
+  <br>
+  <p>
+  Ci sono modi differenti di modificare la directory home di Jenkins:
+  <ul>
+    <li>
+      Modificare la variabile <code>JENKINS_HOME</code> nel file di configurazione
+      di Jenkins (ad esempio <code>/etc/sysconfig/jenkins</code> su Red Hat Linux).
+    <li>
+      Utilizzare lo strumento di amministrazione del container Web per impostare
+      la variabile d'ambiente <code>JENKINS_HOME</code>.
+    <li>
+      Impostare la variabile d'ambiente <code>JENKINS_HOME</code> prima di
+      avviare il container Web, o prima di avviare Jenkins direttamente dal file
+      WAR.
+    <li>
+      Impostare la proprietà di sistema Java <code>JENKINS_HOME</code> durante
+      l'avvio del container Web, o durante l'avvio di Jenkins direttamente dal
+      file WAR.
+    <li>
+      Modificare <tt>web.xml</tt> in <tt>jenkins.war</tt> (o la sua immagine
+      espansa nel container Web). Quest'opzione non è consigliata.
+  </ul>
+  Questo valore non può essere modificato finché Jenkins è in esecuzione.
+  <br>
+  È visualizzato qui per verificare che la configurazione abbia effetto.
+</div>

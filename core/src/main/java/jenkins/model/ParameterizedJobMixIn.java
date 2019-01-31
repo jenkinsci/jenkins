@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
@@ -190,7 +191,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     @SuppressWarnings("deprecation")
     public final void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         if (delay == null) {
-            delay = new TimeDuration(asJob().getQuietPeriod());
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(asJob().getQuietPeriod(), TimeUnit.SECONDS));
         }
 
         if (!asJob().isBuildable()) {
@@ -213,7 +214,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
 
-        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTime(), getBuildCause(asJob(), req)).getItem();
+        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTimeInSeconds(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
@@ -377,27 +378,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          */
         Map<TriggerDescriptor,Trigger<?>> getTriggers();
 
-        /**
-         * @deprecated use {@link #scheduleBuild(Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild() {
-            return getParameterizedJobMixIn().scheduleBuild();
-        }
-
         @Override
         default boolean scheduleBuild(Cause c) {
             return getParameterizedJobMixIn().scheduleBuild(c);
-        }
-
-        /**
-         * @deprecated use {@link #scheduleBuild(int, Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild(int quietPeriod) {
-            return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
         }
 
         @Override

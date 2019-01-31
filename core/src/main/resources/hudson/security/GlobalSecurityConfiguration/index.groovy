@@ -32,7 +32,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
 
                 f.entry(title:_("Security Realm")) {
                     table(style:"width:100%") {
-                        f.descriptorRadioList(varName:"realm", instance:app.securityRealm, descriptors:SecurityRealm.all())
+                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
                     }
                 }
             }
@@ -40,7 +40,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             f.section(title:_("Autorization")) {
                 f.entry(title:_("Strategy")) {
                     table(style:"width:100%") {
-                        f.descriptorRadioList(varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
+                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
                     }
                 }
             }
@@ -79,6 +79,11 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                         td(colspan:"2");
                                         td(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true);
+                                            if (p.deprecated) {
+                                              br()
+                                              text(b(_("Deprecated. ")))
+                                              st.include(from:p, page: "deprecationCause", optional:true);
+                                            }
                                         }
                                         td();
                                     }

@@ -60,8 +60,8 @@ THE SOFTWARE.
         </div>
         <j:if test="${build.building}">
           <div class="build-stop">
-            <!-- Check ABORT permission for Project, Admin permission otherwise -->
-            <j:if test="${empty(it.widget.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.ABORT)}">
+            <!-- Check CANCEL permission for Project, Admin permission otherwise -->
+            <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
               <l:stopButton href="${link}stop" alt="[cancel]" confirm="${%confirm(build.fullDisplayName)}" />
             </j:if>
           </div>

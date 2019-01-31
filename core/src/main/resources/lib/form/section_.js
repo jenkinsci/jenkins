@@ -38,7 +38,7 @@ var section = (function (){
             root = $(root||document.body);
 
             /**
-             * Recursively visit elements and find all section headers.
+             * Recursively visit elements and find all visible section headers that are not inside f:repeatable elements.
              *
              * @param {HTMLElement} dom
              *      Parent element
@@ -46,13 +46,19 @@ var section = (function (){
              *      Function that returns the array to which discovered section headers and child elements are added.
              */
             function visitor(dom,parent) {
+                function isVisible(elem) {
+                    return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects && elem.getClientRects().length );
+                }
+
                 for (var e=dom.firstChild; e!=null; e=e.nextSibling) {
                     if (e.nodeType==1) {
-                        if (e.className=="section-header") {
+                        if (e.className=="section-header" && isVisible(e)) {
                             var child = new SectionNode(e);
                             parent.children.push(child);
+                            // The next line seems to be unnecessary, as there are no children inside the section header itself.
+                            // So this code will always returns a flat list of section headers.
                             visitor(e,child);
-                        } else {
+                        } else if (!e.classList.contains("repeated-container")) {
                             visitor(e,parent);
                         }
                     }

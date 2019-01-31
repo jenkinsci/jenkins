@@ -50,8 +50,8 @@ import javax.servlet.ServletException;
  *
  * <h2>Views</h2>
  * <p>
- * This object needs to have <tt>newInstanceDetail.jelly</tt> view, which shows up in
- * <tt>http://server/hudson/computers/new</tt> page as an explanation of this job type.
+ * This object needs to have {@code newInstanceDetail.jelly} view, which shows up in
+ * {@code http://server/hudson/computers/new} page as an explanation of this job type.
  *
  * <h2>Other Implementation Notes</h2>
  *
@@ -112,7 +112,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
     public static DescriptorExtensionList<Node,NodeDescriptor> all() {
-        return Jenkins.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
+        return Jenkins.get().getDescriptorList(Node.class);
     }
 
     /**
@@ -121,10 +121,10 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
+    public static final DescriptorList<Node> ALL = new DescriptorList<>(Node.class);
 
     public static List<NodeDescriptor> allInstantiable() {
-        List<NodeDescriptor> r = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> r = new ArrayList<>();
         for (NodeDescriptor d : all())
             if(d.isInstantiable())
                 r.add(d);

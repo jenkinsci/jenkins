@@ -47,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
  *
  * <p>
- * This object must have the <tt>myViewTabs.jelly</tt>. This view
+ * This object must have the {@code myViewTabs.jelly}. This view
  * is called once when the My Views main panel is built.
  * The "views" attribute is set to the "Collection of views".
  *
@@ -100,13 +100,13 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
     @Extension(ordinal=305) @Symbol("myView")
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public MyViewsTabBar getMyViewsTabBar() {
-            return Jenkins.getInstance().getMyViewsTabBar();
+            return Jenkins.get().getMyViewsTabBar();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
 
             if (json.has("myViewsTabBar")) {
                 j.setMyViewsTabBar(req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar")));

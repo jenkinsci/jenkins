@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.search.Search;
+import hudson.search.UserSearchProperty;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Data representation of the auto-completion candidates.
@@ -117,22 +119,28 @@ public class AutoCompletionCandidates implements HttpResponse {
 
             @Override
             public void onItem(Item i) {
-                String n = contextualNameOf(i);
-                if ((n.startsWith(value) || value.startsWith(n))
+                String itemName = contextualNameOf(i);
+                
+                //Check user's setting on whether to do case sensitive comparison, configured in user -> configure
+                //This is the same setting that is used by the global search field, should be consistent throughout
+                //the whole application.
+                boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+
+                if ((startsWithImpl(itemName, value, caseInsensitive) || startsWithImpl(value, itemName, caseInsensitive))
                     // 'foobar' is a valid candidate if the current value is 'foo'.
                     // Also, we need to visit 'foo' if the current value is 'foo/bar'
-                 && (value.length()>n.length() || !n.substring(value.length()).contains("/"))
+                 && (value.length()> itemName.length() || !itemName.substring(value.length()).contains("/"))
                     // but 'foobar/zot' isn't if the current value is 'foo'
                     // we'll first show 'foobar' and then wait for the user to type '/' to show the rest
                  && i.hasPermission(Item.READ)
                     // and read permission required
                 ) {
-                    if (type.isInstance(i) && n.startsWith(value))
-                        candidates.add(n);
+                    if (type.isInstance(i) && startsWithImpl(itemName, value, caseInsensitive))
+                        candidates.add(itemName);
 
                     // recurse
                     String oldPrefix = prefix;
-                    prefix = n;
+                    prefix = itemName;
                     super.onItem(i);
                     prefix = oldPrefix;
                 }
@@ -160,5 +168,9 @@ public class AutoCompletionCandidates implements HttpResponse {
         }
 
         return candidates;
+    }
+
+    private static boolean startsWithImpl(String str, String prefix, boolean ignoreCase) {
+        return ignoreCase ? StringUtils.startsWithIgnoreCase(str, prefix) : str.startsWith(prefix);
     }
 }

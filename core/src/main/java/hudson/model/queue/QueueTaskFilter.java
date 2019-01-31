@@ -56,10 +56,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getLastBuiltOn();
     }
 
+    @Deprecated
     public boolean isBuildBlocked() {
         return base.isBuildBlocked();
     }
 
+    @Deprecated
     public String getWhyBlocked() {
         return base.getWhyBlocked();
     }

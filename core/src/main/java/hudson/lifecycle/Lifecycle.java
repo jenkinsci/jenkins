@@ -112,7 +112,7 @@ public abstract class Lifecycle implements ExtensionPoint {
     }
 
     /**
-     * If the location of <tt>jenkins.war</tt> is known in this life cycle,
+     * If the location of {@code jenkins.war} is known in this life cycle,
      * return it location. Otherwise return null to indicate that it is unknown.
      *
      * <p>
@@ -131,7 +131,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      *
      * <p>
      * On some system, most notably Windows, a file being in use cannot be changed,
-     * so rewriting <tt>jenkins.war</tt> requires some special trick. Override this method
+     * so rewriting {@code jenkins.war} requires some special trick. Override this method
      * to do so.
      */
     public void rewriteHudsonWar(File by) throws IOException {

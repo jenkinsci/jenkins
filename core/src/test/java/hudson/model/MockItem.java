@@ -37,6 +37,10 @@ public class MockItem extends Queue.Item {
         super(null, Collections.<Action>emptyList(), id, null);
     }
 
+    public MockItem(Queue.Task task) {
+        super(task, Collections.emptyList(), -1, null);
+    }
+
     public MockItem(Queue.Task task, List<Action> actions, long id) {
         super(task, actions, id, null);
     }

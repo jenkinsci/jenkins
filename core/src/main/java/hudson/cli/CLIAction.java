@@ -250,7 +250,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             // do not require any permission to establish a CLI connection
             // the actual authentication for the connecting Channel is done by CLICommand
 
-            return new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            return new FullDuplexHttpChannel(uuid, !Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 @SuppressWarnings("deprecation")
                 @Override
                 protected void main(Channel channel) throws IOException, InterruptedException {

@@ -28,7 +28,7 @@ package hudson.console;
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
@@ -52,6 +52,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
+import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
  * Extension to {@link LargeText} that handles annotations by {@link ConsoleAnnotator}.
@@ -112,7 +113,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
-    private ConsoleAnnotator createAnnotator(StaplerRequest req) throws IOException {
+    private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
         try {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64!=null) {
@@ -123,7 +124,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                         Jenkins.getInstance().pluginManager.uberClassLoader);
                 try {
                     long timestamp = ois.readLong();
-                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                    if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return (ConsoleAnnotator)ois.readObject();
                 } finally {
@@ -134,7 +135,7 @@ public class AnnotatedLargeText<T> extends LargeText {
             throw new IOException(e);
         }
         // start from scratch
-        return ConsoleAnnotator.initial(context==null ? null : context.getClass());
+        return ConsoleAnnotator.initial(context);
     }
 
     @Override
@@ -163,13 +164,13 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {
-        ConsoleAnnotationOutputStream caw = new ConsoleAnnotationOutputStream(
+        ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
         long r = super.writeLogTo(start,caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();

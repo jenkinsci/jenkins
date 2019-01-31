@@ -12,7 +12,7 @@ import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.ExecutorSlot;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.MappingWorksheet.WorkChunk;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,7 +124,7 @@ public class BackFiller extends LoadPredictor {
             // The downside of guessing the duration wrong is that we can end up creating tentative plans
             // afterward that may be incorrect, but those plans will be rebuilt.
             long d = bi.task.getEstimatedDuration();
-            if (d<=0)    d = TimeUnit2.MINUTES.toMillis(5);
+            if (d<=0)    d = TimeUnit.MINUTES.toMillis(5);
 
             TimeRange slot = new TimeRange(System.currentTimeMillis(), d);
 

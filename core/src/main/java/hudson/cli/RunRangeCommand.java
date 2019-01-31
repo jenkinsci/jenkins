@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * {@link CLICommand} that acts on a series of {@link Run}s.
- * @since FIXME
+ * @since 2.62
  */
 public abstract class RunRangeCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)

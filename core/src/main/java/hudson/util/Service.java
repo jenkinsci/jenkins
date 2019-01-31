@@ -31,19 +31,19 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
 
 /**
- * Load classes by looking up <tt>META-INF/services</tt>.
+ * Load classes by looking up {@code META-INF/services}.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link ServiceLoader} instead.
  */
+@Deprecated
 public class Service {
-    /**
-     * Poorman's clone of JDK6 ServiceLoader.
-     */
     public static <T> List<T> loadInstances(ClassLoader classLoader, Class<T> type) throws IOException {
         List<T> result = new ArrayList<T>();
 
@@ -76,7 +76,7 @@ public class Service {
     }
 
     /**
-     * Look up <tt>META-INF/service/<i>SPICLASSNAME</i></tt> from the classloader
+     * Look up {@code META-INF/service/<i>SPICLASSNAME</i>} from the classloader
      * and all the discovered classes into the given collection.
      */
     public static <T> void load(Class<T> spi, ClassLoader cl, Collection<Class<? extends T>> result) {

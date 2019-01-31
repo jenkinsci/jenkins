@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+    <st:adjunct includes="jenkins.security.seed.UserSeedProperty.resources" />
+    <f:entry field="resetSeed">
+        <!-- 
+            name=OK is a hack until 2.129 where the "ignore-dirty-panel" is added, 
+            otherwise the "there are some modifications on the page" will appear after redirection 
+        -->
+        <div class="user-seed-panel" name="OK">
+            <j:choose>
+                <j:when test="${descriptor.isCurrentUser(it)}">
+                    <span class="yui-button">
+                        <button type="button" name="reset-seed"
+                                onclick="return resetSeed(this)"
+                                data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                                data-confirm="${%resetSeed.confirmation}"
+                                data-redirect-url="${request.contextPath}/">
+                            ${%resetSeed.button}
+                        </button>
+                    </span>
+                </j:when>
+                <j:otherwise>
+                    <span class="yui-button">
+                        <button type="button" name="reset-seed"
+                                onclick="return resetSeed(this)"
+                                data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                                data-confirm="${%resetSeed.confirmation}">
+                            ${%resetSeed.button}
+                        </button>
+                    </span>
+                </j:otherwise>
+            </j:choose>
+            <div class="display-after-reset">${%resetSeed.result}</div>
+        </div>
+    </f:entry>
+</j:jelly>

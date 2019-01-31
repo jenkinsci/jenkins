@@ -1,17 +1,19 @@
 package hudson.util;
 
-import hudson.console.HyperlinkNote;
+import hudson.RestrictedSince;
 import hudson.model.TaskListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.IOException;
 
 /**
- * Partial default implementation of {@link TaskListener}
- * @author Kohsuke Kawaguchi
+ * @deprecated implement {@link TaskListener} directly
  */
+@Deprecated
+@Restricted(NoExternalUse.class)
+@RestrictedSince("2.91")
 public abstract class AbstractTaskListener implements TaskListener {
-    public void hyperlink(String url, String text) throws IOException {
-        annotate(new HyperlinkNote(url,text.length()));
-        getLogger().print(text);
-    }
+
+    private static final long serialVersionUID = 7217626701881006422L;
+
 }

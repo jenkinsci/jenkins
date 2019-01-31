@@ -39,7 +39,7 @@ public class CliProtocol extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return OPT_IN;
+        return true;
     }
 
     @Override
@@ -47,12 +47,17 @@ public class CliProtocol extends AgentProtocol {
         return jenkins.CLI.get().isEnabled() ? "CLI-connect" : null;
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String getDisplayName() {
-        return "Jenkins CLI Protocol/1";
+        return "Jenkins CLI Protocol/1 (deprecated, unencrypted)";
     }
 
     @Override
@@ -103,15 +108,5 @@ public class CliProtocol extends AgentProtocol {
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
-    }
-
-    /**
-     * A/B test turning off this protocol by default.
-     */
-    private static final boolean OPT_IN;
-
-    static {
-        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
-        OPT_IN = (hash % 10) == 0;
     }
 }

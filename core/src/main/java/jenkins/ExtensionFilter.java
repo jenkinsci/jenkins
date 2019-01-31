@@ -63,8 +63,9 @@ public abstract class ExtensionFilter implements ExtensionPoint {
      * @param type
      *      The type of the extension that we are discovering. This is not the actual instance
      *      type, but the contract type, such as {@link Descriptor}, {@link AdministrativeMonitor}, etc.
+     * @param component the actual discovered {@link hudson.Extension} object.
      * @return
-     *      true to let the component into Jenkins. false to drop it and pretend
+     *      <code>true</code> to let the component into Jenkins. <code>false</code> to drop it and pretend
      *      as if it didn't exist. When any one of {@link ExtensionFilter}s veto
      *      a component, it gets dropped.
      */
