@@ -60,7 +60,7 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        final Set<String> agentProtocols = Jenkins.getInstance().getAgentProtocols();
+        final Set<String> agentProtocols = Jenkins.get().getAgentProtocols();
         for (String name : agentProtocols) {
             AgentProtocol pr = AgentProtocol.of(name);
             if (pr != null && pr.isDeprecated()) {
@@ -79,7 +79,7 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
     @CheckForNull
     public static String getDeprecatedProtocolsString() {
         final List<String> deprecatedProtocols = new ArrayList<>();
-        final Set<String> agentProtocols = Jenkins.getInstance().getAgentProtocols();
+        final Set<String> agentProtocols = Jenkins.get().getAgentProtocols();
         for (String name : agentProtocols) {
             AgentProtocol pr = AgentProtocol.of(name);
             if (pr != null && pr.isDeprecated()) {
