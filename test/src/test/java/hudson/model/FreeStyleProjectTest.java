@@ -40,12 +40,15 @@ import java.io.ByteArrayInputStream;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
+
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 
 import java.util.List;
 import java.io.File;
@@ -53,6 +56,7 @@ import java.io.File;
 /**
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class FreeStyleProjectTest {
 
     @Rule

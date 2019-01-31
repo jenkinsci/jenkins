@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
@@ -52,6 +53,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
@@ -78,8 +80,16 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
 
-    static OldDataMonitor get(Jenkins j) {
-        return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+    /**
+     * Gets instance of the monitor.
+     * @param j Jenkins instance
+     * @return Monitor instance
+     * @throws IllegalStateException Monitor not found.
+     *              It should never happen since the monitor is located in the core.
+     */
+    @Nonnull
+    static OldDataMonitor get(Jenkins j) throws IllegalStateException {
+        return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
 
     public OldDataMonitor() {

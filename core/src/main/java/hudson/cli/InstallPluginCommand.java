@@ -152,7 +152,7 @@ public class InstallPluginCommand extends CLICommand {
                 if (h.getUpdateCenter().getSites().isEmpty()) {
                     stdout.println(Messages.InstallPluginCommand_NoUpdateCenterDefined());
                 } else {
-                    Set<String> candidates = new HashSet<String>();
+                    Set<String> candidates = new HashSet<>();
                     for (UpdateSite s : h.getUpdateCenter().getSites()) {
                         Data dt = s.getData();
                         if (dt==null)

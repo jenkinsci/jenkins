@@ -53,7 +53,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "fake v42 failed to load", "update Jenkins from v2.0 to v3.0");
+            assertContains(ex, "fake version 42 failed to load", "update Jenkins from version 2.0 to version 3.0");
         }
     }
 
@@ -64,7 +64,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee v42 failed to load", "dependency v42 is missing. To fix, install v42 or later");
+            assertContains(ex, "dependee version 42 failed to load", "dependency version 42 is missing. To fix, install version 42 or later");
         }
     }
 
@@ -76,7 +76,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee v42 failed to load", "dependency v3 is older than required. To fix, install v5 or later");
+            assertContains(ex, "dependee version 42 failed to load", "dependency version 3 is older than required. To fix, install version 5 or later");
         }
     }
 
@@ -88,7 +88,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee v42 failed to load", "dependency v5 failed to load. Fix this plugin first");
+            assertContains(ex, "dependee version 42 failed to load", "dependency version 5 failed to load. Fix this plugin first");
         }
     }
 

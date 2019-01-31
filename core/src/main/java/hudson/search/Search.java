@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
 import jenkins.util.MemoryReductionUtil;
@@ -156,7 +157,7 @@ public class Search implements StaplerProxy {
         return r;
     }
 
-    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);

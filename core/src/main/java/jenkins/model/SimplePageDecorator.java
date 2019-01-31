@@ -60,7 +60,7 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
 
     /**
      * Returns all login page decorators.
-     * @since TODO
+     * @since 2.156
      */
     public static List<SimplePageDecorator> all() {
         return Jenkins.get().getDescriptorList(SimplePageDecorator.class);

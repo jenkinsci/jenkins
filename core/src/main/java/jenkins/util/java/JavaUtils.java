@@ -23,6 +23,7 @@
  */
 package jenkins.util.java;
 
+import hudson.util.VersionNumber;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -42,7 +43,7 @@ public class JavaUtils {
      * @return {@code true} if it is Java 8 or older version
      */
     public static boolean isRunningWithJava8OrBelow() {
-        String javaVersion = System.getProperty("java.specification.version");
+        String javaVersion = getCurrentRuntimeJavaVersion();
         return javaVersion.startsWith("1.");
     }
 
@@ -51,8 +52,29 @@ public class JavaUtils {
      * @return {@code true} if it is Java 9 or above
      */
     public static boolean isRunningWithPostJava8() {
-        String javaVersion = System.getProperty("java.specification.version");
+        String javaVersion = getCurrentRuntimeJavaVersion();
         return !javaVersion.startsWith("1.");
     }
 
+    /**
+     * Returns the JVM's current version as a {@link VersionNumber} instance.
+     */
+    public static VersionNumber getCurrentJavaRuntimeVersionNumber() {
+        return new VersionNumber(getCurrentRuntimeJavaVersion());
+    }
+
+    /**
+     * Returns the JVM's current version as a {@link String}.
+     * See https://openjdk.java.net/jeps/223 for the expected format.
+     * <ul>
+     *     <li>Until Java 8 included, the expected format should be starting with <code>1.x</code></li>
+     *     <li>Starting with Java 9, cf. JEP-223 linked above, the version got simplified in 9.x, 10.x, etc.</li>
+     * </ul>
+     *
+     * @see System#getProperty(String)
+     */
+    public static String getCurrentRuntimeJavaVersion() {
+        // TODO: leverage Runtime.version() once on Java 9+
+        return System.getProperty("java.specification.version");
+    }
 }

@@ -43,8 +43,6 @@
 
 use strict;
 use File::Find;
-# to install the module: cpan install Config::Properties
-use Config::Properties;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter) = (undef, undef, "./", undef, undef, undef, undef, undef, undef);
 my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
@@ -78,13 +76,13 @@ if (!$lang || $lang eq "en") {
   exit();
 }
 
-print STDERR "\rFinding files ...";
+print STDERR "Finding files ...\n";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
+print STDERR "Found ".(scalar keys @files)." files\n";
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
-print STDERR "\r             ";
 
 ## process each file
 foreach (@files) {
@@ -277,13 +275,23 @@ sub loadJellyFile {
 
 # Fill a hash with key/value pairs from a .properties file
 sub loadPropertiesFile {
-   my $filename = shift;
-   my $properties = Config::Properties->new();
-
-   open my $file, '<', $filename or die "unable to open property file: ". $filename;
-   $properties->load($file);
-   close(F);
-   return $properties->properties;
+   my $file = shift;
+   my %ret;
+   if (open(F, "$file")) {
+      my ($cont, $key, $val) = (0, undef, undef);
+      while (<F>) {
+         s/[\r\n]+//;
+         $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
+         if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
+           ($key, $val) = (trim($1), trim($2));
+           $ret{$key}=$val;
+         }
+         $cont = (/\\\s*$/) ? 1 : 0;
+      }
+      close(F);
+      $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
+   }
+   return %ret;
 }
 
 # remove unused keys from a file
