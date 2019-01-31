@@ -580,7 +580,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             return NO_AUTHENTICATION;
         }
         
-        @Extension
+        @Extension(ordinal=-100)
         @Symbol("none")
         public static class DescriptorImpl extends Descriptor<SecurityRealm> {
 
