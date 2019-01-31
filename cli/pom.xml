@@ -26,12 +26,16 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -62,6 +66,12 @@
       <version>1.7.0</version>
       <optional>true</optional> <!-- do not expose to core -->
     </dependency>
+	<!-- ed25519 algorithm, see JENKINS-45318 -->
+	<dependency>
+  	  <groupId>net.i2p.crypto</groupId>
+	  <artifactId>eddsa</artifactId>
+	  <version>0.3.0</version>
+	</dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
@@ -76,6 +86,10 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
     </dependency>
   </dependencies>
 

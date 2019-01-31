@@ -39,6 +39,7 @@ import hudson.views.ListViewColumn;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -137,7 +138,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public transient final Class<? extends T> clazz;
 
-    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<String,CheckMethod>();
+    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<String,CheckMethod>(2);
 
     /**
      * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
@@ -233,7 +234,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @see #getHelpFile(String) 
      */
-    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<String,HelpRedirect>();
+    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<String,HelpRedirect>(2);
 
     private static class HelpRedirect {
         private final Class<? extends Describable> owner;
@@ -538,7 +539,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Creates a configured instance from the submitted form.
      *
      * <p>
-     * Hudson only invokes this method when the user wants an instance of <tt>T</tt>.
+     * Hudson only invokes this method when the user wants an instance of {@code T}.
      * So there's no need to check that in the implementation.
      *
      * <p>
@@ -601,7 +602,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
         } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+            throw new Error("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
         }
     }
 
@@ -714,9 +715,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * <p>
      * This value is relative to the context root of Hudson, so normally
-     * the values are something like <tt>"/plugin/emma/help.html"</tt> to
-     * refer to static resource files in a plugin, or <tt>"/publisher/EmmaPublisher/abc"</tt>
-     * to refer to Jelly script <tt>abc.jelly</tt> or a method <tt>EmmaPublisher.doAbc()</tt>.
+     * the values are something like {@code "/plugin/emma/help.html"} to
+     * refer to static resource files in a plugin, or {@code "/publisher/EmmaPublisher/abc"}
+     * to refer to Jelly script {@code abc.jelly} or a method {@code EmmaPublisher.doAbc()}.
      *
      * @return
      *      null to indicate that there's no help.
@@ -915,7 +916,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     /**
-     * Serves <tt>help.html</tt> from the resource of {@link #clazz}.
+     * Serves {@code help.html} from the resource of {@link #clazz}.
      */
     public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();

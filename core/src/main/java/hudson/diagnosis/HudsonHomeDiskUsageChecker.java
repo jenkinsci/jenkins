@@ -31,7 +31,7 @@ import org.jenkinsci.Symbol;
 import java.util.logging.Logger;
 
 /**
- * Periodically checks the disk usage of <tt>JENKINS_HOME</tt>,
+ * Periodically checks the disk usage of {@code JENKINS_HOME},
  * and activate {@link HudsonHomeDiskUsageMonitor} if necessary.
  *
  * @author Kohsuke Kawaguchi

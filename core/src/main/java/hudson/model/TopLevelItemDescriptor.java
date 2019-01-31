@@ -125,7 +125,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      *
      * <p>
      * Used as the caption when the user chooses what item type to create.
-     * The descriptor implementation also needs to have <tt>newInstanceDetail.jelly</tt>
+     * The descriptor implementation also needs to have {@code newInstanceDetail.jelly}
      * script, which will be used to render the text below the caption
      * that explains the item type.
      */

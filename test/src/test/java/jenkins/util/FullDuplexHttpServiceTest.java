@@ -24,6 +24,7 @@
 package jenkins.util;
 
 import hudson.cli.FullDuplexHttpStream;
+import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
 import java.io.IOException;
@@ -68,19 +69,11 @@ public class FullDuplexHttpServiceTest {
         assertEquals(66, is.read());
     }
     @TestExtension("smokes")
-    public static class Endpoint implements RootAction {
+    public static class Endpoint extends InvisibleAction implements RootAction {
         private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
         @Override
         public String getUrlName() {
             return "test";
-        }
-        @Override
-        public String getIconFileName() {
-            return null;
-        }
-        @Override
-        public String getDisplayName() {
-            return null;
         }
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {

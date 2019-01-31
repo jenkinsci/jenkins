@@ -44,10 +44,12 @@ import hudson.tasks.Ant.AntInstallation;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.lang.reflect.Field;
@@ -58,6 +60,7 @@ import java.util.List;
 /**
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class HudsonTest {
 
     @Rule

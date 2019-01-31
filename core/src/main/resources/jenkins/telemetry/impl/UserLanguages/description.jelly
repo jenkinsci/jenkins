@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects information about the prevalence of <code>Accept-Language</code> header values among Jenkins users' browsers to help guide localization efforts.
+    We collect the values of the Accept-Language headers and the number of requests sent to Jenkins with each of the headers.
+</j:jelly>

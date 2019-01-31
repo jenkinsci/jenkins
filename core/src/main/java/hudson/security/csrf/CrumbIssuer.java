@@ -9,6 +9,7 @@ import javax.servlet.ServletRequest;
 
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -40,6 +41,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see <a href="http://en.wikipedia.org/wiki/XSRF">Wikipedia: Cross site request forgery</a>
  */
 @ExportedBean
+@StaplerAccessibleType
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";

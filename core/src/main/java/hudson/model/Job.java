@@ -811,7 +811,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
+     * Gets the youngest build #m that satisfies {@code n&lt;=m}.
      * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
@@ -826,7 +826,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the latest build #m that satisfies <tt>m&lt;=n</tt>.
+     * Gets the latest build #m that satisfies {@code m&lt;=n}.
      * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)

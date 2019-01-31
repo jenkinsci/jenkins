@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    Stapler is the web framework used by Jenkins.
+    To help develop an upcoming major revision of the framework, this trial collects information about how Stapler processes HTTP requests.
+    In addition to references to classes, methods, and Stapler-related resource files involved in Stapler request processing, this trial collects the names of installed plugins, their versions, and the version of Jenkins core.
+    It does <strong>not</strong> collect URLs or any user data.
+</j:jelly>

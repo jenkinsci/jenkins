@@ -7,15 +7,12 @@ import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
 
@@ -31,11 +28,11 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  *
  * <p>
  * We do this by computing HMAC of the agent name.
- * This code is sent to the agent inside the <tt>.jnlp</tt> file
+ * This code is sent to the agent inside the {@code .jnlp} file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Jenkins), and the agent sends this
  * token back when it connects to the master.
- * Unauthorized agents can't access the protected <tt>.jnlp</tt> file,
+ * Unauthorized agents can't access the protected {@code .jnlp} file,
  * so it can't impersonate a valid agent.
  *
  * <p>
@@ -103,5 +100,6 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
+
 
 }

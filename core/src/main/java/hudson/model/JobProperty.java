@@ -53,9 +53,9 @@ import javax.annotation.Nonnull;
  * configuration screen, and they are persisted with the job object.
  *
  * <p>
- * Configuration screen should be defined in <tt>config.jelly</tt>.
+ * Configuration screen should be defined in {@code config.jelly}.
  * Within this page, the {@link JobProperty} instance is available
- * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link Job}.
+ * as {@code instance} variable (while {@code it} refers to {@link Job}.
  *
  * <p>
  * Starting 1.150, {@link JobProperty} implements {@link BuildStep},

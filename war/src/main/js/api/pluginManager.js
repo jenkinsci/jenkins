@@ -40,6 +40,12 @@ exports.init = function(handler) {
 					plugins.names.push(pluginName);
 					if (plugin.suggested) {
 						plugins.recommendedPlugins.push(pluginName);
+					} else if (pluginCategory.category === "Languages") {
+						var language = window.navigator.userLanguage || window.navigator.language;
+						var code = language.toLocaleLowerCase();
+						if (pluginName === ("localization-" + code)) {
+							plugins.recommendedPlugins.push(pluginName);
+						}
 					}
 				}
 			}

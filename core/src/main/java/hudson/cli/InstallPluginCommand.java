@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.PluginManager;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
@@ -35,7 +36,6 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -60,7 +60,9 @@ public class InstallPluginCommand extends CLICommand {
             "If this is an URL, Jenkins downloads the URL and installs that as a plugin. " +
             "If it is the string ‘=’, the file will be read from standard input of the command, and ‘-name’ must be specified. " +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
-            "and the plugin will be installed from the update center.")
+            "and the plugin will be installed from the update center. If the short name includes a minimum version number " +
+            "(like ‘findbugs:1.4’), and there are multiple update centers publishing different versions, the update centers " +
+            "will be searched in order for the first one publishing a version that is at least the specified version.")
     public List<String> sources = new ArrayList<String>();
 
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
@@ -133,7 +135,18 @@ public class InstallPluginCommand extends CLICommand {
             }
 
             // is this a plugin the update center?
-            UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
+            int index = source.lastIndexOf(':');
+            UpdateSite.Plugin p;
+            if (index == -1) {
+                p = h.getUpdateCenter().getPlugin(source);
+            } else {
+                // try to find matching min version number
+                VersionNumber version = new VersionNumber(source.substring(index + 1));
+                p = h.getUpdateCenter().getPlugin(source.substring(0,index), version);
+                if (p == null) {
+                    p = h.getUpdateCenter().getPlugin(source);
+                }
+            }
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
                 Throwable e = p.deploy(dynamicLoad).get().getError();
@@ -152,7 +165,7 @@ public class InstallPluginCommand extends CLICommand {
                 if (h.getUpdateCenter().getSites().isEmpty()) {
                     stdout.println(Messages.InstallPluginCommand_NoUpdateCenterDefined());
                 } else {
-                    Set<String> candidates = new HashSet<String>();
+                    Set<String> candidates = new HashSet<>();
                     for (UpdateSite s : h.getUpdateCenter().getSites()) {
                         Data dt = s.getData();
                         if (dt==null)

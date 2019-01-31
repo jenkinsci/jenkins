@@ -204,19 +204,26 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible signature formats: Base64 and Hex
      */
     private boolean verifySignature(Signature signature, String providedSignature) {
-        try {
-            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
-                return true;
-            }
-        } catch (SignatureException|IOException ignore) {
-            // ignore
-        }
-
+        // We can only make one call to Signature#verify here.
+        // Since we need to potentially check two values (one decoded from hex, the other decoded from base64),
+        // try hex first: It's almost certainly going to fail decoding if a base64 string was passed.
+        // It is extremely unlikely for base64 strings to be a valid hex string.
+        // This way, if it's base64, the #verify call will be skipped, and we continue with the #verify for decoded base64.
+        // This approach might look unnecessarily clever, but short of having redundant Signature instances,
+        // there doesn't seem to be a better approach for this.
         try {
             if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
                 return true;
             }
         } catch (SignatureException|DecoderException ignore) {
+            // ignore
+        }
+
+        try {
+            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
+                return true;
+            }
+        } catch (SignatureException|IOException ignore) {
             // ignore
         }
         return false;

@@ -26,7 +26,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
 
 import java.util.logging.Logger;
 

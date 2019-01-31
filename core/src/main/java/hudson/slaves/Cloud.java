@@ -34,7 +34,6 @@ import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.AbstractModelObject;
 import hudson.model.Label;
 import hudson.model.Descriptor;
 import hudson.security.ACL;
@@ -67,7 +66,7 @@ import java.util.concurrent.Future;
  * <p>
  * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
  * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} <tt>configure-entries.jelly</tt> and read it back in through {@link DataBoundConstructor}.
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -80,9 +79,9 @@ import java.util.concurrent.Future;
  *
  * <h3>Views</h3>
  *
- * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
- * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their <tt>summary</tt>
- * views displayed. Actions further contribute to <tt>sidepanel</tt> with <tt>box</tt> views. All mentioned views are
+ * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide {@code top} or {@code main} view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their {@code summary}
+ * views displayed. Actions further contribute to {@code sidepanel} with {@code box} views. All mentioned views are
  * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi
@@ -125,7 +124,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -169,7 +168,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -179,13 +178,13 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
+    public static final DescriptorList<Cloud> ALL = new DescriptorList<>(Cloud.class);
 
     /**
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
+        return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
     private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);

@@ -62,7 +62,7 @@ import java.util.Collection;
  *
  * <p>
  * Other parts of the HTML can initiate the SELECT element update by using the "updateListBox"
- * function, defined in <tt>hudson-behavior.js</tt>. The following example does it
+ * function, defined in {@code hudson-behavior.js}. The following example does it
  * when the value of the textbox changes:
  *
  * <pre>{@code <xmp>
@@ -70,11 +70,11 @@ import java.util.Collection;
  * </xmp>}</pre>
  *
  * <p>
- * The first argument is the SELECT element or the ID of it (see Prototype.js <tt>$(...)</tt> function.)
+ * The first argument is the SELECT element or the ID of it (see Prototype.js {@code $(...)} function.)
  * The second argument is the URL that returns the options list.
  *
  * <p>
- * The URL usually maps to the <tt>doXXX</tt> method on the server, which uses {@link ListBoxModel}
+ * The URL usually maps to the {@code doXXX} method on the server, which uses {@link ListBoxModel}
  * for producing option values. See the following example:
  *
  * <pre>

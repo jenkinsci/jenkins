@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 /**
  * {@link ConfidentialKey} that's used for creating a token by hashing some information with secret
- * (such as <tt>hash(msg|secret)</tt>).
+ * (such as {@code hash(msg|secret)}).
  *
  * <p>
  * This provides more secure version of it by using HMAC.

@@ -56,10 +56,8 @@ import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 
-import hudson.security.pages.SignupPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,7 +66,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.jvnet.hudson.test.recipes.LocalData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.annotation.Nonnull;
 
@@ -89,34 +87,6 @@ public class HudsonPrivateSecurityRealmTest {
         Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
         field.setAccessible(true);
         field.set(null, null);
-    }
-
-    /**
-     * Tests the data compatibility with Hudson before 1.283.
-     * Starting 1.283, passwords are now stored hashed.
-     */
-    @Test
-    @Issue("JENKINS-2381")
-    @LocalData
-    public void dataCompatibilityWith1_282() throws Exception {
-        // make sure we can login with the same password as before
-        WebClient wc = j.createWebClient().login("alice", "alice");
-
-        try {
-            // verify the sanity that the password is really used
-            // this should fail
-            j.createWebClient().login("bob", "bob");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401,e.getStatusCode());
-        }
-
-        // resubmit the config and this should force the data store to be rewritten
-        HtmlPage p = wc.goTo("user/alice/configure");
-        j.submit(p.getFormByName("config"));
-
-        // verify that we can still login
-        j.createWebClient().login("alice", "alice");
     }
 
     @Test
@@ -321,6 +291,57 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.loggedInUsernames.get(0).equals("bob"));
     }
 
+    @Issue("JENKINS-55307")
+    @Test
+    public void selfRegistrationTriggerUserCreation() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        j.jenkins.setCrumbIssuer(null);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        selfRegistration("bob");
+        selfRegistration("charlie");
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("bob"));
+        assertTrue(spySecurityListener.createdUsers.get(1).equals("charlie"));
+    }
+
+    @Issue("JENKINS-55307")
+    @Test
+    public void userCreationFromRealm() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        User u1 = securityRealm.createAccount("alice", "alicePassword");
+        u1.setFullName("Alice User");
+        u1.save();
+
+        User u2 = securityRealm.createAccount("debbie", "debbiePassword");
+        u2.setFullName("Debbie User");
+        u2.save();
+
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("alice"));
+        assertTrue(spySecurityListener.createdUsers.get(1).equals("debbie"));
+    }
+
+    @Issue("JENKINS-55307")
+    @Test
+    public void userCreationWithHashedPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        spySecurityListener.createdUsers.clear();
+        assertTrue(spySecurityListener.createdUsers.isEmpty());
+
+        securityRealm.createAccountWithHashedPassword("charlie_hashed", "#jbcrypt:" + BCrypt.hashpw("charliePassword", BCrypt.gensalt()));
+
+        assertTrue(spySecurityListener.createdUsers.get(0).equals("charlie_hashed"));
+    }
+
     private void createFirstAccount(String login) throws Exception {
         assertNull(User.getById(login, false));
 
@@ -397,11 +418,15 @@ public class HudsonPrivateSecurityRealmTest {
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
         private List<String> loggedInUsernames = new ArrayList<>();
+        private List<String> createdUsers = new ArrayList<String>();
 
         @Override
         protected void loggedIn(@Nonnull String username) {
             loggedInUsernames.add(username);
         }
+
+        @Override
+        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")
@@ -482,6 +507,68 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
             i++;
         }
+    }
+
+    @Test
+    public void createAccountSupportsHashedPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        securityRealm.createAccountWithHashedPassword("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
+
+        WebClient wc = j.createWebClient();
+        wc.login("user_hashed", "password");
+
+
+        XmlPage w2 = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(w2, hasXPath("//name", is("user_hashed")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createAccountWithHashedPasswordRequiresPrefix() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt()));
+    }
+
+    @Test
+    public void hashedPasswordTest() {
+        assertTrue("password is hashed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
+        assertFalse("password is not hashed", PASSWORD_ENCODER.isPasswordHashed("password"));
+        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$blah"));
+        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:password"));
+
+        // real examples
+        // password = a
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+        // password = a
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$12$8NJH3LsPrANStV6XtBakCez0cKHXVxmvxIlcz785vxAIZrihHZpeS"));
+
+        // password = password
+        assertFalse("too big number of iterations", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a208$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+
+        // until https://github.com/jeremyh/jBCrypt/pull/16 is merged, the lib released and the dep updated, only the version 2a is supported
+        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
+        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2y$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+
+        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$3t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+    }
+
+    @Test
+    public void ensureHashingVersion_2a_isSupported() {
+        assertTrue("version 2a is supported", BCrypt.checkpw("a", "$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureHashingVersion_2x_isNotSupported() {
+        BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureHashingVersion_2y_isNotSupported() {
+        BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V.");
     }
     
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
