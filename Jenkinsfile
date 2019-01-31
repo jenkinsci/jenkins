@@ -67,7 +67,7 @@ for(j = 0; j < jdks.size(); j++) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
-                                             excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             excludes: '**/*.lastUpdated,**/jenkins-test*/',
                                              allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }

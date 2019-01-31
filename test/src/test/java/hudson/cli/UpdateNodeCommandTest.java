@@ -78,7 +78,7 @@ public class UpdateNodeCommandTest {
 
         assertThat(result, succeededSilently());
 
-        assertThat("A slave with old name should not exist", j.jenkins.getNode("MySlave"), nullValue());
+        assertThat("An agent with old name should not exist", j.jenkins.getNode("MySlave"), nullValue());
 
         final Node updatedSlave = j.jenkins.getNode("SlaveFromXML");
         assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
