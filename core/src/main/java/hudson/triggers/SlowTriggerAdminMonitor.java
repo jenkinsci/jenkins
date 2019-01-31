@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 @Restricted(NoExternalUse.class)
@@ -26,7 +27,7 @@ import java.util.logging.Logger;
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
     @Nonnull
-    private final Map<String, Value> errors = new CopyOnWriteMap.Hash<>();
+    private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
     public static int MAX_ENTRIES = 10;
 
@@ -53,21 +54,26 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     }
 
     public void clear() {
-        errors.clear();
+        synchronized (errors) {
+            errors.clear();
+        }
     }
 
     public void report(@Nonnull final String trigger, @Nonnull final String msg) {
-        if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
-            String oldest_trigger = null;
-            LocalDateTime oldest_time = null;
-            for (String local_trigger : errors.keySet()) {
-                if (oldest_trigger == null
-                        || errors.get(local_trigger).getTimeLDT().compareTo(oldest_time) < 0) {
-                    oldest_trigger = local_trigger;
-                    oldest_time = errors.get(local_trigger).getTimeLDT();
+
+        synchronized (errors) {
+            if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
+                String oldest_trigger = null;
+                LocalDateTime oldest_time = null;
+                for (String local_trigger : errors.keySet()) {
+                    if (oldest_trigger == null
+                            || errors.get(local_trigger).getTimeLDT().compareTo(oldest_time) < 0) {
+                        oldest_trigger = local_trigger;
+                        oldest_time = errors.get(local_trigger).getTimeLDT();
+                    }
                 }
+                errors.remove(oldest_trigger);
             }
-            errors.remove(oldest_trigger);
         }
         errors.put(trigger, new Value(msg));
     }
