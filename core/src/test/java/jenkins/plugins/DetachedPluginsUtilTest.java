@@ -2,12 +2,16 @@ package jenkins.plugins;
 
 import hudson.util.VersionNumber;
 import jenkins.util.java.JavaUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class DetachedPluginsUtilTest {
     @Test
@@ -40,5 +44,27 @@ public class DetachedPluginsUtilTest {
         }
     }
 
+    /**
+     * Checks the format of the <code>/jenkins/split-plugins.txt</code> file has maximum 4 columns.
+     */
+    @Test
+    public void checkSplitPluginsFileFormat() throws IOException {
+        final List<String> splitPluginsLines = IOUtils.readLines(getClass().getResourceAsStream("/jenkins/split-plugins.txt"));
+        assertTrue(!splitPluginsLines.isEmpty());
 
+        // File is not only comments
+        final List<String> linesWithoutComments = splitPluginsLines.stream()
+                .filter(line -> !line.startsWith("#")).collect(Collectors.toList());
+        assertFalse( "weird, split-plugins.txt only has comments?", linesWithoutComments.isEmpty());
+
+        //
+        assertFalse("no whitespaces only lines allowed" ,linesWithoutComments.stream()
+                            .filter(line -> line.trim().isEmpty())
+                            .anyMatch(line -> !line.isEmpty()));
+
+
+        assertTrue( "max 4 columns is supported", linesWithoutComments.stream()
+                           .map(line -> line.split(" "))
+                           .noneMatch(line -> line.length > 4));
+    }
 }
