@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import static org.junit.Assert.*;
+
 import hudson.Launcher;
 import hudson.model.RunParameterDefinition.RunParameterFilter;
 import hudson.tasks.BuildStepMonitor;
