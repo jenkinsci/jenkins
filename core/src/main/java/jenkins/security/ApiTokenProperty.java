@@ -100,7 +100,7 @@ public class ApiTokenProperty extends UserProperty {
      * Disabled by default due to the security reasons.
      * It's the version of {@link #SHOW_LEGACY_TOKEN_TO_ADMINS} for the new API Token system (SECURITY-200).
      *
-     * @since TODO
+     * @since 2.129
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
@@ -128,7 +128,7 @@ public class ApiTokenProperty extends UserProperty {
             this.tokenStore = new ApiTokenStore();
         }
         if(this.tokenStats == null){
-            this.tokenStats = ApiTokenStats.load(user.getUserFolder());
+            this.tokenStats = ApiTokenStats.load(user);
         }
         if(this.apiToken != null){
             this.tokenStore.regenerateTokenFromLegacyIfRequired(this.apiToken);
@@ -567,5 +567,6 @@ public class ApiTokenProperty extends UserProperty {
      * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
      */
     @Deprecated
-    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class, "seed", 16);
+    @Restricted(NoExternalUse.class)
+    public static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
 }

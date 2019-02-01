@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
 
 /**
- * Load classes by looking up <tt>META-INF/services</tt>.
+ * Load classes by looking up {@code META-INF/services}.
  *
  * @author Kohsuke Kawaguchi
  * @deprecated use {@link ServiceLoader} instead.
@@ -76,7 +76,7 @@ public class Service {
     }
 
     /**
-     * Look up <tt>META-INF/service/<i>SPICLASSNAME</i></tt> from the classloader
+     * Look up {@code META-INF/service/<i>SPICLASSNAME</i>} from the classloader
      * and all the discovered classes into the given collection.
      */
     public static <T> void load(Class<T> spi, ClassLoader cl, Collection<Class<? extends T>> result) {

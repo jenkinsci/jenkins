@@ -53,7 +53,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
     private static void install(Computer c, TaskListener listener) {
         try {
-            final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
+            final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
             VirtualChannel ch = c.getChannel();
             if (ch==null) return;  // defensive check
@@ -77,7 +77,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
             try {
                 Engine.class.getMethod("addListener", EngineListener.class);
-            } catch (NoSuchMethodException _) {
+            } catch (NoSuchMethodException ignored) {
                 return null;    // running with older version of remoting that doesn't support adding listener
             }
 

@@ -58,7 +58,7 @@ import java.net.URL;
  *
  * <h2>Behaviour, JavaScript, and CSS</h2>
  * <p>
- * {@link ConsoleNote} can have associated <tt>script.js</tt> and <tt>style.css</tt> (put them
+ * {@link ConsoleNote} can have associated {@code script.js} and {@code style.css} (put them
  * in the same resource directory that you normally put Jelly scripts), which will be loaded into
  * the HTML page whenever the console notes are used. This allows you to use minimal markup in
  * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
@@ -80,13 +80,13 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * @return
      *      null if this factory is not going to participate in the annotation of this console.
      */
-    public abstract ConsoleAnnotator newInstance(T context);
+    public abstract ConsoleAnnotator<T> newInstance(T context);
 
     /**
      * For which context type does this annotator work?
      */
-    public Class type() {
-        Type type = Types.getBaseClass(getClass(), ConsoleAnnotator.class);
+    public Class<?> type() {
+        Type type = Types.getBaseClass(getClass(), ConsoleAnnotatorFactory.class);
         if (type instanceof ParameterizedType)
             return Types.erasure(Types.getTypeArgument(type,0));
         else
@@ -105,7 +105,7 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     }
 
     private URL getResource(String fileName) {
-        Class c = getClass();
+        Class<?> c = getClass();
         return c.getClassLoader().getResource(c.getName().replace('.','/').replace('$','/')+ fileName);
     }
 
@@ -125,6 +125,7 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     /**
      * All the registered instances.
      */
+    @SuppressWarnings("rawtypes")
     public static ExtensionList<ConsoleAnnotatorFactory> all() {
         return ExtensionList.lookup(ConsoleAnnotatorFactory.class);
     }

@@ -39,7 +39,7 @@ import java.util.List;
  * Any listed plugin with disabled dependencies will have its dependencies enabled transitively. Note that enabling an
  * already enabled plugin does nothing.
  *
- * @since TODO
+ * @since 2.136
  */
 @Extension
 public class EnablePluginCommand extends CLICommand {
@@ -60,27 +60,29 @@ public class EnablePluginCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         PluginManager manager = jenkins.getPluginManager();
+        boolean enabledAnyPlugins = false;
         for (String pluginName : pluginNames) {
-            enablePlugin(manager, pluginName);
+            enabledAnyPlugins |= enablePlugin(manager, pluginName);
         }
-        if (restart) {
+        if (restart && enabledAnyPlugins) {
             jenkins.safeRestart();
         }
         return 0;
     }
 
-    private void enablePlugin(PluginManager manager, String shortName) throws IOException {
+    private boolean enablePlugin(PluginManager manager, String shortName) throws IOException {
         PluginWrapper plugin = manager.getPlugin(shortName);
         if (plugin == null) {
             throw new IllegalArgumentException(Messages.EnablePluginCommand_NoSuchPlugin(shortName));
         }
         if (plugin.isEnabled()) {
-            return;
+            return false;
         }
         stdout.println(String.format("Enabling plugin `%s' (%s)", plugin.getShortName(), plugin.getVersion()));
         enableDependencies(manager, plugin);
         plugin.enable();
         stdout.println(String.format("Plugin `%s' was enabled.", plugin.getShortName()));
+        return true;
     }
 
     private void enableDependencies(PluginManager manager, PluginWrapper plugin) throws IOException {

@@ -822,7 +822,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public static final class ProjectRenameListener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldName, final String newName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 locationChanged(item, oldName, newName);
             }
         }
@@ -866,7 +866,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Range of builds that use this file keyed by a job full name.
      */
-    private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
+    private Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
 
     PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
 
@@ -1027,6 +1027,14 @@ public class Fingerprint implements ModelObject, Saveable {
     public synchronized void add(@Nonnull String jobFullName, int n) throws IOException {
         addWithoutSaving(jobFullName, n);
         save();
+    }
+
+    // JENKINS-49588
+    protected Object readResolve() {
+        if (usages == null) {
+            usages = new Hashtable<String,RangeSet>();
+        }
+        return this;
     }
 
     void addWithoutSaving(@Nonnull String jobFullName, int n) {
@@ -1438,7 +1446,7 @@ public class Fingerprint implements ModelObject, Saveable {
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
-        try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
             final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
             if (itemBySystemUser == null) {
                 return false;

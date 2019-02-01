@@ -31,7 +31,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * we find that we don't have enough permissions to run.
  *
  * <p>
- * <tt>index.jelly</tt> would display a nice friendly error page.
+ * {@code index.jelly} would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */

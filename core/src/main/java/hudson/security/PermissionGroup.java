@@ -69,7 +69,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @param owner sets {@link #owner}
      * @param title sets {@link #title}
      * @throws IllegalStateException if this group was already registered
-     * @since TODO
+     * @since 2.127
      */
     public PermissionGroup(String id, @Nonnull Class owner, Localizable title) throws IllegalStateException {
         this.owner = owner;

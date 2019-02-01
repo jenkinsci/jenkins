@@ -1,6 +1,7 @@
 package jenkins.mvn;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.tools.ToolConfigurationCategory;
@@ -11,13 +12,9 @@ import javax.annotation.Nonnull;
 
 //as close as it gets to the global Maven Project configuration
 @Extension(ordinal = 50) @Symbol("maven")
-public class GlobalMavenConfig extends GlobalConfiguration {
+public class GlobalMavenConfig extends GlobalConfiguration  implements PersistentDescriptor {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;
-
-    public GlobalMavenConfig() {
-        load();
-    }
 
     @Override
     public @Nonnull ToolConfigurationCategory getCategory() {

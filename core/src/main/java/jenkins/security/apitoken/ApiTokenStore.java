@@ -36,6 +36,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -74,7 +75,7 @@ public class ApiTokenStore {
         this.init();
     }
     
-    private ApiTokenStore readResolve() {
+    private Object readResolve() {
         this.init();
         return this;
     }
@@ -298,7 +299,10 @@ public class ApiTokenStore {
     }
     
     @Immutable
-    private static class HashValue {
+    private static class HashValue implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         /**
          * Allow to distinguish tokens from different versions easily to adapt the logic
          */
@@ -337,7 +341,10 @@ public class ApiTokenStore {
         }
     }
     
-    public static class HashedToken {
+    public static class HashedToken implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         // allow us to rename the token and link the statistics
         private String uuid;
         private String name;
@@ -349,7 +356,7 @@ public class ApiTokenStore {
             this.init();
         }
     
-        private HashedToken readResolve() {
+        private Object readResolve() {
             this.init();
             return this;
         }

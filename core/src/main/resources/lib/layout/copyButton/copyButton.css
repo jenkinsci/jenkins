@@ -1,8 +1,11 @@
 .copy-button {
     display: inline-block;
 }
-.copy-button BUTTON {
-    background: url('clipboard.png') center center no-repeat;
+.copy-button button {
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZlcnNpb249IjEuMSIgIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJyZ2IoMCwwLDApIiBkPSJNMTcsOUg3VjdIMTdNMTcsMTNIN1YxMUgxN00xNCwxN0g3VjE1SDE0TTEyLDNBMSwxIDAgMCwxIDEzLDRBMSwxIDAgMCwxIDEyLDVBMSwxIDAgMCwxIDExLDRBMSwxIDAgMCwxIDEyLDNNMTksM0gxNC44MkMxNC40LDEuODQgMTMuMywxIDEyLDFDMTAuNywxIDkuNiwxLjg0IDkuMTgsM0g1QTIsMiAwIDAsMCAzLDVWMTlBMiwyIDAgMCwwIDUsMjFIMTlBMiwyIDAgMCwwIDIxLDE5VjVBMiwyIDAgMCwwIDE5LDNaIiAvPjwvc3ZnPg==');
+    background-size: 18px;
+    background-position: center center;
+    background-repeat: no-repeat;
     width: 20px;
     height: 20px;
 }

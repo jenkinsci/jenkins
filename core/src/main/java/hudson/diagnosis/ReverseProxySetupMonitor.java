@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
+import jenkins.security.stapler.StaplerDispatchable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -70,6 +71,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         return new HttpRedirect(redirect);
     }
 
+    @StaplerDispatchable
     public void getTestForReverseProxySetup(String rest) {
         Jenkins j = Jenkins.getInstance();
         String inferred = j.getRootUrlFromRequest() + "manage";
@@ -92,7 +94,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+setup+is+broken");
+            return new HttpRedirect("https://jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
         }
     }
 
