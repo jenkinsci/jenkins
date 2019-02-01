@@ -34,9 +34,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.File;
 import java.net.HttpURLConnection;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -82,17 +83,13 @@ public class ApiTest {
     @Issue("SECURITY-165")
     @Test public void xPathDocumentFunction() throws Exception {
         File f = new File(j.jenkins.getRootDir(), "queue.xml");
-        JenkinsRule.WebClient client = j.createWebClient();
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
-        try {
-            client.goTo("api/xml?xpath=document(\"" + f.getAbsolutePath() + "\")", "application/xml");
-            fail("Should become 500 error");
-        } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException e) {
-            String contentAsString = e.getResponse().getContentAsString();
-            j.assertStringContains(
-                    contentAsString,
-                    "Illegal function: document");
-        }
+        // could expect application/xml but as an error occurred it's a text/html that is returned
+        Page page = wc.goTo("api/xml?xpath=document(\"" + f.getAbsolutePath() + "\")", null);
+        assertEquals(HttpURLConnection.HTTP_INTERNAL_ERROR, page.getWebResponse().getStatusCode());
+        assertThat(page.getWebResponse().getContentAsString(), containsString("Illegal function: document"));
     }
 
     @Test

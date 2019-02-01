@@ -45,6 +45,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -87,12 +88,12 @@ public class ZipExtractionInstallerTest {
         
         JenkinsRule.WebClient adminWc = j.createWebClient();
         adminWc.login(ADMIN);
-        assertEquals(200, adminWc.getPage(request).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, adminWc.getPage(request).getWebResponse().getStatusCode());
         
-        JenkinsRule.WebClient userWc = j.createWebClient();
-        userWc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient userWc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         userWc.login(USER);
-        assertEquals(403, userWc.getPage(request).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userWc.getPage(request).getWebResponse().getStatusCode());
     }
     
     @Test

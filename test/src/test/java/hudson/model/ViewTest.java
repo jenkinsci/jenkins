@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -31,7 +32,6 @@ import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.hudson.test.Issue;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -56,6 +56,7 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -120,19 +121,19 @@ public class ViewTest {
     @Test public void conflictingName() throws Exception {
         assertNull(j.jenkins.getView("foo"));
 
-        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        WebClient wc = j.createWebClient();
+        HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
 
+        wc.setThrowExceptionOnFailingStatusCode(false);
         // do it again and verify an error
-        try {
-            j.submit(form);
-            fail("shouldn't be allowed to create two views of the same name.");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        Page page = j.submit(form);
+        assertEquals("shouldn't be allowed to create two views of the same name.", 
+                HttpURLConnection.HTTP_BAD_REQUEST, 
+                page.getWebResponse().getStatusCode());
     }
 
     @Test public void privateView() throws Exception {
@@ -209,23 +210,24 @@ public class ViewTest {
             IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
         }
         
-        WebClient webClient = j.createWebClient();
+        WebClient webClient = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         webClient.getOptions().setJavaScriptEnabled(false);
         j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 
     @Issue("JENKINS-16608")
     @Test public void notAllowedName() throws Exception {
-        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("..");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
 
-        try {
-            j.submit(form);
-            fail("\"..\" should not be allowed.");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        HtmlPage page = j.submit(form);
+        assertEquals("\"..\" should not be allowed.",
+                HttpURLConnection.HTTP_BAD_REQUEST, 
+                page.getWebResponse().getStatusCode());
     }
 
     @Ignore("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
