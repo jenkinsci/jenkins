@@ -301,18 +301,32 @@ function findAncestorClass(e, cssClass) {
     return e;
 }
 
+function isTR(tr) {
+    return tr.tagName == 'TR' || tr.classList.contains('tr');
+}
+
 function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
-    while (tr.tagName != "TR")
+    while (!isTR(tr))
         tr = tr.parentNode;
 
     // then next TR that matches the CSS
     do {
         tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
+    } while (tr != null && (!isTR(tr) || !Element.hasClassName(tr,className)));
 
     return tr;
+}
+
+function findInFollowingTR(input, className) {
+    var node = findFollowingTR(input, className);
+    if (node.tagName == 'TR') {
+        node = node.firstChild.nextSibling;
+    } else {
+        node = node.firstChild;
+    }
+    return node;
 }
 
 function find(src,filter,traversalF) {
@@ -421,7 +435,7 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    e.targetElement = findInFollowingTR(e, "validation-error-area");
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
@@ -488,7 +502,7 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    e.targetElement = findInFollowingTR(e, "validation-error-area");
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -630,25 +644,25 @@ function sequencer(fs) {
 }
 
 /** @deprecated Use {@link Behaviour.specify} instead. */
-var jenkinsRules = {
+var jenkinsRules = [
 // TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
-    "BODY" : function() {
+    {"BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
-    },
+    }},
 
-    "TABLE.sortable" : function(e) {// sortable table
+    {"TABLE.sortable" : function(e) {// sortable table
         e.sortable = new Sortable.Sortable(e);
-    },
+    }},
 
-    "TABLE.progress-bar" : function(e) { // progressBar.jelly
+    {"TABLE.progress-bar" : function(e) { // progressBar.jelly
         e.onclick = function() {
             var href = this.getAttribute("href");
             if(href!=null)      window.location = href;
         }
         e = null; // avoid memory leak
-    },
+    }},
 
-    "INPUT.expand-button" : function(e) {
+    {"INPUT.expand-button" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
             while(!Element.hasClassName(link,"advancedLink"))
@@ -658,10 +672,10 @@ var jenkinsRules = {
             layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
-    },
+    }},
 
 // scripting for having default value in the input field
-    "INPUT.has-default-text" : function(e) {
+    {"INPUT.has-default-text" : function(e) {
         var defaultValue = e.value;
         Element.addClassName(e, "defaulted");
         e.onfocus = function() {
@@ -677,10 +691,10 @@ var jenkinsRules = {
             }
         }
         e = null; // avoid memory leak
-    },
+    }},
 
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
-    "LABEL.attach-previous" : function(e) {
+    {"LABEL.attach-previous" : function(e) {
         e.onclick = function() {
             var e = $(this).previous();
             while (e!=null) {
@@ -692,33 +706,33 @@ var jenkinsRules = {
             }
         }
         e = null;
-    },
+    }},
 
 // form fields that are validated via AJAX call to the server
 // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
-    "INPUT.validated" : registerValidator,
-    "SELECT.validated" : registerValidator,
-    "TEXTAREA.validated" : registerValidator,
+    {"INPUT.validated" : registerValidator},
+    {"SELECT.validated" : registerValidator},
+    {"TEXTAREA.validated" : registerValidator},
 
 // validate required form values
-    "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
+    {"INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); }},
 
 // validate form values to be an integer
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
-    "INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
+    {"INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); }},
+    {"INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); }},
 
-    "INPUT.non-negative-number-required" : function(e) {
+    {"INPUT.non-negative-number-required" : function(e) {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
-    },
+    }},
 
-    "INPUT.positive-number" : function(e) {
+    {"INPUT.positive-number" : function(e) {
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
-    },
-    "INPUT.positive-number-required" : function(e) {
+    }},
+    {"INPUT.positive-number-required" : function(e) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
-    },
+    }},
 
-    "INPUT.auto-complete": function(e) {// form field with auto-completion support 
+    {"INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -748,12 +762,14 @@ var jenkinsRules = {
             Dom.setXY(container, [Dom.getX(textbox), Dom.getY(textbox) + textbox.offsetHeight] );
             return true;
         }
-    },
+    }},
 
-    "A.help-button" : function(e) {
+    {"A.help-button" : function(e) {
         e.onclick = function() {
             var tr = findFollowingTR(this, "help-area");
-            var div = $(tr).down().next().down();
+            var div = $(tr).down();
+            if (!div.hasClassName("help"))
+                div = div.next().down();
 
             if (div.style.display != "block") {
                 div.style.display = "block";
@@ -779,10 +795,10 @@ var jenkinsRules = {
         };
         e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
-    },
+    }},
 
     // Script Console : settings and shortcut key
-    "TEXTAREA.script" : function(e) {
+    {"TEXTAREA.script" : function(e) {
         (function() {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
@@ -845,11 +861,11 @@ var jenkinsRules = {
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
-	},
+    }},
 
 // deferred client-side clickable map.
 // this is useful where the generation of <map> element is time consuming
-    "IMG[lazymap]" : function(e) {
+    {"IMG[lazymap]" : function(e) {
         new Ajax.Request(
             e.getAttribute("lazymap"),
             {
@@ -863,10 +879,10 @@ var jenkinsRules = {
                     e.setAttribute("usemap", "#" + id);
                 }
             });
-    },
+    }},
 
     // resizable text area
-    "TEXTAREA" : function(textarea) {
+    {"TEXTAREA" : function(textarea) {
         if(Element.hasClassName(textarea,"rich-editor")) {
             // rich HTML editor
             try {
@@ -922,10 +938,10 @@ var jenkinsRules = {
             s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
             s.style.height = s.scrollHeight + 'px';
         }
-    },
+    }},
 
     // structured form submission
-    "FORM" : function(form) {
+    {"FORM" : function(form) {
         crumb.appendToForm(form);
         if(Element.hasClassName(form, "no-json"))
             return;
@@ -942,30 +958,30 @@ var jenkinsRules = {
         }
 
         form = null; // memory leak prevention
-    },
+    }},
 
     // hook up tooltip.
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-    "[tooltip]" : function(e) {
+    {"[tooltip]" : function(e) {
         applyTooltip(e,e.getAttribute("tooltip"));
-    },
+    }},
 
-    "INPUT.submit-button" : function(e) {
+    {"INPUT.submit-button" : function(e) {
         makeButton(e);
-    },
+    }},
 
-    "INPUT.yui-button" : function(e) {
+    {"INPUT.yui-button" : function(e) {
         makeButton(e);
-    },
+    }},
 
-    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+    {"TR.optional-block-start,DIV.tr.optional-block-start": function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
-    },
+    }},
 
     // see RowVisibilityGroupTest
-    "TR.rowvg-start" : function(e) {
+    {"TR.rowvg-start,DIV.tr.rowvg-start" : function(e) {
         // figure out the corresponding end marker
         function findEnd(e) {
             for( var depth=0; ; e=$(e).next()) {
@@ -1038,9 +1054,9 @@ var jenkinsRules = {
                 }
             }
         };
-    },
+    }},
 
-    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    {"TR.row-set-end,DIV.tr.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
         var end = e;
@@ -1060,19 +1076,19 @@ var jenkinsRules = {
             start.id = ref = "rowSetStart"+(iota++);
 
         applyNameRef(start,end,ref);
-    },
+    }},
 
-    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+    {"TR.optional-block-start,DIV.tr.optional-block-start": function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
-    },
+    }},
 
     // image that shows [+] or [-], with hover effect.
     // oncollapsed and onexpanded will be called when the button is triggered.
-    "IMG.fold-control" : function(e) {
+    {"IMG.fold-control" : function(e) {
         function changeTo(e,img) {
             var src = e.src;
             e.src = src.substring(0,src.lastIndexOf('/'))+"/"+e.getAttribute("state")+img;
@@ -1098,10 +1114,10 @@ var jenkinsRules = {
             return false;
         };
         e = null; // memory leak prevention
-    },
+    }},
 
     // editableComboBox.jelly
-    "INPUT.combobox" : function(c) {
+    {"INPUT.combobox" : function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
         var vdiv = $(c).next();
         if (vdiv.hasClassName("combobox-values")) {
@@ -1111,15 +1127,16 @@ var jenkinsRules = {
                 });
             });
         }
-    },
+    }},
 
     // dropdownList.jelly
-    "SELECT.dropdownList" : function(e) {
+    {"SELECT.dropdownList" : function(e) {
         if(isInsideRemovable(e))    return;
 
         var subForms = [];
-        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
-        do { start = start.firstChild; } while (start && start.tagName != 'TR');
+        var start = findInFollowingTR(e, 'dropdownList-container'), end;
+
+        do { start = start.firstChild; } while (start && !isTR(start));
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
@@ -1150,9 +1167,9 @@ var jenkinsRules = {
         e.onchange = updateDropDownList;
 
         updateDropDownList();
-    },
+    }},
 
-    "A.showDetails" : function(e) {
+    {"A.showDetails" : function(e) {
         e.onclick = function() {
             this.style.display = 'none';
             $(this).next().style.display = 'block';
@@ -1160,17 +1177,17 @@ var jenkinsRules = {
             return false;
         };
         e = null; // avoid memory leak
-    },
+    }},
 
-    "DIV.behavior-loading" : function(e) {
+    {"DIV.behavior-loading" : function(e) {
         e.style.display = 'none';
-    },
+    }},
 
-    ".button-with-dropdown" : function (e) {
+    {".button-with-dropdown" : function (e) {
         new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
-    },
+    }},
 
-    ".track-mouse" : function (element) {
+    {".track-mouse" : function (element) {
         var DOM = YAHOO.util.Dom;
 
         $(element).observe("mouseenter",function () {
@@ -1186,14 +1203,14 @@ var jenkinsRules = {
             };
             Element.observe(document, "mousemove", mousemoveTracker);
         });
-    },
+    }},
 
     /*
         Use on div tag to make it sticky visible on the bottom of the page.
         When page scrolls it remains in the bottom of the page
         Convenient on "OK" button and etc for a long form page
      */
-    "#bottom-sticker" : function(sticker) {
+    {"#bottom-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1225,16 +1242,16 @@ var jenkinsRules = {
         Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
-    },
+    }},
 
-    "#top-sticker" : function(sticker) {// legacy
+    {"#top-sticker" : function(sticker) {// legacy
         this[".top-sticker"](sticker);
-    },
+    }},
 
     /**
      * @param {HTMLElement} sticker
      */
-    ".top-sticker" : function(sticker) {
+    {".top-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1264,15 +1281,19 @@ var jenkinsRules = {
         // initial positioning
         Element.observe(window,"load",adjustSticker);
         adjustSticker();
-    }
-};
+    }}
+];
 /** @deprecated Use {@link Behaviour.specify} instead. */
-var hudsonRules = jenkinsRules; // legacy name
+var hudsonRules = {}; // legacy name
 (function() {
     var p = 20;
-    for (var selector in jenkinsRules) {
-        Behaviour.specify(selector, 'hudson-behavior', p++, jenkinsRules[selector]);
-        delete jenkinsRules[selector];
+    while (jenkinsRules.length > 0) {
+        var rules = jenkinsRules[0];
+        for (var selector in rules) {
+            Behaviour.specify(selector, 'hudson-behavior', p++, rules[selector]);
+            delete rules[selector];
+        }
+        jenkinsRules.splice(0, 1);
     }
 })();
 // now empty, but plugins can stuff things in here later:
@@ -1398,7 +1419,7 @@ function updateOptionalBlock(c,scroll) {
         // Hack to hide tool home when "Install automatically" is checked.
         var homeField = findPreviousFormItem(c, 'home');
         if (homeField != null && homeField.value == '') {
-            var tr = findAncestor(homeField, 'TR');
+            var tr = findAncestor(homeField, 'TR') || findAncestorClass(homeField, 'tr');
             if (tr != null) {
                 tr.style.display = c.checked ? 'none' : '';
                 layoutUpdateCallback.call();

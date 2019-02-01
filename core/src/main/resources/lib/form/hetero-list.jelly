@@ -76,17 +76,17 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <table style="width:100%">
+      <div style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <tr>
-            <td colspan="3">
+          <div class='tr'>
+            <div colspan="3">
               <div class="dd-handle">
                 <b>${descriptor.displayName}</b>
               </div>
-            </td>
+            </div>
             <f:helpLink url="${help}"/>
-          </tr>
+          </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
@@ -101,7 +101,7 @@ THE SOFTWARE.
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
-      </table>
+      </div>
     </d:tag>
   </d:taglib>
 

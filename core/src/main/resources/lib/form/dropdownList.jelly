@@ -39,31 +39,30 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-    <tr>
-        <td class="setting-leftspace"><st:nbsp/></td>
-        <td class="setting-name">
+    <div class='tr'>
+        <div class="setting-leftspace"><st:nbsp/></div>
+        <div class="setting-name">
             ${attrs.title}
-        </td>
-        <td class="setting-main">
+            <f:helpLink url="${attrs.help}" featureName="${title}"/>
+        </div>
+        <div class="setting-main">
             <!-- create drop-down list -->
             <select class="setting-input dropdownList">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>
-        </td>
-        <f:helpLink url="${attrs.help}" featureName="${title}"/>
-    </tr>
+        </div>
+    </div>
 
     <!-- generate the actual form entries -->
-    <tr class="dropdownList-container">
-      <td colspan="2"/>
-      <td colspan="2">
-        <table width="100%" name="${name}">
+    <div class="dropdownList-container tr">
+      <div>
+        <div width="100%" name="${name}">
             <j:set var="dropdownListMode" value="generateEntries"/>
             <d:invokeBody/>
-        </table>
-      </td>
-    </tr>
+        </div>
+      </div>
+    </div>
 
     <j:if test="${!empty(attrs.description)}">
         <f:description>
