@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
@@ -109,7 +110,7 @@ public class ComputerTest {
 
     private void verifyOfflineCause(Computer computer) throws Exception {
         XmlPage page = j.createWebClient().goToXml("computer/" + computer.getName() + "/config.xml");
-        String content = page.getWebResponse().getContentAsString("UTF-8");
+        String content = page.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(content, containsString("temporaryOfflineCause"));
         assertThat(content, containsString("<userId>username</userId>"));
         assertThat(content, not(containsString("ApiTokenProperty")));

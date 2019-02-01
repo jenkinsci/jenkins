@@ -24,7 +24,6 @@
 package hudson.tools;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.InteractivePage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
@@ -148,7 +147,7 @@ public class ZipExtractionInstallerTest {
         }
         
         @Override
-        public Object callFunction(InteractivePage page, Function function, Scriptable scope, Scriptable thisObject, Object[] args) {
+        public Object callFunction(HtmlPage page, Function function, Scriptable scope, Scriptable thisObject, Object[] args) {
             if (thisObject instanceof XMLHttpRequest) {
                 try {
                     WebRequest request = getPrivateWebRequestField((XMLHttpRequest) thisObject);
