@@ -73,7 +73,7 @@ public class ParametersTest {
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
         assertEquals(true, booleanParameterInput.isChecked());
-        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
+        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-main']")).getTextContent());
 
         element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
         assertNotNull(element);

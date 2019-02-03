@@ -26,8 +26,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
-                    f.checkbox()
+                f.entry() {
+                    f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
                 f.entry(title:_("Access Control")) {
