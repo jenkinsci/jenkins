@@ -10,3 +10,25 @@ script-security command-launcher
 script-security matrix-auth
 script-security matrix-project
 script-security windows-slaves
+
+# Weird unexpected cycle that showed up during testing of this new plugin
+# so breaking all potential cycles until JENKINS-28942
+# FIXME: remove when JENKINS-28942 is in (and used in the JAXB plugin)
+script-security jaxb
+maven-plugin jaxb
+subversion jaxb
+cvs jaxb
+ant jaxb
+javadoc jaxb
+external-monitor-job jaxb
+ldap jaxb
+pam-auth jaxb
+mailer jaxb
+matrix-auth jaxb
+windows-slaves jaxb
+antisamy-markup-formatter jaxb
+matrix-project jaxb
+junit jaxb
+bouncycastle-api jaxb
+command-launcher jaxb
+jdk-tool jaxb
