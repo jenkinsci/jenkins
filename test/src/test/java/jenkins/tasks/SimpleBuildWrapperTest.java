@@ -41,7 +41,7 @@ import hudson.model.JDK;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-import hudson.slaves.CommandLauncher;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
@@ -126,7 +126,7 @@ public class SimpleBuildWrapperTest {
         }
     }
     private static class SpecialEnvSlave extends Slave {
-        SpecialEnvSlave(File remoteFS, CommandLauncher launcher) throws Descriptor.FormException, IOException {
+        SpecialEnvSlave(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
         }
         @Override public Computer createComputer() {

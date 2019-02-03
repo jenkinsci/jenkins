@@ -29,6 +29,7 @@ import hudson.model.Run;
 
 /**
  * Optional interface for {@link Action}s that add themselves to a {@link Run}.
+ * You may keep a {@code transient} reference to an owning build, restored in {@link #onLoad}.
  * @since 1.519, 1.509.3
  */
 public interface RunAction2 extends Action {

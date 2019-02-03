@@ -1,6 +1,9 @@
 package hudson.cli;
 
 import hudson.Extension;
+import jenkins.security.SecurityListener;
+import org.acegisecurity.Authentication;
+
 import java.io.PrintStream;
 
 /**
@@ -27,7 +30,13 @@ public class LogoutCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
+
+        Authentication auth = store.get();
+
         store.remove();
+
+        SecurityListener.fireLoggedOut(auth.getName());
+
         return 0;
     }
 }

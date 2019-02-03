@@ -1,0 +1,9 @@
+signature-1
+# just an empty line
+
+signature-2
+# space after the exclamation mark
+!      
+# no space
+!
+signature-3

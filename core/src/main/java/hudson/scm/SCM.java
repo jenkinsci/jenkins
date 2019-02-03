@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +87,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(SCM.class.getName());
 
     /** JENKINS-35098: discouraged */
     @SuppressWarnings("FieldMayBeFinal")
@@ -143,7 +147,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             }
             return autoBrowserHolder.get();
         } else {
-            return guessBrowser();
+            try {
+                return guessBrowser();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return null;
+            }
         }
     }
 
@@ -522,13 +531,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * (for example, SVN revision number.)
      *
      * <p>
-     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, which
-     * can be before/after your checkout method is invoked. So if you are going to provide information about
-     * check out (like SVN revision number that was checked out), be prepared for the possibility that the
-     * check out hasn't happened yet.
+     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, via
+     * {@link #buildEnvVars(AbstractBuild, Map)}, which can be before/after your checkout method is invoked. So if you
+     * are going to provide information about check out (like SVN revision number that was checked out), be prepared
+     * for the possibility that the check out hasn't happened yet.
+     *
+     * @since 2.60
      */
-    // TODO is an equivalent for Run needed?
+    public void buildEnvironment(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild)build, env);
+        }
+    }
+
+    /**
+     * @deprecated in favor of {@link #buildEnvironment(Run, Map)}.
+     */
+    @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+        if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
+            buildEnvironment(build, env);
+        }
         // default implementation is noop.
     }
 
@@ -549,7 +572,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
      * at the top of the checked out module (in the above case, that would
-     * be <tt>xyz/build.xml</tt>), yet the builder doesn't know the "xyz"
+     * be {@code xyz/build.xml}), yet the builder doesn't know the "xyz"
      * part; that comes from SCM.
      *
      * <p>
@@ -655,7 +678,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * The returned object will be used to parse <tt>changelog.xml</tt>.
+     * The returned object will be used to parse {@code changelog.xml}.
      */
     public abstract ChangeLogParser createChangeLogParser();
 

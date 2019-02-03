@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    For many security fixes, the Jenkins security team adds hidden options, sometimes called <em>escape hatches</em>, to disable the security fix.
+    This hedges against severe regressions not caught in testing, or unexpected legitimate use cases.
+    It is unknown to the team which of these options are actually in use, so this trial collects anonymous information about the values of (typically boolean) security-related Java system properties.
+</j:jelly>

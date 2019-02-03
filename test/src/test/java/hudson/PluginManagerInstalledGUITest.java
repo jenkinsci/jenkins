@@ -60,7 +60,8 @@ public class PluginManagerInstalledGUITest {
                         try {
                             return super.loadBundledPlugins();
                         } finally {
-                            installResourcePlugin("tasks.jpi");
+                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/cvs.hpi"), "cvs.jpi"); // cannot use installDetachedPlugin at this point
+                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/tasks.jpi"), "tasks.jpi");
                         }
                     }
                 };

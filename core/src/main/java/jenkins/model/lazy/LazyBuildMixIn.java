@@ -271,10 +271,19 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      */
     public interface LazyLoadingJob<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
         LazyBuildMixIn<JobT,RunT> getLazyBuildMixIn();
+        // not offering default implementation for _getRuns(), removeRun(R), getBuild(String), getBuildByNumber(int), getFirstBuild(), getLastBuild(), getNearestBuild(int), getNearestOldBuild(int), or createHistoryWidget() since they are defined in Job
+        // (could allow implementations to call LazyLoadingJob.super.theMethod())
     }
 
+    /**
+     * Marker for a {@link Run} which uses this mixin.
+     */
     public interface LazyLoadingRun<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
         RunMixIn<JobT,RunT> getRunMixIn();
+        // not offering default implementations for createReference() or dropLinks() since they are protected
+        // (though could use @Restricted(ProtectedExternally.class))
+        // nor for getPreviousBuild() or getNextBuild() since they are defined in Run
+        // (though could allow implementations to call LazyLoadingRun.super.theMethod())
     }
 
     /**

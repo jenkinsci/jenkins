@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -58,7 +59,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Keeps a list of the parameters defined for a project.
  *
  * <p>
- * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
+ * This class also implements {@link Action} so that {@code index.jelly} provides
  * a form to enter build parameters.
  * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
  * The builds also need a {@code sidepanel.jelly}.
@@ -71,17 +72,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     @DataBoundConstructor
     public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
-        if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
-        }
-        this.parameterDefinitions = parameterDefinitions;
+        this.parameterDefinitions = parameterDefinitions != null ? parameterDefinitions : new ArrayList<>();
     }
 
     public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
-        if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
-        }
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+        this.parameterDefinitions = parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : new ArrayList<>();
     }
 
     private Object readResolve() {
@@ -107,15 +102,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * Gets the names of all the parameter definitions.
      */
     public List<String> getParameterDefinitionNames() {
-        return new AbstractList<String>() {
-            public String get(int index) {
-                return parameterDefinitions.get(index).getName();
-            }
-
-            public int size() {
-                return parameterDefinitions.size();
-            }
-        };
+        return new DefinitionsAbstractList(this.parameterDefinitions);
     }
 
     @Nonnull
@@ -147,7 +134,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
      * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -171,7 +159,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
             if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
@@ -196,10 +184,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         		values.add(value);
         	}
         }
-        if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
+        if (delay==null)
+            delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
-                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
@@ -251,5 +240,21 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     public String getUrlName() {
         return null;
+    }
+
+    private static class DefinitionsAbstractList extends AbstractList<String> {
+        private final List<ParameterDefinition> parameterDefinitions;
+
+        public DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
+            this.parameterDefinitions = parameterDefinitions;
+        }
+
+        public String get(int index) {
+            return this.parameterDefinitions.get(index).getName();
+        }
+
+        public int size() {
+            return this.parameterDefinitions.size();
+        }
     }
 }

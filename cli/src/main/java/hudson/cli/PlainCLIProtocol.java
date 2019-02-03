@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadPendingException;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
@@ -112,13 +111,6 @@ class PlainCLIProtocol {
                         } catch (EOFException x) {
                             handleClose();
                             break; // TODO verify that we hit EOF immediately, not partway into framelen
-                        } catch (IOException x) {
-                            if (x.getCause() instanceof TimeoutException) { // TODO on Tomcat this seems to be SocketTimeoutException
-                                LOGGER.log(Level.FINE, "ignoring idle timeout, perhaps from Jetty", x);
-                                continue;
-                            } else {
-                                throw x;
-                            }
                         }
                         if (framelen < 0) {
                             throw new IOException("corrupt stream: negative frame length");

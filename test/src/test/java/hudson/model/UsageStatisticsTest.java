@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
@@ -54,11 +55,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -73,6 +74,7 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
+        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
 
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
@@ -104,12 +106,6 @@ public class UsageStatisticsTest {
 
         // Validate the plugins format
         List<JSONObject> plugins = sortPlugins((List<JSONObject>) o.get("plugins"));
-        Set<String> detached = new TreeSet<>();
-        for (ClassicPluginStrategy.DetachedPlugin p: ClassicPluginStrategy.getDetachedPlugins()) {
-            if (p.getSplitWhen().isOlderThan(Jenkins.getVersion())) {
-                detached.add(p.getShortName());
-            }
-        }
         Set<String> keys = new TreeSet<>();
         keys.add("name");
         keys.add("version");
@@ -122,12 +118,15 @@ public class UsageStatisticsTest {
             assertThat("No duplicates", reported.contains(name), is(false));
             reported.add(name);
         }
-        reported.retainAll(detached); // ignore the dependencies of the detached plugins
-        assertThat(reported, is(detached));
+        assertThat(reported, containsInAnyOrder("credentials"));
 
         // Compare content to watch out for backwards compatibility
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));
-        compareWithFile("nodes.json", o.get("nodes"));
+        JSONArray nodes = o.getJSONArray("nodes");
+        for (Object node : nodes) {
+            ((JSONObject) node).remove("os"); // depends on timing of AbstractNodeMonitorDescriptor.get whether or not this will be present
+        }
+        compareWithFile("nodes.json", nodes);
     }
 
     /**
@@ -178,9 +177,6 @@ public class UsageStatisticsTest {
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
-        String os = System.getProperty("os.name");
-        String arch = System.getProperty("os.arch");
-        fileContent = fileContent.replace("OSSPEC", os + " (" + arch + ')');
         assertEquals(fileContent, object.toString());
     }
 }

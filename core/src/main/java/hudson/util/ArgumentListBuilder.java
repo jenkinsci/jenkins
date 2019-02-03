@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -132,6 +133,16 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         }
         return this;
     }
+    
+    /**
+     * @since 2.72
+     */
+    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
+        for (String arg : args) {
+            add(arg);
+        }
+        return this;
+    }
 
     /**
      * Decomposes the given token into multiple arguments by splitting via whitespace.
@@ -154,7 +165,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Adds key value pairs as "-Dkey=value -Dkey=value ..."
      *
-     * <tt>-D</tt> portion is configurable as the 'prefix' parameter.
+     * {@code -D} portion is configurable as the 'prefix' parameter.
      * @since 1.114
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {

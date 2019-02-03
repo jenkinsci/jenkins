@@ -1,36 +1,26 @@
-// @include org.kohsuke.stapler.zeroclipboard
-
 Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
-        var btn = e.firstChild;
-        var id = "copy-button"+(iota++);
-        btn.id = id;
+    var btn = e.firstChild;
+    var id = "copy-button"+(iota++);
+    btn.id = id;
 
-        var clip = new ZeroClipboard(e);
-        makeButton(btn);
-        clip.setHandCursor(true);
+    makeButton(btn, function() {
+        //make an invisible textarea element containing the text
+        var el = document.createElement('textarea');
+        el.value = e.getAttribute("text");
+        el.style.width = "1px";
+        el.style.height = "1px";
+        el.style.border = "none";
+        el.style.padding = "0px";
+        document.body.appendChild(el);
 
-        var container = e.getAttribute("container");
-        if (container) {
-            container = $(e).up(container);
-            container.style.position = "relative";
-        }
+        //select the text and copy it to the clipboard
+        el.select();
+        document.execCommand('copy');
 
-        clip.on('datarequested',function() {
-            clip.setText(e.getAttribute("text"));
-        });
-        clip.on('complete',function() {
-            notificationBar.show(e.getAttribute("message"));
-        });
-        clip.on('mouseOver',function() {
-          $(id).addClassName('yui-button-hover')
-        });
-        clip.on('mouseOut',function() {
-            $(id).removeClassName('yui-button-hover')
-        });
-        clip.on('mouseDown',function() {
-            $(id).addClassName('yui-button-active')
-        });
-        clip.on('mouseUp',function() {
-            $(id).removeClassName('yui-button-active')
-        });
+        //remove the textarea element
+        document.body.removeChild(el);
+
+        //show the notification
+        notificationBar.show(e.getAttribute("message"));
+    });
 });

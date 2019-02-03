@@ -40,6 +40,12 @@ exports.init = function(handler) {
 					plugins.names.push(pluginName);
 					if (plugin.suggested) {
 						plugins.recommendedPlugins.push(pluginName);
+					} else if (pluginCategory.category === "Languages") {
+						var language = window.navigator.userLanguage || window.navigator.language;
+						var code = language.toLocaleLowerCase();
+						if (pluginName === ("localization-" + code)) {
+							plugins.recommendedPlugins.push(pluginName);
+						}
 					}
 				}
 			}
@@ -177,7 +183,7 @@ exports.incompleteInstallStatus = function(handler, correlationId) {
  * Call this to complete the installation without installing anything
  */
 exports.completeInstall = function(handler) {
-	jenkins.get('/setupWizard/completeInstall', function() {
+	jenkins.post('/setupWizard/completeInstall', {}, function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,
@@ -219,7 +225,7 @@ exports.installPluginsDone = function(handler) {
  * Restart Jenkins
  */
 exports.restartJenkins = function(handler) {
-	jenkins.get('/updateCenter/safeRestart', function() {
+	jenkins.post('/updateCenter/safeRestart', {}, function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,

@@ -39,6 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -57,7 +58,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *         rechecked earlier or later that this!
      */
     @GuardedBy("hudson.model.Queue.lock")
-    public abstract long check(T c);
+    public abstract long check(@Nonnull T c);
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
@@ -92,22 +93,18 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * The default implementation of this method delegates to {@link #check(Computer)},
      * but this allows {@link RetentionStrategy} to distinguish the first time invocation from the rest.
      *
+     * @param c Computer instance
      * @since 1.275
      */
-    public void start(final T c) {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                check(c);
-            }
-        });
+    public void start(final @Nonnull T c) {
+        Queue.withLock((Runnable) () -> check(c));
     }
 
     /**
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
     public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RetentionStrategy.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(RetentionStrategy.class);
     }
 
     /**
@@ -121,26 +118,27 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     /**
      * Dummy instance that doesn't do any attempt to retention.
      */
-    public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+    public static final RetentionStrategy<Computer> NOOP = new NoOp();
+    private static final class NoOp extends RetentionStrategy<Computer> {
         @GuardedBy("hudson.model.Queue.lock")
+        @Override
         public long check(Computer c) {
             return 60;
         }
-
         @Override
         public void start(Computer c) {
             c.connect(false);
         }
-
         @Override
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
-
-        private final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-        class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
-    };
+        private Object readResolve() {
+            return NOOP;
+        }
+        private static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+        private static final class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
+    }
 
     /**
      * Convenient singleton instance, since this {@link RetentionStrategy} is stateless.
@@ -218,8 +216,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         @GuardedBy("hudson.model.Queue.lock")
         public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
-                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
-                for (Computer o : Jenkins.getInstance().getComputers()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<>();
+                for (Computer o : Jenkins.get().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
                         final int idleExecutors = o.countIdle();
                         if (idleExecutors>0)

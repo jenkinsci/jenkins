@@ -50,6 +50,7 @@ import org.apache.tools.ant.taskdefs.Move;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -109,7 +110,10 @@ public class WindowsInstallerLink extends ManagementLink {
     /**
      * Performs installation.
      */
+    @RequirePOST
     public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
         if(installationDir!=null) {
             // installation already complete
             sendError("Installation is already complete",req,rsp);
@@ -119,8 +123,6 @@ public class WindowsInstallerLink extends ManagementLink {
             sendError(".NET Framework 2.0 or later is required for this feature",req,rsp);
             return;
         }
-        
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         File dir = new File(_dir).getAbsoluteFile();
         dir.mkdirs();
@@ -170,7 +172,10 @@ public class WindowsInstallerLink extends ManagementLink {
         }
     }
 
+    @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
         if(installationDir==null) {
             // if the user reloads the page after Hudson has restarted,
             // it comes back here. In such a case, don't let this restart Hudson.
@@ -178,7 +183,6 @@ public class WindowsInstallerLink extends ManagementLink {
             rsp.sendRedirect(req.getContextPath()+"/");
             return;
         }
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         rsp.forward(this,"_restart",req);
         final File oldRoot = Jenkins.getInstance().getRootDir();
@@ -227,6 +231,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         }
                     });
 
+                    Jenkins.getInstance().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

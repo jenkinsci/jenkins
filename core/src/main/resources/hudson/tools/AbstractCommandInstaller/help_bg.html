@@ -1,0 +1,23 @@
+<p>
+    Изпълнение на произволна последователност от команди на обвивката, които
+    позволяват да инсталирате програмата.  Пример с Ubuntu —
+    предполагаме, че потребителят за Jenkins има права в <code>/etc/sudoers</code>:
+</p>
+<pre>sudo apt-get --yes install openjdk-6-jdk</pre>
+<p>
+    (В този случай задайте примерно <code>/usr/lib/jvm/java-6-openjdk-i386</code> като
+    домашна директория.)
+</p>
+<p>
+    Друг пример с инсталиране на стара версия на Sun JDK 6 за x86 Linux,
+    от вече несъществуващия сайт <a href="http://jdk-distros.java.net/">DLJ</a>:
+</p>
+<pre>bin=jdk-6u13-dlj-linux-i586.bin
+if [ \! -f $bin ]
+then
+    wget --no-verbose http://download.java.net/dlj/binaries/$bin
+    sh $bin --unpack --accept-license
+fi</pre>
+<p>
+    (За домашна директория укажете <code>jdk1.6.0_13</code> в този случай.)
+</p>

@@ -102,16 +102,19 @@ final class TarArchiver extends Archiver {
         try {
             if (!file.isDirectory()) {
                 // ensure we don't write more bytes than the declared when we created the entry
-                
+
                 try (InputStream fin = Files.newInputStream(file.toPath());
                      BoundedInputStream in = new BoundedInputStream(fin, size)) {
-                    int len;
-                    while ((len = in.read(buf)) >= 0) {
-                        tar.write(buf, 0, len);
+                    // Separate try block not to wrap exception thrown while opening the input stream into an exception
+                    // indicating a problem while writing
+                    try {
+                        int len;
+                        while ((len = in.read(buf)) >= 0) {
+                            tar.write(buf, 0, len);
+                        }
+                    } catch (IOException | InvalidPathException e) {// log the exception in any case
+                        throw new IOException("Error writing to tar file from: " + file, e);
                     }
-                } catch (IOException | InvalidPathException e) {// log the exception in any case
-                    IOException ioE = new IOException("Error writing to tar file from: " + file, e);
-                    throw ioE;
                 }
             }
         } finally { // always close the entry

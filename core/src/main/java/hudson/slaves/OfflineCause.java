@@ -44,7 +44,7 @@ import java.util.Date;
  *
  * <h2>Views</h2>
  * <p>
- * {@link OfflineCause} must have <tt>cause.jelly</tt> that renders a cause
+ * {@link OfflineCause} must have {@code cause.jelly} that renders a cause
  * into HTML. This is used to tell users why the node is put offline.
  * This view should render a block element like DIV.
  *
@@ -103,7 +103,6 @@ public abstract class OfflineCause {
      * Caused by unexpected channel termination.
      */
     public static class ChannelTermination extends OfflineCause {
-        @Exported
         public final Exception cause;
 
         public ChannelTermination(Exception cause) {

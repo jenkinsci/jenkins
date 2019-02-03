@@ -43,6 +43,8 @@ import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.CheckForNull;
 
 /**
  * Environment variables.
@@ -53,7 +55,7 @@ import java.util.logging.Logger;
  * but case <b>insensitive</b> way (that is, cmd.exe can get both FOO and foo as environment variables
  * when it's launched, and the "set" command will display it accordingly, but "echo %foo%" results in
  * echoing the value of "FOO", not "foo" &mdash; this is presumably caused by the behavior of the underlying
- * Win32 API <tt>GetEnvironmentVariable</tt> acting in case insensitive way.) Windows users are also
+ * Win32 API {@code GetEnvironmentVariable} acting in case insensitive way.) Windows users are also
  * used to write environment variable case-insensitively (like %Path% vs %PATH%), and you can see many
  * documents on the web that claims Windows environment variables are case insensitive.
  *
@@ -64,10 +66,10 @@ import java.util.logging.Logger;
  * <p>
  * In Jenkins, often we need to build up "environment variable overrides"
  * on master, then to execute the process on agents. This causes a problem
- * when working with variables like <tt>PATH</tt>. So to make this work,
- * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
- * that starts with <tt>PATH+</tt> are merged and prepended to the inherited
- * <tt>PATH</tt> variable, on the process where a new process is executed. 
+ * when working with variables like {@code PATH}. So to make this work,
+ * we introduce a special convention {@code PATH+FOO} &mdash; all entries
+ * that starts with {@code PATH+} are merged and prepended to the inherited
+ * {@code PATH} variable, on the process where a new process is executed.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -83,12 +85,29 @@ public class EnvVars extends TreeMap<String,String> {
      * So this property remembers that information.
      */
     private Platform platform;
+    
+    /**
+     * Gets the platform for which these env vars targeted.
+     * @since 2.144
+     * @return The platform.
+     */
+    public @CheckForNull Platform getPlatform() {
+        return platform;
+    }
 
+    /**
+     * Sets the platform for which these env vars target.
+     * @since 2.144
+     * @param platform the platform to set.
+     */
+    public void setPlatform(@Nonnull Platform platform) {
+        this.platform = platform;
+    }
     public EnvVars() {
         super(CaseInsensitiveComparator.INSTANCE);
     }
 
-    public EnvVars(Map<String,String> m) {
+    public EnvVars(@Nonnull Map<String,String> m) {
         this();
         putAll(m);
 
@@ -100,13 +119,13 @@ public class EnvVars extends TreeMap<String,String> {
         }
     }
 
-    public EnvVars(EnvVars m) {
+    public EnvVars(@Nonnull EnvVars m) {
         // this constructor is so that in future we can get rid of the downcasting.
         this((Map)m);
     }
 
     /**
-     * Builds an environment variables from an array of the form <tt>"key","value","key","value"...</tt>
+     * Builds an environment variables from an array of the form {@code "key","value","key","value"...}
      */
     public EnvVars(String... keyValuePairs) {
         this();
@@ -120,7 +139,7 @@ public class EnvVars extends TreeMap<String,String> {
      * Overrides the current entry by the given entry.
      *
      * <p>
-     * Handles <tt>PATH+XYZ</tt> notation.
+     * Handles {@code PATH+XYZ} notation.
      */
     public void override(String key, String value) {
         if(value==null || value.length()==0) {
@@ -210,13 +229,15 @@ public class EnvVars extends TreeMap<String,String> {
         
         private final Comparator<? super String> comparator;
         
+        @Nonnull
         private final EnvVars target;
+        @Nonnull
         private final Map<String,String> overrides;
         
         private Map<String, Set<String>> refereeSetMap;
         private List<String> orderedVariableNames;
         
-        public OverrideOrderCalculator(EnvVars target, Map<String,String> overrides) {
+        public OverrideOrderCalculator(@Nonnull EnvVars target, @Nonnull Map<String,String> overrides) {
             comparator = target.comparator();
             this.target = target;
             this.overrides = overrides;
@@ -323,9 +344,9 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * Overrides all values in the map by the given map. Expressions in values will be expanded.
      * See {@link #override(String, String)}.
-     * @return this
+     * @return {@code this}
      */
-    public EnvVars overrideExpandingAll(Map<String,String> all) {
+    public EnvVars overrideExpandingAll(@Nonnull Map<String,String> all) {
         for (String key : new OverrideOrderCalculator(this, all).getOrderedVariableNames()) {
             override(key, expand(all.get(key)));
         }
@@ -422,7 +443,7 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * If you access this field from agents, then this is the environment
-     * variable of the agent agent.
+     * variable of the agent.
      */
     public static final Map<String,String> masterEnvVars = initMaster();
 

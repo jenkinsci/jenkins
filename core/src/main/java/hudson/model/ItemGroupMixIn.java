@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -239,7 +241,8 @@ public abstract class ItemGroupMixIn {
         T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
-        Util.copyFile(srcConfigFile.getFile(), Items.getConfigFile(result).getFile());
+        Files.copy(Util.fileToPath(srcConfigFile.getFile()), Util.fileToPath(Items.getConfigFile(result).getFile()),
+                StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
         // reload from the new config
         final File rootDir = result.getRootDir();
@@ -317,11 +320,7 @@ public abstract class ItemGroupMixIn {
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
 
         TopLevelItem item = type.newInstance(parent, name);
-        try {
-            callOnCreatedFromScratch(item);
-        } catch (AbstractMethodError e) {
-            // ignore this error. Must be older plugin that doesn't have this method
-        }
+        item.onCreatedFromScratch();
         item.save();
         add(item);
         Jenkins.getInstance().rebuildDependencyGraphAsync();
@@ -332,10 +331,4 @@ public abstract class ItemGroupMixIn {
         return item;
     }
 
-    /**
-     * Pointless wrapper to avoid HotSpot problem. See JENKINS-5756
-     */
-    private void callOnCreatedFromScratch(TopLevelItem item) {
-        item.onCreatedFromScratch();
-    }
 }

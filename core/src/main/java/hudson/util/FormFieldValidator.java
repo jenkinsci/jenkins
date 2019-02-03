@@ -170,8 +170,8 @@ public abstract class FormFieldValidator {
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void error(String message) throws IOException, ServletException {
         errorWithMarkup(message==null?null:Util.escape(message));
@@ -209,8 +209,8 @@ public abstract class FormFieldValidator {
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
         _errorWithMarkup(message,"error");

@@ -56,7 +56,7 @@ public class OnlineNodeCommand extends CLICommand {
     protected int run() throws Exception {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
-        final HashSet<String> hs = new HashSet<String>(nodes);
+        final HashSet<String> hs = new HashSet<>(nodes);
         List<String> names = null;
 
         for (String node_s : hs) {

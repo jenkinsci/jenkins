@@ -6,12 +6,9 @@ import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.HashMap;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol2Handler;
 
@@ -50,7 +47,12 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return false;
+        return true;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return true;
     }
 
     /**

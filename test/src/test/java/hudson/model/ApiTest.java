@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import net.sf.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -135,5 +136,36 @@ public class ApiTest {
         j.createFreeStyleProject();
         j.createFreeStyleProject();
         j.createWebClient().assertFails("api/xml?xpath=/hudson/job/name", HttpURLConnection.HTTP_INTERNAL_ERROR);
+    }
+
+    @Issue("JENKINS-22566")
+    @Test
+    public void parameter() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("foo", "bar"))));
+
+        Page page = j.createWebClient().goTo(
+                p.getUrl() + "api/xml?tree=builds[actions[parameters[name,value]]]&xpath=freeStyleProject/build/action/parameter",
+                "application/xml");
+        assertEquals(
+                "<parameter _class=\"hudson.model.StringParameterValue\"><name>foo</name><value>bar</value></parameter>",
+                page.getWebResponse().getContentAsString());
+    }
+
+    @Issue("JENKINS-22566")
+    @Ignore("TODO currently fails with: org.dom4j.DocumentException: Error on line 1 of document  : An invalid XML character (Unicode: 0x1b) was found in the element content of the document")
+    @Test
+    public void escapedParameter() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("foo", "bar\u001B"))));
+
+        Page page = j.createWebClient().goTo(
+                p.getUrl() + "api/xml?tree=builds[actions[parameters[name,value]]]&xpath=freeStyleProject/build/action/parameter",
+                "application/xml");
+        assertEquals(
+                "<parameter _class=\"hudson.model.StringParameterValue\"><name>foo</name><value>bar&#x1b;</value></parameter>",
+                page.getWebResponse().getContentAsString());
     }
 }

@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <form method="post" action="doDelete">
-        ${%Are you sure about deleting this log recorder?}
+        ${%delete.logrecorder(it.displayName)}
         <f:submit value="${%Yes}" />
       </form>
     </l:main-panel>
