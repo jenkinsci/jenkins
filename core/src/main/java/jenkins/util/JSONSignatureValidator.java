@@ -224,10 +224,10 @@ public class JSONSignatureValidator {
         }
 
         try {
-            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
+            if (signature.verify(Base64.getDecoder().decode(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException|IOException ignore) {
+        } catch (SignatureException ignore) {
             // ignore
         }
         return false;
@@ -237,7 +237,7 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.encode(digest)));
+        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.getEncoder().encode(digest)));
     }
 
 
