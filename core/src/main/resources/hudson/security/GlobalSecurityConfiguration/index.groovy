@@ -31,7 +31,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
 
                 f.entry(title:_("Access Control")) {
-                    table(style:"width:100%") {
+                    div(style:"width:100%") {
                         f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
                         f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
                     }
@@ -59,7 +59,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
                         def agentProtocols = my.agentProtocols;
-                        table(width:"100%") {
+                        div() {
                             for (AgentProtocol p : AgentProtocol.all()) {
                                 if (p.name != null && !p.required) {
                                     f.block() {
@@ -68,9 +68,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                                 checked: agentProtocols.contains(p.name),
                                                 json: p.name);
                                     }
-                                    tr() {
-                                        td(colspan:"2");
-                                        td(class:"setting-description"){
+                                    div(class: "tr") {
+                                        div(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true);
                                             if (p.deprecated) {
                                               br()
@@ -78,7 +77,6 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                               st.include(from:p, page: "deprecationCause", optional:true);
                                             }
                                         }
-                                        td();
                                     }
                                 }
                             }
