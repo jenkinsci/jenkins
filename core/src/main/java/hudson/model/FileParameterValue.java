@@ -171,6 +171,7 @@ public class FileParameterValue extends ParameterValue {
                     locationFilePath.getParent().mkdirs();
             	    locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+                    file.delete();
             	}
                 return new Environment() {};
             }

@@ -87,7 +87,6 @@ public class FileParameterDefinition extends ParameterDefinition {
         FileParameterValue p = new FileParameterValue(getName(), src, getFileName(src.getName()));
         p.setDescription(getDescription());
         p.setLocation(getName());
-        src.delete();
         return p;
 	}
 
@@ -118,7 +117,6 @@ public class FileParameterDefinition extends ParameterDefinition {
         FileParameterValue p = new FileParameterValue(getName(), local, name);
         p.setDescription(getDescription());
         p.setLocation(getName());
-        local.delete();
         return p;
     }
 }
