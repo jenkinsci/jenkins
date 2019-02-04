@@ -23,11 +23,13 @@
  */
 package hudson.model;
 
+import com.google.common.primitives.Floats;
 import hudson.CopyOnWrite;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 
 /**
  * Scalar value that changes over the time (such as load average, Q length, # of executors, etc.)
@@ -49,7 +51,7 @@ public final class TimeSeries implements Serializable {
      * Historical exponential moving average data. Newer ones first.
      */
     @CopyOnWrite
-    private volatile float[] history;
+    private volatile ArrayDeque<Float> history;
 
     /**
      * Maximum history size.
@@ -57,7 +59,8 @@ public final class TimeSeries implements Serializable {
     private final int historySize;
 
     public TimeSeries(float initialValue, float decay, int historySize) {
-        this.history = new float[]{initialValue};
+        this.history = new ArrayDeque<>(historySize);
+        this.history.addFirst(initialValue);
         this.decay = decay;
         this.historySize = historySize;
     }
@@ -71,12 +74,12 @@ public final class TimeSeries implements Serializable {
      * the raw data stream.
      */
     public void update(float newData) {
-        float data = history[0]*decay + newData*(1-decay);
+        float data = history.getFirst()*decay + newData*(1-decay);
 
-        float[] r = new float[Math.min(history.length+1,historySize)];
-        System.arraycopy(history,0,r,1,Math.min(history.length,r.length-1));
-        r[0] = data;
-        history = r;
+        if (history.size() == historySize) {
+            history.removeLast();
+        }
+        history.addFirst(data);
     }
 
     /**
@@ -88,7 +91,7 @@ public final class TimeSeries implements Serializable {
      */
     @Exported
     public float[] getHistory() {
-        return history;
+        return Floats.toArray(history);
     }
 
     /**
@@ -96,12 +99,12 @@ public final class TimeSeries implements Serializable {
      */
     @Exported
     public float getLatest() {
-        return history[0];
+        return history.getFirst();
     }
 
     @Override
     public String toString() {
-        return Float.toString(history[0]);
+        return history.getFirst().toString();
     }
 
     private static final long serialVersionUID = 1L;
