@@ -414,6 +414,12 @@ THE SOFTWARE.
                   <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>

@@ -1394,7 +1394,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         public long getFileSize(){
-            return Long.decode(length);
+            try {
+                return Long.decode(length);
+            }
+            catch (NumberFormatException e) {
+                LOGGER.log(FINE, "Cannot determine file size of the artifact {0}. The length {1} is not a valid long value", new Object[] {this, length});
+                return 0;
+            }
         }
 
         public String getTreeNodeId() {

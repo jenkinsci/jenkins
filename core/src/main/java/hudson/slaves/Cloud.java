@@ -34,7 +34,6 @@ import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.AbstractModelObject;
 import hudson.model.Label;
 import hudson.model.Descriptor;
 import hudson.security.ACL;
@@ -125,7 +124,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -169,7 +168,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -179,13 +178,13 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
+    public static final DescriptorList<Cloud> ALL = new DescriptorList<>(Cloud.class);
 
     /**
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
+        return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
     private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);

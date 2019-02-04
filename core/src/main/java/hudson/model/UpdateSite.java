@@ -25,7 +25,6 @@
 
 package hudson.model;
 
-import hudson.ClassicPluginStrategy;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -67,6 +66,7 @@ import javax.annotation.Nullable;
 
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
+import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
@@ -551,7 +551,7 @@ public class UpdateSite {
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
-                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                List<PluginWrapper.Dependency> implicitDeps = DetachedPluginsUtil.getImpliedDependencies(p.name, p.requiredCore);
                 if(!implicitDeps.isEmpty()) {
                     for(PluginWrapper.Dependency dep : implicitDeps) {
                         if(!p.dependencies.containsKey(dep.shortName)) {

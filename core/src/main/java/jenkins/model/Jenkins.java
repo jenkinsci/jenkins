@@ -2139,7 +2139,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Binds {@link AdministrativeMonitor}s to URL.
+     * @param id Monitor ID
+     * @return The requested monitor or {@code null} if it does not exist
      */
+    @CheckForNull
     public AdministrativeMonitor getAdministrativeMonitor(String id) {
         for (AdministrativeMonitor m : administrativeMonitors)
             if(m.id.equals(id))
@@ -2847,7 +2850,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      or it exists but it's no an instance of the given type.
      * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull <T extends Item> T getItemByFullName(String fullName, Class<T> type) throws AccessDeniedException {
+    public @CheckForNull <T extends Item> T getItemByFullName(@Nonnull String fullName, Class<T> type) throws AccessDeniedException {
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
 
@@ -3559,17 +3562,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
         if(tcpSlaveAgentListener!=null) {
-            LOGGER.log(FINE, "Shutting down TCP/IP slave agent listener");
+            LOGGER.log(FINE, "Shutting down TCP/IP agent listener");
             try {
                 tcpSlaveAgentListener.shutdown();
             } catch (OutOfMemoryError e) {
                 // we should just propagate this, no point trying to log
                 throw e;
             } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP agent listener", e);
                 // safe to ignore and continue for this one
             } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP agent listener", e);
                 // save for later
                 errors.add(e);
             }
