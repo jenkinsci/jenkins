@@ -60,7 +60,7 @@ public class SecretRewriterTest {
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());
-        return new String(Base64.getDecoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
     }
 
     private String encryptNew(String str) {
