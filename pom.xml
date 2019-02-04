@@ -76,8 +76,8 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.163</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <revision>2.162</revision>
+    <changelist></changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
