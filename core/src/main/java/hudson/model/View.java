@@ -748,7 +748,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User, UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User, UserInfo> users = new HashMap<>();
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?, ?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     RunList<? extends Run<?, ?>> runs = job.getBuilds();
                     for (Run<?, ?> r : runs) {
                         if (r instanceof RunWithSCM) {
@@ -828,14 +834,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = User.getUnknown();
         }
 
         /** @see View#getAsynchPeople */
         public AsynchPeople(View parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = null;
         }
 
         {
