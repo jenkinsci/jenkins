@@ -57,8 +57,8 @@ THE SOFTWARE.
   <div class="tr radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <div colspan="3">
       <label>
-	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control block-control" checked="${checked?'true':null}" />
+        <input type="radio" name="${name}" value="${value}"
+               class="radio-block-control block-control" checked="${checked?'true':null}" />
         ${title}
       </label>
     </div>
@@ -67,7 +67,7 @@ THE SOFTWARE.
   <j:if test="${attrs.help!=null}">
     <f:helpArea />
   </j:if>
-	<d:invokeBody />
-	<!-- end marker -->
+  <d:invokeBody />
+  <!-- end marker -->
   <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none"></div>
 </j:jelly>
