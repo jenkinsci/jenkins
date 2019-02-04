@@ -719,7 +719,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?, ?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     RunList<? extends Run<?, ?>> runs = job.getBuilds();
                     for (Run<?, ?> r : runs) {
                         if (r instanceof RunWithSCM) {
@@ -790,7 +796,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
 
         private final Collection<TopLevelItem> items;
-        private final User unknown;
         private final Map<User,UserInfo> users = new HashMap<User,UserInfo>();
         private final Set<User> modified = new HashSet<User>();
         private final String iconSize;
@@ -800,14 +805,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = User.getUnknown();
         }
 
         /** @see View#getAsynchPeople */
         public AsynchPeople(View parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = null;
         }
 
         {
