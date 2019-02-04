@@ -64,20 +64,18 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <!-- single line textbox with expand button -->
-      <div border="0" style="width:100%" cellspacing="0" cellpadding="0">
-        <div class='tr'>
-          <div width="*">
-            <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-            <input class="setting-input" type="text"
-                   name="${name}" value="${value}"
-                   id="textarea.${name}" />
-            <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
-              <j:mute>${customizedFields.add(name)}</j:mute>
-            </j:if>
-          </div><div width="1">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
-                tooltip="${%tooltip}"/>
-          </div>
+      <div class="expanding-input">
+        <div width="*">
+          <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
+          <input class="setting-input" type="text"
+                 name="${name}" value="${value}"
+                 id="textarea.${name}" />
+          <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
+            <j:mute>${customizedFields.add(name)}</j:mute>
+          </j:if>
+        </div><div width="1">
+          <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
+                 tooltip="${%tooltip}"/>
         </div>
       </div>
     </j:otherwise>

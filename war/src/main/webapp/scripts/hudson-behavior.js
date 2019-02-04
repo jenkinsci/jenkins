@@ -1521,7 +1521,7 @@ function expandTextArea(button,id) {
     var value = field.value.replace(/ +/g,'\n');
     
     var n = button; 
-    while (n.tagName != "TABLE")
+    while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
     }
