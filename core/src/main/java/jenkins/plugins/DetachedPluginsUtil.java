@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.util.java.JavaUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -174,13 +175,13 @@ public class DetachedPluginsUtil {
          */
         private final VersionNumber splitWhen;
         private final String requiredVersion;
-        private final VersionNumber minJavaVersion;
+        private final JavaSpecificationVersion minJavaVersion;
 
         private DetachedPlugin(String shortName, String splitWhen, String requiredVersion, String minJavaVersion) {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
             this.requiredVersion = requiredVersion;
-            this.minJavaVersion = new VersionNumber(minJavaVersion);
+            this.minJavaVersion = new JavaSpecificationVersion(minJavaVersion);
         }
 
         /**
@@ -217,7 +218,7 @@ public class DetachedPluginsUtil {
         }
 
         @Nonnull
-        public VersionNumber getMinimumJavaVersion() {
+        public JavaSpecificationVersion getMinimumJavaVersion() {
             return minJavaVersion;
         }
     }

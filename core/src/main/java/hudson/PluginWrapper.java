@@ -33,6 +33,7 @@ import hudson.model.ModelObject;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.java.JavaUtils;
@@ -763,8 +764,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
             String minimumJavaVersion = getMinimumJavaVersion();
             if (minimumJavaVersion != null) {
-                VersionNumber actualVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
-                if (actualVersion.isOlderThan(new VersionNumber(minimumJavaVersion))) {
+                JavaSpecificationVersion actualVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                if (actualVersion.isOlderThan(new JavaSpecificationVersion(minimumJavaVersion))) {
                     versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), minimumJavaVersion), actualVersion.toString(), minimumJavaVersion);
                 }
             }
