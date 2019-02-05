@@ -62,6 +62,7 @@ import jenkins.YesNoMaybe;
 import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
+import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -725,7 +726,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
 
-            final List<ClassicPluginStrategy.DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(lastExecVersion);
+            final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
 
             Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
                 @Override
@@ -734,7 +735,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
-                    if (ClassicPluginStrategy.isDetachedPlugin(name)) {
+                    if (DetachedPluginsUtil.isDetachedPlugin(name)) {
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
                         // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
@@ -747,7 +748,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
 
                     // If it's a plugin that was detached since the last running version.
-                    for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : detachedPlugins) {
+                    for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : detachedPlugins) {
                         if (detachedPlugin.getShortName().equals(name)) {
                             return true;
                         }
@@ -763,9 +764,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             InstallUtil.saveLastExecVersion();
         } else {
-            final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            final Set<DetachedPluginsUtil.DetachedPlugin> forceUpgrade = new HashSet<>();
             // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
-            for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
+            for (DetachedPluginsUtil.DetachedPlugin p : DetachedPluginsUtil.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
                 VersionNumber requiredVersion = p.getRequiredVersion();
                 if (installedVersion != null && installedVersion.isOlderThan(requiredVersion)) {
@@ -780,7 +781,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     @Override
                     public boolean accept(File dir, String name) {
                         name = normalisePluginName(name);
-                        for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : forceUpgrade) {
+                        for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : forceUpgrade) {
                             if (detachedPlugin.getShortName().equals(name)) {
                                 return true;
                             }
