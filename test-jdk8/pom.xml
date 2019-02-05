@@ -2,7 +2,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2018, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@ THE SOFTWARE.
     <relativePath>../test-pom</relativePath>
   </parent>
 
-  <artifactId>jenkins-test</artifactId>
+  <artifactId>jenkins-test-jdk8</artifactId>
 
-  <name>Tests for Jenkins core</name>
-  <description>Functional tests for Jenkins core</description>
+  <name>JDK8-only tests for Jenkins core</name>
+  <description>JDK8-only Functional tests for Jenkins core</description>
 
 </project>
