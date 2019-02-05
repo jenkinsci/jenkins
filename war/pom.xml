@@ -98,10 +98,9 @@ THE SOFTWARE.
       <version>2.2</version>
     </dependency>
     <dependency>
-      <!-- SshCliAuthenticator no longer used, but UserPropertyImpl used by sshd: -->
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.4</version>
+      <version>1.5-20190205.173740-1</version> <!-- TODO https://github.com/jenkinsci/ssh-cli-auth-module/pull/6 -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
