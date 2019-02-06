@@ -308,6 +308,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
         cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
+        cookie.setSecure(true);
         rsp.addCookie(cookie);
 
         rsp.sendRedirect2(getPostLogOutUrl(req,auth));

@@ -638,6 +638,7 @@ public class Functions {
             // to avoid conflicts with any other web apps that might be on the same machine.
             c.setPath("/");
             c.setMaxAge(60*60*24*30); // persist it roughly for a month
+            c.setSecure(true);
             response.addCookie(c);
         }
         if (refresh) {
