@@ -104,7 +104,7 @@ public abstract class TaskThread extends Thread {
      * Starts the task execution asynchronously.
      */
     @Override
-    public void start() {
+    synchronized public void start() {
         associateWith(owner);
         super.start();
     }
