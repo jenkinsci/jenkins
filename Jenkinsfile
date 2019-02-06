@@ -63,7 +63,7 @@ for(j = 0; j < jdks.size(); j++) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
-                    if (buildType == 'Linux') {
+                    if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
