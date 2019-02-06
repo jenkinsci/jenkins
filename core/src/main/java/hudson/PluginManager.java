@@ -1337,6 +1337,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 pluginInfo.put("dependencies", Collections.emptyMap());
             }
             response.add(pluginInfo);
+            allPlugins.put(plugin.getShortName(), pluginInfo);
         }
         for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
             for (UpdateSite.Plugin plugin: site.getAvailables()) {
