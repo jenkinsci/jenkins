@@ -768,7 +768,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     @RequirePOST
-    synchronized public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         super.doConfigSubmit(req,rsp);
 
         updateTransientActions();

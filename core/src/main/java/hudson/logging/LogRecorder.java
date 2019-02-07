@@ -148,7 +148,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     @Restricted(NoExternalUse.class)
     transient /*almost final*/ RingBufferLogHandler handler = new RingBufferLogHandler() {
         @Override
-        synchronized public void publish(LogRecord record) {
+        public synchronized void publish(LogRecord record) {
             for (Target t : orderedTargets()) {
                 Boolean match = t.matches(record);
                 if (match == null) {

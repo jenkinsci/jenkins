@@ -107,12 +107,12 @@ public class ExtensionListView {
             }
 
             @Override
-            synchronized public void add(T t) {
+            public synchronized void add(T t) {
                 storage().add(t);
             }
 
             @Override
-            synchronized public boolean remove(T t) {
+            public synchronized boolean remove(T t) {
                 return storage().remove(t);
             }
 
