@@ -56,10 +56,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getLastBuiltOn();
     }
 
+    @Deprecated
     public boolean isBuildBlocked() {
         return base.isBuildBlocked();
     }
 
+    @Deprecated
     public String getWhyBlocked() {
         return base.getWhyBlocked();
     }
@@ -110,10 +112,6 @@ public abstract class QueueTaskFilter implements Queue.Task {
 
     public Collection<? extends SubTask> getSubTasks() {
         return base.getSubTasks();
-    }
-
-    public final Task getOwnerTask() {
-        return this;
     }
 
     public Object getSameNodeConstraint() {

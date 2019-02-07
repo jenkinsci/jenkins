@@ -25,6 +25,8 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
+
+import hudson.ExtensionList;
 import hudson.Launcher;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.Secret;
@@ -32,13 +34,17 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.annotation.CheckForNull;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import static org.hamcrest.Matchers.containsString;
+
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -58,6 +64,13 @@ public class ClientAuthenticationCacheTest {
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(ClientAuthenticationCache.class, Level.FINER);
+
+    @Before
+    public void setUp() {
+        Set<String> agentProtocols = new HashSet<>(r.jenkins.getAgentProtocols());
+        agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
+        r.jenkins.setAgentProtocols(agentProtocols);
+    }
 
     @Issue("SECURITY-466")
     @Test
@@ -112,7 +125,25 @@ public class ClientAuthenticationCacheTest {
         assertEquals(r.getURL().toString(), cache.getPropertyKey());
         JenkinsLocationConfiguration.get().setUrl(null);
         String key = cache.getPropertyKey();
-        assertTrue(key, Secret.decrypt(key) != null);
+        assertEquals(r.jenkins.getLegacyInstanceId(), key);
+    }
+    
+    @Test
+    @Issue("JENKINS-47426")
+    public void getPropertyKey_mustBeEquivalentOverTime() throws Exception {
+        ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
+
+        String key1 = cache.getPropertyKey();
+        String key2 = cache.getPropertyKey();
+
+        assertEquals("Two calls to the getPropertyKey() must be equivalent over time, with rootUrl", key1, key2);
+
+        JenkinsLocationConfiguration.get().setUrl(null);
+
+        key1 = cache.getPropertyKey();
+        key2 = cache.getPropertyKey();
+
+        assertEquals("Two calls to the getPropertyKey() must be equivalent over time, without rootUrl", key1, key2);
     }
 
     private void assertCLI(int code, @CheckForNull String output, File jar, String... args) throws Exception {

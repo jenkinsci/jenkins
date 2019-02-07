@@ -37,8 +37,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +46,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import jenkins.AgentProtocol;
 import jenkins.model.identity.InstanceIdentityProvider;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
 import org.jenkinsci.remoting.protocol.IOHub;
@@ -58,10 +57,11 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since 2.27 available as the experimental protocol 
- * @since TODO enabled by default
+ * @since 2.27 available as experimental protocol 
+ * @since 2.41 enabled by default
  */
 @Extension
+@Symbol("jnlp4")
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     /**
      * Our logger.

@@ -57,12 +57,12 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
     protected abstract Class<T> type();
 
     @Override public int parseArguments(Parameters params) throws CmdLineException {
-        final Jenkins j = Jenkins.getInstance();
+        final Jenkins j = Jenkins.get();
         final String src = params.getParameter(0);
         T s = j.getItemByFullName(src, type());
         if (s == null) {
             final Authentication who = Jenkins.getAuthentication();
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 Item actual = j.getItemByFullName(src);
                 if (actual == null) {
                     LOGGER.log(Level.FINE, "really no item exists named {0}", src);

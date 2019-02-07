@@ -51,7 +51,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -60,6 +59,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
@@ -74,12 +74,14 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -93,6 +95,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -109,6 +113,7 @@ import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -120,8 +125,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -141,7 +148,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
@@ -774,6 +781,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public String toString() {
+        if (project == null) {
+            return "<broken data JENKINS-45892>";
+        }
         return project.getFullName() + " #" + number;
     }
 
@@ -1013,11 +1023,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return id != null ? id : Integer.toString(number);
     }
     
-    @Override
-    public @CheckForNull Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-
     /**
      * Get the root directory of this {@link Run} on the master.
      * Files related to this {@link Run} should be stored below this directory.
@@ -1093,12 +1098,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return The list can be empty but never null
      */ 
     public @Nonnull List<Artifact> getArtifactsUpTo(int artifactsNumber) {
-        ArtifactList r = new ArtifactList();
+        SerializableArtifactList sal;
+        VirtualFile root = getArtifactManager().root();
         try {
-            addArtifacts(getArtifactManager().root(), "", "", r, null, artifactsNumber);
+            sal = root.run(new AddArtifacts(root, artifactsNumber));
         } catch (IOException x) {
             LOGGER.log(Level.WARNING, null, x);
+            sal = new SerializableArtifactList();
         }
+        ArtifactList r = new ArtifactList();
+        r.updateFrom(sal);
         r.computeDisplayName();
         return r;
     }
@@ -1112,9 +1121,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return !getArtifactsUpTo(1).isEmpty();
     }
 
-    private int addArtifacts(@Nonnull VirtualFile dir, 
+    private static final class AddArtifacts extends MasterToSlaveCallable<SerializableArtifactList, IOException> {
+        private static final long serialVersionUID = 1L;
+        private final VirtualFile root;
+        private final int artifactsNumber;
+        AddArtifacts(VirtualFile root, int artifactsNumber) {
+            this.root = root;
+            this.artifactsNumber = artifactsNumber;
+        }
+        @Override
+        public SerializableArtifactList call() throws IOException {
+            SerializableArtifactList sal = new SerializableArtifactList();
+            addArtifacts(root, "", "", sal, null, artifactsNumber);
+            return sal;
+        }
+    }
+
+    private static int addArtifacts(@Nonnull VirtualFile dir,
             @Nonnull String path, @Nonnull String pathHref, 
-            @Nonnull ArtifactList r, @Nonnull Artifact parent, int upTo) throws IOException {
+            @Nonnull SerializableArtifactList r, @CheckForNull SerializableArtifact parent, int upTo) throws IOException {
         VirtualFile[] kids = dir.list();
         Arrays.sort(kids);
 
@@ -1125,32 +1150,32 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childHref = pathHref + Util.rawEncode(child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (kids.length==1 && parent!=null);
-            Artifact a;
+            SerializableArtifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
-                a = new Artifact(parent.getFileName() + '/' + child, childPath,
+                a = new SerializableArtifact(parent.name + '/' + child, childPath,
                                  sub.isDirectory() ? null : childHref, length,
-                                 parent.getTreeNodeId());
+                                 parent.treeNodeId);
                 r.tree.put(a, r.tree.remove(parent));
             } else {
                 // Use null href for a directory:
-                a = new Artifact(child, childPath,
+                a = new SerializableArtifact(child, childPath,
                                  sub.isDirectory() ? null : childHref, length,
                                  "n" + ++r.idSeq);
-                r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
+                r.tree.put(a, parent!=null ? parent.treeNodeId : null);
             }
             if (sub.isDirectory()) {
                 n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
                 if (n>=upTo) break;
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
+                r.add(collapsed ? new SerializableArtifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
                 if (++n>=upTo) break;
             }
         }
         return n;
     }
-
+    
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
@@ -1162,6 +1187,30 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
 
     // ..and then "too many"
+    
+    /** {@link Run.Artifact} without the implicit link to {@link Run} */
+    private static final class SerializableArtifact implements Serializable {
+        private static final long serialVersionUID = 1L;
+        final String name;
+        final String relativePath;
+        final String href;
+        final String length;
+        final String treeNodeId;
+        SerializableArtifact(String name, String relativePath, String href, String length, String treeNodeId) {
+            this.name = name;
+            this.relativePath = relativePath;
+            this.href = href;
+            this.length = length;
+            this.treeNodeId = treeNodeId;
+        }
+    }
+
+    /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
+        private static final long serialVersionUID = 1L;
+        private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
+        private int idSeq = 0;
+    }
 
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
@@ -1170,7 +1219,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
         private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
-        private int idSeq = 0;
+
+        void updateFrom(SerializableArtifactList clone) {
+            Map<String, Artifact> artifacts = new HashMap<>(); // need to share objects between tree and list, since computeDisplayName mutates displayPath
+            for (SerializableArtifact sa : clone) {
+                Artifact a = new Artifact(sa);
+                artifacts.put(a.relativePath, a);
+                add(a);
+            }
+            tree = new LinkedHashMap<>();
+            for (Map.Entry<SerializableArtifact, String> entry : clone.tree.entrySet()) {
+                SerializableArtifact sa = entry.getKey();
+                Artifact a = artifacts.get(sa.relativePath);
+                if (a == null) {
+                    a = new Artifact(sa);
+                }
+                tree.put(a, entry.getValue());
+            }
+        }
 
         public Map<Artifact,String> getTree() {
             return tree;
@@ -1285,6 +1351,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         private String length;
 
+        Artifact(SerializableArtifact clone) {
+            this(clone.name, clone.relativePath, clone.href, clone.length, clone.treeNodeId);
+        }
+
         /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;
             this.relativePath = relativePath;
@@ -1324,7 +1394,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         public long getFileSize(){
-            return Long.decode(length);
+            try {
+                return Long.decode(length);
+            }
+            catch (NumberFormatException e) {
+                LOGGER.log(FINE, "Cannot determine file size of the artifact {0}. The length {1} is not a valid long value", new Object[] {this, length});
+                return 0;
+            }
         }
 
         public String getTreeNodeId() {
@@ -1337,6 +1413,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
+    /**
+     * get the fingerprints associated with this build
+     *
+     * @return The fingerprints
+     */
+    @Nonnull
+    @Exported(name = "fingerprint", inline = true, visibility = -1)
+    public Collection<Fingerprint> getBuildFingerprints() {
+        FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
+        if (fingerprintAction != null) {
+            return fingerprintAction.getFingerprints().values();
+        }
+        return Collections.<Fingerprint>emptyList();
+    }
+    
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
@@ -1390,21 +1481,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Used from <tt>console.jelly</tt> to write annotated log to the given output.
+     * Used from {@code console.jelly} to write annotated log to the given output.
      *
      * @since 1.349
      */
     public void writeLogTo(long offset, @Nonnull XMLOutput out) throws IOException {
-        try {
-			getLogText().writeHtmlTo(offset,out.asWriter());
-		} catch (IOException e) {
-			// try to fall back to the old getLogInputStream()
-			// mainly to support .gz compressed files
-			// In this case, console annotation handling will be turned off.
-			try (InputStream input = getLogInputStream()) {
-				IOUtils.copy(input, out.asWriter());
-			}
-		}
+        getLogText().writeHtmlTo(offset, out.asWriter());
     }
 
     /**
@@ -1455,16 +1537,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     @Override
-    public void checkPermission(@Nonnull Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull Permission p) {
-        return getACL().hasPermission(p);
-    }
-
-    @Override
     public ACL getACL() {
         // for now, don't maintain ACL per run, and do it at project level
         return getParent().getACL();
@@ -1499,6 +1571,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         RunListener.fireDeleted(this);
+
+        if (artifactManager != null) {
+            deleteArtifacts();
+        } // for StandardArtifactManager, deleting the whole build dir suffices
 
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
@@ -1698,6 +1774,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
+        OutputStream logger = null;
         StreamBuildListener listener=null;
 
         runner = job;
@@ -1716,16 +1793,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-                    listener = createBuildListener(job, listener, charset);
+                    logger = createLogger();
+                    listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
                     if (!auth.equals(ACL.SYSTEM)) {
-                        String name = auth.getName();
+                        String id = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
-                            name = ModelHyperlinkNote.encodeTo(User.get(name));
+                            final User usr = User.getById(id, false);
+                            if (usr != null) { // Encode user hyperlink for existing users
+                                id = ModelHyperlinkNote.encodeTo(usr);
+                            }
                         }
-                        listener.getLogger().println(Messages.Run_running_as_(name));
+                        listener.getLogger().println(Messages.Run_running_as_(id));
                     }
 
                     RunListener.fireStarted(this,listener);
@@ -1798,23 +1879,32 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 getParent().logRotate();
             } catch (Exception e) {
-		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-	    }
+                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+            }
         } finally {
             onEndBuilding();
+            if (logger != null) {
+                try {
+                    logger.close();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
+                }
+            }
         }
     }
 
-    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, StreamBuildListener listener, Charset charset) throws IOException, InterruptedException {
+    private OutputStream createLogger() throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        OutputStream logger;
         try {
-            logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
+    }
+
+    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, OutputStream logger, Charset charset) throws IOException, InterruptedException {
         RunT build = job.getBuild();
 
         // Global log filters
@@ -1830,8 +1920,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
 
-        listener = new StreamBuildListener(logger,charset);
-        return listener;
+        return new StreamBuildListener(logger,charset);
     }
 
     /**
@@ -1926,6 +2015,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private @Nonnull XmlFile getDataFile() {
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
+    }
+
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(Run<?, ?> r) {
+            id = r.getExternalizableId();
+        }
+        private Object readResolve() {
+            return fromExternalizableId(id);
+        }
     }
 
     /**
@@ -2128,7 +2230,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        ;
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getCompressedOutputStream(req);
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
@@ -2277,6 +2378,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
+        if (!(this instanceof AbstractBuild)) {
+            for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
+                a.buildEnvironment(this, env);
+            }
+        } // else for compatibility reasons, handled in override after buildEnvironments
+
         return env;
     }
 
@@ -2319,7 +2426,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } catch (NumberFormatException x) {
             throw new IllegalArgumentException(x);
         }
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            return null;
+        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;
@@ -2469,6 +2579,26 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return returnedResult;
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            // This is a bit weird, but while the Run's PermissionScope does not have READ, delegate to the parent
+            if (!getParent().hasPermission(Item.DISCOVER)) {
+                return null;
+            }
+            getParent().checkPermission(Item.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
+
 
     public static class RedirectUp {
         public void doDynamic(StaplerResponse rsp) throws IOException {

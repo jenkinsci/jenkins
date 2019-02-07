@@ -33,8 +33,8 @@ import java.io.ObjectStreamException;
 
 /**
  * Installs tool via script execution of Batch script.
- * Inspired by "Command installer" from the Jenkins core.
- * @since 0.1
+ * 
+ * @since 1.549
  */
 public class BatchCommandInstaller extends AbstractCommandInstaller {
 

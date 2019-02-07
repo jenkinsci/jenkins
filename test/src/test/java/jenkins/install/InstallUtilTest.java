@@ -23,7 +23,6 @@
  */
 package jenkins.install;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +35,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 import org.mockito.Mockito;
 
 import hudson.Main;
@@ -56,6 +57,7 @@ import net.sf.json.JSONObject;
  * Test
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@Category(SmokeTest.class)
 public class InstallUtilTest {
 
     @Rule
@@ -81,6 +83,9 @@ public class InstallUtilTest {
      */
     @Test
     public void test_typeTransitions() {
+        InstallUtil.getLastExecVersionFile().delete();
+        InstallUtil.getConfigFile().delete();
+        
         // A new test instance sets up security first
         Assert.assertEquals(InstallState.INITIAL_SECURITY_SETUP, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
@@ -115,6 +120,8 @@ public class InstallUtilTest {
      */
     @Test
     public void test_getLastExecVersion() throws Exception {
+        Main.isUnitTest = true;
+
         // Delete the config file, forcing getLastExecVersion to return
         // the default/unset version value.
         InstallUtil.getConfigFile().delete();
@@ -127,12 +134,10 @@ public class InstallUtilTest {
     }
 
     private void setStoredVersion(String version) throws Exception {
-        Field versionField = Jenkins.class.getDeclaredField("version");
-        versionField.setAccessible(true);
-        versionField.set(jenkinsRule.jenkins, version);
-        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
+        Jenkins.VERSION = version;
         // Force a save of the config.xml
         jenkinsRule.jenkins.save();
+        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
     }
 
     /**

@@ -1,6 +1,8 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
+import hudson.model.queue.Tasks;
 import hudson.util.DescribableList;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -20,13 +22,9 @@ import java.util.List;
  * @since 1.520
  */
 @Extension @Symbol("queueItemAuthenticator")
-public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
+public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     private final DescribableList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> authenticators
         = new DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor>(this);
-
-    public QueueItemAuthenticatorConfiguration() {
-        load();
-    }
 
     private Object readResolve() {
         authenticators.setOwner(this);
@@ -34,10 +32,18 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public GlobalConfigurationCategory getCategory() {
+    public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
+    /**
+     * Provides all user-configured authenticators.
+     * Note that if you are looking to determine all <em>effective</em> authenticators,
+     * including any potentially supplied by plugins rather than user configuration,
+     * you should rather call {@link QueueItemAuthenticatorProvider#authenticators};
+     * or if you are looking for the authentication of an actual project, build, etc., use
+     * {@link hudson.model.Queue.Item#authenticate} or {@link Tasks#getAuthenticationOf}.
+     */
     public DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor> getAuthenticators() {
         return authenticators;
     }
@@ -52,8 +58,8 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
         }
     }
 
-    public static QueueItemAuthenticatorConfiguration get() {
-        return Jenkins.getInstance().getInjector().getInstance(QueueItemAuthenticatorConfiguration.class);
+    public static @Nonnull QueueItemAuthenticatorConfiguration get() {
+        return GlobalConfiguration.all().getInstance(QueueItemAuthenticatorConfiguration.class);
     }
 
     @Extension(ordinal = 100)

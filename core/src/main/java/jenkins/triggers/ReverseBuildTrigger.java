@@ -65,7 +65,6 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -74,8 +73,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -91,21 +92,41 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
 
+    @CheckForNull
     private String upstreamProjects;
-    private final Result threshold;
+    private Result threshold = Result.SUCCESS;
 
-    @DataBoundConstructor
+    /**
+     * Legacy constructor used before {@link #threshold} was moved to a {@code @DataBoundSetter}. Kept around for binary
+     * compatibility.
+     */
+    @Deprecated
     public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
-        this.upstreamProjects = upstreamProjects;
+        this(upstreamProjects);
         this.threshold = threshold;
     }
 
+    @DataBoundConstructor
+    public ReverseBuildTrigger(String upstreamProjects) {
+        this.upstreamProjects = upstreamProjects;
+    }
+
+    /**
+     * Gets the upstream projects.
+     * 
+     * @return Upstream projects or empty("") if upstream projects is null.
+     */
     public String getUpstreamProjects() {
-        return upstreamProjects;
+        return Util.fixNull(upstreamProjects);
     }
 
     public Result getThreshold() {
         return threshold;
+    }
+
+    @DataBoundSetter
+    public void setThreshold(Result r) {
+        this.threshold = r;
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
@@ -128,9 +149,6 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
-        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-            auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
-        }
 
         SecurityContext orig = ACL.impersonate(auth);
         Item authUpstream = null;
@@ -159,7 +177,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Override public void buildDependencyGraph(final AbstractProject downstream, DependencyGraph graph) {
-        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), upstreamProjects, AbstractProject.class)) {
+        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), getUpstreamProjects(), AbstractProject.class)) {
             graph.addDependency(new DependencyGraph.Dependency(upstream, downstream) {
                 @Override public boolean shouldTriggerBuild(AbstractBuild upstreamBuild, TaskListener listener, List<Action> actions) {
                     return shouldTrigger(upstreamBuild, listener);
@@ -223,7 +241,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
 
         static RunListenerImpl get() {
-            return ExtensionList.lookup(RunListener.class).get(RunListenerImpl.class);
+            return ExtensionList.lookupSingleton(RunListenerImpl.class);
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger;
@@ -233,7 +251,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
                 for (Job<?, ?> downstream : Jenkins.getInstance().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
@@ -242,7 +260,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         continue;
                     }
                     List<Job> upstreams =
-                            Items.fromNameList(downstream.getParent(), trigger.upstreamProjects, Job.class);
+                            Items.fromNameList(downstream.getParent(), trigger.getUpstreamProjects(), Job.class);
                     LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
                     for (Job upstream : upstreams) {
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
@@ -294,13 +312,13 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     public static class ItemListenerImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 for (Job<?, ?> p : Jenkins.getInstance().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {
                         String revised =
-                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects,
-                                        p.getParent());
+                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName,
+                                        t.getUpstreamProjects(), p.getParent());
                         if (!revised.equals(t.upstreamProjects)) {
                             t.upstreamProjects = revised;
                             try {

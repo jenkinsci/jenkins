@@ -13,9 +13,12 @@ import static org.junit.Assert.assertNotSame;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import static org.powermock.api.mockito.PowerMockito.mock;
+
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ParametersActionTest {
 
     private ParametersAction baseParamsAB;
@@ -105,7 +108,7 @@ public class ParametersActionTest {
         
         // Interaction with build
         EnvVars vars = new EnvVars();
-        parametersAction.buildEnvVars(build, vars);
+        parametersAction.buildEnvironment(build, vars);
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         

@@ -46,7 +46,7 @@ public class Executables {
             throws Error, RuntimeException {
         try {
             return e.getParent();
-        } catch (AbstractMethodError _) {
+        } catch (AbstractMethodError ignored) { // will fallback to a private implementation
             try {
                 Method m = e.getClass().getMethod("getParent");
                 m.setAccessible(true);
@@ -73,17 +73,14 @@ public class Executables {
      * was compiled against Hudson prior to 1.383
      * @param e Executable item
      * @return the estimated duration for a given executable, -1 if the executable is null
+     * @deprecated call {@link Executable#getEstimatedDuration} directly
      */
+    @Deprecated
     public static long getEstimatedDurationFor(@CheckForNull Executable e) {
         if (e == null) {
             return -1;
         }
-        try {
-            return e.getEstimatedDuration();
-        } catch (AbstractMethodError error) {
-            // TODO: according to the code above, e.getparent() may fail. The method also needs to be reworked
-            return e.getParent().getEstimatedDuration();
-        }
+        return e.getEstimatedDuration();
     }
 
 }

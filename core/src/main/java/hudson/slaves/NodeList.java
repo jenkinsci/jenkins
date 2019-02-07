@@ -49,7 +49,7 @@ import javax.annotation.CheckForNull;
  */
 public final class NodeList extends ArrayList<Node> {
     
-    private Map<String,Node> map = new HashMap<String, Node>(); 
+    private Map<String,Node> map = new HashMap<>();
     
     public NodeList() {
     }

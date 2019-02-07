@@ -14,7 +14,7 @@ import java.io.IOException;
  * If {@link AdminWhitelistRule#masterKillSwitch} is on, warn the user.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 @Extension
 public class MasterKillSwitchWarning extends AdministrativeMonitor {

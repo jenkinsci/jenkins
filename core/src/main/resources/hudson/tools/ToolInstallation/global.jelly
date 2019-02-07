@@ -28,7 +28,7 @@ THE SOFTWARE.
       <d:tag name="section">
         <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
-                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
+                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}" enableTopButton="true">
             <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
             <table width="100%">
               <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>

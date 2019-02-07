@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+
 /**
  * Adds {@link #getDescriptorByName(String)} to bind {@link Descriptor}s to URL.
  * Binding them at some specific object (instead of {@link jenkins.model.Jenkins}), allows
@@ -46,5 +48,7 @@ public interface DescriptorByNameOwner extends ModelObject {
      * @param id
      *      Either {@link Descriptor#getId()} (recommended) or the short name.
      */
-    Descriptor getDescriptorByName(String id);    
+    default Descriptor getDescriptorByName(String id) {
+        return Jenkins.getInstance().getDescriptorByName(id);
+    }
 }

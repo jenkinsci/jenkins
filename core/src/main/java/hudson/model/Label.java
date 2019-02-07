@@ -49,6 +49,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -58,6 +60,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +130,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Alias for {@link #getDisplayName()}.
      */
-    @Exported
+    @Exported(visibility=2)
     public final String getName() {
         return getDisplayName();
     }
@@ -196,6 +199,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
+    private static class NodeSorter implements Comparator<Node> {
+        @Override
+        public int compare(Node o1, Node o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+            return o1 instanceof Jenkins ? -1 : (o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName()));
+        }
+    }
+
     /**
      * Gets all {@link Node}s that belong to this label.
      */
@@ -204,7 +217,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         Set<Node> nodes = this.nodes;
         if(nodes!=null) return nodes;
 
-        Set<Node> r = new HashSet<Node>();
+        Set<Node> r = new HashSet<>();
         Jenkins h = Jenkins.getInstance();
         if(this.matches(h))
             r.add(h);
@@ -213,6 +226,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public Set<Node> getSortedNodes() {
+        Set<Node> r = new TreeSet<>(new NodeSorter());
+        r.addAll(getNodes());
+        return r;
     }
 
     /**

@@ -24,6 +24,7 @@
 
 package jenkins.triggers;
 
+import com.google.common.collect.ImmutableMap;
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -47,9 +48,12 @@ import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.ClassRule;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -57,7 +61,15 @@ import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 
 public class ReverseBuildTriggerTest {
 
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
+
     @Rule public JenkinsRule r = new JenkinsRule();
+
+    @Before
+    public void runMoreQuickly() throws Exception {
+        r.jenkins.setQuietPeriod(0);
+    }
 
     @Test public void configRoundtrip() throws Exception {
         r.createFreeStyleProject("upstream");
@@ -100,19 +112,18 @@ public class ReverseBuildTriggerTest {
         // Legacy mode: alice has no read permission on upstream but it works anyway
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
-        r.assertLogContains(hudson.tasks.Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b);
         r.waitUntilNoActivity();
         assertNotNull(JenkinsRule.getLog(b), downstream.getLastBuild());
         assertEquals(1, downstream.getLastBuild().number);
         // A QIA is configured but does not specify any authentication for downstream, so upstream should not trigger it:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(upstreamName, User.get("admin").impersonate())));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(ImmutableMap.of(upstreamName, User.get("admin").impersonate(), downstreamName, Jenkins.ANONYMOUS)));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.assertLogContains(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f("anonymous", upstreamName, downstreamName), b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Auth for upstream is defined but cannot see downstream, so no message is printed about it:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.singletonMap(upstreamName, User.get("bob").impersonate())));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(ImmutableMap.of(upstreamName, User.get("bob").impersonate(), downstreamName, Jenkins.ANONYMOUS)));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
@@ -163,6 +174,7 @@ public class ReverseBuildTriggerTest {
         auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
         qiaConfig = new HashMap<String,Authentication>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
+        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
@@ -196,5 +208,36 @@ public class ReverseBuildTriggerTest {
         r.assertLogNotContains("java.lang.NullPointerException", build);
         assertThat("Build should be not triggered", downstreamJob1.getBuilds(), hasSize(0));
         assertThat("Build should be triggered", downstreamJob2.getBuilds(), not(hasSize(0)));
+    }
+
+    @Issue("JENKINS-45909")
+    @Test
+    public void nullUpstreamProjectsNoNPE() throws Exception {
+        //job with trigger.upstreamProjects == null
+        final FreeStyleProject downstreamJob1 = r.createFreeStyleProject("downstream1");
+        ReverseBuildTrigger trigger = new ReverseBuildTrigger(null);
+        downstreamJob1.addTrigger(trigger);
+        downstreamJob1.save();
+        r.configRoundtrip(downstreamJob1);
+
+        // The reported issue was with Pipeline jobs, which calculate their dependency graphs via
+        // ReverseBuildTrigger.RunListenerImpl, so an additional test may be needed downstream.
+        trigger.buildDependencyGraph(downstreamJob1, Jenkins.getInstance().getDependencyGraph());
+    }
+
+    @Issue("JENKINS-46161")
+    @Test
+    public void testGetUpstreamProjectsShouldNullSafe() throws Exception {
+        ReverseBuildTrigger trigger1 = new ReverseBuildTrigger(null);
+        String upstream1 = trigger1.getUpstreamProjects();
+        assertEquals("", upstream1);
+
+        ReverseBuildTrigger trigger2 = new ReverseBuildTrigger("upstream");
+        String upstream2 = trigger2.getUpstreamProjects();
+        assertEquals("upstream", upstream2);
+
+        ReverseBuildTrigger trigger3 = new ReverseBuildTrigger("");
+        String upstream3 = trigger3.getUpstreamProjects();
+        assertEquals("", upstream3);
     }
 }

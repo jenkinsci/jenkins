@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.PermissionScope;
@@ -33,7 +34,6 @@ import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.AbstractModelObject;
 import hudson.model.Label;
 import hudson.model.Descriptor;
 import hudson.security.ACL;
@@ -42,6 +42,7 @@ import hudson.security.Permission;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
@@ -65,7 +66,7 @@ import java.util.concurrent.Future;
  * <p>
  * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
  * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} <tt>configure-entries.jelly</tt> and read it back in through {@link DataBoundConstructor}.
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -76,12 +77,18 @@ import java.util.concurrent.Future;
  * the resource (such as shutting down a virtual machine.) {@link Computer} needs to own this handle information
  * because by the time this happens, a {@link Slave} object is already long gone.
  *
+ * <h3>Views</h3>
+ *
+ * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide {@code top} or {@code main} view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their {@code summary}
+ * views displayed. Actions further contribute to {@code sidepanel} with {@code box} views. All mentioned views are
+ * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
@@ -99,20 +106,25 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return name;
     }
 
-    public String getSearchUrl() {
-        return "cloud/"+name;
+    /**
+     * Get URL of the cloud.
+     *
+     * @since 2.64
+     * @return Jenkins relative URL.
+     */
+    public @Nonnull String getUrl() {
+        return "cloud/" + name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public @Nonnull String getSearchUrl() {
+        return getUrl();
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public final void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public final boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -156,7 +168,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -166,13 +178,13 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
+    public static final DescriptorList<Cloud> ALL = new DescriptorList<>(Cloud.class);
 
     /**
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
+        return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
     private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);

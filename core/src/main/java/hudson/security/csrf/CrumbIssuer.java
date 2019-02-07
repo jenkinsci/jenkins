@@ -9,6 +9,7 @@ import javax.servlet.ServletRequest;
 
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -40,6 +41,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see <a href="http://en.wikipedia.org/wiki/XSRF">Wikipedia: Cross site request forgery</a>
  */
 @ExportedBean
+@StaplerAccessibleType
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
@@ -193,6 +195,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
         }
 
         @Override public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter String xpath, @QueryParameter String wrapper, @QueryParameter String tree, @QueryParameter int depth) throws IOException, ServletException {
+            setHeaders(rsp);
             String text;
             CrumbIssuer ci = (CrumbIssuer) bean;
             if ("/*/crumbRequestField/text()".equals(xpath)) { // old FullDuplexHttpStream

@@ -30,9 +30,9 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
+import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import hudson.Util;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.init.Initializer;
@@ -66,8 +66,11 @@ import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ImpersonatingExecutorService;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -85,7 +88,6 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -147,7 +149,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
     // TODO:
@@ -325,19 +327,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
+        checkPermission(CONNECT);
         return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
     public ACL getACL() {
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     /**
@@ -575,7 +570,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.624
      * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     *      {@code null} if the computer is disconnected and therefore we don't know whether it is Unix or not.
      */
     public abstract @CheckForNull Boolean isUnix();
 
@@ -784,6 +779,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return "computer/" + Util.rawEncode(getName()) + "/";
     }
 
+    @Exported
+    public Set<LabelAtom> getAssignedLabels() {
+        Node node = getNode();
+        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+    }
+
     /**
      * Returns projects that are tied on this node.
      */
@@ -907,6 +908,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private void addNewExecutorIfNecessary() {
+        if (Jenkins.getInstanceOrNull() == null) {
+            return;
+        }
         Set<Integer> availableNumbers  = new HashSet<Integer>();
         for (int i = 0; i < numExecutors; i++)
             availableNumbers.add(i);
@@ -960,6 +964,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
     }
@@ -968,6 +973,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link OneOffExecutor}s.
      */
     @Exported
+    @StaplerDispatchable
     public List<OneOffExecutor> getOneOffExecutors() {
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }
@@ -976,7 +982,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
      *
      * @return the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
-     * @since TODO
+     * @since 2.55
      */
     public List<Executor> getAllExecutors() {
         List<Executor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
@@ -1066,6 +1072,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         return firstDemand;
     }
+
+    /**
+     * Returns the {@link Node} description for this computer
+     */
+    @Restricted(DoNotUse.class)
+    @Exported
+    public @Nonnull String getDescription() {
+        Node node = getNode();
+        return (node != null) ? node.getNodeDescription() : null;
+    }
+
 
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
@@ -1344,9 +1361,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
+        new ImpersonatingExecutorService(
             Executors.newCachedThreadPool(
-                    new ExceptionCatchingThreadFactory(
-                            new NamingThreadFactory(new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))));
+                new ExceptionCatchingThreadFactory(
+                    new NamingThreadFactory(
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
 
 //
 //
@@ -1417,10 +1436,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
+            final Channel ch = getChannelOrFail();
             StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            Channel.current().dumpExportTable(pw);
-            pw.close();
+            try (PrintWriter pw = new PrintWriter(sw)) {
+                ch.dumpExportTable(pw);
+            }
             return sw.toString();
         }
     }
@@ -1464,6 +1484,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
 
+        String nExecutors = req.getSubmittedForm().getString("numExecutors");
+        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors)<=0) {
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
+        }
+
         Node result = node.reconfigure(req, req.getSubmittedForm());
         Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
 
@@ -1472,7 +1497,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)

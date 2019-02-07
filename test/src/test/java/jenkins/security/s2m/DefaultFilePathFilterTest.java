@@ -25,13 +25,13 @@
 package jenkins.security.s2m;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.jenkinsci.remoting.RoleChecker;
+import static org.hamcrest.Matchers.*;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -63,13 +63,11 @@ public class DefaultFilePathFilterTest {
         try {
             s.getChannel().call(new ReverseCallable(reverse));
             fail("should have failed");
-        } catch (SecurityException x) {
+        } catch (Exception x) {
             // good
 
             // make sure that the stack trace contains the call site info to help assist diagnosis
-            StringWriter sw = new StringWriter();
-            x.printStackTrace(new PrintWriter(sw));
-            assertTrue(sw.toString().contains(DefaultFilePathFilterTest.class.getName()+".remotePath"));
+            assertThat(Functions.printThrowable(x), containsString(DefaultFilePathFilterTest.class.getName()+".remotePath"));
         }
         assertFalse(reverse.exists());
         DefaultFilePathFilter.BYPASS = true;

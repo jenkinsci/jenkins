@@ -4,9 +4,9 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
-import hudson.security.*;
-import hudson.security.Messages;
 import org.jenkinsci.Symbol;
+
+import javax.annotation.Nonnull;
 
 /**
  * Grouping of related {@link GlobalConfiguration}s.
@@ -41,8 +41,12 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
         return ExtensionList.lookup(GlobalConfigurationCategory.class);
     }
 
-    public static <T extends GlobalConfigurationCategory> T get(Class<T> type) {
-        return all().get(type);
+    public static @Nonnull <T extends GlobalConfigurationCategory> T get(Class<T> type) {
+        T category = all().get(type);
+        if(category == null){
+            throw new AssertionError("Category not found. It seems the " + type + " is not annotated with @Extension and so not registered");
+        }
+        return category;
     }
 
     /**

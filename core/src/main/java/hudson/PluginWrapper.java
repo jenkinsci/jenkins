@@ -25,18 +25,22 @@
 package hudson;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.YesNoMaybe;
-import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
-import org.jvnet.localizer.ResourceBundleHolder;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
+import jenkins.util.java.JavaUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -45,16 +49,15 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,12 +68,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
+import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
+import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
+import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
 import static java.util.logging.Level.WARNING;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
@@ -79,7 +90,7 @@ import static org.apache.commons.io.FilenameUtils.getBaseName;
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatibility),
+ * A plug-in is packaged into a jar file whose extension is {@code ".jpi"} (or {@code ".hpi"} for backward compatibility),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
@@ -124,7 +135,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Base URL for loading static resources from this plugin.
      * Null if disabled. The static resources are mapped under
-     * <tt>CONTEXTPATH/plugin/SHORTNAME/</tt>.
+     * {@code CONTEXTPATH/plugin/SHORTNAME/}.
      */
     public final URL baseResourceURL;
 
@@ -149,7 +160,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * True if this plugin is activated for this session.
-     * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
+     * The snapshot of {@code disableFile.exists()} as of the start up.
      */
     private final boolean active;
     
@@ -159,10 +170,34 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final List<Dependency> optionalDependencies;
 
     public List<String> getDependencyErrors() {
-        return Collections.unmodifiableList(dependencyErrors);
+        return Collections.unmodifiableList(new ArrayList<>(dependencyErrors.keySet()));
     }
 
-    private final transient List<String> dependencyErrors = new ArrayList<>();
+    @Restricted(NoExternalUse.class) // Jelly use
+    public List<String> getOriginalDependencyErrors() {
+        Predicate<Map.Entry<String, Boolean>> p = Map.Entry::getValue;
+        return dependencyErrors.entrySet().stream().filter(p.negate()).map(Map.Entry::getKey).collect(Collectors.toList());
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public boolean hasOriginalDependencyErrors() {
+        return !getOriginalDependencyErrors().isEmpty();
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public List<String> getDerivedDependencyErrors() {
+        return dependencyErrors.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toList());
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public boolean hasDerivedDependencyErrors() {
+        return !getDerivedDependencyErrors().isEmpty();
+    }
+
+    /**
+     * A String error message, and a boolean indicating whether it's an original error (false) or downstream from an original one (true)
+     */
+    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>(0);
 
     /**
      * Is this plugin bundled in jenkins.war?
@@ -173,6 +208,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * List of plugins that depend on this plugin.
      */
     private Set<String> dependants = Collections.emptySet();
+
+    /**
+     * List of plugins that depend optionally on this plugin.
+     */
+    private Set<String> optionalDependants = Collections.emptySet();
 
     /**
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
@@ -189,6 +229,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Set the list of components that depend optionally on this plugin.
+     * @param optionalDependants The list of components that depend optionally on this plugin.
+     */
+    public void setOptionalDependants(@Nonnull Set<String> optionalDependants) {
+        this.optionalDependants = optionalDependants;
+    }
+
+    /**
      * Get the list of components that depend on this plugin.
      * @return The list of components that depend on this plugin.
      */
@@ -201,6 +249,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * @return The list of components that depend optionally on this plugin.
+     */
+    public @Nonnull Set<String> getOptionalDependants() {
+        return optionalDependants;
+    }
+
+    /**
      * Does this plugin have anything that depends on it.
      * @return {@code true} if something (Jenkins core, or another plugin) depends on this
      * plugin, otherwise {@code false}.
@@ -208,7 +263,17 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public boolean hasDependants() {
         return (isBundled || !dependants.isEmpty());
     }
-    
+
+    /**
+     * Does this plugin have anything that depends optionally on it.
+     * @return {@code true} if something (Jenkins core, or another plugin) depends optionally on this
+     * plugin, otherwise {@code false}.
+     */
+    public boolean hasOptionalDependants() {
+        return !optionalDependants.isEmpty();
+    }
+
+
     /**
      * Does this plugin depend on any other plugins.
      * @return {@code true} if this plugin depends on other plugins, otherwise {@code false}.
@@ -230,8 +295,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             int idx = s.indexOf(':');
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
-            this.shortName = s.substring(0,idx);
-            String version = s.substring(idx+1);
+            this.shortName = Util.intern(s.substring(0,idx));
+            String version = Util.intern(s.substring(idx+1));
 
             boolean isOptional = false;
             String[] osgiProperties = version.split("[;]");
@@ -274,7 +339,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
 		this.manifest = manifest;
-		this.shortName = computeShortName(manifest, archive.getName());
+		this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
@@ -432,6 +497,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns the minimum Java version of this plugin, as specified in the plugin metadata.
+     * Generally coming from the <code>java.level</code> extracted as MANIFEST's metadata with
+     * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
+     *
+     * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.
+     *
+     * @since TODO
+     */
+    @Exported
+    public @CheckForNull String getMinimumJavaVersion() {
+        return manifest.getMainAttributes().getValue("Minimum-Java-Version");
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -493,15 +572,122 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Disables this plugin next time Jenkins runs.
+     * Disables this plugin next time Jenkins runs. As it doesn't check anything, it's recommended to use the method
+     * {@link #disable(PluginDisableStrategy)}
      */
+    @Deprecated //see https://issues.jenkins-ci.org/browse/JENKINS-27177
     public void disable() throws IOException {
+        disableWithoutCheck();
+    }
+
+    /**
+     * Disable a plugin wihout checking any dependency. Only add the disable file.
+     * @throws IOException
+     */
+    private void disableWithoutCheck() throws IOException {
         // creates an empty file
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
             os.close();
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Disable this plugin using a strategy.
+     * @param strategy strategy to use
+     * @return an object representing the result of the disablement of this plugin and its dependants plugins.
+     */
+    public @Nonnull PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) {
+        PluginDisableResult result = new PluginDisableResult(shortName);
+
+        if (!this.isEnabled()) {
+            result.setMessage(Messages.PluginWrapper_Already_Disabled(shortName));
+            result.setStatus(ALREADY_DISABLED);
+            return result;
+        }
+
+        // Act as a flag indicating if this plugin, finally, can be disabled. If there is a not-disabled-dependant
+        // plugin, this one couldn't be disabled.
+        String aDependantNotDisabled = null;
+
+        // List of dependants plugins to 'check'. 'Check' means disable for mandatory or all strategies, or review if
+        // this dependant-mandatory plugin is enabled in order to return an error for the NONE strategy.
+        Set<String> dependantsToCheck = dependantsToCheck(strategy);
+
+        // Review all the dependants and add to the plugin result what happened with its dependants
+        for (String dependant : dependantsToCheck) {
+            PluginWrapper dependantPlugin = parent.getPlugin(dependant);
+
+            // The dependant plugin doesn't exist, add an error to the report
+            if (dependantPlugin == null) {
+                PluginDisableResult dependantStatus = new PluginDisableResult(dependant, NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(dependant));
+                result.addDependantDisableStatus(dependantStatus);
+
+            // If the strategy is none and there is some enabled dependant plugin, the plugin cannot be disabled. If
+            // this dependant plugin is not enabled, continue searching for one enabled.
+            } else if (strategy.equals(PluginDisableStrategy.NONE)) {
+                if (dependantPlugin.isEnabled()) {
+                    aDependantNotDisabled = dependant;
+                    break; // in this case, we don't need to continue with the rest of its dependants
+                }
+
+            // If the strategy is not none and this dependant plugin is not enabled, add it as already disabled
+            } else if (!dependantPlugin.isEnabled()) {
+                PluginDisableResult dependantStatus = new PluginDisableResult(dependant, ALREADY_DISABLED, Messages.PluginWrapper_Already_Disabled(dependant));
+                result.addDependantDisableStatus(dependantStatus);
+
+            // If the strategy is not none and this dependant plugin is enabled, disable it
+            } else {
+                // As there is no cycles in the plugin dependencies, the recursion shouldn't be infinite. The
+                // strategy used is the same for its dependants plugins
+                PluginDisableResult dependantResult = dependantPlugin.disable(strategy);
+                PluginDisableStatus dependantStatus = dependantResult.status;
+
+                // If something wrong happened, flag this dependant plugin to set the plugin later as not-disabled due
+                // to its dependants plugins.
+                if (ERROR_DISABLING.equals(dependantStatus) || NOT_DISABLED_DEPENDANTS.equals(dependantStatus)) {
+                    aDependantNotDisabled = dependant;
+                    break; // we found a dependant plugin enabled, stop looking for dependant plugins to disable.
+                }
+                result.addDependantDisableStatus(dependantResult);
+            }
+        }
+
+        // If there is no enabled-dependant plugin, disable this plugin and add it to the result
+        if (aDependantNotDisabled == null) {
+            try {
+                this.disableWithoutCheck();
+                result.setMessage(Messages.PluginWrapper_Plugin_Disabled(shortName));
+                result.setStatus(DISABLED);
+            } catch (IOException io) {
+                result.setMessage(Messages.PluginWrapper_Error_Disabling(shortName, io.toString()));
+                result.setStatus(ERROR_DISABLING);
+            }
+        // if there is yet some not disabled dependant plugin (only possible with none strategy), this plugin cannot
+        // be disabled.
+        } else {
+            result.setMessage(Messages.PluginWrapper_Plugin_Has_Dependant(shortName, aDependantNotDisabled, strategy));
+            result.setStatus(NOT_DISABLED_DEPENDANTS);
+        }
+
+        return result;
+    }
+
+    private Set<String> dependantsToCheck(PluginDisableStrategy strategy) {
+        Set<String> dependantsToCheck;
+        switch (strategy) {
+            case ALL:
+                // getDependants returns all the dependant plugins, mandatory or optional.
+                dependantsToCheck = this.getDependants();
+                break;
+            default:
+                // It includes MANDATORY, NONE:
+                // with NONE, the process only fail if mandatory dependant plugins exists
+                // As of getDependants has all the dependants, we get the difference between them and only the optionals
+                dependantsToCheck = Sets.difference(this.getDependants(), this.getOptionalDependants());
+        }
+        return dependantsToCheck;
     }
 
     /**
@@ -571,7 +757,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 VersionNumber actualVersion = Jenkins.getVersion();
                 if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    dependencyErrors.add(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion));
+                    versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
+                }
+            }
+
+            String minimumJavaVersion = getMinimumJavaVersion();
+            if (minimumJavaVersion != null) {
+                VersionNumber actualVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                if (actualVersion.isOlderThan(new VersionNumber(minimumJavaVersion))) {
+                    versionDependencyError(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), minimumJavaVersion), actualVersion.toString(), minimumJavaVersion);
                 }
             }
         }
@@ -581,21 +775,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()));
+                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()), true);
                     break;
                 } else {
-                    dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
+                    dependencyErrors.put(Messages.PluginWrapper_missing(d.shortName, d.version), false);
                 }
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                        versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     }
                 } else {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.add(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                        versionDependencyError(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                     } else {
-                        dependencyErrors.add(Messages.PluginWrapper_disabled(dependency.getLongName()));
+                        dependencyErrors.put(Messages.PluginWrapper_disabled(dependency.getLongName()), false);
                     }
                 }
 
@@ -606,7 +800,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                    versionDependencyError(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), dependency.getVersion(), d.version);
                 } else {
                     dependencies.add(d);
                 }
@@ -616,7 +810,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             NOTICE.addPlugin(this);
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
-            for (Iterator<String> iterator = dependencyErrors.iterator(); iterator.hasNext(); ) {
+            for (Iterator<String> iterator = dependencyErrors.keySet().iterator(); iterator.hasNext(); ) {
                 String dependencyError = iterator.next();
                 messageBuilder.append(" - ").append(dependencyError);
                 if (iterator.hasNext()) {
@@ -632,6 +826,26 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Called when there appears to be a core or plugin version which is too old for a stated dependency.
+     * Normally records an error in {@link #dependencyErrors}.
+     * But if one or both versions {@link #isSnapshot}, just issue a warning (JENKINS-52665).
+     */
+    private void versionDependencyError(String message, String actual, String minimum) {
+        if (isSnapshot(actual) || isSnapshot(minimum)) {
+            LOGGER.log(WARNING, "Suppressing dependency error in {0} v{1}: {2}", new Object[] {getLongName(), getVersion(), message});
+        } else {
+            dependencyErrors.put(message, false);
+        }
+    }
+
+    /**
+     * Similar to {@code org.apache.maven.artifact.ArtifactUtils.isSnapshot}.
+     */
+    static boolean isSnapshot(@Nonnull String version) {
+        return version.contains("-SNAPSHOT") || version.matches(".+-[0-9]{8}.[0-9]{6}-[0-9]+");
+    }
+
+    /**
      * If the plugin has {@link #getUpdateInfo() an update},
      * returns the {@link hudson.model.UpdateSite.Plugin} object.
      *
@@ -641,7 +855,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public UpdateSite.Plugin getUpdateInfo() {
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
-        UpdateSite.Plugin p = uc.getPlugin(getShortName());
+        UpdateSite.Plugin p = uc.getPlugin(getShortName(), getVersionNumber());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
@@ -651,6 +865,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public UpdateSite.Plugin getInfo() {
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+        UpdateSite.Plugin p = uc.getPlugin(getShortName(), getVersionNumber());
+        if (p != null) return p;
         return uc.getPlugin(getShortName());
     }
 
@@ -750,6 +966,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             return !plugins.isEmpty();
         }
 
+        @Restricted(DoNotUse.class) // Jelly
+        public boolean hasAnyDerivedDependencyErrors() {
+            return plugins.values().stream().anyMatch(PluginWrapper::hasDerivedDependencyErrors);
+        }
+
         @Override
         public String getDisplayName() {
             return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
@@ -775,6 +996,93 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         public static PluginWrapperAdministrativeMonitor get() {
             return AdministrativeMonitor.all().get(PluginWrapperAdministrativeMonitor.class);
+        }
+    }
+
+    /**
+     * The result of the disablement of a plugin and its dependants plugins.
+     */
+    public static class PluginDisableResult {
+        private String plugin;
+        private PluginDisableStatus status;
+        private String message;
+        private Set<PluginDisableResult> dependantsDisableStatus = new HashSet<>();
+
+        public PluginDisableResult(String plugin) {
+            this.plugin = plugin;
+        }
+
+        public PluginDisableResult(String plugin, PluginDisableStatus status, String message) {
+            this.plugin = plugin;
+            this.status = status;
+            this.message = message;
+        }
+
+        public String getPlugin() {
+            return plugin;
+        }
+
+        public PluginDisableStatus getStatus() {
+            return status;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PluginDisableResult that = (PluginDisableResult) o;
+            return Objects.equals(plugin, that.plugin);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(plugin);
+        }
+
+        public void setStatus(PluginDisableStatus status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public Set<PluginDisableResult> getDependantsDisableStatus() {
+            return dependantsDisableStatus;
+        }
+
+        public void addDependantDisableStatus(PluginDisableResult dependantDisableStatus) {
+            dependantsDisableStatus.add(dependantDisableStatus);
+        }
+
+    }
+
+    /**
+     * An enum to hold the status of a disabling action against a plugin. To do it more reader-friendly.
+     */
+    public enum PluginDisableStatus {
+        NO_SUCH_PLUGIN,
+        DISABLED,
+        ALREADY_DISABLED,
+        NOT_DISABLED_DEPENDANTS,
+        ERROR_DISABLING
+    }
+
+    /**
+     * The strategies defined for disabling a plugin.
+     */
+    public enum PluginDisableStrategy {
+        NONE,
+        MANDATORY,
+        ALL;
+
+        @Override
+        public String toString() {
+            return this.name().toLowerCase();
         }
     }
 

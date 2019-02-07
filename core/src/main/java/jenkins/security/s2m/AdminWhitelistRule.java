@@ -16,6 +16,8 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,12 +54,10 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     public final FilePathRuleConfig filePathRules;
 
-    private final Jenkins jenkins;
-
     private boolean masterKillSwitch;
 
     public AdminWhitelistRule() throws IOException, InterruptedException {
-        this.jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.get();
 
         // while this file is not a secret, write access to this file is dangerous,
         // so put this in the better-protected part of $JENKINS_HOME, which is in secrets/
@@ -79,17 +79,21 @@ public class AdminWhitelistRule implements StaplerProxy {
                 whitelisted);
         this.filePathRules = new FilePathRuleConfig(
                 new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-gui.conf"));
-        this.masterKillSwitch = loadMasterKillSwitchFile();
+
+        File f = getMasterKillSwitchFile(jenkins);
+        this.masterKillSwitch = loadMasterKillSwitchFile(f);
     }
 
     /**
-     * Reads the master kill switch.
+     * Reads the master kill switch from a file.
      *
      * Instead of {@link FileBoolean}, we use a text file so that the admin can prevent Jenkins from
      * writing this to file.
+     * @param f File to load
+     * @return {@code true} if the file was loaded, {@code false} otherwise
      */
-    private boolean loadMasterKillSwitchFile() {
-        File f = getMasterKillSwitchFile();
+    @CheckReturnValue
+    private boolean loadMasterKillSwitchFile(@Nonnull File f) {
         try {
             if (!f.exists())    return true;
             return Boolean.parseBoolean(FileUtils.readFileToString(f).trim());
@@ -99,7 +103,8 @@ public class AdminWhitelistRule implements StaplerProxy {
         }
     }
 
-    private File getMasterKillSwitchFile() {
+    @Nonnull
+    private File getMasterKillSwitchFile(@Nonnull Jenkins jenkins) {
         return new File(jenkins.getRootDir(),"secrets/slave-to-master-security-kill-switch");
     }
 
@@ -155,8 +160,6 @@ public class AdminWhitelistRule implements StaplerProxy {
 
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
-        jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
-
         String whitelist = Util.fixNull(req.getParameter("whitelist"));
         if (!whitelist.endsWith("\n"))
             whitelist+="\n";
@@ -206,11 +209,13 @@ public class AdminWhitelistRule implements StaplerProxy {
     }
 
     public void setMasterKillSwitch(boolean state) {
+        final Jenkins jenkins = Jenkins.get();
         try {
             jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
-            FileUtils.writeStringToFile(getMasterKillSwitchFile(),Boolean.toString(state));
+            File f = getMasterKillSwitchFile(jenkins);
+            FileUtils.writeStringToFile(f, Boolean.toString(state));
             // treat the file as the canonical source of information in case write fails
-            masterKillSwitch = loadMasterKillSwitchFile();
+            masterKillSwitch = loadMasterKillSwitchFile(f);
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to write master kill switch", e);
         }
@@ -221,7 +226,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     @Override
     public Object getTarget() {
-        jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
         return this;
     }
 

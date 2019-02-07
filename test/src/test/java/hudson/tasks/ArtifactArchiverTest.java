@@ -33,15 +33,25 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Result;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import hudson.model.Run;
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.util.VirtualFile;
+import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
+
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
@@ -155,7 +165,7 @@ public class ArtifactArchiverTest {
         assertFalse(kids[0].isDirectory());
         assertFalse(kids[0].isFile());
         assertFalse(kids[0].exists());
-        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
+        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     static class CreateArtifact extends TestBuilder {
@@ -282,4 +292,85 @@ public class ArtifactArchiverTest {
         assertEquals("[stuff]", a.getFingerprints().keySet().toString());
     }
 
+    @Test @Issue("JENKINS-21905")
+    public void archiveNotReadable() throws Exception {
+        assumeFalse(Functions.isWindows()); // No permission support
+
+        final String FILENAME = "myfile";
+        DumbSlave slave = j.createOnlineSlave(Label.get("target"));
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath file = build.getWorkspace().child(FILENAME);
+                file.act(new RemoveReadPermission());
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver(FILENAME));
+        p.setAssignedNode(slave);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        j.assertBuildStatus(Result.FAILURE, build);
+        String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
+    }
+
+    @Test 
+    @Issue("JENKINS-55049")
+    public void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                FilePath dir = ws.child("dir");
+                dir.mkdirs();
+                dir.child("existant").write("contents", null);
+                dir.child("_toExistant").symlinkTo("existant", listener);
+                dir.child("_nonexistant").symlinkTo("nonexistant", listener);
+                return true;
+            }
+        });
+        ArtifactArchiver aa = new ArtifactArchiver("dir/**");
+        aa.setAllowEmptyArchive(true);
+        p.getPublishersList().add(aa);
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(3, artifacts.size());
+        artifacts.sort(Comparator.comparing(Run.Artifact::getFileName));
+        
+        // invalid symlink => size of 0
+        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        assertEquals("dir/_nonexistant", artifact.relativePath);
+        assertEquals(0, artifact.getFileSize());
+        assertEquals("", artifact.getLength());
+    
+        // valid symlink => same size of the target, 8
+        artifact = artifacts.get(1);
+        assertEquals("dir/_toExistant", artifact.relativePath);
+        assertEquals(8, artifact.getFileSize());
+        assertEquals("8", artifact.getLength());
+    
+        // existant => size of 8
+        artifact = artifacts.get(2);
+        assertEquals("dir/existant", artifact.relativePath);
+        assertEquals(8, artifact.getFileSize());
+        assertEquals("8", artifact.getLength());
+    }
+
+    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+        @Override
+        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            assertTrue(f.createNewFile());
+            assertTrue(f.setReadable(false));
+            return null;
+        }
+    }
 }

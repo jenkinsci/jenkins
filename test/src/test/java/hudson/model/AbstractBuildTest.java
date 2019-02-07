@@ -24,10 +24,12 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,6 +42,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import hudson.tasks.LogRotatorTest;
+import hudson.tasks.Recorder;
+import hudson.util.OneShotEvent;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -50,6 +56,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.UnstableBuilder;
+import org.xml.sax.SAXException;
 
 /**
  * Unit tests of {@link AbstractBuild}.
@@ -122,12 +129,31 @@ public class AbstractBuildTest {
         assertThat(rsp.getWebResponse().getContentAsString(), containsString(out));
     }
 
-    private void assertCulprits(AbstractBuild<?,?> b, String... expectedIds) {
+    private void assertCulprits(AbstractBuild<?,?> b, String... expectedIds) throws IOException, SAXException {
         Set<String> actual = new TreeSet<>();
         for (User u : b.getCulprits()) {
             actual.add(u.getId());
         }
         assertEquals(actual, new TreeSet<>(Arrays.asList(expectedIds)));
+
+        if (expectedIds.length > 0) {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            WebResponse response = wc.goTo(b.getUrl() + "api/json?tree=culprits[id]", "application/json").getWebResponse();
+            JSONObject json = JSONObject.fromObject(response.getContentAsString());
+
+            Object culpritsArray = json.get("culprits");
+            assertNotNull(culpritsArray);
+            assertTrue(culpritsArray instanceof JSONArray);
+            Set<String> fromApi = new TreeSet<>();
+            for (Object o : ((JSONArray)culpritsArray).toArray()) {
+                assertTrue(o instanceof JSONObject);
+                Object id = ((JSONObject)o).get("id");
+                if (id instanceof String) {
+                    fromApi.add((String)id);
+                }
+            }
+            assertEquals(fromApi, new TreeSet<>(Arrays.asList(expectedIds)));
+        }
     }
 
     @Test
@@ -242,6 +268,52 @@ public class AbstractBuildTest {
         }
         @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
         public static class DescriptorImpl extends Descriptor<Builder> {}
+    }
+
+    @Test
+    @Issue("JENKINS-10615")
+    public void workspaceLock() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setConcurrentBuild(true);
+        OneShotEvent e1 = new OneShotEvent();
+        OneShotEvent e2 = new OneShotEvent();
+        OneShotEvent done = new OneShotEvent();
+
+        p.getPublishersList().add(new Recorder() {
+            @Override
+            public BuildStepMonitor getRequiredMonitorService() {
+                return BuildStepMonitor.NONE;
+            }
+
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                if (build.number == 1) {
+                    e1.signal();  // signal that build #1 is in publisher
+                } else {
+                    assert build.number == 2;
+                    e2.signal();
+                }
+
+                done.block();
+
+                return true;
+            }
+            private Object writeReplace() {
+                return new Object();
+            }
+        });
+
+        QueueTaskFuture<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        e1.block();
+
+        QueueTaskFuture<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+        e2.block();
+
+        // at this point both builds are in the publisher, so we verify that
+        // the workspace are differently allocated
+        assertNotEquals(b1.getStartCondition().get().getWorkspace(), b2.getStartCondition().get().getWorkspace());
+
+        done.signal();
     }
 
 }

@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="error">
-    ${%RequiredPluginUpdates}
-    <ul>
-	    <j:forEach var="p" items="${it.pluginsToBeUpdated}">
-	        <li><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></li>
-	    </j:forEach>
-    </ul>
+  <div class="alert alert-danger">
+    <dl>
+        <dt>${%RequiredPluginUpdates}</dt>
+        <j:forEach var="p" items="${it.pluginsToBeUpdated}">
+        <dd><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></dd>
+      </j:forEach>
+    </dl>
   </div>
 </j:jelly>

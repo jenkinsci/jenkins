@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +87,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(SCM.class.getName());
 
     /** JENKINS-35098: discouraged */
     @SuppressWarnings("FieldMayBeFinal")
@@ -143,7 +147,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             }
             return autoBrowserHolder.get();
         } else {
-            return guessBrowser();
+            try {
+                return guessBrowser();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return null;
+            }
         }
     }
 
@@ -527,7 +536,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * are going to provide information about check out (like SVN revision number that was checked out), be prepared
      * for the possibility that the check out hasn't happened yet.
      *
-     * @since FIXME
+     * @since 2.60
      */
     public void buildEnvironment(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
         if (build instanceof AbstractBuild) {
@@ -535,6 +544,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         }
     }
 
+    /**
+     * @deprecated in favor of {@link #buildEnvironment(Run, Map)}.
+     */
     @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
         if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
@@ -560,7 +572,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
      * at the top of the checked out module (in the above case, that would
-     * be <tt>xyz/build.xml</tt>), yet the builder doesn't know the "xyz"
+     * be {@code xyz/build.xml}), yet the builder doesn't know the "xyz"
      * part; that comes from SCM.
      *
      * <p>
@@ -666,7 +678,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * The returned object will be used to parse <tt>changelog.xml</tt>.
+     * The returned object will be used to parse {@code changelog.xml}.
      */
     public abstract ChangeLogParser createChangeLogParser();
 

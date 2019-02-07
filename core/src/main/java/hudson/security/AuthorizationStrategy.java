@@ -36,6 +36,7 @@ import java.util.Collections;
 import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -62,6 +63,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
  */
+@StaplerAccessibleType
 public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
@@ -95,9 +97,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @since 1.220
      */
     public @Nonnull ACL getACL(final @Nonnull View item) {
-        return new ACL() {
-            @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
+        return ACL.lambda((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
                 boolean hasPermission = base.hasPermission(a, permission);
@@ -106,8 +106,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
                 }
 
                 return hasPermission;
-            }
-        };
+        });
     }
     
     /**
@@ -225,12 +224,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             return Collections.emptySet();
         }
 
-        private static final ACL UNSECURED_ACL = new ACL() {
-            @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
-                return true;
-            }
-        };
+        private static final ACL UNSECURED_ACL = ACL.lambda((a, p) -> true);
 
         @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
