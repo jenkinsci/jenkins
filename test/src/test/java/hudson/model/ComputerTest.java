@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -109,7 +110,7 @@ public class ComputerTest {
 
     private void verifyOfflineCause(Computer computer) throws Exception {
         XmlPage page = j.createWebClient().goToXml("computer/" + computer.getName() + "/config.xml");
-        String content = page.getWebResponse().getContentAsString("UTF-8");
+        String content = page.getWebResponse().getContentAsString(UTF_8);
         assertThat(content, containsString("temporaryOfflineCause"));
         assertThat(content, containsString("<userId>username</userId>"));
         assertThat(content, not(containsString("ApiTokenProperty")));

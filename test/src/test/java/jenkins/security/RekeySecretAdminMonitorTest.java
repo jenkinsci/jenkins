@@ -132,7 +132,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     }
 
     private HtmlButton getButton(HtmlForm form, int index) {
-        return form.<HtmlButton>getHtmlElementsByTagName("button").get(index);
+        return (HtmlButton) form.getElementsByTagName("button").get(index);
     }
 
     public void testScanOnBoot() throws Exception {
