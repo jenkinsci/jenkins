@@ -24,6 +24,7 @@
 package jenkins.util.java;
 
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -59,8 +60,8 @@ public class JavaUtils {
     /**
      * Returns the JVM's current version as a {@link VersionNumber} instance.
      */
-    public static VersionNumber getCurrentJavaRuntimeVersionNumber() {
-        return new VersionNumber(getCurrentRuntimeJavaVersion());
+    public static JavaSpecificationVersion getCurrentJavaRuntimeVersionNumber() {
+        return JavaSpecificationVersion.forCurrentJVM();
     }
 
     /**
