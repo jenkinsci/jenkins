@@ -33,6 +33,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 
+import java.net.HttpURLConnection;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -55,19 +57,19 @@ public class AboutJenkinsTest {
                 .grant(Jenkins.READ).everywhere().to(USER)
         );
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         
         { // user cannot see it
             wc.login(USER);
             HtmlPage page = wc.goTo("about/");
-            assertEquals(403, page.getWebResponse().getStatusCode());
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
         }
         
         { // admin can access it
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("about/");
-            assertEquals(200, page.getWebResponse().getStatusCode());
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
         }
     }

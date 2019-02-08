@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -243,13 +242,8 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("f"));
         j.buildAndAssertSuccess(p);
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
-        try {
-            Page download = page.getAnchorByText("f").click();
-            assertEquals("Hello world!", download.getWebResponse().getContentAsString());
-        } catch (FailingHttpStatusCodeException x) {
-            IOUtils.copy(x.getResponse().getContentAsStream(), System.err);
-            throw x;
-        }
+        Page download = page.getAnchorByText("f").click();
+        assertEquals("Hello world!", download.getWebResponse().getContentAsString());
     }
     /** Simulation of a storage service with URLs unrelated to {@link Run#doArtifact}. */
     @TestExtension("externalURLDownload")

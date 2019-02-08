@@ -59,9 +59,9 @@ public class QueueSEC891Test {
         WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
         
         { // user without right cannot cancel
-            JenkinsRule.WebClient wc = r.createWebClient();
-            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-            wc.getOptions().setRedirectEnabled(false);
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
             wc.login("user");
             Page p = wc.getPage(request);
             // currently the endpoint return a redirection to the previously visited page, none in our case 
@@ -71,9 +71,9 @@ public class QueueSEC891Test {
             assertFalse(currentOne.getFuture().isCancelled());
         }
         { // user with right can
-            JenkinsRule.WebClient wc = r.createWebClient();
-            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-            wc.getOptions().setRedirectEnabled(false);
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
             wc.login("admin");
             Page p = wc.getPage(request);
             assertThat(p.getWebResponse().getStatusCode(), lessThan(400));

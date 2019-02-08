@@ -99,8 +99,8 @@ public class ExpandableTextboxTest {
     private void checkRegularCase(TestRootAction testParams) throws Exception {
         testParams.paramName = "testName";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
         
         HtmlElementUtil.click(getExpandButton(p));
@@ -110,8 +110,8 @@ public class ExpandableTextboxTest {
     private void checkInjectionInName(TestRootAction testParams) throws Exception {
         testParams.paramName = "testName',document.title='hacked'+'";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
         
         HtmlElementUtil.click(getExpandButton(p));

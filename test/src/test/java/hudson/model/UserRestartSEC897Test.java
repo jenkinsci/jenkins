@@ -32,16 +32,16 @@ public class UserRestartSEC897Test {
                 User.getById("admin", true).save();
                 
                 { // attempt with ".."
-                    JenkinsRule.WebClient wc = rr.j.createWebClient();
-                    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+                    JenkinsRule.WebClient wc = rr.j.createWebClient()
+                            .withThrowExceptionOnFailingStatusCode(false);
                     
                     WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("..", "any-password"));
                     wc.getPage(request);
                 }
                 { // attempt with "../users/.."
-                    JenkinsRule.WebClient wc = rr.j.createWebClient();
-                    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+                    JenkinsRule.WebClient wc = rr.j.createWebClient()
+                            .withThrowExceptionOnFailingStatusCode(false);
                     
                     WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("../users/..", "any-password"));
