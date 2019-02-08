@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -168,11 +169,37 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public abstract boolean exists() throws IOException;
 
     /**
-     * Lists children of this directory.
+     * Lists children of this directory. Only one level deep.
+     * 
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
     public abstract @Nonnull VirtualFile[] list() throws IOException;
+
+    @Restricted(NoExternalUse.class)
+    public boolean supportsQuickRecursiveListing() {
+        return false;
+    }
+    
+    /**
+     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile). 
+     * Only one level deep.
+     * 
+     * @return a list of descendant children (files and subdirectories); empty for a file or nonexistent directory
+     * @throws IOException if this directory exists but listing was not possible for some other reason
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
+        VirtualFile[] children = list();
+        List<VirtualFile> result = new ArrayList<>();
+        for (int i = 0; i < children.length; i++) {
+            VirtualFile child = children[i];
+            if (child.isDescendant("")) {
+                result.add(child);
+            }
+        }        
+        return result;
+    }
 
     /**
      * @deprecated use {@link #list(String, String, boolean)} instead
@@ -379,6 +406,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public boolean isDescendant(String childRelativePath) throws IOException {
         return false;
     }
+    
+    String joinWithForwardSlashes(Collection<String> relativePath){
+        // instead of File.separator that is specific to the master, the / has the advantage to be supported
+        // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
+        return String.join("/", relativePath) + "/";
+    }
 
     /**
      * Creates a virtual file wrapper for a local file.
@@ -391,6 +424,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     private static final class FileVF extends VirtualFile {
         private final File f;
         private final File root;
+        private boolean cacheDescendant = false;
         FileVF(File f, File root) {
             this.f = f;
             this.root = root;
@@ -442,6 +476,29 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
                 return vfs;
             }
+
+            @Override public boolean supportsQuickRecursiveListing() {
+                return true;
+            }
+
+            @Override public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
+                if (isIllegalSymlink()) {
+                    return Collections.emptyList();
+                }
+                File[] children = f.listFiles();
+                if (children == null) {
+                    return Collections.emptyList();
+                }
+                List<VirtualFile> legalChildren = new ArrayList<>(children.length);
+                for (File child : children) {
+                    if (isDescendant(child.getName())) {
+                        FileVF legalChild = new FileVF(child, root);
+                        legalChild.cacheDescendant = true;
+                        legalChildren.add(legalChild);
+                    }
+                }
+                return legalChildren;
+            }
             @Override
             public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
                 if (isIllegalSymlink()) {
@@ -487,17 +544,14 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             }
 
-        private boolean isIllegalSymlink() { // TODO JENKINS-26838
+        private boolean isIllegalSymlink() {
             try {
-                String myPath = f.toPath().toRealPath(new LinkOption[0]).toString();
-                String rootPath = root.toPath().toRealPath(new LinkOption[0]).toString();
-                if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
-                    return true;
-                }
+                return !this.isDescendant("");
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
             } catch (InvalidPathException x2) {
                 // if this cannot be converted to a path, it cannot be an illegal symlink, as it cannot exist
+                // it's the case when we are calling it with *zip*
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "Could not convert " + f + " to path", x2);
             }
             return false;
@@ -518,15 +572,35 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override
         @Restricted(NoExternalUse.class)
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
+            if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
+                return true;
+            }
+
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
-            
+
+            // shortcut for direct child to avoid the complexity of the whole computation
+            // as we know that a file that is a direct descendant of its parent can only be descendant of the root
+            // if the parent is descendant AND the file itself is not symbolic
+            File directChild = new File(f, potentialChildRelativePath);
+            if (directChild.getParentFile().equals(f)) {
+                // potential shortcut for "simple" / direct child
+                if (!Util.isSymlink(directChild)) {
+                    return true;
+                }
+            }
+
             FilePath root = new FilePath(this.root);
             String relativePath = computeRelativePathToRoot();
             
             try {
-                return root.isDescendant(relativePath + potentialChildRelativePath);
+                boolean isDescendant = root.isDescendant(relativePath + potentialChildRelativePath);
+                if (isDescendant && potentialChildRelativePath.isEmpty()) {
+                    // in DirectoryBrowserSupport#zip, multiple calls to isDescendant are done for the same VirtualFile
+                    cacheDescendant = true;
+                }
+                return isDescendant;
             }
             catch (InterruptedException e) {
                 return false;
@@ -547,8 +621,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 relativePath.addFirst(current.getName());
                 current = current.getParentFile();
             }
-            
-            return String.join(File.separator, relativePath) + File.separator;
+
+            return joinWithForwardSlashes(relativePath);
         }
     }
 
@@ -563,6 +637,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     private static final class FilePathVF extends VirtualFile {
         private final FilePath f;
         private final FilePath root;
+        private boolean cacheDescendant = false;
         FilePathVF(FilePath f, FilePath root) {
             this.f = f;
             this.root = root;
@@ -617,13 +692,40 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
-            @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
+
+            @Override public boolean supportsQuickRecursiveListing() {
+                return this.f.getChannel() == FilePath.localChannel;
+            }
+
+            @Override public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
                 try {
-                    return f.act(new Scanner(includes, excludes, useDefaultExcludes));
+                    if (!isDescendant("")) {
+                        return Collections.emptyList();
+                    }
+
+                    List<FilePath> children = f.list();
+                    List<VirtualFile> legalChildren = new ArrayList<>(children.size());
+                    for (FilePath child : children){
+                        if (isDescendant(child.getName())) {
+                            FilePathVF legalChild = new FilePathVF(child, this.root);
+                            legalChild.cacheDescendant = true;
+                            legalChildren.add(legalChild);
+                        }
+                    }
+
+                    return legalChildren;
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
             }
+
+        @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
+            try {
+                return f.act(new Scanner(includes, excludes, useDefaultExcludes));
+            } catch (InterruptedException x) {
+                throw new IOException(x);
+            }
+        }
             @Override public VirtualFile child(String name) {
                 return new FilePathVF(f.child(name), this.root);
             }
@@ -685,8 +787,30 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override
         @Restricted(NoExternalUse.class)
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
+            if (potentialChildRelativePath.equals("") && cacheDescendant) {
+                return true;
+            }
+
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
+            }
+
+            // shortcut for direct child to avoid the complexity of the whole computation
+            // as we know that a file that is a direct descendant of its parent can only be descendant of the root
+            // if the parent is descendant
+            FilePath directChild = this.f.child(potentialChildRelativePath);
+            if (Objects.equals(directChild.getParent(), this.f)) {
+                try {
+                    boolean isDirectDescendant = this.f.isDescendant(potentialChildRelativePath);
+                    if (isDirectDescendant) {
+                        return true;
+                    }
+                    // not a return false because you can be a non-descendant of your parent but still
+                    // inside the root directory
+                }
+                catch (InterruptedException e) {
+                    return false;
+                }
             }
             
             String relativePath = computeRelativePathToRoot();
@@ -714,7 +838,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 current = current.getParent();
             }
 
-            return String.join(File.separator, relativePath) + File.separator;
+            return joinWithForwardSlashes(relativePath);
         }
     }
     private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
