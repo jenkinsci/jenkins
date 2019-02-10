@@ -26,7 +26,7 @@ package jenkins.cli;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
-import jenkins.cli.StopJobCommand;
+import hudson.model.Executor;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,13 +42,14 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Jenkins.class, AbstractBuild.class})
-public class StopJobCommandTest {
+public class StopBuildsCommandTest {
 
     private static final String TEST_JOB_NAME = "jobName";
     private static final String TEST_JOB_NAME_2 = "jobName2";
@@ -59,11 +60,12 @@ public class StopJobCommandTest {
     private final AbstractProject job = mock(AbstractProject.class);
     private final AbstractBuild lastBuild = mock(AbstractBuild.class);
     private final Jenkins jenkins = mock(Jenkins.class);
+    private final Executor executor = mock(Executor.class);
 
     @Before
     public void setUp() throws Exception {
         mockStatic(Jenkins.class);
-        mockJobWithLastBuild(lastBuild, TEST_BUILD_DISPLAY_NAME, job, TEST_JOB_NAME);
+        mockJobWithLastBuild(lastBuild, TEST_BUILD_DISPLAY_NAME, job, TEST_JOB_NAME, executor);
         when(Jenkins.get()).thenReturn(jenkins);
     }
 
@@ -71,7 +73,7 @@ public class StopJobCommandTest {
     public void shouldStopLastBuild() throws Exception {
         runWith(Collections.singletonList(TEST_JOB_NAME));
 
-        verify(lastBuild).doStop();
+        verify(executor).doStop();
         assertThat(out.toString(), equalTo("Builds stopped for job 'jobName': buildName; \n"));
     }
 
@@ -91,7 +93,10 @@ public class StopJobCommandTest {
 
         runWith(Collections.singletonList(TEST_JOB_NAME));
 
-        assertThat(out.toString(), equalTo("Job have not supported type.\n"));
+        String output = out.toString();
+        assertThat(output, containsString("Cannot abort runs for "));
+        assertThat(output, containsString("Unsupported job type"));
+        verifyZeroInteractions(executor);
     }
 
     @Test
@@ -99,12 +104,14 @@ public class StopJobCommandTest {
         AbstractBuild previousBuild = mock(AbstractBuild.class);
         when(previousBuild.isBuilding()).thenReturn(true);
         when(previousBuild.getDisplayName()).thenReturn(TEST_BUILD_DISPLAY_NAME_2);
+        Executor previousBuildExecutor = mock(Executor.class);
+        when(previousBuild.getExecutor()).thenReturn(previousBuildExecutor);
         when(lastBuild.getPreviousBuildInProgress()).thenReturn(previousBuild);
 
         runWith(Collections.singletonList(TEST_JOB_NAME));
 
-        verify(lastBuild).doStop();
-        verify(previousBuild).doStop();
+        verify(executor).doStop();
+        verify(previousBuildExecutor).doStop();
         assertThat(out.toString(), equalTo("Builds stopped for job 'jobName': buildName; buildName2; \n"));
     }
 
@@ -134,11 +141,11 @@ public class StopJobCommandTest {
     }
 
     private void runWith(final List<String> jobNames) throws Exception {
-        StopJobCommand stopJobCommand = new StopJobCommand();
-        stopJobCommand.jobNames = jobNames;
-        stopJobCommand.stdout = new PrintStream(out);
+        StopBuildsCommand stopBuildsCommand = new StopBuildsCommand();
+        stopBuildsCommand.jobNames = jobNames;
+        stopBuildsCommand.stdout = new PrintStream(out);
 
-        stopJobCommand.run();
+        stopBuildsCommand.run();
     }
 
     private void setupAndAssertTwoBuildsStop(final List<String> inputNames,
@@ -146,12 +153,13 @@ public class StopJobCommandTest {
         AbstractBuild secondLastBuild = mock(AbstractBuild.class);
         when(secondLastBuild.isBuilding()).thenReturn(true);
         AbstractProject job2 = mock(AbstractProject.class);
-        mockJobWithLastBuild(secondLastBuild, TEST_BUILD_DISPLAY_NAME_2, job2, testJobName2);
+        Executor secondExecutor = mock(Executor.class);
+        mockJobWithLastBuild(secondLastBuild, TEST_BUILD_DISPLAY_NAME_2, job2, testJobName2, secondExecutor);
 
         runWith(inputNames);
 
-        verify(lastBuild).doStop();
-        verify(secondLastBuild).doStop();
+        verify(executor).doStop();
+        verify(secondExecutor).doStop();
         assertThat(out.toString(), equalTo("Builds stopped for job 'jobName': buildName; \n" +
                 "Builds stopped for job 'jobName2': buildName2; \n"));
     }
@@ -159,10 +167,12 @@ public class StopJobCommandTest {
     private void mockJobWithLastBuild(final AbstractBuild lastBuild,
                                       final String buildDisplayName,
                                       final AbstractProject job,
-                                      final String jobName) {
+                                      final String jobName,
+                                      final Executor executor) {
         when(lastBuild.getPreviousBuildInProgress()).thenReturn(null);
         when(lastBuild.getDisplayName()).thenReturn(buildDisplayName);
         when(lastBuild.isBuilding()).thenReturn(true);
+        when(lastBuild.getExecutor()).thenReturn(executor);
         when(job.getLastBuild()).thenReturn(lastBuild);
 
         when(jenkins.getItemByFullName(jobName)).thenReturn(job);

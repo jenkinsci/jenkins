@@ -26,9 +26,9 @@ package jenkins.cli;
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.cli.CLICommand;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
+import hudson.model.Executor;
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
@@ -42,9 +42,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Extension
-public class StopJobCommand extends CLICommand {
+public class StopBuildsCommand extends CLICommand {
 
-    private static final Logger LOGGER = Logger.getLogger(StopJobCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StopBuildsCommand.class.getName());
 
     @VisibleForTesting
     @Argument(usage = "Name of the job(s) to stop", required = true, multiValued = true)
@@ -63,10 +63,10 @@ public class StopJobCommand extends CLICommand {
         final StringBuilder resultBuilder = new StringBuilder();
         for (final String jobName : names) {
             Item item = jenkins.getItemByFullName(jobName);
-            if (item instanceof AbstractProject) {
-                stopJobBuilds((AbstractProject) item, jobName, resultBuilder);
+            if (item instanceof Job) {
+                stopJobBuilds((Job) item, jobName, resultBuilder);
             } else if (item != null) {
-                resultBuilder.append("Job have not supported type.\n");
+                resultBuilder.append(String.format("Cannot abort runs for %s. Unsupported job type: %s\n", item, item.getClass()));
             } else {
                 resultBuilder.append(String.format("Job with name %s not found.\n", jobName));
             }
@@ -76,10 +76,10 @@ public class StopJobCommand extends CLICommand {
         return 0;
     }
 
-    private void stopJobBuilds(final AbstractProject job,
+    private void stopJobBuilds(final Job job,
                                final String jobName,
                                final StringBuilder resultBuilder) throws IOException, ServletException {
-        final AbstractBuild lastBuild = job.getLastBuild();
+        final Run lastBuild = job.getLastBuild();
         final List<String> stoppedBuildsNames = new ArrayList<>();
         if (lastBuild != null) {
             stopBuild(lastBuild, jobName, stoppedBuildsNames);
@@ -88,23 +88,28 @@ public class StopJobCommand extends CLICommand {
         updateResultOutput(resultBuilder, jobName, stoppedBuildsNames);
     }
 
-    private void stopBuild(final AbstractBuild build,
+    private void stopBuild(final Run build,
                            final String jobName,
                            final List<String> stoppedBuildNames) throws IOException, ServletException {
         if (build.isBuilding()) {
             final String buildName = build.getDisplayName();
             stoppedBuildNames.add(buildName);
-            build.doStop();
-            logBuildStopped(jobName, buildName);
+            Executor executor = build.getExecutor();
+            if (executor != null) {
+                executor.doStop();
+                logBuildStopped(jobName, buildName);
+            } else {
+                LOGGER.log(Level.INFO, String.format("Build %s in job %s not stopped", buildName, jobName));
+            }
         }
     }
 
-    private void checkAndStopPreviousBuilds(final AbstractBuild lastBuild,
+    private void checkAndStopPreviousBuilds(final Run lastBuild,
                                             final String jobName,
                                             final List<String> stoppedBuildsNames) throws IOException, ServletException {
         Run build = lastBuild.getPreviousBuildInProgress();
-        while (build instanceof AbstractBuild) {
-            stopBuild((AbstractBuild) build, jobName, stoppedBuildsNames);
+        while (build != null) {
+            stopBuild(build, jobName, stoppedBuildsNames);
             build = build.getPreviousBuildInProgress();
         }
     }
