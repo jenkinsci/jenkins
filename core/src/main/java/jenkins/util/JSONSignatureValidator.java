@@ -227,7 +227,7 @@ public class JSONSignatureValidator {
             if (signature.verify(Base64.getDecoder().decode(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException ignore) {
+        } catch (SignatureException|IllegalArgumentException ignore) {
             // ignore
         }
         return false;
