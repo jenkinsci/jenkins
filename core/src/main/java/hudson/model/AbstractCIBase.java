@@ -33,6 +33,8 @@ import hudson.slaves.RetentionStrategy;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
