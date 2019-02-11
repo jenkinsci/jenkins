@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import java.lang.RuntimeException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -299,7 +300,7 @@ public class ConsistentHash<T> {
                 digest[i] ^= digest[i+4]+digest[i+8]+digest[i+12];
             return (b2i(digest[0])<< 24)|(b2i(digest[1])<<16)|(b2i(digest[2])<< 8)|b2i(digest[3]);
         } catch (GeneralSecurityException e) {
-            throw new Error("Could not generate MD5 hash", e);
+            throw new RuntimeException("Could not generate MD5 hash", e);
         }
     }
 
