@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+import jenkins.telemetry.impl.AutoRefresh;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -645,6 +646,12 @@ public class Functions {
         }
         if (refresh) {
             response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
+        }
+
+        try {
+            ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
+        } catch (Exception e) {
+            // ignore telemetry problems
         }
     }
 
