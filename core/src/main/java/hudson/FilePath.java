@@ -79,6 +79,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -3266,7 +3267,7 @@ public final class FilePath implements Serializable {
                 parentRealPath = parentAbsolutePath.toRealPath();
             }
             catch(NoSuchFileException e) {
-                throw new IllegalArgumentException("The parent does not exist");
+                return false;
             }
 
             // example: "a/b/c" that will become "b/c" then just "c", and finally an empty string
@@ -3307,6 +3308,9 @@ public final class FilePath implements Serializable {
                     Path child = currentFileAbsolutePath.normalize();
                     Path parent = parentAbsolutePath.normalize();
                     return child.startsWith(parent);
+                } catch(FileSystemException e) {
+                    LOGGER.log(Level.WARNING, String.format("Problem during call to the method toRealPath on %s", currentFileAbsolutePath), e);
+                    return false;
                 }
             }
 

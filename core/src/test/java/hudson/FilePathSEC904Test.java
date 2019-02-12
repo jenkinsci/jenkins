@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -221,7 +223,6 @@ public class FilePathSEC904Test {
         p.waitFor(2, TimeUnit.SECONDS);
     }
     
-    @Test(expected = IllegalArgumentException.class)
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
@@ -230,15 +231,14 @@ public class FilePathSEC904Test {
         FilePath linkToNonexistent = aFolder.child("linkToNonexistent");
         linkToNonexistent.symlinkTo("__nonexistent__", null);
         
-        linkToNonexistent.isDescendant(".");
+        assertThat(linkToNonexistent.isDescendant("."), is(false));
     }
     
-    @Test(expected = IllegalArgumentException.class)
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_directNonexistent() throws Exception {
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath nonexistent = rootFolder.child("nonexistent");
-        nonexistent.isDescendant(".");
+        assertThat(nonexistent.isDescendant("."), is(false));
     }
     
     @Test(expected = IllegalArgumentException.class)

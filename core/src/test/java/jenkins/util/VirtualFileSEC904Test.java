@@ -27,15 +27,20 @@ package jenkins.util;
 import hudson.FilePath;
 import hudson.model.TaskListener;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
 import java.io.File;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -56,6 +61,7 @@ public class VirtualFileSEC904Test {
     //          /_b => symlink to /root/b
     //      /b
     //          /_a => symlink to /root/a
+    //          /_aatxt => symlink to /root/a/aa/aa.txt
     //          /ba
     //              ba.txt
     private void prepareFileStructureForIsDescendant() throws Exception {
@@ -81,6 +87,9 @@ public class VirtualFileSEC904Test {
         
         File _a = new File(b, "_a");
         new FilePath(_a).symlinkTo(a.getAbsolutePath(), TaskListener.NULL);
+        
+        File _aatxt = new File(b, "_aatxt");
+        new FilePath(_aatxt).symlinkTo(aaTxt.getAbsolutePath(), TaskListener.NULL);
         
         File _b = new File(a, "_b");
         new FilePath(_b).symlinkTo(b.getAbsolutePath(), TaskListener.NULL);
@@ -176,5 +185,97 @@ public class VirtualFileSEC904Test {
         assertTrue(virtualRoot.isDescendant("_b/_a/aa/"));
         assertTrue(virtualRoot.isDescendant("_b/_a/aa/../ab/ab.txt"));
         assertTrue(virtualRoot.isDescendant("_b/_a/aa/aa.txt"));
+    }
+
+    @Test 
+    @Issue("JENKINS-55050")
+    public void forFile_listOnlyDescendants_withoutIllegal() throws Exception {
+        this.prepareFileStructureForIsDescendant();
+
+        File root = tmp.getRoot();
+        File a = new File(root, "a");
+        File b = new File(root, "b");
+        VirtualFile virtualRoot = VirtualFile.forFile(root);
+        VirtualFile virtualFromA = VirtualFile.forFile(a);
+        VirtualFile virtualFromB = VirtualFile.forFile(b);
+
+        checkCommonAssertionForList(virtualRoot, virtualFromA, virtualFromB);
+    }
+
+    @Test
+    @Issue("SECURITY-904")
+    public void forFilePath_listOnlyDescendants_withoutIllegal() throws Exception {
+        this.prepareFileStructureForIsDescendant();
+
+        File root = tmp.getRoot();
+        File a = new File(root, "a");
+        File b = new File(root, "b");
+        VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
+        VirtualFile virtualFromA = VirtualFile.forFilePath(new FilePath(a));
+        VirtualFile virtualFromB = VirtualFile.forFilePath(new FilePath(b));
+
+        checkCommonAssertionForList(virtualRoot, virtualFromA, virtualFromB);
+    }
+
+    private void checkCommonAssertionForList(VirtualFile virtualRoot, VirtualFile virtualFromA, VirtualFile virtualFromB) throws Exception {
+        // outside link to folder is not returned
+        assertThat(virtualFromA.listOnlyDescendants(), containsInAnyOrder(
+                VFMatcher.hasName("aa"),
+                VFMatcher.hasName("ab")
+        ));
+
+        // outside link to file is not returned
+        assertThat(virtualFromB.listOnlyDescendants(), contains(
+                VFMatcher.hasName("ba")
+        ));
+        
+        assertThat(virtualFromA.child("_b").listOnlyDescendants(), hasSize(0));
+
+        assertThat(virtualFromA.child("aa").listOnlyDescendants(), containsInAnyOrder(
+                VFMatcher.hasName("aaa"),
+                VFMatcher.hasName("aa.txt")
+        ));
+        
+        // only a outside link
+        assertThat(virtualFromA.child("aa").child("aaa").listOnlyDescendants(), hasSize(0));
+
+        // as we start from the root, the a/_b linking to root/b is legal
+        assertThat(virtualRoot.child("a").listOnlyDescendants(), containsInAnyOrder(
+                VFMatcher.hasName("aa"),
+                VFMatcher.hasName("ab"),
+                VFMatcher.hasName("_b")
+        ));
+
+        assertThat(virtualRoot.child("a").child("_b").listOnlyDescendants(), containsInAnyOrder(
+                VFMatcher.hasName("_a"),
+                VFMatcher.hasName("_aatxt"),
+                VFMatcher.hasName("ba")
+        ));
+
+        assertThat(virtualRoot.child("a").child("_b").child("_a").listOnlyDescendants(), containsInAnyOrder(
+                VFMatcher.hasName("aa"),
+                VFMatcher.hasName("ab"),
+                VFMatcher.hasName("_b")
+        ));
+    }
+    
+    private abstract static class VFMatcher extends TypeSafeMatcher<VirtualFile> {
+        private final String description;
+
+        private VFMatcher(String description) {
+            this.description = description;
+        }
+
+        public void describeTo(Description description) {
+            description.appendText(this.description);
+        }
+        
+        public static VFMatcher hasName(String expectedName) {
+            return new VFMatcher("Has name: " + expectedName) {
+                protected boolean matchesSafely(VirtualFile vf) {
+                    return expectedName.equals(vf.getName());
+                }
+            };
+        }
     }
 }

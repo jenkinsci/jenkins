@@ -27,12 +27,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.AuthorizationStrategy;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -58,8 +58,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 
 /**
@@ -74,12 +72,10 @@ public class SearchTest {
      */
     @Test
     public void testFailure() throws Exception {
-        try {
-            j.search("no-such-thing");
-            fail("404 expected");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(404,e.getResponse().getStatusCode());
-        }
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlPage resultPage = wc.search("no-such-thing");
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
     }
 
     /**
@@ -88,18 +84,13 @@ public class SearchTest {
     @Issue("JENKINS-3415")
     @Test
     public void testXSS() throws Exception {
-        try {
-            WebClient wc = j.createWebClient();
-            wc.setAlertHandler(new AlertHandler() {
-                public void handleAlert(Page page, String message) {
-                    throw new AssertionError();
-                }
-            });
-            wc.search("<script>alert('script');</script>");
-            fail("404 expected");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(404,e.getResponse().getStatusCode());
-        }
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        wc.setAlertHandler((page, message) -> {
+            throw new AssertionError();
+        });
+        HtmlPage resultPage = wc.search("<script>alert('script');</script>");
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
     }
     
     @Test

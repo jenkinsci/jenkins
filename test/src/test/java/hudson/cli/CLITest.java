@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -233,11 +234,12 @@ public class CLITest {
         sshd.start();
 
         // Sanity check
-        JenkinsRule.WebClient wc = r.createWebClient();
-        wc.getOptions().setRedirectEnabled(false);
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = r.createWebClient()
+                .withRedirectEnabled(false)
+                .withThrowExceptionOnFailingStatusCode(false);
+        
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
-        assertEquals(rsp.getContentAsString(), 302, rsp.getStatusCode());
+        assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins"));
         assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
         assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
@@ -307,7 +309,7 @@ public class CLITest {
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     rsp.setHeader("Location", url);
                     rsp.setContentType("text/html");
-                    rsp.setStatus(302);
+                    rsp.setStatus(HttpURLConnection.HTTP_MOVED_TEMP);
                     PrintWriter w = rsp.getWriter();
                     w.append("Redirect to ").append(url);
                 }

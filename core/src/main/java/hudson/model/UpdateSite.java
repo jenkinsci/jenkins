@@ -64,6 +64,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.plugins.DetachedPluginsUtil;
@@ -1133,8 +1134,8 @@ public class UpdateSite {
          */
         public boolean isForNewerJava() {
             try {
-                final VersionNumber currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
-                return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
+                final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                return minimumJavaVersion != null && new JavaSpecificationVersion(minimumJavaVersion).isNewerThan(
                         currentRuntimeJavaVersion);
             } catch (NumberFormatException nfe) {
                 logBadMinJavaVersion();

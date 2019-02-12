@@ -67,8 +67,9 @@ public class ApiTokenStatsTest {
         assertNotNull(t.getTokenStats());
         
         // test the authentication via Token
-        WebClient wc = j.createWebClient().withBasicCredentials(u.getId());
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withBasicCredentials(u.getId())
+                .withThrowExceptionOnFailingStatusCode(false);
         
         final String TOKEN_NAME = "New Token Name";
         
