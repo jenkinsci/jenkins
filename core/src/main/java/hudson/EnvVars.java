@@ -74,6 +74,7 @@ import javax.annotation.CheckForNull;
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars extends TreeMap<String,String> {
+    private static final long serialVersionUID = 4320331661987259022L;
     private static Logger LOGGER = Logger.getLogger(EnvVars.class.getName());
     /**
      * If this {@link EnvVars} object represents the whole environment variable set,
