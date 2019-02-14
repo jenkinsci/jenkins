@@ -41,6 +41,15 @@ function object(o) {
     return new F();
 }
 
+function TryEach(fn) {
+    return function(name) {
+        try {
+            fn(name);
+        } catch (e) {
+        }
+    }
+}
+
 /**
  * A function that returns false if the page is known to be invisible.
  */
@@ -451,9 +460,9 @@ function registerValidator(e) {
         } else {
             var q = qs(this).addThis();
             if (depends.length>0)
-                depends.split(" ").each(function (n) {
+                depends.split(" ").each(TryEach(function (n) {
                     q.nearBy(n);
-                });
+                }));
             return url+ q.toString();
         }
     };
@@ -487,7 +496,7 @@ function registerValidator(e) {
 
     var v = e.getAttribute("checkDependsOn");
     if (v) {
-        v.split(" ").each(function (name) {
+        v.split(" ").each(TryEach(function (name) {
             var c = findNearBy(e,name);
             if (c==null) {
                 if (window.console!=null)  console.warn("Unable to find nearby "+name);
@@ -495,7 +504,7 @@ function registerValidator(e) {
                 return;
             }
             $(c).observe("change",checker.bind(e));
-        });
+        }));
     }
 
     e = null; // avoid memory leak
@@ -1329,14 +1338,14 @@ function refillOnChange(e,onChange) {
 
     function h() {
         var params = {};
-        deps.each(function (d) {
+        deps.each(TryEach(function (d) {
             params[d.name] = controlValue(d.control);
-        });
+        }));
         onChange(params);
     }
     var v = e.getAttribute("fillDependsOn");
     if (v!=null) {
-        v.split(" ").each(function (name) {
+        v.split(" ").each(TryEach(function (name) {
             var c = findNearBy(e,name);
             if (c==null) {
                 if (window.console!=null)  console.warn("Unable to find nearby "+name);
@@ -1345,7 +1354,7 @@ function refillOnChange(e,onChange) {
             }
             $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
-        });
+        }));
     }
     h();   // initial fill
 }
@@ -2369,7 +2378,7 @@ function ensureVisible(e) {
     function handleStickers(name,f) {
         var e = $(name);
         if (e) f(e);
-        document.getElementsBySelector("."+name).each(f);
+        document.getElementsBySelector("."+name).each(TryEach(f));
     }
 
     // if there are any stickers around, subtract them from the viewport
@@ -2822,11 +2831,11 @@ var downloadService = {
      */
     receiveMessage : function(ev) {
         var self = this;
-        Object.values(this.continuations).each(function(tag) {
+        Object.values(this.continuations).each(TryEach(function(tag) {
             if (tag.iframe.contentWindow==ev.source) {
                 self.post(tag.id,JSON.parse(ev.data));
             }
-        })
+        }))
     },
 
     post : function(id,data) {
