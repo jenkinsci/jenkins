@@ -60,6 +60,7 @@ import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 /**
  * @deprecated No longer used.
  */
+@Deprecated
 public class Connection {
     public final InputStream in;
     public final OutputStream out;
