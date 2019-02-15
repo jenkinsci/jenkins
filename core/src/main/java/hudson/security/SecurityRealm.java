@@ -181,23 +181,11 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
-     * See {@link CliAuthenticator} for more details.
-     *
-     * @param command
-     *      The command about to be executed.
-     * @return
-     *      never null. By default, this method returns a no-op authenticator that always authenticates
-     *      the session as authenticated by the transport (which is often just {@link jenkins.model.Jenkins#ANONYMOUS}.)
-     * @deprecated See {@link CliAuthenticator}.
+     * @deprecated No longer used.
      */
     @Deprecated
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
-        return new CliAuthenticator() {
-            public Authentication authenticate() {
-                return command.getTransportAuthentication();
-            }
-        };
+        throw new UnsupportedOperationException();
     }
 
     /**

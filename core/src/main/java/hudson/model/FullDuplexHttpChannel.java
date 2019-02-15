@@ -38,7 +38,9 @@ import jenkins.util.FullDuplexHttpService;
  * Builds a {@link Channel} on top of two HTTP streams (one used for each direction.)
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Unused.
  */
+@Deprecated
 abstract public class FullDuplexHttpChannel extends FullDuplexHttpService {
     private Channel channel;
     private final boolean restricted;
