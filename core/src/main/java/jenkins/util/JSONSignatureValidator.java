@@ -1,9 +1,8 @@
 package jenkins.util;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
@@ -36,6 +35,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,16 +70,20 @@ public class JSONSignatureValidator {
             {// load and verify certificates
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
                 for (Object cert : signature.getJSONArray("certificates")) {
-                    X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
                     try {
-                        c.checkValidity();
-                    } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
-                        warning = FormValidation.warning(e,String.format("Certificate %s has expired in %s",cert.toString(),name));
-                    } catch (CertificateNotYetValidException e) {
-                        warning = FormValidation.warning(e,String.format("Certificate %s is not yet valid in %s",cert.toString(),name));
+                        X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(cert.toString().getBytes(StandardCharsets.UTF_8))));
+                        try {
+                            c.checkValidity();
+                        } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
+                            warning = FormValidation.warning(e, String.format("Certificate %s has expired in %s", cert.toString(), name));
+                        } catch (CertificateNotYetValidException e) {
+                            warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert.toString(), name));
+                        }
+                        LOGGER.log(Level.FINE, "Add certificate found in json doc: \r\n\tsubjectDN: {0}\r\n\tissuer: {1}", new Object[]{c.getSubjectDN(), c.getIssuerDN()});
+                        certs.add(c);
+                    } catch (IllegalArgumentException ex) {
+                        throw new IOException("Could not decode certificate", ex);
                     }
-                    LOGGER.log(Level.FINE, "Add certificate found in json doc: \r\n\tsubjectDN: {0}\r\n\tissuer: {1}", new Object[]{c.getSubjectDN(), c.getIssuerDN()});
-                    certs.add(c);
                 }
 
                 CertificateUtil.validatePath(certs, loadTrustAnchors(cf));
@@ -220,10 +224,10 @@ public class JSONSignatureValidator {
         }
 
         try {
-            if (signature.verify(Base64.decode(providedSignature.toCharArray()))) {
+            if (signature.verify(Base64.getDecoder().decode(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException|IOException ignore) {
+        } catch (SignatureException|IllegalArgumentException ignore) {
             // ignore
         }
         return false;
@@ -233,7 +237,7 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.encode(digest)));
+        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(new String(Base64.getEncoder().encode(digest)));
     }
 
 

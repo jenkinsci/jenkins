@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
@@ -58,6 +57,7 @@ import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import com.jcraft.jzlib.GZIPOutputStream;
 import jenkins.util.SystemProperties;
@@ -185,7 +185,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 o.write(w);
             }
 
-            return new String(Base64.encode(baos.toByteArray()));
+            return new String(Base64.getEncoder().encode(baos.toByteArray()));
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
