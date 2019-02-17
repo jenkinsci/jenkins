@@ -26,6 +26,7 @@ package jenkins.security;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.UserProperty;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.SecurityRealm;
 import java.util.ArrayList;
@@ -79,6 +80,16 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void userCreated(@Nonnull String username) {}
 
     /**
+     * @since TODO
+     *
+     * Fired after an existing user object property has been updated.
+     *
+     * @param p the user object property
+     * @param username the username
+     */
+    protected void userPropertyUpdated(@Nonnull UserProperty p, @Nonnull String username){}
+
+    /**
      * Fired when a user has failed to log in.
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
@@ -112,6 +123,14 @@ public abstract class SecurityListener implements ExtensionPoint {
         LOGGER.log(Level.FINE, "new user created: {0}", username);
         for (SecurityListener l : all()) {
             l.userCreated(username);
+        }
+    }
+
+    /** @since TODO */
+    public static void fireUserPropertyUpdated(@Nonnull UserProperty p, @Nonnull String username) {
+        LOGGER.log(Level.FINE, "user {0} property updated", username);
+        for (SecurityListener l : all()) {
+            l.userPropertyUpdated(p, username);
         }
     }
 
