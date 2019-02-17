@@ -661,6 +661,16 @@ function findEnd(e) {
     }
 }
 
+function makeOuterVisible(b) {
+    this.outerVisible = b;
+    this.updateVisibility();
+}
+
+function makeInnerVisible(b) {
+    this.innerVisible = b;
+    this.updateVisibility();
+}
+
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = [
 // TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
@@ -1016,10 +1026,7 @@ var jenkinsRules = [
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisible : function(b) {
-                this.outerVisible = b;
-                this.updateVisibility();
-            },
+            makeOuterVisible: makeOuterVisible,
 
             /**
              * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
@@ -1027,10 +1034,7 @@ var jenkinsRules = [
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisible : function(b) {
-                this.innerVisible = b;
-                this.updateVisibility();
-            },
+            makeInnerVisible: makeInnerVisible,
 
             /**
              * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
