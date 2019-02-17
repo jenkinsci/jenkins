@@ -691,6 +691,35 @@ function labelAttachPreviousOnClick() {
     }
 }
 
+function helpButtonOnClick() {
+    var tr = findFollowingTR(this, "help-area");
+    var div = $(tr).down();
+    if (!div.hasClassName("help"))
+        div = div.next().down();
+
+    if (div.style.display != "block") {
+        div.style.display = "block";
+        // make it visible
+        new Ajax.Request(this.getAttribute("helpURL"), {
+            method : 'get',
+            onSuccess : function(x) {
+                var from = x.getResponseHeader("X-Plugin-From");
+                div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+                layoutUpdateCallback.call();
+            },
+            onFailure : function(x) {
+                div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+                layoutUpdateCallback.call();
+            }
+        });
+    } else {
+        div.style.display = "none";
+        layoutUpdateCallback.call();
+    }
+
+    return false;
+}
+
 // figure out the corresponding end marker
 function findEnd(e) {
     for( var depth=0; ; e=$(e).next()) {
@@ -821,36 +850,8 @@ var jenkinsRules = [
     }},
 
     {"A.help-button" : function(e) {
-        e.onclick = function() {
-            var tr = findFollowingTR(this, "help-area");
-            var div = $(tr).down();
-            if (!div.hasClassName("help"))
-                div = div.next().down();
-
-            if (div.style.display != "block") {
-                div.style.display = "block";
-                // make it visible
-                new Ajax.Request(this.getAttribute("helpURL"), {
-                    method : 'get',
-                    onSuccess : function(x) {
-                        var from = x.getResponseHeader("X-Plugin-From");
-                        div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
-                        layoutUpdateCallback.call();
-                    },
-                    onFailure : function(x) {
-                        div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
-                        layoutUpdateCallback.call();
-                    }
-                });
-            } else {
-                div.style.display = "none";
-                layoutUpdateCallback.call();
-            }
-
-            return false;
-        };
+        e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
-        e = null; // avoid memory leak
     }},
 
     // Script Console : settings and shortcut key
