@@ -67,7 +67,9 @@ THE SOFTWARE.
   <j:if test="${attrs.help!=null}">
     <f:helpArea />
   </j:if>
-  <d:invokeBody />
+  <div class="container tr">
+    <d:invokeBody />
+  </div>
   <!-- end marker -->
   <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none"></div>
 </j:jelly>

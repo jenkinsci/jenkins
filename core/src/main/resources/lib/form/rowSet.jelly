@@ -44,7 +44,9 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
-      <d:invokeBody />
+      <div class="container tr">
+        <d:invokeBody />
+      </div>
       <div class="row-set-end row-group-end tr"></div>
     </j:otherwise>
   </j:choose>

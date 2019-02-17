@@ -77,7 +77,9 @@ THE SOFTWARE.
         <f:helpArea />
       </j:if>
       <div class="rowvg-start tr"></div>
-      <d:invokeBody />
+      <div class="container tr">
+        <d:invokeBody />
+      </div>
       <!-- end marker -->
       <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end row-group-end"></div>
     </j:when>
