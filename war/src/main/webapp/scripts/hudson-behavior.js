@@ -666,6 +666,20 @@ function expandButton(e) {
     layoutUpdateCallback.call();
 }
 
+function inputHasDefaultTextOnFocus() {
+    if (this.value == defaultValue) {
+        this.value = "";
+        Element.removeClassName(this, "defaulted");
+    }
+}
+
+function inputHasDefaultTextOnBlur() {
+    if (this.value == "") {
+        this.value = defaultValue;
+        Element.addClassName(this, "defaulted");
+    }
+}
+
 // figure out the corresponding end marker
 function findEnd(e) {
     for( var depth=0; ; e=$(e).next()) {
@@ -730,19 +744,8 @@ var jenkinsRules = [
     {"INPUT.has-default-text" : function(e) {
         var defaultValue = e.value;
         Element.addClassName(e, "defaulted");
-        e.onfocus = function() {
-            if (this.value == defaultValue) {
-                this.value = "";
-                Element.removeClassName(this, "defaulted");
-            }
-        }
-        e.onblur = function() {
-            if (this.value == "") {
-                this.value = defaultValue;
-                Element.addClassName(this, "defaulted");
-            }
-        }
-        e = null; // avoid memory leak
+        e.onfocus = inputHasDefaultTextOnFocus;
+        e.onblur = inputHasDefaultTextOnBlur;
     }},
 
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
