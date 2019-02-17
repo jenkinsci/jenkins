@@ -684,6 +684,15 @@ function updateVisibility() {
     layoutUpdateCallback.call();
 }
 
+function rowvgStartEachRow(recursive,f) {
+    if (recursive) {
+        for (var e=this.start; e!=this.end; e=$(e).next())
+            f(e);
+    } else {
+        throw "not implemented yet";
+    }
+}
+
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = [
 // TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
@@ -1060,14 +1069,7 @@ var jenkinsRules = [
              * @param {boolean} recursive
              *      If true, this visits all the rows from nested visibility groups.
              */
-            eachRow : function(recursive,f) {
-                if (recursive) {
-                    for (var e=this.start; e!=this.end; e=$(e).next())
-                        f(e);
-                } else {
-                    throw "not implemented yet";
-                }
-            }
+            eachRow: rowvgStartEachRow
         };
     }},
 
