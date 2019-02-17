@@ -652,6 +652,11 @@ function sequencer(fs) {
     return next();
 }
 
+function progressBarOnClick() {
+    var href = this.getAttribute("href");
+    if(href!=null)      window.location = href;
+}
+
 // figure out the corresponding end marker
 function findEnd(e) {
     for( var depth=0; ; e=$(e).next()) {
@@ -705,11 +710,7 @@ var jenkinsRules = [
     }},
 
     {"TABLE.progress-bar" : function(e) { // progressBar.jelly
-        e.onclick = function() {
-            var href = this.getAttribute("href");
-            if(href!=null)      window.location = href;
-        }
-        e = null; // avoid memory leak
+        e.onclick = progressBarOnClick;
     }},
 
     {"INPUT.expand-button" : function(e) {
