@@ -1407,10 +1407,19 @@ function replaceDescription() {
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
+    applyNameRefHelper(s,e,id);
+}
+
+function applyNameRefHelper(s,e,id) {
+    if (s===null)
+        return;
     for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.getAttribute("nameRef")==null)
+        if(x.getAttribute("nameRef")==null) {
             x.setAttribute("nameRef",id);
+            if (x.hasClassName('tr'))
+                applyNameRefHelper(x.firstChild,null,id);
+        }
     }
 }
 
