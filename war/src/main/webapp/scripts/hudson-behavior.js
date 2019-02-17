@@ -720,6 +720,55 @@ function helpButtonOnClick() {
     return false;
 }
 
+function isGeckoCommandKey() {
+    return Prototype.Browser.Gecko && event.keyCode == 224
+}
+function isOperaCommandKey() {
+    return Prototype.Browser.Opera && event.keyCode == 17
+}
+function isWebKitCommandKey() {
+    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+}
+function isCommandKey() {
+    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+}
+function isReturnKeyDown() {
+    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
+}
+function getParentForm(element) {
+    if (element == null) throw 'not found a parent form';
+    if (element instanceof HTMLFormElement) return element;
+
+    return getParentForm(element.parentNode);
+}
+function saveAndSubmit() {
+    editor.save();
+    getParentForm(e).submit();
+    event.stop();
+}
+function textAreaScriptEditorOnKeyEvent(editor, event){
+  // Mac (Command + Enter)
+  if (navigator.userAgent.indexOf('Mac') > -1) {
+      if (event.type == 'keydown' && isCommandKey()) {
+          cmdKeyDown = true;
+      }
+      if (event.type == 'keyup' && isCommandKey()) {
+          cmdKeyDown = false;
+      }
+      if (cmdKeyDown && isReturnKeyDown()) {
+          saveAndSubmit();
+          return true;
+      }
+
+  // Windows, Linux (Ctrl + Enter)
+  } else {
+      if (event.ctrlKey && isReturnKeyDown()) {
+          saveAndSubmit();
+          return true;
+      }
+  }
+}
+
 // figure out the corresponding end marker
 function findEnd(e) {
     for( var depth=0; ; e=$(e).next()) {
@@ -866,55 +915,7 @@ var jenkinsRules = [
               lineNumbers: true,
               matchBrackets: true,
               readOnly: readOnly,
-              onKeyEvent: function(editor, event){
-                function isGeckoCommandKey() {
-                    return Prototype.Browser.Gecko && event.keyCode == 224
-                }
-                function isOperaCommandKey() {
-                    return Prototype.Browser.Opera && event.keyCode == 17
-                }
-                function isWebKitCommandKey() {
-                    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
-                }
-                function isCommandKey() {
-                    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
-                }
-                function isReturnKeyDown() {
-                    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
-                }
-                function getParentForm(element) {
-                    if (element == null) throw 'not found a parent form';
-                    if (element instanceof HTMLFormElement) return element;
-                    
-                    return getParentForm(element.parentNode);
-                }
-                function saveAndSubmit() {
-                    editor.save();
-                    getParentForm(e).submit();
-                    event.stop();
-                }
-                
-                // Mac (Command + Enter)
-                if (navigator.userAgent.indexOf('Mac') > -1) {
-                    if (event.type == 'keydown' && isCommandKey()) {
-                        cmdKeyDown = true;
-                    }
-                    if (event.type == 'keyup' && isCommandKey()) {
-                        cmdKeyDown = false;
-                    }
-                    if (cmdKeyDown && isReturnKeyDown()) {
-                        saveAndSubmit();
-                        return true;
-                    }
-                  
-                // Windows, Linux (Ctrl + Enter)
-                } else {
-                    if (event.ctrlKey && isReturnKeyDown()) {
-                        saveAndSubmit();
-                        return true;
-                    }
-                }
-              }
+              onKeyEvent: textAreaScriptEditorOnKeyEvent
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
