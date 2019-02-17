@@ -671,6 +671,19 @@ function makeInnerVisible(b) {
     this.updateVisibility();
 }
 
+function updateVisibility() {
+    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    for (var e=this.start; e!=this.end; e=$(e).next()) {
+        if (e.rowVisibilityGroup && e!=this.start) {
+            e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
+            e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+        } else {
+            e.style.display = display;
+        }
+    }
+    layoutUpdateCallback.call();
+}
+
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = [
 // TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
@@ -1039,18 +1052,7 @@ var jenkinsRules = [
             /**
              * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
              */
-            updateVisibility : function() {
-                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
-                for (var e=this.start; e!=this.end; e=$(e).next()) {
-                    if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
-                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
-                    } else {
-                        e.style.display = display;
-                    }
-                }
-                layoutUpdateCallback.call();
-            },
+            updateVisibility: updateVisibility,
 
             /**
              * Enumerate each row and pass that to the given function.
