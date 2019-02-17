@@ -26,6 +26,7 @@ package hudson.security;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -33,12 +34,15 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
 import hudson.model.User;
+import hudson.model.UserProperty;
 import hudson.remoting.Base64;
 import static hudson.security.HudsonPrivateSecurityRealm.CLASSIC;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
 import hudson.security.pages.SignupPage;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -342,6 +346,41 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.createdUsers.get(0).equals("charlie_hashed"));
     }
 
+    @Issue("JENKINS-56008")
+    @Test
+    public void updateUserPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        WebClient wc = j.createWebClient();
+
+        spySecurityListener.usersWithPasswordUpdate.clear();
+        assertTrue(spySecurityListener.usersWithPasswordUpdate.isEmpty());
+
+        // new user account creation
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("debbie");
+        signup.enterPassword("debbie");
+        signup.enterFullName(StringUtils.capitalize("debbie user"));
+        signup.enterEmail("debbie" + "@" + "debbie" + ".com");
+        HtmlPage p = signup.submit(j);
+
+        assertEquals(200, p.getWebResponse().getStatusCode());
+
+        // execute an http request to change a user's password from their config page
+        User debbie = User.getById("debbie", false);
+        URL configPage = wc.createCrumbedUrl(debbie.getUrl() + "/" + "configSubmit");
+        String formData = "{\"fullName\": \"debbie user\", \"description\": \"\", \"userProperty3\": {\"primaryViewName\": \"\"}, \"userProperty5\": {\"password\": \"admin\", \"$redact\": [\"password\", \"password2\"], \"password2\": \"admin\"}, \"userProperty6\": {\"authorizedKeys\": \"\"}, \"userProperty8\": {\"insensitiveSearch\": true}, \"core:apply\": \"true\"}";
+
+        WebRequest request = new WebRequest(configPage, HttpMethod.POST);
+        request.setAdditionalHeader("Content-Type", "application/x-www-form-urlencoded");
+        request.setRequestBody("json=" + URLEncoder.encode(formData, StandardCharsets.UTF_8.name()));
+        Page page = wc.getPage(request);
+
+        // ensure user whose password was changed was in fact logged
+        assertTrue(spySecurityListener.usersWithPasswordUpdate.get(0).equals("debbie"));
+        assertEquals(200, page.getWebResponse().getStatusCode());
+    }
+
     private void createFirstAccount(String login) throws Exception {
         assertNull(User.getById(login, false));
 
@@ -419,6 +458,7 @@ public class HudsonPrivateSecurityRealmTest {
     public static class SpySecurityListenerImpl extends SecurityListener {
         private List<String> loggedInUsernames = new ArrayList<>();
         private List<String> createdUsers = new ArrayList<String>();
+        private List<String> usersWithPasswordUpdate = new ArrayList<>();
 
         @Override
         protected void loggedIn(@Nonnull String username) {
@@ -427,6 +467,13 @@ public class HudsonPrivateSecurityRealmTest {
 
         @Override
         protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+
+        @Override
+        protected void userPropertyUpdated(@Nonnull UserProperty p, @Nonnull String username){
+            if (p instanceof HudsonPrivateSecurityRealm.Details) {
+                usersWithPasswordUpdate.add(username);
+            }
+        }
     }
 
     @Issue("SECURITY-786")
