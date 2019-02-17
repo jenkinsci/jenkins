@@ -810,63 +810,63 @@ function rowvgStartEachRow(recursive,f) {
     }
 }
 
-/** @deprecated Use {@link Behaviour.specify} instead. */
-var jenkinsRules = [
-// TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
-    {"BODY" : function() {
+(function () {
+    var p = 20;
+    Behaviour.specify("BODY", "body", ++p, function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
-    }},
+    });
 
-    {"TABLE.sortable" : function(e) {// sortable table
+    Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function(e) {// sortable table
         e.sortable = new Sortable.Sortable(e);
-    }},
+    });
 
-    {"TABLE.progress-bar" : function(e) { // progressBar.jelly
+    Behaviour.specify("TABLE.progress-bar", "table-progress-bar", ++p, function(e) { // progressBar.jelly
         e.onclick = progressBarOnClick;
-    }},
+    });
 
-    {"INPUT.expand-button" : function(e) {
+    Behaviour.specify("INPUT.expand-button", "input-expand-button", ++p, function(e) {
         makeButton(e, expandButton);
-    }},
+    });
 
-// scripting for having default value in the input field
-    {"INPUT.has-default-text" : function(e) {
+    // scripting for having default value in the input field
+    Behaviour.specify("INPUT.has-default-text", "input-has-default-text", ++p, function(e) {
         var defaultValue = e.value;
         Element.addClassName(e, "defaulted");
         e.onfocus = inputHasDefaultTextOnFocus;
         e.onblur = inputHasDefaultTextOnBlur;
-    }},
+    });
 
-// <label> that doesn't use ID, so that it can be copied in <repeatable>
-    {"LABEL.attach-previous" : function(e) {
+    // <label> that doesn't use ID, so that it can be copied in <repeatable>
+    Behaviour.specify("LABEL.attach-previous", "label-attach-previous", ++p, function(e) {
         e.onclick = labelAttachPreviousOnClick;
-    }},
+    });
 
-// form fields that are validated via AJAX call to the server
-// elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
-    {"INPUT.validated" : registerValidator},
-    {"SELECT.validated" : registerValidator},
-    {"TEXTAREA.validated" : registerValidator},
+    // form fields that are validated via AJAX call to the server
+    // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
+    Behaviour.specify("INPUT.validated", "input-validated", ++p, registerValidator);
+    Behaviour.specify("SELECT.validated", "select-validated", ++p, registerValidator);
+    Behaviour.specify("TEXTAREA.validated", "textarea-validated", ++p, registerValidator);
 
-// validate required form values
-    {"INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); }},
+    // validate required form values
+    Behaviour.specify("INPUT.required", "input-required", ++p, function(e) { registerRegexpValidator(e,/./,"Field is required"); });
 
-// validate form values to be an integer
-    {"INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); }},
-    {"INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); }},
+    // validate form values to be an integer
+    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); });
+    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); });
 
-    {"INPUT.non-negative-number-required" : function(e) {
+    Behaviour.specify("INPUT.non-negative-number-required", "input-non-negative-number-required", ++p, function(e) {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
-    }},
+    });
 
-    {"INPUT.positive-number" : function(e) {
+    Behaviour.specify("INPUT.positive-number", "input-positive-number", ++p, function(e) {
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
-    }},
-    {"INPUT.positive-number-required" : function(e) {
-        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
-    }},
+    });
 
-    {"INPUT.auto-complete": function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.positive-number-required", "input-positive-number-required", ++p, function(e) {
+        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
+    });
+
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -896,15 +896,16 @@ var jenkinsRules = [
             Dom.setXY(container, [Dom.getX(textbox), Dom.getY(textbox) + textbox.offsetHeight] );
             return true;
         }
-    }},
+    });
 
-    {"A.help-button" : function(e) {
+
+    Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
         e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
-    }},
+    });
 
     // Script Console : settings and shortcut key
-    {"TEXTAREA.script" : function(e) {
+    Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
@@ -919,11 +920,11 @@ var jenkinsRules = [
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
-    }},
+    });
 
-// deferred client-side clickable map.
-// this is useful where the generation of <map> element is time consuming
-    {"IMG[lazymap]" : function(e) {
+    // deferred client-side clickable map.
+    // this is useful where the generation of <map> element is time consuming
+    Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function(e) {
         new Ajax.Request(
             e.getAttribute("lazymap"),
             {
@@ -937,10 +938,10 @@ var jenkinsRules = [
                     e.setAttribute("usemap", "#" + id);
                 }
             });
-    }},
+    });
 
     // resizable text area
-    {"TEXTAREA" : function(textarea) {
+    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
         if(Element.hasClassName(textarea,"rich-editor")) {
             // rich HTML editor
             try {
@@ -996,10 +997,10 @@ var jenkinsRules = [
             s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
             s.style.height = s.scrollHeight + 'px';
         }
-    }},
+    });
 
     // structured form submission
-    {"FORM" : function(form) {
+    Behaviour.specify("FORM", "form", ++p, function(form) {
         crumb.appendToForm(form);
         if(Element.hasClassName(form, "no-json"))
             return;
@@ -1016,30 +1017,30 @@ var jenkinsRules = [
         }
 
         form = null; // memory leak prevention
-    }},
+    });
 
     // hook up tooltip.
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-    {"[tooltip]" : function(e) {
+    Behaviour.specify("[tooltip]", "-tooltip-", ++p, function(e) {
         applyTooltip(e,e.getAttribute("tooltip"));
-    }},
+    });
 
-    {"INPUT.submit-button" : function(e) {
+    Behaviour.specify("INPUT.submit-button", "input-submit-button", ++p, function(e) {
         makeButton(e);
-    }},
+    });
 
-    {"INPUT.yui-button" : function(e) {
+    Behaviour.specify("INPUT.yui-button", "input-yui-button", ++p, function(e) {
         makeButton(e);
-    }},
+    });
 
-    {"TR.optional-block-start,DIV.tr.optional-block-start": function(e) { // see optionalBlock.jelly
+    Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
-    }},
+    });
 
     // see RowVisibilityGroupTest
-    {"TR.rowvg-start,DIV.tr.rowvg-start" : function(e) {
+    Behaviour.specify("TR.rowvg-start,DIV.tr.rowvg-start", "tr-rowvg-start-div-tr-rowvg-start", ++p, function(e) {
         e.rowVisibilityGroup = {
             outerVisible: true,
             innerVisible: true,
@@ -1079,9 +1080,9 @@ var jenkinsRules = [
              */
             eachRow: rowvgStartEachRow
         };
-    }},
+    });
 
-    {"TR.row-set-end,DIV.tr.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    Behaviour.specify("TR.row-set-end,DIV.tr.row-set-end", "tr-row-set-end-div-tr-row-set-end", ++p, function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
         var end = e;
@@ -1101,19 +1102,19 @@ var jenkinsRules = [
             start.id = ref = "rowSetStart"+(iota++);
 
         applyNameRef(start,end,ref);
-    }},
+    });
 
-    {"TR.optional-block-start,DIV.tr.optional-block-start": function(e) { // see optionalBlock.jelly
+    Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start-2", ++p, function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
-    }},
+    });
 
     // image that shows [+] or [-], with hover effect.
     // oncollapsed and onexpanded will be called when the button is triggered.
-    {"IMG.fold-control" : function(e) {
+    Behaviour.specify("IMG.fold-control", "img-fold-control", ++p, function(e) {
         function changeTo(e,img) {
             var src = e.src;
             e.src = src.substring(0,src.lastIndexOf('/'))+"/"+e.getAttribute("state")+img;
@@ -1139,10 +1140,10 @@ var jenkinsRules = [
             return false;
         };
         e = null; // memory leak prevention
-    }},
+    });
 
     // editableComboBox.jelly
-    {"INPUT.combobox" : function(c) {
+    Behaviour.specify("INPUT.combobox", "input-combobox", ++p, function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
         var vdiv = $(c).next();
         if (vdiv.hasClassName("combobox-values")) {
@@ -1152,10 +1153,10 @@ var jenkinsRules = [
                 });
             });
         }
-    }},
+    });
 
     // dropdownList.jelly
-    {"SELECT.dropdownList" : function(e) {
+    Behaviour.specify("SELECT.dropdownList", "select-dropdownlist", ++p, function(e) {
         if(isInsideRemovable(e))    return;
 
         var subForms = [];
@@ -1192,9 +1193,9 @@ var jenkinsRules = [
         e.onchange = updateDropDownList;
 
         updateDropDownList();
-    }},
+    });
 
-    {"A.showDetails" : function(e) {
+    Behaviour.specify("A.showDetails", "a-showdetails", ++p, function(e) {
         e.onclick = function() {
             this.style.display = 'none';
             $(this).next().style.display = 'block';
@@ -1202,17 +1203,17 @@ var jenkinsRules = [
             return false;
         };
         e = null; // avoid memory leak
-    }},
+    });
 
-    {"DIV.behavior-loading" : function(e) {
+    Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
         e.style.display = 'none';
-    }},
+    });
 
-    {".button-with-dropdown" : function (e) {
+    Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
         new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
-    }},
+    });
 
-    {".track-mouse" : function (element) {
+    Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
         var DOM = YAHOO.util.Dom;
 
         $(element).observe("mouseenter",function () {
@@ -1228,14 +1229,14 @@ var jenkinsRules = [
             };
             Element.observe(document, "mousemove", mousemoveTracker);
         });
-    }},
+    });
 
     /*
         Use on div tag to make it sticky visible on the bottom of the page.
         When page scrolls it remains in the bottom of the page
         Convenient on "OK" button and etc for a long form page
      */
-    {"#bottom-sticker" : function(sticker) {
+    Behaviour.specify("#bottom-sticker", "-bottom-sticker", ++p, function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1267,16 +1268,16 @@ var jenkinsRules = [
         Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
-    }},
+    });
 
-    {"#top-sticker" : function(sticker) {// legacy
+    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
         this[".top-sticker"](sticker);
-    }},
+    });
 
     /**
      * @param {HTMLElement} sticker
      */
-    {".top-sticker" : function(sticker) {
+    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1306,21 +1307,10 @@ var jenkinsRules = [
         // initial positioning
         Element.observe(window,"load",adjustSticker);
         adjustSticker();
-    }}
-];
-/** @deprecated Use {@link Behaviour.specify} instead. */
-var hudsonRules = {}; // legacy name
-(function() {
-    var p = 20;
-    while (jenkinsRules.length > 0) {
-        var rules = jenkinsRules[0];
-        for (var selector in rules) {
-            Behaviour.specify(selector, 'hudson-behavior', p++, rules[selector]);
-            delete rules[selector];
-        }
-        jenkinsRules.splice(0, 1);
-    }
+    });
 })();
+
+var hudsonRules = {}; // legacy name
 // now empty, but plugins can stuff things in here later:
 Behaviour.register(hudsonRules);
 
