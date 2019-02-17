@@ -652,6 +652,15 @@ function sequencer(fs) {
     return next();
 }
 
+// figure out the corresponding end marker
+function findEnd(e) {
+    for( var depth=0; ; e=$(e).next()) {
+        if(Element.hasClassName(e,"rowvg-start"))    depth++;
+        if(Element.hasClassName(e,"rowvg-end"))      depth--;
+        if(depth==0)    return e;
+    }
+}
+
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = [
 // TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
@@ -991,15 +1000,6 @@ var jenkinsRules = [
 
     // see RowVisibilityGroupTest
     {"TR.rowvg-start,DIV.tr.rowvg-start" : function(e) {
-        // figure out the corresponding end marker
-        function findEnd(e) {
-            for( var depth=0; ; e=$(e).next()) {
-                if(Element.hasClassName(e,"rowvg-start"))    depth++;
-                if(Element.hasClassName(e,"rowvg-end"))      depth--;
-                if(depth==0)    return e;
-            }
-        }
-
         e.rowVisibilityGroup = {
             outerVisible: true,
             innerVisible: true,
