@@ -717,14 +717,18 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
                     throw new FormException("Please confirm the password by typing it twice","user.password2");
 
+                User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
+                UserProperty p = user.getProperty(Details.class);
+
                 String data = Protector.unprotect(pwd);
                 if(data!=null) {
                     String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
                     if(data.startsWith(prefix))
+                        SecurityListener.fireUserPropertyUpdated(p, user.getId());
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                 }
 
-                User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
+                SecurityListener.fireUserPropertyUpdated(p, user.getId());
                 // the UserSeedProperty is not touched by the configure page
                 UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
                 if (userSeedProperty != null) {
