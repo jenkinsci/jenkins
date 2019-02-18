@@ -47,7 +47,7 @@ THE SOFTWARE.
              data-cannot-enable="${%This plugin cannot be enabled}" 
              data-cannot-disable="${%This plugin cannot be disabled}" 
              data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
-             data-disabled-dependencies="${%It has one or more disabled dependencies}" 
+             data-disabled-dependencies="${%It has one or more missing dependencies}"
              data-enabled-dependants="${%It has one or more enabled dependants}" 
              data-installed-dependants="${%It has one or more installed dependants}" 
         />
