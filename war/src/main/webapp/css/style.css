@@ -78,6 +78,10 @@ dt {
   font-weight: bold;
 }
 
+dt > .plain {
+  font-weight: normal;
+}
+
 .fixed-width {
   font-family: monospace;
 }
