@@ -230,8 +230,12 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
                     var depPluginTR = getPluginTR(pluginId);
-                    var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
-                    if (depPluginMetadata.enableInput.checked) {
+                    var enabled = false;
+                    if (depPluginTR) {
+                        var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                        enabled = depPluginMetadata.enableInput.checked;
+                    }
+                    if (enabled) {
                         // It's enabled ... hide the span
                         dependencySpan.setStyle({display: 'none'});
                     } else {
