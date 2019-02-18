@@ -69,7 +69,7 @@ public class PrivateKeyProviderTest {
         PrivateKeyProvider.loadKey(file, password);
     }
 
-    @Test(expected = java.lang.IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void loadKeyBroken() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh-broken").getFile());
         String password = "password";
