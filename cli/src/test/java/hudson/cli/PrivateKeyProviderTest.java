@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -62,7 +63,7 @@ public class PrivateKeyProviderTest {
         assertNotNull(keyPair.getPublic());
     }
 
-    @Test(expected = java.security.NoSuchAlgorithmException.class)
+    @Test(expected = NoSuchAlgorithmException.class)
     public void loadKeyUnsupportedCipher() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh-unsuported").getFile());
         String password = "password";
