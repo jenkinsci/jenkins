@@ -4,8 +4,8 @@
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="correct" value="${%Correct}"/>
     </form>
-    <p><strong>${%Dependency errors}:</strong></p>
     <p>${%blurbOriginal}</p>
+    <p><strong>${%DirectlyDependentPlugins.title}</strong></p>
     <j:forEach items="${it.plugins}" var="plugin">
       <j:if test="${plugin.hasOriginalDependencyErrors()}">
         <dl>
@@ -17,8 +17,8 @@
       </j:if>
     </j:forEach>
     <j:if test="${it.hasAnyDerivedDependencyErrors()}">
-      <p><strong>${%Downstream dependency errors}:</strong></p>
       <p>${%blurbDerived}</p>
+      <p><strong>${%IndirectlyDependentPlugins.title}</strong></p>
       <dl>
         <j:forEach items="${it.plugins}" var="plugin">
           <j:if test="${plugin.hasDerivedDependencyErrors()}">
