@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import static java.util.logging.Level.FINE;
-import static java.nio.charset.StandardCharsets.UTF_8
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Console;
 import java.io.DataInputStream;
