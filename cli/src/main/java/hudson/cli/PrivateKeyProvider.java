@@ -24,6 +24,7 @@
 package hudson.cli;
 
 import static java.util.logging.Level.FINE;
+import static java.nio.charset.StandardCharsets.UTF_8
 
 import java.io.Console;
 import java.io.DataInputStream;
@@ -140,7 +141,7 @@ public class PrivateKeyProvider {
 
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
         return SecurityUtils.loadKeyPairIdentity("key",
-                new ByteArrayInputStream(pemString.getBytes("UTF-8")),
+                new ByteArrayInputStream(pemString.getBytes(UTF_8)),
                 FilePasswordProvider.of(passwd));
     }
 
