@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,7 +51,7 @@ public class Service {
         final Enumeration<URL> e = classLoader.getResources("META-INF/services/"+type.getName());
         while (e.hasMoreElements()) {
             URL url = e.nextElement();
-            try (BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
+            try (BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = configFile.readLine()) != null) {
                     line = line.trim();
@@ -84,7 +85,7 @@ public class Service {
             Enumeration<URL> e = cl.getResources("META-INF/services/" + spi.getName());
             while(e.hasMoreElements()) {
                 final URL url = e.nextElement();
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = r.readLine()) != null) {
                         if (line.startsWith("#"))

@@ -32,6 +32,7 @@ package hudson.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Implements HTTP chunking support. Writes are buffered to an internal buffer (2048 default size).
@@ -96,7 +97,7 @@ public class ChunkedOutputStream extends OutputStream {
      */
     protected void flushCache() throws IOException {
         if (cachePosition > 0) {
-            byte[] chunkHeader = (Integer.toHexString(cachePosition) + "\r\n").getBytes("US-ASCII");
+            byte[] chunkHeader = (Integer.toHexString(cachePosition) + "\r\n").getBytes(StandardCharsets.US_ASCII);
             stream.write(chunkHeader, 0, chunkHeader.length);
             stream.write(cache, 0, cachePosition);
             stream.write(ENDCHUNK, 0, ENDCHUNK.length);
@@ -115,7 +116,7 @@ public class ChunkedOutputStream extends OutputStream {
      * @since 3.0
      */
     protected void flushCacheWithAppend(byte[] bufferToAppend, int off, int len) throws IOException {
-        byte[] chunkHeader = (Integer.toHexString(cachePosition + len) + "\r\n").getBytes("US-ASCII");
+        byte[] chunkHeader = (Integer.toHexString(cachePosition + len) + "\r\n").getBytes(StandardCharsets.US_ASCII);
         stream.write(chunkHeader, 0, chunkHeader.length);
         stream.write(cache, 0, cachePosition);
         stream.write(bufferToAppend, off, len);
