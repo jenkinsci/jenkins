@@ -1798,7 +1798,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
-                    if (!auth.equals(ACL.SYSTEM)) {
+                    if (auth.equals(ACL.SYSTEM)) {
+                        listener.getLogger().println(Messages.Run_running_as_SYSTEM());
+                    } else {
                         String id = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
                             final User usr = User.getById(id, false);
