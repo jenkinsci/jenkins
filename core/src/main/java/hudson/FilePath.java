@@ -636,7 +636,6 @@ public final class FilePath implements Serializable {
     private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
-        @SuppressWarnings("unchecked")
         Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
