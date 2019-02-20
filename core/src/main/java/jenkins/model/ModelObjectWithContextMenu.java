@@ -53,7 +53,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
      * for more details of what it does. This should suit most implementations.
      */
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
+    ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
 
     /**
      * Data object that represents the context menu.
@@ -61,7 +61,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * Via {@link HttpResponse}, this class is capable of converting itself to JSON that {@code <l:breadcrumb/>} understands.
      */
     @ExportedBean
-    public class ContextMenu implements HttpResponse {
+    class ContextMenu implements HttpResponse {
         /**
          * The actual contents of the menu.
          */
@@ -225,7 +225,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * Menu item in {@link ContextMenu}
      */
     @ExportedBean
-    public class MenuItem {
+    class MenuItem {
         /**
          * Target of the link.
          *
