@@ -385,7 +385,7 @@ public final class FilePath implements Serializable {
             return false;
         // Windows can handle '/' as a path separator but Unix can't,
         // so err on Unix side
-        return remote.indexOf("\\")==-1;
+        return !remote.contains("\\");
     }
 
     /**
