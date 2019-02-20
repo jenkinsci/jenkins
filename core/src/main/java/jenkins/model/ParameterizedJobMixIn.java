@@ -266,7 +266,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Computes the build cause, using RemoteCause or UserCause as appropriate.
      */
     @Restricted(NoExternalUse.class)
-    public static final CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
+    public static CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
         Cause cause;
         @SuppressWarnings("deprecation")
         hudson.model.BuildAuthorizationToken authToken = job.getAuthToken();
