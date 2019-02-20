@@ -45,7 +45,7 @@ enum Boundary {
 
     private final int offsetOfExactMatch, offsetOfInsertionPoint;
 
-    private Boundary(int offsetOfExactMatch, int offsetOfInsertionPoint) {
+    Boundary(int offsetOfExactMatch, int offsetOfInsertionPoint) {
         this.offsetOfExactMatch = offsetOfExactMatch;
         this.offsetOfInsertionPoint = offsetOfInsertionPoint;
     }
