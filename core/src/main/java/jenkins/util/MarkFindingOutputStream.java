@@ -46,7 +46,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
         }
     }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         final int start = off; 
         final int end = off + len;
         for (int i=off; i<end; ) {

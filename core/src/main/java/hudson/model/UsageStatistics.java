@@ -159,7 +159,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         // capture the descriptors as these should be small compared with the number of items
         // so we will walk all items only once and we can short-cut the search of descriptors
         TopLevelItemDescriptor[] descriptors = Items.all().toArray(new TopLevelItemDescriptor[0]);
-        int counts[] = new int[descriptors.length];
+        int[] counts = new int[descriptors.length];
         for (TopLevelItem item: j.allItems(TopLevelItem.class)) {
             TopLevelItemDescriptor d = item.getDescriptor();
             for (int i = 0; i < descriptors.length; i++) {
