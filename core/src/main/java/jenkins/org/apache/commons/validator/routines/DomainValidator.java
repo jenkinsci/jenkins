@@ -1886,9 +1886,8 @@ public class DomainValidator implements Serializable {
         INFRASTRUCTURE_RO,
         /** Get a copy of the local table */
         LOCAL_RO
-        ;
-    };
-    
+    }
+
     // For use by unit test code only
     static synchronized void clearTLDOverrides() {
         inUse = false;

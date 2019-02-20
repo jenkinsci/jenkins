@@ -95,7 +95,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         this.owner = owner;
         this.newerThan = getPagingParam(currentRequest, "newer-than");
         this.olderThan = getPagingParam(currentRequest, "older-than");
-        this.searchString = currentRequest.getParameter("search");;
+        this.searchString = currentRequest.getParameter("search");
     }
 
     /**
