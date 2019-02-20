@@ -2361,12 +2361,7 @@ public final class FilePath implements Serializable {
                 future.get();
                 return future2.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         } else {
             // remote -> local copy
@@ -2391,15 +2386,20 @@ public final class FilePath implements Serializable {
             try {
                 return future.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         }
     }
+
+    private IOException ioWithCause(ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause == null) cause = e;
+        return cause instanceof IOException
+                ? (IOException) cause
+                : new IOException(cause)
+                ;
+    }
+
     private class CopyRecursiveLocal extends SecureFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;
