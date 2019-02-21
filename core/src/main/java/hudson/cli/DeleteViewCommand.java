@@ -62,7 +62,7 @@ public class DeleteViewCommand extends CLICommand {
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
 
         for(String view_s : hs) {
-            View view = null;
+            View view;
 
             try {
                 view = voh.getView(view_s);

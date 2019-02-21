@@ -59,7 +59,7 @@ public class DeleteJobCommand extends CLICommand {
         final HashSet<String> hs = new HashSet<>(jobs);
 
         for (String job_s: hs) {
-            AbstractItem job = null;
+            AbstractItem job;
 
             try {
                 job = (AbstractItem) jenkins.getItemByFullName(job_s);

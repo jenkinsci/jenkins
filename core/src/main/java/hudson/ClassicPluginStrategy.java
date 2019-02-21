@@ -159,7 +159,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
         final Manifest manifest;
 
-        URL baseResourceURL = null;
+        URL baseResourceURL;
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
