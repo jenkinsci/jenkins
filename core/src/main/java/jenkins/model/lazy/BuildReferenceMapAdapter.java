@@ -170,8 +170,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         public Object[] toArray() {
             List<Object> list = new ArrayList<>();
-            for (R r : this)
-                list.add(r);
+            list.addAll(this);
             return list.toArray();
         }
 
@@ -275,8 +274,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         public Object[] toArray() {
             List<Object> list = new ArrayList<>();
-            for (Entry<Integer, R> r : this)
-                list.add(r);
+            list.addAll(this);
             return list.toArray();
         }
 

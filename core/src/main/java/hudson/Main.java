@@ -42,6 +42,7 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.nio.charset.Charset;
 
@@ -153,8 +154,7 @@ public class Main {
                 long start = System.currentTimeMillis();
 
                 List<String> cmd = new ArrayList<>();
-                for( int i=1; i<args.length; i++ )
-                    cmd.add(args[i]);
+                cmd.addAll(Arrays.asList(args).subList(1, args.length));
                 Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
                     new DualOutputStream(System.out,new EncodingStream(os)));
 
