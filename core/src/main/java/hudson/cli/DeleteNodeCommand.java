@@ -40,6 +40,7 @@ import java.util.List;
 @Extension
 public class DeleteNodeCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
     private List<String> nodes;
 

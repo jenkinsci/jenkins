@@ -40,6 +40,7 @@ import java.util.HashSet;
 @Extension
 public class DeleteJobCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
     private List<String> jobs;
 

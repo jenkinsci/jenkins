@@ -41,6 +41,7 @@ import java.util.List;
 @Extension
 public class DeleteViewCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="View names to delete", required=true, multiValued=true)
     private List<String> views;
 

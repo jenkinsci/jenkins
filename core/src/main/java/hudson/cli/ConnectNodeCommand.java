@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 @Extension
 public class ConnectNodeCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comma-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
 
