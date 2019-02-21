@@ -646,7 +646,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     buf.append("+qs(this).addThis()");
 
                     for (String name : names) {
-                        buf.append(".nearBy('"+name+"')");
+                        buf.append(".nearBy('").append(name).append("')");
                     }
                     buf.append(".toString()");
                 }

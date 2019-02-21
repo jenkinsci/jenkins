@@ -100,7 +100,7 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
+                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.VERSION)).append('}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
