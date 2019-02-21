@@ -184,7 +184,7 @@ public class TextFile {
 
             String tails = cs.decode(java.nio.ByteBuffer.wrap(tail)).toString();
 
-            return new String(tails.substring(Math.max(0, tails.length() - numChars))); // trim the baggage of substring by allocating a new String
+            return tails.substring(Math.max(0, tails.length() - numChars));
         }
     }
 
