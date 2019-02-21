@@ -870,7 +870,7 @@ public class Util {
             if (c > 122 || uriMap[c]) {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
-                    out.append(s.substring(0, i));
+                    out.append(s, 0, i);
                     enc = StandardCharsets.UTF_8.newEncoder();
                     buf = CharBuffer.allocate(1);
                     escaped = true;
