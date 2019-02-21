@@ -1694,12 +1694,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("DisplayExecutor{");
-            sb.append("displayName='").append(displayName).append('\'');
-            sb.append(", url='").append(url).append('\'');
-            sb.append(", executor=").append(executor);
-            sb.append('}');
-            return sb.toString();
+            String sb = "DisplayExecutor{" + "displayName='" + displayName + '\'' +
+                    ", url='" + url + '\'' +
+                    ", executor=" + executor +
+                    '}';
+            return sb;
         }
 
         @Override
