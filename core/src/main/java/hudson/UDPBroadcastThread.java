@@ -79,6 +79,7 @@ public class UDPBroadcastThread extends Thread {
             mcs.joinGroup(MULTICAST);
             ready.signal();
 
+            //noinspection InfiniteLoopStatement
             while(true) {
                 byte[] buf = new byte[2048];
                 DatagramPacket p = new DatagramPacket(buf,buf.length);
