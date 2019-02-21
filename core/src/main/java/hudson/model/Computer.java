@@ -259,15 +259,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @SuppressWarnings("deprecation")
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<>();
-    	result.addAll(super.getActions());
-    	synchronized (this) {
-    		if (transientActions == null) {
-    			transientActions = TransientComputerActionFactory.createAllFor(this);
-    		}
-    		result.addAll(transientActions);
-    	}
-    	return Collections.unmodifiableList(result);
+        List<Action> result = new ArrayList<>();
+        result.addAll(super.getActions());
+        synchronized (this) {
+            if (transientActions == null) {
+                transientActions = TransientComputerActionFactory.createAllFor(this);
+            }
+            result.addAll(transientActions);
+        }
+        return Collections.unmodifiableList(result);
     }
 
     @SuppressWarnings({"ConstantConditions","deprecation"})
@@ -423,8 +423,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
     public final Future<?> connect(boolean forceReconnect) {
-    	connectTime = System.currentTimeMillis();
-    	return _connect(forceReconnect);
+        connectTime = System.currentTimeMillis();
+        return _connect(forceReconnect);
     }
 
     /**
@@ -466,7 +466,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return The time in ms since epoch when this computer last connected.
      */
     public final long getConnectTime() {
-    	return connectTime;
+        return connectTime;
     }
 
     /**
@@ -725,9 +725,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns the icon for this computer.
-     * 	 
+     *
      * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
-     * 
+     *
      * @see #getIconClassName()
      */
     @Exported
@@ -740,13 +740,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns the class name that will be used to lookup the icon.
-     * 
+     *
      * This class name will be added as a class tag to the html img tags where the icon should
      * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
      * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
-     * 
+     *
      * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
-     * 
+     *
      * @see #getIcon()
      */
     @Exported
@@ -1321,7 +1321,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          * other classes from being transferred over remoting.
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
-        
+
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<>();
 
