@@ -339,11 +339,7 @@ public class Nodes implements Saveable {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                for (Iterator<Map.Entry<String, Node>> i = nodes.entrySet().iterator(); i.hasNext(); ) {
-                    if (!(i.next().getValue() instanceof EphemeralNode)) {
-                        i.remove();
-                    }
-                }
+                nodes.entrySet().removeIf(stringNodeEntry -> !(stringNodeEntry.getValue() instanceof EphemeralNode));
                 nodes.putAll(newNodes);
                 jenkins.updateComputerList();
                 jenkins.trimLabels();

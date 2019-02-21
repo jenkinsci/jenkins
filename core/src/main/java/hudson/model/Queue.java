@@ -96,6 +96,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -580,10 +581,7 @@ public class Queue extends ResourceController implements Saveable {
     public @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
         // remove nulls
         actions = new ArrayList<>(actions);
-        for (Iterator<Action> itr = actions.iterator(); itr.hasNext();) {
-            Action a =  itr.next();
-            if (a==null)    itr.remove();
-        }
+        actions.removeIf(Objects::isNull);
 
         lock.lock();
         try { try {
