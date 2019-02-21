@@ -137,6 +137,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 } catch (InvalidPathException e) {
                     throw new IOException(e);
                 }
+                //noinspection StatementWithEmptyBody
                 if (firstLine.startsWith("Manifest-Version:")) {
                     // this is the manifest already
                 } else {

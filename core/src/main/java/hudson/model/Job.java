@@ -216,6 +216,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
+                //noinspection StatementWithEmptyBody
                 if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
                     // allow LazyBuildMixIn.onLoad to fix it
                 } else {
