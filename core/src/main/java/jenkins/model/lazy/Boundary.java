@@ -54,10 +54,9 @@ enum Boundary {
      * Computes the boundary value.
      */
     public int apply(int binarySearchOutput) {
-        int r = binarySearchOutput;
-        if (r>=0)    return r+offsetOfExactMatch;   // if we had some x_i==p
+        if (binarySearchOutput >=0)    return binarySearchOutput +offsetOfExactMatch;   // if we had some x_i==p
 
-        int ip = -(r+1);
+        int ip = -(binarySearchOutput +1);
         return ip+offsetOfInsertionPoint;
     }
 }

@@ -1929,8 +1929,7 @@ public final class FilePath implements Serializable {
         } catch (BuildException x) {
             throw new IOException(x.getMessage());
         }
-        String[] files = ds.getIncludedFiles();
-        return files;
+        return ds.getIncludedFiles();
     }
 
     /**

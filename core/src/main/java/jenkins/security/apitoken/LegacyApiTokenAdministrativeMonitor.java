@@ -92,8 +92,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     @Restricted(NoExternalUse.class)
     public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenStore().getLegacyToken();
-        return legacyToken;
+        return apiTokenProperty.getTokenStore().getLegacyToken();
     }
     
     // used by Jelly view
@@ -102,8 +101,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
-            ApiTokenProperty.TokenInfoAndStats tokenInfoAndStats = new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
-            return tokenInfoAndStats;
+            return new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
         }
         
         // in case the legacy token was revoked during the request

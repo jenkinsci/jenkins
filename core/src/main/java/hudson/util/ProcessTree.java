@@ -873,8 +873,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     JAVA_9_PROCESSHANDLE_DESTROY = null;
                 }
             } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
-                LinkageError x = new LinkageError("Cannot initialize reflection for Unix Processes", e);
-                throw x;
+                throw new LinkageError("Cannot initialize reflection for Unix Processes", e);
             }
         }
 
