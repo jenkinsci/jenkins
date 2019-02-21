@@ -120,6 +120,7 @@ public class EnvVars extends TreeMap<String,String> {
         }
     }
 
+    @SuppressWarnings("CopyConstructorMissesField")
     public EnvVars(@Nonnull EnvVars m) {
         // this constructor is so that in future we can get rid of the downcasting.
         this((Map)m);

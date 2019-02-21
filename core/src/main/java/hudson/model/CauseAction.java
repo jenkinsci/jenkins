@@ -75,6 +75,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
         this(Arrays.asList(c));
     }
 
+    @SuppressWarnings("CopyConstructorMissesField")
     public CauseAction(Collection<? extends Cause> causes) {
         addCauses(causes);
     }
