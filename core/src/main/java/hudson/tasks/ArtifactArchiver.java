@@ -327,7 +327,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 return FormValidation.ok();
             }
             // defensive approach to remain case sensitive in doubtful situations
-            boolean bCaseSensitive = caseSensitive == null || !"false".equals(caseSensitive);
+            boolean bCaseSensitive = !"false".equals(caseSensitive);
             return FilePath.validateFileMask(project.getSomeWorkspace(), value, bCaseSensitive);
         }
 
