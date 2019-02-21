@@ -31,7 +31,6 @@ import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
 import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;

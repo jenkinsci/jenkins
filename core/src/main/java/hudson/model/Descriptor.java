@@ -53,7 +53,6 @@ import org.apache.commons.io.IOUtils;
 import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.File;

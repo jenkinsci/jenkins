@@ -27,7 +27,7 @@ import hudson.model.ItemGroupMixIn;
 import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.util.Locale;
-import java.util.logging.Level;
+
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;

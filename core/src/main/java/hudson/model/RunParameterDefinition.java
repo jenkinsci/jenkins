@@ -23,9 +23,6 @@
  */
 package hudson.model;
 
-import static java.util.logging.Level.WARNING;
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;

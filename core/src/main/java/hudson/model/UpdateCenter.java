@@ -63,7 +63,6 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
-import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;

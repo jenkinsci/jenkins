@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
-import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;

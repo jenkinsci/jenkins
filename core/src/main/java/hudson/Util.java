@@ -91,7 +91,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

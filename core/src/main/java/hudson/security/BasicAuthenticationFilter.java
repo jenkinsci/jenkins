@@ -26,7 +26,6 @@ package hudson.security;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
-import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import jenkins.security.BasicApiTokenHelper;

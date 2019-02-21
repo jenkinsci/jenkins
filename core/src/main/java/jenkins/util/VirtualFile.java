@@ -44,7 +44,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

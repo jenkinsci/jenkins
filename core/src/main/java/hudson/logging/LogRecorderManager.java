@@ -25,7 +25,6 @@ package hudson.logging;
 
 import hudson.FeedAdapter;
 import hudson.Functions;
-import hudson.PluginManager;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;

@@ -26,7 +26,6 @@ package jenkins.security;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import java.util.List;
