@@ -122,7 +122,6 @@ public class TableNestChecker extends XMLFilterImpl {
         CHECKERS.put("TABLE",new InList("TR","THEAD","TBODY"));
         InList rows = new InList("TR");
         CHECKERS.put("THEAD",rows);
-        CHECKERS.put("THEAD",rows);
         CHECKERS.put("TR",   new InList("TD","TH"));
     }
 }
