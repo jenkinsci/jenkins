@@ -56,11 +56,8 @@ public class UnixLifecycle extends Lifecycle {
 
             // if we are running as daemon, don't fork into background one more time during restart
             args.remove("--daemon");
-        } catch (UnsupportedOperationException e) {
-            // can't restart
-            failedToObtainArgs = e;
-        } catch (LinkageError e) {
-            // see HUDSON-3875
+        } catch (UnsupportedOperationException | LinkageError e) {
+            // can't restart / see HUDSON-3875
             failedToObtainArgs = e;
         }
     }

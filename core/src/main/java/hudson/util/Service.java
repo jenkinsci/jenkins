@@ -62,11 +62,7 @@ public class Service {
                         if (!type.isAssignableFrom(t)) continue;      // invalid type
 
                         result.add(type.cast(t.newInstance()));
-                    } catch (ClassNotFoundException x) {
-                        LOGGER.log(WARNING, "Failed to load " + line, x);
-                    } catch (InstantiationException x) {
-                        LOGGER.log(WARNING, "Failed to load " + line, x);
-                    } catch (IllegalAccessException x) {
+                    } catch (ClassNotFoundException | IllegalAccessException | InstantiationException x) {
                         LOGGER.log(WARNING, "Failed to load " + line, x);
                     }
                 }

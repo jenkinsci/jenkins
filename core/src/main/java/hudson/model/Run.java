@@ -2335,9 +2335,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         LOGGER.log(WARNING, "deprecated call to Run.getEnvVars\n\tat {0}", new Throwable().getStackTrace()[1]);
         try {
             return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
-        } catch (IOException e) {
-            return new EnvVars();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             return new EnvVars();
         }
     }

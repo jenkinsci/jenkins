@@ -335,11 +335,7 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
-            } catch (JSONException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
-                return null;
-            } catch (IOException e) {
+            } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
                 return null;

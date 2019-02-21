@@ -164,14 +164,10 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     public RunT loadBuild(File dir) throws IOException {
         try {
             return getBuildClass().getConstructor(asJob().getClass(), File.class).newInstance(asJob(), dir);
-        } catch (InstantiationException e) {
-            throw new Error(e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException e) {
             throw new Error(e);
         } catch (InvocationTargetException e) {
             throw handleInvocationTargetException(e);
-        } catch (NoSuchMethodException e) {
-            throw new Error(e);
         }
     }
 

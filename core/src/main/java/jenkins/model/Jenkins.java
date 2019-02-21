@@ -3403,9 +3403,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.log(lv, s);
                 }
             });
-        } catch (InterruptedException | ReactorException | IOException e) {
-            LOGGER.log(SEVERE, "Failed to execute termination",e);
-            errors.add(e);
         } catch (OutOfMemoryError e) {
             // we should just propagate this, no point trying to log
             throw e;

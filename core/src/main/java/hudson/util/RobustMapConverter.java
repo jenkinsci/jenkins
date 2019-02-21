@@ -58,10 +58,7 @@ final class RobustMapConverter extends MapConverter {
             return readItem(reader, context, map);
         } catch (CriticalXStreamException x) {
             throw x;
-        } catch (XStreamException x) {
-            RobustReflectionConverter.addErrorInContext(context, x);
-            return ERROR;
-        } catch (LinkageError x) {
+        } catch (XStreamException | LinkageError x) {
             RobustReflectionConverter.addErrorInContext(context, x);
             return ERROR;
         } finally {

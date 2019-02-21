@@ -290,16 +290,10 @@ public abstract class ItemGroupMixIn {
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
-        } catch (TransformerException e) {
+        } catch (TransformerException | SAXException e) {
             success = false;
             throw new IOException("Failed to persist config.xml", e);
-        } catch (SAXException e) {
-            success = false;
-            throw new IOException("Failed to persist config.xml", e);
-        } catch (IOException e) {
-            success = false;
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             success = false;
             throw e;
         } finally {

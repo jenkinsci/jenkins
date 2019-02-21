@@ -106,9 +106,7 @@ public class RenderOnDemandClosure {
                             }
                             try {
                                 AdjunctsInPage.get().assumeIncluded(adjuncts);
-                            } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
-                            } catch (SAXException e) {
+                            } catch (IOException | SAXException e) {
                                 LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
                             }
                             return context;

@@ -445,11 +445,7 @@ public class XStream2 extends XStream {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
-            } catch (InstantiationException e) {
-                InstantiationError x = new InstantiationError();
-                x.initCause(e);
-                throw x;
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | InvocationTargetException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
                 throw x;

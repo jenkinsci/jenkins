@@ -198,9 +198,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     items.add(item);
                 } catch (CriticalXStreamException e) {
                     throw e;
-                } catch (XStreamException e) {
-                    RobustReflectionConverter.addErrorInContext(context, e);
-                } catch (LinkageError e) {
+                } catch (XStreamException | LinkageError e) {
                     RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();

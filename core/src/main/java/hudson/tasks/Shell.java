@@ -165,9 +165,7 @@ public class Shell extends CommandInterpreter {
             String interpreter = null;
             try {
                 interpreter = channel.call(new Shellinterpreter());
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
             if (interpreter == null) {

@@ -148,10 +148,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 Util.createSymlink(job.getBuildDir(),b.getId(),target,TaskListener.NULL);
             }
             writeSymlink(cache, target);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
-            cache.delete();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
             cache.delete();
         }

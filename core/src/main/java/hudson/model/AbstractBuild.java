@@ -694,10 +694,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                                 setResult(Result.FAILURE);
                             }
                         }
-                    } catch (Exception e) {
-                        reportError(bs, e, listener, phase);
-                        r = false;
-                    } catch (LinkageError e) {
+                    } catch (Exception | LinkageError e) {
                         reportError(bs, e, listener, phase);
                         r = false;
                     }
@@ -742,10 +739,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try {
 
                 canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
-            } catch (RequestAbortedException ex) {
-                // Channel is closed, do not continue
-                reportBrokenChannel(listener);
-            } catch (ChannelClosedException ex) {
+            } catch (RequestAbortedException | ChannelClosedException ex) {
                 // Channel is closed, do not continue
                 reportBrokenChannel(listener);
             } catch (RuntimeException ex) {
@@ -859,9 +853,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         try {
             return scm.parse(this,changelogFile);
-        } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
-        } catch (SAXException e) {
+        } catch (IOException | SAXException e) {
             LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         }
         return ChangeLogSet.createEmpty(this);

@@ -210,11 +210,9 @@ public final class Secret implements Serializable {
         } else {
             try {
                 return HistoricalSecrets.decrypt(data, KEY);
-            } catch (GeneralSecurityException e) {
-                return null;
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e); // impossible
-            } catch (IOException e) {
+            } catch (GeneralSecurityException | IOException e) {
                 return null;
             }
         }
