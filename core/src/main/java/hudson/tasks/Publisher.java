@@ -136,7 +136,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
         @Override
         protected List<ExtensionComponent<Descriptor<Publisher>>> sort(List<ExtensionComponent<Descriptor<Publisher>>> r) {
             List<ExtensionComponent<Descriptor<Publisher>>> copy = new ArrayList<>(r);
-            Collections.sort(copy,this);
+            copy.sort(this);
             return copy;
         }
 

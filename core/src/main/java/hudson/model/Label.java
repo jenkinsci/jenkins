@@ -386,7 +386,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
-        Collections.sort(r, Items.BY_FULL_NAME);
+        r.sort(Items.BY_FULL_NAME);
         return r;
     }
 

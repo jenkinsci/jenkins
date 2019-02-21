@@ -1200,12 +1200,12 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @Nonnull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
-        Collections.sort(r,new Comparator<FingerprintFacet>() {
+        r.sort(new Comparator<FingerprintFacet>() {
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();
                 long b = o2.getTimestamp();
-                if (a<b)    return -1;
-                if (a==b)   return 0;
+                if (a < b) return -1;
+                if (a == b) return 0;
                 return 1;
             }
         });

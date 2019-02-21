@@ -259,7 +259,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        Collections.sort(downstreamProjects, new Comparator<Dependency>() {
+        downstreamProjects.sort(new Comparator<Dependency>() {
             public int compare(Dependency lhs, Dependency rhs) {
                 // Swapping lhs/rhs to get reverse sort:
                 return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());

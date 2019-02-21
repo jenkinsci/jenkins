@@ -151,7 +151,7 @@ public abstract class ViewGroupMixIn {
             if (v.hasPermission(View.READ))
                 copy.add(v);
         }
-        Collections.sort(copy, View.SORTER);
+        copy.sort(View.SORTER);
         return copy;
     }
 

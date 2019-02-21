@@ -1514,7 +1514,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (s != null) {
                     s.sortBlockedItems(blockedItems);
                 } else {
-                    Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
+                    blockedItems.sort(QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
                 }
                 for (BlockedItem p : blockedItems) {
                     String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;

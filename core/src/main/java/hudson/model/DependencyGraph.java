@@ -352,7 +352,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
         for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
-            Collections.sort( e.getValue(), NAME_COMPARATOR );
+            e.getValue().sort(NAME_COMPARATOR);
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
         return Collections.unmodifiableMap(m);

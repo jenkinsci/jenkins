@@ -1781,7 +1781,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         List<String> names = new ArrayList<>();
         for (Job j : allItems(Job.class))
             names.add(j.getFullName());
-        Collections.sort(names, String.CASE_INSENSITIVE_ORDER);
+        names.sort(String.CASE_INSENSITIVE_ORDER);
         return names;
     }
 

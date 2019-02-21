@@ -407,7 +407,7 @@ public class Items {
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
         List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
         // because we add items depth first, we can use the quicker BY_NAME comparison
-        Collections.sort(items, BY_NAME);
+        items.sort(BY_NAME);
         for (Item i : items) {
             if (type.isInstance(i)) {
                 if (i.hasPermission(Item.READ)) {
