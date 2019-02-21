@@ -176,7 +176,7 @@ public abstract class LabelExpression extends Label {
 
         @Override
         protected boolean op(boolean a, boolean b) {
-            return !(a ^ b);
+            return a == b;
         }
 
         @Override
