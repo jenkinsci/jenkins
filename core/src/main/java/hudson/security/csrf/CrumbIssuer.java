@@ -156,7 +156,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Returns all the registered {@link CrumbIssuer} descriptors.
      */
     public static DescriptorExtensionList<CrumbIssuer, Descriptor<CrumbIssuer>> all() {
-        return Jenkins.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
+        return Jenkins.getInstance().getDescriptorList(CrumbIssuer.class);
     }
 
     public Api getApi() {

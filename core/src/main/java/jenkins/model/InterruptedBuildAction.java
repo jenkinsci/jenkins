@@ -43,7 +43,7 @@ public class InterruptedBuildAction extends InvisibleAction {
     private final List<CauseOfInterruption> causes;
 
     public InterruptedBuildAction(Collection<? extends CauseOfInterruption> causes) {
-        this.causes = ImmutableList.<CauseOfInterruption>copyOf(causes);
+        this.causes = ImmutableList.copyOf(causes);
     }
 
     @Exported

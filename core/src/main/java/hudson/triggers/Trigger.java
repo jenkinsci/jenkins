@@ -175,7 +175,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     protected Trigger() {
         this.spec = "";
-        this.tabs = new CronTabList(Collections.<CronTab>emptyList());
+        this.tabs = new CronTabList(Collections.emptyList());
     }
 
     /**

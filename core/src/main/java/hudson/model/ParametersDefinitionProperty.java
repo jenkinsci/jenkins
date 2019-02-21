@@ -108,7 +108,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @Nonnull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
-        return Collections.<Action>singleton(this);
+        return Collections.singleton(this);
     }
 
     @Deprecated

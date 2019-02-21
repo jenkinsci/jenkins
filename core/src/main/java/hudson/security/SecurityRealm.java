@@ -647,7 +647,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Jenkins.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
+        return Jenkins.getInstance().getDescriptorList(SecurityRealm.class);
     }
 
 

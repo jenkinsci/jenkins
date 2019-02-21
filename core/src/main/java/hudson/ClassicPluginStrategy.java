@@ -316,7 +316,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         List<ExtensionFinder> finders;
         if (type==ExtensionFinder.class) {
             // Avoid infinite recursion of using ExtensionFinders to find ExtensionFinders
-            finders = Collections.<ExtensionFinder>singletonList(new ExtensionFinder.Sezpoz());
+            finders = Collections.singletonList(new ExtensionFinder.Sezpoz());
         } else {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }

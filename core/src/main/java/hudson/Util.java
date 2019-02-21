@@ -1035,7 +1035,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
-        return fixNull(l, Collections.<T>emptyList());
+        return fixNull(l, Collections.emptyList());
     }
 
     /**
@@ -1049,7 +1049,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1063,7 +1063,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1077,7 +1077,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
