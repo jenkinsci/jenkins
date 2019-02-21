@@ -83,7 +83,7 @@ public class UnixLifecycle extends Lifecycle {
 
         // exec to self
         String exe = args.get(0);
-        LIBC.execvp(exe, new StringArray(args.toArray(new String[args.size()])));
+        LIBC.execvp(exe, new StringArray(args.toArray(new String[0])));
         throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
 

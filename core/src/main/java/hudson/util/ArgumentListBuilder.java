@@ -260,7 +260,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public String[] toCommandArray() {
-        return args.toArray(new String[args.size()]);
+        return args.toArray(new String[0]);
     }
     
     @Override

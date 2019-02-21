@@ -951,7 +951,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 for (String c : p.categories)
                     entries.add(new PluginEntry(p, getCategoryDisplayName(c)));
         }
-        return entries.toArray(new PluginEntry[entries.size()]);
+        return entries.toArray(new PluginEntry[0]);
     }
 
     private static String getCategoryDisplayName(String category) {

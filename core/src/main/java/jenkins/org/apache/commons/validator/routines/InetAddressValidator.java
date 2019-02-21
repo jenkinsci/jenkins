@@ -149,7 +149,7 @@ public class InetAddressValidator implements Serializable {
             } else if (inet6Address.startsWith("::") && !octetList.isEmpty()) {
                 octetList.remove(0);
             }
-            octets = octetList.toArray(new String[octetList.size()]);
+            octets = octetList.toArray(new String[0]);
         }
         if (octets.length > IPV6_MAX_HEX_GROUPS) {
             return false;

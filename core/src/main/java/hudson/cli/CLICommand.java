@@ -243,7 +243,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
-            p.parseArgument(args.toArray(new String[args.size()]));
+            p.parseArgument(args.toArray(new String[0]));
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",

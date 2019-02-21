@@ -92,7 +92,7 @@ public class Shell extends CommandInterpreter {
             args.addAll(Arrays.asList(Util.tokenize(command.substring(0,end).trim())));
             args.add(script.getRemote());
             args.set(0,args.get(0).substring(2));   // trim off "#!"
-            return args.toArray(new String[args.size()]);
+            return args.toArray(new String[0]);
         } else
             return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
     }

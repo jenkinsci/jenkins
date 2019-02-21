@@ -66,7 +66,7 @@ public final class ContainerAuthentication implements Authentication {
                 l.add(new GrantedAuthorityImpl(g));
         }
         l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-        authorities = l.toArray(new GrantedAuthority[l.size()]);
+        authorities = l.toArray(new GrantedAuthority[0]);
     }
 
     public GrantedAuthority[] getAuthorities() {

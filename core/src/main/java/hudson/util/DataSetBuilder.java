@@ -60,8 +60,8 @@ public final class DataSetBuilder<Row extends Comparable,Column extends Comparab
         TreeSet<Row> rowSet = new TreeSet<>(rows);
         TreeSet<Column> colSet = new TreeSet<>(columns);
 
-        Comparable[] _rows = rowSet.toArray(new Comparable[rowSet.size()]);
-        Comparable[] _cols = colSet.toArray(new Comparable[colSet.size()]);
+        Comparable[] _rows = rowSet.toArray(new Comparable[0]);
+        Comparable[] _cols = colSet.toArray(new Comparable[0]);
 
         // insert rows and columns in the right order
         for (Comparable r : _rows)

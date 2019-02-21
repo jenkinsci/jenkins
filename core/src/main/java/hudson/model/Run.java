@@ -2098,7 +2098,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
+        Byte[] byteArray = bytes.toArray(new Byte[0]);
         return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
     }
 

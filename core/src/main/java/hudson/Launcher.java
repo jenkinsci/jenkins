@@ -774,7 +774,7 @@ public abstract class Launcher {
      */
     protected final void maskedPrintCommandLine(@Nonnull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
         if(mask==null) {
-            printCommandLine(cmd.toArray(new String[cmd.size()]),workDir);
+            printCommandLine(cmd.toArray(new String[0]),workDir);
             return;
         }
         

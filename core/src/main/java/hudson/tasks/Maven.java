@@ -470,7 +470,7 @@ public class Maven extends Builder {
 					}
 				}
 			}
-            this.installations = tmpList.toArray(new MavenInstallation[tmpList.size()]);
+            this.installations = tmpList.toArray(new MavenInstallation[0]);
             save();
         }
 

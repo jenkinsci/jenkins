@@ -68,7 +68,7 @@ public class RenderOnDemandClosure {
             Script script = (Script) c.getVariables().get("org.apache.commons.jelly.body");
             if(script!=null) bodyStack.add(script);
         }
-        this.bodyStack = bodyStack.toArray(new Script[bodyStack.size()]);
+        this.bodyStack = bodyStack.toArray(new Script[0]);
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
         Map<String,Object> variables = new HashMap<>();
