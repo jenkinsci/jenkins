@@ -28,17 +28,17 @@
 }
 @media (min-width: 768px) {
   .container {
-    width: 750px;
+    width: 100%;
   }
 }
 @media (min-width: 992px) {
   .container {
-    width: 970px;
+    width: 100%;
   }
 }
 @media (min-width: 1200px) {
   .container {
-    width: 1170px;
+    width: 100%;
   }
 }
 .container-fluid {
@@ -1269,7 +1269,7 @@
  */
 @media (min-width: 1800px) {
   .container {
-    width: 1760px;
+    width: 100%
   }
 }
 .col-xlg-1, .col-xlg-2, .col-xlg-3, .col-xlg-4, .col-xlg-5, .col-xlg-6, .col-xlg-7, .col-xlg-8, .col-xlg-9, .col-xlg-10, .col-xlg-11, .col-xlg-12, .col-xlg-13, .col-xlg-14, .col-xlg-15, .col-xlg-16, .col-xlg-17, .col-xlg-18, .col-xlg-19, .col-xlg-20, .col-xlg-21, .col-xlg-22, .col-xlg-23, .col-xlg-24 {
