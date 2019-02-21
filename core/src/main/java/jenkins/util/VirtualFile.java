@@ -233,7 +233,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         }
         return r.stream().filter(p -> {
             TokenizedPath path = new TokenizedPath(p.replace('/', File.separatorChar));
-            return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && !excludePatterns.stream().anyMatch(patt -> patt.matchPath(path, true));
+            return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && excludePatterns.stream().noneMatch(patt -> patt.matchPath(path, true));
         }).collect(Collectors.toSet());
     }
     private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
