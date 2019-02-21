@@ -580,17 +580,11 @@ public class Maven extends Builder {
                 if (jars != null) { // be defensive
                     for (File jar : jars) {
                         if (jar.getName().startsWith("maven-")) {
-                            JarFile jf = null;
-                            try {
-                                jf = new JarFile(jar);
+                            try (JarFile jf = new JarFile(jar)) {
                                 Manifest manifest = jf.getManifest();
                                 String version = manifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
                                 if (version != null) {
                                     return version;
-                                }
-                            } finally {
-                                if (jf != null) {
-                                    jf.close();
                                 }
                             }
                         }
