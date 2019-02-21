@@ -55,8 +55,7 @@ public class DeleteNodeCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(nodes);
+        final HashSet<String> hs = new HashSet<>(nodes);
 
         for (String node_s : hs) {
             Node node = null;

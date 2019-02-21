@@ -55,8 +55,7 @@ public class DeleteJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(jobs);
+        final HashSet<String> hs = new HashSet<>(jobs);
 
         for (String job_s: hs) {
             AbstractItem job = null;

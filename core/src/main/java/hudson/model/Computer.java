@@ -259,8 +259,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @SuppressWarnings("deprecation")
     public List<Action> getActions() {
-        List<Action> result = new ArrayList<>();
-        result.addAll(super.getActions());
+        List<Action> result = new ArrayList<>(super.getActions());
         synchronized (this) {
             if (transientActions == null) {
                 transientActions = TransientComputerActionFactory.createAllFor(this);
