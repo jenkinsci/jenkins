@@ -191,8 +191,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
         VirtualFile[] children = list();
         List<VirtualFile> result = new ArrayList<>();
-        for (int i = 0; i < children.length; i++) {
-            VirtualFile child = children[i];
+        for (VirtualFile child : children) {
             if (child.isDescendant("")) {
                 result.add(child);
             }

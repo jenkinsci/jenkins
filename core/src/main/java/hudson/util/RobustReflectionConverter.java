@@ -212,8 +212,7 @@ public class RobustReflectionConverter implements Converter {
                     if (mapping != null) {
                         if (mapping.getItemFieldName() != null) {
                             Collection list = (Collection) newObj;
-                            for (Iterator iter = list.iterator(); iter.hasNext();) {
-                                Object obj = iter.next();
+                            for (Object obj : list) {
                                 writeField(fieldName, mapping.getItemFieldName(), mapping.getItemType(), definedIn, obj);
                             }
                         } else {

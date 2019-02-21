@@ -1463,9 +1463,9 @@ public class Util {
     public static int permissionsToMode(Set<PosixFilePermission> permissions) {
         PosixFilePermission[] allPermissions = PosixFilePermission.values();
         int result = 0;
-        for (int i = 0; i < allPermissions.length; i++) {
+        for (PosixFilePermission allPermission : allPermissions) {
             result <<= 1;
-            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+            result |= permissions.contains(allPermission) ? 1 : 0;
         }
         return result;
     }

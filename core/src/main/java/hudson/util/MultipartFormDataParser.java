@@ -96,8 +96,8 @@ public class MultipartFormDataParser implements AutoCloseable {
             return false;
         }
 
-        for (int i = 0; i < parts.length; i++) {
-            if ("multipart/form-data".equals(parts[i])) {
+        for (String part : parts) {
+            if ("multipart/form-data".equals(part)) {
                 return true;
             }
         }
