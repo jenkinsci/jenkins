@@ -61,9 +61,7 @@ public class QueryParameterMap {
                 String[] kv = param.split("=");
                 String key = URLDecoder.decode(kv[0], "UTF-8");
                 String value = URLDecoder.decode(kv[1], "UTF-8");
-                List<String> values = store.get(key);
-                if (values == null)
-                    store.put(key, values = new ArrayList<>());
+                List<String> values = store.computeIfAbsent(key, k -> new ArrayList<>());
                 values.add(value);
             }
         } catch (UnsupportedEncodingException e) {

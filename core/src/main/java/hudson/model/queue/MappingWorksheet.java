@@ -325,9 +325,7 @@ public class MappingWorksheet {
         Map<Computer,List<ExecutorSlot>> j = new HashMap<>();
         for (ExecutorSlot o : offers) {
             Computer c = o.getExecutor().getOwner();
-            List<ExecutorSlot> l = j.get(c);
-            if (l==null)
-                j.put(c,l= new ArrayList<>());
+            List<ExecutorSlot> l = j.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(o);
         }
 
@@ -378,9 +376,7 @@ public class MappingWorksheet {
             Object c = meu.getSameNodeConstraint();
             if (c==null)    c = new Object();
 
-            List<SubTask> l = m.get(c);
-            if (l==null)
-                m.put(c,l= new ArrayList<>());
+            List<SubTask> l = m.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(meu);
         }
 

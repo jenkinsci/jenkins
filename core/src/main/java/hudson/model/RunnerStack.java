@@ -42,8 +42,7 @@ final class RunnerStack {
 
     synchronized void push(RunExecution r) {
         Executor e = Executor.currentExecutor();
-        Stack<RunExecution> s = stack.get(e);
-        if(s==null) stack.put(e,s= new Stack<>());
+        Stack<RunExecution> s = stack.computeIfAbsent(e, k -> new Stack<>());
         s.push(r);
     }
 
