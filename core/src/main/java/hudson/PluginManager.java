@@ -610,7 +610,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Set<String> names = new HashSet();
 
         ServletContext context = Jenkins.getActiveInstance().servletContext;
-        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
+        Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
 
