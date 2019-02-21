@@ -66,10 +66,10 @@ import javax.annotation.Nullable;
  */
 public class LabelAtom extends Label implements Saveable {
     private DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor> properties =
-            new DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor>(this);
+            new DescribableList<>(this);
 
     @CopyOnWrite
-    protected transient volatile List<Action> transientActions = new Vector<Action>();
+    protected transient volatile List<Action> transientActions = new Vector<>();
 
     private String description;
 
@@ -100,7 +100,7 @@ public class LabelAtom extends Label implements Saveable {
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
-        List<Action> actions = new Vector<Action>(super.getActions());
+        List<Action> actions = new Vector<>(super.getActions());
         actions.addAll(transientActions);
         // return the read only list to cause a failure on plugins who try to add an action here
         return Collections.unmodifiableList(actions);
@@ -109,7 +109,7 @@ public class LabelAtom extends Label implements Saveable {
     // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
 
     protected void updateTransientActions() {
-        Vector<Action> ta = new Vector<Action>();
+        Vector<Action> ta = new Vector<>();
 
         for (LabelAtomProperty p : properties)
             ta.addAll(p.getActions(this));
@@ -236,7 +236,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     public static LabelAtom findNearest(String name) {
-        List<String> candidates = new ArrayList<String>();
+        List<String> candidates = new ArrayList<>();
         for (LabelAtom a : Jenkins.getInstance().getLabelAtoms()) {
             candidates.add(a.getName());
         }

@@ -340,7 +340,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * @since 1.350
      */
     public static List<String> removeNotes(Collection<String> logLines) {
-        List<String> r = new ArrayList<String>(logLines.size());
+        List<String> r = new ArrayList<>(logLines.size());
         for (String l : logLines)
             r.add(removeNotes(l));
         return r;

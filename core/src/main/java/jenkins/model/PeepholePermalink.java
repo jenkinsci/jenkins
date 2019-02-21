@@ -62,7 +62,7 @@ import org.apache.commons.io.FileUtils;
 public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
 
     /** JENKINS-22822: avoids rereading symlinks */
-    static final Map<File,String> symlinks = new HashMap<File,String>();
+    static final Map<File,String> symlinks = new HashMap<>();
 
     /**
      * Checks if the given build satisfies the peep-hole criteria.

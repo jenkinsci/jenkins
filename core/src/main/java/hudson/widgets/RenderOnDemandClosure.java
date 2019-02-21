@@ -63,7 +63,7 @@ public class RenderOnDemandClosure {
     private final String[] adjuncts;
 
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
-        List<Script> bodyStack = new ArrayList<Script>();
+        List<Script> bodyStack = new ArrayList<>();
         for (JellyContext c = context; c!=null; c=c.getParent()) {
             Script script = (Script) c.getVariables().get("org.apache.commons.jelly.body");
             if(script!=null) bodyStack.add(script);
@@ -71,7 +71,7 @@ public class RenderOnDemandClosure {
         this.bodyStack = bodyStack.toArray(new Script[bodyStack.size()]);
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
-        Map<String,Object> variables = new HashMap<String, Object>();
+        Map<String,Object> variables = new HashMap<>();
         for (String v : Util.fixNull(attributesToCapture).split(","))
             variables.put(v.intern(),context.getVariable(v));
 

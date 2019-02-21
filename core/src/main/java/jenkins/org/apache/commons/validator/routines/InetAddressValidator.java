@@ -142,7 +142,7 @@ public class InetAddressValidator implements Serializable {
         }
         String[] octets = inet6Address.split(":");
         if (containsCompressedZeroes) {
-            List<String> octetList = new ArrayList<String>(Arrays.asList(octets));
+            List<String> octetList = new ArrayList<>(Arrays.asList(octets));
             if (inet6Address.endsWith("::")) {
                 // String.split() drops ending empty segments
                 octetList.add("");

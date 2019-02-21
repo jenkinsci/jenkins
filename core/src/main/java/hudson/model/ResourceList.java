@@ -52,7 +52,7 @@ public final class ResourceList {
     /**
      * All resources (R/W.)
      */
-    private final Set<Resource> all = new HashSet<Resource>();
+    private final Set<Resource> all = new HashSet<>();
 
     /**
      * Write accesses. Values are the # of write counts that this list uses.
@@ -60,7 +60,7 @@ public final class ResourceList {
      * The values are mostly supposed to be 1, but when {@link ResourceController}
      * uses a list to keep track of the union of all the activities, it can get larger.
      */
-    private final Map<Resource,Integer> write = new HashMap<Resource,Integer>();
+    private final Map<Resource,Integer> write = new HashMap<>();
     private static final Integer MAX_INT = Integer.MAX_VALUE;
 
     /**
@@ -143,7 +143,7 @@ public final class ResourceList {
 
     @Override
     public String toString() {
-        Map<Resource,String> m = new HashMap<Resource,String>();
+        Map<Resource,String> m = new HashMap<>();
         for (Resource r : all)
             m.put(r,"R");
         for (Entry<Resource,Integer> e : write.entrySet())

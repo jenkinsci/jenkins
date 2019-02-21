@@ -107,7 +107,7 @@ public abstract class ItemGroupMixIn {
                 return child.isDirectory();
             }
         });
-        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
+        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
         for (File subdir : subdirs) {
             try {
                 // Try to retain the identity of an existing child object if we can.

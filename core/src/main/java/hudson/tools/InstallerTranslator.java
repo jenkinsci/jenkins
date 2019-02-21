@@ -40,7 +40,7 @@ import java.util.concurrent.Semaphore;
 @Extension
 public class InstallerTranslator extends ToolLocationTranslator {
 
-    private static final Map<Node,Map<ToolInstallation,Semaphore>> mutexByNode = new WeakHashMap<Node,Map<ToolInstallation,Semaphore>>();
+    private static final Map<Node,Map<ToolInstallation,Semaphore>> mutexByNode = new WeakHashMap<>();
 
     public String getToolHome(Node node, ToolInstallation tool, TaskListener log) throws IOException, InterruptedException {
         if (node.getRootPath() == null) {
@@ -52,7 +52,7 @@ public class InstallerTranslator extends ToolLocationTranslator {
             return null;
         }
 
-        ArrayList<String> inapplicableInstallersMessages = new ArrayList<String>();
+        ArrayList<String> inapplicableInstallersMessages = new ArrayList<>();
 
         for (ToolInstaller installer : isp.installers) {
             if (installer.appliesTo(node)) {
@@ -60,7 +60,7 @@ public class InstallerTranslator extends ToolLocationTranslator {
                 synchronized (mutexByNode) {
                     Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.get(node);
                     if (mutexByTool == null) {
-                        mutexByNode.put(node, mutexByTool = new WeakHashMap<ToolInstallation, Semaphore>());
+                        mutexByNode.put(node, mutexByTool = new WeakHashMap<>());
                     }
                     semaphore = mutexByTool.get(tool);
                     if (semaphore == null) {

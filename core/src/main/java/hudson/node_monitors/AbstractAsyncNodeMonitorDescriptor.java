@@ -80,7 +80,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * Perform monitoring with detailed reporting.
      */
     protected final @Nonnull Result<T> monitorDetailed() throws InterruptedException {
-        Map<Computer,Future<T>> futures = new HashMap<Computer,Future<T>>();
+        Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
         for (Computer c : Jenkins.getInstance().getComputers()) {
@@ -102,7 +102,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         final long now = System.currentTimeMillis();
         final long end = now + getMonitoringTimeOut();
 
-        final Map<Computer,T> data = new HashMap<Computer,T>();
+        final Map<Computer,T> data = new HashMap<>();
 
         for (Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();

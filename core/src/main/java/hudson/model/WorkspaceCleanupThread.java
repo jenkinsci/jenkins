@@ -65,7 +65,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             LOGGER.fine("Disabled. Skipping execution");
             return;
         }
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         Jenkins j = Jenkins.getInstance();
         nodes.add(j);
         nodes.addAll(j.getNodes());

@@ -98,7 +98,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Updated atomically. Once set to this field, the index object may not be modified.
      */
     private volatile Index index = new Index();
-    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<R>(this);
+    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<>(this);
 
     /**
      * Historical holder for map.
@@ -120,11 +120,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         private final TreeMap<Integer,BuildReference<R>> byNumber;
 
         private Index() {
-            byNumber = new TreeMap<Integer,BuildReference<R>>(Collections.reverseOrder());
+            byNumber = new TreeMap<>(Collections.reverseOrder());
         }
 
         private Index(Index rhs) {
-            byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
+            byNumber = new TreeMap<>(rhs.byNumber);
         }
     }
 
@@ -223,7 +223,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer,R> getLoadedBuilds() {
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber));
     }
 
     /**
@@ -249,7 +249,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber.subMap(fromKey, toKey)));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber.subMap(fromKey, toKey)));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
@@ -532,7 +532,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Allow subtype to capture a reference.
      */
     protected BuildReference<R> createReference(R r) {
-        return new BuildReference<R>(getIdOf(r),r);
+        return new BuildReference<>(getIdOf(r), r);
     }
 
 

@@ -90,9 +90,9 @@ public class XStream2 extends XStream {
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
 
     private RobustReflectionConverter reflectionConverter;
-    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
     private final @CheckForNull ClassOwnership classOwnership;
-    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<>();
 
     /**
      * Hook to insert {@link Mapper}s after they are created.
@@ -397,7 +397,7 @@ public class XStream2 extends XStream {
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
         private final ConcurrentHashMap<Class<?>,Converter> cache =
-                new ConcurrentHashMap<Class<?>,Converter>();
+                new ConcurrentHashMap<>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;

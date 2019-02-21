@@ -68,7 +68,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
      */
-    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<String,LogRecorder>();
+    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
     public String getDisplayName() {
         return Messages.LogRecorderManager_DisplayName();
@@ -160,7 +160,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         String level = req.getParameter("level");
         if(level!=null) {
             Level threshold = Level.parse(level);
-            List<LogRecord> filtered = new ArrayList<LogRecord>();
+            List<LogRecord> filtered = new ArrayList<>();
             for (LogRecord r : logs) {
                 if(r.getLevel().intValue() >= threshold.intValue())
                     filtered.add(r);

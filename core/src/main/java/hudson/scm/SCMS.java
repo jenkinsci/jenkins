@@ -46,7 +46,7 @@ public class SCMS {
      *      Use {@link SCM#all()} for read access and {@link Extension} for registration.
      */
     @Deprecated
-    public static final List<SCMDescriptor<?>> SCMS = (List)new DescriptorList<SCM>(SCM.class);
+    public static final List<SCMDescriptor<?>> SCMS = (List) new DescriptorList<>(SCM.class);
 
     /**
      * Parses {@link SCM} configuration from the submitted form.

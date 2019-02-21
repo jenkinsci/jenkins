@@ -65,7 +65,7 @@ public class WhoAmI implements UnprotectedRootAction {
         if (auth().getAuthorities() == null) {
             return MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
-        List <String> authorities = new ArrayList<String>();
+        List <String> authorities = new ArrayList<>();
         for (GrantedAuthority a : auth().getAuthorities()) {
             authorities.add(a.getAuthority());
         }

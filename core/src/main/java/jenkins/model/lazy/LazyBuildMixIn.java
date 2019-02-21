@@ -62,7 +62,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @Nonnull RunMap<RunT> builds = new RunMap<RunT>();
+    private @Nonnull RunMap<RunT> builds = new RunMap<>();
 
     /**
      * Initializes this mixin.
@@ -137,8 +137,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        RunMap<RunT> r = new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
-            @Override public RunT create(File dir) throws IOException {
+        RunMap<RunT> r = new RunMap<>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+            @Override
+            public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
@@ -329,7 +330,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
          */
         public final synchronized BuildReference<RunT> createReference() {
             if (selfReference == null) {
-                selfReference = new BuildReference<RunT>(asRun().getId(), asRun());
+                selfReference = new BuildReference<>(asRun().getId(), asRun());
             }
             return selfReference;
         }

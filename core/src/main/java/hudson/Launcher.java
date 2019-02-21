@@ -197,14 +197,14 @@ public abstract class Launcher {
         }
 
         public ProcStarter cmds(File program, String... args) {
-            commands = new ArrayList<String>(args.length+1);
+            commands = new ArrayList<>(args.length + 1);
             commands.add(program.getPath());
             commands.addAll(Arrays.asList(args));
             return this;
         }
 
         public ProcStarter cmds(List<String> args) {
-            commands = new ArrayList<String>(args);
+            commands = new ArrayList<>(args);
             return this;
         }
 

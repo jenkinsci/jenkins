@@ -256,7 +256,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         // Check all downstream Project of the project, not just those defined by BuildTrigger
         // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
         final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
-        List<Dependency> downstreamProjects = new ArrayList<Dependency>(
+        List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
         Collections.sort(downstreamProjects, new Comparator<Dependency>() {
@@ -267,7 +267,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         });
 
         for (Dependency dep : downstreamProjects) {
-            List<Action> buildActions = new ArrayList<Action>();
+            List<Action> buildActions = new ArrayList<>();
             if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                 AbstractProject p = dep.getDownstreamProject();
                 // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:

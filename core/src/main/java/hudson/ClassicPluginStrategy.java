@@ -192,7 +192,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         // TODO: define a mechanism to hide classes
         // String export = manifest.getMainAttributes().getValue("Export");
 
-        List<File> paths = new ArrayList<File>();
+        List<File> paths = new ArrayList<>();
         if (isLinked) {
             parseClassPath(manifest, archive, paths, "Libraries", ",");
             parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward compatibility
@@ -218,8 +218,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         // compute dependencies
-        List<PluginWrapper.Dependency> dependencies = new ArrayList<PluginWrapper.Dependency>();
-        List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<PluginWrapper.Dependency>();
+        List<PluginWrapper.Dependency> dependencies = new ArrayList<>();
+        List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<>();
         String v = atts.getValue("Plugin-Dependencies");
         if (v != null) {
             for (String s : v.split(",")) {
@@ -336,7 +336,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             } catch (AbstractMethodError e) {
                 // backward compatibility
                 for (T t : finder.findExtensions(type, hudson))
-                    r.add(new ExtensionComponent<T>(t));
+                    r.add(new ExtensionComponent<>(t));
             }
         }
 
@@ -578,7 +578,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
-                        List<PluginWrapper> dep = new ArrayList<PluginWrapper>();
+                        List<PluginWrapper> dep = new ArrayList<>();
                         for (Dependency d : pw.getDependencies()) {
                             PluginWrapper p = pluginManager.getPlugin(d.shortName);
                             if (p!=null && p.isActive())
@@ -644,7 +644,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS",
                             justification = "Should not produce network overheads since the URL is local. JENKINS-53793 is a follow-up")
         protected Enumeration<URL> findResources(String name) throws IOException {
-            HashSet<URL> result = new HashSet<URL>();
+            HashSet<URL> result = new HashSet<>();
 
             if (PluginManager.FAST_LOOKUP) {
                     for (PluginWrapper pw : getTransitiveDependencies()) {
