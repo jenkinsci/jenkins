@@ -181,6 +181,7 @@ public class XStreamDOM {
     public XStreamDOM expandMacro(VariableResolver<String> vars) {
         String[] newAttributes = new String[attributes.length];
         for (int i=0; i<attributes.length; i+=2) {
+            //noinspection PointlessArithmeticExpression
             newAttributes[i+0] = attributes[i]; // name
             newAttributes[i+1] = Util.replaceMacro(attributes[i+1],vars);
         }
