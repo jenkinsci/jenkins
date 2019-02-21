@@ -73,7 +73,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.xmlpull.v1.XmlPullParserException;
@@ -974,7 +973,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return r;
     }
 
-    public @Nullable Hashtable<String,RangeSet> getUsages() {
+    public @CheckForNull Hashtable<String,RangeSet> getUsages() {
         return usages;
     }
 
