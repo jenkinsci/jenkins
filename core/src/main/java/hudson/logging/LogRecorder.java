@@ -156,7 +156,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                     continue;
                 }
 
-                if (match.booleanValue()) {
+                if (match) {
                     // most specific logger matches, so publish
                     super.publish(record);
                 }
@@ -215,14 +215,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
             if (name.length() == 0) {
-                return Boolean.valueOf(levelSufficient); // include if level matches
+                return levelSufficient; // include if level matches
             }
             String logName = r.getLoggerName();
             if(logName==null || !logName.startsWith(name))
                 return null; // not in the domain of this logger
             String rest = logName.substring(name.length());
             if (rest.startsWith(".") || rest.length()==0) {
-                return Boolean.valueOf(levelSufficient); // include if level matches
+                return levelSufficient; // include if level matches
             }
             return null;
         }

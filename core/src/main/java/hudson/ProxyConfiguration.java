@@ -395,7 +395,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : 30 * 1000);
                 
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
