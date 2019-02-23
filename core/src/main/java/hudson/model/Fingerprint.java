@@ -973,7 +973,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return r;
     }
 
-    public @Nonnull Hashtable<String,RangeSet> getUsages() {
+    public @CheckForNull Hashtable<String,RangeSet> getUsages() {
         return usages;
     }
 
@@ -1420,7 +1420,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + new TreeMap<String,RangeSet>(usages) + ",facets=" + facets + "]";
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + ((usages == null) ? "null" : new TreeMap<String,RangeSet>(getUsages())) + ",facets=" + facets + "]";
     }
     
     /**
