@@ -46,6 +46,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
@@ -110,7 +111,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
     private void write(TypeElement c) throws IOException {
         FileObject f = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
                 "", "META-INF/services/hudson.Plugin");
-        try (Writer w = new OutputStreamWriter(f.openOutputStream(), "UTF-8")) {
+        try (Writer w = new OutputStreamWriter(f.openOutputStream(), StandardCharsets.UTF_8)) {
             w.write(c.getQualifiedName().toString());
         }
     }

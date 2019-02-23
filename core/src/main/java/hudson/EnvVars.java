@@ -226,8 +226,8 @@ public class EnvVars extends TreeMap<String,String> {
                 }
                 return refereeSetMap.get(n);
             }
-        };
-        
+        }
+
         private final Comparator<? super String> comparator;
         
         @Nonnull

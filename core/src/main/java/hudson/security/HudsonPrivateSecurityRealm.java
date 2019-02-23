@@ -902,8 +902,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return password.startsWith(JBCRYPT_HEADER) && JBCRYPT_ENCODER.isHashValid(password.substring(JBCRYPT_HEADER.length()));
         }
 
-    };
-    
+    }
+
     public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 
     @Extension @Symbol("local")

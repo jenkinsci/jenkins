@@ -236,7 +236,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private volatile transient State state;
 
-    private static enum State {
+    private enum State {
         /**
          * Build is created/queued but we haven't started building it.
          */

@@ -47,7 +47,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *            the listener of the current build
      * @return the path to the settings.xml
      */
-    public static final FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath settingsPath = null;
         if (settings != null) {
             settingsPath = settings.supplySettings(build, listener);
@@ -66,7 +66,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *            the listener of the current build
      * @return the path to the settings.xml
      */
-    public static final String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath fp = getSettingsFilePath(settings, build, listener);
         return fp == null ? null : fp.getRemote();
     }
