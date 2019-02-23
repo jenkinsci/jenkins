@@ -1569,7 +1569,7 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3).intValue());
+    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
@@ -1581,7 +1581,7 @@ public class Util {
      * between attempts.
      */
     @Restricted(value = NoExternalUse.class)
-    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100);
 
     /**
      * If this flag is set to true then we will request a garbage collection

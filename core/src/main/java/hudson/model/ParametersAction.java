@@ -320,7 +320,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         }
 
         Boolean shouldKeepFlag = SystemProperties.optBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
-        if (shouldKeepFlag != null && shouldKeepFlag.booleanValue()) {
+        if (shouldKeepFlag != null && shouldKeepFlag) {
             return parameters;
         }
 
