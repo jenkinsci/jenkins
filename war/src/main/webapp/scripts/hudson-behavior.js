@@ -902,6 +902,7 @@ function rowvgStartEachRow(recursive,f) {
     Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
         e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
+        e.parentNode.parentNode.addClassName('has-help');
     });
 
     // Script Console : settings and shortcut key
