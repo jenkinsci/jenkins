@@ -24,6 +24,7 @@
 package jenkins;
 
 import hudson.ExtensionList;
+import org.apache.log4j.Logger;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -34,6 +35,9 @@ import java.net.URL;
 @Restricted(NoExternalUse.class)
 @MetaInfServices
 public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResourceProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(MetaLocaleDrivenResourceProvider.class.getName());
+
     @Override
     public URL lookup(String s) {
         /*
@@ -43,9 +47,13 @@ public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResource
          * This saves having to think of one more stupid class name. The downside is the lack of "implements ExtensionPoint".
          */
         for (LocaleDrivenResourceProvider provider : ExtensionList.lookup(LocaleDrivenResourceProvider.class)) {
-            URL url = provider.lookup(s);
-            if (url != null) {
-                return url;
+            try {
+                URL url = provider.lookup(s);
+                if (url != null) {
+                    return url;
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
             }
         }
         return null;
