@@ -25,10 +25,13 @@ package jenkins;
 
 import hudson.ExtensionList;
 import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.LocaleDrivenResourceProvider;
 
 import java.net.URL;
 
+@Restricted(NoExternalUse.class)
 @MetaInfServices
 public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResourceProvider {
     @Override
