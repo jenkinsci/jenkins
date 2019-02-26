@@ -26,6 +26,7 @@ package jenkins.util;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.thoughtworks.xstream.XStream;
@@ -124,9 +125,7 @@ public final class TreeString implements Serializable {
     public int hashCode() {
         int h = parent == null ? 0 : parent.hashCode();
 
-        for (char c : label) {
-            h = 31 * h + c;
-        }
+        h = 31 * h + ArrayUtils.hashCode(label);
 
         assert toString().hashCode() == h;
         return h;
