@@ -3262,9 +3262,10 @@ public final class FilePath implements Serializable {
             Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
             Path parentRealPath;
             try {
-                parentRealPath = parentAbsolutePath.toRealPath();
+                parentRealPath = relaxedToRealPath(parentAbsolutePath);
             }
-            catch(NoSuchFileException e) {
+            catch (NoSuchFileException e) {
+                LOGGER.log(Level.FINE, String.format("Cannot find the real path to the parentFile: %s", parentAbsolutePath), e);
                 return false;
             }
 
@@ -3296,10 +3297,11 @@ public final class FilePath implements Serializable {
                 try{
                     Path child = currentFileAbsolutePath.toRealPath();
                     if (!child.startsWith(parentRealPath)) {
+                        LOGGER.log(Level.FINE, "Child [{0}] does not start with parent [{1}] => not descendant", new Object[]{ child, parentRealPath });
                         return false;
                     }
                 } catch (NoSuchFileException e) {
-                    // nonexistent file
+                    // nonexistent file / Windows Server 2016 + MSFT docker
                     // in case this folder / file will be copied somewhere else, 
                     // it becomes the responsibility of that system to check the isDescendant with the existing links
                     // we are not taking the parentRealPath to avoid possible problem
@@ -3321,6 +3323,19 @@ public final class FilePath implements Serializable {
                 current = current.getParent();
             }
             return current;
+        }
+        
+        private Path relaxedToRealPath(Path path) throws IOException {
+            try {
+                return path.toRealPath();
+            }
+            catch(IOException e) {
+                LOGGER.log(Level.FINE, String.format("relaxedToRealPath cannot use the regular toRealPath on %s, trying with toRealPath(LinkOption.NOFOLLOW_LINKS)", path), e);
+            }
+
+            // that's required for specific environment like Windows Server 2016, running MSFT docker
+            // where the root is a <SYMLINKD>
+            return path.toRealPath(LinkOption.NOFOLLOW_LINKS);
         }
     }
 

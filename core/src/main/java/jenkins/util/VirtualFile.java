@@ -546,7 +546,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
         private boolean isIllegalSymlink() {
             try {
-                return !this.isDescendant("");
+                String myPath = f.toPath().toRealPath().toString();
+                String rootPath = root.toPath().toRealPath().toString();
+                if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
+                    return true;
+                }
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
             } catch (InvalidPathException x2) {
