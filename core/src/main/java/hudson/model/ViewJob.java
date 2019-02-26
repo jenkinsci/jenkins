@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -145,7 +146,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             reload();
         } finally {
             reloadingInProgress = false;
-            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+1000*60 : Long.MAX_VALUE;
+            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+TimeUnit.MINUTES.toMillis(1) : Long.MAX_VALUE;
         }
     }
 
@@ -187,7 +188,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
                 // reload operations might eat InterruptException,
                 // so check the status every so often
                 while(reloadQueue.isEmpty() && !terminating())
-                    reloadQueue.wait(60*1000);
+                    reloadQueue.wait(TimeUnit.MINUTES.toMillis(1));
                 if(terminating())
                     throw new InterruptedException();   // terminate now
                 ViewJob job = reloadQueue.iterator().next();

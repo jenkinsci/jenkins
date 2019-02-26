@@ -49,6 +49,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -210,7 +211,7 @@ public class Channels {
     public static Channel newJVM(String displayName, TaskListener listener, JVMBuilder vmb, FilePath workDir, ClasspathBuilder classpath) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.bind(new InetSocketAddress("localhost",0));
-        serverSocket.setSoTimeout(10*1000);
+        serverSocket.setSoTimeout((int)TimeUnit.SECONDS.toMillis(10));
 
         // use -cp + FQCN instead of -jar since remoting.jar can be rebundled (like in the case of the swarm plugin.)
         vmb.classpath().addJarOf(Channel.class);
