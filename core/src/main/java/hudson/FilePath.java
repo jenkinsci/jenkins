@@ -3329,7 +3329,7 @@ public final class FilePath implements Serializable {
             try {
                 return path.toRealPath();
             }
-            catch(IOException e) {
+            catch (IOException e) {
                 LOGGER.log(Level.FINE, String.format("relaxedToRealPath cannot use the regular toRealPath on %s, trying with toRealPath(LinkOption.NOFOLLOW_LINKS)", path), e);
             }
 
