@@ -3330,7 +3330,9 @@ public final class FilePath implements Serializable {
                 return path.toRealPath();
             }
             catch (IOException e) {
-                LOGGER.log(Level.FINE, String.format("relaxedToRealPath cannot use the regular toRealPath on %s, trying with toRealPath(LinkOption.NOFOLLOW_LINKS)", path), e);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, String.format("relaxedToRealPath cannot use the regular toRealPath on %s, trying with toRealPath(LinkOption.NOFOLLOW_LINKS)", path), e);
+                }
             }
 
             // that's required for specific environment like Windows Server 2016, running MSFT docker
