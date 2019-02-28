@@ -1295,25 +1295,25 @@ TABLE.fingerprint-in-build TD {
   border: 1px solid #5788a1;
 }
 
-#plugins tr.has-dependants input.uninstall {
+#plugins tr.has-dependents input.uninstall {
   background-color: #e0e0e0;
   border: 1px solid #cccccc;
   color: #505050;
   background-color: white;
 }
 
-#plugins tr.all-dependants-disabled .enable input {
+#plugins tr.all-dependents-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
 }
 
-#plugins tr.has-dependants input, #plugins tr.has-disabled-dependency .enable input {
+#plugins tr.has-dependents input, #plugins tr.has-disabled-dependency .enable input {
   pointer-events: none;
   opacity: 0.2;
 }
 
-#plugins tr.has-dependants-but-disabled .enable input {
+#plugins tr.has-dependents-but-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
@@ -1327,7 +1327,7 @@ TABLE.fingerprint-in-build TD {
   visibility: hidden !important;
 }
 
-#plugins .dependant-list, #plugins .dependency-list {
+#plugins .dependent-list, #plugins .dependency-list {
   display: none;
 }
 
