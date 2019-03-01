@@ -79,6 +79,8 @@ import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
 
+import javax.annotation.Nonnull;
+
 /**
  * Records fingerprints of the specified files.
  *
@@ -92,11 +94,34 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      */
     private final String targets;
 
+    /**
+     * Default null 'excludes' pattern as in Ant.
+     */
+    private String excludes = null;
+
+    /**
+     * Default ant exclusion
+     */
+    private boolean defaultExcludes = true;
+
+    /**
+     * Indicate whether include and exclude patterns should be considered as case sensitive
+     */
+    private boolean caseSensitive = true;
+
     @Deprecated
     Boolean recordBuildArtifacts;
 
     @DataBoundConstructor public Fingerprinter(String targets) {
         this.targets = targets;
+    }
+
+    // @DataBoundConstructor
+    public Fingerprinter(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive) {
+        this(targets);
+        this.excludes = excludes;
+        this.defaultExcludes = defaultExcludes;
+        this.caseSensitive = caseSensitive;
     }
 
     @Deprecated
@@ -213,10 +238,16 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
 
         private final String targets;
+        private final String excludes;
+        private final boolean defaultExcludes;
+        private final boolean caseSensitive;
         private final long buildTimestamp;
 
-        FindRecords(String targets, long buildTimestamp) {
+        FindRecords(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive, long buildTimestamp) {
             this.targets = targets;
+            this.excludes = excludes;
+            this.defaultExcludes = defaultExcludes;
+            this.caseSensitive = caseSensitive;
             this.buildTimestamp = buildTimestamp;
         }
 
@@ -224,7 +255,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
             List<Record> results = new ArrayList<Record>();
 
-            FileSet src = Util.createFileSet(baseDir,targets);
+            FileSet src = Util.createFileSet(baseDir, targets, excludes);
+            src.setDefaultexcludes(defaultExcludes);
+            src.setCaseSensitive(caseSensitive);
 
             DirectoryScanner ds = src.getDirectoryScanner();
             for( String f : ds.getIncludedFiles() ) {
@@ -250,7 +283,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
-        for (Record r : ws.act(new FindRecords(targets, build.getTimeInMillis()))) {
+        for (Record r : ws.act(new FindRecords(targets, excludes, defaultExcludes, caseSensitive, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
             if(fp==null) {
                 listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));
