@@ -318,6 +318,30 @@ public class QueueTest {
         }
     }
 
+    @Issue("JENKINS-55512")
+    @Test public void notBlockedWithAction() throws Exception {
+        r.jenkins.doQuietDown();
+
+        // ensure a build is blocked while quieting down
+        FreeStyleProject p = r.createFreeStyleProject();
+        QueueTaskFuture<FreeStyleBuild> future1 = p.scheduleBuild2(0);
+        try {
+            future1.getStartCondition().get(3, TimeUnit.SECONDS);
+            fail();
+        } catch (TimeoutException ex) {
+            // expected
+        }
+        assertEquals("queue item count", 1, r.jenkins.getQueue().getItems().length);
+        assertEquals("queue item identity", p, r.jenkins.getQueue().getItems()[0].task);
+        r.jenkins.getQueue().clear();
+
+        // now submit a build with a NonBlockingAction
+        QueueTaskFuture<FreeStyleBuild> future = p.scheduleBuild2(0, new Cause.UserIdCause("foo"), new Queue.NonBlockingAction());
+        future.getStartCondition().get(3, TimeUnit.SECONDS); // throw if the build hasn't started within 3 seconds
+        assertEquals("empty queue", 0, r.jenkins.getQueue().getItems().length);
+
+    }
+
     @Issue("JENKINS-33467")
     @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();

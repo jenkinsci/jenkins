@@ -69,8 +69,17 @@ public abstract class LoadBalancer implements ExtensionPoint {
      *      Build up the mapping by using the given worksheet and return it.
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
+     *
+     * @deprecated
+     *      Call {@link #map(Queue.Item, MappingWorksheet)} instead.
+     *      Subclasses can continue to implement this.
      */
+    @Deprecated
     public abstract Mapping map(Task task, MappingWorksheet worksheet);
+
+    public Mapping map(Queue.Item item, MappingWorksheet worksheet) {
+        return map(item.task, worksheet);
+    }
 
     /**
      * Uses a consistent hash for scheduling.
@@ -155,6 +164,16 @@ public abstract class LoadBalancer implements ExtensionPoint {
                     return null;
                 }
                 return base.map(task, worksheet);
+            }
+
+            @Override
+            public Mapping map(Queue.Item item, MappingWorksheet worksheet) {
+                if (Queue.isBlockedByShutdown(item)) {
+                    // if we are quieting down, don't start anything new so that
+                    // all executors will be eventually free.
+                    return null;
+                }
+                return base.map(item, worksheet);
             }
 
             /**

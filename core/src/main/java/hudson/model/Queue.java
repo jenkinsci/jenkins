@@ -32,6 +32,7 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
@@ -1626,7 +1627,7 @@ public class Queue extends ResourceController implements Saveable {
                     }
 
                     MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                    Mapping m = loadBalancer.map(p.task, ws);
+                    Mapping m = loadBalancer.map(p, ws);
                     if (m == null) {
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
@@ -1676,7 +1677,7 @@ public class Queue extends ResourceController implements Saveable {
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
             String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
-            if (!isBlockedByShutdown(p.task)) {
+            if (!isBlockedByShutdown(p)) {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
                 LOGGER.log(Level.FINEST, "Converting flyweight task: {0} into a BuildableRunnable", taskDisplayName);
@@ -1788,9 +1789,35 @@ public class Queue extends ResourceController implements Saveable {
      * @param task some queue task
      * @return true if {@link Jenkins#isQuietingDown()} unless this is a {@link NonBlockingTask}
      * @since 1.598
+     * @deprecated Use {@link #isBlockedByShutdown(Item)} instead since TODO
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("since TODO")
+    @Deprecated
     public static boolean isBlockedByShutdown(Task task) {
         return Jenkins.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
+    }
+
+    /**
+     * Checks whether a queue item should not be scheduled because {@link Jenkins#isQuietingDown()}.
+     * @param item a queue item
+     * @return true if {@link Jenkins#isQuietingDown()} unless the item's task is a {@link NonBlockingTask} or the item has a {@link NonBlockingAction}.
+     * @since TODO
+     */
+    public static boolean isBlockedByShutdown(Item item) {
+        if (!Jenkins.get().isQuietingDown()) {
+            return false;
+        }
+        return !(item.task instanceof NonBlockingTask) && item.getAction(NonBlockingAction.class) == null;
+    }
+
+    /**
+     * Marker action indicating that a queue item should not be blocked by Jenkins quieting down.
+     *
+     * @see #isBlockedByShutdown(Item) 
+     */
+    public static class NonBlockingAction extends InvisibleAction {
+        // empty
     }
 
     public Api getApi() {
@@ -2639,7 +2666,7 @@ public class Queue extends ResourceController implements Saveable {
 
         public CauseOfBlockage getCauseOfBlockage() {
             Jenkins jenkins = Jenkins.getInstance();
-            if(isBlockedByShutdown(task))
+            if(isBlockedByShutdown(this))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             List<CauseOfBlockage> causesOfBlockage = transientCausesOfBlockage;

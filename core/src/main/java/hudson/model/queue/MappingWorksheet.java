@@ -83,6 +83,7 @@ import static java.lang.Math.*;
  * which is represented as {@link Mapping}.
  *
  * @see LoadBalancer#map(Queue.Task, MappingWorksheet)
+ * @see LoadBalancer#map(Queue.Item, MappingWorksheet) 
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {
