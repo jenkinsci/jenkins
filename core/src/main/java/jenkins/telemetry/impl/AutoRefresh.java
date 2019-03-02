@@ -54,7 +54,7 @@ public class AutoRefresh extends Telemetry {
     @Nonnull
     @Override
     public String getDisplayName() {
-        return "Use of auto refresh feature";
+        return Messages.AutoRefresh_DisplayName();
     }
 
     @Nonnull
@@ -66,7 +66,7 @@ public class AutoRefresh extends Telemetry {
     @Nonnull
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2019, 4, 10);
+        return LocalDate.of(2019, 5, 31);
     }
 
     @Override
@@ -74,8 +74,11 @@ public class AutoRefresh extends Telemetry {
         if (sessionsBySetting.size() == 0) {
             return null;
         }
-        Map<Boolean, Set<String>> currentSessions = new TreeMap<>(sessionsBySetting);
-        sessionsBySetting.clear();
+        Map<Boolean, Set<String>> currentSessions;
+        synchronized (sessionsBySetting) {
+            currentSessions = new TreeMap<>(sessionsBySetting);
+            sessionsBySetting.clear();
+        }
 
         JSONObject payload = new JSONObject();
         for (Map.Entry<Boolean, Set<String>> entry : currentSessions.entrySet()) {
@@ -94,8 +97,10 @@ public class AutoRefresh extends Telemetry {
         HttpSession session = request.getSession(false);
         if (session != null) {
             String sessionId = session.getId();
-            sessionsBySetting.putIfAbsent(enabled, new HashSet<>());
-            sessionsBySetting.get(enabled).add(sessionId);
+            synchronized (sessionsBySetting) {
+                sessionsBySetting.putIfAbsent(enabled, new HashSet<>());
+                sessionsBySetting.get(enabled).add(sessionId);
+            }
         }
     }
 }

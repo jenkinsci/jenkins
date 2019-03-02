@@ -179,6 +179,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @SuppressWarnings("rawtypes")
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
+    private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     public Functions() {
     }
@@ -651,7 +652,7 @@ public class Functions {
         try {
             ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
         } catch (Exception e) {
-            // ignore telemetry problems
+            LOGGER.log(Level.FINE, "Failed to record auto refresh status in telemetry", e);
         }
     }
 
