@@ -29,7 +29,7 @@ def f = namespace(lib.FormTagLib)
 div(class: "alert alert-warning", role: "alert") {
 
     form(method: "post", action: "${rootURL}/${my.url}/act") {
-        f.submit(name: 'redirect', value: _("Learn more…"))
+        f.submit(name: 'redirect', value: _("Learn more..."))
         f.submit(name: 'dismiss', value: _("Dismiss"))
     }
 
