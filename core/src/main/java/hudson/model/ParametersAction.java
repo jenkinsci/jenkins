@@ -268,8 +268,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            ParametersAction parametersAction = new ParametersAction(parameters, this.safeParameters);
-            return parametersAction;
+            return new ParametersAction(parameters, this.safeParameters);
         }
         ParametersAction parametersAction = createUpdated(overrides.parameters);
         Set<String> safe = new TreeSet<>();
@@ -321,7 +320,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         }
 
         Boolean shouldKeepFlag = SystemProperties.optBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
-        if (shouldKeepFlag != null && shouldKeepFlag.booleanValue()) {
+        if (shouldKeepFlag != null && shouldKeepFlag) {
             return parameters;
         }
 

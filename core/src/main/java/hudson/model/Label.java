@@ -558,7 +558,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Evaluates whether the current label name is equal to the name parameter.
      *
      */
-    private final boolean matches(String name) {
+    private boolean matches(String name) {
         return this.name.equals(name);
     }
 

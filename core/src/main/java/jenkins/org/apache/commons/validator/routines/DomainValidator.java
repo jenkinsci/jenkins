@@ -1886,9 +1886,8 @@ public class DomainValidator implements Serializable {
         INFRASTRUCTURE_RO,
         /** Get a copy of the local table */
         LOCAL_RO
-        ;
-    };
-    
+    }
+
     // For use by unit test code only
     static synchronized void clearTLDOverrides() {
         inUse = false;
@@ -1961,7 +1960,7 @@ public class DomainValidator implements Serializable {
      * @since 1.5.1
      */
     public static String [] getTLDEntries(DomainValidator.ArrayType table) {
-        final String array[];
+        final String[] array;
         switch(table) {
             case COUNTRY_CODE_MINUS:
                 array = countryCodeTLDsMinus;

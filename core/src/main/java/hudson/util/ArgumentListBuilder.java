@@ -188,7 +188,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
         for (Entry<String,String> e : props.entrySet()) {
-            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask == null) ? false : propsToMask.contains(e.getKey()));
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask != null) && propsToMask.contains(e.getKey()));
         }
         return this;
     }
@@ -230,7 +230,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));
 
         for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask == null) ? false : propsToMask.contains(entry.getKey()));
+            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask != null) && propsToMask.contains(entry.getKey()));
         }
         return this;
     }

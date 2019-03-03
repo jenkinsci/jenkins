@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -244,7 +245,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 rsp.setContentType("text/plain;charset=UTF-8");
                 try (OutputStream os = rsp.getOutputStream()) {
                     for (VirtualFile kid : baseFile.list()) {
-                        os.write(kid.getName().getBytes("UTF-8"));
+                        os.write(kid.getName().getBytes(StandardCharsets.UTF_8));
                         if (kid.isDirectory()) {
                             os.write('/');
                         }

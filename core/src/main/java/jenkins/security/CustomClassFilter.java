@@ -84,7 +84,7 @@ public interface CustomClassFilter extends ExtensionPoint {
      */
     @Restricted(NoExternalUse.class)
     @Extension
-    public class Static implements CustomClassFilter {
+    class Static implements CustomClassFilter {
 
         /**
          * Map from {@link Class#getName} to true to permit, false to reject.
@@ -132,7 +132,7 @@ public interface CustomClassFilter extends ExtensionPoint {
      */
     @Restricted(NoExternalUse.class)
     @Extension
-    public class Contributed implements CustomClassFilter {
+    class Contributed implements CustomClassFilter {
 
         /**
          * Map from {@link Class#getName} to true to permit, false to reject.

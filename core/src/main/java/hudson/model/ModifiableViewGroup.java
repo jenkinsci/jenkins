@@ -38,5 +38,5 @@ public interface ModifiableViewGroup extends ViewGroup {
     /**
      * Add new {@link View} to this {@link ViewGroup}.
      */
-    public void addView(@Nonnull View view) throws IOException;
+    void addView(@Nonnull View view) throws IOException;
 }

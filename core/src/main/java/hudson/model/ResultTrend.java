@@ -75,7 +75,7 @@ public enum ResultTrend {
     
     private final Localizable description;
 
-    private ResultTrend(Localizable description) {
+    ResultTrend(Localizable description) {
         this.description = description;
     }
     

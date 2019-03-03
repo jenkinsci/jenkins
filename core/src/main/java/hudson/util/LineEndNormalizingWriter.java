@@ -48,7 +48,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
         super(out);
     }
 
-    public void write(char cbuf[]) throws IOException {
+    public void write(char[] cbuf) throws IOException {
         write(cbuf, 0, cbuf.length);
     }
 
@@ -64,7 +64,7 @@ public class LineEndNormalizingWriter extends FilterWriter {
         seenCR = (c==CR);
     }
 
-    public void write(char cbuf[], int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) throws IOException {
         int end = off+len;
         int writeBegin = off;
 

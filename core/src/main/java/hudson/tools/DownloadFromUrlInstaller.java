@@ -192,9 +192,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             ToolInstallerList toolInstallerList = new ToolInstallerList();
             toolInstallerList.list = new ToolInstallerEntry[reducedToolEntries.size()];
             reducedToolEntries.toArray(toolInstallerList.list);
-            JSONObject reducedToolEntriesJsonList = JSONObject.fromObject(toolInstallerList);
             //return the list with no duplicates
-            return reducedToolEntriesJsonList;
+            return JSONObject.fromObject(toolInstallerList);
         }
 
         /**

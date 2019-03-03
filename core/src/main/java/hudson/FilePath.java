@@ -385,7 +385,7 @@ public final class FilePath implements Serializable {
             return false;
         // Windows can handle '/' as a path separator but Unix can't,
         // so err on Unix side
-        return remote.indexOf("\\")==-1;
+        return !remote.contains("\\");
     }
 
     /**
@@ -636,7 +636,6 @@ public final class FilePath implements Serializable {
     private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
-        @SuppressWarnings("unchecked")
         Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
@@ -1930,8 +1929,7 @@ public final class FilePath implements Serializable {
         } catch (BuildException x) {
             throw new IOException(x.getMessage());
         }
-        String[] files = ds.getIncludedFiles();
-        return files;
+        return ds.getIncludedFiles();
     }
 
     /**
@@ -2362,12 +2360,7 @@ public final class FilePath implements Serializable {
                 future.get();
                 return future2.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         } else {
             // remote -> local copy
@@ -2392,15 +2385,20 @@ public final class FilePath implements Serializable {
             try {
                 return future.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         }
     }
+
+    private IOException ioWithCause(ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause == null) cause = e;
+        return cause instanceof IOException
+                ? (IOException) cause
+                : new IOException(cause)
+                ;
+    }
+
     private class CopyRecursiveLocal extends SecureFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;

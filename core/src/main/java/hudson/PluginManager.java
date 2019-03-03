@@ -1045,8 +1045,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
                 if (res!=null) {
                     in = getBundledJpiManifestStream(res);
-                    Manifest manifest = new Manifest(in);
-                    return manifest;
+                    return new Manifest(in);
                 }
             } finally {
                 Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());

@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
 
@@ -236,7 +237,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
+                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
                         true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 // peek the first few bytes to determine what to do with this client
@@ -291,7 +292,7 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
-                Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
+                Writer o = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
 
                 //TODO: expose version about minimum supported Remoting version (JENKINS-48766)
                 if (header.startsWith("GET / ")) {
@@ -358,11 +359,7 @@ public final class TcpSlaveAgentListener extends Thread {
         private final byte[] ping;
 
         public PingAgentProtocol() {
-            try {
-                ping = "Ping\n".getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
-            }
+            ping = "Ping\n".getBytes(StandardCharsets.UTF_8);
         }
 
         /**
@@ -414,9 +411,9 @@ public final class TcpSlaveAgentListener extends Thread {
                         } else {
                             LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
-                                    new String(ping, "UTF-8"),
+                                    new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?
-                                        new String(response, 0, responseLength, "UTF-8") :
+                                        new String(response, 0, responseLength, StandardCharsets.UTF_8) :
                                         "bad response length " + responseLength
                             });
                             return false;

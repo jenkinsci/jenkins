@@ -3,6 +3,7 @@ package jenkins.util;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Filtering {@link OutputStream} that looks for {@link #MARK} in the output stream and notifies the callback.
@@ -46,7 +47,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
         }
     }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         final int start = off; 
         final int end = off + len;
         for (int i=off; i<end; ) {
@@ -109,10 +110,6 @@ public abstract class MarkFindingOutputStream extends OutputStream {
     private static final byte[] MBYTES = toUTF8(MARK);
     
     private static byte[] toUTF8(String s) {
-        try {
-            return s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 }

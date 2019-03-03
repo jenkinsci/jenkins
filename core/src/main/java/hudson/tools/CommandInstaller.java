@@ -49,8 +49,7 @@ public class CommandInstaller extends AbstractCommandInstaller {
 
     @Override
     public String[] getCommandCall(FilePath script) {
-        String[] cmd = {"sh", "-e", script.getRemote()};
-        return cmd;
+        return new String[]{"sh", "-e", script.getRemote()};
     }
 
     private Object readResolve() throws ObjectStreamException {
