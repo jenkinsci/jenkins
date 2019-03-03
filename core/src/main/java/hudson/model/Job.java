@@ -1214,7 +1214,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (cachedBuildHealthReportsBuildNumber != null
                 && cachedBuildHealthReports != null
                 && lastBuild != null
-                && cachedBuildHealthReportsBuildNumber.intValue() == lastBuild
+                && cachedBuildHealthReportsBuildNumber == lastBuild
                         .getNumber()) {
             reports.addAll(cachedBuildHealthReports);
         } else if (lastBuild != null) {

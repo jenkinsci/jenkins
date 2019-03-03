@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.DataInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -159,7 +160,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         // capture the descriptors as these should be small compared with the number of items
         // so we will walk all items only once and we can short-cut the search of descriptors
         TopLevelItemDescriptor[] descriptors = Items.all().toArray(new TopLevelItemDescriptor[0]);
-        int counts[] = new int[descriptors.length];
+        int[] counts = new int[descriptors.length];
         for (TopLevelItem item: j.allItems(TopLevelItem.class)) {
             TopLevelItemDescriptor d = item.getDescriptor();
             for (int i = 0; i < descriptors.length; i++) {
@@ -181,7 +182,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
             try (OutputStream cipheros = new CombinedCipherOutputStream(baos,getKey(),"AES");
                  OutputStream zipos = new GZIPOutputStream(cipheros);
-                 OutputStreamWriter w = new OutputStreamWriter(zipos, "UTF-8")) {
+                 OutputStreamWriter w = new OutputStreamWriter(zipos, StandardCharsets.UTF_8)) {
                 o.write(w);
             }
 

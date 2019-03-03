@@ -24,6 +24,7 @@
 package hudson.scheduler;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -55,7 +56,7 @@ public abstract class Hash {
     public static Hash from(String seed) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update(seed.getBytes("UTF-8"));
+            md5.update(seed.getBytes(StandardCharsets.UTF_8));
             byte[] digest = md5.digest();
 
             for (int i=8; i<digest.length; i++)
@@ -74,8 +75,6 @@ public abstract class Hash {
             };
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);    // MD5 is a part of JRE
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);    // UTF-8 is mandatory
         }
     }
 

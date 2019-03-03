@@ -88,7 +88,7 @@ public class SecretRewriter {
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w))) {
                 try (InputStream fin = Files.newInputStream(f.toPath())) {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
+                    BufferedReader r = new BufferedReader(new InputStreamReader(fin, StandardCharsets.UTF_8));
                     String line;
                     StringBuilder buf = new StringBuilder();
 

@@ -106,7 +106,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new SwapSpaceMonitor();
         }
-    };
+    }
 
     /**
      * Obtains the string that represents the architecture.
