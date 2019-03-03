@@ -50,15 +50,24 @@ import java.util.Map;
  */
 public abstract class LoadBalancer implements ExtensionPoint {
     /**
-     * Chooses the executor(s) to carry out the build for the given task.
+     * @deprecated
+     *      Call {@link #map(Queue.Item, MappingWorksheet)} instead.
+     *      Subclasses should continue to implement this, while implementing the other is optional.
+     */
+    @Deprecated
+    public abstract Mapping map(Task task, MappingWorksheet worksheet);
+
+    /**
+     *
+     * Chooses the executor(s) to carry out the build for the task of the given item.
      *
      * <p>
      * This method is invoked from different threads, but the execution is serialized by the caller.
      * The thread that invokes this method always holds a lock to {@link Queue}, so queue contents
      * can be safely introspected from this method, if that information is necessary to make
      * decisions.
-     * 
-     * @param  task
+     *
+     * @param  item
      *      The task whose execution is being considered. Never null.
      * @param worksheet
      *      The work sheet that represents the matching that needs to be made.
@@ -70,13 +79,8 @@ public abstract class LoadBalancer implements ExtensionPoint {
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
      *
-     * @deprecated
-     *      Call {@link #map(Queue.Item, MappingWorksheet)} instead.
-     *      Subclasses can continue to implement this.
+     * @since TODO
      */
-    @Deprecated
-    public abstract Mapping map(Task task, MappingWorksheet worksheet);
-
     public Mapping map(Queue.Item item, MappingWorksheet worksheet) {
         return map(item.task, worksheet);
     }
