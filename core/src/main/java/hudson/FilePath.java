@@ -132,6 +132,7 @@ import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
@@ -3262,7 +3263,11 @@ public final class FilePath implements Serializable {
             Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
             Path parentRealPath;
             try {
-                parentRealPath = relaxedToRealPath(parentAbsolutePath);
+                if (Functions.isWindows()) {
+                    parentRealPath = this.relaxedToRealPath(parentAbsolutePath);
+                } else {
+                    parentRealPath = parentAbsolutePath.toRealPath();
+                }
             }
             catch (NoSuchFileException e) {
                 LOGGER.log(Level.FINE, String.format("Cannot find the real path to the parentFile: %s", parentAbsolutePath), e);
@@ -3325,7 +3330,7 @@ public final class FilePath implements Serializable {
             return current;
         }
         
-        private Path relaxedToRealPath(Path path) throws IOException {
+        private @Nonnull Path relaxedToRealPath(@Nonnull Path path) throws IOException {
             try {
                 return path.toRealPath();
             }
