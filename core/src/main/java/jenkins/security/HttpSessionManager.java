@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
-import hudson.security.Permission;
 import hudson.util.FormApply;
 import jenkins.model.Jenkins;
 import jenkins.util.SessionListener;
@@ -137,7 +136,10 @@ public class HttpSessionManager extends ManagementLink implements SessionListene
     }
 
     private void checkPermissions() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j != null) {
+            j.checkPermission(Jenkins.ADMINISTER);
+        }
     }
 
     @Override
@@ -153,11 +155,6 @@ public class HttpSessionManager extends ManagementLink implements SessionListene
     @Override
     public @CheckForNull String getDisplayName() {
         return "Manage Active HTTP Sessions";
-    }
-
-    @Override
-    public @CheckForNull Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
     }
 
     @Restricted(NoExternalUse.class)
