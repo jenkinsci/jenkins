@@ -59,6 +59,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,11 +117,15 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         this.targets = targets;
     }
 
-    // @DataBoundConstructor
-    public Fingerprinter(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive) {
-        this(targets);
+    @DataBoundSetter public void setExcludes(String excludes) {
         this.excludes = excludes;
+    }
+
+    @DataBoundSetter public void setDefaultExcludes(boolean defaultExcludes) {
         this.defaultExcludes = defaultExcludes;
+    }
+
+    @DataBoundSetter public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
 
@@ -132,6 +137,18 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     public String getTargets() {
         return targets;
+    }
+
+    public String getExcludes() {
+        return excludes;
+    }
+
+    public boolean getDefaultExcludes() {
+        return defaultExcludes;
+    }
+
+    public boolean getCaseSensitive() {
+        return caseSensitive;
     }
 
     @Deprecated
