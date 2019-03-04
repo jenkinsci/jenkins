@@ -3264,7 +3264,7 @@ public final class FilePath implements Serializable {
             Path parentRealPath;
             try {
                 if (Functions.isWindows()) {
-                    parentRealPath = this.relaxedToRealPath(parentAbsolutePath);
+                    parentRealPath = this.windowsToRealPath(parentAbsolutePath);
                 } else {
                     parentRealPath = parentAbsolutePath.toRealPath();
                 }
@@ -3330,7 +3330,7 @@ public final class FilePath implements Serializable {
             return current;
         }
         
-        private @Nonnull Path relaxedToRealPath(@Nonnull Path path) throws IOException {
+        private @Nonnull Path windowsToRealPath(@Nonnull Path path) throws IOException {
             try {
                 return path.toRealPath();
             }
