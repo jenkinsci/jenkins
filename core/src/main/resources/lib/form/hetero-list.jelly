@@ -126,7 +126,7 @@ THE SOFTWARE.
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
+            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,h,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>
