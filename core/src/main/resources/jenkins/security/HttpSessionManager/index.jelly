@@ -30,11 +30,11 @@
             <h1>${it.displayName}</h1>
             <table class="pane sortable bigtable">
                 <tr>
-                    <th class="pane-header">Session Identifier</th>
-                    <th class="pane-header">User</th>
-                    <th class="pane-header">Creation Time</th>
-                    <th class="pane-header" initialSortDir="down">Last Accessed Time</th>
-                    <th class="pane-header">Invalidate Session</th>
+                    <th class="pane-header">${%SessionId}</th>
+                    <th class="pane-header">${%User}</th>
+                    <th class="pane-header">${%CreationTime}</th>
+                    <th class="pane-header" initialSortDir="down">${%LastAccessTime}</th>
+                    <th class="pane-header">${%InvalidateSession}</th>
                 </tr>
                 <j:forEach items="${it.activeSessions}" var="session">
                     <tr>
@@ -45,14 +45,14 @@
                         <td class="pane">
                             <form method="POST" action="invalidateSession">
                                 <input type="hidden" name="sessionId" value="${session.sessionId}"/>
-                                <f:apply value="Invalidate"/>
+                                <f:apply value="${%Invalidate}"/>
                             </form>
                         </td>
                     </tr>
                 </j:forEach>
             </table>
             <form method="post" action="invalidateAllSessions">
-                <f:submit value="Invalidate All Sessions"/>
+                <f:submit value="${%InvalidateAllSessions}"/>
             </form>
         </l:main-panel>
     </l:layout>
