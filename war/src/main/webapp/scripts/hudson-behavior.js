@@ -314,9 +314,9 @@ function isTR(tr) {
     return tr.tagName == 'TR' || tr.classList.contains('tr');
 }
 
-function findFollowingTR(input, className) {
+function findFollowingTR(node, className) {
     // identify the parent TR
-    var tr = input;
+    var tr = node;
     while (!isTR(tr))
         tr = tr.parentNode;
 
