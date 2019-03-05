@@ -103,12 +103,12 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     /**
      * Default ant exclusion
      */
-    private boolean defaultExcludes = true;
+    private Boolean defaultExcludes = true;
 
     /**
      * Indicate whether include and exclude patterns should be considered as case sensitive
      */
-    private boolean caseSensitive = true;
+    private Boolean caseSensitive = true;
 
     @Deprecated
     Boolean recordBuildArtifacts;
