@@ -310,14 +310,14 @@ function findAncestorClass(e, cssClass) {
     return e;
 }
 
-function isTR(tr) {
-    return tr.tagName == 'TR' || tr.classList.contains('tr');
+function isTR(tr, nodeClass) {
+    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr');
 }
 
-function findFollowingTR(node, className) {
+function findFollowingTR(node, className, nodeClass) {
     // identify the parent TR
     var tr = node;
-    while (!isTR(tr))
+    while (!isTR(tr, nodeClass))
         tr = tr.parentNode;
 
     // then next TR that matches the CSS
@@ -692,7 +692,7 @@ function labelAttachPreviousOnClick() {
 }
 
 function helpButtonOnClick() {
-    var tr = findFollowingTR(this, "help-area");
+    var tr = findFollowingTR(this, "help-area", "help-sibling");
     var div = $(tr).down();
     if (!div.hasClassName("help"))
         div = div.next().down();
