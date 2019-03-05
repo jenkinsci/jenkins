@@ -69,10 +69,13 @@ THE SOFTWARE.
   <!-- expose this so that we can look up the @field value later from prepareDatabinding.jelly -->
   <j:set var="entry" value="${attrs}" />
   <div class='tr'>
-    <div class="setting-name">
+    <div class="setting-name help-sibling">
       <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
       <f:helpLink url="${attrs.help}" featureName="${title}"/>
     </div>
+    <j:if test="${attrs.help!=null}">
+      <f:helpArea />
+    </j:if>
     <div class="setting-main">
       <d:invokeBody />
     </div>
@@ -83,8 +86,5 @@ THE SOFTWARE.
     <f:description>
       <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.description) : attrs.description}"/>
     </f:description>
-  </j:if>
-  <j:if test="${attrs.help!=null}">
-    <f:helpArea />
   </j:if>
 </j:jelly>

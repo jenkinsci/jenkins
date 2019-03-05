@@ -40,10 +40,13 @@ THE SOFTWARE.
   </st:documentation>
 
     <div class='tr'>
-        <div class="setting-name">
+        <div class="setting-name help-sibling">
             ${attrs.title}
             <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
+        <j:if test="${attrs.help!=null}">
+            <f:helpArea/>
+        </j:if>
         <div class="setting-main">
             <!-- create drop-down list -->
             <select class="setting-input dropdownList">
@@ -67,8 +70,5 @@ THE SOFTWARE.
         <f:description>
             <j:out value="${description}"/>
         </f:description>
-    </j:if>
-    <j:if test="${attrs.help!=null}">
-        <f:helpArea/>
     </j:if>
 </j:jelly>

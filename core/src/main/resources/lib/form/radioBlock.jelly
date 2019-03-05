@@ -54,7 +54,7 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
 
-  <div class="tr radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+  <div class="tr help-sibling radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <div colspan="3">
       <label>
         <input type="radio" name="${name}" value="${value}"

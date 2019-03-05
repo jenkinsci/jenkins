@@ -79,7 +79,7 @@ THE SOFTWARE.
       <div style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <div class='tr'>
+          <div class="tr help-sibling">
             <div colspan="3">
               <div class="dd-handle">
                 <b>${descriptor.displayName}</b>
