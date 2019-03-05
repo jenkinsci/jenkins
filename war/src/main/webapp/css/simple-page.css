@@ -30,6 +30,7 @@ html {
 
 .simple-page h1 {
   font-size: 24px;
+  line-height: normal;
 }
 
 .simple-page {
@@ -50,7 +51,7 @@ html {
   -webkit-justify-content: center;
   justify-content: center;
   min-height: 90vh;
-  padding: 0px 16px;
+  padding: 0 16px;
 }
 
 .simple-page form {
