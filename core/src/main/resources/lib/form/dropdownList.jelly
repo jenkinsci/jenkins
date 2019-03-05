@@ -40,7 +40,6 @@ THE SOFTWARE.
   </st:documentation>
 
     <div class='tr'>
-        <div class="setting-leftspace"><st:nbsp/></div>
         <div class="setting-name">
             ${attrs.title}
             <f:helpLink url="${attrs.help}" featureName="${title}"/>
