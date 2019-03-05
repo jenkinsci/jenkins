@@ -68,17 +68,31 @@ THE SOFTWARE.
   </j:if>
   <!-- expose this so that we can look up the @field value later from prepareDatabinding.jelly -->
   <j:set var="entry" value="${attrs}" />
+  <j:set var="possiblyEscapedTitle" value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
   <div class='tr'>
-    <div class="setting-name help-sibling">
-      <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
-      <f:helpLink url="${attrs.help}" featureName="${title}"/>
-    </div>
-    <j:if test="${attrs.help!=null}">
-      <f:helpArea />
-    </j:if>
-    <div class="setting-main">
-      <d:invokeBody />
-    </div>
+    <j:choose>
+      <j:when test="${possiblyEscapedTitle!=null}">
+        <div class="setting-name help-sibling">
+          <j:out value="${possiblyEscapedTitle}" />
+          <f:helpLink url="${attrs.help}" featureName="${title}"/>
+        </div>
+        <j:if test="${attrs.help!=null}">
+          <f:helpArea />
+        </j:if>
+        <div class="setting-main">
+          <d:invokeBody />
+        </div>
+      </j:when>
+      <j:otherwise>
+        <div class="setting-main">
+          <d:invokeBody />
+          <div class="setting-name help-sibling">
+            <f:helpLink url="${attrs.help}" featureName="${title}"/>
+          </div>
+          <f:helpArea />
+        </div>
+      </j:otherwise>
+    </j:choose>
   </div>
   <!-- used to display the form validation error -->
   <div class="validation-error-area tr"><div colspan="2"></div><div></div><div></div></div>
