@@ -80,8 +80,6 @@ import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
 
-import javax.annotation.Nonnull;
-
 /**
  * Records fingerprints of the specified files.
  *
