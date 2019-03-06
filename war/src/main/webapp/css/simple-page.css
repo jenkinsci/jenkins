@@ -51,7 +51,6 @@ html {
   -webkit-justify-content: center;
   justify-content: center;
   min-height: 90vh;
-  padding: 0 16px;
 }
 
 .simple-page form {
