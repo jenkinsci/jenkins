@@ -728,7 +728,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         AllUsers.clear();
     }
 
-    private static final File getConfigFileFor(String id) {
+    private static File getConfigFileFor(String id) {
         return new File(getUserFolderFor(id), "config.xml");
     }
     

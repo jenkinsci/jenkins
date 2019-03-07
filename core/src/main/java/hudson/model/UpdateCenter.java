@@ -225,7 +225,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Simple connection status enum.
      */
     @Restricted(NoExternalUse.class)
-    static enum ConnectionStatus {
+    enum ConnectionStatus {
         /**
          * Connection status has not started yet.
          */
@@ -1888,7 +1888,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return VerificationResult.FAIL;
     }
 
-    private static enum VerificationResult {
+    private enum VerificationResult {
         PASS,
         NOT_PROVIDED,
         NOT_COMPUTED,

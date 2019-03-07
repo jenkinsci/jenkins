@@ -162,7 +162,7 @@ public class AtomicFileWriter extends Writer {
         core.write(str,off,len);
     }
 
-    public void write(char cbuf[], int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) throws IOException {
         core.write(cbuf,off,len);
     }
 

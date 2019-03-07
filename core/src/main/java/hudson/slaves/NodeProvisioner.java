@@ -334,7 +334,7 @@ public class NodeProvisioner {
      * Represents the decision taken by an individual {@link hudson.slaves.NodeProvisioner.Strategy}.
      * @since 1.588
      */
-    public static enum StrategyDecision {
+    public enum StrategyDecision {
         /**
          * This decision is the default decision and indicates that the {@link hudson.slaves.NodeProvisioner.Strategy}
          * either could not provision sufficient resources or did not take any action. Any remaining strategies

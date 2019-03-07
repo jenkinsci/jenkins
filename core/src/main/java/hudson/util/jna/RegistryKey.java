@@ -18,6 +18,7 @@ package hudson.util.jna;
 import com.sun.jna.ptr.IntByReference;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -65,11 +66,7 @@ public class RegistryKey {
      * @return String
      */
     private static String convertBufferToString(byte[] buf) {
-        try {
-            return new String(buf, 0, buf.length - 2, "UTF-16LE");
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);    // impossible
-        }
+        return new String(buf, 0, buf.length - 2, StandardCharsets.UTF_16LE);
     }
 
     /**
@@ -128,15 +125,11 @@ public class RegistryKey {
      * Writes a String value.
      */
     public void setValue(String name, String value) {
-        try {
-            byte[] bytes = value.getBytes("UTF-16LE");
-            int newLength = bytes.length+2; // for 0 padding
-            byte[] with0 = new byte[newLength];
-            System.arraycopy(bytes, 0, with0, 0, newLength);
-            check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, with0, with0.length));
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_16LE);
+        int newLength = bytes.length+2; // for 0 padding
+        byte[] with0 = new byte[newLength];
+        System.arraycopy(bytes, 0, with0, 0, newLength);
+        check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, with0, with0.length));
     }
 
     /**

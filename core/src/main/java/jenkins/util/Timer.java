@@ -62,6 +62,6 @@ public class Timer {
     /**
      * Do not create this.
      */
-    private Timer() {};
+    private Timer() {}
 
 }

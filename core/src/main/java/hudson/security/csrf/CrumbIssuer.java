@@ -24,6 +24,7 @@ import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -216,7 +217,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             if (text != null) {
                 try (OutputStream o = rsp.getCompressedOutputStream(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
-                    o.write(text.getBytes("UTF-8"));
+                    o.write(text.getBytes(StandardCharsets.UTF_8));
                 }
             } else {
                 super.doXml(req, rsp, xpath, wrapper, tree, depth);
