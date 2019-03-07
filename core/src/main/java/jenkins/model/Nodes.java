@@ -233,7 +233,11 @@ public class Nodes implements Saveable {
                 }
             });
             updateNode(newOne);
+            if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
+                Util.deleteRecursive(new File(getNodesDir(), oldOne.getNodeName()));
+            }
             NodeListener.fireOnUpdated(oldOne, newOne);
+
             return true;
         } else {
             return false;
