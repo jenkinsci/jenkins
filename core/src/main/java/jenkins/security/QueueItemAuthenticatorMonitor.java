@@ -25,6 +25,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
 import hudson.security.ACL;
@@ -119,11 +120,17 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
                 displayName = executable.toString();
             }
 
+            if (!(li.task instanceof Job<?, ?>)) {
+                // Only care about jobs for now -- Do not react to folder scans and similar
+                LOGGER.log(Level.FINE, displayName + " is not a job");
+                return;
+            }
+
             // TODO this is probably not intended to be used as a getter -- seems potentially unstable
             Authentication buildAuthentication = li.authenticate();
             boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM;
             if (!buildRunsAsSystem) {
-                LOGGER.log(Level.FINE, li.getDisplayName() + " does not run as SYSTEM");
+                LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
                 return;
             }
 
