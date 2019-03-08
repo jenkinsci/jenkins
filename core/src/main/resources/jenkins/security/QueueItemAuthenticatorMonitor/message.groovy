@@ -45,10 +45,7 @@ div(class: "alert alert-warning", role: "alert") {
 
 
                 if (my.anyBuildLaunchedAsSystemWithAuthenticatorPresent) {
-                    li(raw(_("anyBuildLaunchedAsSystem", rootURL)))
-                    form(method: "post", action: "${rootURL}/${my.url}/act") {
-                        f.submit(name: 'reset', value: _("Reset"))
-                    }
+                    li(raw(_("anyBuildLaunchedAsSystem", rootURL, "${rootURL}/${my.url}")))
                 }
                 // else: This monitor will not be displayed
 
