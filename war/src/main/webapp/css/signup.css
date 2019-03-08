@@ -22,17 +22,15 @@
  * THE SOFTWARE.
  */
 .signup{
-  min-width: 480px;
   max-width: 480px;
-  width: 480px;
+  width: 100%;
 }
 .signupIntroDefault {
   text-align: center;
 }
 form.signup{
-  min-width: 480px;
   max-width: 480px;
-  width: 480px;
+  width: 100%;
   text-align: left;
 }
 .inputHeader {
