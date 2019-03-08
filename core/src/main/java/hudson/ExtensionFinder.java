@@ -42,7 +42,6 @@ import com.google.inject.spi.ProvisionListener;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.util.ReflectionUtils;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionFilter;
 import jenkins.ExtensionRefreshException;

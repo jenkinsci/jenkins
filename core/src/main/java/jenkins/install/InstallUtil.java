@@ -48,7 +48,6 @@ import com.google.common.base.Function;
 import com.thoughtworks.xstream.XStream;
 
 import hudson.Functions;
-import hudson.Main;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;

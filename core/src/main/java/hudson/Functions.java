@@ -2006,7 +2006,7 @@ public class Functions {
         if(size < 1024){
             return size + " " + measure;
         }
-        Double number = new Double(size);
+        double number = size;
         if(number>=1024){
             number = number/1024;
             measure = "KB";

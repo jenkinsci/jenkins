@@ -339,10 +339,9 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             set = new ArrayList<DependencyGroup>();
             map.put(key,set);
         }
-        for (ListIterator<DependencyGroup> it = set.listIterator(); it.hasNext();) {
-            DependencyGroup d = it.next();
+        for (DependencyGroup d : set) {
             // Check for existing edge that connects the same two projects:
-            if (d.getUpstreamProject()==dep.getUpstreamProject() && d.getDownstreamProject()==dep.getDownstreamProject()) {
+            if (d.getUpstreamProject() == dep.getUpstreamProject() && d.getDownstreamProject() == dep.getDownstreamProject()) {
                 d.add(dep);
                 return;
             }

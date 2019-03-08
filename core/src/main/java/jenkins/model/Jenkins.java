@@ -3830,7 +3830,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             while (isQuietingDown
                    && (timeout <= 0 || System.currentTimeMillis() < waitUntil)
                    && !RestartListener.isAllReady()) {
-                Thread.sleep(1000);
+                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
             }
         }
         return new HttpRedirect(".");
@@ -3889,7 +3889,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         // if the result isn't available in 5 sec, ignore that.
         // this is a precaution against hang nodes
-        long endTime = System.currentTimeMillis() + 5000;
+        long endTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
 
         Map<String,Map<String,String>> r = new HashMap<String, Map<String, String>>();
         for (Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
@@ -4246,7 +4246,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     ACL.impersonate(ACL.SYSTEM);
 
                     // give some time for the browser to load the "reloading" page
-                    Thread.sleep(5000);
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                     LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
@@ -4282,7 +4282,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
-                        Thread.sleep(10000);
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
                         LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
                         for (RestartListener listener : RestartListener.all())
                             listener.onRestart();
@@ -4587,7 +4587,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(ALLOWED_RESOURCE_EXTENSIONS.contains(extension)) {
             URL url = pluginManager.uberClassLoader.getResource(path);
             if(url!=null) {
-                long expires = MetaClass.NO_CACHE ? 0 : 365L * 24 * 60 * 60 * 1000; /*1 year*/
+                long expires = MetaClass.NO_CACHE ? 0 : TimeUnit.DAYS.toMillis(365);
                 rsp.serveFile(req,url,expires);
                 return;
             }

@@ -154,8 +154,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             RunList builds = owner.getBuilds();
             Set<String> seenUpstreamProjects = new HashSet<String>();
 
-            for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
-                Run build = (Run) iter.next();
+            for (Object build1 : builds) {
+                Run build = (Run) build1;
                 for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
                     for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
