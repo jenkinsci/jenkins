@@ -30,6 +30,7 @@ f=namespace(lib.FormTagLib)
 if (!QueueItemAuthenticatorDescriptor.all().isEmpty()) {
     f.section(title:_("Access Control for Builds")) {
         f.block() {
+            p(_("blurb"))
             f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
         }
     }
