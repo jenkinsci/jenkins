@@ -373,8 +373,10 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Loads all the extensions.
      */
     protected List<ExtensionComponent<T>> load() {
-        if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.log(Level.FINE,"Loading ExtensionList: "+extensionType, new Throwable());
+        LOGGER.fine(() -> String.format("Loading ExtensionList '%s'", extensionType.getName()));
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, String.format("Loading ExtensionList '%s' from", extensionType.getName()), new Throwable("Only present for stacktrace information"));
+        }
 
         return jenkins.getPluginManager().getPluginStrategy().findComponents(extensionType, hudson);
     }
