@@ -90,12 +90,17 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-	final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
+    /* =================================================================================================================
+    * Package-protected, but accessed API
+    * ============================================================================================================== */
+
+    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
     @Restricted(NoExternalUse.class)
     public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
     	return disabledAdministrativeMonitors;
     }
+    
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */
