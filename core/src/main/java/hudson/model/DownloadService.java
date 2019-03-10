@@ -92,7 +92,7 @@ public class DownloadService extends PageDecorator {
         if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
-                if(d.getDue()<now && TimeUnit.SECONDS.toMillis(d.lastAttempt+10)<now) {
+                if(d.getDue()<now && d.lastAttempt+TimeUnit.SECONDS.toMillis(10)<now) {
                     buf.append("<script>")
                        .append("Behaviour.addLoadEvent(function() {")
                        .append("  downloadService.download(")
