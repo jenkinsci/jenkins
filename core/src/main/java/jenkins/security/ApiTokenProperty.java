@@ -199,7 +199,7 @@ public class ApiTokenProperty extends UserProperty {
             return false;
         }
         
-      //  tokenStats.updateUsageForId(matchingToken.getUuid());
+    
         
         return true;
     }
