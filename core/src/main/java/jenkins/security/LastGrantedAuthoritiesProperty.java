@@ -56,10 +56,10 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
         grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
 
-        for (int i = 0; i < roles.length; i++){
+        for (String role : roles) {
             // to avoid having twice that role
-            if(!authenticatedRole.equals(roles[i])){
-                grantedAuthorities.add(new GrantedAuthorityImpl(roles[i]));
+            if (!authenticatedRole.equals(role)) {
+                grantedAuthorities.add(new GrantedAuthorityImpl(role));
             }
         }
 

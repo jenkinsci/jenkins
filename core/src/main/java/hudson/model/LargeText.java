@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.util.ByteBuffer;
 import hudson.util.CharSpool;
 import hudson.util.LineEndNormalizingWriter;
-import org.apache.commons.fileupload.util.Closeable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;

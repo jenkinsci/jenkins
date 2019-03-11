@@ -249,7 +249,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     Node checkedNode = c.getNode();
                     if (needExecutor && checkedNode != null && checkedNode.canTake(item) == null) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
-                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        needComputer = demandMilliseconds > TimeUnit.MINUTES.toMillis(inDemandDelay);
                         break;
                     }
                 }
@@ -262,7 +262,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});

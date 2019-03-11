@@ -5,8 +5,6 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
 import jenkins.slaves.RemotingVersionInfo;
 import org.jenkinsci.remoting.RoleChecker;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
 /**

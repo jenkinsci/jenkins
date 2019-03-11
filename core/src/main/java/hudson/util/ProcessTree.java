@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -550,7 +551,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
 
             // after that wait for it to cease to exist
-            long deadline = System.nanoTime() + softKillWaitSeconds * 1000000000;
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
             int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
             do {
                 if (!p.isRunning()) {
@@ -759,7 +760,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          */
         public void kill() throws InterruptedException {
             // after sending SIGTERM, wait for the process to cease to exist
-            long deadline = System.nanoTime() + softKillWaitSeconds * 1000000000;
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
             kill(deadline);
         }
 
@@ -798,7 +799,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         public void killRecursively() throws InterruptedException {
             // after sending SIGTERM, wait for the processes to cease to exist until the deadline
-            long deadline = System.nanoTime() + softKillWaitSeconds * 1000000000;
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
             killRecursively(deadline);
         }
 

@@ -24,7 +24,6 @@
 package hudson.model.listeners;
 
 import com.google.common.base.Function;
-import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
@@ -35,7 +34,6 @@ import hudson.model.Items;
 import hudson.security.ACL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.acegisecurity.AccessDeniedException;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
