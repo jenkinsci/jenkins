@@ -486,6 +486,9 @@ public class ApiTokenProperty extends UserProperty {
             }
             
             ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = p.tokenStore.generateNewToken(tokenName);
+            if ((p != null) && (tokenUuidAndPlainValue != null)) {
+                ApiTokenPropertyListener.fireOnCreated(u.getId(), p);
+            }
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
@@ -549,6 +552,7 @@ public class ApiTokenProperty extends UserProperty {
                     p.apiToken = null;
                 }
                 p.tokenStats.removeId(revoked.getUuid());
+                ApiTokenPropertyListener.fireOnDeleted(u.getId(), p);
             }
             u.save();
             
