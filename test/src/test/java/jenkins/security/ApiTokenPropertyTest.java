@@ -4,12 +4,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -18,33 +14,40 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.User;
+import hudson.model.UserProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.pages.SignupPage;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -52,12 +55,19 @@ import org.jvnet.hudson.test.recipes.LocalData;
  */
 public class ApiTokenPropertyTest {
 
+    private SpyApiTokenPropertyListenerImpl spyApiTokenListener;
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
     @Before
     public void setupLegacyConfig(){
         ApiTokenTestHelper.enableLegacyBehavior();
+    }
+
+    @Before
+    public void linkExtension() throws Exception {
+        spyApiTokenListener = ExtensionList.lookup(ApiTokenPropertyListener.class).get(SpyApiTokenPropertyListenerImpl.class);
     }
     
     /**
@@ -156,6 +166,69 @@ public class ApiTokenPropertyTest {
 //        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
         assertEquals("Update token response is incorrect", 
                 Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
+    }
+
+    @Issue("JENKINS-56170")
+    @Test
+    public void createUserTokenFromUi() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        WebClient wc = j.createWebClient();
+
+        spyApiTokenListener.usersWithCreatedTokens.clear();
+        assertTrue(spyApiTokenListener.usersWithCreatedTokens.isEmpty());
+
+        // new user account creation
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("charlie");
+        signup.enterPassword("charlie");
+        signup.enterFullName(StringUtils.capitalize("charlie user"));
+        signup.enterEmail("charlie" + "@" + "example.com");
+        HtmlPage page = signup.submit(j);
+
+        // execute an http request to create a new a user api token from their config page
+        User charlie = User.getById("charlie", false);
+        URL configPage = wc.createCrumbedUrl(charlie.getUrl() + "/" + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken/?newTokenName=" + "charlie-token");
+        Page p = wc.getPage(new WebRequest(configPage, HttpMethod.POST));
+
+        // ensure user whose new token was deleted was in fact logged
+        assertEquals(200, p.getWebResponse().getStatusCode());
+        assertEquals("charlie", spyApiTokenListener.usersWithCreatedTokens.get(0));
+    }
+
+    @Issue("JENKINS-56170")
+    @Test
+    public void revokeUserTokenFromUi() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        WebClient wc = j.createWebClient();
+
+        spyApiTokenListener.usersWithDeletedTokens.clear();
+        assertTrue(spyApiTokenListener.usersWithDeletedTokens.isEmpty());
+
+        // new user account creation
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("alice");
+        signup.enterPassword("alice");
+        signup.enterFullName(StringUtils.capitalize("alice user"));
+        signup.enterEmail("alice" + "@" + "example.com");
+        HtmlPage page = signup.submit(j);
+
+        // execute an http request to create a new a user api token from their config page
+        User alice = User.getById("alice", false);
+        URL configPage = wc.createCrumbedUrl(alice.getUrl() + "/" + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken/?newTokenName=" + "alice-token");
+        Page p = wc.getPage(new WebRequest(configPage, HttpMethod.POST));
+        JSONObject responseJson = JSONObject.fromObject(p.getWebResponse().getContentAsString());
+        GenerateNewTokenResponse userToken = (GenerateNewTokenResponse) responseJson.getJSONObject("data").toBean(GenerateNewTokenResponse.class);
+        assertNotNull(userToken.tokenUuid);
+
+        // execute a second http request to delete the just created user api token from their config page
+        configPage = wc.createCrumbedUrl(alice.getUrl() + "/" + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + userToken.tokenUuid);
+        p = wc.getPage(new WebRequest(configPage, HttpMethod.POST));
+
+        // ensure user whose new token was deleted was in fact logged
+        assertEquals(200, p.getWebResponse().getStatusCode());
+        assertEquals("alice", spyApiTokenListener.usersWithDeletedTokens.get(0));
     }
 
     @Test
@@ -460,7 +533,26 @@ public class ApiTokenPropertyTest {
         Object result = responseJson.getJSONObject("data").toBean(GenerateNewTokenResponse.class);
         return (GenerateNewTokenResponse) result;
     }
-    
-    
+
+    @TestExtension
+    public static class SpyApiTokenPropertyListenerImpl extends ApiTokenPropertyListener {
+        private List<String> usersWithCreatedTokens = new ArrayList<>();
+        private List<String> usersWithDeletedTokens = new ArrayList<>();
+
+        @Override
+        public void onCreated(@Nonnull String username, @Nonnull UserProperty value) {
+            if (value instanceof ApiTokenProperty) {
+                usersWithCreatedTokens.add(username);
+            }
+        }
+
+        @Override
+        public void onDeleted(@Nonnull String username, @Nonnull UserProperty value) {
+            if (value instanceof ApiTokenProperty) {
+                usersWithDeletedTokens.add(username);
+            }
+        }
+    }
+
     // test no token are generated for new user with the global configuration set to false
 }
