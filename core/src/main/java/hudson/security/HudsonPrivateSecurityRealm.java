@@ -719,16 +719,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
                 UserProperty p = user.getProperty(Details.class);
+                String currentUserHashedPassword = ((Details) p).getPassword();
 
                 String data = Protector.unprotect(pwd);
                 if(data!=null) {
                     String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
                     if(data.startsWith(prefix))
-                        SecurityListener.fireUserPropertyUpdated(p, user.getId());
+                        PasswordPropertyListener.fireOnChanged(user.getId(), Util.fixNull(currentUserHashedPassword), Util.fixNull(pwd));
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                 }
 
-                SecurityListener.fireUserPropertyUpdated(p, user.getId());
+                if (p != null) {
+                    PasswordPropertyListener.fireOnChanged(user.getId(), Util.fixNull(currentUserHashedPassword), Util.fixNull(pwd));
+                }
                 // the UserSeedProperty is not touched by the configure page
                 UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
                 if (userSeedProperty != null) {
