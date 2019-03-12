@@ -80,10 +80,12 @@ public class HudsonPrivateSecurityRealmTest {
     public JenkinsRule j = new JenkinsRule();
 
     private SpySecurityListenerImpl spySecurityListener;
+    private SpyPasswordPropertyListenerImpl spyPasswordListener;
 
     @Before
     public void linkExtension() throws Exception {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
+        spyPasswordListener = ExtensionList.lookup(PasswordPropertyListener.class).get(SpyPasswordPropertyListenerImpl.class);
     }
 
     @Before
@@ -353,8 +355,8 @@ public class HudsonPrivateSecurityRealmTest {
         j.jenkins.setSecurityRealm(securityRealm);
         WebClient wc = j.createWebClient();
 
-        spySecurityListener.usersWithPasswordUpdate.clear();
-        assertTrue(spySecurityListener.usersWithPasswordUpdate.isEmpty());
+        spyPasswordListener.usersWithPasswordUpdate.clear();
+        assertTrue(spyPasswordListener.usersWithPasswordUpdate.isEmpty());
 
         // new user account creation
         SignupPage signup = new SignupPage(wc.goTo("signup"));
@@ -369,7 +371,7 @@ public class HudsonPrivateSecurityRealmTest {
         // execute an http request to change a user's password from their config page
         User debbie = User.getById("debbie", false);
         URL configPage = wc.createCrumbedUrl(debbie.getUrl() + "/" + "configSubmit");
-        String formData = "{\"fullName\": \"debbie user\", \"description\": \"\", \"userProperty3\": {\"primaryViewName\": \"\"}, \"userProperty5\": {\"password\": \"admin\", \"$redact\": [\"password\", \"password2\"], \"password2\": \"admin\"}, \"userProperty6\": {\"authorizedKeys\": \"\"}, \"userProperty8\": {\"insensitiveSearch\": true}, \"core:apply\": \"true\"}";
+        String formData = "{\"fullName\": \"debbie user\", \"description\": \"\", \"userProperty3\": {\"primaryViewName\": \"\"}, \"userProperty5\": {\"user.password\": \"admin\", \"$redact\": [\"user.password\", \"user.password2\"], \"user.password2\": \"admin\"}, \"userProperty6\": {\"authorizedKeys\": \"\"}, \"userProperty8\": {\"insensitiveSearch\": true}, \"core:apply\": \"true\"}";
 
         WebRequest request = new WebRequest(configPage, HttpMethod.POST);
         request.setAdditionalHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -377,8 +379,8 @@ public class HudsonPrivateSecurityRealmTest {
         Page page = wc.getPage(request);
 
         // ensure user whose password was changed was in fact logged
-        assertTrue(spySecurityListener.usersWithPasswordUpdate.get(0).equals("debbie"));
         assertEquals(200, page.getWebResponse().getStatusCode());
+        assertTrue(spyPasswordListener.usersWithPasswordUpdate.get(0).equals("debbie"));
     }
 
     private void createFirstAccount(String login) throws Exception {
@@ -458,7 +460,6 @@ public class HudsonPrivateSecurityRealmTest {
     public static class SpySecurityListenerImpl extends SecurityListener {
         private List<String> loggedInUsernames = new ArrayList<>();
         private List<String> createdUsers = new ArrayList<String>();
-        private List<String> usersWithPasswordUpdate = new ArrayList<>();
 
         @Override
         protected void loggedIn(@Nonnull String username) {
@@ -467,12 +468,15 @@ public class HudsonPrivateSecurityRealmTest {
 
         @Override
         protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+    }
+
+    @TestExtension
+    public static class SpyPasswordPropertyListenerImpl extends PasswordPropertyListener {
+        private List<String> usersWithPasswordUpdate = new ArrayList<>();
 
         @Override
-        protected void userPropertyUpdated(@Nonnull UserProperty p, @Nonnull String username){
-            if (p instanceof HudsonPrivateSecurityRealm.Details) {
-                usersWithPasswordUpdate.add(username);
-            }
+        public void onChanged(@Nonnull String username, @Nonnull Object oldValue, @Nonnull Object newValue) {
+            usersWithPasswordUpdate.add(username);
         }
     }
 
