@@ -146,7 +146,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             public PasswordAuthentication getPasswordAuthentication() {
                 String userName = getUserName();
                 if (getRequestorType() == RequestorType.PROXY && userName != null) {
-                    return new PasswordAuthentication(userName, getPassword().toCharArray());
+                    return new PasswordAuthentication(userName, Secret.toString(secretPassword).toCharArray());
                 }
                 return null;
             }
@@ -157,13 +157,11 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return userName;
     }
 
-//    This method is public, if it was public only for jelly, then should make it private (or inline contents)
-//    Have left public, as can't tell if anyone else is using from plugins
     /**
-     * @return the password in plain text
+     * @return the proxy password
      */
-    public String getPassword() {
-        return Secret.toString(secretPassword);
+    public Secret getPassword() {
+        return secretPassword;
     }
 
     public String getEncryptedPassword() {
@@ -174,11 +172,23 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return testUrl;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     /**
      * Returns the list of properly formatted no proxy host names.
      */
     public List<Pattern> getNoProxyHostPatterns() {
         return getNoProxyHostPatterns(noProxyHost);
+    }
+
+    public String getNoProxyHost() {
+        return noProxyHost;
     }
 
     /**
