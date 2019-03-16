@@ -53,7 +53,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
      * Each time an API Token is used, its usage counter is incremented and the last used date is updated.
      * You can disable this feature using this property.
      */
-    private boolean usageStatisticsEnabled = true;
+    private boolean usageStatisticsEnabled = false;
     
     public static ApiTokenPropertyConfiguration get() {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
