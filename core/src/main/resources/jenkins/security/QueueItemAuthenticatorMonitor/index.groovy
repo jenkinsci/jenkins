@@ -38,49 +38,34 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             text(my.displayName)
         }
 
-        p(_('blurb'))
+        p(raw(_('blurb')))
 
         table(class: 'pane bigtable') {
             tr {
                 th(_('Project'))
-                th(_('Build'))
-                th(_('Started'))
+                th(_('Most Recent Builds Run as SYSTEM'))
             }
             QueueItemAuthenticatorMonitor.buildsLaunchedAsSystemWithAuthenticatorPresentByJob.toSorted { Jenkins.get().getItemByFullName(it.key)?.fullDisplayName?:it.key }.each { jobName, buildReferences ->
                 def item = Jenkins.get().getItemByFullName(jobName)
 
-                buildReferences.descendingSet().each { reference ->
-                    tr {
-                        td {
-                            if (item == null) {
-                                // deleted?
-                                text(jobName)
-                            } else {
-                                a(class: 'model-link inside', href: "${rootURL}/${item.url}", item?.fullDisplayName)
-                            }
+
+                tr {
+                    td {
+                        if (item == null) {
+                            // deleted?
+                            text(jobName)
+                        } else {
+                            a(class: 'model-link inside', href: "${rootURL}/${item.url}", item?.fullDisplayName)
                         }
-                        td {
-                            if (reference.buildNumber == null) {
-                                _('Not yet known')
-                            } else {
+                    }
+                    td {
+                        buildReferences.descendingSet().each { reference ->
+                            if (reference.buildNumber != null) {
                                 def build = item?.getBuildByNumber((int) reference.buildNumber)
                                 if (build == null) {
                                     text("#${reference.buildNumber}")
                                 } else {
                                     a(class: 'model-link inside', href: "${rootURL}/${build.url}", build.displayName)
-                                }
-                            }
-                        }
-                        td {
-                            if (reference.buildNumber == null) {
-                                _('Not yet known')
-                            } else {
-                                def build = item?.getBuildByNumber((int) reference.buildNumber)
-                                if (build == null) {
-                                    _("N/A")
-                                } else {
-//                                hudson.Util.getPastTimeString(System)
-                                    _('ago', build.timestampString)
                                 }
                             }
                         }

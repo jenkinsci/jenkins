@@ -33,7 +33,7 @@ div(class: "alert alert-warning", role: "alert") {
         f.submit(name: 'dismiss', value: _("Dismiss"))
     }
 
-    text(_("blurb"))
+    text(raw(_("blurb")))
 
     ul(style: "list-style-type: none;") {
         if (my.queueItemAuthenticatorPresent) {
