@@ -24,9 +24,12 @@
 package hudson.security;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import hudson.model.User;
 import hudson.security.captcha.CaptchaSupport;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -37,6 +40,15 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.util.Cookie;
+
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Random;
+
+import static org.hamcrest.Matchers.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -78,5 +90,54 @@ public class SecurityRealmTest {
         @Override
         public void generateImage(String id, OutputStream ios) throws IOException {
         }
+    }
+
+    static void addSessionCookie(CookieManager manager, String domain, String path, Date date) {
+        manager.addCookie(new Cookie(domain, "JSESSIONID."+Integer.toHexString(new Random().nextInt()),
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                path,
+                date,
+                false));
+    }
+
+    @Test
+    public void many_sessions_logout() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        CookieManager manager = wc.getCookieManager();
+        manager.setCookiesEnabled(true);
+        wc.goTo("login");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        Date tomorrow = calendar.getTime();
+        byte[] array = new byte[7];
+        Collections.nCopies(8, 1)
+                .stream()
+                .forEach(i -> addSessionCookie(manager, "localhost", "/jenkins", tomorrow));
+        addSessionCookie(manager, "localhost", "/will-not-be-sent", tomorrow);
+
+        HtmlPage page = wc.goTo("logout");
+
+        StringBuilder builder = new StringBuilder();
+        int sessionCookies = 0;
+
+        final boolean debugCookies = false;
+        for (Cookie cookie : manager.getCookies()) {
+            if (cookie.getName().startsWith("JSESSIONID.")) {
+                ++sessionCookies;
+
+                if (debugCookies) {
+                    builder.append(cookie.getName());
+                    String path = cookie.getPath();
+                    if (path != null)
+                        builder.append("; Path=").append(path);
+                    builder.append("\n");
+                }
+            }
+        }
+        if (debugCookies) {
+            assertThat(builder.toString(), Matchers.is(equalTo("")));
+        }
+        assertThat(sessionCookies, Matchers.is(equalTo(1)));
     }
 }

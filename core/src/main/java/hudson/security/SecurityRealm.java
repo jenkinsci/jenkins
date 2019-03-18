@@ -290,15 +290,44 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
 
-        // reset remember-me cookie
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
+        String contextPath = req.getContextPath().length() > 0 ? req.getContextPath() : "/";
+        resetRememberMeCookie(req, rsp, contextPath);
+        clearStaleSessionCookies(req, rsp, contextPath);
+
+        rsp.sendRedirect2(getPostLogOutUrl(req,auth));
+    }
+
+    private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
+        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
-        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
+        cookie.setPath(contextPath);
         rsp.addCookie(cookie);
+    }
 
-        rsp.sendRedirect2(getPostLogOutUrl(req,auth));
+    // See https://github.com/jenkinsci/extras-executable-war/blob/6558df699d1366b18d045d2ffda3e970df377873/src/main/java/Main.java#L79-L97
+    private static final String JSESSIONID_COOKIE_NAME =
+            System.getProperty("executableWar.jetty.sessionIdCookieName");
+    private static final boolean DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME =
+            Boolean.getBoolean("executableWar.jetty.disableCustomSessionIdCookieName");
+
+    private void clearStaleSessionCookies(StaplerRequest req, StaplerResponse rsp, String contextPath) {
+        final String cookieName;
+        if (!DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME && JSESSIONID_COOKIE_NAME != null) {
+            cookieName = JSESSIONID_COOKIE_NAME;
+        } else {
+            cookieName = "JSESSIONID.";
+        }
+        for (Cookie cookie : req.getCookies()) {
+            if (cookie.getName().startsWith(cookieName)) {
+                // one reason users log out is to clear their session(s)
+                // so tell the browser to drop all old sessions
+                cookie.setMaxAge(0);
+                cookie.setValue("");
+                rsp.addCookie(cookie);
+            }
+        }
     }
 
     /**
