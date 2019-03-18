@@ -33,6 +33,7 @@ import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
 
 import hudson.model.AperiodicWork;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -151,6 +152,13 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public String getAgentProtocolNames() {
         return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+    }
+
+    /**
+     * Gets Remoting minimum supported version to prevent unsupported agents from connecting
+     */
+    public VersionNumber getRemotingMinimumVersion() {
+        return RemotingVersionInfo.getMinimumSupportedVersion();
     }
 
     @Override
@@ -304,7 +312,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
-                    o.write("Remoting-Minimum-Version: " + RemotingVersionInfo.getMinimumSupportedVersion() + "\r\n");
+                    o.write("Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
