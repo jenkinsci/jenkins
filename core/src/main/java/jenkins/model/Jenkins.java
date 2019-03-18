@@ -4187,6 +4187,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
+        //Request from rest client
+        if (req.getReferer() == null || req.getMethod().equals("POST")) {
+            rsp.setStatus(200);
+            restart();
+            return;
+        }
+
         if (req == null || req.getMethod().equals("POST")) {
             restart();
         }
@@ -4208,6 +4215,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         checkPermission(ADMINISTER);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
+
+        //Request from rest client
+        if (req.getReferer() == null || req.getMethod().equals("POST")){
+            safeRestart();
+            return HttpResponses.text("safeRestart");
+        }
 
         if (req == null || req.getMethod().equals("POST")) {
             safeRestart();
