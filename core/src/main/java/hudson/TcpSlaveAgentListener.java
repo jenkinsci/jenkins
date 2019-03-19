@@ -302,8 +302,7 @@ public final class TcpSlaveAgentListener extends Thread {
         private void respondHello(String header, Socket s) throws IOException {
             try {
                 Writer o = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
-
-                //TODO: expose version about minimum supported Remoting version (JENKINS-48766)
+                
                 if (header.startsWith("GET / ")) {
                     o.write("HTTP/1.0 200 OK\r\n");
                     o.write("Content-Type: text/plain;charset=UTF-8\r\n");
