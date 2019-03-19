@@ -239,6 +239,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 mac = new byte[macSz];
                 decoded.readFully(mac);
                 sz = decoded.readInt();
+                if (sz < 0) {
+                    throw new IOException("Corrupt stream");
+                }
             } else {
                 mac = null;
                 sz = - macSz;
