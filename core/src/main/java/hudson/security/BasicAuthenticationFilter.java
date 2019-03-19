@@ -152,7 +152,7 @@ public class BasicAuthenticationFilter implements Filter {
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
                     try {
-                        chain.doFilter(request,response);
+                        chain.doFilter(request, response);
                     } finally {
                         SecurityContextHolder.clearContext();
                     }
