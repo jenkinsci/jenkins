@@ -112,6 +112,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @return The current filter value, if filter is null, returns ALL
      * @since 1.517
      */
+    @Exported
     public RunParameterFilter getFilter() {
     	// if filter is null, default to RunParameterFilter.ALL
         return (null == filter) ? RunParameterFilter.ALL : filter;
