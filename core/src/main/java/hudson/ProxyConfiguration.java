@@ -63,6 +63,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -94,14 +95,14 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * Possibly null proxy user name.
      */
-    private final String userName;
+    private String userName;
 
     /**
      * List of host names that shouldn't use proxy, as typed by users.
      *
      * @see #getNoProxyHostPatterns()
      */
-    public final String noProxyHost;
+    public String noProxyHost;
 
     @Deprecated
     private String password;
@@ -117,6 +118,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     private transient boolean authCacheSeeded;
 
+    @DataBoundConstructor
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
     }
@@ -129,7 +131,6 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this(name,port,userName,password,noProxyHost,null);
     }
 
-    @DataBoundConstructor
     public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost, String testUrl) {
         this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
@@ -158,9 +159,15 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     /**
+     * Use {@link #getSecretPassword()} instead
      * @return the proxy password
      */
-    public Secret getPassword() {
+    @Deprecated
+    public String getPassword() {
+        return Secret.toString(secretPassword);
+    }
+
+    public Secret getSecretPassword() {
         return secretPassword;
     }
 
@@ -203,6 +210,26 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;
+    }
+
+    @DataBoundSetter
+    public void setSecretPassword(Secret secretPassword) {
+        this.secretPassword = secretPassword;
+    }
+
+    @DataBoundSetter
+    public void setTestUrl(String testUrl) {
+        this.testUrl = testUrl;
+    }
+
+    @DataBoundSetter
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    @DataBoundSetter
+    public void setNoProxyHost(String noProxyHost) {
+        this.noProxyHost = noProxyHost;
     }
 
     /**
