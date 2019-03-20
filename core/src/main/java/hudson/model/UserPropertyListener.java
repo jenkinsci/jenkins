@@ -57,7 +57,7 @@ public interface UserPropertyListener extends ExtensionPoint {
      * @param value property that was newly created.
      *
      */
-    default void onCreated(@Nonnull String username, @Nonnull Object value) {
+    default <T> void onCreated(@Nonnull String username, @Nonnull T value) {
         LOGGER.log(Level.FINE, MessageFormat.format("new {0} property created for user {1}", value.toString(), username));
     }
 
@@ -81,7 +81,7 @@ public interface UserPropertyListener extends ExtensionPoint {
      * @param newValue new property of the user
      *
      */
-    default void onChanged(@Nonnull String username, @Nonnull Object oldValue, @Nonnull Object newValue) {
+    default <T> void onChanged(@Nonnull String username, @Nonnull T oldValue, @Nonnull T newValue) {
         LOGGER.log(Level.FINE, MessageFormat.format("{0} property changed for user {1}", oldValue.toString(), username));
     }
 
@@ -103,7 +103,7 @@ public interface UserPropertyListener extends ExtensionPoint {
      * @param value property that was removed
      *
      */
-    default void onDeleted(@Nonnull String username, @Nonnull Object value) {
+    default <T> void onDeleted(@Nonnull String username, @Nonnull T value) {
         LOGGER.log(Level.FINE, MessageFormat.format("new {0} property created for user {1}", value.toString(), username));
     }
 
