@@ -23,66 +23,40 @@
  */
 package hudson.model;
 
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.Launcher;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.UnexpectedPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.*;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import jenkins.model.*;
+import jenkins.util.VirtualFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.*;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.TestBuilder;
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.ExtensionList;
-import hudson.Util;
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import jenkins.model.ArtifactManager;
-import jenkins.model.ArtifactManagerConfiguration;
-import jenkins.model.ArtifactManagerFactory;
-import jenkins.model.ArtifactManagerFactoryDescriptor;
-import jenkins.model.Jenkins;
-import jenkins.util.VirtualFile;
-import org.apache.commons.io.IOUtils;
-import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 /**
