@@ -12,7 +12,7 @@ f.entry(title:_("User name"),field:"userName") {
     f.textbox()
 }
 f.entry(title:_("Password"),field:"secretPassword") {
-    f.password(value:instance?.secretPassword)
+    f.password()
 }
 f.entry(title:_("No Proxy Host"),field:"noProxyHost") {
     f.textarea()
