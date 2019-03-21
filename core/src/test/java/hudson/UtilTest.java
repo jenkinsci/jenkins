@@ -43,7 +43,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 
+import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
@@ -544,5 +546,42 @@ public class UtilTest {
     
     private Date parseDate(String dateString) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateString);
+    }
+
+    @Test
+    public void resolveSymlinkToFile() throws Exception {
+        //  root
+        //      /a
+        //          /aa
+        //              aa.txt
+        //          /_b => symlink to /root/b
+        //      /b
+        //          /_a => symlink to /root/a
+        File root = tmp.getRoot();
+        File a = new File(root, "a");
+        File aa = new File(a, "aa");
+        aa.mkdirs();
+        File aaTxt = new File(aa, "aa.txt");
+        FileUtils.write(aaTxt, "aa");
+
+        File b = new File(root, "b");
+        b.mkdir();
+
+        File _a = new File(b, "_a");
+        Util.createSymlink(_a.getParentFile(), a.getAbsolutePath(), _a.getName(), TaskListener.NULL);
+
+        File _b = new File(a, "_b");
+        Util.createSymlink(_b.getParentFile(), b.getAbsolutePath(), _b.getName(), TaskListener.NULL);
+
+        assertTrue(Files.isSymbolicLink(_a.toPath()));
+        assertTrue(Files.isSymbolicLink(_b.toPath()));
+
+        // direct symlinks are resolved
+        assertEquals(Util.resolveSymlinkToFile(_a), a);
+        assertEquals(Util.resolveSymlinkToFile(_b), b);
+
+        // intermediate symlinks are NOT resolved
+        assertNull(Util.resolveSymlinkToFile(new File(_a, "aa")));
+        assertNull(Util.resolveSymlinkToFile(new File(_a, "aa/aa.txt")));
     }
 }
