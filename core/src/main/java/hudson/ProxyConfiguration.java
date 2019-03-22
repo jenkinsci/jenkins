@@ -418,7 +418,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         @RequirePOST
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
-                @QueryParameter("userName") String userName, @QueryParameter("password") String password,
+                @QueryParameter("userName") String userName, @QueryParameter("secretPassword") Secret password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
@@ -443,7 +443,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = createCredentials(userName, password);
+                    Credentials credentials = createCredentials(userName, password != null ? password.getPlainText() : null);
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
