@@ -111,6 +111,14 @@
 .token-list .token-list-new-item .new-token-value.visible{
     display: inline-block;
 }
+.token-list .token-list-new-item .copy-new-token{
+    margin-left: 10px;
+    display: none;
+    cursor: pointer;
+}
+.token-list .token-list-new-item .copy-new-token.visible{
+    display: inline-block;
+}
 .token-list .token-list-new-item .display-after-generation{
     margin-top: 5px; 
     display: none;
