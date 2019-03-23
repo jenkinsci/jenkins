@@ -159,6 +159,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         if (caseSensitive == null) {
             caseSensitive = true;
         }
+        if (followSymlinks == null) {
+          followSymlinks = true;
+      }
         return this;
     }
 
