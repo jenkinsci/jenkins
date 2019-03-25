@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.hamcrest.xml.HasXPath.hasXPath;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class TokenBasedRememberMeServices2Test {
@@ -308,5 +310,46 @@ public class TokenBasedRememberMeServices2Test {
     private void assertUserNotConnected(JenkinsRule.WebClient wc, String notExpectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
+    }
+
+    @Test
+    @Issue("SECURITY-996")
+    public void rememberMeToken_shouldNotBeRead_ifOptionIsDisabled() throws Exception {
+        j.jenkins.setDisableRememberMe(false);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        Cookie rememberMeCookie = null;
+        {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.login("alice", "alice", true);
+
+
+            // we should see a remember me cookie
+            rememberMeCookie = getRememberMeCookie(wc);
+            assertNotNull(rememberMeCookie);
+            assertThat(rememberMeCookie.getValue(), not(isEmptyString()));
+        }
+
+        j.jenkins.setDisableRememberMe(true);
+        {
+            JenkinsRule.WebClient wc = j.createWebClient();
+
+            wc.getCookieManager().addCookie(rememberMeCookie);
+
+            // the application should not use the cookie to connect
+            XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+            assertThat(page, hasXPath("//name", not(is("alice"))));
+        }
+
+        j.jenkins.setDisableRememberMe(false);
+        {
+            JenkinsRule.WebClient wc = j.createWebClient();
+
+            wc.getCookieManager().addCookie(rememberMeCookie);
+
+            // if we reactivate the remember me feature, it's ok
+            XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+            assertThat(page, hasXPath("//name", is("alice")));
+        }
     }
 }
