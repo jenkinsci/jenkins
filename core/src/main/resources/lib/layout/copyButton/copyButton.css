@@ -9,3 +9,9 @@
     width: 20px;
     height: 20px;
 }
+.copy-button.visible{
+    display: inline-block;
+}
+.copy-button.invisible{
+    display: none;
+}

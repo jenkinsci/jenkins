@@ -88,10 +88,10 @@ function saveApiToken(button){
                 tokenValueSpan.addClassName('visible');
 
                 // show the copy button
-                if(ClipboardJS.isSupported()) {
-                    var tokenCopyButton = repeatedChunk.querySelector('.copy-new-token');
-                    tokenCopyButton.addClassName('visible');
-                }
+                var tokenCopyButton = repeatedChunk.querySelector('.copy-button');
+                tokenCopyButton.setAttribute('text', tokenValue);
+                tokenCopyButton.removeClassName('invisible')
+                tokenCopyButton.addClassName('visible');
                 
                 var tokenUuid = json.data.tokenUuid;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
@@ -131,12 +131,4 @@ function adjustTokenEmptyListMessage(tokenList){
             emptyListMessage.removeClassName('hidden-message');
         }
     }
-}
-
-if(ClipboardJS.isSupported()) {
-    new ClipboardJS('.copy-new-token', {
-        text: function(trigger) {
-            return trigger.parentElement.querySelector('.new-token-value').innerText;
-        }
-    });
 }
