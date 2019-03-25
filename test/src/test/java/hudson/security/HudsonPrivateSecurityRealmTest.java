@@ -27,6 +27,7 @@ package hudson.security;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -604,5 +605,34 @@ public class HudsonPrivateSecurityRealmTest {
         HtmlPage success = signup.submit(j);
         assertThat(success.getElementById("main-panel").getTextContent(), not(containsString("Success")));
         assertThat(success.getElementById("main-panel").getTextContent(), containsString(regex));
+    }
+
+    @Test
+    @Issue("SECURITY-1158")
+    public void singupNoLongerVulnerableToSessionFixation() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        // to trigger the creation of a session
+        wc.goTo("");
+        Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
+        String sessionIdBefore = sessionBefore.getValue();
+
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("alice");
+        signup.enterPassword("alice");
+        signup.enterFullName("Alice User");
+        signup.enterEmail("alice@nowhere.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
+
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+
+        Cookie sessionAfter = wc.getCookieManager().getCookie("JSESSIONID");
+        String sessionIdAfter = sessionAfter.getValue();
+
+        assertNotEquals(sessionIdAfter, sessionIdBefore);
     }
 }
