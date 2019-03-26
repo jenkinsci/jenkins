@@ -127,7 +127,7 @@ THE SOFTWARE.
                             <span class="token-cancel">
                                 <f:repeatableDeleteButton value="${%Cancel}" />
                             </span>
-                            <l:copyButton message="${%Copied}" text="" clazz="invisible" style="margin-left: 6px;"/>
+                            <l:copyButton message="${%Copied}" text="" clazz="invisible"/>
                             <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
                                data-confirm="${%ConfirmRevokeSingle}"
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
