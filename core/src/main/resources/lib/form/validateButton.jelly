@@ -52,7 +52,11 @@ THE SOFTWARE.
   </st:documentation>
   <f:entry>
     <div style="float:right">
-      <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz}" onclick="validateButton('${descriptor.descriptorFullUrl}/${h.jsStringEscape(method)}','${h.jsStringEscape(with)}',this)" />
+      <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz}" 
+             data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
+             data-validate-button-method="${method}"
+             data-validate-button-with="${with}"
+             onclick="safeValidateButton(this)" />
     </div>
     <div style="display:none;">
       <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}
