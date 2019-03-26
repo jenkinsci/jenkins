@@ -70,10 +70,9 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
             Rectangle2D r = null;
 
             int categoryIndex = 0;
-            Iterator iterator = ticks.iterator();
-            while (iterator.hasNext()) {
+            for (Object tick1 : ticks) {
 
-                CategoryTick tick = (CategoryTick) iterator.next();
+                CategoryTick tick = (CategoryTick) tick1;
                 g2.setFont(getTickLabelFont(tick.getCategory()));
                 g2.setPaint(getTickLabelPaint(tick.getCategory()));
 

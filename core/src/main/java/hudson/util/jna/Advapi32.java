@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author TB
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface Advapi32  extends StdCallLibrary {
   Advapi32 INSTANCE = (Advapi32) Native.loadLibrary("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);
 

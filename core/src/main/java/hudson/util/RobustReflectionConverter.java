@@ -44,7 +44,6 @@ import hudson.model.Saveable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -213,8 +212,7 @@ public class RobustReflectionConverter implements Converter {
                     if (mapping != null) {
                         if (mapping.getItemFieldName() != null) {
                             Collection list = (Collection) newObj;
-                            for (Iterator iter = list.iterator(); iter.hasNext();) {
-                                Object obj = iter.next();
+                            for (Object obj : list) {
                                 writeField(fieldName, mapping.getItemFieldName(), mapping.getItemType(), definedIn, obj);
                             }
                         } else {

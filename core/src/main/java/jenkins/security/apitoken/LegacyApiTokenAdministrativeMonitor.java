@@ -26,7 +26,6 @@ package jenkins.security.apitoken;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
-import hudson.node_monitors.AbstractAsyncNodeMonitorDescriptor;
 import hudson.util.HttpResponses;
 import jenkins.security.ApiTokenProperty;
 import org.jenkinsci.Symbol;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
 @Symbol("legacyApiTokenUsage")
 @Restricted(NoExternalUse.class)
 public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
-    private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LegacyApiTokenAdministrativeMonitor.class.getName());
     
     public LegacyApiTokenAdministrativeMonitor() {
         super("legacyApiToken");

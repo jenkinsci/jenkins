@@ -38,7 +38,6 @@ import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;

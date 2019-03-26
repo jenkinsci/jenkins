@@ -23,9 +23,6 @@
  */
 package hudson.model;
 
-import static java.util.logging.Level.WARNING;
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -115,6 +112,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @return The current filter value, if filter is null, returns ALL
      * @since 1.517
      */
+    @Exported
     public RunParameterFilter getFilter() {
     	// if filter is null, default to RunParameterFilter.ALL
         return (null == filter) ? RunParameterFilter.ALL : filter;

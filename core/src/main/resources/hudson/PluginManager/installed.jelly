@@ -48,8 +48,8 @@ THE SOFTWARE.
              data-cannot-disable="${%This plugin cannot be disabled}" 
              data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
              data-disabled-dependencies="${%It has one or more disabled dependencies}" 
-             data-enabled-dependants="${%It has one or more enabled dependants}" 
-             data-installed-dependants="${%It has one or more installed dependants}" 
+             data-enabled-dependents="${%It has one or more enabled dependents}" 
+             data-installed-dependents="${%It has one or more installed dependents}" 
         />
         <table id="plugins" class="pane bigtable sortable stripped-odd">
           <j:choose>
@@ -67,7 +67,7 @@ THE SOFTWARE.
                 <th width="1">${%Uninstall}</th>
               </tr>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
-                <tr class="plugin ${p.hasDependants()?'has-dependants':''} ${(p.hasDependants() &amp;&amp; !p.enabled)?'has-dependants-but-disabled':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
+                <tr class="plugin ${p.hasDependents()?'has-dependents':''} ${(p.hasDependents() &amp;&amp; !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
                   <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="center pane enable" data="${state}">
                     <input type="checkbox" checked="${state}" onclick="flip(event)"
@@ -118,10 +118,10 @@ THE SOFTWARE.
                         <p>${%Uninstallation pending}</p>
                       </j:when>
                       <j:otherwise>
-                          <j:if test="${p.hasDependants()}">
-                            <div class="dependant-list">
-                              <j:forEach var="dependant" items="${p.dependants}">
-                                <span data-plugin-id="${dependant}"></span>
+                          <j:if test="${p.hasDependents()}">
+                            <div class="dependent-list">
+                              <j:forEach var="dependent" items="${p.dependents}">
+                                <span data-plugin-id="${dependent}"></span>
                               </j:forEach>
                             </div>
                           </j:if>

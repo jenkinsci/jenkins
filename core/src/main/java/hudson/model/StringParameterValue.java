@@ -70,7 +70,7 @@ public class StringParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
      
