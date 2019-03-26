@@ -591,10 +591,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
 
             // All plugins are loaded. Now we can figure out who depends on who.
-            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependant Plugins Graph", new Executable() {
+            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependent Plugins Graph", new Executable() {
                 @Override
                 public void run(Reactor reactor) throws Exception {
-                    resolveDependantPlugins();
+                    resolveDependentPlugins();
                 }
             });
         }});
@@ -948,7 +948,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // Redo who depends on who.
-            resolveDependantPlugins();
+            resolveDependentPlugins();
 
             try {
                 Jenkins.get().refreshExtensions();
@@ -960,40 +960,40 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
-    public synchronized void resolveDependantPlugins() {
+    public synchronized void resolveDependentPlugins() {
         for (PluginWrapper plugin : plugins) {
-            // Set of optional dependants plugins of plugin
-            Set<String> optionalDependants = new HashSet<>();
-            Set<String> dependants = new HashSet<>();
-            for (PluginWrapper possibleDependant : plugins) {
-                // No need to check if plugin is dependant of itself
-                if(possibleDependant.getShortName().equals(plugin.getShortName())) {
+            // Set of optional dependents plugins of plugin
+            Set<String> optionalDependents = new HashSet<>();
+            Set<String> dependents = new HashSet<>();
+            for (PluginWrapper possibleDependent : plugins) {
+                // No need to check if plugin is dependent of itself
+                if(possibleDependent.getShortName().equals(plugin.getShortName())) {
                     continue;
                 }
 
                 // The plugin could have just been deleted. If so, it doesn't
-                // count as a dependant.
-                if (possibleDependant.isDeleted()) {
+                // count as a dependent.
+                if (possibleDependent.isDeleted()) {
                     continue;
                 }
-                List<Dependency> dependencies = possibleDependant.getDependencies();
+                List<Dependency> dependencies = possibleDependent.getDependencies();
                 for (Dependency dependency : dependencies) {
                     if (dependency.shortName.equals(plugin.getShortName())) {
-                        dependants.add(possibleDependant.getShortName());
+                        dependents.add(possibleDependent.getShortName());
 
-                        // If, in addition, the dependency is optional, add to the optionalDependants list
+                        // If, in addition, the dependency is optional, add to the optionalDependents list
                         if (dependency.optional) {
-                            optionalDependants.add(possibleDependant.getShortName());
+                            optionalDependents.add(possibleDependent.getShortName());
                         }
 
-                        // already know possibleDependant depends on plugin, no need to continue with the rest of
-                        // dependencies. We continue with the next possibleDependant
+                        // already know possibleDependent depends on plugin, no need to continue with the rest of
+                        // dependencies. We continue with the next possibleDependent
                         break;
                     }
                 }
             }
-            plugin.setDependants(dependants);
-            plugin.setOptionalDependants(optionalDependants);
+            plugin.setDependents(dependents);
+            plugin.setOptionalDependents(optionalDependents);
         }
     }
 
@@ -1545,7 +1545,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         
         // Fire a one-off thread to wait for the plugins to be deployed and then
-        // refresh the dependant plugins list.
+        // refresh the dependent plugins list.
         new Thread() {
             @Override
             public void run() {
@@ -1563,7 +1563,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         }
                     }
                     // All the plugins are installed. It's now safe to refresh.
-                    resolveDependantPlugins();
+                    resolveDependentPlugins();
                     break;
                 }
             }
@@ -1941,10 +1941,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * Disable a list of plugins using a strategy for their dependants plugins.
-     * @param strategy the strategy regarding how the dependant plugins are processed
+     * Disable a list of plugins using a strategy for their dependents plugins.
+     * @param strategy the strategy regarding how the dependent plugins are processed
      * @param plugins the list of plugins
-     * @return the list of results for every plugin and their dependant plugins.
+     * @return the list of results for every plugin and their dependent plugins.
      * @throws IOException see {@link PluginWrapper#disable()}
      */
     public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {

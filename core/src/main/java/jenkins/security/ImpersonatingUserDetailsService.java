@@ -8,8 +8,6 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
 
-import static java.util.Collections.*;
-
 /**
  * {@link UserDetailsService} for those {@link SecurityRealm}
  * that doesn't allow query of other users.

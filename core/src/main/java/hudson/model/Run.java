@@ -95,7 +95,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -125,7 +124,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -1798,7 +1796,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
-                    if (!auth.equals(ACL.SYSTEM)) {
+                    if (auth.equals(ACL.SYSTEM)) {
+                        listener.getLogger().println(Messages.Run_running_as_SYSTEM());
+                    } else {
                         String id = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
                             final User usr = User.getById(id, false);

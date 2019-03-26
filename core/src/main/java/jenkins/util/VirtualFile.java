@@ -44,7 +44,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -192,8 +191,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
         VirtualFile[] children = list();
         List<VirtualFile> result = new ArrayList<>();
-        for (int i = 0; i < children.length; i++) {
-            VirtualFile child = children[i];
+        for (VirtualFile child : children) {
             if (child.isDescendant("")) {
                 result.add(child);
             }
@@ -233,7 +231,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         }
         return r.stream().filter(p -> {
             TokenizedPath path = new TokenizedPath(p.replace('/', File.separatorChar));
-            return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && !excludePatterns.stream().anyMatch(patt -> patt.matchPath(path, true));
+            return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && excludePatterns.stream().noneMatch(patt -> patt.matchPath(path, true));
         }).collect(Collectors.toSet());
     }
     private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
@@ -546,7 +544,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
         private boolean isIllegalSymlink() {
             try {
-                return !this.isDescendant("");
+                String myPath = f.toPath().toRealPath().toString();
+                String rootPath = root.toPath().toRealPath().toString();
+                if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
+                    return true;
+                }
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
             } catch (InvalidPathException x2) {

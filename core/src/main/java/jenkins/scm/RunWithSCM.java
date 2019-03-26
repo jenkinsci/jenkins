@@ -26,7 +26,6 @@ package jenkins.scm;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.model.Job;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
