@@ -24,7 +24,9 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.JobProperty;
@@ -72,8 +74,8 @@ public class ValidateButtonSEC1327Test {
         HtmlPage htmlPage = wc.goTo(p.getUrl() + "/configure");
         assertThat(htmlPage.getWebResponse().getStatusCode(), is(200));
 
-        List<HtmlButton> inputs = htmlPage.getDocumentElement().getHtmlElementsByTagName("button");
-        HtmlButton validateButton = inputs.stream()
+         DomNodeList<HtmlElement> inputs = htmlPage.getDocumentElement().getElementsByTagName("button");
+         HtmlButton validateButton = (HtmlButton) inputs.stream()
                 .filter(i -> i.getTextContent().contains("testInjection"))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Validate button not found"));
