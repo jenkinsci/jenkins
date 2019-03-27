@@ -95,7 +95,8 @@ public class ClientAuthenticationCache implements Serializable {
         String verificationPart = val.substring(idx + 1);
         int indexOfSeparator = verificationPart.indexOf(VERIFICATION_FRAGMENT_SEPARATOR);
         if (indexOfSeparator == -1) {
-            return legacy(username, verificationPart, val);
+            LOGGER.log(Level.FINE, "The legacy method is no longer accepted: username={0}", username);
+            return Jenkins.ANONYMOUS;
         }
         
         /*
@@ -127,10 +128,6 @@ public class ClientAuthenticationCache implements Serializable {
         }
 
         return getUserAuthIfValidMac(username, macFragment, val);
-    }
-    
-    private Authentication legacy(String username, String mac, String fullValueStored){
-        return getUserAuthIfValidMac(username, mac, fullValueStored);
     }
 
     /**
