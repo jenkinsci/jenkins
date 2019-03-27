@@ -70,8 +70,8 @@ public class ClientAuthenticationCacheWithUserSeedTest {
     public LoggerRule logging = new LoggerRule().record(ClientAuthenticationCache.class, Level.FINER);
 
     @Test
-    @Issue("SECURITY-1247")
-    public void legacyCache_smoothlyMigratedWithUserSeed() throws Exception {
+    @Issue("SECURITY-1289")
+    public void legacyCache_noLongerUsable() throws Exception {
         ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
         assertThat(cache.get(), is(Jenkins.ANONYMOUS));
 
@@ -95,7 +95,8 @@ public class ClientAuthenticationCacheWithUserSeedTest {
             File jar = tmp.newFile("jenkins-cli.jar");
             FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
 
-            assertCLI(0, "Authenticated as: " + user.getId(), jar, "who-am-i");
+            // the legacy method is no longer usable
+            assertCLI(0, "Authenticated as: anonymous", jar, "who-am-i");
 
             cache = new ClientAuthenticationCache(null);
             String valueAfterUsage = cache.props.getProperty(cache.getPropertyKey());

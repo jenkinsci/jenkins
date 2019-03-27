@@ -26,6 +26,7 @@ package hudson.cli;
 
 import com.google.common.collect.Lists;
 import hudson.Launcher;
+import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.Secret;
 import hudson.util.StreamTaskListener;
@@ -67,6 +68,9 @@ public class ClientAuthenticationCacheTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
         assertCLI(0, "Authenticated as: anonymous", jar, "who-am-i");
+
+        // user must exist to use the new cli auth cache (which is the case in non-test context)
+        User.getById("dev", true);
         assertCLI(0, null, jar, "login", "--username", "dev", "--password", "dev");
         try {
             assertCLI(0, "Authenticated as: dev", jar, "who-am-i");
