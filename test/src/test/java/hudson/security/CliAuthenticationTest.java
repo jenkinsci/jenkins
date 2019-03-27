@@ -123,6 +123,8 @@ public class CliAuthenticationTest {
     public void login() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
+        // user must exist to use the new cli auth cache (which is the case in non-test context)
+        hudson.model.User.getById("abc", true);
         successfulCommand("login","--username","abc","--password","abc");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(userDetails -> userDetails.getUsername().equals("abc"));
         spySecurityListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("abc");
