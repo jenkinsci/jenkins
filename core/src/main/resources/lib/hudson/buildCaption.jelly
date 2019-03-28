@@ -46,13 +46,13 @@ THE SOFTWARE.
 	  </j:if>
 	  
 	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
-	  <script>
-          function updateBuildCaptionIcon(){
+        <script>
+          (function(autorefresh){
+            function updateBuildCaptionIcon(){
               new Ajax.Request("statusIcon",{
                 method: "get",
                 onComplete: function(rsp,_) {
                   var isBuilding = rsp.getResponseHeader("X-Building");
-                  console.log("Building:"+isBuilding);
                   if (isBuilding == "true") {
                     setTimeout(updateBuildCaptionIcon, 5000)
                   } else {
@@ -63,12 +63,18 @@ THE SOFTWARE.
                   }
                   document.querySelector(".build-caption .icon-xlg").outerHTML = rsp.responseText;
                 }
+              });
+            }
+
+            window.addEventListener("load", function(){
+              if (autorefresh) {
+                updateBuildCaptionIcon()
+              }
+              Event.observe(window, "jenkins:consoleFinished", updateBuildCaptionIcon);
             });
-          }
-          <j:if test="${autorefresh!=null}">
-                window.addEventListener("load", updateBuildCaptionIcon);
-          </j:if>
-          </script>
+
+          })(${autorefresh});
+        </script>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

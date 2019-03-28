@@ -31,7 +31,7 @@ THE SOFTWARE.
 	<%@attribute name="idref" required="true" description="ID of the HTML element in which the result is displayed" %>
 	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
 	<%@attribute name="startOffset" required="false" description="Skip this many bytes rather than showing from start of data" %>
-	<%@attribute name="callback" required="false" description="JS function with one argument, receives true when complete and false for intermediate steps" %>
+	<%@attribute name="onFinishEvent" required="false" description="JS custom event to be fired when progress is finished" %>
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
@@ -50,7 +50,7 @@ THE SOFTWARE.
 	      @param href
 	          Where to retrieve additional text from
 	    -->
-	    function fetchNext(e,href,callback) {
+	    function fetchNext(e,href,onFinishEvent) {
         var headers = {};
         if (e.consoleAnnotator!=undefined)
           headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
@@ -81,13 +81,13 @@ THE SOFTWARE.
               e.fetchedBytes     = rsp.getResponseHeader("X-Text-Size");
               e.consoleAnnotator = rsp.getResponseHeader("X-ConsoleAnnotator");
               if(rsp.getResponseHeader("X-More-Data")=="true") {
-                setTimeout(function(){fetchNext(e,href,callback);},1000);
+                setTimeout(function(){fetchNext(e,href,onFinishEvent);},1000);
               } else {
               <j:if test="${spinner!=null}">
                 $$("${spinner}").style.display = "none";
               </j:if>
-                if (callback) {
-                  callback();
+                if (onFinishEvent) {
+                  Event.fire(window, onFinishEvent);
                 }
               }
             }
@@ -95,6 +95,6 @@ THE SOFTWARE.
         }
       </j:if>
       $$("${idref}").fetchedBytes = ${empty(startOffset)?0:startOffset};
-      fetchNext($$("${idref}"),"${href}",${empty(callback)?"null":callback});
+      fetchNext($$("${idref}"),"${href}","${empty(onFinishEvent)?"":onFinishEvent}");
     </script>
 </j:jelly>
