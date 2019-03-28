@@ -239,6 +239,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 mac = new byte[macSz];
                 decoded.readFully(mac);
                 sz = decoded.readInt();
+                if (sz < 0) {
+                    throw new IOException("Corrupt stream");
+                }
             } else {
                 mac = null;
                 sz = - macSz;
@@ -251,12 +254,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(postamble,POSTAMBLE))
                 return null;    // not a valid postamble
 
-            if (mac == null) {
-                if (!INSECURE) {
+            if (!INSECURE) {
+                if (mac == null) {
                     throw new IOException("Refusing to deserialize unsigned note from an old log.");
+                } else if (!MAC.checkMac(buf, mac)) {
+                    throw new IOException("MAC mismatch");
                 }
-            } else if (!MAC.checkMac(buf, mac)) {
-                throw new IOException("MAC mismatch");
             }
 
             Jenkins jenkins = Jenkins.getInstance();
