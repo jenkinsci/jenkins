@@ -2,7 +2,6 @@ package hudson.cli;
 
 import org.apache.commons.codec.binary.Base64;
 
-
 /**
  * Fluent-API to instantiate {@link CLI}.
  * 
@@ -36,5 +35,4 @@ public class CLIConnectionFactory {
     public CLIConnectionFactory basicAuth(String userInfo) {
         return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
     }
-
 }

@@ -79,5 +79,4 @@ public class BuildTimelineWidget {
         }
         return result;
     }
-
 }

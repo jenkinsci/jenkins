@@ -68,7 +68,8 @@ public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMChe
      * @param listener
      *      Allows you to write to console output and report errors. Never null.
      */
-    public void preCheckout(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    public void preCheckout(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException,
+            InterruptedException {
         AbstractProject<?, ?> project = build.getProject();
         if (project instanceof BuildableItemWithBuildWrappers) {
                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;

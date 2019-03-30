@@ -44,7 +44,8 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
     private AuthenticationDetailsSource authenticationDetailsSource = new AuthenticationDetailsSourceImpl();
 
     @Override
-    public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
+    public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username,
+                                       String password) throws IOException, ServletException {
         if (DISABLE)
             return null;
 

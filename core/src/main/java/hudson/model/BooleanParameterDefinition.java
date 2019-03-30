@@ -87,5 +87,4 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
             return "/help/parameter/boolean.html";
         }
     }
-
 }

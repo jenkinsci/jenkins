@@ -123,5 +123,4 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         run = r;
         build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
-
 }

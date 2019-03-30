@@ -123,7 +123,6 @@ class SSHCLI {
 
                     Integer exitStatus = channel.getExitStatus();
                     return exitStatus;
-
                 }
             } finally {
                 client.stop();

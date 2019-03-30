@@ -17,7 +17,6 @@ import java.util.logging.Logger;
  */
 public class FullDuplexHttpStream {
     private final URL base;
-    
     private final OutputStream output;
     private final InputStream input;
 

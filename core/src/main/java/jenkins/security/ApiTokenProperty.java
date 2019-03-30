@@ -497,7 +497,8 @@ public class ApiTokenProperty extends UserProperty {
         
         @RequirePOST
         public HttpResponse doRename(@AncestorInPath User u,
-                                     @QueryParameter String tokenUuid, @QueryParameter String newName) throws IOException {
+                                     @QueryParameter String tokenUuid, @QueryParameter String newName)
+                throws IOException {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
     
@@ -511,7 +512,8 @@ public class ApiTokenProperty extends UserProperty {
             
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating" +
+                        " one before.");
             }
             
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
@@ -539,7 +541,8 @@ public class ApiTokenProperty extends UserProperty {
             
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating" +
+                        " one before.");
             }
             
             ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenUuid);

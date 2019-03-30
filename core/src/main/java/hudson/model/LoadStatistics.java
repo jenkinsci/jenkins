@@ -659,5 +659,4 @@ public abstract class LoadStatistics {
             return new Builder();
         }
     }
-
 }

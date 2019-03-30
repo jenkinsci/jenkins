@@ -2143,5 +2143,4 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         @Nonnull
         public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
     }
-
 }

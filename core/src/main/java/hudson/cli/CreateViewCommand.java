@@ -42,7 +42,6 @@ public class CreateViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.CreateViewCommand_ShortDescription();
     }
 

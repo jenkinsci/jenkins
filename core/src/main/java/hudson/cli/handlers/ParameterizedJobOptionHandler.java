@@ -54,5 +54,4 @@ public class ParameterizedJobOptionHandler extends GenericItemOptionHandler<Para
     public String getDefaultMetaVariable() {
         return "JOB";
     }
-
 }

@@ -40,16 +40,13 @@ public class GetViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.GetViewCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
-
         view.checkPermission(View.READ);
         view.writeXml(stdout);
-
         return 0;
     }
 }

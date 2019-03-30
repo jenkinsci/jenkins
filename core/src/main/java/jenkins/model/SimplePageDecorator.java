@@ -37,7 +37,8 @@ import java.util.List;
  *
  * @since 2.128
  */
-public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator> {
+public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint,
+        Describable<SimplePageDecorator> {
 
     protected SimplePageDecorator()  {
         super(self());
@@ -74,5 +75,4 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
         List<SimplePageDecorator> decorators = all();
         return decorators.isEmpty() ? null : decorators.get(0);
     }
-
 }

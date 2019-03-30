@@ -50,7 +50,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * Generates the context menu.
      * 
      * The typical implementation is {@code return new ContextMenu().from(this,request,response);},
-     * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
+     * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest,
+     * StaplerResponse)}
      * for more details of what it does. This should suit most implementations.
      */
     ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
@@ -58,7 +59,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
     /**
      * Data object that represents the context menu.
      *
-     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that {@code <l:breadcrumb/>} understands.
+     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that {@code <l:breadcrumb/>}
+     * understands.
      */
     @ExportedBean
     class ContextMenu implements HttpResponse {
@@ -68,7 +70,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported(inline=true)
         public final List<MenuItem> items = new ArrayList<MenuItem>();
         
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException,
+                ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);
         }
         
@@ -189,11 +192,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * can override {@link ModelObjectWithContextMenu#doContextMenu(StaplerRequest, StaplerResponse)}
          * directly to provide alternative semantics.
          */
-        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response)
+                throws JellyException, IOException {
             return from(self,request,response,"sidepanel");
         }
 
-        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response,
+                                String view) throws JellyException, IOException {
             WebApp webApp = WebApp.getCurrent();
             final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
             if (s!=null) {
@@ -276,7 +281,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             try {
                 this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
             } catch (URISyntaxException x) {
-                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
+                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI()
+                        + " vs. " + url, x);
             }
             return this;
         }
@@ -334,7 +340,5 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @see ContextMenu#add(Action)
          */
         boolean isVisible();
-
     }
-
 }

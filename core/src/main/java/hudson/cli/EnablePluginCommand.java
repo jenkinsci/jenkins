@@ -98,5 +98,4 @@ public class EnablePluginCommand extends CLICommand {
             }
         }
     }
-
 }

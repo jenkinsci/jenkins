@@ -91,8 +91,6 @@ public class ListChangesCommand extends RunRangeCommand {
             }
             break;
         }
-
         return 0;
     }
-
 }

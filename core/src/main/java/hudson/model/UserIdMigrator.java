@@ -99,5 +99,4 @@ class UserIdMigrator {
         mapper.save();
         LOGGER.fine("Completed migration of users to userId mapping.");
     }
-
 }

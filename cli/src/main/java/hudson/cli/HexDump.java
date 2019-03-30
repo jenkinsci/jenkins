@@ -11,6 +11,7 @@ class HexDump {
     public static String toHex(byte[] buf) {
         return toHex(buf,0,buf.length);
     }
+
     public static String toHex(byte[] buf, int start, int len) {
         StringBuilder r = new StringBuilder(len*2);
         boolean inText = false;

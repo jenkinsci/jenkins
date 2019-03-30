@@ -45,15 +45,12 @@ public class UpdateNodeCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.UpdateNodeCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws IOException, ServletException {
-
         node.toComputer().updateByXml(stdin);
-
         return 0;
     }
 }

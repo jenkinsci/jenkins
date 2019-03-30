@@ -76,5 +76,4 @@ public class CreateNodeCommand extends CLICommand {
 
         return 0;
     }
-
 }

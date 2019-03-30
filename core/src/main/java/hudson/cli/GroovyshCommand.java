@@ -111,5 +111,4 @@ public class GroovyshCommand extends CLICommand {
         shell.getImports().add("hudson.model.*");
         return shell;
     }
-
 }

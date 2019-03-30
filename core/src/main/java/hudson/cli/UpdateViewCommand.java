@@ -42,13 +42,11 @@ public class UpdateViewCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.UpdateViewCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
-
         view.updateByXml(new StreamSource(stdin));
         return 0;
     }

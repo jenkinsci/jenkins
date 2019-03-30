@@ -601,5 +601,4 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
     }
-
 }

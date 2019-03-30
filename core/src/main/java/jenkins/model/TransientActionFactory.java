@@ -98,10 +98,13 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
         }
     }
     @SuppressWarnings("rawtypes")
-    private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>> cache =
-        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>>() {
+    private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey,
+            List<TransientActionFactory<?>>>> cache = CacheBuilder.newBuilder().weakKeys().build(
+                    new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey,
+                            List<TransientActionFactory<?>>>>() {
         @Override
-        public LoadingCache<CacheKey, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory> allFactories) throws Exception {
+        public LoadingCache<CacheKey, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory>
+                                                                                    allFactories) throws Exception {
             final LoadingCache<CacheKey, List<TransientActionFactory<?>>> perJenkinsCache =
                 CacheBuilder.newBuilder().build(new CacheLoader<CacheKey, List<TransientActionFactory<?>>>() {
                 @Override
@@ -109,7 +112,8 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
                     List<TransientActionFactory<?>> factories = new ArrayList<>();
                     for (TransientActionFactory<?> taf : allFactories) {
                         Class<? extends Action> actionType = taf.actionType();
-                        if (taf.type().isAssignableFrom(key.type) && (key.actionType.isAssignableFrom(actionType) || actionType.isAssignableFrom(key.actionType))) {
+                        if (taf.type().isAssignableFrom(key.type) && (key.actionType.isAssignableFrom(actionType) ||
+                                actionType.isAssignableFrom(key.actionType))) {
                             factories.add(taf);
                         }
                     }

@@ -564,5 +564,4 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             }
         }
     }
-
 }

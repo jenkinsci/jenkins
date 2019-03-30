@@ -232,5 +232,4 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             };
         }
     }
-
 }

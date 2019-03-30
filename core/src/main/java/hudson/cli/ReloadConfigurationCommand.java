@@ -67,5 +67,4 @@ public class ReloadConfigurationCommand extends CLICommand {
             return 1; // could throw JenkinsReloadFailed.cause if it were not deprecated
         }
     }
-
 }

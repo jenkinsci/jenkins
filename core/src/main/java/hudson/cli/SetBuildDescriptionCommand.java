@@ -38,8 +38,6 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         }
         
         run.setDescription(description);
-        
         return 0;
     }
-    
 }

@@ -44,7 +44,6 @@ import org.kohsuke.args4j.spi.Setter;
 public class NodeOptionHandler extends OptionHandler<Node> {
 
     public NodeOptionHandler(CmdLineParser parser, OptionDef option, Setter<Node> setter) {
-
         super(parser, option, setter);
     }
 
@@ -62,7 +61,6 @@ public class NodeOptionHandler extends OptionHandler<Node> {
 
     @Override
     public String getDefaultMetaVariable() {
-
         return "NODE";
     }
 }

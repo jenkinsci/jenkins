@@ -166,5 +166,4 @@ public abstract class LoadBalancer implements ExtensionPoint {
             }
         };
     }
-
 }

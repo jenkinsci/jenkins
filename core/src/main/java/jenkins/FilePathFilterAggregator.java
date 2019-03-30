@@ -139,7 +139,8 @@ class FilePathFilterAggregator extends FilePathFilter {
         return "FilePathFilterAggregator" + all;
     }
 
-    static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class, "FilePathFilters");
+    static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class,
+            "FilePathFilters");
 
     public static final int DEFAULT_ORDINAL = 0;
 }

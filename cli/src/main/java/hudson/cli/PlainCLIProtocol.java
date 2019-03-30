@@ -152,7 +152,6 @@ class PlainCLIProtocol {
                     handleClose();
                 }
             }
-
         }
 
         protected abstract void handleClose();
@@ -338,7 +337,6 @@ class PlainCLIProtocol {
         public final void sendEndStdin() throws IOException {
             send(Op.END_STDIN);
         }
-
     }
 
     private PlainCLIProtocol() {}

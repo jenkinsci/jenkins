@@ -187,5 +187,4 @@ class FlightRecorderInputStream extends InputStream {
         }
 
     }
-
 }

@@ -1255,7 +1255,5 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             // should always come first so that ID that are ids get mapped correctly
             return Integer.MAX_VALUE;
         }
-
     }
-
 }

@@ -49,7 +49,6 @@ public enum TermMilestone implements Milestone {
         return b;
     }
 
-
     @Override
     public String toString() {
         return message;

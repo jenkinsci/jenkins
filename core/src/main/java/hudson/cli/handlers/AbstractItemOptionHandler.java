@@ -44,5 +44,4 @@ import org.kohsuke.args4j.spi.Setter;
     @Override protected Class<AbstractItem> type() {
         return AbstractItem.class;
     }
-
 }

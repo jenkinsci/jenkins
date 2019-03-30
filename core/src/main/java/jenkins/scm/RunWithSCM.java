@@ -154,7 +154,8 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
                     }
                 } catch (RuntimeException re) {
                     Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
-                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + ((RunT) this).getParent().getDisplayName() + ", " + ((RunT) this).getDisplayName(), re);
+                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for "
+                            + ((RunT) this).getParent().getDisplayName() + ", " + ((RunT) this).getDisplayName(), re);
                 }
             }
         }

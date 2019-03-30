@@ -58,5 +58,4 @@ public class EscapedMarkupFormatter extends MarkupFormatter {
             return Messages.EscapedMarkupFormatter_DisplayName();
         }
     }
-
 }

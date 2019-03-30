@@ -33,7 +33,8 @@ public class PosixAPI {
                     throw new PosixException("native error " + error.description() + " " + extraData, convert(error));
                 }
                 @Override public void error(Errno error, String methodName, String extraData) {
-                    throw new PosixException("native error calling " + methodName + ": " + error.description() + " " + extraData, convert(error));
+                    throw new PosixException("native error calling " + methodName + ": " + error.description() + " "
+                            + extraData, convert(error));
                 }
                 private org.jruby.ext.posix.POSIX.ERRORS convert(Errno error) {
                     try {

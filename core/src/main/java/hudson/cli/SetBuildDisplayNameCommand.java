@@ -39,7 +39,6 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
         }
 
         run.setDisplayName(displayName);
-
         return 0;
     }
 }

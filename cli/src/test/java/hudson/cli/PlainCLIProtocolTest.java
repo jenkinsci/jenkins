@@ -128,5 +128,4 @@ public class PlainCLIProtocolTest {
         assertEquals("goodbye", client.stdout.toString());
         assertEquals(2, client.code);
     }
-
 }

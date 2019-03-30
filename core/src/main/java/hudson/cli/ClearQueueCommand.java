@@ -50,5 +50,4 @@ public class ClearQueueCommand extends CLICommand {
         Jenkins.getActiveInstance().getQueue().clear();
         return 0;
     }
-
 }

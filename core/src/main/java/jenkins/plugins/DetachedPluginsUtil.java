@@ -46,7 +46,8 @@ public class DetachedPluginsUtil {
     static final List<DetachedPlugin> DETACHED_LIST;
 
     /**
-     * Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins.
+     * Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle
+     * among bundled plugins.
      */
     private static final Set<String> BREAK_CYCLES;
 
@@ -102,7 +103,8 @@ public class DetachedPluginsUtil {
     }
 
     /**
-     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core, applicable to the current Java runtime.
+     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core, applicable
+     * to the current Java runtime.
      *
      * @return A {@link List} of {@link DetachedPlugin}s.
      * @see JavaUtils#getCurrentJavaRuntimeVersionNumber()
