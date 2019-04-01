@@ -311,9 +311,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         if (SET_HTTP_ONLY!=null) {
             try {
                 SET_HTTP_ONLY.invoke(cookie,true);
-            } catch (IllegalAccessException e) {
-                // ignore
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 // ignore
             }
         }

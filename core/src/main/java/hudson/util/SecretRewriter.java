@@ -41,7 +41,7 @@ public class SecretRewriter {
      * Canonical paths of the directories we are recursing to protect
      * against symlink induced cycles.
      */
-    private Set<String> callstack = new HashSet<String>();
+    private Set<String> callstack = new HashSet<>();
 
     public SecretRewriter() throws GeneralSecurityException {
         cipher = Secret.getCipher("AES");

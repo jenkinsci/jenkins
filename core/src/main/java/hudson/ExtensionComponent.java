@@ -95,9 +95,7 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
         if (this.instance instanceof Descriptor && that.instance instanceof Descriptor) {
             try {
                 return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull(((Descriptor)that.instance).getDisplayName()));
-            } catch (RuntimeException x) {
-                LOG.log(Level.WARNING, null, x);
-            } catch (LinkageError x) {
+            } catch (RuntimeException | LinkageError x) {
                 LOG.log(Level.WARNING, null, x);
             }
         }

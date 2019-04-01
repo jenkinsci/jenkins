@@ -47,7 +47,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText getLogText() {
-        return new AnnotatedLargeText<AsynchronousAdministrativeMonitor>(
+        return new AnnotatedLargeText<>(
                 getLogFile(), Charset.defaultCharset(),
                 !isFixingActive(), this);
     }

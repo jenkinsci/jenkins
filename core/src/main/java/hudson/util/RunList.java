@@ -58,11 +58,11 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     public RunList(View view) {// this is a type unsafe operation
-        Set<Job> jobs = new HashSet<Job>();
+        Set<Job> jobs = new HashSet<>();
         for (TopLevelItem item : view.getItems())
             jobs.addAll(item.getAllJobs());
 
-        List<Iterable<R>> runLists = new ArrayList<Iterable<R>>();
+        List<Iterable<R>> runLists = new ArrayList<>();
         for (Job job : jobs) {
             runLists.add(job.getBuilds());
         }
@@ -70,7 +70,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     public RunList(Collection<? extends Job> jobs) {
-        List<Iterable<R>> runLists = new ArrayList<Iterable<R>>();
+        List<Iterable<R>> runLists = new ArrayList<>();
         for (Job j : jobs)
             runLists.add(j.getBuilds());
         this.base = combine(runLists);
@@ -148,7 +148,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     @Override
     public List<R> subList(int fromIndex, int toIndex) {
-        List<R> r = new ArrayList<R>();
+        List<R> r = new ArrayList<>();
         Iterator<R> itr = iterator();
         hudson.util.Iterators.skip(itr, fromIndex);
         for (int i=toIndex-fromIndex; i>0; i--) {
