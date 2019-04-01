@@ -156,7 +156,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets Remoting minimum supported version to prevent unsupported agents from connecting
-     * @since 2.169
+     * @since TODO
      */
     public VersionNumber getRemotingMinimumVersion() {
         return RemotingVersionInfo.getMinimumSupportedVersion();
