@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 import javax.annotation.CheckForNull;
@@ -166,12 +167,22 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
         out.writeObject(charset==null? null : charset.name());
+        LOGGER.log(Level.FINE, null, new Throwable("serializing here with AUTO_FLUSH=" + AUTO_FLUSH));
     }
 
+    /**
+     * Restores eager remote flushing behavior.
+     * By default, remote tasks are expected to call {@link PrintStream#flush} before exiting.
+     * This flag will ensure that no output is lost from tasks which neglect to do so,
+     * at the expense of heavier Remoting traffic and reduced performance.
+     */
+    private static /* not final */ boolean AUTO_FLUSH = SystemProperties.getBoolean(StreamTaskListener.class.getName() + ".AUTO_FLUSH");
+
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = new PrintStream((OutputStream)in.readObject(), false);
+        out = new PrintStream((OutputStream)in.readObject(), AUTO_FLUSH);
         String name = (String)in.readObject();
         charset = name==null ? null : Charset.forName(name);
+        LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
     }
 
     @Override
