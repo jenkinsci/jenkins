@@ -119,11 +119,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         this.excludes = excludes;
     }
 
-    @DataBoundSetter public void setDefaultExcludes(boolean defaultExcludes) {
+    @DataBoundSetter public void setDefaultExcludes(Boolean defaultExcludes) {
         this.defaultExcludes = defaultExcludes;
     }
 
-    @DataBoundSetter public void setCaseSensitive(boolean caseSensitive) {
+    @DataBoundSetter public void setCaseSensitive(Boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
 
@@ -141,11 +141,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return excludes;
     }
 
-    public boolean getDefaultExcludes() {
+    public Boolean getDefaultExcludes() {
         return defaultExcludes;
     }
 
-    public boolean getCaseSensitive() {
+    public Boolean getCaseSensitive() {
         return caseSensitive;
     }
 
