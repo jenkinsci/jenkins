@@ -26,11 +26,25 @@ package jenkins.util;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.Computer;
+import hudson.model.TaskListener;
+import hudson.remoting.Channel;
+import hudson.slaves.ComputerListener;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import jenkins.security.MasterToSlaveCallable;
 
 import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
@@ -60,38 +74,110 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>While it looks like it on first glance, this cannot be mapped to {@link EnvVars},
  * because {@link EnvVars} is only for build variables, not Jenkins itself variables.
- *
- * @author Johannes Ernst
- * @since 2.4
  */
-//TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
+@SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Currently Jenkins instance may have one ond only one context")
 @Restricted(NoExternalUse.class)
 public class SystemProperties {
+
+    private interface Handler {
+        @CheckForNull String getString(String key);
+        @Nonnull Map<String, String> getAllStrings();
+    }
+
+    private static final Handler NULL_HANDLER = new Handler() {
+        @Override
+        public String getString(String key) {
+            return null;
+        }
+        @Override
+        public Map<String, String> getAllStrings() {
+            return Collections.emptyMap();
+        }
+    };
+
+    private static @Nonnull Handler handler = NULL_HANDLER;
 
     // declared in WEB-INF/web.xml
     public static final class Listener implements ServletContextListener, OnMaster {
 
         /**
-         * The ServletContext to get the "init" parameters from.
-         */
-        @CheckForNull
-        private static ServletContext theContext;
-
-        /**
          * Called by the servlet container to initialize the {@link ServletContext}.
          */
         @Override
-        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-                justification = "Currently Jenkins instance may have one ond only one context")
         public void contextInitialized(ServletContextEvent event) {
-            theContext = event.getServletContext();
+            ServletContext theContext = event.getServletContext();
+            handler = new Handler() {
+                @Override
+                public String getString(String key) {
+                    if (StringUtils.isNotBlank(key)) {
+                        try {
+                            return theContext.getInitParameter(key);
+                        } catch (SecurityException ex) {
+                            // Log exception and go on
+                            LOGGER.log(Level.CONFIG, "Access to the property {0} is prohibited", key);
+                        }
+                    }
+                    return null;
+                }
+                @Override
+                public Map<String, String> getAllStrings() {
+                    Map<String, String> values = new HashMap<>();
+                    Enumeration<String> names = theContext.getInitParameterNames();
+                    while (names.hasMoreElements()) {
+                        String key = names.nextElement();
+                        String value = getString(key);
+                        if (value != null) {
+                            values.put(key, value);
+                        }
+                    }
+                    return values;
+                }
+            };
         }
 
         @Override
         public void contextDestroyed(ServletContextEvent event) {
-            theContext = null;
+            handler = NULL_HANDLER;
         }
 
+    }
+
+    @Extension
+    public static final class SlaveCopier extends ComputerListener {
+        @Override
+        public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+            channel.call(new CopySystemProperties());
+        }
+        private static final class CopySystemProperties extends MasterToSlaveCallable<Void, RuntimeException> {
+            private static final long serialVersionUID = 1;
+            private final Map<String, String> allStrings;
+            @SuppressWarnings("unchecked")
+            CopySystemProperties() {
+                // Take a snapshot of all system properties and context variables available on the master at the time the agent starts.
+                allStrings = new HashMap<>();
+                allStrings.putAll(handler.getAllStrings());
+                allStrings.putAll((Map) System.getProperties()); // these take precedence
+            }
+            @Override
+            public Void call() throws RuntimeException {
+                handler = new CopiedHandler(allStrings);
+                return null;
+            }
+        }
+        private static final class CopiedHandler implements Handler {
+            private final Map<String, String> allStrings;
+            CopiedHandler(Map<String, String> allStrings) {
+                this.allStrings = allStrings;
+            }
+            @Override
+            public String getString(String key) {
+                return allStrings.get(key);
+            }
+            @Override
+            public Map<String, String> getAllStrings() {
+                return allStrings;
+            }
+        }
     }
 
     /**
@@ -123,7 +209,7 @@ public class SystemProperties {
             return value;
         }
         
-        value = tryGetValueFromContext(key);
+        value = handler.getString(key);
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
@@ -177,7 +263,7 @@ public class SystemProperties {
             return value;
         } 
         
-        value = tryGetValueFromContext(key);
+        value = handler.getString(key);
         if (value != null) {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
@@ -374,29 +460,6 @@ public class SystemProperties {
             }
         }
         return def;
-    }
-
-    @CheckForNull
-    private static String tryGetValueFromContext(String key) {
-        if (!JenkinsJVM.isJenkinsJVM()) {
-            return null;
-        }
-        return doTryGetValueFromContext(key);
-    }
-
-    private static String doTryGetValueFromContext(String key) {
-        if (StringUtils.isNotBlank(key) && Listener.theContext != null) {
-            try {
-                String value = Listener.theContext.getInitParameter(key);
-                if (value != null) {
-                    return value;
-                }
-            } catch (SecurityException ex) {
-                // Log exception and go on
-                LOGGER.log(Level.CONFIG, "Access to the property {0} is prohibited", key);
-            }
-        }
-        return null;
     }
 
 }
