@@ -70,9 +70,7 @@ public class ArgumentListBuilder2Test {
         args.addMasked("-version");
 
         Slave s = j.createOnlineSlave();
-        /* TODO https://github.com/jenkinsci/jenkins-test-harness/pull/127
-        j.showSlaveLogs(s, logging);
-        */
+        j.showAgentLogs(s, logging);
 
         StringWriter out = new StringWriter();
         assertEquals(0,s.createLauncher(new StreamTaskListener(out)).launch().cmds(args).join());
