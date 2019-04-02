@@ -1429,7 +1429,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
-     */  
+     * @deprecated Assumes file-based storage of the log. Use other methods giving various kinds of streams.
+     */
+    @Deprecated
     public @Nonnull File getLogFile() {
         File rawF = new File(getRootDir(), "log");
         if (rawF.isFile()) {
