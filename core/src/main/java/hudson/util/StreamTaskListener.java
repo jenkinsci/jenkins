@@ -167,7 +167,9 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
         out.writeObject(charset==null? null : charset.name());
-        LOGGER.log(Level.FINE, null, new Throwable("serializing here with AUTO_FLUSH=" + AUTO_FLUSH));
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, null, new Throwable("serializing here with AUTO_FLUSH=" + AUTO_FLUSH));
+        }
     }
 
     /**
@@ -182,7 +184,9 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         out = new PrintStream((OutputStream)in.readObject(), AUTO_FLUSH);
         String name = (String)in.readObject();
         charset = name==null ? null : Charset.forName(name);
-        LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
+        }
     }
 
     @Override
