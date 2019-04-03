@@ -46,6 +46,7 @@ public class UpdateCenter2Test {
      * Makes sure a plugin installs fine.
      */
     // TODO randomly fails: SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…
+    @Ignore("JENKINS-56870")
     @Test public void install() throws Exception {
         UpdateSite.neverUpdate = false;
         j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata
@@ -62,6 +63,7 @@ public class UpdateCenter2Test {
         assertEquals(Messages.UpdateCenter_n_a(), j.jenkins.getUpdateCenter().getLastUpdatedString());
     }
 
+    @Ignore("JENKINS-56870")
     @Issue("SECURITY-234")
     @Test public void installInvalidChecksum() throws Exception {
         UpdateSite.neverUpdate = false;
