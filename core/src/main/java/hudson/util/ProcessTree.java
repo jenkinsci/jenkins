@@ -1061,67 +1061,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             private AIXProcess(int pid) throws IOException {
                 super(pid);
 
-                RandomAccessFile pstatus = new RandomAccessFile(getFile("status"),"r");
-                try {
-					// typedef struct pstatus {
-					//    uint32_t pr_flag;                /* process flags from proc struct p_flag */
-					//    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
-					//    uint32_t pr_flags;               /* /proc flags */
-					//    uint32_t pr_nlwp;                /* number of threads in the process */
-					//    char     pr_stat;                /* process state from proc p_stat */
-					//    char     pr_dmodel;              /* data model for the process */
-					//    char     pr__pad1[6];            /* reserved for future use */
-					//    pr_sigset_t pr_sigpend;          /* set of process pending signals */
-					//    prptr64_t pr_brkbase;            /* address of the process heap */
-					//    uint64_t pr_brksize;             /* size of the process heap, in bytes */
-					//    prptr64_t pr_stkbase;            /* address of the process stack */
-					//    uint64_t pr_stksize;             /* size of the process stack, in bytes */
-					//    uint64_t pr_pid;                 /* process id */
-					//    uint64_t pr_ppid;                /* parent process id */
-					//    uint64_t pr_pgid;                /* process group id */
-					//    uint64_t pr_sid;                 /* session id */
-					//    pr_timestruc64_t pr_utime;       /* process user cpu time */
-					//    pr_timestruc64_t pr_stime;       /* process system cpu time */
-					//    pr_timestruc64_t pr_cutime;      /* sum of children's user times */
-					//    pr_timestruc64_t pr_cstime;      /* sum of children's system times */
-					//    pr_sigset_t pr_sigtrace;         /* mask of traced signals */
-					//    fltset_t pr_flttrace;            /* mask of traced hardware faults */
-					//    uint32_t pr_sysentry_offset;     /* offset into pstatus file of sysset_t
-					//                                      * identifying system calls traced on
-					//                                      * entry.  If 0, then no entry syscalls
-					//                                      * are being traced. */
-					//    uint32_t pr_sysexit_offset;      /* offset into pstatus file of sysset_t
-					//                                      * identifying system calls traced on
-					//                                      * exit.  If 0, then no exit syscalls
-					//                                      * are being traced. */
-					//    uint64_t pr__pad[8];             /* reserved for future use */
-					//    lwpstatus_t pr_lwp;              /* "representative" thread status */
-					// } pstatus_t;
-
-                    pstatus.seek(17); // offset of pr_dmodel
-
-					byte pr_dmodel = pstatus.readByte();
-
-                    if (pr_dmodel == PR_MODEL_ILP32) {
-                        b64 = false;
-                    } else if (pr_dmodel == PR_MODEL_LP64) {
-                        b64 = true;
-                    } else {
-                        throw new IOException("Unrecognized data model value"); // sanity check
-                    }
-
-                    pstatus.seek(88); // offset of pr_pid
-
-                    if (adjust((int)pstatus.readLong()) != pid)
-                        throw new IOException("pstatus PID mismatch"); // sanity check
-
-                    ppid = adjust((int)pstatus.readLong()); // AIX pids are stored as a 64 bit integer, 
-                                                            // but the first 4 bytes are always 0
-
-                } finally {
-                    pstatus.close();
-                }
-
+                // psinfo is nominally world readable
                 RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
                 try {
                     // typedef struct psinfo {
@@ -1155,23 +1095,86 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     //   uint64_t pr__pad[8];             /* reserved for future use */
                     //   struct   lwpsinfo pr_lwp;        /* "representative" thread info */
                     // }
-
                     psinfo.seek(48); // offset of pr_pid
 
                     if (adjust((int)psinfo.readLong()) != pid)
                         throw new IOException("psinfo PID mismatch"); // sanity check
 
-                    if (adjust((int)psinfo.readLong()) != ppid)
-                        throw new IOException("psinfo PPID mismatch"); // sanity check
+                    ppid = adjust((int)psinfo.readLong()); // AIX pids are stored as a 64 bit integer, 
+                                                           // but the first 4 bytes are always 0
 
                     psinfo.seek(148); // offset of pr_argc
 
                     argc = adjust(psinfo.readInt());
                     pr_argp = adjustL(psinfo.readLong());
                     pr_envp = adjustL(psinfo.readLong());
+
+                    b64 = is64BitProcess();
                 } finally {
                     psinfo.close();
                 }
+            }
+
+            protected boolean is64BitProcess() {
+                // status is only readable by the process owner
+                try {
+                    RandomAccessFile pstatus = new RandomAccessFile(getFile("status"),"r");
+                    try {
+                        // typedef struct pstatus {
+                        //    uint32_t pr_flag;                /* process flags from proc struct p_flag */
+                        //    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
+                        //    uint32_t pr_flags;               /* /proc flags */
+                        //    uint32_t pr_nlwp;                /* number of threads in the process */
+                        //    char     pr_stat;                /* process state from proc p_stat */
+                        //    char     pr_dmodel;              /* data model for the process */
+                        //    char     pr__pad1[6];            /* reserved for future use */
+                        //    pr_sigset_t pr_sigpend;          /* set of process pending signals */
+                        //    prptr64_t pr_brkbase;            /* address of the process heap */
+                        //    uint64_t pr_brksize;             /* size of the process heap, in bytes */
+                        //    prptr64_t pr_stkbase;            /* address of the process stack */
+                        //    uint64_t pr_stksize;             /* size of the process stack, in bytes */
+                        //    uint64_t pr_pid;                 /* process id */
+                        //    uint64_t pr_ppid;                /* parent process id */
+                        //    uint64_t pr_pgid;                /* process group id */
+                        //    uint64_t pr_sid;                 /* session id */
+                        //    pr_timestruc64_t pr_utime;       /* process user cpu time */
+                        //    pr_timestruc64_t pr_stime;       /* process system cpu time */
+                        //    pr_timestruc64_t pr_cutime;      /* sum of children's user times */
+                        //    pr_timestruc64_t pr_cstime;      /* sum of children's system times */
+                        //    pr_sigset_t pr_sigtrace;         /* mask of traced signals */
+                        //    fltset_t pr_flttrace;            /* mask of traced hardware faults */
+                        //    uint32_t pr_sysentry_offset;     /* offset into pstatus file of sysset_t
+                        //                                      * identifying system calls traced on
+                        //                                      * entry.  If 0, then no entry syscalls
+                        //                                      * are being traced. */
+                        //    uint32_t pr_sysexit_offset;      /* offset into pstatus file of sysset_t
+                        //                                      * identifying system calls traced on
+                        //                                      * exit.  If 0, then no exit syscalls
+                        //                                      * are being traced. */
+                        //    uint64_t pr__pad[8];             /* reserved for future use */
+                        //    lwpstatus_t pr_lwp;              /* "representative" thread status */
+                        // } pstatus_t;
+
+                        pstatus.seek(17); // offset of pr_dmodel
+
+                        byte pr_dmodel = pstatus.readByte();
+
+                        if (pr_dmodel == PR_MODEL_ILP32) {
+                            return false;
+                        } else if (pr_dmodel == PR_MODEL_LP64) {
+                            return true;
+                        } else {
+                            throw new IOException("Unrecognized data model value"); // sanity check
+                        }
+                    } finally {
+                        pstatus.close();
+                    }
+                } catch (IOException | LastErrorException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+
+                return false;
             }
 
             public OSProcess getParent() {
@@ -1188,11 +1191,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 try {
-                    int psize = b64 ? 8 : 4;
-                    Memory m = new Memory(psize);
                     int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
 
                     try {
+                        int psize = b64 ? 8 : 4;
+                        Memory m = new Memory(psize);
+
                         // Get address of the argument vector
                         LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(pr_argp));
                         long argp = b64 ? m.getLong(0) : to64(m.getInt(0));
@@ -1234,11 +1238,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 try {
-                    int psize = b64 ? 8 : 4;
-                    Memory m = new Memory(psize);
                     int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
 
                     try {
+                        int psize = b64 ? 8 : 4;
+                        Memory m = new Memory(psize);
+
                         // Get address of the environment vector
                         LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(pr_envp));
                         long envp = b64 ? m.getLong(0) : to64(m.getInt(0));
