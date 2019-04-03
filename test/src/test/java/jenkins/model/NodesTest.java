@@ -98,7 +98,7 @@ public class NodesTest {
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
-        assertNull(r.jenkins.getNode(oldNode.getNodeName()));
+        assertNull(r.jenkins.getNode("foo"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class NodesTest {
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
-        assertNotNull(r.jenkins.getNode(oldNode.getNodeName()));
+        assertNotNull(r.jenkins.getNode("foo"));
     }
 
     private static class InvalidNode extends Slave {
