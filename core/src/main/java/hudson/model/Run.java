@@ -1,6 +1,8 @@
 /*
  * The MIT License
- * 
+ *
+ * Copyright (c) 2019 Intel Corporation 
+ *
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
  * Darek Ostolski, CloudBees, Inc.
@@ -118,6 +120,10 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream;
+import org.apache.commons.compress.compressors.snappy.SnappyCompressorInputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.ArrayUtils;
@@ -1455,24 +1461,33 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
-    	File logFile = getLogFile();
-    	
-    	if (logFile.exists() ) {
-    	    // Checking if a ".gz" file was return
+        File logFile = getLogFile();
+        
+        if (logFile.exists() ) {
+            // Checking if the log file is compressed
             try {
                 InputStream fis = Files.newInputStream(logFile.toPath());
-                if (logFile.getName().endsWith(".gz")) {
+                String lName = logFile.getName().toLowerCase();
+                if (lName.endsWith(".gz")) {
                     return new GZIPInputStream(fis);
+                } else if (lName.endsWith(".xz")) {
+                    return new XZCompressorInputStream(fis);
+                } else if (lName.endsWith(".bzip2") || lName.endsWith(".bz2")) {
+                    return new BZip2CompressorInputStream(fis);
+                } else if (lName.endsWith(".lzma") || lName.endsWith(".lz")) {
+                    return new LZMACompressorInputStream(fis);
+                } else if (lName.endsWith(".snappy") || lName.endsWith(".sz")) {
+                    return new SnappyCompressorInputStream(fis);
                 } else {
+                    //Uncompressed file, hopefully
                     return fis;
                 }
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
-    	}
-    	
+        }
         String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+        return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
