@@ -2054,14 +2054,4 @@ public class Functions {
             return true;
         }
     }
-
-    @Restricted(NoExternalUse.class) // for cc.xml.jelly
-    public static Collection<TopLevelItem> getCCItems(View v) {
-        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
-            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
-        } else {
-            return v.getItems();
-        }
-    }
-
 }
