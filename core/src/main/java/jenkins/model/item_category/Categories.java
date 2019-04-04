@@ -55,7 +55,7 @@ public class Categories implements HttpResponse, Serializable {
     private List<Category> items;
 
     public Categories() {
-        items = new ArrayList<Category>();
+        items = new ArrayList<>();
     }
 
     @Exported(name = "categories")

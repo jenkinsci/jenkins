@@ -63,7 +63,7 @@ public class InstallPluginCommand extends CLICommand {
             "and the plugin will be installed from the update center. If the short name includes a minimum version number " +
             "(like ‘findbugs:1.4’), and there are multiple update centers publishing different versions, the update centers " +
             "will be searched in order for the first one publishing a version that is at least the specified version.")
-    public List<String> sources = new ArrayList<String>();
+    public List<String> sources = new ArrayList<>();
 
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
     public String name; // TODO better to parse out Short-Name from the manifest and deprecate this option

@@ -85,7 +85,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     };
 
     private static final DescribableList<NodeMonitor,Descriptor<NodeMonitor>> monitors
-            = new DescribableList<NodeMonitor, Descriptor<NodeMonitor>>(MONITORS_OWNER);
+            = new DescribableList<>(MONITORS_OWNER);
 
     @Exported
     public String getDisplayName() {
@@ -129,7 +129,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Returns a subset pf {@link #getMonitors()} that are {@linkplain NodeMonitor#isIgnored() not ignored}.
      */
     public static Map<Descriptor<NodeMonitor>,NodeMonitor> getNonIgnoredMonitors() {
-        Map<Descriptor<NodeMonitor>,NodeMonitor> r = new HashMap<Descriptor<NodeMonitor>, NodeMonitor>();
+        Map<Descriptor<NodeMonitor>,NodeMonitor> r = new HashMap<>();
         for (NodeMonitor m : monitors) {
             if(!m.isIgnored())
                 r.put(m.getDescriptor(),m);
@@ -421,7 +421,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @Nonnull
     public static List<String> getComputerNames() {
-        final ArrayList<String> names = new ArrayList<String>();
+        final ArrayList<String> names = new ArrayList<>();
         for (Computer c : Jenkins.getInstance().getComputers()) {
             if (!c.getName().isEmpty()) {
                 names.add(c.getName());
@@ -435,14 +435,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     static {
         try {
             DescribableList<NodeMonitor,Descriptor<NodeMonitor>> r
-                    = new DescribableList<NodeMonitor, Descriptor<NodeMonitor>>(Saveable.NOOP);
+                    = new DescribableList<>(Saveable.NOOP);
 
             // load persisted monitors
             XmlFile xf = getConfigFile();
             if(xf.exists()) {
                 DescribableList<NodeMonitor,Descriptor<NodeMonitor>> persisted =
                         (DescribableList<NodeMonitor,Descriptor<NodeMonitor>>) xf.read();
-                List<NodeMonitor> sanitized = new ArrayList<NodeMonitor>();
+                List<NodeMonitor> sanitized = new ArrayList<>();
                 for (NodeMonitor nm : persisted) {
                     try {
                         nm.getDescriptor();

@@ -192,18 +192,15 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
         ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
 
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
-        try {
+        try (DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2, true, -1, null))) {
             buf2.write(PREAMBLE);
             if (JenkinsJVM.isJenkinsJVM()) { // else we are in another JVM and cannot sign; result will be ignored unless INSECURE
                 byte[] mac = MAC.mac(buf.toByteArray());
-                dos.writeInt(- mac.length); // negative to differentiate from older form
+                dos.writeInt(-mac.length); // negative to differentiate from older form
                 dos.write(mac);
             }
             dos.writeInt(buf.size());
             buf.writeTo(dos);
-        } finally {
-            dos.close();
         }
         buf2.write(POSTAMBLE);
         return buf2;
@@ -239,6 +236,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 mac = new byte[macSz];
                 decoded.readFully(mac);
                 sz = decoded.readInt();
+                if (sz < 0) {
+                    throw new IOException("Corrupt stream");
+                }
             } else {
                 mac = null;
                 sz = - macSz;
@@ -251,12 +251,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(postamble,POSTAMBLE))
                 return null;    // not a valid postamble
 
-            if (mac == null) {
-                if (!INSECURE) {
+            if (!INSECURE) {
+                if (mac == null) {
                     throw new IOException("Refusing to deserialize unsigned note from an old log.");
+                } else if (!MAC.checkMac(buf, mac)) {
+                    throw new IOException("MAC mismatch");
                 }
-            } else if (!MAC.checkMac(buf, mac)) {
-                throw new IOException("MAC mismatch");
             }
 
             Jenkins jenkins = Jenkins.getInstance();
@@ -337,7 +337,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * @since 1.350
      */
     public static List<String> removeNotes(Collection<String> logLines) {
-        List<String> r = new ArrayList<String>(logLines.size());
+        List<String> r = new ArrayList<>(logLines.size());
         for (String l : logLines)
             r.add(removeNotes(l));
         return r;

@@ -641,7 +641,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(SecurityRealm.class);
+    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<>(SecurityRealm.class);
 
     /**
      * Returns all the registered {@link SecurityRealm} descriptors.

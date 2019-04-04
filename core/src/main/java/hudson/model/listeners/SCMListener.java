@@ -130,7 +130,7 @@ public abstract class SCMListener implements ExtensionPoint {
         if (j == null) { // TODO use !Functions.isExtensionsAvailable() once JENKINS-33377
             return Collections.emptySet();
         }
-        List<SCMListener> r = new ArrayList<SCMListener>(j.getExtensionList(SCMListener.class));
+        List<SCMListener> r = new ArrayList<>(j.getExtensionList(SCMListener.class));
         for (SCMListener l : j.getSCMListeners()) {
             r.add(l);
         }

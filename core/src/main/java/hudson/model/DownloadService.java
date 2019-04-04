@@ -309,7 +309,7 @@ public class DownloadService extends PageDecorator {
          * URLs to download from.
          */
         public List<String> getUrls() {
-            List<String> updateSites = new ArrayList<String>();
+            List<String> updateSites = new ArrayList<>();
             for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");

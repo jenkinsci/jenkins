@@ -66,7 +66,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * The actual contents of the menu.
          */
         @Exported(inline=true)
-        public final List<MenuItem> items = new ArrayList<MenuItem>();
+        public final List<MenuItem> items = new ArrayList<>();
         
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);

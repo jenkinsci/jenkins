@@ -46,7 +46,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public class ArgumentListBuilder implements Serializable, Cloneable {
-    private final List<String> args = new ArrayList<String>();
+    private final List<String> args = new ArrayList<>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
      */
@@ -260,7 +260,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public String[] toCommandArray() {
-        return args.toArray(new String[args.size()]);
+        return args.toArray(new String[0]);
     }
     
     @Override

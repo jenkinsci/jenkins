@@ -28,9 +28,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
         try {
             return base.loadUserByUsername(username);
-        } catch (UserMayOrMayNotExistException e) {
-            return attemptToImpersonate(username, e);
-        } catch (DataAccessException e) {
+        } catch (UserMayOrMayNotExistException | DataAccessException e) {
             return attemptToImpersonate(username, e);
         }
     }

@@ -822,7 +822,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[0]));
     }
 
     /**

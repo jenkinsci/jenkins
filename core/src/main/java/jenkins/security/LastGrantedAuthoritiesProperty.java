@@ -63,18 +63,18 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             }
         }
 
-        return grantedAuthorities.toArray(new GrantedAuthority[grantedAuthorities.size()]);
+        return grantedAuthorities.toArray(new GrantedAuthority[0]);
     }
 
     /**
      * Persist the information with the new {@link UserDetails}.
      */
     public void update(@Nonnull Authentication auth) throws IOException {
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
             roles.add(ga.getAuthority());
         }
-        String[] a = roles.toArray(new String[roles.size()]);
+        String[] a = roles.toArray(new String[0]);
         if (!Arrays.equals(this.roles,a)) {
             this.roles = a;
             this.timestamp = System.currentTimeMillis();

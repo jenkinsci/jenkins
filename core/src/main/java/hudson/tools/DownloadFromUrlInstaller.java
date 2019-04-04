@@ -178,7 +178,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         private JSONObject reduce(List<JSONObject> jsonList) {
             List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
 
-            HashSet<String> processedIds = new HashSet<String>();
+            HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {
                 ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
                 for(ToolInstallerEntry entry : toolInstallerList.list) {
