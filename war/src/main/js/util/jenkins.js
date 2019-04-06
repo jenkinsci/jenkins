@@ -284,8 +284,11 @@ exports.buildFormPost = function($form) {
 	var wnd = exports.getWindow($form);
 	var form = $form[0];
 	if(wnd.buildFormTree(form)) {
-		return $form.serialize() +
-			'&core:apply=&Submit=Save&json=' + $form.find('input[name=json]').val();
+		return $form.serialize() + "&" + jquery.param({
+			'core:apply': '',
+			'Submit': 'Save',
+			'json': $form.find('input[name=json]').val()
+		});
 	}
 	return '';
 };
