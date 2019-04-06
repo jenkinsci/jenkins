@@ -28,14 +28,13 @@ public class QueueTaskDispatcherTest {
     @Test
     public void canRunBlockageIsDisplayed() throws Exception {
         FreeStyleProject project = r.createFreeStyleProject();
-        r.jenkins.getQueue().schedule(project);
+        r.jenkins.getQueue().schedule(project, 0);
+
+        r.getInstance().getQueue().maintain();
 
         Item item = r.jenkins.getQueue().getItem(project);
-        for (int i = 0; i < 4 * 60 && !item.isBlocked(); i++) {
-            Thread.sleep(250);
-            item = r.jenkins.getQueue().getItem(project);
-        }
-        assertTrue("Not blocked after 60 seconds", item.isBlocked());
+
+        assertTrue("Not blocked", item.isBlocked());
         assertEquals("Expected CauseOfBlockage to be returned", "blocked by canRun", item.getWhy());
     }
 
@@ -56,18 +55,17 @@ public class QueueTaskDispatcherTest {
     @Test
     public void canTakeBlockageIsDisplayed() throws Exception {
         FreeStyleProject project = r.createFreeStyleProject();
-        r.jenkins.getQueue().schedule(project);
-        Queue.Item item;
-        while (true) {
-            item = r.jenkins.getQueue().getItem(project);
-            if (item.isBuildable()) {
-                break;
-            }
-            Thread.sleep(100);
-        }
+
+        r.jenkins.getQueue().schedule(project, 0);
+        r.getInstance().getQueue().maintain();
+
+        Queue.Item item = r.jenkins.getQueue().getItem(project);
+        assertNotNull(item);
+
         CauseOfBlockage cob = item.getCauseOfBlockage();
         assertNotNull(cob);
         assertThat(cob.getShortDescription(), containsString("blocked by canTake"));
+
         StringWriter w = new StringWriter();
         TaskListener l = new StreamTaskListener(w);
         cob.print(l);

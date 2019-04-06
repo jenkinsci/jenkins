@@ -30,6 +30,7 @@ import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.LoadBalancer;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
@@ -133,7 +134,7 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
                 return false;   // tasks don't have a permission to run on this node
 
             return true;
@@ -217,7 +218,7 @@ public class MappingWorksheet {
         }
 
         public List<ExecutorChunk> applicableExecutorChunks() {
-            List<ExecutorChunk> r = new ArrayList<ExecutorChunk>(executors.size());
+            List<ExecutorChunk> r = new ArrayList<>(executors.size());
             for (ExecutorChunk e : executors) {
                 if (e.canAccept(this))
                     r.add(e);
@@ -269,7 +270,7 @@ public class MappingWorksheet {
          * Returns the assignment as a map.
          */
         public Map<WorkChunk,ExecutorChunk> toMap() {
-            Map<WorkChunk,ExecutorChunk> r = new HashMap<WorkChunk,ExecutorChunk>();
+            Map<WorkChunk,ExecutorChunk> r = new HashMap<>();
             for (int i=0; i<size(); i++)
                 r.put(get(i),assigned(i));
             return r;
@@ -321,12 +322,10 @@ public class MappingWorksheet {
         this.item = item;
         
         // group executors by their computers
-        Map<Computer,List<ExecutorSlot>> j = new HashMap<Computer, List<ExecutorSlot>>();
+        Map<Computer,List<ExecutorSlot>> j = new HashMap<>();
         for (ExecutorSlot o : offers) {
             Computer c = o.getExecutor().getOwner();
-            List<ExecutorSlot> l = j.get(c);
-            if (l==null)
-                j.put(c,l=new ArrayList<ExecutorSlot>());
+            List<ExecutorSlot> l = j.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(o);
         }
 
@@ -362,7 +361,7 @@ public class MappingWorksheet {
         }
 
         // build into the final shape
-        List<ExecutorChunk> executors = new ArrayList<ExecutorChunk>();
+        List<ExecutorChunk> executors = new ArrayList<>();
         for (List<ExecutorSlot> group : j.values()) {
             if (group.isEmpty())    continue;   // evict empty group
             ExecutorChunk ec = new ExecutorChunk(group, executors.size());
@@ -372,19 +371,17 @@ public class MappingWorksheet {
         this.executors = ImmutableList.copyOf(executors);
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
-        Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
-        for (SubTask meu : Tasks.getSubTasksOf(item.task)) {
-            Object c = Tasks.getSameNodeConstraintOf(meu);
+        Map<Object,List<SubTask>> m = new LinkedHashMap<>();
+        for (SubTask meu : item.task.getSubTasks()) {
+            Object c = meu.getSameNodeConstraint();
             if (c==null)    c = new Object();
 
-            List<SubTask> l = m.get(c);
-            if (l==null)
-                m.put(c,l= new ArrayList<SubTask>());
+            List<SubTask> l = m.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(meu);
         }
 
         // build into the final shape
-        List<WorkChunk> works = new ArrayList<WorkChunk>();
+        List<WorkChunk> works = new ArrayList<>();
         for (List<SubTask> group : m.values()) {
             works.add(new WorkChunk(group,works.size()));
         }

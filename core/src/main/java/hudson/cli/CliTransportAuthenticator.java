@@ -3,24 +3,9 @@ package hudson.cli;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
-import hudson.security.SecurityRealm;
 
 /**
- * Perform {@link SecurityRealm} independent authentication.
- *
- * <p>
- * Implementing this extension point requires changes in the CLI module, as during authentication
- * neither side trusts each other enough to start code-transfer. But it does allow us to
- * use different implementations of the same protocol.
- *
- * <h2>Current Implementations</h2>
- * <p>
- * Starting 1.419, CLI supports SSH public key based client/server mutual authentication.
- * The protocol name of this is "ssh".
- *
- * @author Kohsuke Kawaguchi
- * @since 1.419
- * @deprecated Specific to Remoting-based protocol.
+ * @deprecated No longer used.
  */
 @Deprecated
 public abstract class CliTransportAuthenticator implements ExtensionPoint {

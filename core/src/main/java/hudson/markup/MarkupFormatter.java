@@ -51,7 +51,7 @@ import org.kohsuke.stapler.QueryParameter;
  *   
  * <h2>Views</h2>
  * <p>
- * This extension point must have a valid <tt>config.jelly</tt> that feeds the constructor.
+ * This extension point must have a valid {@code config.jelly} that feeds the constructor.
  *
  * TODO: allow {@link MarkupFormatter} to control the UI that the user uses to edit.
  *

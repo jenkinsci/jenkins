@@ -32,16 +32,19 @@ import hudson.EnvVars;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
-import hudson.tools.JDKInstaller;
 import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -160,9 +163,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
             return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
-        } catch (IOException e) {
-            return false;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             return false;
         }
     }
@@ -183,8 +184,18 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
 
         @Override
-        public List<JDKInstaller> getDefaultInstallers() {
-            return Collections.singletonList(new JDKInstaller(null,false));
+        public List<? extends ToolInstaller> getDefaultInstallers() {
+            try {
+                Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.getInstance().getPluginManager()
+                        .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
+                Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
+                return Collections.singletonList(constructor.newInstance(null, false));
+            } catch (ClassNotFoundException e) {
+                return Collections.emptyList();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to get default installer", e);
+                return Collections.emptyList();
+            }
         }
 
         /**
@@ -211,4 +222,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return ((JDK)obj).javaHome;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(JDK.class.getName());
 }

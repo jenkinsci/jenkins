@@ -349,7 +349,7 @@ public class Fingerprint implements ModelObject, Saveable {
         private final List<Range> ranges;
 
         public RangeSet() {
-            this(new ArrayList<Range>());
+            this(new ArrayList<>());
         }
 
         private RangeSet(List<Range> data) {
@@ -417,7 +417,7 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         @Exported
         public synchronized List<Range> getRanges() {
-            return new ArrayList<Range>(ranges);
+            return new ArrayList<>(ranges);
         }
 
         /**
@@ -515,7 +515,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * @return true if this range set was modified as a result.
          */
         public synchronized boolean retainAll(RangeSet that) {
-            List<Range> intersection = new ArrayList<Range>();
+            List<Range> intersection = new ArrayList<>();
 
             int lhs=0,rhs=0;
             while(lhs<this.ranges.size() && rhs<that.ranges.size()) {
@@ -561,7 +561,7 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public synchronized boolean removeAll(RangeSet that) {
             boolean modified = false;
-            List<Range> sub = new ArrayList<Range>();
+            List<Range> sub = new ArrayList<>();
 
             int lhs=0,rhs=0;
             while(lhs<this.ranges.size() && rhs<that.ranges.size()) {
@@ -822,24 +822,22 @@ public class Fingerprint implements ModelObject, Saveable {
     public static final class ProjectRenameListener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldName, final String newName) {
-            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 locationChanged(item, oldName, newName);
             }
         }
         private void locationChanged(Item item, String oldName, String newName) {
-            if (item instanceof AbstractProject) {
-                AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
+            if (item instanceof Job) {
+                Job p = Jenkins.getInstance().getItemByFullName(newName, Job.class);
                 if (p != null) {
-                    RunList builds = p.getBuilds();
-                    for (Object build : builds) {
-                        if (build instanceof AbstractBuild) {
-                            Collection<Fingerprint> fingerprints = ((AbstractBuild)build).getBuildFingerprints();
-                            for (Fingerprint f : fingerprints) {
-                                try {
-                                    f.rename(oldName, newName);
-                                } catch (IOException e) {
-                                    logger.log(Level.WARNING, "Failed to update fingerprint record " + f.getFileName() + " when " + oldName + " was renamed to " + newName, e);
-                                }
+                    RunList<? extends Run> builds = p.getBuilds();
+                    for (Run build : builds) {
+                        Collection<Fingerprint> fingerprints = build.getBuildFingerprints();
+                        for (Fingerprint f : fingerprints) {
+                            try {
+                                f.rename(oldName, newName);
+                            } catch (IOException e) {
+                                logger.log(Level.WARNING, "Failed to update fingerprint record " + f.getFileName() + " when " + oldName + " was renamed to " + newName, e);
                             }
                         }
                     }
@@ -868,9 +866,9 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Range of builds that use this file keyed by a job full name.
      */
-    private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
+    private Hashtable<String,RangeSet> usages = new Hashtable<>();
 
-    PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
+    PersistedList<FingerprintFacet> facets = new PersistedList<>(this);
 
     /**
      * Lazily computed immutable {@link FingerprintFacet}s created from {@link TransientFingerprintFacetFactory}.
@@ -969,13 +967,13 @@ public class Fingerprint implements ModelObject, Saveable {
      * Gets the sorted list of job names where this jar is used.
      */
     public @Nonnull List<String> getJobs() {
-        List<String> r = new ArrayList<String>();
+        List<String> r = new ArrayList<>();
         r.addAll(usages.keySet());
         Collections.sort(r);
         return r;
     }
 
-    public @Nonnull Hashtable<String,RangeSet> getUsages() {
+    public @CheckForNull Hashtable<String,RangeSet> getUsages() {
         return usages;
     }
 
@@ -995,7 +993,7 @@ public class Fingerprint implements ModelObject, Saveable {
     // this is for remote API
     @Exported(name="usage")
     public @Nonnull List<RangeItem> _getUsages() {
-        List<RangeItem> r = new ArrayList<RangeItem>();
+        List<RangeItem> r = new ArrayList<>();
         final Jenkins instance = Jenkins.getInstance();
         for (Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
@@ -1029,6 +1027,14 @@ public class Fingerprint implements ModelObject, Saveable {
     public synchronized void add(@Nonnull String jobFullName, int n) throws IOException {
         addWithoutSaving(jobFullName, n);
         save();
+    }
+
+    // JENKINS-49588
+    protected Object readResolve() {
+        if (usages == null) {
+            usages = new Hashtable<>();
+        }
+        return this;
     }
 
     void addWithoutSaving(@Nonnull String jobFullName, int n) {
@@ -1081,7 +1087,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public synchronized boolean trim() throws IOException {
         boolean modified = false;
 
-        for (Entry<String,RangeSet> e : new Hashtable<String,RangeSet>(usages).entrySet()) {// copy because we mutate
+        for (Entry<String,RangeSet> e : new Hashtable<>(usages).entrySet()) {// copy because we mutate
             Job j = Jenkins.getInstance().getItemByFullName(e.getKey(),Job.class);
             if(j==null) {// no such job any more. recycle the record
                 modified = true;
@@ -1152,7 +1158,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @Nonnull Collection<FingerprintFacet> getFacets() {
         if (transientFacets==null) {
-            List<FingerprintFacet> transientFacets = new ArrayList<FingerprintFacet>();
+            List<FingerprintFacet> transientFacets = new ArrayList<>();
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
                 fff.createFor(this,transientFacets);
             }
@@ -1193,13 +1199,13 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return Sorted list of {@link FingerprintFacet}s 
      */
     public @Nonnull Collection<FingerprintFacet> getSortedFacets() {
-        List<FingerprintFacet> r = new ArrayList<FingerprintFacet>(getFacets());
-        Collections.sort(r,new Comparator<FingerprintFacet>() {
+        List<FingerprintFacet> r = new ArrayList<>(getFacets());
+        r.sort(new Comparator<FingerprintFacet>() {
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();
                 long b = o2.getTimestamp();
-                if (a<b)    return -1;
-                if (a==b)   return 0;
+                if (a < b) return -1;
+                if (a == b) return 0;
                 return 1;
             }
         });
@@ -1224,7 +1230,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Returns the actions contributed from {@link #getFacets()}
      */
     public @Nonnull List<Action> getActions() {
-        List<Action> r = new ArrayList<Action>();
+        List<Action> r = new ArrayList<>();
         for (FingerprintFacet ff : getFacets())
             ff.createActions(r);
         return Collections.unmodifiableList(r);
@@ -1256,7 +1262,7 @@ public class Fingerprint implements ModelObject, Saveable {
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try {
                 PrintWriter w = new PrintWriter(afw);
-                w.println("<?xml version='1.0' encoding='UTF-8'?>");
+                w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
                 w.print(DATE_CONVERTER.toString(timestamp));
@@ -1366,11 +1372,16 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         try {
-            Fingerprint f = (Fingerprint) configFile.read();
+            Object loaded = configFile.read();
+            if (!(loaded instanceof Fingerprint)) {
+                throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
+                        + (loaded != null ? loaded.getClass() : "null"));
+            }
+            Fingerprint f = (Fingerprint) loaded;
             if(logger.isLoggable(Level.FINE))
                 logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
             if (f.facets==null)
-                f.facets = new PersistedList<FingerprintFacet>(f);
+                f.facets = new PersistedList<>(f);
             for (FingerprintFacet facet : f.facets)
                 facet._setOwner(f);
             return f;
@@ -1409,7 +1420,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + new TreeMap<String,RangeSet>(usages) + ",facets=" + facets + "]";
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + ((usages == null) ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
     }
     
     /**
@@ -1435,7 +1446,7 @@ public class Fingerprint implements ModelObject, Saveable {
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
-        try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
             final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
             if (itemBySystemUser == null) {
                 return false;
@@ -1443,14 +1454,14 @@ public class Fingerprint implements ModelObject, Saveable {
 
             // To get the item existence fact, a user needs Item.DISCOVER for the item
             // and Item.READ for all container folders.
-            boolean canDiscoverTheItem = itemBySystemUser.getACL().hasPermission(userAuth, Item.DISCOVER);
+            boolean canDiscoverTheItem = itemBySystemUser.hasPermission(userAuth, Item.DISCOVER);
             if (canDiscoverTheItem) {
                 ItemGroup<?> current = itemBySystemUser.getParent();
                 do {
                     if (current instanceof Item) {
                         final Item i = (Item) current;
                         current = i.getParent();
-                        if (!i.getACL().hasPermission(userAuth, Item.READ)) {
+                        if (!i.hasPermission(userAuth, Item.READ)) {
                             canDiscoverTheItem = false;
                         }
                     } else {

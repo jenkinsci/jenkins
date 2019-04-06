@@ -42,12 +42,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * An object which can ensure that a generic {@link ToolInstallation} in fact exists on a node.
+ * The properties can be added to {@link ToolInstallation} using the {@link InstallSourceProperty}.
  *
  * The subclass should have a {@link ToolInstallerDescriptor}.
  * A {@code config.jelly} should be provided to customize specific fields;
  * {@code <t:label xmlns:t="/hudson/tools"/>} to customize {@code label}.
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Tool+Auto-Installation">Tool Auto-Installation</a>
  * @since 1.305
+ * @see InstallSourceProperty
  */
 public abstract class ToolInstaller implements Describable<ToolInstaller>, ExtensionPoint {
 

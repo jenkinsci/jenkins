@@ -3,9 +3,12 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.mail.internet.AddressException;
@@ -29,7 +32,7 @@ import javax.annotation.Nonnull;
  * @since 1.494
  */
 @Extension @Symbol("location")
-public class JenkinsLocationConfiguration extends GlobalConfiguration {
+public class JenkinsLocationConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
      */
@@ -41,12 +44,20 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
-    public static @CheckForNull JenkinsLocationConfiguration get() {
-        return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
+    public static @Nonnull JenkinsLocationConfiguration get() {
+        return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
     }
-
-    public JenkinsLocationConfiguration() {
-        load();
+    
+    /**
+     * Gets local configuration. For explanation when it could die, see {@link #get()}
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull JenkinsLocationConfiguration getOrDie(){
+        JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        if (config == null) {
+            throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
+        }
+        return config;
     }
 
     @Override
@@ -57,7 +68,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         if(!file.exists()) {
             XStream2 xs = new XStream2();
             xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
+            file = new XmlFile(xs,new File(Jenkins.get().getRootDir(),"hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);
@@ -119,7 +130,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      */
     private void updateSecureSessionFlag() {
         try {
-            ServletContext context = Jenkins.getInstance().servletContext;
+            ServletContext context = Jenkins.get().servletContext;
             Method m;
             try {
                 m = context.getClass().getMethod("getSessionCookieConfig");
@@ -146,7 +157,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * Checks the URL in <tt>global.jelly</tt>
+     * Checks the URL in {@code global.jelly}
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
         if(value.startsWith("http://localhost"))

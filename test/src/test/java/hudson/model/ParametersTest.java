@@ -51,22 +51,22 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
 
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='string']");
+        HtmlElement element = DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='string']");
         assertNotNull(element);
         assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
 
-        HtmlTextInput stringParameterInput = (HtmlTextInput) DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
+        HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
         assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
-        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='boolean']");
+        element = DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='boolean']");
         assertNotNull(element);
         assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
@@ -75,12 +75,12 @@ public class ParametersTest {
         assertEquals(true, booleanParameterInput.isChecked());
         assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
 
-        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
+        element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
 
-        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='run']");
+        element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='run']");
         assertNotNull(element);
         assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
         assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
@@ -105,16 +105,16 @@ public class ParametersTest {
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
+        HtmlElement element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
-        HtmlOption opt = (HtmlOption)DomNodeUtil.selectSingleNode(element, "td/div/select/option[@value='Choice <2>']");
+        HtmlOption opt = DomNodeUtil.selectSingleNode(element, "td/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
         assertEquals("Choice <2>", opt.asText());
         opt.setSelected(true);
@@ -192,8 +192,8 @@ public class ParametersTest {
                 new FileParameterDefinition("filename", "description"));
         project.addProperty(pdp);
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
@@ -215,12 +215,13 @@ public class ParametersTest {
         );
         p.addProperty(pdb);
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // Ignore 405
+        WebClient wc = j.createWebClient()
+                // Ignore 405
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "build");
 
         // java.lang.IllegalArgumentException: No such parameter definition: <gibberish>.
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
+        wc.setThrowExceptionOnFailingStatusCode(true);
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
@@ -233,8 +234,8 @@ public class ParametersTest {
         StringParameterDefinition param = new StringParameterDefinition("<param name>", "<param default>", "<param description>");
         assertEquals("<b>[</b>param description<b>]</b>", param.getFormattedDescription());
         p.addProperty(new ParametersDefinitionProperty(param));
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "build?delay=0sec");
         collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpStatus.SC_METHOD_NOT_ALLOWED)); // 405 to dissuade scripts from thinking this triggered the build
         String text = page.getWebResponse().getContentAsString();

@@ -49,12 +49,13 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
-      <form method="post" action="install">
-        <div id="filter-container">
-          ${%Filter}:
-          <input type="text" id="filter-box"/>
-        </div>
+      
+      <div id="filter-container">
+        ${%Filter}:
+        <input type="text" id="filter-box"/>
+      </div>
 
+      <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
         <div class="pane-frame">
@@ -71,6 +72,7 @@ THE SOFTWARE.
             <j:choose>
               <j:when test="${!empty(list)}">
                 <j:set var="lastCat" value="" />
+                <j:set var="cache" value="${it.createCache()}"/>
                 <j:forEach var="p" items="${list}">
                   <j:if test="${!isUpdates}">
                     <j:set var="thisCat" value="${p.category}" />
@@ -89,9 +91,10 @@ THE SOFTWARE.
                     <td class="pane" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
                              checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"/>
+                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"
+                             data-compat-warning="${!p.isCompatibleWithInstalledVersion()}" />
                     </td>
-                    <td class="pane" data="${h.xmlEscape(p.displayName)}">
+                    <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
                         <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
                       </div>
@@ -104,11 +107,17 @@ THE SOFTWARE.
                       <j:if test="${p.isForNewerHudson()}">
                         <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
                       </j:if>
-                      <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion()}">
+                      <j:if test="${p.isForNewerJava()}">
+                        <div class="compatWarning">${%javaWarning(p.minimumJavaVersion)}</div>
+                      </j:if>
+                      <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="compatWarning">${%depCompatWarning}</div>
                       </j:if>
-                      <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
+                      <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
                         <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
+                      </j:if>
+                      <j:if test="${p.isNeededDependenciesForNewerJava()}">
+                        <div class="compatWarning">${%depJavaWarning(p.getNeededDependenciesMinimumJavaVersion().toString())}</div>
                       </j:if>
                       <j:if test="${p.hasWarnings()}">
                         <div class="securityWarning">${%securityWarning}

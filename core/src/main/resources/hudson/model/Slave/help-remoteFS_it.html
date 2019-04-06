@@ -1,0 +1,39 @@
+<div>
+  <p>
+  Un agente deve avere una directory dedicata a Jenkins. Specificare il
+  percorso a questa directory sull'agente. È meglio utilizzare un percorso
+  assoluto, come <tt>/var/jenkins</tt> o <tt>c:\jenkins</tt>.
+  Questo dovrebbe essere un percorso locale per la macchina agente. Non è
+  necessario che questo percorso sia visibile dal master.
+  <p>
+  Gli agenti non conservano dati importanti; tutte le configurazioni dei
+  processi, i registri di compilazione e gli artefatti sono salvati sul master,
+  per cui sarebbe possibile utilizzare una directory temporanea come directory
+  radice dell'agente.
+  <br>
+  Ciò nonostante, fornendo a un agente una directory non eliminata, ad esempio,
+  dopo un riavvio della macchina, l'agente è in grado di salvare in cache dati
+  come le installazioni degli strumenti o gli spazi di lavoro delle
+  compilazioni. Ciò impedisce i download non necessari degli strumenti o un
+  nuovo checkout del codice sorgente quando le compilazioni iniziano nuovamente
+  ad essere eseguite su questo agente dopo un riavvio.
+  <p>
+  Se si utilizza un percorso relativo, come <tt>./jenkins-agent</tt>, il
+  percorso sarà relativo alla directory di lavoro fornito dal <i>Metodo di
+  avvio</i>.
+  <ul>
+  <li>Per i lanciatori per cui Jenkins controlla l'avvio del processo agente,
+  come SSH, la directory di lavoro corrente sarà tipicamente consistente, ad
+  esempio la directory home dell'utente.</li>
+  <li>Per i lanciatori per cui Jenkins non ha controllo sull'avvio del processo
+  agente, come JNLP se lanciato dalla riga di comando o da un collegamento nel
+  browser Web, la directory di lavoro corrente potrebbe cambiare da un avvio
+  dell'agente all'altro e l'utilizzo di un percorso relativo potrebbe
+  rivelarsi problematico.
+  <br>
+  Il problema principale che si affronta utilizzando percorsi relativi con i
+  lanciatori come JNLP è la proliferazione di spazi di lavoro vecchi e di
+  installazioni di strumenti sulla macchina agente. Ciò può causare problemi
+  legati allo spazio su disco.</li>
+  </ul>
+</div>

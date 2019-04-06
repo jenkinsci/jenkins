@@ -25,7 +25,9 @@ package hudson;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
@@ -40,6 +42,7 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.nio.charset.Charset;
 
@@ -52,6 +55,8 @@ import java.nio.charset.Charset;
  * @author Kohsuke Kawaguchi
  */
 public class Main {
+
+    /** @see #remotePost */
     public static void main(String[] args) {
         try {
             System.exit(run(args));
@@ -61,6 +66,7 @@ public class Main {
         }
     }
 
+    /** @see #remotePost */
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home==null) {
@@ -82,7 +88,8 @@ public class Main {
     }
 
     /**
-     * Run command and place the result to a remote Hudson installation
+     * Run command and send result to {@code ExternalJob} in the {@code external-monitor-job} plugin.
+     * Obsoleted by {@code SetExternalBuildResultCommand} but kept here for compatibility.
      */
     public static int remotePost(String[] args) throws Exception {
         String projectName = args[0];
@@ -92,7 +99,7 @@ public class Main {
 
         // check for authentication info
         String auth = new URL(home).getUserInfo();
-        if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes("UTF-8"));
+        if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 
         {// check if the home is set correctly
             HttpURLConnection con = open(new URL(home));
@@ -138,23 +145,24 @@ public class Main {
         try {
             int ret;
             try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
-                 Writer w = new OutputStreamWriter(os,"UTF-8")) {
-                w.write("<?xml version='1.0' encoding='UTF-8'?>");
+                 Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+                w.write("<?xml version='1.1' encoding='UTF-8'?>");
                 w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
                 w.flush();
 
                 // run the command
                 long start = System.currentTimeMillis();
 
-                List<String> cmd = new ArrayList<String>();
-                for( int i=1; i<args.length; i++ )
-                    cmd.add(args[i]);
+                List<String> cmd = new ArrayList<>();
+                cmd.addAll(Arrays.asList(args).subList(1, args.length));
                 Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
                     new DualOutputStream(System.out,new EncodingStream(os)));
 
                 ret = proc.join();
 
                 w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
 
             URL location = new URL(jobURL, "postBuildResult");
@@ -173,6 +181,8 @@ public class Main {
                     // send the data
                     try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
                         org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
+                    } catch (InvalidPathException e) {
+                        throw new IOException(e);
                     }
 
                     if(con.getResponseCode()!=200) {

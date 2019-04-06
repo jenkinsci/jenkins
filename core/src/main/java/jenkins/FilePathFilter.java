@@ -23,7 +23,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  * @see FilePath
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class FilePathFilter {
     /**
@@ -102,7 +102,7 @@ public abstract class FilePathFilter {
 
     /**
      * Returns an {@link FilePathFilter} object that represents all the in-scope filters,
-     * or null if none is needed.
+     * or {@code null} if none is needed.
      */
     public static @CheckForNull FilePathFilter current() {
         Channel ch = Channel.current();

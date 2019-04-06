@@ -48,25 +48,33 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     public GrantedAuthority[] getAuthorities() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
-        GrantedAuthority[] r = new GrantedAuthority[roles==null ? 1 : roles.length+1];
-        r[0] = SecurityRealm.AUTHENTICATED_AUTHORITY;
-        if (roles != null) {
-            for (int i = 1; i < r.length; i++) {
-                r[i] = new GrantedAuthorityImpl(roles[i - 1]);
+        if(roles == null){
+            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY};
+        }
+
+        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
+        grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
+
+        for (String role : roles) {
+            // to avoid having twice that role
+            if (!authenticatedRole.equals(role)) {
+                grantedAuthorities.add(new GrantedAuthorityImpl(role));
             }
         }
-        return r;
+
+        return grantedAuthorities.toArray(new GrantedAuthority[0]);
     }
 
     /**
      * Persist the information with the new {@link UserDetails}.
      */
     public void update(@Nonnull Authentication auth) throws IOException {
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
             roles.add(ga.getAuthority());
         }
-        String[] a = roles.toArray(new String[roles.size()]);
+        String[] a = roles.toArray(new String[0]);
         if (!Arrays.equals(this.roles,a)) {
             this.roles = a;
             this.timestamp = System.currentTimeMillis();
@@ -90,14 +98,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
      */
     @Extension
     public static class SecurityListenerImpl extends SecurityListener {
-        @Override
-        protected void authenticated(@Nonnull UserDetails details) {
-        }
-
-        @Override
-        protected void failedToAuthenticate(@Nonnull String username) {
-        }
-
         @Override
         protected void loggedIn(@Nonnull String username) {
             try {
@@ -142,10 +142,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 //            } catch (IOException e) {
 //                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
 //            }
-        }
-
-        @Override
-        protected void loggedOut(@Nonnull String username) {
         }
     }
 

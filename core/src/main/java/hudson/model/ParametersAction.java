@@ -87,7 +87,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private Set<String> safeParameters;
 
-    private final List<ParameterValue> parameters;
+    private @Nonnull List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
 
@@ -99,8 +99,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private transient Run<?, ?> run;
 
-    public ParametersAction(List<ParameterValue> parameters) {
-        this.parameters = parameters;
+    public ParametersAction(@Nonnull List<ParameterValue> parameters) {
+        this.parameters = new ArrayList<>(parameters);
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
         if (paramNames != null) {
@@ -138,10 +138,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         }
     }
 
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    @Override
+    public void buildEnvironment(Run<?,?> run, EnvVars env) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
-            p.buildEnvironment(build, env); 
+            p.buildEnvironment(run, env);
         }
     }
 
@@ -221,11 +222,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return !parameters.isEmpty();
         } else {
             // I don't think we need multiple ParametersActions, but let's be defensive
-            Set<ParameterValue> params = new HashSet<ParameterValue>();
+            Set<ParameterValue> params = new HashSet<>();
             for (ParametersAction other: others) {
                 params.addAll(other.parameters);
             }
-            return !params.equals(new HashSet<ParameterValue>(this.parameters));
+            return !params.equals(new HashSet<>(this.parameters));
         }
     }
 
@@ -267,8 +268,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            ParametersAction parametersAction = new ParametersAction(parameters, this.safeParameters);
-            return parametersAction;
+            return new ParametersAction(parameters, this.safeParameters);
         }
         ParametersAction parametersAction = createUpdated(overrides.parameters);
         Set<String> safe = new TreeSet<>();
@@ -283,6 +283,9 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     private Object readResolve() {
+        if (parameters == null) { // JENKINS-39495
+            parameters = Collections.emptyList();
+        }
         if (build != null)
             OldDataMonitor.report(build, "1.283");
         if (safeParameters == null) {
@@ -295,7 +298,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public void onAttached(Run<?, ?> r) {
         ParametersDefinitionProperty p = r.getParent().getProperty(ParametersDefinitionProperty.class);
         if (p != null) {
-            this.parameterDefinitionNames = p.getParameterDefinitionNames();
+            this.parameterDefinitionNames = new ArrayList<>(p.getParameterDefinitionNames());
         } else {
             this.parameterDefinitionNames = Collections.emptyList();
         }
@@ -316,17 +319,17 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
-        String shouldKeepFlag = SystemProperties.getString(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
-        if ("true".equalsIgnoreCase(shouldKeepFlag)) {
+        Boolean shouldKeepFlag = SystemProperties.optBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        if (shouldKeepFlag != null && shouldKeepFlag) {
             return parameters;
         }
 
-        List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
+        List<ParameterValue> filteredParameters = new ArrayList<>();
 
         for (ParameterValue v : this.parameters) {
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
-            } else if ("false".equalsIgnoreCase(shouldKeepFlag)) {
+            } else if (shouldKeepFlag == null) {
                 LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
                         + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
                         + "even though it represents a security breach or `-D{2}=false` to no longer show this message.",

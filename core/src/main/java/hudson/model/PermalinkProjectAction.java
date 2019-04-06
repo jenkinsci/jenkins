@@ -91,7 +91,7 @@ public interface PermalinkProjectAction extends Action {
         /**
          * List of {@link Permalink}s that are built into Jenkins.
          */
-        public static final List<Permalink> BUILTIN = new CopyOnWriteArrayList<Permalink>();
+        public static final List<Permalink> BUILTIN = new CopyOnWriteArrayList<>();
 
         public static final Permalink LAST_BUILD = new Permalink() {
             public String getDisplayName() {

@@ -162,7 +162,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      *      Structured form data that includes the data for nested descriptor list.
      */
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
-        List<T> newList = new ArrayList<T>();
+        List<T> newList = new ArrayList<>();
 
         for (Descriptor<T> d : descriptors) {
             T existing = get((D)d);
@@ -270,10 +270,9 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
-
             try {
-                DescribableList r = (DescribableList)context.getRequiredType().newInstance();
+                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
+                CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
                 r.data.replaceBy(core);
                 return r;
             } catch (InstantiationException e) {

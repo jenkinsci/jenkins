@@ -24,7 +24,6 @@
 package hudson.model.listeners;
 
 import com.google.common.base.Function;
-import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
@@ -35,7 +34,6 @@ import hudson.model.Items;
 import hudson.security.ACL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.acegisecurity.AccessDeniedException;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -64,7 +62,7 @@ public class ItemListener implements ExtensionPoint {
      * @param src the item being copied
      * @param parent the proposed parent
      * @throws Failure to veto the operation.
-     * @since TODO
+     * @since 2.51
      */
     public void onCheckCopy(Item src, ItemGroup parent) throws Failure {
     }
@@ -200,7 +198,7 @@ public class ItemListener implements ExtensionPoint {
      * @param src    the item being copied
      * @param parent the proposed parent
      * @throws Failure if the copy operation has been vetoed.
-     * @since TODO
+     * @since 2.51
      */
     public static void checkBeforeCopy(final Item src, final ItemGroup parent) throws Failure {
         for (ItemListener l : all()) {

@@ -60,7 +60,8 @@ public class PluginManagerInstalledGUITest {
                         try {
                             return super.loadBundledPlugins();
                         } finally {
-                            installResourcePlugin("tasks.jpi");
+                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/cvs.hpi"), "cvs.jpi"); // cannot use installDetachedPlugin at this point
+                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/tasks.jpi"), "tasks.jpi");
                         }
                     }
                 };
@@ -78,8 +79,8 @@ public class PluginManagerInstalledGUITest {
         InstalledPlugin tasksPlugin = installedPlugins.get("tasks");
         InstalledPlugin cvsPlugin = installedPlugins.get("cvs");
 
-        tasksPlugin.assertHasNoDependants();
-        cvsPlugin.assertHasDependants();
+        tasksPlugin.assertHasNoDependents();
+        cvsPlugin.assertHasDependents();
         
         // Tasks plugin should be enabled and it should be possible to disable it
         // because no other plugins depend on it.
@@ -188,10 +189,10 @@ public class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateChangeable() {
-            if (!hasDependants() && !hasDisabledDependency() && !allDependantsDisabled()) {
+            if (!hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
-            if (allDependantsDisabled() && !hasDisabledDependency()) {
+            if (allDependentsDisabled() && !hasDisabledDependency()) {
                 return;
             }
             
@@ -199,10 +200,10 @@ public class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateNotChangeable() {
-            if (hasDependants() && !hasDisabledDependency() && !allDependantsDisabled()) {
+            if (hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
-            if (!hasDependants() && hasDisabledDependency()) {
+            if (!hasDependents() && hasDisabledDependency()) {
                 return;
             }
             
@@ -210,19 +211,19 @@ public class PluginManagerInstalledGUITest {
         }
 
         public void assertUninstallable() {
-            Assert.assertFalse("Plugin '" + getId() + "' cannot be uninstalled.", hasDependants());
+            Assert.assertFalse("Plugin '" + getId() + "' cannot be uninstalled.", hasDependents());
         }
 
         public void assertNotUninstallable() {
-            Assert.assertTrue("Plugin '" + getId() + "' can be uninstalled.", hasDependants());
+            Assert.assertTrue("Plugin '" + getId() + "' can be uninstalled.", hasDependents());
         }
 
-        public void assertHasDependants() {
-            Assert.assertTrue(hasDependants());
+        public void assertHasDependents() {
+            Assert.assertTrue(hasDependents());
         }
 
-        public void assertHasNoDependants() {
-            Assert.assertFalse(hasDependants());
+        public void assertHasNoDependents() {
+            Assert.assertFalse(hasDependents());
         }
 
         private boolean hasClassName(String className) {
@@ -235,12 +236,12 @@ public class PluginManagerInstalledGUITest {
             return hasClassName("has-disabled-dependency");
         }
 
-        private boolean allDependantsDisabled() {
-            return hasClassName("all-dependants-disabled");
+        private boolean allDependentsDisabled() {
+            return hasClassName("all-dependents-disabled");
         }
 
-        private boolean hasDependants() {
-            return hasClassName("has-dependants");
+        private boolean hasDependents() {
+            return hasClassName("has-dependents");
         }
     }
 }

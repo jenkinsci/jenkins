@@ -1,0 +1,33 @@
+<div>
+  Jenkins può tenere traccia delle 'impronte' dei file (molto spesso file JAR)
+  per tenere traccia dell'host e del momento in cui sono stati generati e
+  utilizzati tali file. Se si hanno progetti dipendenti fra loro su Jenkins,
+  ciò consente di rispondere velocemente a domande come:
+
+  <ul>
+    <li>
+      Ho <tt>pippo.jar</tt> sul mio disco fisso ma da quale compilazione di PIPPO proviene?
+    </li>
+    <li>
+      Il mio progetto PLUTO dipende da <tt>pippo.jar</tt> dal progetto PIPPO.
+    </li>
+    <li><ul>
+      <li>
+        Quale compilazione di <tt>pippo.jar</tt> è utilizzata nella compilazione 51 di PLUTO?
+      </li>
+      <li>
+        Quale compilazione di PLUTO contiene la correzione all'errore numero 32 di <tt>pippo.jar</tt>?
+      </li>
+    </ul></li>
+  </ul>
+
+  <p>
+  Per utilizzare questa funzionalità, tutti i progetti coinvolti (non solo il
+  progetto in cui viene prodotto un file, ma anche i progetti in cui esso
+  viene utilizzato) devono utilizzare questa funzione e tenere traccia delle
+  impronte.
+
+  <p>
+  Si veda <a href="https://jenkins.io/redirect/fingerprint">questo documento</a>
+  per ulteriori dettagli.
+</div>

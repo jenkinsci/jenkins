@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
@@ -32,9 +33,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ListIterator;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -145,7 +148,7 @@ public class Iterators {
      * Remove duplicates from another iterator.
      */
     public static final class DuplicateFilterIterator<T> extends FilterIterator<T> {
-        private final Set<T> seen = new HashSet<T>();
+        private final Set<T> seen = new HashSet<>();
 
         public DuplicateFilterIterator(Iterator<? extends T> core) {
             super(core);
@@ -333,7 +336,7 @@ public class Iterators {
      */
     public static <T> Iterator<T> removeDups(Iterator<T> iterator) {
         return new FilterIterator<T>(iterator) {
-            final Set<T> found = new HashSet<T>();
+            final Set<T> found = new HashSet<>();
             @Override
             protected boolean filter(T t) {
                 return found.add(t);
@@ -403,4 +406,20 @@ public class Iterators {
     public interface CountingPredicate<T> {
         boolean apply(int index, T input);
     }
+
+    /**
+     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * @param iterator some iterator
+     * @param count a nonnegative count
+     */
+    @Restricted(NoExternalUse.class)
+    public static void skip(@Nonnull Iterator<?> iterator, int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException();
+        }
+        while (iterator.hasNext() && count-- > 0) {
+            iterator.next();
+        }
+    }
+
 }

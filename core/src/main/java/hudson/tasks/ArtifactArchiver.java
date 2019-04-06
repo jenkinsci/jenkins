@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
@@ -140,9 +141,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     // Backwards compatibility for older builds
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
-    public Object readResolve() {
+    protected Object readResolve() {
         if (allowEmptyArchive == null) {
             this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
         }
@@ -213,20 +214,10 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
-    private void listenerWarnOrError(TaskListener listener, String message) {
-    	if (allowEmptyArchive) {
-    		listener.getLogger().println(String.format("WARN: %s", message));
-    	} else {
-    		listener.error(message);
-    	}
-    }
-
     @Override
-    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if(artifacts.length()==0) {
-            listener.error(Messages.ArtifactArchiver_NoIncludes());
-            build.setResult(Result.FAILURE);
-            return;
+            throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
 
         Result result = build.getResult();
@@ -247,29 +238,30 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             } else {
                 result = build.getResult();
-                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
-                    // If the build failed, don't complain that there was no matching artifact.
-                    // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                    String msg = null;
+                if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     try {
-                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                    	String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                        if (msg != null) {
+                            listener.getLogger().println(msg);
+                        }
                     } catch (Exception e) {
-                    	listenerWarnOrError(listener, e.getMessage());
+                        Functions.printStackTrace(e, listener.getLogger());
                     }
-                    if(msg!=null)
-                        listenerWarnOrError(listener, msg);
+                    if (allowEmptyArchive) {
+                        listener.getLogger().println(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    } else {
+                        throw new AbortException(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    }
+                } else {
+                    // If a freestyle build failed, do not complain that there was no matching artifact:
+                    // the build probably did not even get to the point where it produces artifacts.
+                    // For Pipeline, the program ought not be *trying* to archive anything after a failure,
+                    // but anyway most likely result == null above so we would not be here.
                 }
-                if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
-                }
-                return;
             }
-        } catch (IOException e) {
-            Util.displayIOException(e,listener);
-            Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
-            build.setResult(Result.FAILURE);
-            return;
+        } catch (java.nio.file.AccessDeniedException e) {
+            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
+            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         }
     }
 
@@ -287,7 +279,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String,String> r = new HashMap<String,String>();
+            Map<String,String> r = new HashMap<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
@@ -335,7 +327,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 return FormValidation.ok();
             }
             // defensive approach to remain case sensitive in doubtful situations
-            boolean bCaseSensitive = caseSensitive == null || !"false".equals(caseSensitive);
+            boolean bCaseSensitive = !"false".equals(caseSensitive);
             return FilePath.validateFileMask(project.getSomeWorkspace(), value, bCaseSensitive);
         }
 

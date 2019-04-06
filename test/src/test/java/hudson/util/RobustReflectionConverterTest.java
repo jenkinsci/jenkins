@@ -24,24 +24,30 @@
 
 package hudson.util;
 
+import com.gargoylesoftware.htmlunit.Page;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Items;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
+import hudson.model.Items;
 import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 import hudson.model.Saveable;
+import hudson.model.User;
 import hudson.security.ACL;
 
 import java.io.ByteArrayInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
+
+import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;
 
 import org.junit.Rule;
@@ -54,7 +60,6 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 
@@ -81,7 +86,7 @@ public class RobustReflectionConverterTest {
     // GUI related implementations (@DataBoundConstructor and newInstance) aren't used actually
     // (no jelly files are provides and they don't work actually),
     // but written to clarify a use case.
-    public static class AcceptOnlySpecificKeyword extends AbstractDescribableImpl<AcceptOnlySpecificKeyword>{
+    public static class AcceptOnlySpecificKeyword extends AbstractDescribableImpl<AcceptOnlySpecificKeyword> {
         public static final String ACCEPT_KEYWORD = "accept";
         private final String keyword;
         
@@ -98,7 +103,7 @@ public class RobustReflectionConverterTest {
             return ACCEPT_KEYWORD.equals(keyword);
         }
         
-        public Object readResolve() throws Exception {
+        private Object readResolve() throws Exception {
             if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
@@ -168,7 +173,7 @@ public class RobustReflectionConverterTest {
     }
     
     private static final String CONFIGURATION_TEMPLATE =
-            "<?xml version='1.0' encoding='UTF-8'?>"
+            "<?xml version='1.1' encoding='UTF-8'?>"
             + "<project>"
             + "<properties>"
             +     "<hudson.util.RobustReflectionConverterTest_-KeywordProperty>"
@@ -184,8 +189,12 @@ public class RobustReflectionConverterTest {
     
     @Test
     public void testRestInterfaceFailure() throws Exception {
+        ApiTokenTestHelper.enableLegacyBehavior();
+
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
-        
+
+        User test = User.getById("test", true);
+
         // without addCriticalField. This is accepted.
         {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -198,11 +207,8 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.login("test", "test");
-            WebRequest req = new WebRequest(
-                    wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
-                    HttpMethod.POST
-            );
+            wc.withBasicApiToken(test);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
@@ -230,21 +236,17 @@ public class RobustReflectionConverterTest {
             
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-            WebClient wc = r.createWebClient();
-            wc.login("test", "test");
-            WebRequest req = new WebRequest(
-                    wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
-                    HttpMethod.POST
-            );
+            WebClient wc = r.createWebClient()
+                    .withThrowExceptionOnFailingStatusCode(false);
+            wc.withBasicApiToken(test);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
             
-            try {
-                wc.getPage(req);
-                fail("Submitting unacceptable configuration via REST should fail.");
-            } catch (FailingHttpStatusCodeException e) {
-                // pass
-            }
+            Page page = wc.getPage(req);
+            assertEquals("Submitting unacceptable configuration via REST should fail.", 
+                    HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    page.getWebResponse().getStatusCode());
             
             // Configuration should not be updated for a failure of the critical field,
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
@@ -274,13 +276,10 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .asUser("test")
                     .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
                     .withArgs(
-                            p.getFullName(),
-                            "--username",
-                            "test",
-                            "--password",
-                            "test"
+                            p.getFullName()
                     )
                     .invoke();
             
@@ -309,13 +308,10 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .asUser("test")
                     .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
                     .withArgs(
-                            p.getFullName(),
-                            "--username",
-                            "test",
-                            "--password",
-                            "test"
+                            p.getFullName()
                     )
                     .invoke();
             assertNotEquals(0, ret.returnCode());

@@ -1,15 +1,12 @@
 package hudson.init.impl;
 
 import hudson.init.Initializer;
+import java.io.EOFException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
-import org.kohsuke.stapler.compression.UncaughtExceptionHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,31 +14,34 @@ import java.util.logging.Logger;
 import org.kohsuke.stapler.Stapler;
 
 /**
- * @author Kohsuke Kawaguchi
+ * Deals with exceptions that get thrown all the way up to the Stapler rendering layer.
  */
 public class InstallUncaughtExceptionHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(InstallUncaughtExceptionHandler.class.getName());
+
     @Initializer
     public static void init(final Jenkins j) throws IOException {
-        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, new UncaughtExceptionHandler() {
-            @Override
-            public void reportException(Throwable e, ServletContext context, HttpServletRequest req, HttpServletResponse rsp) throws ServletException, IOException {
+        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> {
+                if (rsp.isCommitted()) {
+                    LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
+                    return;
+                }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
-                    WebApp.get(j.servletContext).getSomeStapler()
-                            .invoke(req,rsp, Jenkins.getInstance(), "/oops");
+                    WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
                         throw x;
                     }
                 }
-            }
         });
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
-            DefaultUncaughtExceptionHandler.LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");
+            LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");
         }
         catch (SecurityException ex) {
-            DefaultUncaughtExceptionHandler.LOGGER.log(Level.SEVERE, 
+            LOGGER.log(Level.SEVERE,
                                                        "Failed to set the default UncaughtExceptionHandler.  " + 
                                                        "If any threads die due to unhandled coding errors then there will be no logging of this information.  " +
                                                        "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " + 
@@ -50,10 +50,18 @@ public class InstallUncaughtExceptionHandler {
         }
     }
 
+    private static boolean isEOFException(Throwable e) {
+        if (e == null) {
+            return false;
+        } else if (e instanceof EOFException) {
+            return true;
+        } else {
+            return isEOFException(e.getCause());
+        }
+    }
+
     /** An UncaughtExceptionHandler that just logs the exception */
     private static class DefaultUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-
-        private static final Logger LOGGER = Logger.getLogger(InstallUncaughtExceptionHandler.class.getName());
 
         @Override
         public void uncaughtException(Thread t, Throwable ex) {
@@ -65,4 +73,7 @@ public class InstallUncaughtExceptionHandler {
         }
 
     }
+
+    private InstallUncaughtExceptionHandler() {}
+
 }

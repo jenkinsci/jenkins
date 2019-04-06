@@ -7,6 +7,8 @@ import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
+
 /**
  * Convenient base class for extensions that contributes to the system configuration page but nothing
  * else, or to manage the global configuration of a plugin implementing several extension points.
@@ -23,7 +25,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * properties defined in your GlobalConfiguration subclass, here are two possibilities:
  * <ul><li>@{@link javax.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
  * for classes not annotated with {@link hudson.Extension})</li>
- * <li>access it via a call to {@code GlobalConfiguration.all().get(<your GlobalConfiguration subclass>.class)}</li></ul>
+ * <li>access it via a call to {@code ExtensionList.lookupSingleton(<your GlobalConfiguration subclass>.class)}</li></ul>
  *
  * <p>
  * While an implementation might store its actual configuration data in various ways,
@@ -69,8 +71,8 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     /**
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
-    public static ExtensionList<GlobalConfiguration> all() {
-        return Jenkins.getInstance().<GlobalConfiguration,GlobalConfiguration>getDescriptorList(GlobalConfiguration.class);
+    public static @Nonnull ExtensionList<GlobalConfiguration> all() {
+        return Jenkins.get().getDescriptorList(GlobalConfiguration.class);
         // pointless type parameters help work around bugs in javac in earlier versions http://codepad.org/m1bbFRrH
     }
 }

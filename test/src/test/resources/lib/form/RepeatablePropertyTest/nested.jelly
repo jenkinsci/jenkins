@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout title="Testing nested repeatableProperty">
+        <l:main-panel>
+            <f:form method="post" name="config" action="thisFormIsOnlyInspectedInTheTests">
+                <j:set var="instance" value="${it}" />
+                <j:set var="descriptor" value="${it.descriptor}" />
+                <f:entry title="Nested Exciting Objects">
+                    <f:repeatableProperty field="testRepeatableContainer" minimum="1" />
+                </f:entry>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

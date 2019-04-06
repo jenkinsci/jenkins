@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -45,7 +46,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public class ArgumentListBuilder implements Serializable, Cloneable {
-    private final List<String> args = new ArrayList<String>();
+    private final List<String> args = new ArrayList<>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
      */
@@ -132,6 +133,16 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         }
         return this;
     }
+    
+    /**
+     * @since 2.72
+     */
+    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
+        for (String arg : args) {
+            add(arg);
+        }
+        return this;
+    }
 
     /**
      * Decomposes the given token into multiple arguments by splitting via whitespace.
@@ -154,7 +165,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Adds key value pairs as "-Dkey=value -Dkey=value ..."
      *
-     * <tt>-D</tt> portion is configurable as the 'prefix' parameter.
+     * {@code -D} portion is configurable as the 'prefix' parameter.
      * @since 1.114
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
@@ -177,7 +188,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
         for (Entry<String,String> e : props.entrySet()) {
-            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask == null) ? false : propsToMask.contains(e.getKey()));
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask != null) && propsToMask.contains(e.getKey()));
         }
         return this;
     }
@@ -219,7 +230,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));
 
         for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask == null) ? false : propsToMask.contains(entry.getKey()));
+            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask != null) && propsToMask.contains(entry.getKey()));
         }
         return this;
     }
@@ -249,7 +260,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public String[] toCommandArray() {
-        return args.toArray(new String[args.size()]);
+        return args.toArray(new String[0]);
     }
     
     @Override

@@ -119,7 +119,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
-            Map<String,String> record = new HashMap<String,String>();
+            Map<String,String> record = new HashMap<>();
             
             EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
@@ -152,10 +152,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
-            Set<String> seenUpstreamProjects = new HashSet<String>();
+            Set<String> seenUpstreamProjects = new HashSet<>();
 
-            for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
-                Run build = (Run) iter.next();
+            for (Object build1 : builds) {
+                Run build = (Run) build1;
                 for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
                     for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
@@ -188,59 +188,69 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
     }
 
-    private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
-        final class Record implements Serializable {
-            final boolean produced;
-            final String relativePath;
-            final String fileName;
-            final String md5sum;
+    private static final class Record implements Serializable {
 
-            public Record(boolean produced, String relativePath, String fileName, String md5sum) {
-                this.produced = produced;
-                this.relativePath = relativePath;
-                this.fileName = fileName;
-                this.md5sum = md5sum;
-            }
+        final boolean produced;
+        final String relativePath;
+        final String fileName;
+        final String md5sum;
 
-            Fingerprint addRecord(Run build) throws IOException {
-                FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
-                return map.getOrCreate(produced?build:null, fileName, md5sum);
-            }
-
-            private static final long serialVersionUID = 1L;
+        public Record(boolean produced, String relativePath, String fileName, String md5sum) {
+            this.produced = produced;
+            this.relativePath = relativePath;
+            this.fileName = fileName;
+            this.md5sum = md5sum;
         }
 
-        final long buildTimestamp = build.getTimeInMillis();
+        Fingerprint addRecord(Run build) throws IOException {
+            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
+            return map.getOrCreate(produced?build:null, fileName, md5sum);
+        }
 
-        List<Record> records = ws.act(new MasterToSlaveFileCallable<List<Record>>() {
-            public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
-                List<Record> results = new ArrayList<Record>();
+        private static final long serialVersionUID = 1L;
+    }
 
-                FileSet src = Util.createFileSet(baseDir,targets);
+    private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
 
-                DirectoryScanner ds = src.getDirectoryScanner();
-                for( String f : ds.getIncludedFiles() ) {
-                    File file = new File(baseDir,f);
+        private final String targets;
+        private final long buildTimestamp;
 
-                    // consider the file to be produced by this build only if the timestamp
-                    // is newer than when the build has started.
-                    // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
-                    boolean produced = buildTimestamp <= file.lastModified()+2000;
+        FindRecords(String targets, long buildTimestamp) {
+            this.targets = targets;
+            this.buildTimestamp = buildTimestamp;
+        }
 
-                    try {
-                        results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
-                    } catch (IOException e) {
-                        throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
-                    } catch (InterruptedException e) {
-                        throw new IOException(Messages.Fingerprinter_Aborted(),e);
-                    }
+        @Override
+        public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
+            List<Record> results = new ArrayList<>();
+
+            FileSet src = Util.createFileSet(baseDir,targets);
+
+            DirectoryScanner ds = src.getDirectoryScanner();
+            for( String f : ds.getIncludedFiles() ) {
+                File file = new File(baseDir,f);
+
+                // consider the file to be produced by this build only if the timestamp
+                // is newer than when the build has started.
+                // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
+                boolean produced = buildTimestamp <= file.lastModified()+2000;
+
+                try {
+                    results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
+                } catch (IOException e) {
+                    throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
+                } catch (InterruptedException e) {
+                    throw new IOException(Messages.Fingerprinter_Aborted(),e);
                 }
-
-                return results;
             }
-        });
 
-        for (Record r : records) {
+            return results;
+        }
+
+    }
+
+    private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
+        for (Record r : ws.act(new FindRecords(targets, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
             if(fp==null) {
                 listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));
@@ -306,7 +316,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public void add(Map<String,String> moreRecords) {
-            Map<String,String> r = new HashMap<String, String>(record);
+            Map<String,String> r = new HashMap<>(record);
             r.putAll(moreRecords);
             record = compact(r);
             ref = null;
@@ -351,7 +361,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         /** Share data structure with other builds, mainly those of the same job. */
         private PackedMap<String,String> compact(Map<String,String> record) {
-            Map<String,String> b = new HashMap<String,String>();
+            Map<String,String> b = new HashMap<>();
             for (Entry<String,String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
@@ -370,7 +380,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             Jenkins h = Jenkins.getInstance();
 
-            Map<String,Fingerprint> m = new TreeMap<String,Fingerprint>();
+            Map<String,Fingerprint> m = new TreeMap<>();
             for (Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
@@ -382,7 +392,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             }
 
             m = ImmutableMap.copyOf(m);
-            ref = new WeakReference<Map<String,Fingerprint>>(m);
+            ref = new WeakReference<>(m);
             return m;
         }
 
@@ -401,7 +411,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          * @since 1.430
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
-            Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+            Map<AbstractProject,Integer> r = new HashMap<>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();

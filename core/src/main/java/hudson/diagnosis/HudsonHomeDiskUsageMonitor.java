@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Monitors the disk usage of <tt>JENKINS_HOME</tt>, and if it's almost filled up, warn the user.
+ * Monitors the disk usage of {@code JENKINS_HOME}, and if it's almost filled up, warn the user.
  *
  * @author Kohsuke Kawaguchi
  */

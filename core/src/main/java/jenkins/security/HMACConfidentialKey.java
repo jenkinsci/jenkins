@@ -8,13 +8,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
  * {@link ConfidentialKey} that's used for creating a token by hashing some information with secret
- * (such as <tt>hash(msg|secret)</tt>).
+ * (such as {@code hash(msg|secret)}).
  *
  * <p>
  * This provides more secure version of it by using HMAC.
@@ -27,6 +28,7 @@ import java.util.Arrays;
  */
 public class HMACConfidentialKey extends ConfidentialKey {
     private volatile SecretKey key;
+    private Mac mac;
     private final int length;
 
     /**
@@ -61,12 +63,14 @@ public class HMACConfidentialKey extends ConfidentialKey {
         this(owner,shortName,Integer.MAX_VALUE);
     }
 
-
     /**
      * Computes the message authentication code for the specified byte sequence.
      */
-    public byte[] mac(byte[] message) {
-        return chop(createMac().doFinal(message));
+    public synchronized byte[] mac(byte[] message) {
+        if (mac == null) {
+            mac = createMac();
+        }
+        return chop(mac.doFinal(message));
     }
 
     /**
@@ -81,11 +85,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
      * While redundant, often convenient.
      */
     public String mac(String message) {
-        try {
-            return Util.toHexString(mac(message.getBytes("UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return Util.toHexString(mac(message.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
@@ -129,9 +129,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
                             store(encoded=key.getEncoded());
                         }
                         key = new SecretKeySpec(encoded,ALGORITHM);
-                    } catch (IOException e) {
-                        throw new Error("Failed to load the key: "+getId(),e);
-                    } catch (NoSuchAlgorithmException e) {
+                    } catch (IOException | NoSuchAlgorithmException e) {
                         throw new Error("Failed to load the key: "+getId(),e);
                     }
                 }

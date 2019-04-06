@@ -32,6 +32,7 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.util.io.ArchiverFactory;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
@@ -39,7 +40,6 @@ import org.jenkinsci.Symbol;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -218,6 +218,8 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             File wss = new File(build.getRootDir(),"workspace.tgz");
             try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(wss.toPath()))) {
                 ws.archive(ArchiverFactory.TARGZ, os, glob);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
             return new WorkspaceSnapshotImpl();
         }

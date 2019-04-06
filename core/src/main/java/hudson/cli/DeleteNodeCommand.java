@@ -31,7 +31,6 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * CLI command, which deletes Jenkins nodes.
@@ -56,7 +55,7 @@ public class DeleteNodeCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final HashSet<String> hs = new HashSet<>();
         hs.addAll(nodes);
 
         for (String node_s : hs) {

@@ -30,6 +30,7 @@ import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletContext;
@@ -46,7 +47,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 
 /**
- * Makes sure that no other Hudson uses our <tt>JENKINS_HOME</tt> directory,
+ * Makes sure that no other Hudson uses our {@code JENKINS_HOME} directory,
  * to forestall the problem of running multiple instances of Hudson that point to the same data directory.
  *
  * <p>
@@ -174,6 +175,7 @@ public class DoubleLaunchChecker {
     /**
      * Ignore the problem and go back to using Hudson.
      */
+    @RequirePOST
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
         Jenkins.getInstance().servletContext.setAttribute("app", Jenkins.getInstance());

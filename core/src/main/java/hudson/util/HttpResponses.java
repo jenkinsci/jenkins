@@ -29,7 +29,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -89,15 +88,51 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         return new JSONObjectResponse(data);
     }
 
-        /**
-         * Set the response as an error response.
-         * @param message The error "message" set on the response.
-         * @return {@code this} object.
-         *
-         * @since 2.0
-         */
+    /**
+     * Set the response as an error response.
+     * @param message The error "message" set on the response.
+     * @return {@code this} object.
+     *
+     * @since 2.0
+     */
     public static HttpResponse errorJSON(@Nonnull String message) {
         return new JSONObjectResponse().error(message);
+    }
+    
+    /**
+     * Set the response as an error response plus some data.
+     * @param message The error "message" set on the response.
+     * @param data The data.
+     * @return {@code this} object.
+     *
+     * @since 2.119
+     */
+    public static HttpResponse errorJSON(@Nonnull String message, @Nonnull Map<?,?> data) {
+        return new JSONObjectResponse(data).error(message);
+    }
+
+    /**
+     * Set the response as an error response plus some data.
+     * @param message The error "message" set on the response.
+     * @param data The data.
+     * @return {@code this} object.
+     *
+     * @since 2.115
+     */
+    public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONObject data) {
+        return new JSONObjectResponse(data).error(message);
+    }
+
+    /**
+     * Set the response as an error response plus some data.
+     * @param message The error "message" set on the response.
+     * @param data The data.
+     * @return {@code this} object.
+     *
+     * @since 2.115
+     */
+    public static HttpResponse errorJSON(@Nonnull String message, @Nonnull JSONArray data) {
+        return new JSONObjectResponse(data).error(message);
     }
 
     /**

@@ -23,11 +23,15 @@
  */
 package hudson.model;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.Jenkins;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.jvnet.hudson.test.Issue;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -52,12 +56,17 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -85,6 +94,26 @@ public class ViewTest {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
     }
 
+    @Issue("JENKINS-43848")
+    @Test public void testNoCacheHeadersAreSet() throws Exception {
+        List<NameValuePair> responseHeaders = j.createWebClient()
+                .goTo("view/all/itemCategories", "application/json")
+                .getWebResponse()
+                .getResponseHeaders();
+
+
+        final Map<String, String> values = new HashMap<>();
+
+        for(NameValuePair p : responseHeaders) {
+            values.put(p.getName(), p.getValue());
+        }
+
+        String resp = values.get("Cache-Control");
+        assertThat(resp, is("no-cache, no-store, must-revalidate"));
+        assertThat(values.get("Expires"), is("0"));
+        assertThat(values.get("Pragma"), is("no-cache"));
+    }
+
     /**
      * Creating two views with the same name.
      */
@@ -92,19 +121,19 @@ public class ViewTest {
     @Test public void conflictingName() throws Exception {
         assertNull(j.jenkins.getView("foo"));
 
-        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        WebClient wc = j.createWebClient();
+        HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
 
+        wc.setThrowExceptionOnFailingStatusCode(false);
         // do it again and verify an error
-        try {
-            j.submit(form);
-            fail("shouldn't be allowed to create two views of the same name.");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        Page page = j.submit(form);
+        assertEquals("shouldn't be allowed to create two views of the same name.", 
+                HttpURLConnection.HTTP_BAD_REQUEST, 
+                page.getWebResponse().getStatusCode());
     }
 
     @Test public void privateView() throws Exception {
@@ -169,23 +198,36 @@ public class ViewTest {
     @Issue("JENKINS-9367")
     @Test public void allImagesCanBeLoaded() throws Exception {
         User.get("user", true);
-        WebClient webClient = j.createWebClient();
+        
+        // as long as the cloudbees-folder is included as test dependency, its Folder will load icon
+        boolean folderPluginActive = (j.jenkins.getPlugin("cloudbees-folder") != null);
+        // link to Folder class is done here to ensure if we remove the dependency, this code will fail and so will be removed
+        boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor(Folder.class) != null);
+        // this could be written like this to avoid the hard dependency: 
+        // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
+        if (!folderPluginActive && folderPluginClassesLoaded) {
+            // reset the icon added by Folder because the plugin resources are not reachable
+            IconSet.icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", "width: 24px; height: 24px;"));
+        }
+        
+        WebClient webClient = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         webClient.getOptions().setJavaScriptEnabled(false);
         j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 
     @Issue("JENKINS-16608")
     @Test public void notAllowedName() throws Exception {
-        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("..");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
 
-        try {
-            j.submit(form);
-            fail("\"..\" should not be allowed.");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        HtmlPage page = j.submit(form);
+        assertEquals("\"..\" should not be allowed.",
+                HttpURLConnection.HTTP_BAD_REQUEST, 
+                page.getWebResponse().getStatusCode());
     }
 
     @Ignore("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
@@ -206,7 +248,7 @@ public class ViewTest {
         ListView view = listView("v");
         view.description = "one";
         WebClient wc = j.createWebClient();
-        String xml = wc.goToXml("view/v/config.xml").getContent();
+        String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
         assertTrue(xml, xml.contains("<description>one</description>"));
         xml = xml.replace("<description>one</description>", "<description>two</description>");
         WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
@@ -218,6 +260,24 @@ public class ViewTest {
         assertTrue(xml, xml.contains("<description>two</description>"));
     }
     
+    @Issue("JENKINS-21017")
+    @Test public void doConfigDotXmlReset() throws Exception {
+        ListView view = listView("v");
+        view.description = "one";
+        WebClient wc = j.createWebClient();
+        String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
+        assertThat(xml, containsString("<description>one</description>"));
+        xml = xml.replace("<description>one</description>", "");
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        req.setRequestBody(xml);
+        req.setEncodingType(null);
+        wc.getPage(req);
+        assertEquals(null, view.getDescription()); // did not work
+        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        assertThat(xml, not(containsString("<description>"))); // did not work
+        assertEquals(j.jenkins, view.getOwner());
+    }
+
     @Test
     public void testGetQueueItems() throws IOException, Exception{
         ListView view1 = listView("view1");
@@ -305,11 +365,11 @@ public class ViewTest {
         view2.add(foreignJob);
         foreignJob.setAssignedLabel(j.jenkins.getLabel("label0||label1"));
 
-        // contains all slaves having labels associated with freestyleJob or matrixJob
+        // contains all agents having labels associated with freestyleJob or matrixJob
         assertContainsNodes(view1, slave0, slave1, slave2, slave3);
         assertNotContainsNodes(view1, slave4);
 
-        // contains all slaves having labels associated with foreignJob
+        // contains all agents having labels associated with foreignJob
         assertContainsNodes(view2, slave0, slave1, slave3);
         assertNotContainsNodes(view2, slave2, slave4);
 
@@ -386,14 +446,14 @@ public class ViewTest {
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwnerItemGroup());
+        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
     
     @Test
     public void testGetOwnerPrimaryView() throws Exception{
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwnerPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
     }
     
     @Test
@@ -504,7 +564,7 @@ public class ViewTest {
                 return null;
             }
         });
-        JenkinsRule.WebClient wc = j.createWebClient().login("admin");
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin");
         assertEquals("original ${rootURL}/checkJobName still supported", "<div/>", wc.goTo("checkJobName?value=stuff").getWebResponse().getContentAsString());
         assertEquals("but now possible on a view in a folder", "<div/>", wc.goTo("job/d1/view/All/checkJobName?value=stuff").getWebResponse().getContentAsString());
     }

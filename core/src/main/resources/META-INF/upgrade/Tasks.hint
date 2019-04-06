@@ -1,0 +1,5 @@
+hudson.model.queue.Tasks.getSubTasksOf($t) => $t.getSubTasks();;
+hudson.model.queue.Tasks.getSameNodeConstraintOf($t) => $t.getSameNodeConstraint();;
+hudson.model.queue.Tasks.getOwnerTaskOf($t) => $t.getOwnerTask();;
+hudson.model.queue.Tasks.getDefaultAuthenticationOf($t) => $t.getDefaultAuthentication();;
+hudson.model.queue.Tasks.getDefaultAuthenticationOf($t, $i) => $t.getDefaultAuthentication($i);;

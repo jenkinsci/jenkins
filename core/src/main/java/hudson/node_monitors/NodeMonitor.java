@@ -48,7 +48,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <dl>
  * <dt>column.jelly</dt>
  * <dd>
- * Invoked from {@link ComputerSet} <tt>index.jelly</tt> to render a column.
+ * Invoked from {@link ComputerSet} {@code index.jelly} to render a column.
  * The {@link NodeMonitor} instance is accessible through the "from" variable.
  * Also see {@link #getColumnCaption()}.
  *
@@ -140,7 +140,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
+    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<>(NodeMonitor.class);
 
     /**
      * Returns all the registered {@link NodeMonitor} descriptors.
