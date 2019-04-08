@@ -18,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since 1.587 / 1.580.1
  */
 class FilePathFilterAggregator extends FilePathFilter {
-    private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<Entry>();
+    private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<>();
 
     private class Entry implements Comparable<Entry> {
         final FilePathFilter filter;
@@ -139,7 +139,7 @@ class FilePathFilterAggregator extends FilePathFilter {
         return "FilePathFilterAggregator" + all;
     }
 
-    static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class, "FilePathFilters");
+    static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<>(FilePathFilterAggregator.class, "FilePathFilters");
 
     public static final int DEFAULT_ORDINAL = 0;
 }

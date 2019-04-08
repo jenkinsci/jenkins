@@ -279,7 +279,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String,String> r = new HashMap<String,String>();
+            Map<String,String> r = new HashMap<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);

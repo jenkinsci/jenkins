@@ -86,7 +86,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     @CopyOnWrite
     private volatile List<ExtensionComponent<T>> extensions;
 
-    private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<ExtensionListListener>();
+    private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Place to store manually registered instances with the per-Hudson scope.
@@ -104,7 +104,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     protected ExtensionList(Jenkins jenkins, Class<T> extensionType) {
-        this(jenkins,extensionType,new CopyOnWriteArrayList<ExtensionComponent<T>>());
+        this(jenkins,extensionType, new CopyOnWriteArrayList<>());
     }
 
     /**
@@ -237,7 +237,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     private synchronized boolean removeSync(Object o) {
         boolean removed = removeComponent(legacyInstances, o);
         if(extensions!=null) {
-            List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
+            List<ExtensionComponent<T>> r = new ArrayList<>(extensions);
             removed |= removeComponent(r,o);
             extensions = sort(r);
         }
@@ -279,11 +279,11 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     private synchronized boolean addSync(T t) {
-        legacyInstances.add(new ExtensionComponent<T>(t));
+        legacyInstances.add(new ExtensionComponent<>(t));
         // if we've already filled extensions, add it
         if(extensions!=null) {
-            List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
-            r.add(new ExtensionComponent<T>(t));
+            List<ExtensionComponent<T>> r = new ArrayList<>(extensions);
+            r.add(new ExtensionComponent<>(t));
             extensions = sort(r);
         }
         return true;
@@ -395,7 +395,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * The implementation should copy a list, do a sort, and return the new instance.
      */
     protected List<ExtensionComponent<T>> sort(List<ExtensionComponent<T>> r) {
-        r = new ArrayList<ExtensionComponent<T>>(r);
+        r = new ArrayList<>(r);
         Collections.sort(r);
         return r;
     }
@@ -412,7 +412,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> ExtensionList<T> create(Jenkins jenkins, Class<T> type) {
         if(type.getAnnotation(LegacyInstancesAreScopedToHudson.class)!=null)
-            return new ExtensionList<T>(jenkins,type);
+            return new ExtensionList<>(jenkins, type);
         else {
             return new ExtensionList(jenkins, type, staticLegacyInstances.computeIfAbsent(type, key -> new CopyOnWriteArrayList()));
         }

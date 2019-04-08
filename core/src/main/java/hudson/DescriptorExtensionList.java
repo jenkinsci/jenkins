@@ -76,7 +76,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         if (describableType == (Class) Publisher.class) {
             return (DescriptorExtensionList) new Publisher.DescriptorExtensionListImpl(jenkins);
         }
-        return new DescriptorExtensionList<T,D>(jenkins,describableType);
+        return new DescriptorExtensionList<>(jenkins, describableType);
     }
 
     /**
@@ -199,7 +199,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     private List<ExtensionComponent<D>> _load(Iterable<ExtensionComponent<Descriptor>> set) {
-        List<ExtensionComponent<D>> r = new ArrayList<ExtensionComponent<D>>();
+        List<ExtensionComponent<D>> r = new ArrayList<>();
         for( ExtensionComponent<Descriptor> c : set ) {
             Descriptor d = c.getInstance();
             try {

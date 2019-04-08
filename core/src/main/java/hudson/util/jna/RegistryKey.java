@@ -187,7 +187,7 @@ public class RegistryKey {
      */
     public Collection<String> getSubKeys() {
         WINBASE.FILETIME lpftLastWriteTime;
-        TreeSet<String> subKeys = new TreeSet<String>();
+        TreeSet<String> subKeys = new TreeSet<>();
         char[] lpName = new char[256];
         IntByReference lpcName = new IntByReference(256);
         lpftLastWriteTime = new WINBASE.FILETIME();
@@ -228,7 +228,7 @@ public class RegistryKey {
         byte[] lpData;
         IntByReference lpcchValueName, lpType, lpcbData;
         String name;
-        TreeMap<String, Object> values = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<String, Object> values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         lpValueName = new char[16384];
         lpcchValueName = new IntByReference(16384);

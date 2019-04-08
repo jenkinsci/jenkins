@@ -32,7 +32,7 @@ public class DNSMultiCast implements Closeable {
                 try {
                     jmdns = JmDNS.create();
 
-                    Map<String,String> props = new HashMap<String, String>();
+                    Map<String,String> props = new HashMap<>();
                     String rootURL = jenkins.getRootUrl();
                     if (rootURL==null)  return null;
 

@@ -62,12 +62,12 @@ public class TreeView extends View implements ViewGroup {
      * List of job names. This is what gets serialized.
      */
     private final Set<String> jobNames
-        = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+        = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
 
     /**
      * Nested views.
      */
-    private final CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+    private final CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<>();
 
     @DataBoundConstructor
     public TreeView(String name) {

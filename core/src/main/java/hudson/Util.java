@@ -114,7 +114,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> filter( @Nonnull Iterable<?> base, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object i : base) {
             if(type.isInstance(i))
                 r.add(type.cast(i));
@@ -144,7 +144,7 @@ public class Util {
      */
     @Nullable
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
-        return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
+        return replaceMacro(s, new VariableResolver.ByMap<>(properties));
     }
 
     /**
@@ -783,7 +783,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> createSubList(@Nonnull Collection<?> source, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object item : source) {
             if(type.isInstance(item))
                 r.add(type.cast(item));
@@ -1117,7 +1117,7 @@ public class Util {
         int size = 0;
         for (Collection<? extends T> item : items)
             size += item.size();
-        List<T> r = new ArrayList<T>(size);
+        List<T> r = new ArrayList<>(size);
         for (Collection<? extends T> item : items)
             r.addAll(item);
         return r;

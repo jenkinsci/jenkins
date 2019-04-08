@@ -86,9 +86,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
                 Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
                 f.setAccessible(true);
                 f.set(this,rb);
-            } catch (NoSuchFieldException e) {
-                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
             }
         }

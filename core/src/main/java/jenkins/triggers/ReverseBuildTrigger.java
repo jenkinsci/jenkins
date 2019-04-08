@@ -266,11 +266,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
                             continue; // handled specially
                         }
-                        Collection<ReverseBuildTrigger> triggers = result.get(upstream);
-                        if (triggers == null) {
-                            triggers = new LinkedList<>();
-                            result.put(upstream, triggers);
-                        }
+                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new LinkedList<>());
                         triggers.remove(trigger);
                         triggers.add(trigger);
                     }

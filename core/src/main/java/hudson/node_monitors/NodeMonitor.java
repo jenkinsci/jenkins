@@ -140,7 +140,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
+    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<>(NodeMonitor.class);
 
     /**
      * Returns all the registered {@link NodeMonitor} descriptors.
