@@ -64,8 +64,10 @@ public class StreamCopyThread extends Thread {
                 // so there's no 'closeIn' flag.
                 in.close();
                 if (closeOut) {
+                    // This mode is not currently used in core.
                     out.close();
                 } else {
+                    // Leaving the stream open, but we want to make sure any final output is sent to the master.
                     out.flush();
                 }
             }
