@@ -542,6 +542,7 @@ public class UtilTest {
     }
 
     @Test
+    @Issue("SECURITY-904")
     public void resolveSymlinkToFile() throws Exception {
         //  root
         //      /a
