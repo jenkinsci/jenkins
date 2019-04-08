@@ -122,7 +122,7 @@ public class TokenBasedRememberMeServices2SEC868Test {
         { // a malicious cookie with expiration too far in the future should not work
             JenkinsRule.WebClient wc = j.createWebClient();
 
-            // by default we have 14 days of validity, 
+            // by default we have 14 days of validity,
             // here we increase artificially the duration of validity, that could be used to have permanent access
             long oneDay = TimeUnit.DAYS.toMillis(1);
             Cookie cookie = createRememberMeCookie(tokenService, oneDay, alice);
@@ -135,7 +135,7 @@ public class TokenBasedRememberMeServices2SEC868Test {
         { // a hand crafted cookie with regular expiration duration works
             JenkinsRule.WebClient wc = j.createWebClient();
 
-            // by default we have 14 days of validity, 
+            // by default we have 14 days of validity,
             // here we reduce a bit the expiration date to simulate an "old" cookie (regular usage)
             long minusFiveMinutes = TimeUnit.MINUTES.toMillis(-5);
             Cookie cookie = createRememberMeCookie(tokenService, minusFiveMinutes, alice);
@@ -165,7 +165,7 @@ public class TokenBasedRememberMeServices2SEC868Test {
             { // a malicious cookie with expiration too far in the future should not work
                 JenkinsRule.WebClient wc = j.createWebClient();
 
-                // by default we have 14 days of validity, 
+                // by default we have 14 days of validity,
                 // here we increase artificially the duration of validity, that could be used to have permanent access
                 long oneDay = TimeUnit.DAYS.toMillis(1);
                 Cookie cookie = createRememberMeCookie(tokenService, oneDay, alice);
@@ -178,7 +178,7 @@ public class TokenBasedRememberMeServices2SEC868Test {
             { // a hand crafted cookie with regular expiration duration works
                 JenkinsRule.WebClient wc = j.createWebClient();
 
-                // by default we have 14 days of validity, 
+                // by default we have 14 days of validity,
                 // here we reduce a bit the expiration date to simulate an "old" cookie (regular usage)
                 long minusFiveMinutes = TimeUnit.MINUTES.toMillis(-5);
                 Cookie cookie = createRememberMeCookie(tokenService, minusFiveMinutes, alice);

@@ -38,22 +38,22 @@ import static org.junit.Assert.assertThat;
 
 //TODO to be merged into HudsonPrivateSecurityRealm2Test after security release
 public class HudsonPrivateSecurityRealm2SEC1158Test {
-    
+
     @Rule
     public JenkinsRule rule = new JenkinsRule();
-    
+
     @Test
     @Issue("SECURITY-1158")
     public void singupNoLongerVulnerableToSessionFixation() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         rule.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = rule.createWebClient();
-        
+
         // to trigger the creation of a session
         wc.goTo("");
         Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdBefore = sessionBefore.getValue();
-        
+
         SignupPage signup = new SignupPage(wc.goTo("signup"));
         signup.enterUsername("alice");
         signup.enterPassword("alice");
@@ -62,12 +62,12 @@ public class HudsonPrivateSecurityRealm2SEC1158Test {
         HtmlPage success = signup.submit(rule);
         assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
         assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
-        
+
         assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
-        
+
         Cookie sessionAfter = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdAfter = sessionAfter.getValue();
-        
+
         assertNotEquals(sessionIdAfter, sessionIdBefore);
     }
 }

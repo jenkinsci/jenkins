@@ -141,7 +141,7 @@ public class HudsonPrivateSecurityRealmSEC1245Test {
             UserSeedProperty.DISABLE_USER_SEED = previousConfig;
         }
     }
-    
+
     private User prepareRealmAndAlice() throws Exception {
         j.jenkins.setDisableRememberMe(false);
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);

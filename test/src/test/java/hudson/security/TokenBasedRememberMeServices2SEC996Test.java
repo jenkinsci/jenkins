@@ -40,48 +40,48 @@ import static org.junit.Assert.assertThat;
 public class TokenBasedRememberMeServices2SEC996Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @Issue("SECURITY-996")
     public void rememberMeToken_shouldNotBeRead_ifOptionIsDisabled() throws Exception {
         j.jenkins.setDisableRememberMe(false);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
+
         Cookie rememberMeCookie = null;
         {
             JenkinsRule.WebClient wc = j.createWebClient();
             wc.login("alice", "alice", true);
-            
-            
+
+
             // we should see a remember me cookie
             rememberMeCookie = getRememberMeCookie(wc);
             assertNotNull(rememberMeCookie);
             assertThat(rememberMeCookie.getValue(), not(isEmptyString()));
         }
-        
+
         j.jenkins.setDisableRememberMe(true);
         {
             JenkinsRule.WebClient wc = j.createWebClient();
-        
+
             wc.getCookieManager().addCookie(rememberMeCookie);
-        
+
             // the application should not use the cookie to connect
             XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
             assertThat(page, hasXPath("//name", not(is("alice"))));
         }
-        
+
         j.jenkins.setDisableRememberMe(false);
         {
             JenkinsRule.WebClient wc = j.createWebClient();
-        
+
             wc.getCookieManager().addCookie(rememberMeCookie);
-        
+
             // if we reactivate the remember me feature, it's ok
             XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
             assertThat(page, hasXPath("//name", is("alice")));
         }
     }
-    
+
     private Cookie getRememberMeCookie(JenkinsRule.WebClient wc) {
         return wc.getCookieManager().getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
     }

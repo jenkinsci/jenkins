@@ -17,24 +17,24 @@ import static org.junit.Assert.assertThat;
 
 //TODO after the security fix, it could be merged inside UserRestartTest
 public class UserRestartSEC897Test {
-    
+
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
-    
+
     @Test public void legacyConfigMoveCannotEscapeUserFolder() {
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 rr.j.jenkins.setSecurityRealm(rr.j.createDummySecurityRealm());
                 assertThat(rr.j.jenkins.isUseSecurity(), equalTo(true));
-                
+
                 // in order to create the folder "users"
                 User.getById("admin", true).save();
-                
+
                 { // attempt with ".."
                     JenkinsRule.WebClient wc = rr.j.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
-                    
+
                     WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("..", "any-password"));
                     wc.getPage(request);
@@ -42,12 +42,12 @@ public class UserRestartSEC897Test {
                 { // attempt with "../users/.."
                     JenkinsRule.WebClient wc = rr.j.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
-                    
+
                     WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("../users/..", "any-password"));
                     wc.getPage(request);
                 }
-                
+
                 // security is still active
                 assertThat(rr.j.jenkins.isUseSecurity(), equalTo(true));
                 // but, the config file was moved
@@ -64,7 +64,7 @@ public class UserRestartSEC897Test {
             }
         });
     }
-    
+
     private String base64(String login, String password) {
         return "Basic " + Base64.getEncoder().encodeToString((login + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
