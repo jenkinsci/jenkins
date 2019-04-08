@@ -47,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.logging.Level;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -57,7 +58,9 @@ public class ArgumentListBuilder2Test {
     public JenkinsRule j = new JenkinsRule();
 
     @Rule
-    public LoggerRule logging = new LoggerRule().record(StreamTaskListener.class, Level.FINE);
+    public LoggerRule logging = new LoggerRule().
+        record(StreamTaskListener.class, Level.FINE).
+        record(SystemProperties.class, Level.FINE);
 
     /**
      * Makes sure {@link RemoteLauncher} properly masks arguments.

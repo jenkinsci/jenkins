@@ -34,10 +34,10 @@ import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -79,21 +79,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class SystemProperties {
 
+    @FunctionalInterface
     private interface Handler {
         @CheckForNull String getString(String key);
-        @Nonnull Map<String, String> getAllStrings();
     }
 
-    private static final Handler NULL_HANDLER = new Handler() {
-        @Override
-        public String getString(String key) {
-            return null;
-        }
-        @Override
-        public Map<String, String> getAllStrings() {
-            return Collections.emptyMap();
-        }
-    };
+    private static final Handler NULL_HANDLER = key -> null;
 
     private static @Nonnull Handler handler = NULL_HANDLER;
 
@@ -106,32 +97,16 @@ public class SystemProperties {
         @Override
         public void contextInitialized(ServletContextEvent event) {
             ServletContext theContext = event.getServletContext();
-            handler = new Handler() {
-                @Override
-                public String getString(String key) {
-                    if (StringUtils.isNotBlank(key)) {
-                        try {
-                            return theContext.getInitParameter(key);
-                        } catch (SecurityException ex) {
-                            // Log exception and go on
-                            LOGGER.log(Level.CONFIG, "Access to the property {0} is prohibited", key);
-                        }
+            handler = key -> {
+                if (StringUtils.isNotBlank(key)) {
+                    try {
+                        return theContext.getInitParameter(key);
+                    } catch (SecurityException ex) {
+                        // Log exception and go on
+                        LOGGER.log(Level.CONFIG, "Access to the property {0} is prohibited", key);
                     }
-                    return null;
                 }
-                @Override
-                public Map<String, String> getAllStrings() {
-                    Map<String, String> values = new HashMap<>();
-                    Enumeration<String> names = theContext.getInitParameterNames();
-                    while (names.hasMoreElements()) {
-                        String key = names.nextElement();
-                        String value = getString(key);
-                        if (value != null) {
-                            values.put(key, value);
-                        }
-                    }
-                    return values;
-                }
+                return null;
             };
         }
 
@@ -142,6 +117,15 @@ public class SystemProperties {
 
     }
 
+    private static final Set<String> ALLOW_ON_AGENT = Collections.synchronizedSet(new HashSet<>());
+
+    /**
+     * Mark a key whose value should be made accessible in agent JVMs.
+     */
+    public static void allowOnAgent(String key) {
+        ALLOW_ON_AGENT.add(key);
+    }
+
     @Extension
     public static final class AgentCopier extends ComputerListener {
         @Override
@@ -150,32 +134,29 @@ public class SystemProperties {
         }
         private static final class CopySystemProperties extends MasterToSlaveCallable<Void, RuntimeException> {
             private static final long serialVersionUID = 1;
-            private final Map<String, String> allStrings;
-            @SuppressWarnings("unchecked")
+            private final Map<String, String> snapshot;
             CopySystemProperties() {
-                // Take a snapshot of all system properties and context variables available on the master at the time the agent starts.
-                allStrings = new HashMap<>();
-                allStrings.putAll(handler.getAllStrings());
-                allStrings.putAll((Map) System.getProperties()); // these take precedence
+                // Take a snapshot of those system properties and context variables available on the master at the time the agent starts which have been whitelisted for that purpose.
+                snapshot = new HashMap<>();
+                for (String key : ALLOW_ON_AGENT) {
+                    snapshot.put(key, getString(key));
+                }
+                LOGGER.log(Level.FINE, "taking snapshot of {0}", snapshot);
             }
             @Override
             public Void call() throws RuntimeException {
-                handler = new CopiedHandler(allStrings);
+                handler = new CopiedHandler(snapshot);
                 return null;
             }
         }
         private static final class CopiedHandler implements Handler {
-            private final Map<String, String> allStrings;
-            CopiedHandler(Map<String, String> allStrings) {
-                this.allStrings = allStrings;
+            private final Map<String, String> snapshot;
+            CopiedHandler(Map<String, String> snapshot) {
+                this.snapshot = snapshot;
             }
             @Override
             public String getString(String key) {
-                return allStrings.get(key);
-            }
-            @Override
-            public Map<String, String> getAllStrings() {
-                return allStrings;
+                return snapshot.get(key);
             }
         }
     }
