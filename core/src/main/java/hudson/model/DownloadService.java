@@ -426,13 +426,12 @@ public class DownloadService {
                 SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
+    // TODO this was previously referenced in the browser-based download, but should probably be checked for the server-based download
     public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
      * Useful when upstream signatures are broken, such as due to expired certificates.
-     * Should only be used when {@link DownloadSettings#isUseBrowser};
-     * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
     public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
