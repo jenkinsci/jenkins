@@ -24,9 +24,6 @@
 package hudson.console;
 
 import hudson.MarkupText;
-import org.apache.commons.io.output.ProxyWriter;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -38,6 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.output.ProxyWriter;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
  * Used to convert plain text console output (as byte sequence) + embedded annotations into HTML (as char sequence),
@@ -119,11 +119,9 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                             }
                         });
                     }
-                } catch (IOException e) {
+                } catch (IOException | ClassNotFoundException e) {
                     // if we failed to resurrect an annotation, ignore it.
-                    LOGGER.log(Level.FINE,"Failed to resurrect annotation",e);
-                } catch (ClassNotFoundException e) {
-                    LOGGER.log(Level.FINE,"Failed to resurrect annotation",e);
+                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest)) + "\"", e);
                 }
 
                 int bytesUsed = rest - b.available(); // bytes consumed by annotations

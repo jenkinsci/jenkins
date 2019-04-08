@@ -316,7 +316,7 @@ public class InstallUtil {
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
-	Map<String,String> statuses = new HashMap<String,String>();
+	Map<String,String> statuses = new HashMap<>();
 	for(UpdateCenterJob j : installingPlugins) {
 		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
 			InstallationJob ij = (InstallationJob)j;

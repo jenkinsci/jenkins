@@ -59,7 +59,7 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
         float weight(T item);
     }
 
-    private final List<Entry> entries = new ArrayList<Entry>();
+    private final List<Entry> entries = new ArrayList<>();
     private float max = 1;
 
     /**

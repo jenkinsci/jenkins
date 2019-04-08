@@ -82,7 +82,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public static final class Context {
         private Disposer disposer;
-        private final Map<String,String> env = new HashMap<String,String>();
+        private final Map<String,String> env = new HashMap<>();
         public @Nonnull Map<String,String> getEnv() {
             return env;
         }

@@ -201,7 +201,7 @@ public class MultiStageTimeSeries implements Serializable {
 
         public TrendChart(TimeScale timeScale, MultiStageTimeSeries... series) {
             this.timeScale = timeScale;
-            this.series = new ArrayList<MultiStageTimeSeries>(Arrays.asList(series));
+            this.series = new ArrayList<>(Arrays.asList(series));
             this.dataset = createDataset();
         }
 

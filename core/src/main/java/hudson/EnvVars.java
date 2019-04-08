@@ -200,7 +200,7 @@ public class EnvVars extends TreeMap<String,String> {
             }
             
             public void clear() {
-                referredVariables = new TreeSet<String>(comparator);
+                referredVariables = new TreeSet<>(comparator);
             }
             
             public String resolve(String name) {
@@ -288,8 +288,8 @@ public class EnvVars extends TreeMap<String,String> {
          * Scan all variables and list all referring variables.
          */
         public void scan() {
-            refereeSetMap = new TreeMap<String, Set<String>>(comparator);
-            List<String> extendingVariableNames = new ArrayList<String>();
+            refereeSetMap = new TreeMap<>(comparator);
+            List<String> extendingVariableNames = new ArrayList<>();
             
             TraceResolver resolver = new TraceResolver(comparator);
             
@@ -327,10 +327,10 @@ public class EnvVars extends TreeMap<String,String> {
             
             // When A refers B, the last appearance of B always comes after
             // the last appearance of A.
-            List<String> reversedDuplicatedOrder = new ArrayList<String>(sorter.getSorted());
+            List<String> reversedDuplicatedOrder = new ArrayList<>(sorter.getSorted());
             Collections.reverse(reversedDuplicatedOrder);
             
-            orderedVariableNames = new ArrayList<String>(overrides.size());
+            orderedVariableNames = new ArrayList<>(overrides.size());
             for(String key: reversedDuplicatedOrder) {
                 if(overrides.containsKey(key) && !orderedVariableNames.contains(key)) {
                     orderedVariableNames.add(key);

@@ -136,7 +136,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      */
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
-                = new DescribableList<ToolProperty<?>, ToolPropertyDescriptor>(NOOP);
+                = new DescribableList<>(NOOP);
 
         List<? extends ToolInstaller> installers = getDefaultInstallers();
         if(!installers.isEmpty())

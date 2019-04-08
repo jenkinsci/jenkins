@@ -284,9 +284,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
      */
-    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<>();
 
-    protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
+    protected final List<FailedPlugin> failedPlugins = new ArrayList<>();
 
     /**
      * Plug-in root directory.
@@ -422,7 +422,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                             // once we've listed plugins, we can fill in the reactor with plugin-specific initialization tasks
                             TaskGraphBuilder g = new TaskGraphBuilder();
 
-                            final Map<String,File> inspectedShortNames = new HashMap<String,File>();
+                            final Map<String,File> inspectedShortNames = new HashMap<>();
 
                             for( final File arc : archives ) {
                                 g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
@@ -465,7 +465,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                                             @Override
                                             protected List<PluginWrapper> getEdges(PluginWrapper p) {
-                                                List<PluginWrapper> next = new ArrayList<PluginWrapper>();
+                                                List<PluginWrapper> next = new ArrayList<>();
                                                 addTo(p.getDependencies(), next);
                                                 addTo(p.getOptionalDependencies(), next);
                                                 return next;
@@ -537,7 +537,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
-                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
                             public void run(Reactor session) throws Exception {
                                 try {
@@ -560,7 +560,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
 
                     // schedule execution of initializing plugins
-                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
                             public void run(Reactor session) throws Exception {
                                 if (!activePlugins.contains(p)) {
@@ -1241,7 +1241,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return The list of plugins implementing the specified class.
      */
     public List<PluginWrapper> getPlugins(Class<? extends Plugin> pluginSuperclass) {
-        List<PluginWrapper> result = new ArrayList<PluginWrapper>();
+        List<PluginWrapper> result = new ArrayList<>();
         for (PluginWrapper p : getPlugins()) {
             if(pluginSuperclass.isInstance(p.getPlugin()))
                 result.add(p);
@@ -1264,7 +1264,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Deprecated
     public <T> Collection<Class<? extends T>> discover( Class<T> spi ) {
-        Set<Class<? extends T>> result = new HashSet<Class<? extends T>>();
+        Set<Class<? extends T>> result = new HashSet<>();
 
         for (PluginWrapper p : activePlugins) {
             Service.load(spi, p.classLoader, result);
@@ -1770,12 +1770,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     protected String identifyPluginShortName(File t) {
         try {
-            JarFile j = new JarFile(t);
-            try {
+            try (JarFile j = new JarFile(t)) {
                 String name = j.getManifest().getMainAttributes().getValue("Short-Name");
-                if (name!=null) return name;
-            } finally {
-                j.close();
+                if (name != null) return name;
             }
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to identify the short name from "+t,e);
@@ -1807,7 +1804,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public List<Future<UpdateCenter.UpdateCenterJob>> prevalidateConfig(InputStream configXml) throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<Future<UpdateCenter.UpdateCenterJob>>();
+        List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<>();
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
         // TODO call uc.updateAllSites() when available? perhaps not, since we should not block on network here
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
@@ -1901,7 +1898,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Parses configuration XML files and picks up references to XML files.
      */
     public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
-        final Map<String,VersionNumber> requestedPlugins = new TreeMap<String,VersionNumber>();
+        final Map<String,VersionNumber> requestedPlugins = new TreeMap<>();
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
                 @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -1981,16 +1978,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Make generated types visible.
          * Keyed by the generated class name.
          */
-        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
+        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<>();
         /** Cache of loaded, or known to be unloadable, classes. */
-        private final Map<String,Class<?>> loaded = new HashMap<String,Class<?>>();
+        private final Map<String,Class<?>> loaded = new HashMap<>();
 
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
         }
 
         public void addNamedClass(String className, Class c) {
-            generatedClasses.put(className,new WeakReference<Class>(c));
+            generatedClasses.put(className, new WeakReference<>(c));
         }
 
         @Override
@@ -2071,7 +2068,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
-            List<URL> resources = new ArrayList<URL>();
+            List<URL> resources = new ArrayList<>();
             if (FAST_LOOKUP) {
                     for (PluginWrapper p : activePlugins) {
                         resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));

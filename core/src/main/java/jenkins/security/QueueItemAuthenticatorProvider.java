@@ -41,7 +41,7 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
                 if (provider == null) {
                     continue;
                 }
-                delegate = new ArrayList<QueueItemAuthenticator>(provider.getAuthenticators()).iterator();
+                delegate = new ArrayList<>(provider.getAuthenticators()).iterator();
             }
             return delegate != null && delegate.hasNext();
         }
