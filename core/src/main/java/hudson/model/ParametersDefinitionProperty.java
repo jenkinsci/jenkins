@@ -59,7 +59,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Keeps a list of the parameters defined for a project.
  *
  * <p>
- * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
+ * This class also implements {@link Action} so that {@code index.jelly} provides
  * a form to enter build parameters.
  * <p>The owning job needs a {@code sidepanel.jelly} and should have web methods delegating to {@link ParameterizedJobMixIn#doBuild} and {@link ParameterizedJobMixIn#doBuildWithParameters}.
  * The builds also need a {@code sidepanel.jelly}.
@@ -138,7 +138,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
 
-        List<ParameterValue> values = new ArrayList<ParameterValue>();
+        List<ParameterValue> values = new ArrayList<>();
         
         JSONObject formData = req.getSubmittedForm();
         JSONArray a = JSONArray.fromObject(formData.get("parameter"));
@@ -177,7 +177,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
-        List<ParameterValue> values = new ArrayList<ParameterValue>();
+        List<ParameterValue> values = new ArrayList<>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);
         	if (value != null) {

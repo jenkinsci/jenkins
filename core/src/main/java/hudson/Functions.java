@@ -396,11 +396,11 @@ public class Functions {
      * is chosen, this part remains intact.
      *
      * <p>
-     * The <tt>524</tt> is the path from {@link Job} to {@link Run}.
+     * The {@code 524} is the path from {@link Job} to {@link Run}.
      *
      * <p>
-     * The <tt>bbb</tt> portion is the path after that till the last
-     * {@link Run} subtype. The <tt>ccc</tt> portion is the part
+     * The {@code bbb} portion is the path after that till the last
+     * {@link Run} subtype. The {@code ccc} portion is the part
      * after that.
      */
     public static final class RunUrl {
@@ -465,7 +465,7 @@ public class Functions {
     }
 
     public static Map getSystemProperties() {
-        return new TreeMap<Object,Object>(System.getProperties());
+        return new TreeMap<>(System.getProperties());
     }
 
     /**
@@ -479,7 +479,7 @@ public class Functions {
     }
 
     public static Map getEnvVars() {
-        return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        return new TreeMap<>(EnvVars.masterEnvVars);
     }
 
     public static boolean isWindows() {
@@ -544,7 +544,7 @@ public class Functions {
      * @since 1.525
      */
     public static <T> Iterable<T> reverse(Collection<T> collection) {
-        List<T> list = new ArrayList<T>(collection);
+        List<T> list = new ArrayList<>(collection);
         Collections.reverse(list);
         return list;
     }
@@ -618,7 +618,7 @@ public class Functions {
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Used by <tt>layout.jelly</tt> to control the auto refresh behavior.
+     * Used by {@code layout.jelly} to control the auto refresh behavior.
      *
      * @param noAutoRefresh
      *      On certain pages, like a page with forms, will have annoying interference
@@ -772,7 +772,7 @@ public class Functions {
     }
 
     /**
-     * This version is so that the 'checkPermission' on <tt>layout.jelly</tt>
+     * This version is so that the 'checkPermission' on {@code layout.jelly}
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
@@ -1693,7 +1693,7 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in <tt>slave-agent.jnlp.jelly</tt> to specify the destination
+     * This is primarily used in {@code slave-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
      */
     public String getServerName() {
@@ -1746,7 +1746,7 @@ public class Functions {
     /**
      * If the given href link is matching the current page, return true.
      *
-     * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
+     * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
@@ -1777,6 +1777,10 @@ public class Functions {
      */
     public static SimplePageDecorator getSimplePageDecorator() {
         return SimplePageDecorator.first();
+    }
+
+    public static List<SimplePageDecorator> getSimplePageDecorators() {
+        return SimplePageDecorator.all();
     }
 
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
@@ -1827,7 +1831,7 @@ public class Functions {
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
-        String cp = Stapler.getCurrentRequest().getContextPath();
+        String cp = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
@@ -2002,7 +2006,7 @@ public class Functions {
         if(size < 1024){
             return size + " " + measure;
         }
-        Double number = new Double(size);
+        double number = size;
         if(number>=1024){
             number = number/1024;
             measure = "KB";

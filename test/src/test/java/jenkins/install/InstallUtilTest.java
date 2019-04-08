@@ -35,7 +35,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SmokeTest;
 import org.mockito.Mockito;
 
 import hudson.Main;
@@ -55,6 +57,7 @@ import net.sf.json.JSONObject;
  * Test
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@Category(SmokeTest.class)
 public class InstallUtilTest {
 
     @Rule

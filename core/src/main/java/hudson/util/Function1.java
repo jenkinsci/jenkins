@@ -24,7 +24,7 @@
 package hudson.util;
 
 /**
- * Unary function <tt>y=f(x)</tt>.
+ * Unary function {@code y=f(x)}.
  * 
  * @author Kohsuke Kawaguchi
  */

@@ -56,7 +56,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     @Override
     public boolean owns(String clientName) {
-        Computer computer = Jenkins.getInstance().getComputer(clientName);
+        Computer computer = Jenkins.get().getComputer(clientName);
         return computer != null;
     }
 
@@ -83,7 +83,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
-        SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(clientName);
+        SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
             event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
             return;

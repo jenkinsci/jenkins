@@ -37,7 +37,7 @@ public abstract class ComputerPanelBox implements ExtensionPoint{
      *      List of all the registered {@link ComputerPanelBox}s.
      */
     public static List<ComputerPanelBox> all(Computer computer) {
-        List<ComputerPanelBox> boxs = new ArrayList<ComputerPanelBox>();
+        List<ComputerPanelBox> boxs = new ArrayList<>();
         for(ComputerPanelBox box:  ExtensionList.lookup(ComputerPanelBox.class)){
             box.setComputer(computer);
             boxs.add(box);

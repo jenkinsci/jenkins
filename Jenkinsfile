@@ -13,15 +13,18 @@
 def runTests = true
 def failFast = false
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
+properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
+def jdks = [8, 11]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
+for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
-    builds[buildType] = {
+    def jdk = jdks[j]
+    builds["${buildType}-jdk${jdk}"] = {
         node(buildType.toLowerCase()) {
             timestamps {
                 // First stage is actually checking out the source. Since we're using Multibranch
@@ -39,13 +42,14 @@ for(i = 0; i < buildTypes.size(); i++) {
                         // See below for what this method does - we're passing an arbitrary environment
                         // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
                         withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
+                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                             def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
+
                             if(isUnix()) {
                                 sh mvnCmd
-                                sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
+                                sh 'git add . && git diff --exit-code HEAD'
                             } else {
                                 bat mvnCmd
                             }
@@ -57,12 +61,13 @@ for(i = 0; i < buildTypes.size(); i++) {
                 stage("${buildType} Publishing") {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
-                    if (buildType == 'Linux') {
+                    if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
-                                             excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             excludes: '**/*.lastUpdated,**/jenkins-test*/',
                                              allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }
@@ -71,8 +76,9 @@ for(i = 0; i < buildTypes.size(); i++) {
             }
         }
     }
-}
+}}
 
+// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker&&highmem") {
         // Just to be safe
@@ -82,7 +88,7 @@ builds.ath = {
         dir("sources") {
             checkout scm
             withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                          "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
+                          "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
                 sh "mvn --batch-mode --show-version -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
             }
             dir("war/target") {
@@ -103,13 +109,13 @@ infra.maybePublishIncrementals()
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
 // body we passed in within that environment.
-void withMavenEnv(List envVars = [], def body) {
+void withMavenEnv(List envVars = [], def javaVersion, def body) {
     // The names here are currently hardcoded for my test environment. This needs
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the
     // node.
     String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk8", type: 'hudson.model.JDK'
+    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
 
     // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
     // using.

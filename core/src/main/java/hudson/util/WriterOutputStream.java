@@ -62,7 +62,7 @@ public class WriterOutputStream extends OutputStream {
         buf.put((byte)b);
     }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         while(len>0) {
             if(buf.remaining()==0)
                 decode(false);

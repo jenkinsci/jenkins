@@ -31,7 +31,7 @@ THE SOFTWARE.
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
 					<form method="post" action="restart">
-						${%Are you sure about restarting Jenkins?}
+						${%Are you sure you want to restart Jenkins?}
 						<f:submit value="${%Yes}" />
 					</form>
 				</j:when>

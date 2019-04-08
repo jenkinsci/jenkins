@@ -39,7 +39,6 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeDescriptor;

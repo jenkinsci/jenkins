@@ -51,9 +51,9 @@ THE SOFTWARE.
       <h2>Currently Whitelisted Commands</h2>
       <p>
         The following commands are currently whitelisted for agents to execute on the master.
-        Type in any fully-qualified class names to white list them:
+        Type in any fully-qualified class names to whitelist them:
       </p>
-      <textarea id="whitelist" name="whitelist" style="width:100%; height:5em">${it.whitelisted.read()}</textarea>
+      <textarea id="whitelist" name="whitelist" style="width:100%; height:5em">${it.whitelisted.exists() ? it.whitelisted.read() : ""}</textarea>
 
       <j:set var="rejectedList" value="${it.rejected.describe()}"/>
 
@@ -88,7 +88,7 @@ THE SOFTWARE.
       <p>
         The following rules control which part of <tt>$JENKINS_HOME</tt> can be accessed from agents:
       </p>
-      <textarea id="filePathRules" name="filePathRules" style="width:100%; height:5em">${it.filePathRules.read()}</textarea>
+      <textarea id="filePathRules" name="filePathRules" style="width:100%; height:5em">${it.filePathRules.exists() ? it.filePathRules.read() : ""}</textarea>
       <p>
         Example:
       </p>

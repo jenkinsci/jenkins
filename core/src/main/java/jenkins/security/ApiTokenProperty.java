@@ -50,7 +50,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -128,7 +127,7 @@ public class ApiTokenProperty extends UserProperty {
             this.tokenStore = new ApiTokenStore();
         }
         if(this.tokenStats == null){
-            this.tokenStats = ApiTokenStats.load(user.getUserFolder());
+            this.tokenStats = ApiTokenStats.load(user);
         }
         if(this.apiToken != null){
             this.tokenStore.regenerateTokenFromLegacyIfRequired(this.apiToken);
@@ -475,7 +474,7 @@ public class ApiTokenProperty extends UserProperty {
             
             final String tokenName;
             if (StringUtils.isBlank(newTokenName)) {
-                tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
+                tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             }else{
                 tokenName = newTokenName;
             }

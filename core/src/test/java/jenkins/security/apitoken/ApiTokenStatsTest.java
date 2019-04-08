@@ -25,26 +25,22 @@ package jenkins.security.apitoken;
 
 import hudson.XmlFile;
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.LessOrEqual;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,6 +58,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ApiTokenPropertyConfiguration.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ApiTokenStatsTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
@@ -82,8 +79,7 @@ public class ApiTokenStatsTest {
         final String ID_2 = "other-uuid";
         
         { // empty stats can be saved
-            ApiTokenStats tokenStats = new ApiTokenStats();
-            tokenStats.setParent(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             // can remove an id that does not exist
             tokenStats.removeId(ID_1);
@@ -92,7 +88,7 @@ public class ApiTokenStatsTest {
         }
         
         { // and then loaded, empty stats is empty
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             assertNotNull(tokenStats);
             
             ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_1);
@@ -103,7 +99,7 @@ public class ApiTokenStatsTest {
         
         Date lastUsage;
         { // then re-notify the same token
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_1);
             assertEquals(1, stats.getUseCounter());
@@ -118,7 +114,7 @@ public class ApiTokenStatsTest {
         Thread.sleep(10);
         
         { // then re-notify the same token
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_1);
             assertEquals(2, stats.getUseCounter());
@@ -129,7 +125,7 @@ public class ApiTokenStatsTest {
         }
         
         { // check all tokens have separate stats, try with another ID
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             {
                 ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_2);
@@ -146,7 +142,7 @@ public class ApiTokenStatsTest {
         }
         
         { // reload the stats, check the counter are correct
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
             assertEquals(2, stats_1.getUseCounter());
@@ -157,7 +153,7 @@ public class ApiTokenStatsTest {
         }
         
         { // after a removal, the existing must keep its value
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
             assertEquals(0, stats_1.getUseCounter());
@@ -168,7 +164,7 @@ public class ApiTokenStatsTest {
     
     @Test
     public void testResilientIfFileDoesNotExist() throws Exception {
-        ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+        ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
         assertNotNull(tokenStats);
     }
     
@@ -179,8 +175,7 @@ public class ApiTokenStatsTest {
         final String ID_3 = UUID.randomUUID().toString();
         
         { // put counter to 4 for ID_1 and to 2 for ID_2 and 1 for ID_3
-            ApiTokenStats tokenStats = new ApiTokenStats();
-            tokenStats.setParent(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             tokenStats.updateUsageForId(ID_1);
             tokenStats.updateUsageForId(ID_1);
@@ -201,7 +196,7 @@ public class ApiTokenStatsTest {
         }
         
         {
-            ApiTokenStats tokenStats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             assertNotNull(tokenStats);
             
             ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
@@ -228,16 +223,15 @@ public class ApiTokenStatsTest {
                     /* D */ createSingleTokenStatsByReflection(ID, "2018-05-01 09:10:59.235", 1)
             );
             
-            ApiTokenStats stats = new ApiTokenStats();
+            ApiTokenStats stats = createFromFile(tmp.getRoot());
             Field field = ApiTokenStats.class.getDeclaredField("tokenStats");
             field.setAccessible(true);
             field.set(stats, tokenStatsList);
             
-            stats.setParent(tmp.getRoot());
             stats.save();
         }
         { // reload to see the effect
-            ApiTokenStats stats = ApiTokenStats.load(tmp.getRoot());
+            ApiTokenStats stats = createFromFile(tmp.getRoot());
             ApiTokenStats.SingleTokenStats tokenStats = stats.findTokenStatsById(ID);
             // must be D (as it was the last updated one)
             assertThat(tokenStats.getUseCounter(), equalTo(1));
@@ -293,8 +287,7 @@ public class ApiTokenStatsTest {
     @Test
     public void testDayDifference() throws Exception {
         final String ID = UUID.randomUUID().toString();
-        ApiTokenStats tokenStats = new ApiTokenStats();
-        tokenStats.setParent(tmp.getRoot());
+        ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
         ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID);
         assertThat(stats.getNumDaysUse(), lessThan(1L));
         
@@ -310,5 +303,15 @@ public class ApiTokenStatsTest {
         );
         
         assertThat(stats.getNumDaysUse(), greaterThanOrEqualTo(2L));
+    }
+    
+    private ApiTokenStats createFromFile(File file){
+        ApiTokenStats result = ApiTokenStats.internalLoad(file);
+        if (result == null) {
+            result = new ApiTokenStats();
+            result.parent = file;
+        }
+        
+        return result;
     }
 }

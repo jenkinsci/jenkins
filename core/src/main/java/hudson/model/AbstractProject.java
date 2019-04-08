@@ -574,7 +574,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Returns the root directory of the checked-out module.
      * <p>
-     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * This is usually where {@code pom.xml}, {@code build.xml}
      * and so on exists.
      *
      * @deprecated as of 1.319
@@ -643,7 +643,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Used in <tt>sidepanel.jelly</tt> to decide whether to display
+     * Used in {@code sidepanel.jelly} to decide whether to display
      * the config/delete/build links.
      */
     public boolean isConfigurable() {
@@ -752,7 +752,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Returns the live list of all {@link Publisher}s configured for this project.
      *
      * <p>
-     * This method couldn't be called <tt>getPublishers()</tt> because existing methods
+     * This method couldn't be called {@code getPublishers()} because existing methods
      * in sub-classes return different inconsistent types.
      */
     public abstract DescribableList<Publisher,Descriptor<Publisher>> getPublishersList();
@@ -823,7 +823,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[0]));
     }
 
     /**
@@ -1451,11 +1451,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
                 //We can roam, check that the master is set to be used as much as possible, and not tied jobs only.
-                if(Jenkins.getInstance().getMode() == Mode.EXCLUSIVE) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return Jenkins.getInstance().getMode() == Mode.EXCLUSIVE;
             }
         }
         return true;

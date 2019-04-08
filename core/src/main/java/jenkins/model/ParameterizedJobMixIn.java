@@ -149,7 +149,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         if (!asJob().isBuildable())
             return null;
 
-        List<Action> queueActions = new ArrayList<Action>(actions);
+        List<Action> queueActions = new ArrayList<>(actions);
         if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
             queueActions.add(new ParametersAction(getDefaultParametersValues()));
         }
@@ -158,7 +158,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
     private List<ParameterValue> getDefaultParametersValues() {
         ParametersDefinitionProperty paramDefProp = asJob().getProperty(ParametersDefinitionProperty.class);
-        ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
+        ArrayList<ParameterValue> defValues = new ArrayList<>();
 
         /*
          * This check is made ONLY if someone will call this method even if isParametrized() is false.
@@ -266,7 +266,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Computes the build cause, using RemoteCause or UserCause as appropriate.
      */
     @Restricted(NoExternalUse.class)
-    public static final CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
+    public static CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
         Cause cause;
         @SuppressWarnings("deprecation")
         hudson.model.BuildAuthorizationToken authToken = job.getAuthToken();
@@ -285,7 +285,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * @see #getBuildNowText
      * @since 1.624
      */
-    public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<ParameterizedJob>();
+    public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<>();
 
     /**
      * Suggested implementation of {@link ParameterizedJob#getBuildNowText}.

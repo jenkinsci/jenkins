@@ -9,6 +9,7 @@ import javax.servlet.ServletRequest;
 
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -23,6 +24,7 @@ import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -40,6 +42,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see <a href="http://en.wikipedia.org/wiki/XSRF">Wikipedia: Cross site request forgery</a>
  */
 @ExportedBean
+@StaplerAccessibleType
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
@@ -214,7 +217,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             if (text != null) {
                 try (OutputStream o = rsp.getCompressedOutputStream(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
-                    o.write(text.getBytes("UTF-8"));
+                    o.write(text.getBytes(StandardCharsets.UTF_8));
                 }
             } else {
                 super.doXml(req, rsp, xpath, wrapper, tree, depth);

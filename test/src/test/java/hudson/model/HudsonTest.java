@@ -25,7 +25,6 @@ package hudson.model;
 
 import static org.junit.Assert.*;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -44,10 +43,12 @@ import hudson.tasks.Ant.AntInstallation;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.lang.reflect.Field;
@@ -58,6 +59,7 @@ import java.util.List;
 /**
  * @author Kohsuke Kawaguchi
  */
+@Category(SmokeTest.class)
 public class HudsonTest {
 
     @Rule
@@ -166,20 +168,19 @@ public class HudsonTest {
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("computer/(master)/");
-        for (HtmlAnchor a : page.getAnchors())
-            assertFalse(a.getHrefAttribute(),a.getHrefAttribute().endsWith("delete"));
-
-        // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
-        try {
-            wc.getPage(wc.addCrumb(req));
-            fail("Error code expected");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, e.getStatusCode());
+        for (HtmlAnchor a : page.getAnchors()) {
+            assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
         }
 
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        // try to delete it by hitting the final URL directly
+        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        page = wc.getPage(wc.addCrumb(req));
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
+
         // the master computer object should be still here
-        wc.goTo("computer/(master)/");
+        page = wc.goTo("computer/(master)/");
+        assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
     }
 
     /**

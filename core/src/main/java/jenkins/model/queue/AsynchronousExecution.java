@@ -39,7 +39,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**

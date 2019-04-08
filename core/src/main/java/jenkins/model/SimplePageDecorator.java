@@ -23,10 +23,12 @@
  */
 package jenkins.model;
 
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+
+import java.util.List;
+
 /**
  * Participates in the rendering of the login page
  *
@@ -57,16 +59,20 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
     }
 
     /**
+     * Returns all login page decorators.
+     * @since 2.156
+     */
+    public static List<SimplePageDecorator> all() {
+        return Jenkins.get().getDescriptorList(SimplePageDecorator.class);
+    }
+
+    /**
      * The first found LoginDecarator, there can only be one.
      * @return the first found {@link SimplePageDecorator}
      */
     public static SimplePageDecorator first(){
-        DescriptorExtensionList<SimplePageDecorator, SimplePageDecorator> descriptorList = Jenkins.getInstanceOrNull().<SimplePageDecorator, SimplePageDecorator>getDescriptorList(SimplePageDecorator.class);
-        if (descriptorList.size() >= 1) {
-            return descriptorList.get(0);
-        } else {
-            return null;
-        }
+        List<SimplePageDecorator> decorators = all();
+        return decorators.isEmpty() ? null : decorators.get(0);
     }
 
 }

@@ -26,9 +26,7 @@ package hudson.bugs;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import hudson.Functions;
 import hudson.Proc;
-import hudson.cli.util.ScriptLoader;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.model.User;
@@ -37,8 +35,6 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
-import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
@@ -56,7 +52,6 @@ import java.util.List;
 import java.util.Locale;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +72,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
-     * Creates a new slave that needs to be launched via JNLP.
+     * Creates a new agent that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
         return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
@@ -141,25 +136,10 @@ public class JnlpAccessWithSecuredHudsonTest {
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
             final File f = new File(r.jenkins.getRootDir(), "config.xml");
             assertTrue(f.exists());
-            try {
-                fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
-            } catch (Exception x) {
-                assertThat(Functions.printThrowable(x), containsString("https://jenkins.io/redirect/security-144"));
-            }
         } finally {
             p.kill();
         }
     }
 
-    private static class Attack extends MasterToSlaveCallable<String,Exception> {
-        private final String path;
-        Attack(String path) {
-            this.path = path;
-        }
-        @Override
-        public String call() throws Exception {
-            return getChannelOrFail().call(new ScriptLoader(path));
-        }
-    }
 
 }

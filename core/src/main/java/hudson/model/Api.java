@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +61,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Used to expose remote access API for ".../api/"
  *
  * <p>
- * If the parent object has a <tt>_api.jelly</tt> view, it will be included
+ * If the parent object has a {@code _api.jelly} view, it will be included
  * in the api index page.
  *
  * @author Kohsuke Kawaguchi
@@ -135,7 +136,19 @@ public class Api extends AbstractModelObject {
                 XPath comp = dom.createXPath(xpath);
                 comp.setFunctionContext(functionContext);
                 List list = comp.selectNodes(dom);
+
                 if (wrapper!=null) {
+                    // check if the wrapper is a valid entity name
+                    // First position:  letter or underscore
+                    // Other positions: \w (letter, number, underscore), dash or dot
+                    String validNameRE = "^[a-zA-Z_][\\w-\\.]*$";
+
+                    if(!wrapper.matches(validNameRE)) {
+                        rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        rsp.getWriter().print(Messages.Api_WrapperParamInvalid());
+                        return;
+                    }
+
                     Element root = DocumentFactory.getInstance().createElement(wrapper);
                     for (Object o : list) {
                         if (o instanceof String) {
@@ -176,7 +189,7 @@ public class Api extends AbstractModelObject {
                 // simple output allowed
                 rsp.setContentType("text/plain;charset=UTF-8");
                 String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
-                o.write(text.getBytes("UTF-8"));
+                o.write(text.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 

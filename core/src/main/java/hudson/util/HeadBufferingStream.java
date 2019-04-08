@@ -57,7 +57,7 @@ public class HeadBufferingStream extends FilterInputStream {
     }
 
     @Override
-    public int read(byte b[], int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException {
         int r = in.read(b, off, len);
         if(r>0) {
             int sp = space();

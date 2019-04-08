@@ -80,7 +80,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * Perform monitoring with detailed reporting.
      */
     protected final @Nonnull Result<T> monitorDetailed() throws InterruptedException {
-        Map<Computer,Future<T>> futures = new HashMap<Computer,Future<T>>();
+        Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
         for (Computer c : Jenkins.getInstance().getComputers()) {
@@ -92,9 +92,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
                     if (cc!=null)
                         futures.put(c,ch.callAsync(cc));
                 }
-            } catch (RuntimeException e) {
-                LOGGER.log(WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-            } catch (IOException e) {
+            } catch (RuntimeException | IOException e) {
                 LOGGER.log(WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
             }
         }
@@ -102,7 +100,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         final long now = System.currentTimeMillis();
         final long end = now + getMonitoringTimeOut();
 
-        final Map<Computer,T> data = new HashMap<Computer,T>();
+        final Map<Computer,T> data = new HashMap<>();
 
         for (Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();
@@ -112,11 +110,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
             if (f!=null) {
                 try {
                     data.put(c,f.get(Math.max(0,end-System.currentTimeMillis()), MILLISECONDS));
-                } catch (RuntimeException x) {
-                    LOGGER.log(WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), x);
-                } catch (ExecutionException x) {
-                    LOGGER.log(WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), x);
-                } catch (TimeoutException x) {
+                } catch (RuntimeException | TimeoutException | ExecutionException x) {
                     LOGGER.log(WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), x);
                 }
             } else {
@@ -134,16 +128,16 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * returned in the future.
      *
      * The {@link #getMonitoringData()} provides the results of the monitoring as {@link #monitor()} does. Note the value
-     * in the map can be <tt>null</tt> for several reasons:
+     * in the map can be {@code null} for several reasons:
      * <ul>
-     *     <li>The monitoring {@link Callable} returned <tt>null</tt> as a provisioning result.</li>
+     *     <li>The monitoring {@link Callable} returned {@code null} as a provisioning result.</li>
      *     <li>Creating or evaluating that callable has thrown an exception.</li>
      *     <li>The computer was not monitored as it was offline.</li>
      *     <li>The {@link AbstractAsyncNodeMonitorDescriptor#createCallable} has returned null.</li>
      * </ul>
      *
      * Clients can distinguishing among these states based on the additional data attached to this object. {@link #getSkipped()}
-     * returns computers that was not monitored as they ware either offline or monitor produced <tt>null</tt> {@link Callable}.
+     * returns computers that was not monitored as they ware either offline or monitor produced {@code null} {@link Callable}.
      */
     protected static final class Result<T> {
         private static final long serialVersionUID = -7671448355804481216L;

@@ -37,6 +37,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,6 +79,7 @@ public class UDPBroadcastThread extends Thread {
             mcs.joinGroup(MULTICAST);
             ready.signal();
 
+            //noinspection InfiniteLoopStatement
             while(true) {
                 byte[] buf = new byte[2048];
                 DatagramPacket p = new DatagramPacket(buf,buf.length);
@@ -99,7 +101,7 @@ public class UDPBroadcastThread extends Thread {
 
                 rsp.append("</hudson>");
 
-                byte[] response = rsp.toString().getBytes("UTF-8");
+                byte[] response = rsp.toString().getBytes(StandardCharsets.UTF_8);
                 mcs.send(new DatagramPacket(response,response.length,sender));
             }
         } catch (ClosedByInterruptException e) {

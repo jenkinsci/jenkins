@@ -54,7 +54,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
     }
 
     /**
-     * If <tt>jenkins.exe</tt> is old compared to our copy,
+     * If {@code jenkins.exe} is old compared to our copy,
      * schedule an overwrite (except that since it's currently running,
      * we can only do it when Jenkins restarts next time.)
      */
@@ -145,7 +145,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
             throw new IOException(baos.toString());
     }
     
-    private static final File getBaseDir() {
+    private static File getBaseDir() {
         File baseDir;
         
         String baseEnv = System.getenv("BASE");

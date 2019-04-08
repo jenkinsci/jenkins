@@ -45,7 +45,7 @@ public class InitStrategy {
      *      and when that happens, Jenkins will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-        List<File> r = new ArrayList<File>();
+        List<File> r = new ArrayList<>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
         // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the

@@ -64,7 +64,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
      *      Map to copy contents from. Iteration order is preserved.
      */
     public static <K,V> PackedMap<K,V> of(Map<? extends K,? extends V> src) {
-        return new PackedMap<K, V>(src);
+        return new PackedMap<>(src);
     }
 
     private PackedMap(Map<? extends K,? extends V> src) {

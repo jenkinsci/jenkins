@@ -128,8 +128,8 @@ public class ValidateButtonTest {
         descriptor.paramMethod = "validateInjection";
         descriptor.paramWith = "a,b";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
         
         descriptor.wasCalled = false;
@@ -142,8 +142,8 @@ public class ValidateButtonTest {
         descriptor.paramMethod = "validateInjection',document.title='hacked'+'";
         descriptor.paramWith = "a,b";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
         
         // no check on wasCalled because the button that is expected by the method is not passed (arguments are shifted due to the injection)
@@ -156,8 +156,8 @@ public class ValidateButtonTest {
         descriptor.paramMethod = "validateInjection";
         descriptor.paramWith = "a,b',document.title='hacked'+'";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
         
         descriptor.wasCalled = false;

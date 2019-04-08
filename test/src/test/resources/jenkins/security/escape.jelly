@@ -1,0 +1,8 @@
+<!-- This line is added from the code changing the value: <?jelly escape-by-default='true'?> -->
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:layout>
+        <l:main-panel>
+            ${h.xmlUnescape("Injection: &lt;script&gt; alert('Oh Oh');&lt;/script&gt; end")}
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

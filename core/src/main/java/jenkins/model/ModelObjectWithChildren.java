@@ -20,5 +20,5 @@ public interface ModelObjectWithChildren extends ModelObject {
     /**
      * Generates the context menu to list up all the children.
      */
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
+    ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
 }

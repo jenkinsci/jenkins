@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.logging.Level;
@@ -91,7 +92,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             if(it instanceof SlaveComputer) {
                 jnlpMac = Util.fromHexString(((SlaveComputer)it).getJnlpMac());
             } else {
-                jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName.getBytes("UTF-8"));
+                jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName.getBytes(StandardCharsets.UTF_8));
             }
             SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
             byte[] encrypted;

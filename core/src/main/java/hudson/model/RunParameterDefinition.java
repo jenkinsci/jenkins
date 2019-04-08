@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -111,6 +112,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      * @return The current filter value, if filter is null, returns ALL
      * @since 1.517
      */
+    @Exported
     public RunParameterFilter getFilter() {
     	// if filter is null, default to RunParameterFilter.ALL
         return (null == filter) ? RunParameterFilter.ALL : filter;
@@ -164,20 +166,25 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         Run<?,?> lastBuild = null;
+        Job project = getProject();
+
+        if (project == null) {
+            return null;
+        }
 
         // use getFilter() so we dont have to worry about null filter value.
         switch (getFilter()) {
         case COMPLETED:
-            lastBuild = getProject().getLastCompletedBuild();
+            lastBuild = project.getLastCompletedBuild();
             break;
         case SUCCESSFUL:
-            lastBuild = getProject().getLastSuccessfulBuild();
+            lastBuild = project.getLastSuccessfulBuild();
             break;
         case STABLE	:
-            lastBuild = getProject().getLastStableBuild();
+            lastBuild = project.getLastStableBuild();
             break;
         default:
-            lastBuild = getProject().getLastBuild();
+            lastBuild = project.getLastBuild();
             break;
         }
 
@@ -199,4 +206,5 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         return new RunParameterValue(getName(), value, getDescription());
     }
 
+    private static final Logger LOGGER = Logger.getLogger(RunParameterDefinition.class.getName());
 }

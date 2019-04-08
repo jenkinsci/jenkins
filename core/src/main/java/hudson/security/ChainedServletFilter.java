@@ -58,7 +58,7 @@ public class ChainedServletFilter implements Filter {
     }
 
     public void setFilters(Collection<? extends Filter> filters) {
-        this.filters = filters.toArray(new Filter[filters.size()]);
+        this.filters = filters.toArray(new Filter[0]);
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {

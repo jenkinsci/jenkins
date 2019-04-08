@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Deprecated
 public abstract class Memoizer<K,V> {
-    private final ConcurrentHashMap<K,V> store = new ConcurrentHashMap<K,V>();
+    private final ConcurrentHashMap<K,V> store = new ConcurrentHashMap<>();
 
     public V get(K key) {
         V v = store.get(key);

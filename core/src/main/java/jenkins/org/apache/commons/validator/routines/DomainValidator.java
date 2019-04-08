@@ -17,6 +17,7 @@
 /* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
 package jenkins.org.apache.commons.validator.routines;
 
+import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -71,8 +72,6 @@ import java.util.Locale;
 public class DomainValidator implements Serializable {
     
     private static final int MAX_DOMAIN_LENGTH = 253;
-    
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
     
     private static final long serialVersionUID = -4407125112880174009L;
     
@@ -1853,16 +1852,16 @@ public class DomainValidator implements Serializable {
      * using the getInstance methods which are all (now) synchronised.
      */
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
-    private static volatile String[] countryCodeTLDsPlus = EMPTY_STRING_ARRAY;
+    private static volatile String[] countryCodeTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
     
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
-    private static volatile String[] genericTLDsPlus = EMPTY_STRING_ARRAY;
+    private static volatile String[] genericTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
     
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
-    private static volatile String[] countryCodeTLDsMinus = EMPTY_STRING_ARRAY;
+    private static volatile String[] countryCodeTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
     
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
-    private static volatile String[] genericTLDsMinus = EMPTY_STRING_ARRAY;
+    private static volatile String[] genericTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
     
     /**
      * enum used by {@link DomainValidator#updateTLDOverride(DomainValidator.ArrayType, String[])}
@@ -1887,16 +1886,15 @@ public class DomainValidator implements Serializable {
         INFRASTRUCTURE_RO,
         /** Get a copy of the local table */
         LOCAL_RO
-        ;
-    };
-    
+    }
+
     // For use by unit test code only
     static synchronized void clearTLDOverrides() {
         inUse = false;
-        countryCodeTLDsPlus = EMPTY_STRING_ARRAY;
-        countryCodeTLDsMinus = EMPTY_STRING_ARRAY;
-        genericTLDsPlus = EMPTY_STRING_ARRAY;
-        genericTLDsMinus = EMPTY_STRING_ARRAY;
+        countryCodeTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
+        countryCodeTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
+        genericTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
+        genericTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
     }
     /**
      * Update one of the TLD override arrays.
@@ -1962,7 +1960,7 @@ public class DomainValidator implements Serializable {
      * @since 1.5.1
      */
     public static String [] getTLDEntries(DomainValidator.ArrayType table) {
-        final String array[];
+        final String[] array;
         switch(table) {
             case COUNTRY_CODE_MINUS:
                 array = countryCodeTLDsMinus;

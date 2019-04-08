@@ -40,8 +40,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
+import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -140,7 +142,7 @@ public class Search implements StaplerProxy {
      *      a certain threshold to avoid showing too many options. 
      */
     public SearchResult getSuggestions(StaplerRequest req, String query) {
-        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
+        Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
         int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
         SearchableModelObject smo = findClosestSearchableModelObject(req);
@@ -155,7 +157,7 @@ public class Search implements StaplerProxy {
         return r;
     }
 
-    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);
@@ -325,16 +327,14 @@ public class Search implements StaplerProxy {
     static final class TokenList {
         private final String[] tokens;
 
-        private final static String[] EMPTY = new String[0];
-
         public TokenList(String tokenList) {
-            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : EMPTY;
+            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         public int length() { return tokens.length; }
 
         /**
-         * Returns {@link List} such that its <tt>get(end)</tt>
+         * Returns {@link List} such that its {@code get(end)}
          * returns the concatenation of [token_start,...,token_end]
          * (both end inclusive.)
          */

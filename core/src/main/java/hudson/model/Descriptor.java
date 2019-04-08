@@ -39,6 +39,7 @@ import hudson.views.ListViewColumn;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -52,7 +53,6 @@ import org.apache.commons.io.IOUtils;
 import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.File;
@@ -137,7 +137,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public transient final Class<? extends T> clazz;
 
-    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<String,CheckMethod>();
+    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<>(2);
 
     /**
      * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
@@ -233,7 +233,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @see #getHelpFile(String) 
      */
-    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<String,HelpRedirect>();
+    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<>(2);
 
     private static class HelpRedirect {
         private final Class<? extends Describable> owner;
@@ -416,7 +416,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
 
         // build query parameter line by figuring out what should be submitted
-        List<String> depends = buildFillDependencies(method, new ArrayList<String>());
+        List<String> depends = buildFillDependencies(method, new ArrayList<>());
 
         if (!depends.isEmpty())
             attributes.put("fillDependsOn",Util.join(depends," "));
@@ -506,7 +506,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Given the class, list up its {@link PropertyType}s from its public fields/getters.
      */
     private Map<String, PropertyType> buildPropertyTypes(Class<?> clazz) {
-        Map<String, PropertyType> r = new HashMap<String, PropertyType>();
+        Map<String, PropertyType> r = new HashMap<>();
         for (Field f : clazz.getFields())
             r.put(f.getName(),new PropertyType(f));
 
@@ -538,7 +538,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Creates a configured instance from the submitted form.
      *
      * <p>
-     * Hudson only invokes this method when the user wants an instance of <tt>T</tt>.
+     * Hudson only invokes this method when the user wants an instance of {@code T}.
      * So there's no need to check that in the implementation.
      *
      * <p>
@@ -601,7 +601,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
         } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+            throw new Error("Failed to instantiate "+clazz+" from "+RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData),e);
         }
     }
 
@@ -714,9 +714,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * <p>
      * This value is relative to the context root of Hudson, so normally
-     * the values are something like <tt>"/plugin/emma/help.html"</tt> to
-     * refer to static resource files in a plugin, or <tt>"/publisher/EmmaPublisher/abc"</tt>
-     * to refer to Jelly script <tt>abc.jelly</tt> or a method <tt>EmmaPublisher.doAbc()</tt>.
+     * the values are something like {@code "/plugin/emma/help.html"} to
+     * refer to static resource files in a plugin, or {@code "/publisher/EmmaPublisher/abc"}
+     * to refer to Jelly script {@code abc.jelly} or a method {@code EmmaPublisher.doAbc()}.
      *
      * @return
      *      null to indicate that there's no help.
@@ -855,7 +855,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     protected List<String> getPossibleViewNames(String baseName) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
@@ -915,7 +915,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     /**
-     * Serves <tt>help.html</tt> from the resource of {@link #clazz}.
+     * Serves {@code help.html} from the resource of {@link #clazz}.
      */
     public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
@@ -981,12 +981,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     public static <T> List<T> toList( T... values ) {
-        return new ArrayList<T>(Arrays.asList(values));
+        return new ArrayList<>(Arrays.asList(values));
     }
 
     public static <T extends Describable<T>>
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
-        Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
+        Map<Descriptor<T>,T> m = new LinkedHashMap<>();
         for (T d : describables) {
             Descriptor<T> descriptor;
             try {
@@ -1025,7 +1025,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     List<T> newInstancesFromHeteroList(StaplerRequest req, Object formData,
                 Collection<? extends Descriptor<T>> descriptors) throws FormException {
 
-        List<T> items = new ArrayList<T>();
+        List<T> items = new ArrayList<>();
 
         if (formData!=null) {
             for (Object o : JSONArray.fromObject(formData)) {

@@ -170,8 +170,8 @@ public abstract class FormFieldValidator {
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void error(String message) throws IOException, ServletException {
         errorWithMarkup(message==null?null:Util.escape(message));
@@ -209,8 +209,8 @@ public abstract class FormFieldValidator {
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     *      Human readable message to be sent. {@code error(null)}
+     *      can be used as {@code ok()}.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
         _errorWithMarkup(message,"error");
@@ -273,7 +273,7 @@ public abstract class FormFieldValidator {
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while((line=in.readLine())!=null)
-                if(line.indexOf(literal)!=-1)
+                if(line.contains(literal))
                     return true;
             return false;
         }
@@ -622,9 +622,9 @@ public abstract class FormFieldValidator {
                     return;
                 }
                 
-                com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+                java.util.Base64.getDecoder().decode(v);
                 ok();
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 fail();
             }
         }

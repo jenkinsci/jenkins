@@ -34,15 +34,18 @@ import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.PingFailureAnalyzer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Establish a periodic ping to keep connections between {@link Slave slaves}
+ * Establish a periodic ping to keep connections between {@link Slave agents}
  * and the main Jenkins node alive. This prevents network proxies from
  * terminating connections that are idle for too long.
  *
@@ -119,14 +122,15 @@ public class ChannelPinger extends ComputerListener {
     }
 
     @VisibleForTesting
-    /*package*/ static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
+    @Restricted(NoExternalUse.class)
+    public static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
         private transient int pingInterval;
         private final int pingTimeoutSeconds;
         private final int pingIntervalSeconds;
 
-        SetUpRemotePing(int pingTimeoutSeconds, int pingIntervalSeconds) {
+        public SetUpRemotePing(int pingTimeoutSeconds, int pingIntervalSeconds) {
             this.pingTimeoutSeconds = pingTimeoutSeconds;
             this.pingIntervalSeconds = pingIntervalSeconds;
         }
@@ -177,10 +181,11 @@ public class ChannelPinger extends ComputerListener {
     }
 
     @VisibleForTesting
-    /*package*/ static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
+    @Restricted(NoExternalUse.class)
+    public static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
         LOGGER.log(Level.FINE, "setting up ping on {0} with a {1} seconds interval and {2} seconds timeout", new Object[] {channel.getName(), intervalSeconds, timeoutSeconds});
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
-        final PingThread t = new PingThread(channel, timeoutSeconds * 1000L, intervalSeconds * 1000L) {
+        final PingThread t = new PingThread(channel, TimeUnit.SECONDS.toMillis(timeoutSeconds), TimeUnit.SECONDS.toMillis(intervalSeconds)) {
             @Override
             protected void onDead(Throwable cause) {
                     if (analysis) {

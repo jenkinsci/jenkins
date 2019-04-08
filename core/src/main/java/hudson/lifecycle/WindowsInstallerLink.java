@@ -54,7 +54,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -216,9 +215,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 int r = runElevated(
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
+                            } catch (IOException | InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }

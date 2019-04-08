@@ -36,9 +36,9 @@ import java.util.Collections;
 import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 
-import org.acegisecurity.Authentication;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -62,6 +62,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
  */
+@StaplerAccessibleType
 public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
@@ -193,7 +194,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<>(AuthorizationStrategy.class);
     
     /**
      * {@link AuthorizationStrategy} that implements the semantics

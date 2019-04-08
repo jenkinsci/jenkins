@@ -28,12 +28,15 @@ import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
 
 import hudson.model.AperiodicWork;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
@@ -82,6 +85,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @see AgentProtocol
  */
+@StaplerAccessibleType
 public final class TcpSlaveAgentListener extends Thread {
 
     private final ServerSocketChannel serverSocket;
@@ -148,6 +152,14 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public String getAgentProtocolNames() {
         return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+    }
+
+    /**
+     * Gets Remoting minimum supported version to prevent unsupported agents from connecting
+     * @since 2.171
+     */
+    public VersionNumber getRemotingMinimumVersion() {
+        return RemotingVersionInfo.getMinimumSupportedVersion();
     }
 
     @Override
@@ -234,7 +246,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
+                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
                         true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 // peek the first few bytes to determine what to do with this client
@@ -289,9 +301,8 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
-                Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
-
-                //TODO: expose version about minimum supported Remoting version (JENKINS-48766)
+                Writer o = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
+                
                 if (header.startsWith("GET / ")) {
                     o.write("HTTP/1.0 200 OK\r\n");
                     o.write("Content-Type: text/plain;charset=UTF-8\r\n");
@@ -301,7 +312,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
-                    o.write("Remoting-Minimum-Version: " + RemotingVersionInfo.getMinimumSupportedVersion() + "\r\n");
+                    o.write("Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
@@ -356,11 +367,7 @@ public final class TcpSlaveAgentListener extends Thread {
         private final byte[] ping;
 
         public PingAgentProtocol() {
-            try {
-                ping = "Ping\n".getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
-            }
+            ping = "Ping\n".getBytes(StandardCharsets.UTF_8);
         }
 
         /**
@@ -412,8 +419,10 @@ public final class TcpSlaveAgentListener extends Thread {
                         } else {
                             LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
-                                    new String(ping, "UTF-8"),
-                                    new String(response, 0, responseLength, "UTF-8")
+                                    new String(ping, StandardCharsets.UTF_8),
+                                    responseLength > 0 && responseLength <= response.length ?
+                                        new String(response, 0, responseLength, StandardCharsets.UTF_8) :
+                                        "bad response length " + responseLength
                             });
                             return false;
                         }

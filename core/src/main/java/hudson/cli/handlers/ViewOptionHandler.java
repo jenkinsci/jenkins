@@ -48,7 +48,7 @@ import javax.annotation.CheckForNull;
  * For example:
  * <dl>
  *   <dt>my_view_name</dt><dd>refers to a top level view with given name.</dd>
- *   <dt>nested/inner</dt><dd>refers to a view named <tt>inner</tt> inside of a top level view group named <tt>nested</tt>.</dd>
+ *   <dt>nested/inner</dt><dd>refers to a view named {@code inner} inside of a top level view group named {@code nested}.</dd>
  * </dl>
  *
  * <p>

@@ -50,7 +50,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
     private static final String PARENT = "parent";
     private static final String BY_TYPE = "byType";
     private static final String BY_CONSTRUCTOR = "constructor";
-    private static final Set<String> DYNAMIC_PROPS = new HashSet<String>(Arrays.asList(AUTOWIRE, CONSTRUCTOR_ARGS, DESTROY_METHOD, FACTORY_BEAN, FACTORY_METHOD, INIT_METHOD, BY_NAME, BY_TYPE, BY_CONSTRUCTOR));
+    private static final Set<String> DYNAMIC_PROPS = new HashSet<>(Arrays.asList(AUTOWIRE, CONSTRUCTOR_ARGS, DESTROY_METHOD, FACTORY_BEAN, FACTORY_METHOD, INIT_METHOD, BY_NAME, BY_TYPE, BY_CONSTRUCTOR));
     private String parentName;
 
     @Override

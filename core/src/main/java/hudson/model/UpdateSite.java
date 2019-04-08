@@ -25,7 +25,6 @@
 
 package hudson.model;
 
-import hudson.ClassicPluginStrategy;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -35,6 +34,7 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
+import static jenkins.util.MemoryReductionUtil.*;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
@@ -46,7 +46,6 @@ import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +55,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -64,11 +64,14 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
+import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -131,7 +134,7 @@ public class UpdateSite {
     private final String id;
 
     /**
-     * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
+     * Path to {@code update-center.json}, like {@code http://jenkins-ci.org/update-center.json}.
      */
     private final String url;
 
@@ -332,11 +335,7 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
-            } catch (JSONException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
-                return null;
-            } catch (IOException e) {
+            } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
                 return null;
@@ -352,7 +351,7 @@ public class UpdateSite {
      */
     @Exported
     public List<Plugin> getAvailables() {
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         Data data = getData();
         if(data==null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
@@ -412,7 +411,7 @@ public class UpdateSite {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
         
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
@@ -485,7 +484,15 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals(UpdateCenter.PREDEFINED_UPDATE_SITE_ID) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
+        return isHudsonCI() || isUpdatesFromHudsonLabs();
+    }
+
+    private boolean isHudsonCI() {
+        return url != null && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id) && url.startsWith("http://hudson-ci.org/");
+    }
+
+    private boolean isUpdatesFromHudsonLabs() {
+        return url != null && url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
@@ -504,13 +511,13 @@ public class UpdateSite {
         /**
          * Plugins in the repository, keyed by their artifact IDs.
          */
-        public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
+        public final Map<String,Plugin> plugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         /**
          * List of warnings (mostly security) published with the update site.
          *
          * @since 2.40
          */
-        private final Set<Warning> warnings = new HashSet<Warning>();
+        private final Set<Warning> warnings = new HashSet<>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -519,7 +526,7 @@ public class UpdateSite {
         public final String connectionCheckUrl;
 
         Data(JSONObject o) {
-            this.sourceId = (String)o.get("id");
+            this.sourceId = Util.intern((String)o.get("id"));
             JSONObject c = o.optJSONObject("core");
             if (c!=null) {
                 core = new Entry(sourceId, c, url);
@@ -541,7 +548,7 @@ public class UpdateSite {
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
-                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                List<PluginWrapper.Dependency> implicitDeps = DetachedPluginsUtil.getImpliedDependencies(p.name, p.requiredCore);
                 if(!implicitDeps.isEmpty()) {
                     for(PluginWrapper.Dependency dep : implicitDeps) {
                         if(!p.dependencies.containsKey(dep.shortName)) {
@@ -549,7 +556,7 @@ public class UpdateSite {
                         }
                     }
                 }
-                plugins.put(e.getKey(), p);
+                plugins.put(Util.intern(e.getKey()), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -621,8 +628,8 @@ public class UpdateSite {
 
         Entry(String sourceId, JSONObject o, String baseURL) {
             this.sourceId = sourceId;
-            this.name = o.getString("name");
-            this.version = o.getString("version");
+            this.name = Util.intern(o.getString("name"));
+            this.version = Util.intern(o.getString("version"));
 
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
@@ -730,8 +737,8 @@ public class UpdateSite {
 
         public WarningVersionRange(JSONObject o) {
             this.name = Util.fixEmpty(o.optString("name"));
-            this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
-            this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
+            this.firstVersion = Util.intern(Util.fixEmpty(o.optString("firstVersion")));
+            this.lastVersion = Util.intern(Util.fixEmpty(o.optString("lastVersion")));
             Pattern p;
             try {
                 p = Pattern.compile(o.getString("pattern"));
@@ -828,13 +835,13 @@ public class UpdateSite {
                 this.type = Type.UNKNOWN;
             }
             this.id = o.getString("id");
-            this.component = o.getString("name");
+            this.component = Util.intern(o.getString("name"));
             this.message = o.getString("message");
             this.url = o.getString("url");
 
             if (o.has("versions")) {
-                List<WarningVersionRange> ranges = new ArrayList<>();
                 JSONArray versions = o.getJSONArray("versions");
+                List<WarningVersionRange> ranges = new ArrayList<>(versions.size());
                 for (int i = 0; i < versions.size(); i++) {
                     WarningVersionRange range = new WarningVersionRange(versions.getJSONObject(i));
                     ranges.add(range);
@@ -918,6 +925,16 @@ public class UpdateSite {
         }
     }
 
+    private static String get(JSONObject o, String prop) {
+        if(o.has(prop))
+            return o.getString(prop);
+        else
+            return null;
+    }
+
+    static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
+    static final Predicate<Object> IS_NOT_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
+
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
@@ -949,6 +966,13 @@ public class UpdateSite {
         @Exported
         public final String requiredCore;
         /**
+         * Version of Java this plugin requires to run.
+         *
+         * @since TODO
+         */
+        @Exported
+        public final String minimumJavaVersion;
+        /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
          */
@@ -959,13 +983,13 @@ public class UpdateSite {
          * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
-        public final Map<String,String> dependencies = new HashMap<String,String>();
+        public final Map<String,String> dependencies;
         
         /**
          * Optional dependencies of this plugin.
          */
         @Exported
-        public final Map<String,String> optionalDependencies = new HashMap<String,String>();
+        public final Map<String,String> optionalDependencies;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -973,30 +997,32 @@ public class UpdateSite {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
-            this.requiredCore = get(o,"requiredCore");
-            this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
+            this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
+            this.requiredCore = Util.intern(get(o,"requiredCore"));
+            this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
+            JSONArray ja = o.getJSONArray("dependencies");
+            int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count());
+            int optionalDepCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count());
+            dependencies = getPresizedMutableMap(depCount);
+            optionalDependencies = getPresizedMutableMap(optionalDepCount);
+
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute and that the optional value isn't true.
-                if (get(depObj,"name")!=null) {
+                String depName = Util.intern(get(depObj,"name"));
+                if (depName!=null) {
                     if (get(depObj, "optional").equals("false")) {
-                        dependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        dependencies.put(depName, Util.intern(get(depObj, "version")));
                     } else {
-                        optionalDependencies.put(get(depObj, "name"), get(depObj, "version"));
+                        optionalDependencies.put(depName, Util.intern(get(depObj, "version")));
                     }
                 }
-                
             }
 
         }
 
-        private String get(JSONObject o, String prop) {
-            if(o.has(prop))
-                return o.getString(prop);
-            else
-                return null;
-        }
+
 
         public String getDisplayName() {
             String displayName;
@@ -1043,16 +1069,16 @@ public class UpdateSite {
          */
         @Exported
         public List<Plugin> getNeededDependencies() {
-            List<Plugin> deps = new ArrayList<Plugin>();
+            List<Plugin> deps = new ArrayList<>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     LOGGER.log(Level.WARNING, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
-                
+
                 // Is the plugin installed already? If not, add it.
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -1071,11 +1097,11 @@ public class UpdateSite {
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
 
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -1098,6 +1124,21 @@ public class UpdateSite {
             }
         }
 
+        /**
+         * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
+         * @since TODO
+         */
+        public boolean isForNewerJava() {
+            try {
+                final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                return minimumJavaVersion != null && new JavaSpecificationVersion(minimumJavaVersion).isNewerThan(
+                        currentRuntimeJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+                return false; // treat this as undeclared minimum Java version
+            }
+        }
+
         public VersionNumber getNeededDependenciesRequiredCore() {
             VersionNumber versionNumber = null;
             try {
@@ -1110,6 +1151,36 @@ public class UpdateSite {
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
+        }
+
+        /**
+         * Returns the minimum Java version needed to use the plugin and all its dependencies.
+         * @since TODO
+         * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
+         */
+        @CheckForNull
+        public VersionNumber getNeededDependenciesMinimumJavaVersion() {
+            VersionNumber versionNumber = null;
+            try {
+                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+            }
+            for (Plugin p: getNeededDependencies()) {
+                VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
+                if (v == null) {
+                    continue;
+                }
+                if (versionNumber == null || v.isNewerThan(versionNumber)) {
+                    versionNumber = v;
+                }
+            }
+            return versionNumber;
+        }
+
+        private void logBadMinJavaVersion() {
+            LOGGER.log(Level.WARNING, "minimumJavaVersion was specified for plugin {0} but unparseable (received {1})",
+                       new String[]{this.name, this.minimumJavaVersion});
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
@@ -1126,6 +1197,20 @@ public class UpdateSite {
                 }
                 return false;
             });
+        }
+
+        /**
+         * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
+         *
+         * @since TODO
+         */
+        public boolean isNeededDependenciesForNewerJava() {
+            for (Plugin p: getNeededDependencies()) {
+                if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**

@@ -53,13 +53,13 @@ import java.util.logging.Logger;
  * <p>
  * If an {@link AuthenticationException} is detected, the filter will launch the <code>authenticationEntryPoint</code>.
  * This allows common handling of authentication failures originating from any subclass of
- * <tt>AbstractSecurityInterceptor</tt>.
+ * {@code AbstractSecurityInterceptor}.
  * </p>
  * <p>
  * If an {@link AccessDeniedException} is detected, the filter will determine whether or not the user is an anonymous
  * user. If they are an anonymous user, the <code>authenticationEntryPoint</code> will be launched. If they are not
- * an anonymous user, the filter will delegate to the <tt>AccessDeniedHandler</tt>.
- * By default the filter will use <tt>AccessDeniedHandlerImpl</tt>.
+ * an anonymous user, the filter will delegate to the {@code AccessDeniedHandler}.
+ * By default the filter will use {@code AccessDeniedHandlerImpl}.
  * </p>
  * <p>
  * To use this filter, it is necessary to specify the following properties:
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  * </ul>
  * <P>
  * <B>Do not use this class directly.</B> Instead configure
- * <code>web.xml</code> to use the <tt>FilterToBeanProxy</tt>.
+ * <code>web.xml</code> to use the {@code FilterToBeanProxy}.
  * </p>
  *
  * @author Ben Alex
@@ -118,13 +118,9 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
 			LOGGER.finer("Chain processed normally");
 		}
-		catch (AuthenticationException ex) {
+		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
-		}
-		catch (AccessDeniedException ex) {
-			handleException(request, response, chain, ex);
-		}
-		catch (ServletException ex) {
+		} catch (ServletException ex) {
 			if (ex.getRootCause() instanceof AuthenticationException
 					|| ex.getRootCause() instanceof AccessDeniedException) {
 				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());

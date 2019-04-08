@@ -26,22 +26,22 @@ package hudson.jobs;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 
-import hudson.AbortException;
+import com.gargoylesoftware.htmlunit.Page;
 import hudson.model.Failure;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.listeners.ItemListener;
+
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
 
-import org.acegisecurity.AccessDeniedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.FreeStyleProject;
@@ -54,7 +54,6 @@ import org.jvnet.hudson.test.TestExtension;
  * @author Christopher Simons
  */
 public class CreateItemTest {
-    private static final int ERROR_PRESET = (-1);
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
@@ -78,15 +77,13 @@ public class CreateItemTest {
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
-        int result = ERROR_PRESET;
-        try {
-            result = rule.createWebClient()
-                .getPage(request).getWebResponse().getStatusCode();
-        } catch (FailingHttpStatusCodeException e) {
-            result = e.getResponse().getStatusCode();
-        }
 
-        assertEquals("Creating job from copy should succeed.", 200, result);
+        Page p = rule.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .getPage(request);
+        assertEquals("Creating job from copy should succeed.",
+                HttpURLConnection.HTTP_OK,
+                p.getWebResponse().getStatusCode());
     }
 
     @Issue("JENKINS-34691")
@@ -104,15 +101,14 @@ public class CreateItemTest {
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
-        int result = ERROR_PRESET;
-        try {
-            result = rule.createWebClient()
-                .getPage(request).getWebResponse().getStatusCode();
-        } catch (FailingHttpStatusCodeException e) {
-            result = e.getResponse().getStatusCode();
-        }
 
-        assertEquals("Creating job from copy should fail.", 400, result);
+        Page p = rule.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .getPage(request);
+
+        assertEquals("Creating job from copy should fail.", 
+                HttpURLConnection.HTTP_BAD_REQUEST, 
+                p.getWebResponse().getStatusCode());
         assertThat(rule.jenkins.getItem("newJob"), nullValue());
     }
 
@@ -125,9 +121,13 @@ public class CreateItemTest {
         rule.jenkins.setCrumbIssuer(null);
         rule.createFolder("d1").createProject(FreeStyleProject.class, "p");
         MockFolder d2 = rule.createFolder("d2");
-        rule.createWebClient().getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
+
+        JenkinsRule.WebClient wc = rule.createWebClient();
+
+        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
         assertNotNull(d2.getItem("p2"));
-        rule.createWebClient().getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
+
+        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
         assertNotNull(d2.getItem("p3"));
     }
 
