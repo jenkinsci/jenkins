@@ -58,30 +58,8 @@ public final class DownloadSettings extends GlobalConfiguration implements Persi
         return GlobalConfiguration.all().getInstance(DownloadSettings.class);
     }
 
-    private boolean useBrowser = false;
-    
-    public boolean isUseBrowser() {
-        return useBrowser;
-    }
-
-    public void setUseBrowser(boolean useBrowser) {
-        this.useBrowser = useBrowser;
-        save();
-    }
-
     @Override public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
-    }
-
-    public static boolean usePostBack() {
-        return get().isUseBrowser() && Jenkins.get().hasPermission(Jenkins.ADMINISTER);
-    }
-
-    public static void checkPostBackAccess() throws AccessDeniedException {
-        if (!get().isUseBrowser()) {
-            throw new AccessDeniedException("browser-based download disabled");
-        }
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
     }
 
     @Extension @Symbol("updateCenterCheck")
@@ -101,9 +79,6 @@ public final class DownloadSettings extends GlobalConfiguration implements Persi
         }
 
         @Override protected void execute(TaskListener listener) throws IOException, InterruptedException {
-            if (get().isUseBrowser()) {
-                return;
-            }
             boolean due = false;
             for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
                 if (site.isDue()) {
@@ -134,18 +109,4 @@ public final class DownloadSettings extends GlobalConfiguration implements Persi
         }
 
     }
-
-    @Extension public static final class Warning extends AdministrativeMonitor {
-
-        @Override
-        public String getDisplayName() {
-            return Messages.DownloadSettings_Warning_DisplayName();
-        }
-
-        @Override public boolean isActivated() {
-            return DownloadSettings.get().isUseBrowser();
-        }
-
-    }
-
 }

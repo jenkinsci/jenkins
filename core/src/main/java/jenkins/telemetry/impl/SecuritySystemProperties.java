@@ -93,9 +93,6 @@ public class SecuritySystemProperties extends Telemetry {
         putBoolean(security, "org.kohsuke.stapler.Facet.allowViewNamePathTraversal", false);
         putBoolean(security, "org.kohsuke.stapler.jelly.CustomJellyContext.escapeByDefault", true);
 
-        // not controlled by a system property for historical reasons only
-        security.put("jenkins.model.DownloadSettings.useBrowser", Boolean.toString(DownloadSettings.get().isUseBrowser()));
-
         putStringInfo(security, "hudson.model.ParametersAction.safeParameters");
         putStringInfo(security, "hudson.model.DirectoryBrowserSupport.CSP");
         putStringInfo(security, "hudson.security.HudsonPrivateSecurityRealm.ID_REGEX");

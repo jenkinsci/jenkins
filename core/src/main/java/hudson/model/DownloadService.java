@@ -33,7 +33,6 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
@@ -46,7 +45,6 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
@@ -56,10 +54,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -72,7 +66,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class DownloadService extends PageDecorator {
+public class DownloadService {
 
     /**
      * the prefix for the signature validator name
@@ -80,59 +74,12 @@ public class DownloadService extends PageDecorator {
     private static final String signatureValidatorPrefix = "downloadable";
     /**
      * Builds up an HTML fragment that starts all the download jobs.
+     *
+     * @deprecated browser-based download has been disabled
      */
+    @Deprecated
     public String generateFragment() {
-        if (!DownloadSettings.usePostBack()) {
-            return "";
-        }
-    	if (neverUpdate) return "";
-        if (doesNotSupportPostMessage())  return "";
-
-        StringBuilder buf = new StringBuilder();
-        if(Jenkins.get().hasPermission(Jenkins.READ)) {
-            long now = System.currentTimeMillis();
-            for (Downloadable d : Downloadable.all()) {
-                if(d.getDue()<now && d.lastAttempt+TimeUnit.SECONDS.toMillis(10)<now) {
-                    buf.append("<script>")
-                       .append("Behaviour.addLoadEvent(function() {")
-                       .append("  downloadService.download(")
-                       .append(QuotedStringTokenizer.quote(d.getId()))
-                       .append(',')
-                       .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
-                       .append(',')
-                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.VERSION)).append('}')
-                       .append(',')
-                       .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
-                       .append(',')
-                       .append("null);")
-                       .append("});")
-                       .append("</script>");
-                    d.lastAttempt = now;
-                }
-            }
-        }
-        return buf.toString();
-    }
-
-    private boolean doesNotSupportPostMessage() {
-        StaplerRequest req = Stapler.getCurrentRequest();
-        if (req==null)      return false;
-
-        String ua = req.getHeader("User-Agent");
-        if (ua==null)       return false;
-
-        // according to http://caniuse.com/#feat=x-doc-messaging, IE <=7 doesn't support pstMessage
-        // see http://www.useragentstring.com/pages/Internet%20Explorer/ for user agents
-
-        // we want to err on the cautious side here.
-        // Because of JENKINS-15105, we can't serve signed metadata from JSON, which means we need to be
-        // using a modern browser as a vehicle to request these data. This check is here to prevent Jenkins
-        // from using older browsers that are known not to support postMessage as the vehicle.
-        return ua.contains("Windows") && (ua.contains(" MSIE 5.") || ua.contains(" MSIE 6.") || ua.contains(" MSIE 7."));
-    }
-
-    private String mapHttps(String url) {
-        return url;
+        return "";
     }
 
     /**
@@ -366,24 +313,6 @@ public class DownloadService extends PageDecorator {
                     throw new IOException("Failed to parse "+df+" into JSON",e);
                 }
             return null;
-        }
-
-        /**
-         * This is where the browser sends us the data. 
-         */
-        @RequirePOST
-        public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            DownloadSettings.checkPostBackAccess();
-            long dataTimestamp = System.currentTimeMillis();
-            due = dataTimestamp+getInterval();  // success or fail, don't try too often
-
-            String json = IOUtils.toString(req.getInputStream(),"UTF-8");
-            FormValidation e = load(json, dataTimestamp);
-            if (e.kind != Kind.OK) {
-                LOGGER.severe(e.renderHtml());
-                throw e;
-            }
-            rsp.setContentType("text/plain");  // So browser won't try to parse response
         }
 
         private FormValidation load(String json, long dataTimestamp) throws IOException {

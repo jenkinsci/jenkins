@@ -2426,13 +2426,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
-     * Adds the update center data retriever to HTML.
-     */
-    @Extension
-    public static class PageDecoratorImpl extends PageDecorator {
-    }
-
-    /**
      * Initializes the update center.
      *
      * This has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
