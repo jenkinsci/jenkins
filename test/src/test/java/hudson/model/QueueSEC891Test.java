@@ -26,11 +26,15 @@ public class QueueSEC891Test {
     @Rule
     public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
 
-    @Test public void doCancelItem_PermissionIsChecked() throws Exception {
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelItem_PermissionIsChecked() throws Exception {
         checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId());
     }
 
-    @Test public void doCancelQueue_PermissionIsChecked() throws Exception {
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelQueue_PermissionIsChecked() throws Exception {
         checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue");
     }
 

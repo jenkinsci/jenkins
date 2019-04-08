@@ -21,7 +21,9 @@ public class UserRestartSEC897Test {
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
-    @Test public void legacyConfigMoveCannotEscapeUserFolder() {
+    @Test
+    @Issue("SECURITY-897")
+    public void legacyConfigMoveCannotEscapeUserFolder() {
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
