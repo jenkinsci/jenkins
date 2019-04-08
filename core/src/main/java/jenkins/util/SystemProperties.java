@@ -143,7 +143,7 @@ public class SystemProperties {
     }
 
     @Extension
-    public static final class SlaveCopier extends ComputerListener {
+    public static final class AgentCopier extends ComputerListener {
         @Override
         public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
             channel.call(new CopySystemProperties());
