@@ -59,11 +59,12 @@ THE SOFTWARE.
         </j:choose>
       </j:forEach>
     </table>
-    <p>${%blurb.3}</p>
-    <p>${%blurb.4}</p>
     <j:set var="vers" value="${it.versionList}"/>
     <j:choose>
       <j:when test="${vers.hasNext()}">
+        <h2>${%Old Data Format}</h2>
+        <p>${%blurb.3}</p>
+        <p>${%blurb.4}</p>
         <form action="upgrade" method="POST" name="oldDataUpgrade">
           ${%Resave data files with structure changes no newer than Jenkins}
           <select name="thruVer">
