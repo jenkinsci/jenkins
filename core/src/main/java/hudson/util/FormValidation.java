@@ -499,7 +499,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while((line=in.readLine())!=null)
-                if(line.indexOf(literal)!=-1)
+                if(line.contains(literal))
                     return true;
             return false;
         }
@@ -596,7 +596,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if(method !=null) {
-                names = new ArrayList<String>();
+                names = new ArrayList<>();
                 findParameters(method);
             } else {
                 names = null;

@@ -43,8 +43,6 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -93,11 +91,8 @@ public class PluginSubtypeMarker extends AbstractProcessor {
             }
 
             return false;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | Error e) {
             // javac sucks at reporting errors in annotation processors
-            e.printStackTrace();
-            throw e;
-        } catch (Error e) {
             e.printStackTrace();
             throw e;
         }

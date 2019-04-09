@@ -54,7 +54,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
 
         // exec to self
         String exe = Daemon.getCurrentExecutable();
-        LIBC.execv(exe, new StringArray(args.toArray(new String[args.size()])));
+        LIBC.execv(exe, new StringArray(args.toArray(new String[0])));
         throw new IOException("Failed to exec '" + exe + "' " + LIBC.strerror(Native.getLastError()));
     }
 

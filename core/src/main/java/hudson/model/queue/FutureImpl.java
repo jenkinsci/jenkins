@@ -47,14 +47,14 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
     /**
      * If the computation has started, set to {@link Executor}s that are running the build.
      */
-    private final Set<Executor> executors = new HashSet<Executor>();
+    private final Set<Executor> executors = new HashSet<>();
 
     /**
      * {@link Future} that completes when the task started running.
      *
      * In contrast, {@link FutureImpl} will complete when the task finishes.
      */
-    /*package*/ final AsyncFutureImpl<Executable> start = new AsyncFutureImpl<Executable>();
+    /*package*/ final AsyncFutureImpl<Executable> start = new AsyncFutureImpl<>();
 
     public FutureImpl(Task task) {
         this.task = task;

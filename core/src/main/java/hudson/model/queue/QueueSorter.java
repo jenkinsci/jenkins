@@ -53,7 +53,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      * @since 1.618
      */
     public void sortBlockedItems(List<Queue.BlockedItem> blockedItems) {
-        Collections.sort(blockedItems, DEFAULT_BLOCKED_ITEM_COMPARATOR);
+        blockedItems.sort(DEFAULT_BLOCKED_ITEM_COMPARATOR);
     }
 
     /**

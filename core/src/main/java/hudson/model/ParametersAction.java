@@ -222,11 +222,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return !parameters.isEmpty();
         } else {
             // I don't think we need multiple ParametersActions, but let's be defensive
-            Set<ParameterValue> params = new HashSet<ParameterValue>();
+            Set<ParameterValue> params = new HashSet<>();
             for (ParametersAction other: others) {
                 params.addAll(other.parameters);
             }
-            return !params.equals(new HashSet<ParameterValue>(this.parameters));
+            return !params.equals(new HashSet<>(this.parameters));
         }
     }
 
@@ -324,7 +324,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
-        List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
+        List<ParameterValue> filteredParameters = new ArrayList<>();
 
         for (ParameterValue v : this.parameters) {
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {

@@ -189,9 +189,9 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
             return null;
         }
 
-        for (int i = 0; i < cookies.length; i++) {
-            if (ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY.equals(cookies[i].getName())) {
-                return cookies[i].getValue();
+        for (Cookie cookie : cookies) {
+            if (ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY.equals(cookie.getName())) {
+                return cookie.getValue();
             }
         }
 
@@ -311,9 +311,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         if (SET_HTTP_ONLY!=null) {
             try {
                 SET_HTTP_ONLY.invoke(cookie,true);
-            } catch (IllegalAccessException e) {
-                // ignore
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 // ignore
             }
         }

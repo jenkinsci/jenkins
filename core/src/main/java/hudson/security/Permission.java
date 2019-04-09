@@ -287,7 +287,7 @@ public final class Permission {
     /**
      * All permissions in the system but in a single list.
      */
-    private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
+    private static final List<Permission> ALL = new CopyOnWriteArrayList<>();
 
     private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
 

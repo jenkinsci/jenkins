@@ -45,7 +45,7 @@ public class MarkupText extends AbstractMarkupText {
     /**
      * Added mark up tags.
      */
-    private final List<Tag> tags = new ArrayList<Tag>();
+    private final List<Tag> tags = new ArrayList<>();
 
     /**
      * Represents one mark up inserted into text.

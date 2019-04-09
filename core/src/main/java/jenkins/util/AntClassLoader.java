@@ -35,7 +35,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -546,7 +545,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *         separated by the path separator for the system.
      */
     public String getClasspath() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         boolean firstPass = true;
         Enumeration componentEnum = pathComponents.elements();
         while (componentEnum.hasMoreElements()) {
@@ -1562,8 +1561,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                 ReflectUtil.newInstance(subClassToLoad,
                                         CONSTRUCTOR_ARGS,
                                         new Object[] {
-                                            parent, project, path,
-                                            Boolean.valueOf(parentFirst)
+                                            parent, project, path, parentFirst
                                         });
         }
         return new AntClassLoader(parent, project, path, parentFirst);

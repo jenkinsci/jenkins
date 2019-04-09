@@ -155,7 +155,7 @@ public final class Result implements Serializable, CustomExportedBean {
     }
 
     private static @Nonnull List<String> getNames() {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         for (Result r : all)
             l.add(r.name);
         return l;

@@ -64,7 +64,7 @@ public class ConsistentHash<T> {
     /**
      * All the items in the hash, to their replication factors.
      */
-    private final Map<T,Point[]> items = new HashMap<T,Point[]>();
+    private final Map<T,Point[]> items = new HashMap<>();
     private int numPoints;
 
     private final int defaultReplication;
@@ -141,15 +141,16 @@ public class ConsistentHash<T> {
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
-            return new DuplicateFilterIterator<T>(new Iterator<T>() {
-                int pos=0;
+            return new DuplicateFilterIterator<>(new Iterator<T>() {
+                int pos = 0;
+
                 public boolean hasNext() {
-                    return pos<owner.length;
+                    return pos < owner.length;
                 }
 
                 public T next() {
-                    if(!hasNext())  throw new NoSuchElementException();
-                    return (T)owner[(start+(pos++))%owner.length];
+                    if (!hasNext()) throw new NoSuchElementException();
+                    return (T) owner[(start + (pos++)) % owner.length];
                 }
 
                 public void remove() {
