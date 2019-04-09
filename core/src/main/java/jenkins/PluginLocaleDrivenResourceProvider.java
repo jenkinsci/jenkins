@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 Daniel Beck
+ * Copyright (c) 2019 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,26 @@
  */
 package jenkins;
 
-import hudson.ExtensionList;
-import org.apache.log4j.Logger;
-import org.kohsuke.MetaInfServices;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.LocaleDrivenResourceProvider;
+import hudson.ExtensionPoint;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.net.URL;
 
 /**
- * Look up plugin-provided localized resources for the given URL.
+ * Contribute localizations for arbitrary resources from plugins.
+ *
+ * @see org.kohsuke.stapler.LocaleDrivenResourceProvider
  */
-@Restricted(NoExternalUse.class)
-@MetaInfServices
-public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResourceProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(MetaLocaleDrivenResourceProvider.class.getName());
-
-    @Override
+public interface PluginLocaleDrivenResourceProvider extends ExtensionPoint {
+    /**
+     * Look up localized resources for the given resource path.
+     *
+     * @see org.kohsuke.stapler.LocaleDrivenResourceProvider
+     *
+     * @param s
+     * @return URL to the localized resource, or {@code null} if inapplicable.
+     */
     @CheckForNull
-    public URL lookup(@Nonnull String s) {
-        for (PluginLocaleDrivenResourceProvider provider : ExtensionList.lookup(PluginLocaleDrivenResourceProvider.class)) {
-            try {
-                URL url = provider.lookup(s);
-                if (url != null) {
-                    return url;
-                }
-            } catch (Exception e) {
-                LOGGER.warn("Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
-            }
-        }
-        return null;
-    }
+    URL lookup(@Nonnull String s);
 }
