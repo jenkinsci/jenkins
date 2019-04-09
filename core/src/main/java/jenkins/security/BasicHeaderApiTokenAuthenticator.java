@@ -39,7 +39,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
 
                     SecurityListener.fireAuthenticated(userDetails);
                 } else {
-                    LOGGER.log(INFO, "API token matched for user {0} but the account is [enable={1}, accountNonExpired={2}, accountNonLocked={3}, credentialsNonExpired={4}]", new Object[]{
+                    LOGGER.log(INFO, "API token matched for user {0} but the account is [enabled={1}, accountNonExpired={2}, accountNonLocked={3}, credentialsNonExpired={4}]", new Object[]{
                             username,
                             userDetails.isEnabled(),
                             userDetails.isAccountNonExpired(),
