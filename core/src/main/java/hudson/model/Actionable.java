@@ -74,12 +74,15 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Deprecated
     @Nonnull
     public List<Action> getActions() {
-        synchronized (this) {
-            if(actions == null) {
-                actions = new CopyOnWriteArrayList<Action>();
+        //this double checked synchronization is only safe if the field 'actions' is volatile
+        if (actions == null) {
+            synchronized (this) {
+                if (actions == null) {
+                    actions = new CopyOnWriteArrayList<>();
+                }
             }
-            return actions;
         }
+        return actions;
     }
 
     /**
@@ -193,7 +196,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>(1);
+        List<Action> old = new ArrayList<>(1);
         List<Action> current = getActions();
         boolean found = false;
         for (Action a2 : current) {
@@ -252,7 +255,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action type must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>();
+        List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
         for (Action a : current) {
             if (clazz.isInstance(a)) {
@@ -287,7 +290,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>();
+        List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
         boolean found = false;
         for (Action a1 : current) {

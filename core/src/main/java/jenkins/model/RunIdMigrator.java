@@ -28,14 +28,12 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.RootAction;
+import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -71,7 +69,7 @@ import static java.util.logging.Level.*;
 /**
  * Converts legacy {@code builds} directories to the current format.
  *
- * There would be one instance associated with each {@link Job}, to retain ID -> build# mapping.
+ * There would be one instance associated with each {@link Job}, to retain ID → build# mapping.
  *
  * The {@link Job#getBuildDir} is passed to every method call (rather than being cached) in case it is moved.
  */
@@ -83,12 +81,12 @@ public final class RunIdMigrator {
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
-    private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
+    private static final Map<String,Integer> EMPTY = new TreeMap<>();
 
     /**
      * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
      */
-    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<File>());
+    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
     private @Nonnull Map<String,Integer> idToNumber = EMPTY;
 
@@ -105,7 +103,7 @@ public final class RunIdMigrator {
         if (f.length() == 0) {
             return true;
         }
-        idToNumber = new TreeMap<String,Integer>();
+        idToNumber = new TreeMap<>();
         try {
             for (String line : FileUtils.readLines(f)) {
                 int i = line.indexOf(' ');
@@ -192,10 +190,10 @@ public final class RunIdMigrator {
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
     private void doMigrate(File dir) {
-        idToNumber = new TreeMap<String,Integer>();
+        idToNumber = new TreeMap<>();
         File[] kids = dir.listFiles();
         // Need to process symlinks first so we can rename to them.
-        List<File> kidsList = new ArrayList<File>(Arrays.asList(kids));
+        List<File> kidsList = new ArrayList<>(Arrays.asList(kids));
         Iterator<File> it = kidsList.iterator();
         while (it.hasNext()) {
             File kid = it.next();

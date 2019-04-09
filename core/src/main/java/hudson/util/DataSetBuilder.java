@@ -44,9 +44,9 @@ import java.util.TreeSet;
  */
 public final class DataSetBuilder<Row extends Comparable,Column extends Comparable> {
 
-    private List<Number> values = new ArrayList<Number>();
-    private List<Row> rows = new ArrayList<Row>();
-    private List<Column> columns = new ArrayList<Column>();
+    private List<Number> values = new ArrayList<>();
+    private List<Row> rows = new ArrayList<>();
+    private List<Column> columns = new ArrayList<>();
 
     public void add( Number value, Row rowKey, Column columnKey ) {
         values.add(value);
@@ -57,11 +57,11 @@ public final class DataSetBuilder<Row extends Comparable,Column extends Comparab
     public CategoryDataset build() {
         DefaultCategoryDataset ds = new DefaultCategoryDataset();
 
-        TreeSet<Row> rowSet = new TreeSet<Row>(rows);
-        TreeSet<Column> colSet = new TreeSet<Column>(columns);
+        TreeSet<Row> rowSet = new TreeSet<>(rows);
+        TreeSet<Column> colSet = new TreeSet<>(columns);
 
-        Comparable[] _rows = rowSet.toArray(new Comparable[rowSet.size()]);
-        Comparable[] _cols = colSet.toArray(new Comparable[colSet.size()]);
+        Comparable[] _rows = rowSet.toArray(new Comparable[0]);
+        Comparable[] _cols = colSet.toArray(new Comparable[0]);
 
         // insert rows and columns in the right order
         for (Comparable r : _rows)

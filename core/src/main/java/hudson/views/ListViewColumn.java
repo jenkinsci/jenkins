@@ -48,13 +48,13 @@ import net.sf.json.JSONObject;
  * Extension point for adding a column to a table rendering of {@link Item}s, such as {@link ListView}.
  *
  * <p>
- * This object must have the <tt>column.jelly</tt>. This view
+ * This object must have the {@code column.jelly}. This view
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
- * the &lt;td> tag.
+ * the {@code <td>} tag.
  *
  * <p>
- * This object may have an additional <tt>columnHeader.jelly</tt>. The default ColumnHeader
+ * This object may have an additional {@code columnHeader.jelly}. The default ColumnHeader
  * will render {@link #getColumnCaption()}.
  *
  * <p>
@@ -96,7 +96,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<ListViewColumn> LIST = new DescriptorList<ListViewColumn>(ListViewColumn.class);
+    public static final DescriptorList<ListViewColumn> LIST = new DescriptorList<>(ListViewColumn.class);
 
     /**
      * Whether this column will be shown by default.
@@ -152,7 +152,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
     private static List<ListViewColumn> createDefaultInitialColumnList(List<Descriptor<ListViewColumn>> descriptors) {
         // OK, set up default list of columns:
         // create all instances
-        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        ArrayList<ListViewColumn> r = new ArrayList<>();
         final JSONObject emptyJSON = new JSONObject();
         for (Descriptor<ListViewColumn> d : descriptors)
             try {

@@ -39,6 +39,7 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -226,11 +227,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                     LOGGER.log(FINEST, "Loaded " + b.getFullDisplayName() + " in " + Thread.currentThread().getName(), new ThisIsHowItsLoaded());
                 }
                 return b;
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "could not load " + d, e);
-            } catch (InstantiationError e) {
-                LOGGER.log(Level.WARNING, "could not load " + d, e);
-            } catch (Exception e) {
+            } catch (Exception | InstantiationError e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }

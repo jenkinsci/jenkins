@@ -26,7 +26,6 @@ package jenkins.security;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,44 +44,56 @@ public abstract class SecurityListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**
-     * Fired when a user was successfully authenticated by password.
-     * This might be via the web UI, or via REST (not with an API token) or CLI (not with an SSH key).
-     * Only {@link AbstractPasswordBasedSecurityRealm}s are considered.
-     * @param details details of the newly authenticated user, such as name and groups
+     * Fired when a user was successfully authenticated using credentials. It could be password or any other credentials.
+     * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
+     * or any other way plugins can propose.
+     * @param details details of the newly authenticated user, such as name and groups.
      */
-    protected abstract void authenticated(@Nonnull UserDetails details);
+    protected void authenticated(@Nonnull UserDetails details){}
 
     /**
-     * Fired when a user tried to authenticate by password but failed.
+     * Fired when a user tried to authenticate but failed.
+     * In case the authentication method uses multiple layers to validate the credentials,
+     * we do fire this event only when even the last layer failed to authenticate.
      * @param username the user
      * @see #authenticated
      */
-    protected abstract void failedToAuthenticate(@Nonnull String username);
+    protected void failedToAuthenticate(@Nonnull String username){}
 
     /**
-     * Fired when a user has logged in via the web UI.
+     * Fired when a user has logged in. Compared to authenticated, there is a notion of storage / cache.
      * Would be called after {@link #authenticated}.
+     * It should be called after the {@link org.acegisecurity.context.SecurityContextHolder#getContext()}'s authentication is set.
      * @param username the user
      */
-    protected abstract void loggedIn(@Nonnull String username);
+    protected void loggedIn(@Nonnull String username){}
 
     /**
-     * Fired when a user has failed to log in via the web UI.
+     * @since TODO
+     *
+     * Fired after a new user account has been created and saved to disk.
+     *
+     * @param username the user
+     */
+    protected void userCreated(@Nonnull String username) {}
+
+    /**
+     * Fired when a user has failed to log in.
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
      */
-    protected abstract void failedToLogIn(@Nonnull String username);
+    protected void failedToLogIn(@Nonnull String username){}
 
     /**
      * Fired when a user logs out.
      * @param username the user
      */
-    protected abstract void loggedOut(@Nonnull String username);
+    protected void loggedOut(@Nonnull String username){}
 
     /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            List<String> groups = new ArrayList<String>();
+            List<String> groups = new ArrayList<>();
             for (GrantedAuthority auth : details.getAuthorities()) {
                 if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                     groups.add(auth.getAuthority());
@@ -92,6 +103,14 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
         for (SecurityListener l : all()) {
             l.authenticated(details);
+        }
+    }
+
+    /** @since TODO */
+    public static void fireUserCreated(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "new user created: {0}", username);
+        for (SecurityListener l : all()) {
+            l.userCreated(username);
         }
     }
 

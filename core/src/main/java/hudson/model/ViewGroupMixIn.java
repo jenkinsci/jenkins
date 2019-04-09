@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Implements {@link ViewGroup} to be used as a "mix-in".
@@ -40,19 +42,20 @@ import java.util.List;
  * <ol>
  * <li>
  * Create three data fields in your class:
- * <pre>
+ * <pre>{@code
  * private String primaryView;
- * private CopyOnWriteArrayList&lt;View> views;
+ * private CopyOnWriteArrayList<View> views;
  * private ViewsTabBar viewsTabBar;
- * </pre>
+ * }</pre>
  * <li>
  * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
- *     List&lt;View> views() { return views; }
+ *     List&lt;View&gt; views() { return views; }
  *     ...
  * }
  * </pre>
+ * </ol>
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */
@@ -60,34 +63,57 @@ public abstract class ViewGroupMixIn {
     private final ViewGroup owner;
 
     /**
-     * Returns all the views. This list must be concurrently iterable.
+     * Returns all views in the group. This list must be modifiable and concurrently iterable.
      */
+    @Nonnull
     protected abstract List<View> views();
+
+    /**
+     * Gets primary view of the mix-in.
+     * @return Name of the primary view, {@code null} if there is no primary one defined.
+     */
+    @CheckForNull
     protected abstract String primaryView();
+
+    /**
+     * Sets the primary view.
+     * @param newName Name of the primary view to be set.
+     *                {@code null} to make the primary view undefined.
+     */
     protected abstract void primaryView(String newName);
 
     protected ViewGroupMixIn(ViewGroup owner) {
         this.owner = owner;
     }
 
-    public void addView(View v) throws IOException {
+    public void addView(@Nonnull View v) throws IOException {
         v.owner = owner;
         views().add(v);
         owner.save();
     }
 
-    public boolean canDelete(View view) {
+    public boolean canDelete(@Nonnull View view) {
         return !view.isDefault();  // Cannot delete primary view
     }
 
-    public synchronized void deleteView(View view) throws IOException {
+    public synchronized void deleteView(@Nonnull View view) throws IOException {
         if (views().size() <= 1)
             throw new IllegalStateException("Cannot delete last view");
         views().remove(view);
         owner.save();
     }
 
-    public View getView(String name) {
+    /**
+     * Gets a view by the specified name.
+     * The method iterates through {@link ViewGroup}s if required.
+     * @param name Name of the view
+     * @return View instance or {@code null} if it is missing
+     */
+    @CheckForNull
+    public View getView(@CheckForNull String name) {
+        if (name == null) {
+            return null;
+        }
         //Top level views returned first if match
         List<View> views = views();
         for (View v : views) {
@@ -104,7 +130,7 @@ public abstract class ViewGroupMixIn {
                 }
             }
         }
-        if (name != null && !name.equals(primaryView())) {
+        if (!name.equals(primaryView())) {
             // Fallback to subview of primary view if it is a ViewGroup
             View pv = getPrimaryView();
             if (pv instanceof ViewGroup)
@@ -133,7 +159,7 @@ public abstract class ViewGroupMixIn {
             if (v.hasPermission(View.READ))
                 copy.add(v);
         }
-        Collections.sort(copy, View.SORTER);
+        copy.sort(View.SORTER);
         return copy;
     }
 

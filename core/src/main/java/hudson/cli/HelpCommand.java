@@ -53,7 +53,7 @@ public class HelpCommand extends CLICommand {
     protected int run() throws Exception {
         if (!Jenkins.getActiveInstance().hasPermission(Jenkins.READ)) {
             throw new AccessDeniedException("You must authenticate to access this Jenkins.\n"
-                    + "Use --username/--password/--password-file parameters or login command.");
+                    + CLI.usage());
         }
 
         if (command != null)
@@ -65,7 +65,7 @@ public class HelpCommand extends CLICommand {
     }
 
     private int showAllCommands() {
-        Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
+        Map<String,CLICommand> commands = new TreeMap<>();
         for (CLICommand c : CLICommand.all())
             commands.put(c.getName(),c);
 

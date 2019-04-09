@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import jenkins.scm.RunWithSCM;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
@@ -70,7 +71,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.ref.WeakReference;
-import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -91,8 +91,6 @@ import static java.util.logging.Level.WARNING;
 
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -102,7 +100,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R> {
+public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCM<P,R> {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -299,7 +297,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Returns the root directory of the checked-out module.
      * <p>
-     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * This is usually where {@code pom.xml}, {@code build.xml}
      * and so on exists.
      */
     public final FilePath getModuleRoot() {
@@ -321,80 +319,44 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent().getScm().getModuleRoots(ws, this);
     }
 
-    /**
-     * List of users who committed a change since the last non-broken build till now.
-     *
-     * <p>
-     * This list at least always include people who made changes in this build, but
-     * if the previous build was a failure it also includes the culprit list from there.
-     *
-     * @return
-     *      can be empty but never null.
-     */
-    @Exported
-    public Set<User> getCulprits() {
-        if (culprits==null) {
-            Set<User> r = new HashSet<User>();
-            R p = getPreviousCompletedBuild();
-            if (p !=null && isBuilding()) {
-                Result pr = p.getResult();
-                if (pr!=null && pr.isWorseThan(Result.SUCCESS)) {
-                    // we are still building, so this is just the current latest information,
-                    // but we seems to be failing so far, so inherit culprits from the previous build.
-                    // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
-                    // this information
-                    r.addAll(p.getCulprits());
-                }
-            }
-            for (Entry e : getChangeSet())
-                r.add(e.getAuthor());
+    @Override
+    @CheckForNull public Set<String> getCulpritIds() {
+        return culprits;
+    }
 
-            if (upstreamCulprits) {
-                // If we have dependencies since the last successful build, add their authors to our list
-                if (getPreviousNotFailedBuild() != null) {
-                    Map <AbstractProject,DependencyChange> depmap = getDependencyChanges(getPreviousSuccessfulBuild());
-                    for (DependencyChange dep : depmap.values()) {
-                        for (AbstractBuild<?,?> b : dep.getBuilds()) {
-                            for (Entry entry : b.getChangeSet()) {
-                                r.add(entry.getAuthor());
-                            }
+    @Override
+    @Exported
+    @Nonnull public Set<User> getCulprits() {
+        return RunWithSCM.super.getCulprits();
+    }
+
+    @Override
+    public boolean shouldCalculateCulprits() {
+        return getCulpritIds() == null;
+    }
+
+    @Override
+    @Nonnull
+    public Set<User> calculateCulprits() {
+        Set<User> c = RunWithSCM.super.calculateCulprits();
+
+        AbstractBuild<P,R> p = getPreviousCompletedBuild();
+        if (upstreamCulprits) {
+            // If we have dependencies since the last successful build, add their authors to our list
+            if (p != null && p.getPreviousNotFailedBuild() != null) {
+                Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
+                        p.getDependencyChanges(p.getPreviousSuccessfulBuild());
+                for (AbstractBuild.DependencyChange dep : depmap.values()) {
+                    for (AbstractBuild<?, ?> b : dep.getBuilds()) {
+                        for (ChangeLogSet.Entry entry : b.getChangeSet()) {
+                            c.add(entry.getAuthor());
                         }
                     }
                 }
             }
-
-            return r;
         }
 
-        return new AbstractSet<User>() {
-            public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(culprits.iterator()) {
-                    protected User adapt(String id) {
-                        return User.get(id);
-                    }
-                };
-            }
-
-            public int size() {
-                return culprits.size();
-            }
-        };
-    }
-
-    /**
-     * Returns true if this user has made a commit to this build.
-     *
-     * @since 1.191
-     */
-    public boolean hasParticipant(User user) {
-        for (ChangeLogSet.Entry e : getChangeSet())
-            try{
-                if (e.getAuthor()==user)
-                    return true;
-            } catch (RuntimeException re) { 
-                LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + getParent().getDisplayName() + ", " + getDisplayName(), re);
-            }
-        return false;
+        return c;
     }
 
     /**
@@ -474,11 +436,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
+                FilePath rootPath = n.getRootPath();
+                if (rootPath == null) {
+                    throw new AbortException(n.getDisplayName() + " seems to be offline");
+                }
                 // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+                return Lease.createDummyLease(rootPath.child(getEnvironment(listener).expand(customWorkspace)));
             }
             // TODO: this cast is indicative of abstraction problem
-            return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
+            FilePath ws = n.getWorkspaceFor((TopLevelItem) getProject());
+            if (ws == null) {
+                throw new AbortException(n.getDisplayName() + " seems to be offline");
+            }
+            return wsl.allocate(ws, getBuild());
         }
 
         public Result run(@Nonnull BuildListener listener) throws Exception {
@@ -494,8 +464,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (node instanceof Jenkins) {
                     listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
                 } else {
-                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, builtOn)));
-                    Set<LabelAtom> assignedLabels = new HashSet<LabelAtom>(node.getAssignedLabels());
+                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, node.getDisplayName())));
+                    Set<LabelAtom> assignedLabels = new HashSet<>(node.getAssignedLabels());
                     assignedLabels.remove(node.getSelfLabel());
                     if (!assignedLabels.isEmpty()) {
                         boolean first = true;
@@ -566,7 +536,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     l = bw.decorateLauncher(AbstractBuild.this,l,listener);
             }
 
-            buildEnvironments = new ArrayList<Environment>();
+            buildEnvironments = new ArrayList<>();
 
             for (RunListener rl: RunListener.all()) {
                 Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
@@ -613,7 +583,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         }
 
                         build.scm = scm.createChangeLogParser();
-                        build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet());
+                        build.changeSet = new WeakReference<>(build.calcChangeSet());
 
                         for (SCMListener l : SCMListener.all())
                             try {
@@ -665,7 +635,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 post2(listener);
             } finally {
                 // update the culprit list
-                HashSet<String> r = new HashSet<String>();
+                HashSet<String> r = new HashSet<>();
                 for (User u : getCulprits())
                     r.add(u.getId());
                 culprits = ImmutableSortedSet.copyOf(r);
@@ -724,10 +694,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                                 setResult(Result.FAILURE);
                             }
                         }
-                    } catch (Exception e) {
-                        reportError(bs, e, listener, phase);
-                        r = false;
-                    } catch (LinkageError e) {
+                    } catch (Exception | LinkageError e) {
                         reportError(bs, e, listener, phase);
                         r = false;
                     }
@@ -762,12 +729,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * Calls a build step.
          */
         protected final boolean perform(BuildStep bs, BuildListener listener) throws InterruptedException, IOException {
-            BuildStepMonitor mon;
-            try {
-                mon = bs.getRequiredMonitorService();
-            } catch (AbstractMethodError e) {
-                mon = BuildStepMonitor.BUILD;
-            }
+            BuildStepMonitor mon = bs.getRequiredMonitorService();
             Result oldResult = AbstractBuild.this.getResult();
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.started(AbstractBuild.this, bs, listener);
@@ -777,10 +739,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try {
 
                 canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
-            } catch (RequestAbortedException ex) {
-                // Channel is closed, do not continue
-                reportBrokenChannel(listener);
-            } catch (ChannelClosedException ex) {
+            } catch (RequestAbortedException | ChannelClosedException ex) {
                 // Channel is closed, do not continue
                 reportBrokenChannel(listener);
             } catch (RuntimeException ex) {
@@ -838,20 +797,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
     }
 
-    /**
-     * get the fingerprints associated with this build
-     *
-     * @return never null
-     */
-    @Exported(name = "fingerprint", inline = true, visibility = -1)
-    public Collection<Fingerprint> getBuildFingerprints() {
-        FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
-        if (fingerprintAction != null) {
-            return fingerprintAction.getFingerprints().values();
-        }
-        return Collections.<Fingerprint>emptyList();
-    }
-
 	/*
      * No need to lock the entire AbstractBuild on change set calculation
      */
@@ -863,7 +808,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return never null.
      */
     @Exported
-    public ChangeLogSet<? extends Entry> getChangeSet() {
+    @Nonnull public ChangeLogSet<? extends Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
                 scm = NullChangeLogParser.INSTANCE;                
@@ -883,14 +828,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if (cs==null)
             cs = ChangeLogSet.createEmpty(this);
 
-        changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
+        changeSet = new WeakReference<>(cs);
         return cs;
     }
 
-    @Restricted(DoNotUse.class) // for project-changes.jelly
-    public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+    @Override
+    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
         ChangeLogSet<? extends Entry> cs = getChangeSet();
-        return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
+        return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
     }
 
     /**
@@ -908,9 +853,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         try {
             return scm.parse(this,changelogFile);
-        } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
-        } catch (SAXException e) {
+        } catch (IOException | SAXException e) {
             LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         }
         return ChangeLogSet.createEmpty(this);
@@ -952,7 +895,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public EnvironmentList getEnvironments() {
         Executor e = Executor.currentExecutor();
         if (e!=null && e.getCurrentExecutable()==this) {
-            if (buildEnvironments==null)    buildEnvironments = new ArrayList<Environment>();
+            if (buildEnvironments==null)    buildEnvironments = new ArrayList<>();
             return new EnvironmentList(buildEnvironments); 
         }
         
@@ -985,7 +928,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.378
      */
     public Set<String> getSensitiveBuildVariables() {
-        Set<String> s = new HashSet<String>();
+        Set<String> s = new HashSet<>();
 
         ParametersAction parameters = getAction(ParametersAction.class);
         if (parameters != null) {
@@ -1022,7 +965,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      The returned map is mutable so that subtypes can put more values.
      */
     public Map<String,String> getBuildVariables() {
-        Map<String,String> r = new HashMap<String, String>();
+        Map<String,String> r = new HashMap<>();
 
         ParametersAction parameters = getAction(ParametersAction.class);
         if (parameters!=null) {
@@ -1049,11 +992,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Creates {@link VariableResolver} backed by {@link #getBuildVariables()}.
      */
     public final VariableResolver<String> getBuildVariableResolver() {
-        return new VariableResolver.ByMap<String>(getBuildVariables());
+        return new VariableResolver.ByMap<>(getBuildVariables());
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AbstractTestResultAction}.
      */
     @Deprecated
     public Action getTestResultAction() {
@@ -1065,7 +1008,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AggregatedTestResultAction}.
      */
     @Deprecated
     public Action getAggregatedTestResultAction() {
@@ -1108,7 +1051,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 AbstractBuild<?,?> b = p.getBuildByNumber(i);
                 if (b!=null)
-                    return Messages.AbstractBuild_KeptBecause(b);
+                    return Messages.AbstractBuild_KeptBecause(p.hasPermission(Item.READ) ? b.toString() : "?");
             }
         }
 
@@ -1222,7 +1165,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      of builds (which can be empty if no build uses the artifact from this build or downstream is not {@link AbstractProject#isFingerprintConfigured}.)
      */
     public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
-        Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
+        Map<AbstractProject,RangeSet> r = new HashMap<>();
         for (AbstractProject p : getParent().getDownstreamProjects()) {
             if (p.isFingerprintConfigured())
                 r.put(p,getDownstreamRelationship(p));
@@ -1249,7 +1192,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     private Map<AbstractProject, Integer> _getUpstreamBuilds(Collection<AbstractProject> projects) {
-        Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+        Map<AbstractProject,Integer> r = new HashMap<>();
         for (AbstractProject p : projects) {
             int n = getUpstreamRelationship(p);
             if (n>=0)
@@ -1271,7 +1214,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         Map<AbstractProject,Integer> ndep = n.getDependencies(true);
         Map<AbstractProject,Integer> odep = o.getDependencies(true);
 
-        Map<AbstractProject,DependencyChange> r = new HashMap<AbstractProject,DependencyChange>();
+        Map<AbstractProject,DependencyChange> r = new HashMap<>();
 
         for (Map.Entry<AbstractProject,Integer> entry : odep.entrySet()) {
             AbstractProject p = entry.getKey();
@@ -1323,7 +1266,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * of IDs, but due to log rotations, some builds may be already unavailable.
          */
         public List<AbstractBuild> getBuilds() {
-            List<AbstractBuild> r = new ArrayList<AbstractBuild>();
+            List<AbstractBuild> r = new ArrayList<>();
 
             AbstractBuild<?,?> b = project.getNearestBuild(fromId);
             if (b!=null && b.getNumber()==fromId)
@@ -1347,6 +1290,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      Use {@link #doStop()}
      */
     @Deprecated
+    @RequirePOST // #doStop() should be preferred, but better to be safe
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

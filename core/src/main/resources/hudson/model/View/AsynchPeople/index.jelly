@@ -101,7 +101,7 @@ THE SOFTWARE.
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th />
-          <th>${%User Id}</th>
+          <th>${%User ID}</th>
           <th>${%Name}</th>
           <th initialSortDir="up">${%Last Commit Activity}</th>
           <th>${%On}</th>

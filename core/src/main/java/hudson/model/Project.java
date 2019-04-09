@@ -26,7 +26,6 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
-import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.SCM;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -109,10 +108,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return this;
     }
 
-    @Override public QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions) {
-        return scheduleBuild2(quietPeriod, null, actions);
-    }
-
     @Override public SCMTrigger getSCMTrigger() {
         return getTrigger(SCMTrigger.class);
     }
@@ -162,7 +157,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
-        final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+        final Set<ResourceActivity> activities = new HashSet<>();
 
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(getBuildersList(),ResourceActivity.class));

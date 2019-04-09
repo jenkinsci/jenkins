@@ -30,6 +30,7 @@ import org.apache.tools.tar.TarEntry;
 import java.io.FilterOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
@@ -102,7 +103,7 @@ public class TarOutputStream extends FilterOutputStream {
     /**
      * Set the long file mode.
      * This can be LONGFILE_ERROR(0), LONGFILE_TRUNCATE(1) or LONGFILE_GNU(2).
-     * This specifies the treatment of long file names (names >= TarConstants.NAMELEN).
+     * This specifies the treatment of long file names (names ≥ TarConstants.NAMELEN).
      * Default is LONGFILE_ERROR.
      * @param longFileMode the mode to use
      */
@@ -186,7 +187,7 @@ public class TarOutputStream extends FilterOutputStream {
                 TarEntry longLinkEntry = new TarEntry(TarConstants.GNU_LONGLINK,
                                                       TarConstants.LF_GNUTYPE_LONGNAME);
 
-                byte[] name = entry.getName().getBytes("UTF-8");
+                byte[] name = entry.getName().getBytes(StandardCharsets.UTF_8);
                 longLinkEntry.setSize(name.length + 1);
                 putNextEntry(longLinkEntry);
                 write(name);

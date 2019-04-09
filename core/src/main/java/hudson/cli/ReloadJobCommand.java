@@ -26,9 +26,9 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
 import hudson.model.Item;
 
+import hudson.model.Items;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -62,14 +62,13 @@ public class ReloadJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
+        final HashSet<String> hs = new HashSet<>();
         hs.addAll(jobs);
 
         for (String job_s: hs) {
             AbstractItem job = null;
 
             try {
-                // TODO: JENKINS-30786
                 Item item = jenkins.getItemByFullName(job_s);
                 if (item instanceof AbstractItem) {
                     job = (AbstractItem) item;
@@ -78,11 +77,10 @@ public class ReloadJobCommand extends CLICommand {
                 }
 
                 if(job == null) {
-                    // TODO: JENKINS-30785
-                    AbstractProject project = AbstractProject.findNearest(job_s);
+                    AbstractItem project = Items.findNearest(AbstractItem.class, job_s, jenkins);
                     throw new IllegalArgumentException(project == null ?
-                        "No such job \u2018" + job_s + "\u2019 exists." :
-                        String.format("No such job \u2018%s\u2019 exists. Perhaps you meant \u2018%s\u2019?",
+                        "No such item \u2018" + job_s + "\u2019 exists." :
+                        String.format("No such item \u2018%s\u2019 exists. Perhaps you meant \u2018%s\u2019?",
                                 job_s, project.getFullName()));
                 }
 

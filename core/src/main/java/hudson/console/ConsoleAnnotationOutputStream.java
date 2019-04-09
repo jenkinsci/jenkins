@@ -24,9 +24,6 @@
 package hudson.console;
 
 import hudson.MarkupText;
-import org.apache.commons.io.output.ProxyWriter;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -38,6 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.output.ProxyWriter;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
  * Used to convert plain text console output (as byte sequence) + embedded annotations into HTML (as char sequence),
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  * @since 1.349
  */
 public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputStream {
-    private final Writer out;
+    private final Writer out; // not an OutputStream so cannot use LineTransformationOutputStream.Delegating
     private final T context;
     private ConsoleAnnotator<T> ann;
 
@@ -72,7 +72,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
         this.lineOut = new WriterOutputStream(line,charset);
     }
 
-    public ConsoleAnnotator getConsoleAnnotator() {
+    public ConsoleAnnotator<T> getConsoleAnnotator() {
         return ann;
     }
 
@@ -80,6 +80,8 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
      * Called after we read the whole line of plain text, which is stored in {@link #buf}.
      * This method performs annotations and send the result to {@link #out}.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"}) // appears to be unsound
+    @Override
     protected void eol(byte[] in, int sz) throws IOException {
         line.reset();
         final StringBuffer strBuf = line.getStringBuffer();
@@ -109,18 +111,17 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     final ConsoleNote a = ConsoleNote.readFrom(new DataInputStream(b));
                     if (a!=null) {
                         if (annotators==null)
-                            annotators = new ArrayList<ConsoleAnnotator<T>>();
+                            annotators = new ArrayList<>();
                         annotators.add(new ConsoleAnnotator<T>() {
-                            public ConsoleAnnotator annotate(T context, MarkupText text) {
+                            @Override
+                            public ConsoleAnnotator<T> annotate(T context, MarkupText text) {
                                 return a.annotate(context,text,charPos);
                             }
                         });
                     }
-                } catch (IOException e) {
+                } catch (IOException | ClassNotFoundException e) {
                     // if we failed to resurrect an annotation, ignore it.
-                    LOGGER.log(Level.FINE,"Failed to resurrect annotation",e);
-                } catch (ClassNotFoundException e) {
-                    LOGGER.log(Level.FINE,"Failed to resurrect annotation",e);
+                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest)) + "\"", e);
                 }
 
                 int bytesUsed = rest - b.available(); // bytes consumed by annotations

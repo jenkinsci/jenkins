@@ -25,17 +25,20 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import hudson.tasks.*;
-import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
+import java.io.Closeable;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
+import hudson.util.Scrambler;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
@@ -44,7 +47,6 @@ import hudson.Launcher.RemoteLauncher;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.model.queue.SubTaskContributor;
-import hudson.model.queue.AbstractSubTask;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
@@ -66,6 +68,8 @@ import java.io.File;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.model.labels.LabelAtom;
 import hudson.scm.SCMDescriptor;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProvisioner;
@@ -249,7 +253,8 @@ public class ProjectTest {
         assertEquals("Scm retry count should be the same as global scm retry count.", 6, p.getScmCheckoutRetryCount());
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
-        form.getInputByName("hasCustomScmCheckoutRetryCount").click();
+        // required due to the new default behavior of click
+        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
@@ -536,8 +541,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doCancelQueue(null, null);
             fail("User should not have permission to build project");
         }
@@ -554,11 +558,9 @@ public class ProjectTest {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
-        j.jenkins.setSecurityRealm(realm); 
-        User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("john", true);
+        try (ACLContext as = ACL.as(user)) {
             project.doDoDelete(null, null);
             fail("User should not have permission to build project");
         }
@@ -570,7 +572,13 @@ public class ProjectTest {
         auth.add(Jenkins.READ, user.getId());
         auth.add(Job.READ, user.getId());
         auth.add(Job.DELETE, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl() + "delete").getForms();
+
+        // use Basic to speedup the test, normally it's pure UI testing
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId());
+        HtmlPage p = wc.goTo(project.getUrl() + "delete");
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("doDelete".equals(form.getAttribute("action"))){
                 j.submit(form);
@@ -589,8 +597,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doDoWipeOutWorkspace();
             fail("User should not have permission to build project");
         }
@@ -608,9 +615,13 @@ public class ProjectTest {
         String cmd = "echo hello > change.log";
         project.getBuildersList().add(Functions.isWindows()? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(project);
-        JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
+        assertEquals(p.getWebResponse().getStatusCode(), 200);
+
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
     }
@@ -624,8 +635,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doDisable();
             fail("User should not have permission to build project");
         }
@@ -637,7 +647,12 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
+        HtmlPage p = wc.goTo(project.getUrl());
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("disable".equals(form.getAttribute("action"))){
                 j.submit(form);
@@ -655,9 +670,10 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        project.disable();
-        try{
+        try (ACLContext as = ACL.as(user)) {
+            project.disable();
+        }
+        try (ACLContext as = ACL.as(user)) {
             project.doEnable();
             fail("User should not have permission to build project");
         }
@@ -669,7 +685,12 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
+        HtmlPage p = wc.goTo(project.getUrl());
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("enable".equals(form.getAttribute("action"))){
                 j.submit(form);
@@ -709,7 +730,7 @@ public class ProjectTest {
     }
     
     /**
-     * Job is restricted, but label can not be provided by any cloud, only normal slaves. Then job will not submit, because no slave is available.
+     * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
      * @throws Exception
      */
     @Test
@@ -729,12 +750,12 @@ public class ProjectTest {
         j.buildAndAssertSuccess(proj);        
 
         //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
-        //We tell our mock SCM to return that it has got changes. But since there are no slaves, we get the desired result. 
+        //We tell our mock SCM to return that it has got changes. But since there are no agents, we get the desired result. 
         Slave s2 = j.createSlave();
         proj.setAssignedLabel(s2.getSelfLabel());
         requiresWorkspaceScm.hasChange = true;
         
-        //Poll (We now should have NO online slaves, this should now return NO_CHANGES.
+        //Poll (We now should have NO online agents, this should now return NO_CHANGES.
         PollingResult pr = proj.poll(j.createTaskListener());
         assertFalse(pr.hasChanges());
         
@@ -924,7 +945,7 @@ public class ProjectTest {
         
     }
     
-    public static class SubTaskImpl extends AbstractSubTask{
+    public static class SubTaskImpl implements SubTask{
         
         public String projectName;
 

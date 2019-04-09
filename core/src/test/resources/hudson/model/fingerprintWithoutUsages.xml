@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<fingerprint>
+  <timestamp>2018-02-21 16:33:12.291 UTC</timestamp>
+  <original>
+    <name>maven1/test:jenkinsfile-example</name>
+    <number>4</number>
+  </original>
+  <md5sum>f003726dfd1d07868e3c1ab5aab0682d</md5sum>
+  <fileName>test:jenkinsfile-example-1.0-SNAPSHOT.jar</fileName>
+  <facets/>
+</fingerprint>

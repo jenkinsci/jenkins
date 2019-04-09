@@ -6,6 +6,7 @@ import hudson.util.Secret;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 
 /**
  * Confidential information that gets stored as a singleton in Jenkins, mostly some random token value.

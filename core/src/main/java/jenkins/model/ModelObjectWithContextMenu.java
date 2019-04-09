@@ -53,20 +53,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
      * for more details of what it does. This should suit most implementations.
      */
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
+    ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
 
     /**
      * Data object that represents the context menu.
      *
-     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that &lt;l:breadcrumb/> understands.
+     * Via {@link HttpResponse}, this class is capable of converting itself to JSON that {@code <l:breadcrumb/>} understands.
      */
     @ExportedBean
-    public class ContextMenu implements HttpResponse {
+    class ContextMenu implements HttpResponse {
         /**
          * The actual contents of the menu.
          */
         @Exported(inline=true)
-        public final List<MenuItem> items = new ArrayList<MenuItem>();
+        public final List<MenuItem> items = new ArrayList<>();
         
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);
@@ -180,7 +180,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * 
          * <p>
          * This method uses {@code sidepanel.groovy} to run the side panel generation, captures
-         * the use of &lt;l:task> tags, and then converts those into {@link MenuItem}s. This is
+         * the use of {@code <l:task>} tags, and then converts those into {@link MenuItem}s. This is
          * supposed to make this work with most existing {@link ModelObject}s that follow the standard
          * convention.
          * 
@@ -225,7 +225,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * Menu item in {@link ContextMenu}
      */
     @ExportedBean
-    public class MenuItem {
+    class MenuItem {
         /**
          * Target of the link.
          *

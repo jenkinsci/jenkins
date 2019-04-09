@@ -27,6 +27,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.lang.ArrayUtils;
 
 import javax.annotation.CheckForNull;
 import javax.servlet.http.HttpServletRequest;
@@ -41,9 +42,9 @@ import java.util.HashMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MultipartFormDataParser {
+public class MultipartFormDataParser implements AutoCloseable {
     private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-    private final Map<String,FileItem> byName = new HashMap<String,FileItem>();
+    private final Map<String,FileItem> byName = new HashMap<>();
 
     public MultipartFormDataParser(HttpServletRequest request) throws ServletException {
         try {
@@ -73,6 +74,12 @@ public class MultipartFormDataParser {
             item.delete();
     }
 
+    /** Alias for {@link #cleanUp}. */
+    @Override
+    public void close() {
+        cleanUp();
+    }
+
     /**
      * Checks a Content-Type string to assert if it is "multipart/form-data".
      *
@@ -86,16 +93,6 @@ public class MultipartFormDataParser {
         }
 
         String[] parts = contentType.split(";");
-        if (parts.length == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < parts.length; i++) {
-            if ("multipart/form-data".equals(parts[i])) {
-                return true;
-            }
-        }
-
-        return false;
+        return ArrayUtils.contains(parts, "multipart/form-data");
     }
 }

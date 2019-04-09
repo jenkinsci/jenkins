@@ -13,6 +13,7 @@ for (p in new File(resDir, oldview).parentFile.listFiles()) {
     def n = p.name;
     if (n == "${basename}.properties" || n.startsWith("${basename}_") && n.endsWith(".properties")) {
         def lines = p.readLines('ISO-8859-1');
+        // TODO does not handle multiline values correctly
         def matches = lines.findAll({it.startsWith("${key}=")});
         if (!matches.isEmpty()) {
             lines.removeAll(matches);
@@ -24,6 +25,7 @@ for (p in new File(resDir, oldview).parentFile.listFiles()) {
             } else {
                 def nue = new File(resDir, newview + n.substring(basename.length()));
                 println("moving ${matches.size()} matches from ${n} to ${nue.name}");
+                // TODO if the original lacked a trailing newline, this will corrupt previously final key
                 nue.withWriterAppend('ISO-8859-1') {out ->
                         matches.each {line -> out.writeLine(line)}
                 }

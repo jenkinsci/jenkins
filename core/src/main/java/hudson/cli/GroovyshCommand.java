@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
-import hudson.remoting.ChannelClosedException;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -56,7 +55,7 @@ public class GroovyshCommand extends CLICommand {
         return Messages.GroovyshCommand_ShortDescription();
     }
 
-    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<String>();
+    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<>();
 
     @Override
     protected int run() {
@@ -110,25 +109,6 @@ public class GroovyshCommand extends CLICommand {
         };
         Groovysh shell = new Groovysh(cl, binding, io, registrar);
         shell.getImports().add("hudson.model.*");
-
-        // defaultErrorHook doesn't re-throw IOException, so ShellRunner in
-        // Groovysh will keep looping forever if we don't terminate when the
-        // channel is closed
-        final Closure originalErrorHook = shell.getErrorHook();
-        shell.setErrorHook(new Closure(shell, shell) {
-            private static final long serialVersionUID = 1L;
-
-            @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
-            public Object doCall(Object[] args) throws ChannelClosedException {
-                if (args.length == 1 && args[0] instanceof ChannelClosedException) {
-                    throw (ChannelClosedException)args[0];
-                }
-
-                return originalErrorHook.call(args);
-            }
-        });
-
         return shell;
     }
 

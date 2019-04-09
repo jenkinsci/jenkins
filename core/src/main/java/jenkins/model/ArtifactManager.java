@@ -26,12 +26,14 @@ package jenkins.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.ArtifactArchiver;
 import java.io.IOException;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import jenkins.util.VirtualFile;
 
 /**
@@ -46,14 +48,14 @@ public abstract class ArtifactManager {
      * The selected manager will be persisted inside a build, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
      * @param build a historical build with which this manager was associated
      */
-    public abstract void onLoad(Run<?,?> build);
+    public abstract void onLoad(@Nonnull Run<?,?> build);
 
     /**
      * Archive all configured artifacts from a build.
      * <p>If called multiple times for the same build, do not delete the old artifacts but keep them all, unless overwritten.
      * For example, the XVNC plugin could use this to save {@code screenshot.jpg} if so configured.
      * <p>This method is typically invoked on a running build, though e.g. in the case of Maven module builds,
-     * the build may actually be {@link hudson.model.Run.State#COMPLETED} when this is called
+     * the build may actually be {@code Run.State.COMPLETED} when this is called
      * (since it is the parent build which is still running and performing archiving).
      * @param workspace the root directory from which to copy files (typically {@link AbstractBuild#getWorkspace} but not necessarily)
      * @param launcher a launcher to use if external processes need to be forked

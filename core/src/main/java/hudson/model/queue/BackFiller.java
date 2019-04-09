@@ -12,7 +12,7 @@ import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.ExecutorSlot;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.MappingWorksheet.WorkChunk;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +32,7 @@ public class BackFiller extends LoadPredictor {
     @Override
     public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
         TimeRange timeRange = new TimeRange(start, end - start);
-        List<FutureLoad> loads = new ArrayList<FutureLoad>();
+        List<FutureLoad> loads = new ArrayList<>();
 
         for (BuildableItem bi : Jenkins.getInstance().getQueue().getBuildableItems()) {
             TentativePlan tp = bi.getAction(TentativePlan.class);
@@ -94,7 +94,7 @@ public class BackFiller extends LoadPredictor {
         recursion = true;
         try {
             // pretend for now that all executors are available and decide some assignment that's executable.
-            List<PseudoExecutorSlot> slots = new ArrayList<PseudoExecutorSlot>();
+            List<PseudoExecutorSlot> slots = new ArrayList<>();
             for (Computer c : Jenkins.getInstance().getComputers()) {
                 if (c.isOffline())  continue;
                 for (Executor e : c.getExecutors()) {
@@ -109,7 +109,7 @@ public class BackFiller extends LoadPredictor {
             if (m==null)    return null;
 
             // figure out how many executors we need on each computer?
-            Map<Computer,Integer> footprint = new HashMap<Computer, Integer>();
+            Map<Computer,Integer> footprint = new HashMap<>();
             for (Entry<WorkChunk, ExecutorChunk> e : m.toMap().entrySet()) {
                 Computer c = e.getValue().computer;
                 Integer v = footprint.get(c);
@@ -124,7 +124,7 @@ public class BackFiller extends LoadPredictor {
             // The downside of guessing the duration wrong is that we can end up creating tentative plans
             // afterward that may be incorrect, but those plans will be rebuilt.
             long d = bi.task.getEstimatedDuration();
-            if (d<=0)    d = TimeUnit2.MINUTES.toMillis(5);
+            if (d<=0)    d = TimeUnit.MINUTES.toMillis(5);
 
             TimeRange slot = new TimeRange(System.currentTimeMillis(), d);
 

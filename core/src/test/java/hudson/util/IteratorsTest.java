@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -77,9 +78,27 @@ public class IteratorsTest {
         assertEquals("[]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,4,6).iterator(), EVEN)));
     }
 
-    public static final CountingPredicate<Integer> EVEN = new CountingPredicate<Integer>() {
-        public boolean apply(int index, Integer input) {
-            return input % 2 == 0;
-        }
-    };
+    public static final CountingPredicate<Integer> EVEN = (index, input) -> input % 2 == 0;
+
+    @Issue("JENKINS-51779")
+    @Test
+    public void skip() {
+        List<Integer> lst = Iterators.sequence(1, 4);
+        Iterator<Integer> it = lst.iterator();
+        Iterators.skip(it, 0);
+        assertEquals("[1, 2, 3]", com.google.common.collect.Iterators.toString(it));
+        it = lst.iterator();
+        Iterators.skip(it, 1);
+        assertEquals("[2, 3]", com.google.common.collect.Iterators.toString(it));
+        it = lst.iterator();
+        Iterators.skip(it, 2);
+        assertEquals("[3]", com.google.common.collect.Iterators.toString(it));
+        it = lst.iterator();
+        Iterators.skip(it, 3);
+        assertEquals("[]", com.google.common.collect.Iterators.toString(it));
+        it = lst.iterator();
+        Iterators.skip(it, 4);
+        assertEquals("[]", com.google.common.collect.Iterators.toString(it));
+    }
+
 }

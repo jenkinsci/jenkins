@@ -47,6 +47,7 @@ public class GetJobCommandTest {
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintStream outS = new PrintStream(out);
+        // TODO switch to CLICommandInvoker
         int result = new GetJobCommand().main(Collections.singletonList("d/p"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
         outS.flush();
         String output = out.toString();

@@ -25,11 +25,7 @@ package hudson.cli;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
-import hudson.cli.util.ScriptLoader;
-import hudson.model.AbstractProject;
 import jenkins.model.Jenkins;
-import hudson.model.Item;
-import hudson.model.Run;
 import hudson.Extension;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -52,14 +48,14 @@ public class GroovyCommand extends CLICommand {
         return Messages.GroovyCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '=' to represent stdin.")
+    @Argument(metaVar="SCRIPT",usage="Script to be executed. Only '=' (to represent stdin) is supported.")
     public String script;
 
     /**
      * Remaining arguments.
      */
     @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
-    public List<String> remaining = new ArrayList<String>();
+    public List<String> remaining = new ArrayList<>();
 
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
@@ -70,23 +66,9 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stdin",stdin);
         binding.setProperty("stdout",stdout);
         binding.setProperty("stderr",stderr);
-        binding.setProperty("channel",channel);
-
-        if (channel != null) {
-            String j = getClientEnvironmentVariable("JOB_NAME");
-            if (j != null) {
-                Item job = Jenkins.getActiveInstance().getItemByFullName(j);
-                binding.setProperty("currentJob", job);
-                String b = getClientEnvironmentVariable("BUILD_NUMBER");
-                if (b != null && job instanceof AbstractProject) {
-                    Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
-                    binding.setProperty("currentBuild", r);
-                }
-            }
-        }
 
         GroovyShell groovy = new GroovyShell(Jenkins.getActiveInstance().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
+        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[0]));
         return 0;
     }
 
@@ -99,7 +81,8 @@ public class GroovyCommand extends CLICommand {
         if (script.equals("="))
             return IOUtils.toString(stdin);
 
-        return checkChannel().call(new ScriptLoader(script));
+        checkChannel();
+        return null; // never called
     }
 }
 

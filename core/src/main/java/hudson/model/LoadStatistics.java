@@ -28,7 +28,6 @@ import jenkins.util.SystemProperties;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.Tasks;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
@@ -52,6 +51,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import javax.annotation.CheckForNull;
 
@@ -377,7 +377,7 @@ public abstract class LoadStatistics {
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
-    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
+    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", (int)TimeUnit.SECONDS.toMillis(10));
 
     /**
      * Periodically update the load statistics average.
@@ -406,9 +406,11 @@ public abstract class LoadStatistics {
         private int count(List<Queue.BuildableItem> bis, Label l) {
             int q=0;
             for (Queue.BuildableItem bi : bis) {
-                for (SubTask st : Tasks.getSubTasksOf(bi.task))
-                    if (bi.getAssignedLabelFor(st)==l)
+                for (SubTask st : bi.task.getSubTasks()) {
+                    if (bi.getAssignedLabelFor(st) == l) {
                         q++;
+                    }
+                }
             }
             return q;
         }

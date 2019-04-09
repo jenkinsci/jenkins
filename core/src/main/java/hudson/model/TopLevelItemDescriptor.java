@@ -125,7 +125,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      *
      * <p>
      * Used as the caption when the user chooses what item type to create.
-     * The descriptor implementation also needs to have <tt>newInstanceDetail.jelly</tt>
+     * The descriptor implementation also needs to have {@code newInstanceDetail.jelly}
      * script, which will be used to render the text below the caption
      * that explains the item type.
      */
@@ -135,10 +135,11 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
     }
 
     /**
-     * A description of this kind of item type. This description can contain HTML code but it is recommend to use text plain
-     * in order to avoid how it should be represented.
+     * A description of this kind of item type. This description can contain HTML code but it is recommended that
+     * you use plain text in order to be consistent with the rest of Jenkins.
      *
-     * This method should be called in a thread where Stapler is associated, but it will return an empty string.
+     * This method should be called from a thread where Stapler is handling an HTTP request, otherwise it will
+     * return an empty string.
      *
      * @return A string, by default the value from newInstanceDetail view is taken.
      *
@@ -187,7 +188,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
      * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
      *
-     * @see {@link FreeStyleProject.DescriptorImpl#getIconFilePathPattern()}
+     * @see FreeStyleProject.DescriptorImpl#getIconFilePathPattern()
      *
      * @return A string or null if it is not defined.
      *

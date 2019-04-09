@@ -35,7 +35,7 @@ THE SOFTWARE.
 
       <h1>${%Build Time Trend}</h1>
           <div align="center">
-            <img src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[Build time graph]" style="float:right"/>
+            <img src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" style="float:right"/>
           </div>
 
           <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>

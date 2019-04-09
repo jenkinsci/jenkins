@@ -77,8 +77,8 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      * given job type.
      * 
      * <p>
-     * The default implementation of this method checks if the given job type is assignable to 'J' of
-     * {@link JobProperty}<tt>&lt;J></tt>, but subtypes can extend this to change this behavior.
+     * The default implementation of this method checks if the given job type is assignable to {@code J} of
+     * {@link JobProperty}{@code <J>}, but subtypes can extend this to change this behavior.
      *
      * @return
      *      true to indicate applicable, in which case the property will be
@@ -99,7 +99,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
      */
     public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
-        List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
+        List<JobPropertyDescriptor> r = new ArrayList<>();
         for (JobPropertyDescriptor p : all())
             if(p.isApplicable(clazz))
                 r.add(p);

@@ -116,7 +116,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * @deprecated as of 1.467
-     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      Override the {@link #run()} method by calling {@link #execute(hudson.model.Run.RunExecution)} with
      *      proper execution object.
      */
     @Restricted(NoExternalUse.class)
@@ -147,7 +147,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
             Result r = null;
             try {
-                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
+                List<BuildWrapper> wrappers = new ArrayList<>(project.getBuildWrappers().values());
                 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)

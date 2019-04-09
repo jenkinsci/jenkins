@@ -57,18 +57,18 @@ import java.util.Map.Entry;
  *
  * BeanBuilder builder = new BeanBuilder()
  * builder.beans {
- *   dataSource(BasicDataSource) {                  // <--- invokeMethod
+ *   dataSource(BasicDataSource) {                  // ← invokeMethod
  *      driverClassName = "org.hsqldb.jdbcDriver"
  *      url = "jdbc:hsqldb:mem:grailsDB"
- *      username = "sa"                            // <-- setProperty
+ *      username = "sa"                            // ← setProperty
  *      password = ""
  *      settings = [mynew:"setting"]
  *  }
  *  sessionFactory(SessionFactory) {
- *  	   dataSource = dataSource                 // <-- getProperty for retrieving refs
+ *  	   dataSource = dataSource                 // ← getProperty for retrieving refs
  *  }
  *  myService(MyService) {
- *      nestedBean = { AnotherBean bean->          // <-- setProperty with closure for nested bean
+ *      nestedBean = { AnotherBean bean-&gt;          // ← setProperty with closure for nested bean
  *      		dataSource = dataSource
  *      }
  *  }
@@ -87,7 +87,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     private static final String ANONYMOUS_BEAN = "bean";
     private RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
     private BeanConfiguration currentBeanConfig;
-    private Map<String,DeferredProperty> deferredProperties = new HashMap<String,DeferredProperty>();
+    private Map<String,DeferredProperty> deferredProperties = new HashMap<>();
     private ApplicationContext parentCtx;
     private Map binding = new HashMap();
     private ClassLoader classLoader = null;
@@ -172,7 +172,7 @@ public class BeanBuilder extends GroovyObjectSupport {
      */
     public Map<String,BeanDefinition> getBeanDefinitions() {
 
-        Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
+        Map<String,BeanDefinition> beanDefinitions = new HashMap<>();
         for (String beanName : getSpringConfig().getBeanNames()) {
             BeanDefinition bd = getSpringConfig()
                     .getBeanConfig(beanName)

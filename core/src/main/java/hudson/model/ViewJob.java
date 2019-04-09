@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -59,7 +60,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient /*almost final*/ RunMap<RunT> runs = new RunMap<RunT>();
+    protected transient /*almost final*/ RunMap<RunT> runs = new RunMap<>();
 
     private transient boolean notLoaded = true;
 
@@ -104,7 +105,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             // if none is loaded yet, do so immediately.
             synchronized(this) {
                 if(runs==null)
-                    runs = new RunMap<RunT>();
+                    runs = new RunMap<>();
                 if(notLoaded) {
                     notLoaded = false;
                     _reload();   
@@ -145,7 +146,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             reload();
         } finally {
             reloadingInProgress = false;
-            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+1000*60 : Long.MAX_VALUE;
+            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+TimeUnit.MINUTES.toMillis(1) : Long.MAX_VALUE;
         }
     }
 
@@ -176,7 +177,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
          * This is a set, so no {@link ExternalJob}s are scheduled twice, yet
          * it's order is predictable, avoiding starvation.
          */
-        final Set<ViewJob> reloadQueue = new LinkedHashSet<ViewJob>();
+        final Set<ViewJob> reloadQueue = new LinkedHashSet<>();
 
         private ReloadThread() {
             setName("ViewJob reload thread");
@@ -187,7 +188,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
                 // reload operations might eat InterruptException,
                 // so check the status every so often
                 while(reloadQueue.isEmpty() && !terminating())
-                    reloadQueue.wait(60*1000);
+                    reloadQueue.wait(TimeUnit.MINUTES.toMillis(1));
                 if(terminating())
                     throw new InterruptedException();   // terminate now
                 ViewJob job = reloadQueue.iterator().next();

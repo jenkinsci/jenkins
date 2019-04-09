@@ -168,5 +168,5 @@ final class ExpressionFactory2 implements ExpressionFactory {
      *
      * @see Functions#getCurrentJellyContext()
      */
-    protected static final ThreadLocal<JellyContext> CURRENT_CONTEXT = new ThreadLocal<JellyContext>();
+    protected static final ThreadLocal<JellyContext> CURRENT_CONTEXT = new ThreadLocal<>();
 }

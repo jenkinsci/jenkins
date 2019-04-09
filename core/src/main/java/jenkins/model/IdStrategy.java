@@ -30,11 +30,16 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The strategy to use for manipulating converting names (e.g. user names, group names, etc) into ids.
@@ -44,38 +49,63 @@ import java.util.Locale;
 public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint,
         Comparator<String> {
 
+    private static final Pattern PSEUDO_UNICODE_PATTERN = Pattern.compile("\\$[a-f0-9]{4}");
+    private static final Pattern CAPITALIZATION_PATTERN = Pattern.compile("~[a-z]");
+
     /**
      * The default case insensitive strategy.
      */
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**
-     * Converts an ID into a name that for use as a filename.
+     * No longer used. This method is now a no-op but the signature is retained for backward compatibility.
      *
-     * @param id the id. Note, this method assumes that the id does not contain any filesystem unsafe characters.
-     * @return the name.
+     * @param id the id.
+     * @return the name.  Must be filesystem safe.
+     * @deprecated No current use.
      */
-    @Nonnull
-    public abstract String filenameOf(@Nonnull String id);
+    @Deprecated
+    public String filenameOf(@Nonnull String id) {
+        return null;
+    }
 
     /**
-     * Converts a filename into the corresponding id.
+     * No longer used. This method is now a no-op but the signature is retained for backward compatibility.
+     *
+     * @param id the id
+     * @return the name
+     * @deprecated No current use.
+     */
+    @Deprecated
+    @Restricted(ProtectedExternally.class)
+    public String legacyFilenameOf(@Nonnull String id) {
+        return null;
+    }
+
+    /**
+     * Converts a filename into the corresponding id.  This may contain filesystem unsafe characters.
+     *
      * @param filename the filename.
      * @return the corresponding id.
      * @since 1.577
+     * @deprecated Use only for migrating to new format. After the migration an id is no longer represented by a filename (directory).
      */
+    @Deprecated
     public String idFromFilename(@Nonnull String filename) {
         return filename;
     }
 
     /**
-     * Converts an ID into a key for use in a Java Map.
+     * Converts an ID into a key for use in a Java Map or similar. This controls uniqueness of ids and how multiple different
+     * ids may map to the same id. For example, all different capitalizations of "Foo" may map to the same value "foo".
      *
      * @param id the id.
      * @return the key.
      */
     @Nonnull
-    public abstract String keyFor(@Nonnull String id);
+    public String keyFor(@Nonnull String id) {
+        return id;
+    }
 
     /**
      * Compare two IDs and return {@code true} IFF the two ids are the same. Normally we expect that this should be
@@ -91,7 +121,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     }
 
     /**
-     * Compare tow IDs and return their sorting order. If {@link #equals(String, String)} is {@code true} then this
+     * Compare two IDs and return their sorting order. If {@link #equals(String, String)} is {@code true} then this
      * must return {@code 0} but {@link #compare(String, String)} returning {@code 0} need not imply that
      * {@link #equals(String, String)} is {@code true}.
      *
@@ -142,7 +172,26 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * Returns all the registered {@link IdStrategy} descriptors.
      */
     public static DescriptorExtensionList<IdStrategy, IdStrategyDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(IdStrategy.class);
+        return Jenkins.get().getDescriptorList(IdStrategy.class);
+    }
+
+    String applyPatternRepeatedly(@Nonnull Pattern pattern, @Nonnull String filename,
+                                  @Nonnull Function<String, Character> converter) {
+        StringBuilder id = new StringBuilder();
+        int beginIndex = 0;
+        Matcher matcher = pattern.matcher(filename);
+        while (matcher.find()) {
+            String group = matcher.group();
+            id.append(filename, beginIndex, matcher.start());
+            id.append(converter.apply(group));
+            beginIndex = matcher.end();
+        }
+        id.append(filename.substring(beginIndex));
+        return id.toString();
+    }
+
+    Character convertPseudoUnicode(String matchedGroup) {
+        return (char) Integer.parseInt(matchedGroup.substring(1), 16);
     }
 
     /**
@@ -154,8 +203,8 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         public CaseInsensitive() {}
 
         @Override
-        @Nonnull
-        public String filenameOf(@Nonnull String id) {
+        public String idFromFilename(@Nonnull String filename) {
+            String id = applyPatternRepeatedly(PSEUDO_UNICODE_PATTERN, filename, this::convertPseudoUnicode);
             return id.toLowerCase(Locale.ENGLISH);
         }
 
@@ -182,6 +231,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             /**
              * {@inheritDoc}
              */
+            @Nonnull
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseInsensitive_DisplayName();
@@ -197,86 +247,14 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @DataBoundConstructor
         public CaseSensitive() {}
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Nonnull
-        public String filenameOf(@Nonnull String id) {
-            if (id.matches("[a-z0-9_. -]+")) {
-                return id;
-            } else {
-                StringBuilder buf = new StringBuilder(id.length() + 16);
-                for (char c : id.toCharArray()) {
-                    if ('a' <= c && c <= 'z') {
-                        buf.append(c);
-                    } else if ('0' <= c && c <= '9') {
-                        buf.append(c);
-                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c || '@' == c) {
-                        buf.append(c);
-                    } else if ('A' <= c && c <= 'Z') {
-                        buf.append('~');
-                        buf.append(Character.toLowerCase(c));
-                    } else {
-                        buf.append('$');
-                        buf.append(StringUtils.leftPad(Integer.toHexString(c & 0xffff), 4, '0'));
-                    }
-                }
-                return buf.toString();
-            }
-        }
-
         @Override
         public String idFromFilename(@Nonnull String filename) {
-            if (filename.matches("[a-z0-9_. -]+")) {
-                return filename;
-            } else {
-                StringBuilder buf = new StringBuilder(filename.length());
-                final char[] chars = filename.toCharArray();
-                for (int i = 0; i < chars.length; i++) {
-                    char c = chars[i];
-                    if ('a' <= c && c <= 'z') {
-                        buf.append(c);
-                    } else if ('0' <= c && c <= '9') {
-                        buf.append(c);
-                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c || '@' == c) {
-                        buf.append(c);
-                    } else if (c == '~') {
-                        i++;
-                        if (i < chars.length) {
-                            buf.append(Character.toUpperCase(chars[i]));
-                        }
-                    } else if (c == '$') {
-                        StringBuilder hex = new StringBuilder(4);
-                        i++;
-                        if (i < chars.length) {
-                            hex.append(chars[i]);
-                        } else {
-                            break;
-                        }
-                        i++;
-                        if (i < chars.length) {
-                            hex.append(chars[i]);
-                        } else {
-                            break;
-                        }
-                        i++;
-                        if (i < chars.length) {
-                            hex.append(chars[i]);
-                        } else {
-                            break;
-                        }
-                        i++;
-                        if (i < chars.length) {
-                            hex.append(chars[i]);
-                        } else {
-                            break;
-                        }
-                        buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
-                    }
-                }
-                return buf.toString();
-            }
+            String id = applyPatternRepeatedly(CAPITALIZATION_PATTERN, filename, this::convertCapitalizedAscii);
+            return applyPatternRepeatedly(PSEUDO_UNICODE_PATTERN, id, this::convertPseudoUnicode);
+        }
+
+        private Character convertCapitalizedAscii(String encoded) {
+            return encoded.toUpperCase().charAt(1);
         }
 
         /**
@@ -285,15 +263,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Override
         public boolean equals(@Nonnull String id1, @Nonnull String id2) {
             return StringUtils.equals(id1, id2);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Nonnull
-        public String keyFor(@Nonnull String id) {
-            return id;
         }
 
         /**
@@ -321,7 +290,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * A case sensitive email address {@link IdStrategy}. Providing this implementation among the set of default
      * implementations as given the history of misunderstanding in the Jenkins code base around ID case sensitivity,
      * if not provided people will get this wrong.
-     * <p/>
+     * <p>
      * Note: Not all email addresses are case sensitive. It is knowledge that belongs to the server that holds the
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
@@ -330,15 +299,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @DataBoundConstructor
         public CaseSensitiveEmailAddress() {}
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Nonnull
-        public String filenameOf(@Nonnull String id) {
-            return super.filenameOf(keyFor(id));
-        }
 
         /**
          * {@inheritDoc}

@@ -79,9 +79,9 @@ public abstract class LoadBalancer implements ExtensionPoint {
         @Override
         public Mapping map(Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
-            List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<ConsistentHash<ExecutorChunk>>(ws.works.size());
+            List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<>(ws.works.size());
             for (int i=0; i<ws.works.size(); i++) {
-                ConsistentHash<ExecutorChunk> hash = new ConsistentHash<ExecutorChunk>(new Hash<ExecutorChunk>() {
+                ConsistentHash<ExecutorChunk> hash = new ConsistentHash<>(new Hash<ExecutorChunk>() {
                     public String hash(ExecutorChunk node) {
                         return node.getName();
                     }
@@ -112,7 +112,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
         private boolean assignGreedily(Mapping m, Task task, List<ConsistentHash<ExecutorChunk>> hashes, int i) {
             if (i==hashes.size())   return true;    // fully assigned
 
-            String key = task.getFullDisplayName() + (i>0 ? String.valueOf(i) : "");
+            String key = task.getAffinityKey() + (i>0 ? String.valueOf(i) : "");
 
             for (ExecutorChunk ec : hashes.get(i).list(key)) {
                 // let's attempt this assignment

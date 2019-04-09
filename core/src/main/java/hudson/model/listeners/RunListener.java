@@ -28,12 +28,10 @@ import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
-import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.Run.RunnerAbortedException;
@@ -96,7 +94,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public void onCompleted(R r, @Nonnull TaskListener listener) {}
 
     /**
-     * Called after a build is moved to the {@link hudson.model.Run.State#COMPLETED} state.
+     * Called after a build is moved to the {@code Run.State.COMPLETED} state.
      *
      * <p>
      * At this point, all the records related to a build is written down to the disk. As such,

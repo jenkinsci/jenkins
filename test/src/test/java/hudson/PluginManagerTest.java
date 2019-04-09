@@ -31,7 +31,6 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
 import hudson.model.User;
-import hudson.scm.SubversionSCM;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
@@ -44,7 +43,11 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
+import jenkins.model.GlobalConfiguration;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -167,7 +170,6 @@ public class PluginManagerTest {
                     // plugins should be already visible in the UberClassLoader
                     assertTrue(!activePlugins.isEmpty());
 
-                    uberClassLoader.loadClass(SubversionSCM.class.getName());
                     uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
 
                     super.startPlugin(plugin);
@@ -291,7 +293,7 @@ public class PluginManagerTest {
         try {
             callDependerValue();
             fail();
-        } catch (ClassNotFoundException _) {
+        } catch (ClassNotFoundException ex) {
         }
         
         // No extensions exist.
@@ -329,7 +331,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
         
         // Load dependee.
@@ -342,8 +344,8 @@ public class PluginManagerTest {
         assertEquals("dependee", callDependerValue());
         
         // No extensions exist.
-        // extensions in depender is not loaded.
-        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        // extensions in depender are loaded.
+        assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
     @Issue("JENKINS-21486")
@@ -378,7 +380,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
     }
 
@@ -516,5 +518,37 @@ public class PluginManagerTest {
         // now the other plugins should have been found as dependencies and downloaded
         assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+    }
+
+    @Issue("JENKINS-44898")
+    @WithPlugin("plugin-first.hpi")
+    @Test
+    public void findResourceForPluginFirstClassLoader() throws Exception {
+        PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
+        assertNotNull(w);
+
+        URL fromPlugin = w.classLoader.getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+        assertNotNull(fromPlugin);
+
+        // This is how UberClassLoader.findResource functions.
+        URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+
+        assertEquals(fromPlugin, fromToolkit);
+    }
+
+    // Sources for jenkins-50336.hpi are available at https://github.com/Vlatombe/jenkins-50336
+    //
+    // package io.jenkins.plugins;
+    // import org.jenkinsci.plugins.variant.OptionalExtension;
+    // import jenkins.model.GlobalConfiguration;
+    // @OptionalExtension public class MyGlobalConfiguration extends GlobalConfiguration {}
+    //
+    @Issue("JENKINS-50336")
+    @Test
+    public void optionalExtensionCanBeFoundAfterDynamicLoadOfVariant() throws Exception {
+        dynamicLoad("variant.hpi");
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
+        dynamicLoad("jenkins-50336.hpi");
+        assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
     }
 }

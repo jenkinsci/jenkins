@@ -48,11 +48,11 @@ import java.util.Map;
  * @since 1.394
  */
 public class QueryParameterMap {
-    private final Map<String,List<String>> store = new HashMap<String, List<String>>();
+    private final Map<String,List<String>> store = new HashMap<>();
 
     /**
      * @param queryString
-     *      String that looks like "abc=def&ghi=jkl"
+     *      String that looks like {@code abc=def&ghi=jkl}
      */
     public QueryParameterMap(String queryString) {
         if (queryString==null || queryString.length()==0)   return;
@@ -61,9 +61,7 @@ public class QueryParameterMap {
                 String[] kv = param.split("=");
                 String key = URLDecoder.decode(kv[0], "UTF-8");
                 String value = URLDecoder.decode(kv[1], "UTF-8");
-                List<String> values = store.get(key);
-                if (values == null)
-                    store.put(key, values = new ArrayList<String>());
+                List<String> values = store.computeIfAbsent(key, k -> new ArrayList<>());
                 values.add(value);
             }
         } catch (UnsupportedEncodingException e) {

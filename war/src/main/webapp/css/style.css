@@ -734,6 +734,7 @@ LABEL.attach-previous {
     min-height: 16px;
     line-height: 16px;
     background-image: url( "../images/16x16/warning.png" );
+    background-size: 16px 16px;
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -776,6 +777,7 @@ LABEL.attach-previous {
   background-color: #f0f0f0;
   padding: 1em;
   margin-bottom: 1em;
+  word-break: break-word;
 }
 
 .help .from-plugin {
@@ -1293,25 +1295,25 @@ TABLE.fingerprint-in-build TD {
   border: 1px solid #5788a1;
 }
 
-#plugins tr.has-dependants input.uninstall {
+#plugins tr.has-dependents input.uninstall {
   background-color: #e0e0e0;
   border: 1px solid #cccccc;
   color: #505050;
   background-color: white;
 }
 
-#plugins tr.all-dependants-disabled .enable input {
+#plugins tr.all-dependents-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
 }
 
-#plugins tr.has-dependants input, #plugins tr.has-disabled-dependency .enable input {
+#plugins tr.has-dependents input, #plugins tr.has-disabled-dependency .enable input {
   pointer-events: none;
   opacity: 0.2;
 }
 
-#plugins tr.has-dependants-but-disabled .enable input {
+#plugins tr.has-dependents-but-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
@@ -1325,7 +1327,7 @@ TABLE.fingerprint-in-build TD {
   visibility: hidden !important;
 }
 
-#plugins .dependant-list, #plugins .dependency-list {
+#plugins .dependent-list, #plugins .dependency-list {
   display: none;
 }
 
@@ -1492,7 +1494,7 @@ DIV.yahooTree td {
 
 #search-box-completion .yui-ac-content {
   border: 1px solid black;
-  width:25em;
+  width:35em;
   background-color: white;
   overflow: hidden;
 }
@@ -1912,3 +1914,126 @@ body.no-sticker #bottom-sticker {
     width: 48px;
     height: 48px;
 }
+
+/* ----------- Manage Jenkins ----------- */
+
+.manage-messages {
+    margin-bottom: 20px;
+}
+
+.manage-messages a, .manage-messages a:visited {
+    color: inherit !important;
+    text-decoration: none;
+}
+
+.manage-messages a:hover, .manage-messages a:focus {
+    text-decoration: underline;
+}
+
+.manage-messages dl:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt {
+    margin-top: 10px;
+    font-weight: normal;
+}
+
+.manage-messages dl dd {
+    margin-left: 15px;
+}
+
+.manage-messages dl:last-child {
+    margin-bottom: 0;
+}
+
+.manage-messages dl dt::after {
+    content: ": ";
+}
+
+.manage-messages .alert a {
+    text-decoration: underline;
+}
+
+.manage-messages .alert a:hover {
+    text-decoration: none;
+}
+
+.manage-messages .alert form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 0 !important;
+}
+
+.manage-messages .alert form span {
+    margin: 0 0 0 4px !important;
+}
+
+.manage-option {
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+}
+
+.manage-option:hover {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #fafafa;
+}
+
+.manage-option dl {
+    padding: 0;
+    margin: 0 0 0 62px;
+    min-height: 48px;
+}
+
+.manage-option dl dt {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.manage-option dl dd {
+    margin-left: 0;
+    line-height: 20px;
+    color: #333;
+    font-size: 14px;
+}
+
+.manage-option a {
+    display: block;
+    padding: 8px;
+    margin: 0;
+    text-decoration: none !important;
+    color: #000;
+    outline: 0;
+}
+
+.manage-option .icon {
+    display: block;
+    float: left;
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+/* -------------------------------------- */
+
+/* --------------- RSS bar -------------- */
+
+#rss-bar {
+    margin: 1em;
+    text-align: right;
+}
+
+#rss-bar .icon-rss {
+    border: 0;
+}
+
+#rss-bar .rss-bar-item {
+    padding-left: 1em;
+}
+
+/* -------------------------------------- */

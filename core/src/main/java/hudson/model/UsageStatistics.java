@@ -23,14 +23,12 @@
  */
 package hudson.model;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
-import static hudson.util.TimeUnit2.DAYS;
+import static java.util.concurrent.TimeUnit.DAYS;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -51,6 +49,7 @@ import java.io.OutputStream;
 import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.DataInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -59,6 +58,7 @@ import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import com.jcraft.jzlib.GZIPOutputStream;
 import jenkins.util.SystemProperties;
@@ -67,7 +67,7 @@ import jenkins.util.SystemProperties;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class UsageStatistics extends PageDecorator {
+public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
     private final String keyImage;
 
     /**
@@ -89,7 +89,6 @@ public class UsageStatistics extends PageDecorator {
      */
     public UsageStatistics(String keyImage) {
         this.keyImage = keyImage;
-        load();
     }
 
     /**
@@ -131,7 +130,7 @@ public class UsageStatistics extends PageDecorator {
         o.put("servletContainer", j.servletContext.getServerInfo());
         o.put("version", Jenkins.VERSION);
 
-        List<JSONObject> nodes = new ArrayList<JSONObject>();
+        List<JSONObject> nodes = new ArrayList<>();
         for( Computer c : j.getComputers() ) {
             JSONObject  n = new JSONObject();
             if(c.getNode()==j) {
@@ -147,7 +146,7 @@ public class UsageStatistics extends PageDecorator {
         }
         o.put("nodes",nodes);
 
-        List<JSONObject> plugins = new ArrayList<JSONObject>();
+        List<JSONObject> plugins = new ArrayList<>();
         for( PluginWrapper pw : j.getPluginManager().getPlugins() ) {
             if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
             JSONObject p = new JSONObject();
@@ -161,7 +160,7 @@ public class UsageStatistics extends PageDecorator {
         // capture the descriptors as these should be small compared with the number of items
         // so we will walk all items only once and we can short-cut the search of descriptors
         TopLevelItemDescriptor[] descriptors = Items.all().toArray(new TopLevelItemDescriptor[0]);
-        int counts[] = new int[descriptors.length];
+        int[] counts = new int[descriptors.length];
         for (TopLevelItem item: j.allItems(TopLevelItem.class)) {
             TopLevelItemDescriptor d = item.getDescriptor();
             for (int i = 0; i < descriptors.length; i++) {
@@ -181,14 +180,13 @@ public class UsageStatistics extends PageDecorator {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
-            try {
+            try (OutputStream cipheros = new CombinedCipherOutputStream(baos,getKey(),"AES");
+                 OutputStream zipos = new GZIPOutputStream(cipheros);
+                 OutputStreamWriter w = new OutputStreamWriter(zipos, StandardCharsets.UTF_8)) {
                 o.write(w);
-            } finally {
-                IOUtils.closeQuietly(w);
             }
 
-            return new String(Base64.encode(baos.toByteArray()));
+            return new String(Base64.getEncoder().encode(baos.toByteArray()));
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }

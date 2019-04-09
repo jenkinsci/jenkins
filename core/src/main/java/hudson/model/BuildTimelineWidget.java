@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Util;
 import hudson.util.RunList;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -64,7 +65,9 @@ public class BuildTimelineWidget {
             Event e = new Event();
             e.start = new Date(r.getStartTimeInMillis());
             e.end   = new Date(r.getStartTimeInMillis()+r.getDuration());
-            e.title = r.getFullDisplayName();
+            // due to SimileAjax.HTML.deEntify (in simile-ajax-bundle.js), "&lt;" are transformed back to "<", but not the "&#60";
+            // to protect against XSS
+            e.title = Util.escape(r.getFullDisplayName()).replace("&lt;", "&#60;");
             // what to put in the description?
             // e.description = "Longish description of event "+r.getFullDisplayName();
             // e.durationEvent = true;

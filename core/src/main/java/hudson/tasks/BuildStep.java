@@ -50,6 +50,7 @@ import jenkins.security.QueueItemAuthenticator;
 import org.acegisecurity.Authentication;
 
 import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 
 /**
  * One step of the whole build process.
@@ -64,7 +65,7 @@ import javax.annotation.Nonnull;
  * So generally speaking, derived classes should use instance variables
  * only for keeping configuration. You can still store objects you use
  * for processing, like a parser of some sort, but they need to be marked
- * as <tt>transient</tt>, and the code needs to be aware that they might
+ * as {@code transient}, and the code needs to be aware that they might
  * be null (which is the case when you access the field for the first time
  * the object is restored.)
  *
@@ -144,9 +145,9 @@ public interface BuildStep {
      * it owns when the rendering is requested.
      *
      * <p>
-     * This action can have optional <tt>jobMain.jelly</tt> view, which will be
+     * This action can have optional {@code jobMain.jelly} view, which will be
      * aggregated into the main panel of the job top page. The jelly file
-     * should have an &lt;h2> tag that shows the section title, followed by some
+     * should have an {@code <h2>} tag that shows the section title, followed by some
      * block elements to render the details of the section.
      *
      * @param project
@@ -198,7 +199,7 @@ public interface BuildStep {
      *
      * <ul>
      * <li>
-     * Just return {@link BuildStepMonitor#BUILD} to demand the backward compatible behavior from Hudson,
+     * To demand the backward compatible behavior from Jenkins, leave this method unoverridden,
      * and make no other changes to the code. This will prevent users from reaping the benefits of concurrent
      * builds, but at least your plugin will work correctly, and therefore this is a good easy first step.
      * <li>
@@ -215,14 +216,11 @@ public interface BuildStep {
      * you try to access the state from the previous build.
      * </ul>
      *
-     * <h2>Note to caller</h2>
-     * <p>
-     * For plugins written against earlier versions of Hudson, calling this method results in
-     * {@link AbstractMethodError}. 
-     *
      * @since 1.319
      */
-    BuildStepMonitor getRequiredMonitorService();
+    default BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.BUILD;
+    }
 
     /**
      * List of all installed builders.
@@ -234,7 +232,7 @@ public interface BuildStep {
      *      {@link Extension} for registration.
      */
     @Deprecated
-    List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
+    List<Descriptor<Builder>> BUILDERS = new DescriptorList<>(Builder.class);
 
     /**
      * List of all installed publishers.
@@ -261,14 +259,14 @@ public interface BuildStep {
          * {@link Descriptor}s are actually stored in here.
          * Since {@link PublisherList} lives longer than {@link jenkins.model.Jenkins} we cannot directly use {@link ExtensionList}.
          */
-        private final DescriptorList<Publisher> core = new DescriptorList<Publisher>(Publisher.class);
+        private final DescriptorList<Publisher> core = new DescriptorList<>(Publisher.class);
 
         /**
          * For descriptors that are manually registered, remember what kind it was since
          * older plugins don't extend from neither {@link Recorder} nor {@link Notifier}.
          */
         /*package*/ static final WeakHashMap<Descriptor<Publisher>,Class<? extends Publisher>/*either Recorder.class or Notifier.class*/>
-                KIND = new WeakHashMap<Descriptor<Publisher>, Class<? extends Publisher>>();
+                KIND = new WeakHashMap<>();
 
         private PublisherList() {
         }

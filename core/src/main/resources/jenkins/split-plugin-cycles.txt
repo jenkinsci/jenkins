@@ -1,0 +1,34 @@
+# See ClassicPluginStrategy.BREAK_CYCLES. As of JENKINS-47634 also used by plugin-compat-tester.
+# JENKINS-28942 could make this obsolete.
+
+credentials matrix-auth
+credentials windows-slaves
+
+script-security antisamy-markup-formatter
+script-security bouncycastle-api
+script-security command-launcher
+script-security matrix-auth
+script-security matrix-project
+script-security windows-slaves
+
+# Weird unexpected cycle that showed up during testing of this new plugin
+# so breaking all potential cycles until JENKINS-28942
+# FIXME: remove when JENKINS-28942 is in (and used in the JAXB plugin)
+script-security jaxb
+maven-plugin jaxb
+subversion jaxb
+cvs jaxb
+ant jaxb
+javadoc jaxb
+external-monitor-job jaxb
+ldap jaxb
+pam-auth jaxb
+mailer jaxb
+matrix-auth jaxb
+windows-slaves jaxb
+antisamy-markup-formatter jaxb
+matrix-project jaxb
+junit jaxb
+bouncycastle-api jaxb
+command-launcher jaxb
+jdk-tool jaxb

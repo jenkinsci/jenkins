@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.triggers.SCMTrigger;
+import hudson.triggers.TimerTrigger;
 
 import java.util.Set;
 import java.io.IOException;
@@ -64,10 +65,10 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <dl>
  * <dt>message.jelly</dt>
  * <dd>
- * If {@link #isActivated()} returns true, Jenkins will use the <tt>message.jelly</tt>
+ * If {@link #isActivated()} returns true, Jenkins will use the {@code message.jelly}
  * view of this object to render the warning text. This happens in the
- * <tt>http://SERVER/jenkins/manage</tt> page. This view should typically render
- * a DIV box with class='error' or class='warning' with a human-readable text
+ * {@code http://SERVER/jenkins/manage} page. This view should typically render
+ * a DIV box with class='alert alert-error' or class='alert alert-warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
  * about the problem.
  * </dd>
@@ -115,11 +116,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Mark this monitor as disabled, to prevent this from showing up in the UI.
      */
     public void disable(boolean value) throws IOException {
-        AbstractCIBase hudson = Jenkins.getInstance();
-        Set<String> set = hudson.disabledAdministrativeMonitors;
+        AbstractCIBase jenkins = Jenkins.get();
+        Set<String> set = jenkins.disabledAdministrativeMonitors;
         if(value)   set.add(id);
         else        set.remove(id);
-        hudson.save();
+        jenkins.save();
     }
 
     /**
@@ -130,7 +131,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * he wants to ignore.
      */
     public boolean isEnabled() {
-        return !((AbstractCIBase)Jenkins.getInstance()).disabledAdministrativeMonitors.contains(id);
+        return !((AbstractCIBase)Jenkins.get()).disabledAdministrativeMonitors.contains(id);
     }
 
     /**
@@ -157,7 +158,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return this;
     }
 

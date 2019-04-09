@@ -33,6 +33,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -61,10 +62,12 @@ public class I18nTest {
 
     @Issue("JENKINS-35270")
     @Test
-    public void test_baseName_plugin() throws IOException, SAXException {
-        // ssh-slaves plugin is installed by default
+    public void test_baseName_plugin() throws Exception {
+        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("credentials");
+        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("ssh-credentials");
+        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("ssh-slaves");
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.plugins.sshslaves.Messages").getJSONObject();
-        Assert.assertEquals("ok", response.getString("status"));
+        Assert.assertEquals(response.toString(), "ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
         Assert.assertEquals("The launch timeout must be a number.", data.getString("SSHConnector.LaunchTimeoutMustBeANumber"));
     }

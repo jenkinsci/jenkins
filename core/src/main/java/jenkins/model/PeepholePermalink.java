@@ -32,7 +32,7 @@ import org.apache.commons.io.FileUtils;
  * <blockquote>
  *     Given a job J, permalink is a function F that computes a build B.
  *     A peephole permalink is a subset of this function that can be
- *     deduced to the "peep-hole" function G(B)->bool:
+ *     deduced to the "peep-hole" function G(B)→bool:
  *
  *     <pre>
  *         F(J) = { newest B | G(B)==true }
@@ -62,7 +62,7 @@ import org.apache.commons.io.FileUtils;
 public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
 
     /** JENKINS-22822: avoids rereading symlinks */
-    static final Map<File,String> symlinks = new HashMap<File,String>();
+    static final Map<File,String> symlinks = new HashMap<>();
 
     /**
      * Checks if the given build satisfies the peep-hole criteria.
@@ -148,10 +148,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 Util.createSymlink(job.getBuildDir(),b.getId(),target,TaskListener.NULL);
             }
             writeSymlink(cache, target);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
-            cache.delete();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
             cache.delete();
         }

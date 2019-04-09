@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -56,12 +57,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
+ * Instances of {@link ParameterValue}s are persisted into build's {@code build.xml}
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
  * <h2>Associated Views</h2>
- * <h4>value.jelly</h4>
- * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
+ * <h3>value.jelly</h3>
+ * The {@code value.jelly} view contributes a UI fragment to display the parameter
  * values used for a build.
  *
  * <h2>Notes</h2>
@@ -75,6 +76,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
+@StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
@@ -134,10 +136,10 @@ public abstract class ParameterValue implements Serializable {
      * expected to add more values to this map (or do nothing)
      *
      * <p>
-     * <strike>Environment variables should be by convention all upper case.
+     * Formerly, environment variables would be by convention all upper case.
      * (This is so that a Windows/Unix heterogeneous environment
      * won't get inconsistent result depending on which platform to
-     * execute.)</strike> (see {@link EnvVars} why upper casing is a bad idea.)
+     * execute.) But now see {@link EnvVars} why upper casing is a bad idea.
      *
      * @param env
      *      never null.
@@ -217,7 +219,7 @@ public abstract class ParameterValue implements Serializable {
      * Returns a {@link VariableResolver} so that other components like {@link Builder}s
      * can perform variable substitution to reflect parameter values into the build process.
      *
-     * <p.
+     * <p>
      * This is yet another means in which a {@link ParameterValue} can influence
      * a build.
      *

@@ -1,0 +1,21 @@
+<div>
+  Il numero massimo di compilazioni concorrenti che Jenkins può eseguire su
+  questo agente.
+  <p>
+  Un buon valore di partenza potrebbe essere il numero di core CPU sulla
+  macchina. L'impostazione di un valore più altro farebbe sì che ogni
+  compilazione duri più a lungo, ma potrebbe aumentare il throughput totale.
+  Ad esempio, una compilazione potrebbe essere CPU-bound, mentre un'altra
+  compilazione in esecuzione nello stesso momento potrebbe essere I/O bound
+  &mdash; in questo modo la seconda compilazione potrebbe trarre vantaggio
+  dalla capacità di I/O disponibile in quel momento.
+  <p>
+  Gli agenti devono avere almeno un esecutore. Per impedire temporaneamente
+  l'esecuzione delle compilazioni su un agente, utilizzare il pulsante
+  <i>Contrassegna questo nodo come temporaneamente non in linea</i> nella
+  pagina dell'agente.
+  <p>
+  Quest'impostazione non si applica al master Jenkins &mdash; l'impostazione
+  del numero di esecutori a zero impedirà l'esecuzione delle compilazioni sul
+  master.
+</div>

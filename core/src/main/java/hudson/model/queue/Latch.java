@@ -75,10 +75,7 @@ class Latch {
 
         try {
             onCriteriaMet();
-        } catch (Error e) {
-            abort(e);
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (Error | RuntimeException e) {
             abort(e);
             throw e;
         }

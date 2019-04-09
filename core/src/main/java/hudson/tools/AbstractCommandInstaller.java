@@ -73,7 +73,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
         // TODO support Unix scripts with interpreter line (see Shell.buildCommandLine)
         FilePath script = dir.createTextTempFile("hudson", getCommandFileExtension(), command);
         try {
-            String cmd[] = getCommandCall(script);
+            String[] cmd = getCommandCall(script);
             int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
             if (r != 0) {
                 throw new IOException("Command returned status " + r);
