@@ -177,6 +177,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -4187,9 +4188,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
-        //Request from rest client
-        if (req != null && req.getReferer() == null && req.getMethod().equals("POST")) {
-            rsp.setStatus(200);
+        if (isRestClientAndPost(req)) {
+            rsp.setStatus(HttpURLConnection.HTTP_OK);
             restart();
             return;
         }
@@ -4213,13 +4213,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CLIMethod(name="safe-restart")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if (req != null && req.getMethod().equals("GET"))
-            return HttpResponses.forwardToView(this,"_safeRestart.jelly");
+        if (req != null && req.getMethod().equals("GET")) {
+            return HttpResponses.forwardToView(this, "_safeRestart.jelly");
+        }
 
-        //Request from rest client
-        if (req != null && req.getReferer() == null && req.getMethod().equals("POST")){
+        if (isRestClientAndPost(req)){
             safeRestart();
-            return HttpResponses.text("safeRestart");
+            return HttpResponses.status(HttpURLConnection.HTTP_ACCEPTED);
         }
 
         if (req == null || req.getMethod().equals("POST")) {
@@ -4227,6 +4227,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         return HttpResponses.redirectToDot();
+    }
+
+    private boolean isRestClientAndPost(@CheckForNull StaplerRequest req) {
+        if (req == null) {
+            return false;
+        }
+
+        if (!req.getMethod().equals("POST")) {
+            return false;
+        }
+
+        // no support for multiple accept types / q-factor weighted ones
+        String acceptValue = req.getHeader("Accept");
+        if (acceptValue == null) {
+            return false;
+        }
+
+        if (acceptValue.equals("application/json")) {
+            return true;
+        }
+
+        return false;
     }
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
