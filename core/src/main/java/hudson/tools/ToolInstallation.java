@@ -84,7 +84,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     @XStreamSerializable
     private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
-            = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+            = new DescribableList<>(Saveable.NOOP);
 
     /**
      * @deprecated
@@ -211,7 +211,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     protected Object readResolve() {
         if(properties==null)
-            properties = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+            properties = new DescribableList<>(Saveable.NOOP);
         for (ToolProperty<?> p : properties)
             _setTool(p, this);
         return this;

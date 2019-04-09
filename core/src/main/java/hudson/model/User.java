@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
- * Tom Huybrechts, Vincent Latombe
- * 
+ *
+ * Copyright (c) 2004-2018, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+ * Tom Huybrechts, Vincent Latombe, CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,27 +40,20 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,16 +61,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -92,13 +83,10 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -106,8 +94,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.dao.DataAccessException;
-
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 /**
  * Represents a user.
@@ -130,11 +116,46 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
  * is explicitly invoked (perhaps as a result of a browser submitting a
  * configuration.)
  *
- *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+
+    public static final XStream2 XSTREAM = new XStream2();
+    private static final Logger LOGGER = Logger.getLogger(User.class.getName());
+    static final String CONFIG_XML = "config.xml";
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+
+    /**
+     * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
+     * which was necessary to make sure users removed from the backend will get removed from the frontend.
+     * <p>
+     * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
+     * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
+     * <p>
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">JENKINS-22346</a>.
+     */
+    public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
+
+    /**
+     * Jenkins historically created a (usually) ephemeral user record when an user with Overall/Administer permission
+     * accesses a /user/arbitraryName URL.
+     * <p>
+     * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * <p>
+     * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
+     * is not recommended.
+     * <p>
+     * SECURITY-406.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
     /**
      * The username of the 'unknown' user used to avoid null user references.
@@ -147,23 +168,72 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
             ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
-    private transient final String id;
 
+    private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
+    private String id;
     private volatile String fullName;
-
     private volatile String description;
 
-    /**
-     * List of {@link UserProperty}s configured for this project.
-     */
     @CopyOnWrite
-    private volatile List<UserProperty> properties = new ArrayList<UserProperty>();
+    private volatile List<UserProperty> properties = new ArrayList<>();
 
+    static {
+        XSTREAM.alias("user", User.class);
+    }
 
     private User(String id, String fullName) {
         this.id = id;
         this.fullName = fullName;
-        load();
+        load(id);
+    }
+
+    private void load(String userId) {
+        clearExistingProperties();
+        loadFromUserConfigFile(userId);
+        removeNullsThatFailedToLoad();
+        allocateDefaultPropertyInstancesAsNeeded();
+        setUserToProperties();
+    }
+
+    private void setUserToProperties() {
+        for (UserProperty p : properties) {
+            p.setUser(this);
+        }
+    }
+
+    private void allocateDefaultPropertyInstancesAsNeeded() {
+        for (UserPropertyDescriptor d : UserProperty.all()) {
+            if (getProperty(d.clazz) == null) {
+                UserProperty up = d.newInstance(this);
+                if (up != null)
+                    properties.add(up);
+            }
+        }
+    }
+
+    private void removeNullsThatFailedToLoad() {
+        properties.removeIf(Objects::isNull);
+    }
+
+    private void loadFromUserConfigFile(String userId) {
+        XmlFile config = getConfigFile();
+        try {
+            if ( config != null && config.exists()) {
+                config.unmarshal(this);
+                this.id = userId;
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to load " + config, e);
+        }
+    }
+
+    private void clearExistingProperties() {
+        properties.clear();
+    }
+
+    private XmlFile getConfigFile() {
+        File existingUserFolder = getExistingUserFolder();
+        return existingUserFolder == null ? null : new XmlFile(XSTREAM, new File(existingUserFolder, CONFIG_XML));
     }
 
     /**
@@ -175,7 +245,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Nonnull
     public static IdStrategy idStrategy() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         SecurityRealm realm = j.getSecurityRealm();
         if (realm == null) {
             return IdStrategy.CASE_INSENSITIVE;
@@ -183,42 +253,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
-    public int compareTo(User that) {
+    public int compareTo(@Nonnull User that) {
         return idStrategy().compare(this.id, that.id);
-    }
-
-    /**
-     * Loads the other data from disk if it's available.
-     */
-    private synchronized void load() {
-        properties.clear();
-
-        XmlFile config = getConfigFile();
-        try {
-            if(config.exists())
-                config.unmarshal(this);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load "+config,e);
-        }
-
-        // remove nulls that have failed to load
-        for (Iterator<UserProperty> itr = properties.iterator(); itr.hasNext();) {
-            if(itr.next()==null)
-                itr.remove();            
-        }
-
-        // allocate default instances if needed.
-        // doing so after load makes sure that newly added user properties do get reflected
-        for (UserPropertyDescriptor d : UserProperty.all()) {
-            if(getProperty(d.clazz)==null) {
-                UserProperty up = d.newInstance(this);
-                if(up!=null)
-                    properties.add(up);
-            }
-        }
-
-        for (UserProperty p : properties)
-            p.setUser(this);
     }
 
     @Exported
@@ -226,28 +262,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return id;
     }
 
-    public @Nonnull String getUrl() {
-        return "user/"+Util.rawEncode(idStrategy().keyFor(id));
+    public @Nonnull
+    String getUrl() {
+        return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
-    public @Nonnull String getSearchUrl() {
-        return "/user/"+Util.rawEncode(idStrategy().keyFor(id));
+    public @Nonnull
+    String getSearchUrl() {
+        return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
     /**
      * The URL of the user page.
      */
-    @Exported(visibility=999)
-    public @Nonnull String getAbsoluteUrl() {
-        return Jenkins.getInstance().getRootUrl()+getUrl();
+    @Exported(visibility = 999)
+    public @Nonnull
+    String getAbsoluteUrl() {
+        return Jenkins.get().getRootUrl() + getUrl();
     }
 
     /**
      * Gets the human readable name of this user.
      * This is configurable by the user.
      */
-    @Exported(visibility=999)
-    public @Nonnull String getFullName() {
+    @Exported(visibility = 999)
+    public @Nonnull
+    String getFullName() {
         return fullName;
     }
 
@@ -256,18 +296,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * If the input parameter is empty, the user's ID will be set.
      */
     public void setFullName(String name) {
-        if(Util.fixEmptyAndTrim(name)==null)    name=id;
+        if (Util.fixEmptyAndTrim(name) == null) name = id;
         this.fullName = name;
     }
 
     @Exported
-    public @CheckForNull String getDescription() {
+    public @CheckForNull
+    String getDescription() {
         return description;
     }
 
-
     /**
      * Sets the description of the user.
+     *
      * @since 1.609
      */
     public void setDescription(String description) {
@@ -277,7 +318,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the user properties configured for this user.
      */
-    public Map<Descriptor<UserProperty>,UserProperty> getProperties() {
+    public Map<Descriptor<UserProperty>, UserProperty> getProperties() {
         return Descriptor.toMap(properties);
     }
 
@@ -286,8 +327,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public synchronized void addProperty(@Nonnull UserProperty p) throws IOException {
         UserProperty old = getProperty(p.getClass());
-        List<UserProperty> ps = new ArrayList<UserProperty>(properties);
-        if(old!=null)
+        List<UserProperty> ps = new ArrayList<>(properties);
+        if (old != null)
             ps.remove(old);
         ps.add(p);
         p.setUser(this);
@@ -298,7 +339,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * List of all {@link UserProperty}s exposed primarily for the remoting API.
      */
-    @Exported(name="property",inline=true)
+    @Exported(name = "property", inline = true)
     public List<UserProperty> getAllProperties() {
         if (hasPermission(Jenkins.ADMINISTER)) {
             return Collections.unmodifiableList(properties);
@@ -306,13 +347,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         return Collections.emptyList();
     }
-    
+
     /**
      * Gets the specific property, or null.
      */
     public <T extends UserProperty> T getProperty(Class<T> clazz) {
         for (UserProperty p : properties) {
-            if(clazz.isInstance(p))
+            if (clazz.isInstance(p))
                 return clazz.cast(p);
         }
         return null;
@@ -320,20 +361,20 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
-     *
+     * <p>
      * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
      * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
      * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
      * logged in.
      *
-     * @throws UsernameNotFoundException
-     *      If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
+    public @Nonnull
+    Authentication impersonate() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation());
     }
-    
+
     /**
      * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
      * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
@@ -341,42 +382,39 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
-     *
-     * @throws UsernameNotFoundException
-     *      If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      */
-    public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+    public @Nonnull
+    UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
-                Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails
+                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
         );
-        
+
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(id);
-            LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", new Object[]{ id });
+            LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", id);
             return userDetails;
         } catch (UserMayOrMayNotExistException e) {
-            LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", new Object[]{ id });
-            // backend can't load information about other users. so use the stored information if available
+            LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", id);
         } catch (UsernameNotFoundException e) {
-            // if the user no longer exists in the backend, we need to refuse impersonating this user
-            if(ALLOW_NON_EXISTENT_USER_TO_LOGIN){
-                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm but we are required to let it pass, due to ALLOW_NON_EXISTENT_USER_TO_LOGIN", new Object[]{ id });
-            }else{
-                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", new Object[]{ id });
+            if (ALLOW_NON_EXISTENT_USER_TO_LOGIN) {
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm but we are required to let it pass, due to ALLOW_NON_EXISTENT_USER_TO_LOGIN", id);
+            } else {
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", id);
                 throw e;
             }
         } catch (DataAccessException e) {
             // seems like it's in the same boat as UserMayOrMayNotExistException
-            LOGGER.log(Level.FINE, "The user {0} retrieval just threw a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{ id, e.getMessage() });
+            LOGGER.log(Level.FINE, "The user {0} retrieval just threw a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{id, e.getMessage()});
         }
-        
+
         return new LegitimateButUnknownUserDetails(id);
     }
 
     /**
      * Only used for a legitimate user we have no idea about. We give it only minimum access
      */
-    private static class LegitimateButUnknownUserDetails extends org.acegisecurity.userdetails.User{
+    private static class LegitimateButUnknownUserDetails extends org.acegisecurity.userdetails.User {
         private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
             super(
                     username, "",
@@ -393,7 +431,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see #getUserDetailsForImpersonation()
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull Authentication impersonate(@Nonnull UserDetails userDetails) {
+    public @Nonnull
+    Authentication impersonate(@Nonnull UserDetails userDetails) {
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
@@ -401,12 +440,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
 
         description = req.getParameter("description");
         save();
-        
+
         rsp.sendRedirect(".");  // go to the top page
     }
 
@@ -422,177 +461,77 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the {@link User} object by its id or full name.
      *
-     * @param create
-     *      If true, this method will never return null for valid input
-     *      (by creating a new {@link User} object if none exists.)
-     *      If false, this method will return null if {@link User} object
-     *      with the given name doesn't exist.
+     * @param create If true, this method will never return null for valid input
+     *               (by creating a new {@link User} object if none exists.)
+     *               If false, this method will return null if {@link User} object
+     *               with the given name doesn't exist.
      * @return Requested user. May be {@code null} if a user does not exist and
-     *      {@code create} is false.
+     * {@code create} is false.
      * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
     @Deprecated
-    public static @Nullable User get(String idOrFullName, boolean create) {
+    public static @Nullable
+    User get(String idOrFullName, boolean create) {
         return get(idOrFullName, create, Collections.emptyMap());
     }
 
     /**
      * Gets the {@link User} object by its id or full name.
-     *
+     * <p>
      * In order to resolve the user ID, the method invokes {@link CanonicalIdResolver} extension points.
      * Note that it may cause significant performance degradation.
      * If you are sure the passed value is a User ID, it is recommended to use {@link #getById(String, boolean)}.
      *
-     * @param create
-     *      If true, this method will never return null for valid input
-     *      (by creating a new {@link User} object if none exists.)
-     *      If false, this method will return null if {@link User} object
-     *      with the given name doesn't exist.
-     *
-     * @param context
-     *      contextual environment this user idOfFullName was retrieved from,
-     *      that can help resolve the user ID
-     * 
-     * @return
-     *      An existing or created user. May be {@code null} if a user does not exist and
-     *      {@code create} is false.
+     * @param create  If true, this method will never return null for valid input
+     *                (by creating a new {@link User} object if none exists.)
+     *                If false, this method will return null if {@link User} object
+     *                with the given name doesn't exist.
+     * @param context contextual environment this user idOfFullName was retrieved from,
+     *                that can help resolve the user ID
+     * @return An existing or created user. May be {@code null} if a user does not exist and
+     * {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
-
-        if(idOrFullName==null)
+    public static @Nullable
+    User get(String idOrFullName, boolean create, @Nonnull Map context) {
+        if (idOrFullName == null) {
             return null;
+        }
 
-        // TODO: In many cases the method should receive the canonical ID.
-        // Maybe it makes sense to try AllUsers.byName().get(idkey) before invoking all resolvers and other stuff
-        // oleg-nenashev: FullNameResolver with User.getAll() loading and iteration makes me think it's a good idea.
+        User user = AllUsers.get(idOrFullName);
+        if (user != null) {
+            return user;
+        }
 
         String id = CanonicalIdResolver.resolve(idOrFullName, context);
-        // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
-        if (id == null) {
-            throw new IllegalStateException("The user id should be always non-null thanks to DefaultUserCanonicalIdResolver");
-        }
-        return getOrCreate(id, idOrFullName, create);
+        return getOrCreateById(id, idOrFullName, create);
     }
 
     /**
      * Retrieve a user by its ID, and create a new one if requested.
-     * @return
-     *      An existing or created user. May be {@code null} if a user does not exist and
-     *      {@code create} is false.
+     *
+     * @return An existing or created user. May be {@code null} if a user does not exist and
+     * {@code create} is false.
      */
-    private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create) {
-        return getOrCreate(id, fullName, create, getUnsanitizedLegacyConfigFileFor(id));
-    }
-
-    private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create, File unsanitizedLegacyConfigFile) {
-        String idkey = idStrategy().keyFor(id);
-
-        byNameLock.readLock().lock();
-        User u;
-        try {
-            u = AllUsers.byName().get(idkey);
-        } finally {
-            byNameLock.readLock().unlock();
-        }
-        final File configFile = getConfigFileFor(id);
-        boolean mustMigrateLegacyConfig = isMigrationRequiredForLegacyConfigFile(unsanitizedLegacyConfigFile, configFile);
-        if (mustMigrateLegacyConfig) {
-            File ancestor = unsanitizedLegacyConfigFile.getParentFile();
-            if (!configFile.exists()) {
-                try {
-                    Files.createDirectory(configFile.getParentFile().toPath());
-                    Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
-                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
-                } catch (IOException | InvalidPathException e) {
-                    LOGGER.log(
-                            Level.WARNING,
-                            String.format("Failed to migrate user record from %s to %s", unsanitizedLegacyConfigFile, configFile),
-                            e);
-                }
-            }
-
-            // Don't clean up ancestors with other children; the directories should be cleaned up when the last child
-            // is migrated
-            File tmp = ancestor;
-            try {
-                while (!ancestor.equals(getRootDir())) {
-                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(ancestor.toPath())) {
-                        if (!stream.iterator().hasNext()) {
-                            tmp = ancestor;
-                            ancestor = tmp.getParentFile();
-                            Files.deleteIfExists(tmp.toPath());
-                        } else {
-                            break;
-                        }
-                    }
-                }
-            } catch (IOException | InvalidPathException e) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Could not delete " + tmp + " when cleaning up legacy user directories", e);
-                }
-            }
-        }
-
-        if (u==null && (create || configFile.exists())) {
-            User tmp = new User(id, fullName);
-            User prev;
-            byNameLock.readLock().lock();
-            try {
-                prev = AllUsers.byName().putIfAbsent(idkey, u = tmp);
-            } finally {
-                byNameLock.readLock().unlock();
-            }
-            if (prev != null) {
-                u = prev; // if some has already put a value in the map, use it
-                if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
-                    LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
-                }
-            } else if (!id.equals(fullName) && !configFile.exists()) {
-                // JENKINS-16332: since the fullName may not be recoverable from the id, and various code may store the id only, we must save the fullName
+    private static @Nullable
+    User getOrCreateById(@Nonnull String id, @Nonnull String fullName, boolean create) {
+        User u = AllUsers.get(id);
+        if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
+            u = new User(id, fullName);
+            AllUsers.put(id, u);
+            if (!id.equals(fullName) && !UserIdMapper.getInstance().isMapped(id)) {
                 try {
                     u.save();
                 } catch (IOException x) {
-                    LOGGER.log(Level.WARNING, null, x);
+                    LOGGER.log(Level.WARNING, "Failed to save user configuration for " + id, x);
                 }
             }
         }
         return u;
     }
-    
-    private static boolean isMigrationRequiredForLegacyConfigFile(@Nonnull File legacyConfigFile, @Nonnull File newConfigFile){
-        boolean mustMigrateLegacyConfig = legacyConfigFile.exists() && !legacyConfigFile.equals(newConfigFile);
-        if(mustMigrateLegacyConfig){
-            try{
-                // TODO Could be replace by Util.isDescendant(getRootDir(), legacyConfigFile) in 2.80+
-                String canonicalLegacy = legacyConfigFile.getCanonicalPath();
-                String canonicalUserDir = getRootDir().getCanonicalPath();
-                if(!canonicalLegacy.startsWith(canonicalUserDir + File.separator)){
-                    // without that check, the application config.xml could be moved (i.e. erased from application PoV)
-                    mustMigrateLegacyConfig = false;
-                    LOGGER.log(Level.WARNING, String.format(
-                            "Attempt to escape from users directory with %s, migration aborted, see SECURITY-897 for more information",
-                            legacyConfigFile.getAbsolutePath()
-                    ));
-                }
-            }
-            catch (IOException e){
-                mustMigrateLegacyConfig = false;
-                LOGGER.log(
-                        Level.WARNING,
-                        String.format(
-                                "Failed to determine the canonical path of %s, migration aborted, see SECURITY-897 for more information", 
-                                legacyConfigFile.getAbsolutePath()
-                        ),
-                        e
-                );
-            }
-        }
-        return mustMigrateLegacyConfig;
-    }
 
     /**
      * Gets the {@link User} object by its id or full name.
-     *
+     * <p>
      * Creates a user on-demand.
      *
      * <p>
@@ -602,18 +541,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is slow (see JENKINS-23281).
      *
      * @deprecated This method is deprecated, because it causes unexpected {@link User} creation
-     *             by API usage code and causes performance degradation of used to retrieve users by ID.
-     *             Use {@link #getById} when you know you have an ID.
-     *             Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
+     * by API usage code and causes performance degradation of used to retrieve users by ID.
+     * Use {@link #getById} when you know you have an ID.
+     * Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
     @Deprecated
-    public static @Nonnull User get(String idOrFullName) {
+    public static @Nonnull
+    User get(String idOrFullName) {
         return getOrCreateByIdOrFullName(idOrFullName);
     }
 
     /**
      * Get the user by ID or Full Name.
-     *
+     * <p>
      * If the user does not exist, creates a new one on-demand.
      *
      * <p>
@@ -627,137 +567,105 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 2.91
      */
     public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
-        return get(idOrFullName,true, Collections.emptyMap());
+        return get(idOrFullName, true, Collections.emptyMap());
     }
 
 
     /**
      * Gets the {@link User} object representing the currently logged-in user, or null
      * if the current user is anonymous.
+     *
      * @since 1.172
      */
-    public static @CheckForNull User current() {
+    public static @CheckForNull
+    User current() {
         return get(Jenkins.getAuthentication());
     }
 
     /**
      * Gets the {@link User} object representing the supplied {@link Authentication} or
      * {@code null} if the supplied {@link Authentication} is either anonymous or {@code null}
+     *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
      * @since 1.609
      */
-    public static @CheckForNull User get(@CheckForNull Authentication a) {
-        if(a == null || a instanceof AnonymousAuthenticationToken)
+    public static @CheckForNull
+    User get(@CheckForNull Authentication a) {
+        if (a == null || a instanceof AnonymousAuthenticationToken)
             return null;
 
-        // Since we already know this is a name, we can just call getOrCreate with the name directly.
-        String id = a.getName();
-        return getById(id, true);
+        // Since we already know this is a name, we can just call getOrCreateById with the name directly.
+        return getById(a.getName(), true);
     }
 
     /**
      * Gets the {@link User} object by its <code>id</code>
      *
-     * @param id
-     *            the id of the user to retrieve and optionally create if it does not exist.
-     * @param create
-     *            If <code>true</code>, this method will never return <code>null</code> for valid input (by creating a
-     *            new {@link User} object if none exists.) If <code>false</code>, this method will return
-     *            <code>null</code> if {@link User} object with the given id doesn't exist.
+     * @param id     the id of the user to retrieve and optionally create if it does not exist.
+     * @param create If <code>true</code>, this method will never return <code>null</code> for valid input (by creating a
+     *               new {@link User} object if none exists.) If <code>false</code>, this method will return
+     *               <code>null</code> if {@link User} object with the given id doesn't exist.
      * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
-     *         and the user does not exist.
+     * and the user does not exist.
      * @since 1.651.2 / 2.3
      */
-    public static @Nullable User getById(String id, boolean create) {
-        return getOrCreate(id, id, create);
+    public static @Nullable
+    User getById(String id, boolean create) {
+        return getOrCreateById(id, id, create);
     }
 
     /**
      * Gets all the users.
      */
-    public static @Nonnull Collection<User> getAll() {
+    public static @Nonnull
+    Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
-        byNameLock.readLock().lock();
-        ArrayList<User> r;
-        try {
-            r = new ArrayList<User>(AllUsers.byName().values());
-        } finally {
-            byNameLock.readLock().unlock();
-        }
-        Collections.sort(r,new Comparator<User>() {
-
-            public int compare(User o1, User o2) {
-                return strategy.compare(o1.getId(), o2.getId());
-            }
-        });
-        return r;
+        ArrayList<User> users = new ArrayList<>(AllUsers.values());
+        users.sort((o1, o2) -> strategy.compare(o1.getId(), o2.getId()));
+        return users;
     }
 
     /**
      * To be called from {@link Jenkins#reload} only.
      */
     @Restricted(NoExternalUse.class)
-    public static void reload() {
-        byNameLock.readLock().lock();
-        try {
-            AllUsers.byName().clear();
-        } finally {
-            byNameLock.readLock().unlock();
-        }
-        UserDetailsCache.get().invalidateAll();
-        AllUsers.scanAll();
-    }
-
-    /**
-     * @deprecated Used to be called by test harnesses; now ignored in that case.
-     */
-    @Deprecated
-    public static void clear() {
-        if (ExtensionList.lookup(AllUsers.class).isEmpty()) {
-            // Historically this was called by JenkinsRule prior to startup. Ignore!
-            return;
-        }
-        byNameLock.writeLock().lock();
-        try {
-            AllUsers.byName().clear();
-        } finally {
-            byNameLock.writeLock().unlock();
-        }
+    public static void reload() throws IOException {
+        UserIdMapper.getInstance().reload();
+        AllUsers.reload();
     }
 
     /**
      * Called when changing the {@link IdStrategy}.
+     *
      * @since 1.566
      */
     public static void rekey() {
-        final IdStrategy strategy = idStrategy();
-        byNameLock.writeLock().lock();
+        /* There are many and varied ways in which this could cause erratic or
+            problematic behavior. Such changes should really only occur during initial
+            setup and under very controlled situations. After this sort of a change
+            the whole webapp should restart. It's possible that this rekeying,
+            or greater issues in the realm change, could affect currently logged
+            in users and even the user making the change. */
         try {
-            ConcurrentMap<String, User> byName = AllUsers.byName();
-            for (Map.Entry<String, User> e : byName.entrySet()) {
-                String idkey = strategy.keyFor(e.getValue().id);
-                if (!idkey.equals(e.getKey())) {
-                    // need to remap
-                    byName.remove(e.getKey());
-                    byName.putIfAbsent(idkey, e.getValue());
-                }
-            }
-        } finally {
-            byNameLock.writeLock().unlock();
-            UserDetailsCache.get().invalidateAll();
+            reload();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to perform rekey operation.", e);
         }
     }
 
     /**
      * Returns the user name.
      */
-    public @Nonnull String getDisplayName() {
+    public @Nonnull
+    String getDisplayName() {
         return getFullName();
     }
 
-    /** true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause} */
-    private boolean relatedTo(@Nonnull AbstractBuild<?,?> b) {
+    /**
+     * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
+     */
+    private boolean relatedTo(@Nonnull AbstractBuild<?, ?> b) {
         if (b.hasParticipant(this)) {
             return true;
         }
@@ -778,64 +686,73 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
-    public @Nonnull RunList getBuilds() {
-        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
-            @Override public boolean apply(Run<?,?> r) {
-                return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
-            }
-        });
+    public @Nonnull
+    RunList getBuilds() {
+        return RunList.fromJobs((Iterable) Jenkins.get().
+                allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
     }
 
     /**
      * Gets all the {@link AbstractProject}s that this user has committed to.
+     *
      * @since 1.191
      */
-    public @Nonnull Set<AbstractProject<?,?>> getProjects() {
-        Set<AbstractProject<?,?>> r = new HashSet<AbstractProject<?,?>>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class))
-            if(p.hasParticipant(this))
+    public @Nonnull
+    Set<AbstractProject<?, ?>> getProjects() {
+        Set<AbstractProject<?, ?>> r = new HashSet<>();
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class))
+            if (p.hasParticipant(this))
                 r.add(p);
         return r;
     }
 
-    public @Override String toString() {
+    public @Override
+    String toString() {
         return fullName;
     }
-    
-    /**
-     * Returns the folder that store all the user information
-     * Useful for plugins to save a user-specific file aside the config.xml
-     * 
-     * @since 2.129
-     */
-    public File getUserFolder(){
-        return getUserFolderFor(this.id);
-    }
 
     /**
-     * The file we save our configuration.
+     * Called by tests in the JTH. Otherwise this shouldn't be called.
+     * Even in the tests this usage is questionable.
      */
-    protected final XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM,getConfigFileFor(id));
+    @Deprecated
+    public static void clear() {
+        if (ExtensionList.lookup(AllUsers.class).isEmpty()) {
+            return;
+        }
+        UserIdMapper.getInstance().clear();
+        AllUsers.clear();
     }
 
-    private static final File getConfigFileFor(String id) {
+    private static File getConfigFileFor(String id) {
         return new File(getUserFolderFor(id), "config.xml");
     }
     
     private static File getUserFolderFor(String id){
         return new File(getRootDir(), idStrategy().filenameOf(id));
     }
+    /**
+     * Returns the folder that store all the user information.
+     * Useful for plugins to save a user-specific file aside the config.xml.
+     * Exposes implementation details that may be subject to change.
+     * 
+     * @return The folder containing the user configuration files or {@code null} if the user was not yet saved.
+     *
+     * @since 2.129
+     */
+    public @CheckForNull File getUserFolder() {
+        return getExistingUserFolder();
+    }
 
-    private static File getUnsanitizedLegacyConfigFileFor(String id) {
-        return new File(getRootDir(), idStrategy().legacyFilenameOf(id) + "/config.xml");
+    private @CheckForNull File getExistingUserFolder() {
+        return UserIdMapper.getInstance().getDirectory(id);
     }
 
     /**
      * Gets the directory where Hudson stores user information.
      */
-    private static File getRootDir() {
-        return new File(Jenkins.getInstance().getRootDir(), "users");
+    static File getRootDir() {
+        return new File(Jenkins.get().getRootDir(), "users");
     }
 
     /**
@@ -848,12 +765,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param id ID to be checked
      * @return {@code true} if the username or fullname is valid.
-     *      For {@code null} or blank IDs returns {@code false}.
+     * For {@code null} or blank IDs returns {@code false}.
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        //TODO: StringUtils.isBlank() checks the null value, but FindBugs is not smart enough. Remove it later
-        if (id == null || StringUtils.isBlank(id)) {
+        if (StringUtils.isBlank(id)) {
             return false;
         }
         final String trimmedId = id.trim();
@@ -865,49 +781,49 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Save the settings to a file.
+     * Save the user configuration.
      */
-    public synchronized void save() throws IOException, FormValidation {
-        if (! isIdOrFullnameAllowed(id)) {
+    public synchronized void save() throws IOException {
+        if (!isIdOrFullnameAllowed(id)) {
             throw FormValidation.error(Messages.User_IllegalUsername(id));
         }
-        if (! isIdOrFullnameAllowed(fullName)) {
+        if (!isIdOrFullnameAllowed(fullName)) {
             throw FormValidation.error(Messages.User_IllegalFullname(fullName));
         }
-        if(BulkChange.contains(this))   return;
-        getConfigFile().write(this);
-        SaveableListener.fireOnChange(this, getConfigFile());
+        if (BulkChange.contains(this)) {
+            return;
+        }
+        XmlFile xmlFile = new XmlFile(XSTREAM, constructUserConfigFile());
+        xmlFile.write(this);
+        SaveableListener.fireOnChange(this, xmlFile);
     }
 
-    private Object writeReplace() {
-        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    private File constructUserConfigFile() throws IOException {
+        return new File(putUserFolderIfAbsent(), CONFIG_XML);
     }
-    private static class Replacer {
-        private final String id;
-        Replacer(User u) {
-            id = u.getId();
-        }
-        private Object readResolve() {
-            return getById(id, false);
-        }
+
+    private File putUserFolderIfAbsent() throws IOException {
+        return UserIdMapper.getInstance().putIfAbsent(id, true);
     }
 
     /**
      * Deletes the data directory and removes this user from Hudson.
      *
-     * @throws IOException
-     *      if we fail to delete.
+     * @throws IOException if we fail to delete.
      */
-    public synchronized void delete() throws IOException {
-        final IdStrategy strategy = idStrategy();
-        byNameLock.readLock().lock();
-        try {
-            AllUsers.byName().remove(strategy.keyFor(id));
-        } finally {
-            byNameLock.readLock().unlock();
+    public void delete() throws IOException {
+        String idKey = idStrategy().keyFor(id);
+        File existingUserFolder = getExistingUserFolder();
+        UserIdMapper.getInstance().remove(id);
+        AllUsers.remove(id);
+        deleteExistingUserFolder(existingUserFolder);
+        UserDetailsCache.get().invalidate(idKey);
+    }
+
+    private void deleteExistingUserFolder(File existingUserFolder) throws IOException {
+        if (existingUserFolder != null && existingUserFolder.exists()) {
+            Util.deleteRecursive(existingUserFolder);
         }
-        Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
-        UserDetailsCache.get().invalidate(strategy.keyFor(id));
     }
 
     /**
@@ -921,7 +837,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Accepts submission from the configuration page.
      */
     @RequirePOST
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
@@ -929,13 +845,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         fullName = json.getString("fullName");
         description = json.getString("description");
 
-        List<UserProperty> props = new ArrayList<UserProperty>();
+        List<UserProperty> props = new ArrayList<>();
         int i = 0;
         for (UserPropertyDescriptor d : UserProperty.all()) {
             UserProperty p = getProperty(d.clazz);
 
             JSONObject o = json.optJSONObject("userProperty" + (i++));
-            if (o!=null) {
+            if (o != null) {
                 if (p != null) {
                     p = p.reconfigure(req, o);
                 } else {
@@ -944,7 +860,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 p.setUser(this);
             }
 
-            if (p!=null)
+            if (p != null)
                 props.add(p);
         }
         this.properties = props;
@@ -955,14 +871,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             UserDetailsCache.get().invalidate(oldFullName);
         }
 
-        FormApply.success(".").generateResponse(req,rsp,this);
+        FormApply.success(".").generateResponse(req, rsp, this);
     }
 
     /**
      * Deletes this user from Hudson.
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         if (idStrategy().equals(id, Jenkins.getAuthentication().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
@@ -983,9 +899,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        final List<Run> lastBuilds = new ArrayList<Run>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
-            for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+        final List<Run> lastBuilds = new ArrayList<>();
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
+            for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
                 if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
@@ -994,44 +910,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         // historically these have been reported sorted by project name, we switched to the lazy iteration
         // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
-        Collections.sort(lastBuilds, new Comparator<Run>() {
-            @Override
-            public int compare(Run o1, Run o2) {
-                return Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent());
-            }
-        });
+        lastBuilds.sort((o1, o2) -> Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent()));
         rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
             throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
     }
 
-    /**
-     * This lock is used to guard access to the {@link AllUsers#byName} map. Use
-     * {@link java.util.concurrent.locks.ReadWriteLock#readLock()} for normal access and
-     * {@link java.util.concurrent.locks.ReadWriteLock#writeLock()} for {@link #rekey()} or any other operation
-     * that requires operating on the map as a whole.
-     */
-    private static final ReadWriteLock byNameLock = new ReentrantReadWriteLock();
-
-    /**
-     * Used to load/save user configuration.
-     */
-    public static final XStream2 XSTREAM = new XStream2();
-
-    private static final Logger LOGGER = Logger.getLogger(User.class.getName());
-
-    static {
-        XSTREAM.alias("user",User.class);
-    }
-
+    @Override
+    @Nonnull
     public ACL getACL() {
-        ACL base = Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        ACL base = Jenkins.get().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
         return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
-                        || base.hasPermission(a, permission));
+                || base.hasPermission(a, permission));
     }
 
     /**
@@ -1040,21 +934,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
         return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
-                && new File(getRootDir(), strategy.filenameOf(id)).exists();
+                && UserIdMapper.getInstance().isMapped(id);
     }
 
     /**
      * Checks for authorities (groups) associated with this user.
      * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
      * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
-     * @since 1.498
+     *
      * @return a possibly empty list
+     * @since 1.498
      */
-    public @Nonnull List<String> getAuthorities() {
-        if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+    public @Nonnull
+    List<String> getAuthorities() {
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return Collections.emptyList();
         }
-        List<String> r = new ArrayList<String>();
+        List<String> r = new ArrayList<>();
         Authentication authentication;
         try {
             authentication = impersonate();
@@ -1071,29 +967,29 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 r.add(n);
             }
         }
-        Collections.sort(r, String.CASE_INSENSITIVE_ORDER);
+        r.sort(String.CASE_INSENSITIVE_ORDER);
         return r;
     }
 
     public Object getDynamic(String token) {
-        for(Action action: getTransientActions()){
-            if(Objects.equals(action.getUrlName(), token))
+        for (Action action : getTransientActions()) {
+            if (Objects.equals(action.getUrlName(), token))
                 return action;
         }
-        for(Action action: getPropertyActions()){
-            if(Objects.equals(action.getUrlName(), token))
+        for (Action action : getPropertyActions()) {
+            if (Objects.equals(action.getUrlName(), token))
                 return action;
         }
         return null;
     }
-    
+
     /**
      * Return all properties that are also actions.
-     * 
+     *
      * @return the list can be empty but never null. read only.
      */
     public List<Action> getPropertyActions() {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         for (UserProperty userProp : getProperties().values()) {
             if (userProp instanceof Action) {
                 actions.add((Action) userProp);
@@ -1101,22 +997,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         return Collections.unmodifiableList(actions);
     }
-    
+
     /**
      * Return all transient actions associated with this user.
-     * 
+     *
      * @return the list can be empty but never null. read only.
      */
     public List<Action> getTransientActions() {
-        List<Action> actions = new ArrayList<Action>();
-        for (TransientUserActionFactory factory: TransientUserActionFactory.all()) {
+        List<Action> actions = new ArrayList<>();
+        for (TransientUserActionFactory factory : TransientUserActionFactory.all()) {
             actions.addAll(factory.createFor(this));
         }
         return Collections.unmodifiableList(actions);
     }
 
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        return new ContextMenu().from(this,request,response);
+        return new ContextMenu().from(this, request, response);
     }
 
     @Override
@@ -1131,73 +1027,95 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Escape hatch for StaplerProxy-based access control
-     */
-    @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
-
-    
-    /**
      * Gets list of Illegal usernames, for which users should not be created.
      * Always includes users from {@link #ILLEGAL_PERSISTED_USERNAMES}
+     *
      * @return List of usernames
      */
     @Restricted(NoExternalUse.class)
     /*package*/ static Set<String> getIllegalPersistedUsernames() {
-        // TODO: This method is designed for further extensibility via system properties. To be extended in a follow-up issue
-        final Set<String> res = new HashSet<>();
-        res.addAll(Arrays.asList(ILLEGAL_PERSISTED_USERNAMES));
-        return res;
+        return new HashSet<>(Arrays.asList(ILLEGAL_PERSISTED_USERNAMES));
     }
 
-    /** Per-{@link Jenkins} holder of all known {@link User}s. */
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+
+    private static class Replacer {
+        private final String id;
+
+        Replacer(User u) {
+            id = u.getId();
+        }
+
+        private Object readResolve() {
+            return getById(id, false);
+        }
+    }
+
+    /**
+     * Per-{@link Jenkins} holder of all known {@link User}s.
+     */
     @Extension
     @Restricted(NoExternalUse.class)
     public static final class AllUsers {
 
-        @Initializer(after = InitMilestone.JOB_LOADED) // so Jenkins.loadConfig has been called
+        private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
+
+        @Initializer(after = InitMilestone.JOB_LOADED)
         public static void scanAll() {
-            IdStrategy strategy = idStrategy();
-            File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-            if (subdirs != null) {
-                for (File subdir : subdirs) {
-                    if (subdir.equals(getRootDir())) {
-                        continue; // ignore the parent directory in case of stray config.xml
-                    }
-                    File configFile = new File(subdir, "config.xml");
-                    if (configFile.exists()) {
-                        String name = strategy.idFromFilename(subdir.getName());
-                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true, configFile);
-                    }
-                }
+            for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
+                User user = new User(userId, userId);
+                getInstance().byName.putIfAbsent(idStrategy().keyFor(userId), user);
             }
         }
-
-        @GuardedBy("User.byNameLock")
-        private final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
 
         /**
          * Keyed by {@link User#id}. This map is used to ensure
          * singleton-per-id semantics of {@link User} objects.
-         *
+         * <p>
          * The key needs to be generated by {@link IdStrategy#keyFor(String)}.
          */
-        @GuardedBy("User.byNameLock")
-        static ConcurrentMap<String,User> byName() {
-            return ExtensionList.lookupSingleton(AllUsers.class).byName;
+        private static AllUsers getInstance() {
+            return ExtensionList.lookupSingleton(AllUsers.class);
         }
 
+        private static void reload() {
+            getInstance().byName.clear();
+            UserDetailsCache.get().invalidateAll();
+            scanAll();
+        }
+
+        private static void clear() {
+            getInstance().byName.clear();
+        }
+
+        private static void remove(String id) {
+            getInstance().byName.remove(idStrategy().keyFor(id));
+        }
+
+        private static User get(String id) {
+            return getInstance().byName.get(idStrategy().keyFor(id));
+        }
+
+        private static void put(String id, User user) {
+            getInstance().byName.putIfAbsent(idStrategy().keyFor(id), user);
+        }
+
+        private static Collection<User> values() {
+            return getInstance().byName.values();
+        }
     }
 
     /**
      * Resolves User IDs by ID, full names or other strings.
-     *
+     * <p>
      * This extension point may be useful to map SCM user names to Jenkins {@link User} IDs.
      * Currently the extension point is used in {@link User#get(String, boolean, Map)}.
      *
-     * @since 1.479
      * @see jenkins.model.DefaultUserCanonicalIdResolver
      * @see FullNameIdResolver
+     * @since 1.479
      */
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
@@ -1209,23 +1127,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         public static final String REALM = "realm";
 
         @Override
-        public int compareTo(CanonicalIdResolver o) {
+        public int compareTo(@Nonnull CanonicalIdResolver o) {
             // reverse priority order
-            int i = getPriority();
-            int j = o.getPriority();
-            return i>j ? -1 : (i==j ? 0:1);
+            return Integer.compare(o.getPriority(), getPriority());
         }
 
         /**
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, @Nonnull Map<String, ?> context);
+        public abstract @CheckForNull
+        String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
 
         /**
          * Gets priority of the resolver.
          * Higher priority means that it will be checked earlier.
-         *
+         * <p>
          * Overriding methods must not use {@link Integer#MIN_VALUE}, because it will cause collisions
          * with {@link jenkins.model.DefaultUserCanonicalIdResolver}.
          *
@@ -1235,10 +1152,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return 1;
         }
 
-        //TODO: It is too late to use Extension Point ordinals, right?
         //Such sorting and collection rebuild is not good for User#get(...) method performance.
+
         /**
          * Gets all extension points, sorted by priority.
+         *
          * @return Sorted list of extension point implementations.
          * @since 2.93
          */
@@ -1250,18 +1168,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         /**
          * Resolves users using all available {@link CanonicalIdResolver}s.
+         *
          * @param idOrFullName ID or full name of the user
-         * @param context Context
+         * @param context      Context
          * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
          * @since 2.93
          */
         @CheckForNull
         public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
             for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
-                //TODO: add try/catch for Runtime exceptions? It should not happen now && it may cause performance degradation
                 String id = resolver.resolveCanonicalId(idOrFullName, context);
                 if (id != null) {
-                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
+                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[]{resolver, idOrFullName, id});
                     return id;
                 }
             }
@@ -1276,7 +1194,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Resolve user ID from full name
      */
-    @Extension @Symbol("fullName")
+    @Extension
+    @Symbol("fullName")
     public static class FullNameIdResolver extends CanonicalIdResolver {
 
         @Override
@@ -1302,15 +1221,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
 
-        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE = 
+        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE =
                 SystemProperties.getBoolean(User.class.getName() + ".SECURITY_243_FULL_DEFENSE", true);
 
-        private static final ThreadLocal<Boolean> resolving = new ThreadLocal<Boolean>() {
-            @Override
-            protected Boolean initialValue() {
-                return false;
-            }
-        };
+        private static final ThreadLocal<Boolean> resolving = ThreadLocal.withInitial(() -> false);
 
         @Override
         public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
@@ -1343,31 +1257,5 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
     }
-
-    /**
-     * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
-     * which was necessary to make sure users removed from the backend will get removed from the frontend.
-     * <p>
-     * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
-     * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
-     *
-     * JENKINS-22346.
-     */
-    public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName()+".allowNonExistentUserToLogin");
-
-    /**
-     * Jenkins historically created a (usually) ephemeral user record when an user with Overall/Administer permission
-     * accesses a /user/arbitraryName URL.
-     * <p>
-     * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
-     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
-     * <p>
-     * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
-     * is not recommended.
-     *
-     * SECURITY-406.
-     */
-    @Restricted(NoExternalUse.class)
-    public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
 }

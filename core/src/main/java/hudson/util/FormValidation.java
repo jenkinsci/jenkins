@@ -54,7 +54,9 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -461,9 +463,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
             if(!allowEmpty && v.length()==0)
                 return error(errorMessage);
 
-            com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+            Base64.getDecoder().decode(v.getBytes(StandardCharsets.UTF_8));
             return ok();
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             return error(errorMessage);
         }
     }
@@ -497,7 +499,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while((line=in.readLine())!=null)
-                if(line.indexOf(literal)!=-1)
+                if(line.contains(literal))
                     return true;
             return false;
         }
@@ -594,7 +596,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if(method !=null) {
-                names = new ArrayList<String>();
+                names = new ArrayList<>();
                 findParameters(method);
             } else {
                 names = null;

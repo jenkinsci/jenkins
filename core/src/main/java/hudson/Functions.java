@@ -465,7 +465,7 @@ public class Functions {
     }
 
     public static Map getSystemProperties() {
-        return new TreeMap<Object,Object>(System.getProperties());
+        return new TreeMap<>(System.getProperties());
     }
 
     /**
@@ -479,7 +479,7 @@ public class Functions {
     }
 
     public static Map getEnvVars() {
-        return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        return new TreeMap<>(EnvVars.masterEnvVars);
     }
 
     public static boolean isWindows() {
@@ -544,7 +544,7 @@ public class Functions {
      * @since 1.525
      */
     public static <T> Iterable<T> reverse(Collection<T> collection) {
-        List<T> list = new ArrayList<T>(collection);
+        List<T> list = new ArrayList<>(collection);
         Collections.reverse(list);
         return list;
     }
@@ -1556,30 +1556,13 @@ public class Functions {
     /**
      * Converts the Hudson build status to CruiseControl build status,
      * which is either Success, Failure, Exception, or Unknown.
+     *
+     * @deprecated This functionality has been moved to ccxml plugin.
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("since TODO")
     public static String toCCStatus(Item i) {
-        if (i instanceof Job) {
-            Job j = (Job) i;
-            switch (j.getIconColor()) {
-            case ABORTED:
-            case ABORTED_ANIME:
-            case RED:
-            case RED_ANIME:
-            case YELLOW:
-            case YELLOW_ANIME:
-                return "Failure";
-            case BLUE:
-            case BLUE_ANIME:
-                return "Success";
-            case DISABLED:
-            case DISABLED_ANIME:
-            case GREY:
-            case GREY_ANIME:
-            case NOTBUILT:
-            case NOTBUILT_ANIME:
-                return "Unknown";
-            }
-        }
         return "Unknown";
     }
 
@@ -1779,6 +1762,10 @@ public class Functions {
         return SimplePageDecorator.first();
     }
 
+    public static List<SimplePageDecorator> getSimplePageDecorators() {
+        return SimplePageDecorator.all();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
@@ -1827,7 +1814,7 @@ public class Functions {
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
-        String cp = Stapler.getCurrentRequest().getContextPath();
+        String cp = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
@@ -2002,7 +1989,7 @@ public class Functions {
         if(size < 1024){
             return size + " " + measure;
         }
-        Double number = new Double(size);
+        double number = size;
         if(number>=1024){
             number = number/1024;
             measure = "KB";
@@ -2067,14 +2054,4 @@ public class Functions {
             return true;
         }
     }
-
-    @Restricted(NoExternalUse.class) // for cc.xml.jelly
-    public static Collection<TopLevelItem> getCCItems(View v) {
-        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
-            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
-        } else {
-            return v.getItems();
-        }
-    }
-
 }

@@ -25,7 +25,6 @@
 
 package hudson.model;
 
-import hudson.ClassicPluginStrategy;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -65,11 +64,14 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
+import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -333,11 +335,7 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
-            } catch (JSONException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
-                return null;
-            } catch (IOException e) {
+            } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
                 return null;
@@ -353,7 +351,7 @@ public class UpdateSite {
      */
     @Exported
     public List<Plugin> getAvailables() {
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         Data data = getData();
         if(data==null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
@@ -413,7 +411,7 @@ public class UpdateSite {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
         
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
@@ -513,13 +511,13 @@ public class UpdateSite {
         /**
          * Plugins in the repository, keyed by their artifact IDs.
          */
-        public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
+        public final Map<String,Plugin> plugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         /**
          * List of warnings (mostly security) published with the update site.
          *
          * @since 2.40
          */
-        private final Set<Warning> warnings = new HashSet<Warning>();
+        private final Set<Warning> warnings = new HashSet<>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -550,7 +548,7 @@ public class UpdateSite {
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
-                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                List<PluginWrapper.Dependency> implicitDeps = DetachedPluginsUtil.getImpliedDependencies(p.name, p.requiredCore);
                 if(!implicitDeps.isEmpty()) {
                     for(PluginWrapper.Dependency dep : implicitDeps) {
                         if(!p.dependencies.containsKey(dep.shortName)) {
@@ -968,6 +966,13 @@ public class UpdateSite {
         @Exported
         public final String requiredCore;
         /**
+         * Version of Java this plugin requires to run.
+         *
+         * @since TODO
+         */
+        @Exported
+        public final String minimumJavaVersion;
+        /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
          */
@@ -993,6 +998,7 @@ public class UpdateSite {
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
+            this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.requiredCore = Util.intern(get(o,"requiredCore"));
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
@@ -1063,16 +1069,16 @@ public class UpdateSite {
          */
         @Exported
         public List<Plugin> getNeededDependencies() {
-            List<Plugin> deps = new ArrayList<Plugin>();
+            List<Plugin> deps = new ArrayList<>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     LOGGER.log(Level.WARNING, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
-                
+
                 // Is the plugin installed already? If not, add it.
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -1091,11 +1097,11 @@ public class UpdateSite {
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     continue;
                 }
-                VersionNumber requiredVersion = new VersionNumber(e.getValue());
 
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -1118,6 +1124,21 @@ public class UpdateSite {
             }
         }
 
+        /**
+         * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
+         * @since TODO
+         */
+        public boolean isForNewerJava() {
+            try {
+                final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
+                return minimumJavaVersion != null && new JavaSpecificationVersion(minimumJavaVersion).isNewerThan(
+                        currentRuntimeJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+                return false; // treat this as undeclared minimum Java version
+            }
+        }
+
         public VersionNumber getNeededDependenciesRequiredCore() {
             VersionNumber versionNumber = null;
             try {
@@ -1130,6 +1151,36 @@ public class UpdateSite {
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
+        }
+
+        /**
+         * Returns the minimum Java version needed to use the plugin and all its dependencies.
+         * @since TODO
+         * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
+         */
+        @CheckForNull
+        public VersionNumber getNeededDependenciesMinimumJavaVersion() {
+            VersionNumber versionNumber = null;
+            try {
+                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
+            } catch (NumberFormatException nfe) {
+                logBadMinJavaVersion();
+            }
+            for (Plugin p: getNeededDependencies()) {
+                VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
+                if (v == null) {
+                    continue;
+                }
+                if (versionNumber == null || v.isNewerThan(versionNumber)) {
+                    versionNumber = v;
+                }
+            }
+            return versionNumber;
+        }
+
+        private void logBadMinJavaVersion() {
+            LOGGER.log(Level.WARNING, "minimumJavaVersion was specified for plugin {0} but unparseable (received {1})",
+                       new String[]{this.name, this.minimumJavaVersion});
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
@@ -1146,6 +1197,20 @@ public class UpdateSite {
                 }
                 return false;
             });
+        }
+
+        /**
+         * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
+         *
+         * @since TODO
+         */
+        public boolean isNeededDependenciesForNewerJava() {
+            for (Plugin p: getNeededDependencies()) {
+                if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**

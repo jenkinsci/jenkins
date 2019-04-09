@@ -108,7 +108,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     @Deprecated
-    public static final List<PageDecorator> ALL = (List)new DescriptorList<PageDecorator>(PageDecorator.class);
+    public static final List<PageDecorator> ALL = (List) new DescriptorList<>(PageDecorator.class);
 
     /**
      * Returns all the registered {@link PageDecorator} descriptors.

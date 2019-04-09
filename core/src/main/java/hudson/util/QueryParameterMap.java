@@ -48,7 +48,7 @@ import java.util.Map;
  * @since 1.394
  */
 public class QueryParameterMap {
-    private final Map<String,List<String>> store = new HashMap<String, List<String>>();
+    private final Map<String,List<String>> store = new HashMap<>();
 
     /**
      * @param queryString
@@ -61,9 +61,7 @@ public class QueryParameterMap {
                 String[] kv = param.split("=");
                 String key = URLDecoder.decode(kv[0], "UTF-8");
                 String value = URLDecoder.decode(kv[1], "UTF-8");
-                List<String> values = store.get(key);
-                if (values == null)
-                    store.put(key, values = new ArrayList<String>());
+                List<String> values = store.computeIfAbsent(key, k -> new ArrayList<>());
                 values.add(value);
             }
         } catch (UnsupportedEncodingException e) {

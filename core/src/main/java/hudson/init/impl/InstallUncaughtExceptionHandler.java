@@ -5,12 +5,8 @@ import java.io.EOFException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
-import org.kohsuke.stapler.compression.UncaughtExceptionHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +29,7 @@ public class InstallUncaughtExceptionHandler {
                 }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
-                    WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, Jenkins.get(), "/oops");
+                    WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
                         throw x;

@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.41</version>
+      <version>1.45</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -89,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.1</version>
+      <version>5.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -100,7 +100,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -110,7 +110,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.9.3</version>
+      <version>1.10.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -414,6 +414,12 @@ THE SOFTWARE.
                   <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>
@@ -604,7 +610,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
             <executions>
 
               <execution>

@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -84,11 +85,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
      * While redundant, often convenient.
      */
     public String mac(String message) {
-        try {
-            return Util.toHexString(mac(message.getBytes("UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return Util.toHexString(mac(message.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
@@ -132,9 +129,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
                             store(encoded=key.getEncoded());
                         }
                         key = new SecretKeySpec(encoded,ALGORITHM);
-                    } catch (IOException e) {
-                        throw new Error("Failed to load the key: "+getId(),e);
-                    } catch (NoSuchAlgorithmException e) {
+                    } catch (IOException | NoSuchAlgorithmException e) {
                         throw new Error("Failed to load the key: "+getId(),e);
                     }
                 }

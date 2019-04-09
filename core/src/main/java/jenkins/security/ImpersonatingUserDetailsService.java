@@ -8,8 +8,6 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
 
-import static java.util.Collections.*;
-
 /**
  * {@link UserDetailsService} for those {@link SecurityRealm}
  * that doesn't allow query of other users.
@@ -30,9 +28,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
         try {
             return base.loadUserByUsername(username);
-        } catch (UserMayOrMayNotExistException e) {
-            return attemptToImpersonate(username, e);
-        } catch (DataAccessException e) {
+        } catch (UserMayOrMayNotExistException | DataAccessException e) {
             return attemptToImpersonate(username, e);
         }
     }

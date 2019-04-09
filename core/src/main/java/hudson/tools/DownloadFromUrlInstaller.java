@@ -178,7 +178,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         private JSONObject reduce(List<JSONObject> jsonList) {
             List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
 
-            HashSet<String> processedIds = new HashSet<String>();
+            HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {
                 ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
                 for(ToolInstallerEntry entry : toolInstallerList.list) {
@@ -192,9 +192,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             ToolInstallerList toolInstallerList = new ToolInstallerList();
             toolInstallerList.list = new ToolInstallerEntry[reducedToolEntries.size()];
             reducedToolEntries.toArray(toolInstallerList.list);
-            JSONObject reducedToolEntriesJsonList = JSONObject.fromObject(toolInstallerList);
             //return the list with no duplicates
-            return reducedToolEntriesJsonList;
+            return JSONObject.fromObject(toolInstallerList);
         }
 
         /**

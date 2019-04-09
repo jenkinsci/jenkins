@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 
 import hudson.model.Computer;
 import hudson.model.Queue;
@@ -46,7 +47,7 @@ public class ComputerRetentionWork extends PeriodicWork {
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
      */
-    private final Map<Computer, Long> nextCheck = new WeakHashMap<Computer, Long>();
+    private final Map<Computer, Long> nextCheck = new WeakHashMap<>();
 
     public long getRecurrencePeriod() {
         return MIN;
@@ -59,7 +60,7 @@ public class ComputerRetentionWork extends PeriodicWork {
     @Override
     protected void doRun() {
         final long startRun = System.currentTimeMillis();
-        for (final Computer c : Jenkins.getInstance().getComputers()) {
+        for (final Computer c : Jenkins.get().getComputers()) {
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
@@ -70,7 +71,7 @@ public class ComputerRetentionWork extends PeriodicWork {
                         // at the moment I don't trust strategies to wait more than 60 minutes
                         // strategies need to wait at least one minute
                         final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
-                        nextCheck.put(c, startRun + waitInMins*1000*60 /*MINS->MILLIS*/);
+                        nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
                     }
                 }
             });

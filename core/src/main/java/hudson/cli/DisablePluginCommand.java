@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Disable one or more installed plugins.
- * @since TODO
+ * @since 2.151
  */
 @Extension
 public class DisablePluginCommand extends CLICommand {
@@ -47,10 +47,10 @@ public class DisablePluginCommand extends CLICommand {
     @Option(name = "-restart", aliases = "-r", usage = "Restart Jenkins after disabling plugins.")
     private boolean restart;
 
-    @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = "How to process the dependant plugins. \n" +
-            "- none: if a mandatory dependant plugin exists and it is enabled, the plugin cannot be disabled (default value).\n" +
-            "- mandatory: all mandatory dependant plugins are also disabled, optional dependant plugins remain enabled.\n" +
-            "- all: all dependant plugins are also disabled, no matter if its dependency is optional or mandatory.")
+    @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = "How to process the dependent plugins. \n" +
+            "- none: if a mandatory dependent plugin exists and it is enabled, the plugin cannot be disabled (default value).\n" +
+            "- mandatory: all mandatory dependent plugins are also disabled, optional dependent plugins remain enabled.\n" +
+            "- all: all dependent plugins are also disabled, no matter if its dependency is optional or mandatory.")
     private String strategy = PluginWrapper.PluginDisableStrategy.NONE.toString();
 
     @Option(name = "-quiet", aliases = "-q", usage = "Be quiet, print only the error messages")
@@ -140,10 +140,10 @@ public class DisablePluginCommand extends CLICommand {
         }
 
         printIndented(indent, Messages.DisablePluginCommand_StatusMessage(oneResult.getPlugin(), oneResult.getStatus(), oneResult.getMessage()));
-        if (oneResult.getDependantsDisableStatus().size() > 0) {
+        if (oneResult.getDependentsDisableStatus().size() > 0) {
             indent += INDENT_SPACE;
-            for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
-                printResult(oneDependantResult, indent);
+            for (PluginWrapper.PluginDisableResult oneDependentResult : oneResult.getDependentsDisableStatus()) {
+                printResult(oneDependentResult, indent);
             }
         }
     }
@@ -163,9 +163,9 @@ public class DisablePluginCommand extends CLICommand {
     }
 
     /**
-     * Restart if this particular result of the disablement of a plugin and its dependant plugins (depending on the
+     * Restart if this particular result of the disablement of a plugin and its dependent plugins (depending on the
      * strategy used) has a plugin disablexd.
-     * @param oneResult the result of a plugin (and its dependants).
+     * @param oneResult the result of a plugin (and its dependents).
      * @return true if it end up in restarting jenkins.
      */
     private boolean restartIfNecessary(PluginWrapper.PluginDisableResult oneResult) throws RestartNotSupportedException {
@@ -175,9 +175,9 @@ public class DisablePluginCommand extends CLICommand {
             return true;
         }
 
-        if (oneResult.getDependantsDisableStatus().size() > 0) {
-            for (PluginWrapper.PluginDisableResult oneDependantResult : oneResult.getDependantsDisableStatus()) {
-                if (restartIfNecessary(oneDependantResult)) {
+        if (oneResult.getDependentsDisableStatus().size() > 0) {
+            for (PluginWrapper.PluginDisableResult oneDependentResult : oneResult.getDependentsDisableStatus()) {
+                if (restartIfNecessary(oneDependentResult)) {
                     return true;
                 }
             }
@@ -191,7 +191,7 @@ public class DisablePluginCommand extends CLICommand {
      * Calculate the result code of the full process based in what went on during the process
      * @param results he list of results for the disablement of each plugin
      * @return the status code. 0 if all plugins disabled. {@link #RETURN_CODE_NOT_DISABLED_DEPENDANTS} if some
-     * dependant plugin is not disabled (with strategy NONE), {@link #RETURN_CODE_NO_SUCH_PLUGIN} if some passed
+     * dependent plugin is not disabled (with strategy NONE), {@link #RETURN_CODE_NO_SUCH_PLUGIN} if some passed
      * plugin doesn't exist. Whatever happens first.
      */
     private int getResultCode(List<PluginWrapper.PluginDisableResult> results) {
@@ -208,7 +208,7 @@ public class DisablePluginCommand extends CLICommand {
 
     /**
      * Calculate the result code of the disablement of one plugin based in what went on during the process of this one
-     * and its dependant plugins.
+     * and its dependent plugins.
      * @param result the result of the disablement of this plugin
      * @return the status code
      */
@@ -223,8 +223,8 @@ public class DisablePluginCommand extends CLICommand {
         }
 
         if (returnCode == 0) {
-            for (PluginWrapper.PluginDisableResult oneDependantResult : result.getDependantsDisableStatus()) {
-                returnCode = getResultCode(oneDependantResult);
+            for (PluginWrapper.PluginDisableResult oneDependentResult : result.getDependentsDisableStatus()) {
+                returnCode = getResultCode(oneDependentResult);
                 if (returnCode != 0) {
                     break;
                 }

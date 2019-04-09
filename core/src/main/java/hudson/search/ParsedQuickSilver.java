@@ -39,7 +39,7 @@ import java.beans.Introspector;
  * @author Kohsuke Kawaguchi
  */
 final class ParsedQuickSilver {
-    private static final Map<Class,ParsedQuickSilver> TABLE = new HashMap<Class,ParsedQuickSilver>();
+    private static final Map<Class,ParsedQuickSilver> TABLE = new HashMap<>();
 
     synchronized static ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
         ParsedQuickSilver pqs = TABLE.get(clazz);
@@ -48,7 +48,7 @@ final class ParsedQuickSilver {
         return pqs;
     }
 
-    private final List<Getter> getters = new ArrayList<Getter>();
+    private final List<Getter> getters = new ArrayList<>();
 
     private ParsedQuickSilver(Class<? extends SearchableModelObject> clazz) {
         QuickSilver qs;

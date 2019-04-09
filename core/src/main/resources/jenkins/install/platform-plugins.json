@@ -35,11 +35,10 @@
     {
         "category":"Build Analysis and Reporting",
         "plugins": [
-            { "name": "checkstyle" },
             { "name": "cobertura" },
             { "name": "htmlpublisher" },
             { "name": "junit" },
-            { "name": "warnings" },
+            { "name": "warnings-ng" },
             { "name": "xunit" }
         ]
     },
@@ -84,12 +83,13 @@
     },
     {
         "category":"User Management and Security",
-        "plugins": [            
+        "plugins": [
             { "name": "matrix-auth", "suggested": true },
             { "name": "pam-auth", "suggested": true },
             { "name": "ldap", "suggested": true },
             { "name": "role-strategy" },
-            { "name": "active-directory" }
+            { "name": "active-directory" },
+            { "name": "authorize-project" }
         ]
     },
     {

@@ -118,13 +118,9 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
 			LOGGER.finer("Chain processed normally");
 		}
-		catch (AuthenticationException ex) {
+		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
-		}
-		catch (AccessDeniedException ex) {
-			handleException(request, response, chain, ex);
-		}
-		catch (ServletException ex) {
+		} catch (ServletException ex) {
 			if (ex.getRootCause() instanceof AuthenticationException
 					|| ex.getRootCause() instanceof AccessDeniedException) {
 				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());

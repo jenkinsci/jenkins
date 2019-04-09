@@ -24,6 +24,7 @@
 package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -42,6 +43,8 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import jenkins.security.SecurityListener;
+import jenkins.util.SystemProperties;
+import jenkins.security.seed.UserSeedProperty;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -82,6 +85,9 @@ import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -391,7 +397,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
      * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
-     * SignupInfo#errors} set to a non-null value if any of the supported fields are invalid
+     * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
     private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
@@ -501,8 +507,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
         user.addProperty(Details.fromPlainPassword(password));
+        SecurityListener.fireUserCreated(user.getId());
         return user;
     }
+
+    /**
+     * Creates a new user account by registering a JBCrypt Hashed password with the user.
+     *
+     * @param userName The user's name
+     * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
+     */
+    public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
+        if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
+            throw new IllegalArgumentException("this method should only be called with a pre-hashed password");
+        }
+        User user = User.getById(userName, true);
+        user.addProperty(Details.fromHashedPassword(hashedPassword));
+        SecurityListener.fireUserCreated(user.getId());
+        return user;
+    }
+
 
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
@@ -553,10 +577,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public String username,password1,password2,fullname,email,captcha;
 
         /**
-         * To display an error message, set it here.
+         * To display a general error message, set it here.
+         *
          */
         public String errorMessage;
 
+        /**
+         * Add field-specific error messages here.
+         * Keys are field names (e.g. {@code password2}), values are the messages.
+         */
+        // TODO i18n?
         public HashMap<String, String> errors = new HashMap<String, String>();
 
         public SignupInfo() {
@@ -693,6 +723,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     if(data.startsWith(prefix))
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                 }
+
+                User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
+                // the UserSeedProperty is not touched by the configure page
+                UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
+                if (userSeedProperty != null) {
+                    userSeedProperty.renewSeed();
+                }
+
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
@@ -788,7 +826,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
-    private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
+    private static class JBCryptEncoder implements PasswordEncoder {
+        // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
+        // and for 18, it's "only" 20s
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int MAXIMUM_BCRYPT_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumBCryptLogRound", 18);
+
+        private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
+
         public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return BCrypt.hashpw(rawPass,BCrypt.gensalt());
         }
@@ -796,13 +842,38 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             return BCrypt.checkpw(rawPass,encPass);
         }
-    };
+
+        /**
+         * Returns true if the supplied hash looks like a bcrypt encoded hash value, based off of the
+         * implementation defined in jBCrypt and: https://en.wikipedia.org/wiki/Bcrypt.
+         *
+         */
+        public boolean isHashValid(String hash) {
+            Matcher matcher = BCRYPT_PATTERN.matcher(hash);
+            if (matcher.matches()) {
+                String logNumOfRound = matcher.group(1);
+                // no number format exception due to the expression
+                int logNumOfRoundInt = Integer.parseInt(logNumOfRound);
+                if (logNumOfRoundInt > 0 && logNumOfRoundInt <= MAXIMUM_BCRYPT_LOG_ROUND) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
     /**
      * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
      * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
      */
-    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
+    /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
+        /**
+         * Magic header used to detect if a password is bcrypt hashed.
+         */
+        private static final String JBCRYPT_HEADER = "#jbcrypt:";
+
         /*
             CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
             to designate JBCRYPT-format hash.
@@ -814,14 +885,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
-            if (encPass.startsWith(JBCRYPT_HEADER))
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()),rawPass,salt);
-            else
-                return CLASSIC.isPasswordValid(encPass,rawPass,salt);
+            if (isPasswordHashed(encPass)) {
+                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()), rawPass, salt);
+            } else {
+                return CLASSIC.isPasswordValid(encPass, rawPass, salt);
+            }
         }
 
-        private static final String JBCRYPT_HEADER = "#jbcrypt:";
-    };
+        /**
+         * Returns true if the supplied password starts with a prefix indicating it is already hashed.
+         */
+        public boolean isPasswordHashed(String password) {
+            if (password == null) {
+                return false;
+            }
+            return password.startsWith(JBCRYPT_HEADER) && JBCRYPT_ENCODER.isHashValid(password.substring(JBCRYPT_HEADER.length()));
+        }
+
+    }
+
+    public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {

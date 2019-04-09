@@ -80,29 +80,25 @@ public class PluginFirstClassLoader
     protected Enumeration findResources( String arg0, boolean arg1 )
         throws IOException
     {
-        Enumeration enu = super.findResources( arg0, arg1 );
-        return enu;
+        return super.findResources( arg0, arg1 );
     }
 
     @Override
     protected Enumeration findResources( String name )
         throws IOException
     {
-        Enumeration enu = super.findResources( name );
-        return enu;
+        return super.findResources( name );
     }
 
     @Override
     public URL getResource( String arg0 )
     {
-        URL url = super.getResource( arg0 );
-        return url;
+        return super.getResource( arg0 );
     }
 
     @Override
     public InputStream getResourceAsStream( String name )
     {
-        InputStream is = super.getResourceAsStream( name );
-        return is;
+        return super.getResourceAsStream( name );
     }
 }

@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.security.stapler.StaplerAccessibleType;
+
 /**
  * A model object has a human readable name.
  *
@@ -32,6 +34,7 @@ package hudson.model;
  *
  * @author Kohsuke Kawaguchi
  */
+@StaplerAccessibleType
 public interface ModelObject {
     String getDisplayName();
 }

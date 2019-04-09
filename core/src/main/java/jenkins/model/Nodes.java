@@ -73,7 +73,7 @@ public class Nodes implements Saveable {
     /**
      * The map of nodes.
      */
-    private final ConcurrentMap<String, Node> nodes = new ConcurrentSkipListMap<String, Node>();
+    private final ConcurrentMap<String, Node> nodes = new ConcurrentSkipListMap<>();
 
     /**
      * Constructor, intended to be called only from {@link Jenkins}.
@@ -93,7 +93,7 @@ public class Nodes implements Saveable {
      */
     @Nonnull
     public List<Node> getNodes() {
-        return new ArrayList<Node>(nodes.values());
+        return new ArrayList<>(nodes.values());
     }
 
     /**
@@ -106,7 +106,7 @@ public class Nodes implements Saveable {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Set<String> toRemove = new HashSet<String>(Nodes.this.nodes.keySet());
+                Set<String> toRemove = new HashSet<>(Nodes.this.nodes.keySet());
                 for (Node n : nodes) {
                     final String name = n.getNodeName();
                     toRemove.remove(name);
@@ -279,7 +279,7 @@ public class Nodes implements Saveable {
             return;
         }
         final File nodesDir = getNodesDir();
-        final Set<String> existing = new HashSet<String>();
+        final Set<String> existing = new HashSet<>();
         for (Node n : nodes.values()) {
             if (n instanceof EphemeralNode) {
                 continue;
@@ -322,7 +322,7 @@ public class Nodes implements Saveable {
                 return child.isDirectory();
             }
         });
-        final Map<String, Node> newNodes = new TreeMap<String, Node>();
+        final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
             for (File subdir : subdirs) {
                 try {
@@ -339,11 +339,7 @@ public class Nodes implements Saveable {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                for (Iterator<Map.Entry<String, Node>> i = nodes.entrySet().iterator(); i.hasNext(); ) {
-                    if (!(i.next().getValue() instanceof EphemeralNode)) {
-                        i.remove();
-                    }
-                }
+                nodes.entrySet().removeIf(stringNodeEntry -> !(stringNodeEntry.getValue() instanceof EphemeralNode));
                 nodes.putAll(newNodes);
                 jenkins.updateComputerList();
                 jenkins.trimLabels();

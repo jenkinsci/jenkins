@@ -70,8 +70,8 @@ import java.util.Stack;
  */
 public class DependencyGraph implements Comparator<AbstractProject> {
 
-    private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
-    private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
+    private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<>();
+    private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<>();
 
     private transient Map<Class<?>, Object> computationalData;
 
@@ -90,7 +90,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
-            this.computationalData = new HashMap<Class<?>, Object>();
+            this.computationalData = new HashMap<>();
             for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
@@ -113,7 +113,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         DirectedGraph<AbstractProject> g = new DirectedGraph<AbstractProject>() {
             @Override
             protected Collection<AbstractProject> nodes() {
-                final Set<AbstractProject> nodes = new HashSet<AbstractProject>();
+                final Set<AbstractProject> nodes = new HashSet<>();
                 nodes.addAll(forward.keySet());
                 nodes.addAll(backward.keySet());
                 return nodes;
@@ -127,8 +127,8 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
         List<SCC<AbstractProject>> sccs = g.getStronglyConnectedComponents();
 
-        final Map<AbstractProject,Integer> topoOrder = new HashMap<AbstractProject,Integer>();
-        topologicallySorted = new ArrayList<AbstractProject<?,?>>();
+        final Map<AbstractProject,Integer> topoOrder = new HashMap<>();
+        topologicallySorted = new ArrayList<>();
         int idx=0;
         for (SCC<AbstractProject> scc : sccs) {
             for (AbstractProject n : scc) {
@@ -196,7 +196,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     private List<AbstractProject> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src, boolean up) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) return Collections.emptyList();
-        List<AbstractProject> result = new ArrayList<AbstractProject>(v.size());
+        List<AbstractProject> result = new ArrayList<>(v.size());
         for (DependencyGroup d : v) result.add(up ? d.getUpstreamProject() : d.getDownstreamProject());
         return result;
     }
@@ -284,8 +284,8 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * where the length is greater than 1.
      */
     public boolean hasIndirectDependencies(AbstractProject src, AbstractProject dst) {
-        Set<AbstractProject> visited = new HashSet<AbstractProject>();
-        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+        Set<AbstractProject> visited = new HashSet<>();
+        Stack<AbstractProject> queue = new Stack<>();
 
         queue.addAll(getDownstream(src));
         queue.remove(dst);
@@ -316,8 +316,8 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private Set<AbstractProject> getTransitive(Map<AbstractProject, List<DependencyGroup>> direction, AbstractProject src, boolean up) {
-        Set<AbstractProject> visited = new HashSet<AbstractProject>();
-        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+        Set<AbstractProject> visited = new HashSet<>();
+        Stack<AbstractProject> queue = new Stack<>();
 
         queue.add(src);
 
@@ -334,15 +334,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private void add(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject key, Dependency dep) {
-        List<DependencyGroup> set = map.get(key);
-        if(set==null) {
-            set = new ArrayList<DependencyGroup>();
-            map.put(key,set);
-        }
-        for (ListIterator<DependencyGroup> it = set.listIterator(); it.hasNext();) {
-            DependencyGroup d = it.next();
+        List<DependencyGroup> set = map.computeIfAbsent(key, k -> new ArrayList<>());
+        for (DependencyGroup d : set) {
             // Check for existing edge that connects the same two projects:
-            if (d.getUpstreamProject()==dep.getUpstreamProject() && d.getDownstreamProject()==dep.getDownstreamProject()) {
+            if (d.getUpstreamProject() == dep.getUpstreamProject() && d.getDownstreamProject() == dep.getDownstreamProject()) {
                 d.add(dep);
                 return;
             }
@@ -353,7 +348,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
     private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
         for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
-            Collections.sort( e.getValue(), NAME_COMPARATOR );
+            e.getValue().sort(NAME_COMPARATOR);
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
         return Collections.unmodifiableMap(m);
@@ -458,7 +453,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * Collect multiple dependencies between the same two projects.
      */
     private static class DependencyGroup {
-        private Set<Dependency> group = new LinkedHashSet<Dependency>();
+        private Set<Dependency> group = new LinkedHashSet<>();
 
         DependencyGroup(Dependency first) {
             this.upstream = first.getUpstreamProject();

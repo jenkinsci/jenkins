@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
 import jenkins.util.MemoryReductionUtil;
@@ -141,7 +142,7 @@ public class Search implements StaplerProxy {
      *      a certain threshold to avoid showing too many options. 
      */
     public SearchResult getSuggestions(StaplerRequest req, String query) {
-        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
+        Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
         int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
         SearchableModelObject smo = findClosestSearchableModelObject(req);
@@ -156,7 +157,7 @@ public class Search implements StaplerProxy {
         return r;
     }
 
-    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);

@@ -35,7 +35,6 @@ import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.security.CliAuthenticator;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -43,10 +42,10 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -90,7 +89,7 @@ public class CLIRegisterer extends ExtensionFinder {
      * Finds a resolved method annotated with {@link CLIResolver}.
      */
     private Method findResolver(Class type) throws IOException {
-        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.getInstance().getPluginManager().uberClassLoader), Method.class);
+        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.get().getPluginManager().uberClassLoader), Method.class);
         for ( ; type!=null; type=type.getSuperclass())
             for (Method m : resolvers)
                 if (m.getReturnType()==type)
@@ -98,12 +97,12 @@ public class CLIRegisterer extends ExtensionFinder {
         return null;
     }
 
-    private List<ExtensionComponent<CLICommand>> discover(final Jenkins hudson) {
+    private List<ExtensionComponent<CLICommand>> discover(@Nonnull final Jenkins jenkins) {
         LOGGER.fine("Listing up @CLIMethod");
-        List<ExtensionComponent<CLICommand>> r = new ArrayList<ExtensionComponent<CLICommand>>();
+        List<ExtensionComponent<CLICommand>> r = new ArrayList<>();
 
         try {
-            for ( final Method m : Util.filter(Index.list(CLIMethod.class, hudson.getPluginManager().uberClassLoader),Method.class)) {
+            for ( final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader),Method.class)) {
                 try {
                     // command name
                     final String name = m.getAnnotation(CLIMethod.class).name();
@@ -111,7 +110,7 @@ public class CLIRegisterer extends ExtensionFinder {
                     final ResourceBundleHolder res = loadMessageBundle(m);
                     res.format("CLI."+name+".shortDescription");   // make sure we have the resource, to fail early
 
-                    r.add(new ExtensionComponent<CLICommand>(new CloneableCLICommand() {
+                    r.add(new ExtensionComponent<>(new CloneableCLICommand() {
                         @Override
                         public String getName() {
                             return name;
@@ -120,12 +119,12 @@ public class CLIRegisterer extends ExtensionFinder {
                         @Override
                         public String getShortDescription() {
                             // format by using the right locale
-                            return res.format("CLI."+name+".shortDescription");
+                            return res.format("CLI." + name + ".shortDescription");
                         }
 
                         @Override
                         protected CmdLineParser getCmdLineParser() {
-                            return bindMethod(new ArrayList<MethodBinder>());
+                            return bindMethod(new ArrayList<>());
                         }
 
                         private CmdLineParser bindMethod(List<MethodBinder> binders) {
@@ -134,7 +133,7 @@ public class CLIRegisterer extends ExtensionFinder {
                             CmdLineParser parser = new CmdLineParser(null);
 
                             //  build up the call sequence
-                            Stack<Method> chains = new Stack<Method>();
+                            Stack<Method> chains = new Stack<>();
                             Method method = m;
                             while (true) {
                                 chains.push(method);
@@ -146,15 +145,15 @@ public class CLIRegisterer extends ExtensionFinder {
                                 try {
                                     method = findResolver(type);
                                 } catch (IOException ex) {
-                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for "+type, ex);
+                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for " + type, ex);
                                 }
-                                if (method==null) {
-                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for "+type);
+                                if (method == null) {
+                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for " + type);
                                 }
                             }
 
                             while (!chains.isEmpty())
-                                binders.add(new MethodBinder(chains.pop(),this,parser));
+                                binders.add(new MethodBinder(chains.pop(), this, parser));
 
                             return parser;
                         }
@@ -199,25 +198,19 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stderr = stderr;
                             this.locale = locale;
 
-                            List<MethodBinder> binders = new ArrayList<MethodBinder>();
+                            List<MethodBinder> binders = new ArrayList<>();
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();
                                 Authentication old = sc.getAuthentication();
                                 try {
-                                    // authentication
-                                    CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator, parser);
-
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = authenticator.authenticate();
-                                    if (auth == Jenkins.ANONYMOUS)
-                                        auth = loadStoredAuthentication();
+                                    Authentication auth = getTransportAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
-                                    hudson.checkPermission(Jenkins.READ);
+                                    jenkins.checkPermission(Jenkins.READ);
 
                                     // resolve them
                                     Object instance = null;

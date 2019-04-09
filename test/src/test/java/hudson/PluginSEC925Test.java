@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.junit.Ignore;
 
 //TODO merge it within PluginTest after the security release
 public class PluginSEC925Test {
@@ -18,6 +19,7 @@ public class PluginSEC925Test {
     @Rule
     public JenkinsRule r = new JenkinsRule();
     
+    @Ignore("TODO observed to fail in CI with 404 due to external UC issues")
     @Test
     @Issue("SECURITY-925")
     public void preventTimestamp2_toBeServed() throws Exception {

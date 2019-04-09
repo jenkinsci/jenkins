@@ -25,7 +25,6 @@ package jenkins.telemetry.impl;
 
 import hudson.Extension;
 import hudson.PluginWrapper;
-import hudson.model.UsageStatistics;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;

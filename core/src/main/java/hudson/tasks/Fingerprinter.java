@@ -119,7 +119,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
-            Map<String,String> record = new HashMap<String,String>();
+            Map<String,String> record = new HashMap<>();
             
             EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
@@ -152,10 +152,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
-            Set<String> seenUpstreamProjects = new HashSet<String>();
+            Set<String> seenUpstreamProjects = new HashSet<>();
 
-            for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
-                Run build = (Run) iter.next();
+            for (Object build1 : builds) {
+                Run build = (Run) build1;
                 for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
                     for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
@@ -222,7 +222,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         @Override
         public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
-            List<Record> results = new ArrayList<Record>();
+            List<Record> results = new ArrayList<>();
 
             FileSet src = Util.createFileSet(baseDir,targets);
 
@@ -316,7 +316,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public void add(Map<String,String> moreRecords) {
-            Map<String,String> r = new HashMap<String, String>(record);
+            Map<String,String> r = new HashMap<>(record);
             r.putAll(moreRecords);
             record = compact(r);
             ref = null;
@@ -361,7 +361,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         /** Share data structure with other builds, mainly those of the same job. */
         private PackedMap<String,String> compact(Map<String,String> record) {
-            Map<String,String> b = new HashMap<String,String>();
+            Map<String,String> b = new HashMap<>();
             for (Entry<String,String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
@@ -380,7 +380,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             Jenkins h = Jenkins.getInstance();
 
-            Map<String,Fingerprint> m = new TreeMap<String,Fingerprint>();
+            Map<String,Fingerprint> m = new TreeMap<>();
             for (Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
@@ -392,7 +392,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             }
 
             m = ImmutableMap.copyOf(m);
-            ref = new WeakReference<Map<String,Fingerprint>>(m);
+            ref = new WeakReference<>(m);
             return m;
         }
 
@@ -411,7 +411,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          * @since 1.430
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
-            Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+            Map<AbstractProject,Integer> r = new HashMap<>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();

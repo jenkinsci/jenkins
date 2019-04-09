@@ -79,9 +79,7 @@ public class BooleanParameterValue extends ParameterValue {
 
         BooleanParameterValue that = (BooleanParameterValue) o;
 
-        if (value != that.value) return false;
-
-        return true;
+        return value == that.value;
     }
 
     @Override

@@ -24,7 +24,6 @@
 package hudson.tools;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.InteractivePage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
@@ -46,6 +45,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -88,12 +88,12 @@ public class ZipExtractionInstallerTest {
         
         JenkinsRule.WebClient adminWc = j.createWebClient();
         adminWc.login(ADMIN);
-        assertEquals(200, adminWc.getPage(request).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, adminWc.getPage(request).getWebResponse().getStatusCode());
         
-        JenkinsRule.WebClient userWc = j.createWebClient();
-        userWc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient userWc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         userWc.login(USER);
-        assertEquals(403, userWc.getPage(request).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userWc.getPage(request).getWebResponse().getStatusCode());
     }
     
     @Test
@@ -148,7 +148,7 @@ public class ZipExtractionInstallerTest {
         }
         
         @Override
-        public Object callFunction(InteractivePage page, Function function, Scriptable scope, Scriptable thisObject, Object[] args) {
+        public Object callFunction(HtmlPage page, Function function, Scriptable scope, Scriptable thisObject, Object[] args) {
             if (thisObject instanceof XMLHttpRequest) {
                 try {
                     WebRequest request = getPrivateWebRequestField((XMLHttpRequest) thisObject);

@@ -1515,6 +1515,10 @@ function refreshPart(id,url) {
                             window.clearInterval(intervalID);
                         return;
                     }
+                    if (!rsp.responseText) {
+                        console.log("Failed to retrieve response for ID " + id + ", perhaps Jenkins is unavailable");
+                        return;
+                    }
                     var p = hist.up();
 
                     var div = document.createElement('div');

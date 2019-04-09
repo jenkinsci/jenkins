@@ -24,7 +24,7 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -52,7 +52,6 @@ import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -221,14 +220,19 @@ public class JobTest {
         try {
             wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
 
-            wc.withBasicApiToken(User.getById("alice", true));  // Has CONFIGURE and EXTENDED_READ permission
-            tryConfigDotXml(wc, 500, "Both perms; should get 500");
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            
+            // Has CONFIGURE and EXTENDED_READ permission
+            wc.withBasicApiToken(User.getById("alice", true));  
+            tryConfigDotXml(wc, HttpURLConnection.HTTP_INTERNAL_ERROR, "Both perms; should get 500");
 
-            wc.withBasicApiToken(User.getById("bob", true));  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
-            tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
+            // Has only CONFIGURE permission (this should imply EXTENDED_READ)
+            wc.withBasicApiToken(User.getById("bob", true));  
+            tryConfigDotXml(wc, HttpURLConnection.HTTP_INTERNAL_ERROR, "Config perm should imply EXTENDED_READ");
 
-            wc.withBasicApiToken(User.getById("charlie", true));  // Has only EXTENDED_READ permission
-            tryConfigDotXml(wc, 403, "No permission, should get 403");
+            // Has only EXTENDED_READ permission
+            wc.withBasicApiToken(User.getById("charlie", true));  
+            tryConfigDotXml(wc, HttpURLConnection.HTTP_FORBIDDEN, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }
@@ -236,17 +240,17 @@ public class JobTest {
 
     private static void tryConfigDotXml(JenkinsRule.WebClient wc, int status, String msg) throws Exception {
         // Verify we can GET the config.xml:
-        wc.goTo("job/testJob/config.xml", "application/xml");
+        Page p = wc.goTo("job/testJob/config.xml", "application/xml");
+        assertEquals("Retrieving config.xml should be ok", HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
+        
         // This page is a simple form to POST to /job/testJob/config.xml
         // But it posts invalid data so we expect 500 if we have permission, 403 if not
         HtmlPage page = wc.goTo("userContent/post.html");
-        try {
-            HtmlFormUtil.submit(page.getForms().get(0));
-            fail("Expected exception: " + msg);
-        } catch (FailingHttpStatusCodeException expected) {
-            assertEquals(msg, status, expected.getStatusCode());
-        }
-        wc.goTo("logout");
+        p = HtmlFormUtil.submit(page.getForms().get(0));
+        assertEquals(msg, status, p.getWebResponse().getStatusCode());
+        
+        p = wc.goTo("logout");
+        assertEquals("To logout should be ok", HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
     }
 
     @LocalData @Issue("JENKINS-6371")

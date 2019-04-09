@@ -19,8 +19,8 @@ public class Security177Test {
     
     @Test
     public void nosniff() throws Exception {
-        WebClient wc = jenkins.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = jenkins.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
         URL u = jenkins.getURL();
         verifyNoSniff(wc.getPage(new URL(u, "adjuncts/507db12b/nosuch/adjunct.js")));

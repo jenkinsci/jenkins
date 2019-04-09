@@ -24,10 +24,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
                 return false;   // not under winsw
 
             return exec("status") ==0;
-        } catch (InterruptedException e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
-            return false;
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException e) {
             LOGGER.log(FINE, getClass()+" unsuitable", e);
             return false;
         }

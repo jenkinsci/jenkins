@@ -1,25 +1,16 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.Util;
 import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.HashMap;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol3Handler;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Master-side implementation for JNLP3-connect protocol.

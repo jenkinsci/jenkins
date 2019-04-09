@@ -25,7 +25,7 @@ import javax.annotation.Nonnull;
  * properties defined in your GlobalConfiguration subclass, here are two possibilities:
  * <ul><li>@{@link javax.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
  * for classes not annotated with {@link hudson.Extension})</li>
- * <li>access it via a call to {@code GlobalConfiguration.all().get(<your GlobalConfiguration subclass>.class)}</li></ul>
+ * <li>access it via a call to {@code ExtensionList.lookupSingleton(<your GlobalConfiguration subclass>.class)}</li></ul>
  *
  * <p>
  * While an implementation might store its actual configuration data in various ways,

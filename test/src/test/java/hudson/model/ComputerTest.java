@@ -25,15 +25,16 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import java.io.File;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
@@ -41,11 +42,14 @@ import hudson.slaves.OfflineCause;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+@Category(SmokeTest.class)
 public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -76,18 +80,15 @@ public class ComputerTest {
         Node nodeA = j.createSlave("nodeA", null, null);
         Node nodeB = j.createSlave("nodeB", null, null);
 
-        WebClient wc = j.createWebClient();
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.getPage(nodeB, "configure").getFormByName("config");
         form.getInputByName("_.name").setValueAttribute("nodeA");
 
-        try {
-            j.submit(form);
-            fail(NOTE);
-        } catch (FailingHttpStatusCodeException e) {
-            assertThat(NOTE, e.getStatusCode(), equalTo(400));
-            assertThat(NOTE, e.getResponse().getContentAsString(),
-                    containsString("Agent called ‘nodeA’ already exists"));
-        }
+        Page page = j.submit(form);
+        assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
+        assertThat(NOTE, page.getWebResponse().getContentAsString(), 
+                containsString("Agent called ‘nodeA’ already exists"));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class ComputerTest {
 
     private void verifyOfflineCause(Computer computer) throws Exception {
         XmlPage page = j.createWebClient().goToXml("computer/" + computer.getName() + "/config.xml");
-        String content = page.getWebResponse().getContentAsString("UTF-8");
+        String content = page.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(content, containsString("temporaryOfflineCause"));
         assertThat(content, containsString("<userId>username</userId>"));
         assertThat(content, not(containsString("ApiTokenProperty")));

@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.Computer;
@@ -76,7 +77,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -558,7 +558,11 @@ public class SlaveComputer extends Computer {
 
     static class LoadingPrefetchCacheCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         @Override public Integer call() {
-            return Channel.current().classLoadingPrefetchCacheCount.get();
+            Channel c = Channel.current();
+            if (c == null) {
+                return -1;
+            }
+            return c.classLoadingPrefetchCacheCount.get();
         }
     }
 
@@ -570,7 +574,7 @@ public class SlaveComputer extends Computer {
         @Override public Long call() {
             Channel c = Channel.current();
             if (c == null) {
-                return Long.valueOf(-1);
+                return -1L;
             }
             return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
         }
@@ -696,7 +700,7 @@ public class SlaveComputer extends Computer {
             SecurityContextHolder.setContext(old);
         }
         log.println("Agent successfully connected and online");
-        Jenkins.getInstance().getQueue().scheduleMaintenance();
+        Jenkins.get().getQueue().scheduleMaintenance();
     }
 
     @Override
@@ -716,7 +720,7 @@ public class SlaveComputer extends Computer {
     }
 
     @RequirePOST
-    public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
+    public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
             checkPermission(DISCONNECT);
@@ -741,11 +745,18 @@ public class SlaveComputer extends Computer {
     }
 
     @RequirePOST
-    public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @Override
+    public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(CONNECT);
             
         if(channel!=null) {
-            req.getView(this,"already-launched.jelly").forward(req, rsp);
+            try {
+                req.getView(this, "already-launched.jelly").forward(req, rsp);
+            } catch (IOException x) {
+                throw x;
+            } catch (/*Servlet*/Exception x) {
+                throw new IOException(x);
+            }
             return;
         }
 
@@ -778,7 +789,7 @@ public class SlaveComputer extends Computer {
     }
 
     @WebMethod(name="slave-agent.jnlp")
-    public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
+    public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
         return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
     }
 
@@ -935,7 +946,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
+            // avoid double installation of the handler. JNLP agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {
@@ -952,7 +963,7 @@ public class SlaveComputer extends Computer {
             }
 
             try {
-                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
             } catch (ChannelClosedException e) {
                 throw new IllegalStateException(e);
             }
@@ -987,13 +998,15 @@ public class SlaveComputer extends Computer {
     /**
      * Helper method for Jelly.
      */
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public static List<SlaveSystemInfo> getSystemInfoExtensions() {
         return SlaveSystemInfo.all();
     }
 
     private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
         public List<LogRecord> call() {
-            return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
+            return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
         }
     }
 

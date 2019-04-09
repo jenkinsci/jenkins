@@ -59,7 +59,6 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 
-import static java.util.logging.Level.FINE;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -80,9 +79,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
@@ -132,13 +132,12 @@ import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
-import static hudson.Util.deleteFile;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
-import static hudson.Util.isSymlink;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -326,7 +325,7 @@ public final class FilePath implements Serializable {
         }
         boolean isAbsolute = buf.length() > 0;
         // Split remaining path into tokens, trimming any duplicate or trailing separators
-        List<String> tokens = new ArrayList<String>();
+        List<String> tokens = new ArrayList<>();
         int s = 0, end = path.length();
         for (int i = 0; i < end; i++) {
             char c = path.charAt(i);
@@ -387,7 +386,7 @@ public final class FilePath implements Serializable {
             return false;
         // Windows can handle '/' as a path separator but Unix can't,
         // so err on Unix side
-        return remote.indexOf("\\")==-1;
+        return !remote.contains("\\");
     }
 
     /**
@@ -638,14 +637,13 @@ public final class FilePath implements Serializable {
     private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
-        @SuppressWarnings("unchecked")
         Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
-                if (!f.toPath().normalize().startsWith(dir.toPath())) {
+                if (!f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
                     throw new IOException(
                         "Zip " + zipFile.getPath() + " contains illegal file name that breaks out of the target directory: " + e.getName());
                 }
@@ -1063,7 +1061,7 @@ public final class FilePath implements Serializable {
         if(channel!=null) {
             // run this on a remote system
             try {
-                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
+                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable, cl);
                 for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
                     wrapper = factory.wrap(wrapper);
                 }
@@ -1138,7 +1136,7 @@ public final class FilePath implements Serializable {
      */
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
-            DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable);
+            DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<>(callable);
             for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
                 wrapper = factory.wrap(wrapper);
             }
@@ -1269,7 +1267,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            deleteRecursive(deleting(f));
+            Util.deleteRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
     }
@@ -1284,32 +1282,9 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            deleteContentsRecursive(f);
+            Util.deleteContentsRecursive(fileToPath(f), path -> deleting(path.toFile()));
             return null;
         }
-    }
-
-    private void deleteRecursive(File dir) throws IOException {
-        if(!isSymlink(dir))
-            deleteContentsRecursive(dir);
-        try {
-            deleteFile(deleting(dir));
-        } catch (IOException e) {
-            // if some of the child directories are big, it might take long enough to delete that
-            // it allows others to create new files, causing problems like JENKINS-10113
-            // so give it one more attempt before we give up.
-            if(!isSymlink(dir))
-                deleteContentsRecursive(dir);
-            deleteFile(deleting(dir));
-        }
-    }
-
-    private void deleteContentsRecursive(File file) throws IOException {
-        File[] files = file.listFiles();
-        if(files==null)
-            return;     // the directory didn't exist in the first place
-        for (File child : files)
-            deleteRecursive(child);
     }
 
     /**
@@ -1621,11 +1596,7 @@ public final class FilePath implements Serializable {
             @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(!f.exists()) {
-                    try {
-                        Files.newOutputStream(creating(f).toPath()).close();
-                    } catch (InvalidPathException e) {
-                        throw new IOException(e);
-                    }
+                    Files.newOutputStream(fileToPath(creating(f))).close();
                 }
                 if(!stating(f).setLastModified(timestamp))
                     throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
@@ -1868,7 +1839,7 @@ public final class FilePath implements Serializable {
                     return Collections.emptyList();
                 }
 
-                ArrayList<FilePath> r = new ArrayList<FilePath>(children.length);
+                ArrayList<FilePath> r = new ArrayList<>(children.length);
                 for (File child : children)
                     r.add(new FilePath(child));
 
@@ -1959,8 +1930,7 @@ public final class FilePath implements Serializable {
         } catch (BuildException x) {
             throw new IOException(x.getMessage());
         }
-        String[] files = ds.getIncludedFiles();
-        return files;
+        return ds.getIncludedFiles();
     }
 
     /**
@@ -1968,11 +1938,7 @@ public final class FilePath implements Serializable {
      */
     public InputStream read() throws IOException, InterruptedException {
         if(channel==null) {
-            try {
-                return Files.newInputStream(reading(new File(remote)).toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newInputStream(fileToPath(reading(new File(remote))));
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
@@ -1988,11 +1954,9 @@ public final class FilePath implements Serializable {
         }
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            try (InputStream fis = Files.newInputStream(reading(f).toPath());
+            try (InputStream fis = Files.newInputStream(fileToPath(reading(f)));
                     OutputStream out = p.getOut()) {
                 org.apache.commons.io.IOUtils.copy(fis, out);
-            } catch (InvalidPathException e) {
-                p.error(new IOException(e));
             } catch (Exception x) {
                 p.error(x);
             }
@@ -2063,11 +2027,16 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Reads this file into a string, by using the current system encoding.
+     * Reads this file into a string, by using the current system encoding on the remote machine.
      */
     public String readToString() throws IOException, InterruptedException {
-        try (InputStream in = read()) {
-            return org.apache.commons.io.IOUtils.toString(in);
+        return act(new ReadToString());
+    } 
+    private final class ReadToString extends SecureFileCallable<String> {
+        private static final long serialVersionUID = 1L;       
+        @Override
+        public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            return new String(Files.readAllBytes(fileToPath(reading(f))));
         }
     }
 
@@ -2090,11 +2059,7 @@ public final class FilePath implements Serializable {
         if(channel==null) {
             File f = new File(remote).getAbsoluteFile();
             mkdirs(f.getParentFile());
-            try {
-                return Files.newOutputStream(writing(f).toPath());
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            return Files.newOutputStream(fileToPath(writing(f)));
         }
 
         return act(new WritePipe());
@@ -2105,12 +2070,7 @@ public final class FilePath implements Serializable {
             public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
                 f = f.getAbsoluteFile();
                 mkdirs(f.getParentFile());
-                try {
-                    OutputStream fos = Files.newOutputStream(writing(f).toPath());
-                    return new RemoteOutputStream(fos);
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
+                return new RemoteOutputStream(Files.newOutputStream(fileToPath(writing(f))));
             }
     }
 
@@ -2118,7 +2078,7 @@ public final class FilePath implements Serializable {
      * Overwrites this file by placing the given String as the content.
      *
      * @param encoding
-     *      Null to use the platform default encoding.
+     *      Null to use the platform default encoding on the remote machine.
      * @since 1.105
      */
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
@@ -2135,11 +2095,9 @@ public final class FilePath implements Serializable {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             mkdirs(f.getParentFile());
-            try (OutputStream fos = Files.newOutputStream(writing(f).toPath());
+            try (OutputStream fos = Files.newOutputStream(fileToPath(writing(f)));
                     Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
                 w.write(content);
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             }
             return null;
         }
@@ -2285,11 +2243,9 @@ public final class FilePath implements Serializable {
         }
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            try (InputStream fis = Files.newInputStream(reading(f).toPath())) {
+            try (InputStream fis = Files.newInputStream(fileToPath(reading(f)))) {
                 org.apache.commons.io.IOUtils.copy(fis, out);
                 return null;
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             } finally {
                 out.close();
             }
@@ -2405,12 +2361,7 @@ public final class FilePath implements Serializable {
                 future.get();
                 return future2.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         } else {
             // remote -> local copy
@@ -2435,15 +2386,20 @@ public final class FilePath implements Serializable {
             try {
                 return future.get();
             } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) cause = e;
-                throw cause instanceof IOException
-                        ? (IOException) cause
-                        : new IOException(cause)
-                ;
+                throw ioWithCause(e);
             }
         }
     }
+
+    private IOException ioWithCause(ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause == null) cause = e;
+        return cause instanceof IOException
+                ? (IOException) cause
+                : new IOException(cause)
+                ;
+    }
+
     private class CopyRecursiveLocal extends SecureFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;
@@ -3303,35 +3259,90 @@ public final class FilePath implements Serializable {
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);
             }
-
-            Path parent = parentFile.getAbsoluteFile().toPath().normalize();
-
-            String remainingPath = potentialChildRelativePath;
-            File currentFile = parentFile;
-            while (!remainingPath.isEmpty()) {
-                File directChild = this.getDirectChild(currentFile, remainingPath);
-                File childUsingFullPath = new File(currentFile, remainingPath);
-                remainingPath = childUsingFullPath.getAbsolutePath().substring(directChild.getAbsolutePath().length());
-                
-                File childFileSymbolic = Util.resolveSymlinkToFile(directChild);
-                if (childFileSymbolic == null) {
-                    currentFile = directChild;
+    
+            Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
+            Path parentRealPath;
+            try {
+                if (Functions.isWindows()) {
+                    parentRealPath = this.windowsToRealPath(parentAbsolutePath);
                 } else {
-                    currentFile = childFileSymbolic;
+                    parentRealPath = parentAbsolutePath.toRealPath();
+                }
+            }
+            catch (NoSuchFileException e) {
+                LOGGER.log(Level.FINE, String.format("Cannot find the real path to the parentFile: %s", parentAbsolutePath), e);
+                return false;
+            }
+
+            // example: "a/b/c" that will become "b/c" then just "c", and finally an empty string
+            String remainingPath = potentialChildRelativePath;
+
+            Path currentFilePath = parentFile.toPath();
+            while (!remainingPath.isEmpty()) {
+                Path directChild = this.getDirectChild(currentFilePath, remainingPath);
+                Path childUsingFullPath = currentFilePath.resolve(remainingPath);
+                String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
+                String directChildAbs = directChild.toAbsolutePath().toString();
+
+                if (childUsingFullPathAbs.length() == directChildAbs.length()) {
+                    remainingPath = "";
+                } else {
+                    // +1 to avoid the last slash
+                    remainingPath = childUsingFullPathAbs.substring(directChildAbs.length() + 1);
+                }
+
+                File childFileSymbolic = Util.resolveSymlinkToFile(directChild.toFile());
+                if (childFileSymbolic == null) {
+                    currentFilePath = directChild;
+                } else {
+                    currentFilePath = childFileSymbolic.toPath();
+                }
+
+                Path currentFileAbsolutePath = currentFilePath.toAbsolutePath();
+                try{
+                    Path child = currentFileAbsolutePath.toRealPath();
+                    if (!child.startsWith(parentRealPath)) {
+                        LOGGER.log(Level.FINE, "Child [{0}] does not start with parent [{1}] => not descendant", new Object[]{ child, parentRealPath });
+                        return false;
+                    }
+                } catch (NoSuchFileException e) {
+                    // nonexistent file / Windows Server 2016 + MSFT docker
+                    // in case this folder / file will be copied somewhere else, 
+                    // it becomes the responsibility of that system to check the isDescendant with the existing links
+                    // we are not taking the parentRealPath to avoid possible problem
+                    Path child = currentFileAbsolutePath.normalize();
+                    Path parent = parentAbsolutePath.normalize();
+                    return child.startsWith(parent);
+                } catch(FileSystemException e) {
+                    LOGGER.log(Level.WARNING, String.format("Problem during call to the method toRealPath on %s", currentFileAbsolutePath), e);
+                    return false;
                 }
             }
 
-            //TODO could be refactored using Util#isDescendant(File, File) from 2.80+
-            Path child = currentFile.getAbsoluteFile().toPath().normalize();
-            return child.startsWith(parent);
+            return true;
         }
 
-        private @CheckForNull File getDirectChild(File parentFile, String childPath){
-            File current = new File(parentFile, childPath);
-            while (current != null && !parentFile.equals(current.getParentFile())) {
-                current = current.getParentFile();
+        private @CheckForNull Path getDirectChild(Path parentPath, String childPath){
+            Path current = parentPath.resolve(childPath);
+            while (current != null && !parentPath.equals(current.getParent())) {
+                current = current.getParent();
             }
             return current;
+        }
+        
+        private @Nonnull Path windowsToRealPath(@Nonnull Path path) throws IOException {
+            try {
+                return path.toRealPath();
+            }
+            catch (IOException e) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, String.format("relaxedToRealPath cannot use the regular toRealPath on %s, trying with toRealPath(LinkOption.NOFOLLOW_LINKS)", path), e);
+                }
+            }
+
+            // that's required for specific environment like Windows Server 2016, running MSFT docker
+            // where the root is a <SYMLINKD>
+            return path.toRealPath(LinkOption.NOFOLLOW_LINKS);
         }
     }
 

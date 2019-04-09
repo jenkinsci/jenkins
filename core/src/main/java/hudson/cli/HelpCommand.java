@@ -65,7 +65,7 @@ public class HelpCommand extends CLICommand {
     }
 
     private int showAllCommands() {
-        Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
+        Map<String,CLICommand> commands = new TreeMap<>();
         for (CLICommand c : CLICommand.all())
             commands.put(c.getName(),c);
 

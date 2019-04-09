@@ -25,7 +25,6 @@
  */
 package hudson.console;
 
-import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +47,14 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
+import javax.annotation.CheckReturnValue;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
@@ -119,16 +122,15 @@ public class AnnotatedLargeText<T> extends LargeText {
             if (base64!=null) {
                 Cipher sym = PASSING_ANNOTATOR.decrypt();
 
-                ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
-                        new CipherInputStream(new ByteArrayInputStream(Base64.decode(base64.toCharArray())),sym)),
-                        Jenkins.getInstance().pluginManager.uberClassLoader);
-                try {
+                try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
+                        new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8))), sym)),
+                        Jenkins.getInstance().pluginManager.uberClassLoader)) {
                     long timestamp = ois.readLong();
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack
-                        return (ConsoleAnnotator)ois.readObject();
-                } finally {
-                    ois.close();
+                        return (ConsoleAnnotator) ois.readObject();
+                } catch (RuntimeException ex) {
+                    throw new IOException("Could not decode input", ex);
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -138,6 +140,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         return ConsoleAnnotator.initial(context);
     }
 
+    @CheckReturnValue
     @Override
     public long writeLogTo(long start, Writer w) throws IOException {
         if (isHtml())
@@ -150,6 +153,7 @@ public class AnnotatedLargeText<T> extends LargeText {
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
      * {@inheritDoc}
      */
+    @CheckReturnValue
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
@@ -159,10 +163,12 @@ public class AnnotatedLargeText<T> extends LargeText {
      * Calls {@link LargeText#writeLogTo(long, OutputStream)} without stripping annotations as {@link #writeLogTo(long, OutputStream)} would.
      * @since 1.577
      */
+    @CheckReturnValue
     public long writeRawLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, out);
     }
 
+    @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
@@ -176,7 +182,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.close();
         StaplerResponse rsp = Stapler.getCurrentResponse();
         if (rsp!=null)
-            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.encode(baos.toByteArray())));
+            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.getEncoder().encode(baos.toByteArray())));
         return r;
     }
 

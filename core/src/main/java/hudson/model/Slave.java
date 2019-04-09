@@ -180,9 +180,10 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
+    @Deprecated
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -635,7 +636,7 @@ public abstract class Slave extends Node implements Serializable {
         @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
-            List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+            List<NodePropertyDescriptor> result = new ArrayList<>();
             Collection<NodePropertyDescriptor> list =
                     (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
             for (NodePropertyDescriptor npd : it == null

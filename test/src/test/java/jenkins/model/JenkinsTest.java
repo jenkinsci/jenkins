@@ -47,6 +47,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.InvisibleAction;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
@@ -68,10 +69,12 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
@@ -95,6 +98,7 @@ import javax.annotation.CheckForNull;
  * @see Jenkins
  * @see JenkinsRule
  */
+@Category(SmokeTest.class)
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -333,33 +337,30 @@ public class JenkinsTest {
             grant(Jenkins.READ).everywhere().to("bob").
             grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
 
-        WebClient wc = j.createWebClient();
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .withBasicApiToken(User.getById("alice", true));
 
-        wc.withBasicApiToken(User.getById("alice", true));
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
-        assertEquals("3", eval(wc));
+        assertEquals("3", eval(wc).getWebResponse().getContentAsString());
 
         wc.withBasicApiToken(User.getById("bob", true));
-        try {
-            eval(wc);
-            fail("bob has only READ");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        Page page = eval(wc);
+        assertEquals("bob has only READ", 
+                HttpURLConnection.HTTP_FORBIDDEN, 
+                page.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(User.getById("charlie", true));
-        try {
-            eval(wc);
-            fail("charlie has ADMINISTER but not RUN_SCRIPTS");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        page = eval(wc);
+        assertEquals("charlie has ADMINISTER but not RUN_SCRIPTS", 
+                HttpURLConnection.HTTP_FORBIDDEN,
+                page.getWebResponse().getStatusCode());
     }
-    private String eval(WebClient wc) throws Exception {
+    private Page eval(WebClient wc) throws Exception {
         WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
-        return wc.getPage(req).getWebResponse().getContentAsString();
+        return wc.getPage(req);
     }
 
     @TestExtension("testUnprotectedRootAction")
@@ -386,15 +387,8 @@ public class JenkinsTest {
     }
 
     @TestExtension("testUnprotectedRootAction")
-    public static class ProtectedRootActionImpl implements RootAction {
-        public String getIconFileName() {
-            return null;
-        }
-
-        public String getDisplayName() {
-            return null;
-        }
-
+    public static class ProtectedRootActionImpl extends InvisibleAction implements RootAction {
+        @Override
         public String getUrlName() {
             return "foobar-zot";
         }
@@ -414,13 +408,13 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
-        assertTrue(!Jenkins.getInstance().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
+        assertTrue(!Jenkins.get().hasPermission(Jenkins.ANONYMOUS, Jenkins.READ));
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(p.asText(), HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
@@ -465,8 +459,8 @@ public class JenkinsTest {
 
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
         WebRequest req = new WebRequest(url, HttpMethod.POST);
         Page page = wc.getPage(wc.addCrumb(req));

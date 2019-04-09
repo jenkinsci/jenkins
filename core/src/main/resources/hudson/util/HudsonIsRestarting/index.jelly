@@ -25,18 +25,22 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
-
+    <j:new var="h" className="hudson.Functions" />
     <st:statusCode value="503"/><!-- SERVICE NOT AVAILABLE -->
     <st:setHeader name="Expires" value="0"/>
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
     <!-- response contentType header -->
     <st:contentType value="text/html;charset=UTF-8"/>
+    <!-- get default/commong page variable -->
+    ${h.initPageVariables(context)}
     <x:doctype name="html"/>
     <html lang="${request.getLocale().toLanguageTag()}">
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
             <title>${%Restarting Jenkins}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
+            <!-- mobile friendly layout -->
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
             <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />

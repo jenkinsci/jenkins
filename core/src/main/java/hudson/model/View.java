@@ -63,6 +63,7 @@ import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
 import jenkins.scm.RunWithSCM;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 
@@ -98,6 +99,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -204,7 +206,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public Collection<TopLevelItem> getAllItems() {
 
         if (this instanceof ViewGroup) {
-            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
+            final Collection<TopLevelItem> items = new LinkedHashSet<>(getItems());
 
             for(View view: ((ViewGroup) this).getViews()) {
                 items.addAll(view.getAllItems());
@@ -316,7 +318,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * on this label.
      */
     public List<ViewPropertyDescriptor> getApplicablePropertyDescriptors() {
-        List<ViewPropertyDescriptor> r = new ArrayList<ViewPropertyDescriptor>();
+        List<ViewPropertyDescriptor> r = new ArrayList<>();
         for (ViewPropertyDescriptor pd : ViewProperty.all()) {
             if (pd.isEnabledFor(this))
                 r.add(pd);
@@ -426,9 +428,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return Arrays.asList(computers);
         }
 
-        List<Computer> result = new ArrayList<Computer>();
+        List<Computer> result = new ArrayList<>();
 
-        HashSet<Label> labels = new HashSet<Label>();
+        HashSet<Label> labels = new HashSet<>();
         for (Item item : getItems()) {
             if (item instanceof AbstractProject<?, ?>) {
                 labels.addAll(((AbstractProject<?, ?>) item).getRelevantLabels());
@@ -697,6 +699,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     @ExportedBean
+    @StaplerAccessibleType
     public static final class People  {
         @Exported
         public final List<UserInfo> users;
@@ -722,7 +725,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
-            Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+            Map<User,UserInfo> users = new HashMap<>();
             for (Item item : items) {
                 for (Job<?, ?> job : item.getAllJobs()) {
                     RunList<? extends Run<?, ?>> runs = job.getBuilds();
@@ -751,7 +754,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         private List<UserInfo> toList(Map<User,UserInfo> users) {
-            ArrayList<UserInfo> list = new ArrayList<UserInfo>();
+            ArrayList<UserInfo> list = new ArrayList<>();
             list.addAll(users.values());
             Collections.sort(list);
             return Collections.unmodifiableList(list);
@@ -796,8 +799,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         private final Collection<TopLevelItem> items;
         private final User unknown;
-        private final Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-        private final Set<User> modified = new HashSet<User>();
+        private final Map<User,UserInfo> users = new HashMap<>();
+        private final Set<User> modified = new HashSet<>();
         private final String iconSize;
         public final ModelObject parent;
 
@@ -1082,7 +1085,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
-            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
+            Map<String, Serializable> metadata = new HashMap<>();
 
             // Information about Item.
             metadata.put("class", descriptor.getId());
@@ -1106,7 +1109,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             if (category != null) {
                 category.getItems().add(metadata);
             } else {
-                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
+                List<Map<String, Serializable>> temp = new ArrayList<>();
                 temp.add(metadata);
                 category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getOrder(), ic.getMinToShow(), temp);
                 categories.getItems().add(category);
@@ -1137,7 +1140,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        List<Run> lastBuilds = new ArrayList<Run>();
+        List<Run> lastBuilds = new ArrayList<>();
         for (TopLevelItem item : getItems()) {
             if (item instanceof Job) {
                 Job job = (Job) item;
@@ -1204,7 +1207,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         // try to reflect the changes by reloading
-        try (InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")))){
+        try (InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes(StandardCharsets.UTF_8)))){
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
@@ -1238,7 +1241,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
+    public static final DescriptorList<View> LIST = new DescriptorList<>(View.class);
 
     /**
      * Returns all the registered {@link ViewDescriptor}s.
@@ -1256,7 +1259,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Nonnull
     public static List<ViewDescriptor> allInstantiable() {
-        List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
+        List<ViewDescriptor> r = new ArrayList<>();
         StaplerRequest request = Stapler.getCurrentRequest();
         if (request == null) {
             throw new IllegalStateException("This method can only be invoked from a stapler request");
@@ -1400,7 +1403,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * "Job" in "New Job". When a view is used in a context that restricts the child type,
      * It might be useful to override this.
      */
-    public static final Message<View> NEW_PRONOUN = new Message<View>();
+    public static final Message<View> NEW_PRONOUN = new Message<>();
 
     private final static Logger LOGGER = Logger.getLogger(View.class.getName());
 }

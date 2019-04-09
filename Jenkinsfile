@@ -13,11 +13,11 @@
 def runTests = true
 def failFast = false
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
+properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
-def jdks = [8]
+def jdks = [8, 11]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
@@ -49,7 +49,7 @@ for(j = 0; j < jdks.size(); j++) {
 
                             if(isUnix()) {
                                 sh mvnCmd
-                                sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
+                                sh 'git add . && git diff --exit-code HEAD'
                             } else {
                                 bat mvnCmd
                             }
@@ -61,12 +61,13 @@ for(j = 0; j < jdks.size(); j++) {
                 stage("${buildType} Publishing") {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
-                    if (buildType == 'Linux') {
+                    if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
-                                             excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             excludes: '**/*.lastUpdated,**/jenkins-test*/',
                                              allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }

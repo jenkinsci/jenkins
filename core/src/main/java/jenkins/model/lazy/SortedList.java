@@ -38,7 +38,7 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     private List<T> data;
 
     public SortedList(List<T> data) {
-        this.data = new ArrayList<T>(data);
+        this.data = new ArrayList<>(data);
         assert isSorted();
     }
 

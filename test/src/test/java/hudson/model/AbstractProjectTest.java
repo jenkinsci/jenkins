@@ -24,8 +24,8 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -120,16 +120,13 @@ public class AbstractProjectTest {
 
         FreeStyleBuild b = project.scheduleBuild2(0).get();
 
-        assert b.getWorkspace().exists() : "Workspace should exist by now";
+        assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
         // make sure that the action link is protected
-        JenkinsRule.WebClient wc = j.createWebClient();
-        try {
-            wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
-            fail("Expected HTTP status code 403");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
     /**
@@ -148,7 +145,7 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
-        page = (HtmlPage) page.getAnchorByText("Workspace").click();
+        page = page.getAnchorByText("Workspace").click();
         try {
             String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
             page.getAnchorByText(wipeOutLabel);
@@ -405,24 +402,21 @@ public class AbstractProjectTest {
         j.jenkins.setNumExecutors(0);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.getPage(j.getURL() + p.getUrl() + "build").getWebResponse();
-        assertEquals(201, rsp.getStatusCode());
+        WebResponse rsp = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
         assertNotNull(rsp.getResponseHeaderValue("Location"));
 
-        WebResponse rsp2 = wc.getPage(j.getURL() + p.getUrl() + "build").getWebResponse();
-        assertEquals(201, rsp2.getStatusCode());
+        WebResponse rsp2 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
         assertEquals(rsp.getResponseHeaderValue("Location"), rsp2.getResponseHeaderValue("Location"));
 
         p.makeDisabled(true);
 
-        try {
-            wc.getPage(j.getURL() + p.getUrl() + "build");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            // request should fail
-        }
+        WebResponse rsp3 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
     }
 
     /**

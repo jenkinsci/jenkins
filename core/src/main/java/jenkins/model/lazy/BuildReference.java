@@ -115,7 +115,7 @@ public final class BuildReference<R> {
     private static <R> Holder<R> findHolder(R referent) {
         if (referent == null) {
             // AbstractBuild.NONE
-            return new DefaultHolderFactory.NoHolder<R>();
+            return new DefaultHolderFactory.NoHolder<>();
         }
         for (HolderFactory f : ExtensionList.lookup(HolderFactory.class)) {
             Holder<R> h = f.make(referent);
@@ -149,13 +149,13 @@ public final class BuildReference<R> {
 
         @Override public <R> Holder<R> make(R referent) {
             if (mode == null || mode.equals("soft")) {
-                return new SoftHolder<R>(referent);
+                return new SoftHolder<>(referent);
             } else if (mode.equals("weak")) {
-                return new WeakHolder<R>(referent);
+                return new WeakHolder<>(referent);
             } else if (mode.equals("strong")) {
-                return new StrongHolder<R>(referent);
+                return new StrongHolder<>(referent);
             } else if (mode.equals("none")) {
-                return new NoHolder<R>();
+                return new NoHolder<>();
             } else {
                 throw new IllegalStateException("unrecognized value of " + MODE_PROPERTY + ": " + mode);
             }

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -199,7 +200,7 @@ public class CronTabTest {
     }
 
     /**
-     * Humans can't easily see difference in two {@link Calendar}s, do help the diagnosis by using {@link DateFormat}. 
+     * Humans can't easily see difference in two {@link Calendar}s, do help the diagnosis by using {@link DateFormat}.
      */
     private void compare(Calendar expected, Calendar actual) {
         DateFormat f = DateFormat.getDateTimeInstance();
@@ -307,7 +308,9 @@ public class CronTabTest {
         CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
         List<Integer> times = new ArrayList<Integer>();
         for (int i = 0; i < 60; i++) {
-            if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
+            GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            calendar.set(2013, Calendar.APRIL, 3, 11, i, 0);
+            if (tabs.check(calendar)) {
                 times.add(i);
             }
         }
@@ -321,4 +324,10 @@ public class CronTabTest {
         new CronTab("0 0 31 7 *").floor(cal); // would infinite loop
     }
 
+    @Issue("SECURITY-1193")
+    @Test(timeout = 1000L) public void testCeilLongMonths() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.NOVEMBER);
+        new CronTab("0 0 31 * *").ceil(cal); // would infinite loop
+    }
 }

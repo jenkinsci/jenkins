@@ -95,7 +95,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -125,7 +124,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -236,7 +234,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private volatile transient State state;
 
-    private static enum State {
+    private enum State {
         /**
          * Build is created/queued but we haven't started building it.
          */
@@ -383,7 +381,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public List<Action> getTransientActions() {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
             for (Action created : factory.createFor(this)) {
                 if (created == null) {
@@ -823,7 +821,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.556
      */   
     protected @Nonnull BuildReference<RunT> createReference() {
-        return new BuildReference<RunT>(getId(), _this());
+        return new BuildReference<>(getId(), _this());
     }
 
     /**
@@ -867,7 +865,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public final @CheckForNull RunT getPreviousBuildInProgress() {
         if(previousBuildInProgress==this)   return null;    // the most common case
 
-        List<RunT> fixUp = new ArrayList<RunT>();
+        List<RunT> fixUp = new ArrayList<>();
         RunT r = _this(); // 'r' is the source of the pointer (so that we can add it to fix up if we find that the target of the pointer is inefficient.)
         RunT answer;
         while (true) {
@@ -950,7 +948,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.383
      */  
     public @Nonnull List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
-        List<RunT> builds = new ArrayList<RunT>(numberOfBuilds);
+        List<RunT> builds = new ArrayList<>(numberOfBuilds);
         
         RunT r = getPreviousBuild();
         while (r != null && builds.size() < numberOfBuilds) {
@@ -1175,7 +1173,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return n;
     }
-
+    
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
@@ -1218,7 +1216,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Map of Artifact to treeNodeId of parent node in tree view.
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
-        private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
+        private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<>();
 
         void updateFrom(SerializableArtifactList clone) {
             Map<String, Artifact> artifacts = new HashMap<>(); // need to share objects between tree and list, since computeDisplayName mutates displayPath
@@ -1258,7 +1256,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             int depth=0;
             do {
                 collision = false;
-                Map<String,Integer/*index*/> names = new HashMap<String,Integer>();
+                Map<String,Integer/*index*/> names = new HashMap<>();
                 for (int i = 0; i < tokens.length; i++) {
                     String[] token = tokens[i];
                     String displayName = combineLast(token,len[i]);
@@ -1394,7 +1392,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         public long getFileSize(){
-            return Long.decode(length);
+            try {
+                return Long.decode(length);
+            }
+            catch (NumberFormatException e) {
+                LOGGER.log(FINE, "Cannot determine file size of the artifact {0}. The length {1} is not a valid long value", new Object[] {this, length});
+                return 0;
+            }
         }
 
         public String getTreeNodeId() {
@@ -1425,7 +1429,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the log file.
      * @return The file may reference both uncompressed or compressed logs
-     */  
+     * @deprecated Assumes file-based storage of the log, which is not necessarily the case for Pipelines after JEP-210. Use other methods giving various kinds of streams such as {@link Run#getLogReader()},  {@link Run#getLogInputStream()}, or {@link Run#getLogText()}.
+     */
+    @Deprecated
     public @Nonnull File getLogFile() {
         File rawF = new File(getRootDir(), "log");
         if (rawF.isFile()) {
@@ -1654,7 +1660,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
              * Stages of the builds that this runner has completed. This is used for concurrent {@link RunExecution}s to
              * coordinate and serialize their executions where necessary.
              */
-            private final Set<CheckPoint> checkpoints = new HashSet<CheckPoint>();
+            private final Set<CheckPoint> checkpoints = new HashSet<>();
 
             private boolean allDone;
 
@@ -1693,7 +1699,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         private final CheckpointSet checkpoints = new CheckpointSet();
 
-        private final Map<Object,Object> attributes = new HashMap<Object, Object>();
+        private final Map<Object,Object> attributes = new HashMap<>();
 
         /**
          * Performs the main build and returns the status code.
@@ -1792,7 +1798,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
-                    if (!auth.equals(ACL.SYSTEM)) {
+                    if (auth.equals(ACL.SYSTEM)) {
+                        listener.getLogger().println(Messages.Run_running_as_SYSTEM());
+                    } else {
                         String id = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
                             final User usr = User.getById(id, false);
@@ -2092,7 +2100,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
+        Byte[] byteArray = bytes.toArray(new Byte[0]);
         return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
     }
 
@@ -2329,9 +2337,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         LOGGER.log(WARNING, "deprecated call to Run.getEnvVars\n\tat {0}", new Throwable().getStackTrace()[1]);
         try {
             return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
-        } catch (IOException e) {
-            return new EnvVars();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             return new EnvVars();
         }
     }

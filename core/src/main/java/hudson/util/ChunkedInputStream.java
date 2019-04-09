@@ -33,6 +33,7 @@ package hudson.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 
@@ -266,7 +267,7 @@ public class ChunkedInputStream extends InputStream {
         }
 
         //parse data
-        String dataString = new String(baos.toByteArray(),"US-ASCII");
+        String dataString = new String(baos.toByteArray(), StandardCharsets.US_ASCII);
         int separator = dataString.indexOf(';');
         dataString = (separator > 0)
             ? dataString.substring(0, separator).trim()
@@ -342,9 +343,8 @@ public class ChunkedInputStream extends InputStream {
      */
     static void exhaustInputStream(InputStream inStream) throws IOException {
         // read and discard the remainder of the message
-        byte buffer[] = new byte[1024];
+        byte[] buffer = new byte[1024];
         while (inStream.read(buffer) >= 0) {
-            ;
         }
     }
 }
