@@ -4217,7 +4217,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return HttpResponses.forwardToView(this, "_safeRestart.jelly");
         }
 
-        if (isRestClientAndPost(req)){
+        if (isRestClientAndPost(req)) {
             safeRestart();
             return HttpResponses.status(HttpURLConnection.HTTP_ACCEPTED);
         }
@@ -4244,11 +4244,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
-        if (acceptValue.equals("application/json")) {
-            return true;
-        }
-
-        return false;
+        return acceptValue.equals("application/json");
     }
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
