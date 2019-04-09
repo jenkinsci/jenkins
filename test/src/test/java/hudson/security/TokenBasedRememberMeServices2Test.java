@@ -12,7 +12,6 @@ import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
-import org.acegisecurity.userdetails.User;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import static org.junit.Assert.*;
@@ -73,7 +72,7 @@ public class TokenBasedRememberMeServices2Test {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
-                return new User(username, password, true, new GrantedAuthority[] {new GrantedAuthorityImpl("myteam")});
+                return new org.acegisecurity.userdetails.User(username, password, true, new GrantedAuthority[] {new GrantedAuthorityImpl("myteam")});
             }
             throw new BadCredentialsException(username);
         }
