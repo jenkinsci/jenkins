@@ -31,6 +31,7 @@ import org.jenkinsci.Symbol;
 import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Free-style software project.
@@ -47,6 +48,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         super(parent, name);
     }
 
+    @DataBoundConstructor
     public FreeStyleProject(ItemGroup parent, String name) {
         super(parent, name);
     }

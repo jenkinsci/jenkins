@@ -185,7 +185,7 @@ public class AbstractProjectTest {
 
         input.setChecked(true);
         j.submit(form);
-        assertTrue("blockBuildWhenUpstreamBuilding was not updated from configuration form", p.blockBuildWhenUpstreamBuilding());
+        assertTrue("blockBuildWhenUpstreamBuilding was not updated from configuration form", p.isBlockBuildWhenUpstreamBuilding());
 
         form = j.createWebClient().getPage(p, "configure").getFormByName("config");
         input = form.getInputByName("blockBuildWhenUpstreamBuilding");

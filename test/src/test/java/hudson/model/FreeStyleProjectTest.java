@@ -24,9 +24,6 @@
 package hudson.model;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -35,12 +32,11 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tasks.Builder;
+import hudson.tasks.Fingerprinter;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
+import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -157,5 +153,36 @@ public class FreeStyleProjectTest {
 
             assertThat(String.format("Pattern %s score", Integer.toBinaryString(i)), health.getScore(), is(100*(5-expectedFails)/5));
         }
+    }
+
+    @Test
+    @Issue("JENKINS-16360")
+    public void uninstantiate() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setDescription("lorem ipsum");
+        project.setDisplayName("test");
+        project.setConcurrentBuild(true);
+        project.setQuietPeriod(7);
+        project.setBlockBuildWhenDownstreamBuilding(true);
+        project.setBlockBuildWhenUpstreamBuilding(true);
+        project.getBuildersList().add(new Shell("echo hello"));
+        project.getPublishersList().add(new Fingerprinter("target"));
+        project.setCustomWorkspace("somedir");
+
+        UninstantiatedDescribable uid = UninstantiatedDescribable.from(project);
+
+        assertEquals(uid.getSymbol(), "freeStyle");
+        assertEquals(uid.getArguments().size(), 11);
+        assertEquals(uid.getArguments().get("name"), project.getName());
+        assertEquals(uid.getArguments().get("parent"), project.getParent());
+        assertEquals(uid.getArguments().get("description"), project.getDescription());
+        assertEquals(uid.getArguments().get("displayName"), project.getDisplayName());
+        assertEquals(uid.getArguments().get("concurrentBuild"), project.isConcurrentBuild());
+        assertEquals(uid.getArguments().get("quietPeriod"), project.getQuietPeriod());
+        assertEquals(uid.getArguments().get("blockBuildWhenDownstreamBuilding"), project.isBlockBuildWhenDownstreamBuilding());
+        assertEquals(uid.getArguments().get("blockBuildWhenUpstreamBuilding"), project.isBlockBuildWhenUpstreamBuilding());
+        assertEquals(uid.getArguments().get("buildersList").toString(), "[@shell$Shell(command=echo hello)]");
+        assertEquals(uid.getArguments().get("publishersList").toString(), "[@fingerprint$Fingerprinter(targets=target)]");
+        assertEquals(uid.getArguments().get("customWorkspace"), project.getCustomWorkspace());
     }
 }

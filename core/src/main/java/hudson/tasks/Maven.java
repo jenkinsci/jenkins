@@ -191,6 +191,26 @@ public class Maven extends Builder {
         return targets;
     }
 
+    @Restricted(NoExternalUse.class)
+    public String getName() {
+        return mavenName;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public String getPom() {
+        return pom;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public String getProperties() {
+        return properties;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public String getJvmOptions() {
+        return jvmOptions;
+    }
+
     /**
      * @since 1.491
      */
@@ -217,7 +237,15 @@ public class Maven extends Builder {
         this.usePrivateRepository = usePrivateRepository;
     }
 
+    /**
+     * @deprecated use {@link #isUsePrivateRepository()} instead
+     */
+    @Deprecated
     public boolean usesPrivateRepository() {
+        return usePrivateRepository;
+    }
+
+    public boolean isUsePrivateRepository() {
         return usePrivateRepository;
     }
 
@@ -352,7 +380,7 @@ public class Maven extends Builder {
             final VariableResolver<String> resolver = new Union<>(new ByMap<>(env), vr);
             args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
 
-            if (usesPrivateRepository())
+            if (isUsePrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
             wrapUpArguments(args,normalizedTarget,build,launcher,listener);

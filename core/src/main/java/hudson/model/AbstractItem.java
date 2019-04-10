@@ -57,6 +57,7 @@ import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.WebMethod;
@@ -192,6 +193,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         setDisplayName(displayName);
     }
     
+    @DataBoundSetter
     public void setDisplayName(String displayName) throws IOException {
         this.displayName = Util.fixEmptyAndTrim(displayName);
         save();
@@ -223,6 +225,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Sets the project description HTML.
      */
+    @DataBoundSetter
     public void setDescription(String description) throws IOException {
         this.description = description;
         save();

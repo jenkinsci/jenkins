@@ -40,6 +40,9 @@ import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -136,12 +139,24 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         }
         return builders;
     }
-    
+
+    @DataBoundSetter
+    @Restricted(DoNotUse.class)
+    public void setBuildersList(DescribableList<Builder, Descriptor<Builder>> builders) {
+        throw new UnsupportedOperationException();
+    }
+
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
         if (publishers == null) {
             publishersSetter.compareAndSet(this,null,new DescribableList<Publisher,Descriptor<Publisher>>(this));
         }
         return publishers;
+    }
+
+    @DataBoundSetter
+    @Restricted(DoNotUse.class)
+    public void setPublishersList(DescribableList<Publisher, Descriptor<Publisher>> publishers) {
+        throw new UnsupportedOperationException();
     }
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
@@ -153,6 +168,12 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
             buildWrappersSetter.compareAndSet(this,null,new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this));
         }
         return buildWrappers;
+    }
+
+    @DataBoundSetter
+    @Restricted(DoNotUse.class)
+    public void setBuildWrappersList(DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

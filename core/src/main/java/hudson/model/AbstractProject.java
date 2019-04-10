@@ -117,6 +117,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -371,6 +372,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return concurrentBuild;
     }
 
+    @DataBoundSetter
     public void setConcurrentBuild(boolean b) throws IOException {
         concurrentBuild = b;
         save();
@@ -609,6 +611,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scmCheckoutStrategy == null ? new DefaultSCMCheckoutStrategyImpl() : scmCheckoutStrategy;
     }
 
+    @DataBoundSetter
     public void setScmCheckoutStrategy(SCMCheckoutStrategy scmCheckoutStrategy) throws IOException {
         this.scmCheckoutStrategy = scmCheckoutStrategy;
         save();
@@ -627,6 +630,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Sets the custom quiet period of this project, or revert to the global default if null is given.
      */
+    @DataBoundSetter
     public void setQuietPeriod(Integer seconds) throws IOException {
         this.quietPeriod = seconds;
         save();
@@ -649,19 +653,37 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return true;
     }
 
+    /**
+     * @deprecated use {@link #isBlockBuildWhenDownstreamBuilding()} instead
+     */
+    @Deprecated
     public boolean blockBuildWhenDownstreamBuilding() {
         return blockBuildWhenDownstreamBuilding;
     }
 
+    public boolean isBlockBuildWhenDownstreamBuilding() {
+        return blockBuildWhenDownstreamBuilding;
+    }
+
+    @DataBoundSetter
     public void setBlockBuildWhenDownstreamBuilding(boolean b) throws IOException {
         blockBuildWhenDownstreamBuilding = b;
         save();
     }
 
+    /**
+     * @deprecated use {@link #isBlockBuildWhenUpstreamBuilding()} instead
+     */
+    @Deprecated
     public boolean blockBuildWhenUpstreamBuilding() {
         return blockBuildWhenUpstreamBuilding;
     }
 
+    public boolean isBlockBuildWhenUpstreamBuilding() {
+        return blockBuildWhenUpstreamBuilding;
+    }
+
+    @DataBoundSetter
     public void setBlockBuildWhenUpstreamBuilding(boolean b) throws IOException {
         blockBuildWhenUpstreamBuilding = b;
         save();
@@ -673,6 +695,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Restricted(DoNotUse.class)
+    @DataBoundSetter
     @Override
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
@@ -888,6 +911,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Overwrites the JDK setting.
      */
+    @DataBoundSetter
     public void setJDK(JDK jdk) throws IOException {
         this.jdk = jdk.getName();
         save();
@@ -1080,12 +1104,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 LOGGER.log(Level.FINE, "The last build has been deleted during the non-concurrent cause creation. The build is not blocked anymore");
             }
         }
-        if (blockBuildWhenDownstreamBuilding()) {
+        if (isBlockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
                 return new BecauseOfDownstreamBuildInProgress(bup);
         }
-        if (blockBuildWhenUpstreamBuilding()) {
+        if (isBlockBuildWhenUpstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingUpstream();
             if (bup!=null)
                 return new BecauseOfUpstreamBuildInProgress(bup);
@@ -1498,6 +1522,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scm;
     }
 
+    @DataBoundSetter
     public void setScm(SCM scm) throws IOException {
         this.scm = scm;
         save();
@@ -1541,6 +1566,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @SuppressWarnings("unchecked")
     @Override public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
         return triggers().toMap();
+    }
+
+    public DescribableList<Trigger<?>,TriggerDescriptor> getTriggersList() {
+        return triggers();
+    }
+
+    @DataBoundSetter
+    @Restricted(DoNotUse.class)
+    public void setTriggersList(DescribableList<Trigger<?>,TriggerDescriptor> triggers) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -2121,6 +2156,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @since 1.410
      */
+    @DataBoundSetter
     public void setCustomWorkspace(String customWorkspace) throws IOException {
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
