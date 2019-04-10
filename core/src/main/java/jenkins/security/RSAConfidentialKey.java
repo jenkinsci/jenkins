@@ -90,9 +90,7 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
                 }
             }
             return priv;
-        } catch (IOException e) {
-            throw new Error("Failed to load the key: " + getId(), e);
-        } catch (GeneralSecurityException e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new Error("Failed to load the key: " + getId(), e);
         }
     }

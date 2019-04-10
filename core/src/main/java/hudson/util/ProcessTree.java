@@ -99,7 +99,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * To be filled in the constructor of the derived type.
      */
-    protected final Map<Integer/*pid*/, OSProcess> processes = new HashMap<Integer, OSProcess>();
+    protected final Map<Integer/*pid*/, OSProcess> processes = new HashMap<>();
 
     /**
      * Lazily obtained {@link ProcessKiller}s to be applied on this process tree.

@@ -181,13 +181,14 @@ public class XStreamDOM {
     public XStreamDOM expandMacro(VariableResolver<String> vars) {
         String[] newAttributes = new String[attributes.length];
         for (int i=0; i<attributes.length; i+=2) {
+            //noinspection PointlessArithmeticExpression
             newAttributes[i+0] = attributes[i]; // name
             newAttributes[i+1] = Util.replaceMacro(attributes[i+1],vars);
         }
 
         List<XStreamDOM> newChildren = null;
         if (children!=null) {
-            newChildren = new ArrayList<XStreamDOM>(children.size());
+            newChildren = new ArrayList<>(children.size());
             for (XStreamDOM d : children)
                 newChildren.add(d.expandMacro(vars));
         }
@@ -274,7 +275,7 @@ public class XStreamDOM {
     }
 
     public Map<String, String> getAttributeMap() {
-        Map<String,String> r = new HashMap<String, String>();
+        Map<String,String> r = new HashMap<>();
         for (int i=0; i<attributes.length; i+=2)
             r.put(attributes[i],attributes[i+1]);
         return r;
@@ -315,7 +316,7 @@ public class XStreamDOM {
             }
         }
 
-        private final Stack<Pointer> pointers = new Stack<Pointer>();
+        private final Stack<Pointer> pointers = new Stack<>();
 
 
         public ReaderImpl(XStreamDOM current) {

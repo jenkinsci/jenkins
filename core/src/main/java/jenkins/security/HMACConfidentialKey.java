@@ -129,9 +129,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
                             store(encoded=key.getEncoded());
                         }
                         key = new SecretKeySpec(encoded,ALGORITHM);
-                    } catch (IOException e) {
-                        throw new Error("Failed to load the key: "+getId(),e);
-                    } catch (NoSuchAlgorithmException e) {
+                    } catch (IOException | NoSuchAlgorithmException e) {
                         throw new Error("Failed to load the key: "+getId(),e);
                     }
                 }

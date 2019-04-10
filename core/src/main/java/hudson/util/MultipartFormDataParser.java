@@ -44,7 +44,7 @@ import java.util.HashMap;
  */
 public class MultipartFormDataParser implements AutoCloseable {
     private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-    private final Map<String,FileItem> byName = new HashMap<String,FileItem>();
+    private final Map<String,FileItem> byName = new HashMap<>();
 
     public MultipartFormDataParser(HttpServletRequest request) throws ServletException {
         try {

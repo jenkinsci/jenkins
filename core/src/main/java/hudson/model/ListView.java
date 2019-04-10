@@ -77,7 +77,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
@@ -135,7 +135,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         synchronized(this) {
             if (jobNames == null) {
-                jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+                jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
             }
         }
         initColumns();
@@ -145,14 +145,14 @@ public class ListView extends View implements DirectlyModifiableView {
 
     protected void initColumns() {
         if (columns == null)
-            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
+            columns = new DescribableList<>(this,
                     ListViewColumn.createDefaultInitialColumnList(getClass())
             );
     }
 
     protected void initJobFilters() {
         if (jobFilters == null)
-            jobFilters = new DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>>(this);
+            jobFilters = new DescribableList<>(this);
     }
 
     /**
@@ -196,14 +196,14 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     private List<TopLevelItem> getItems(boolean recurse) {
         SortedSet<String> names;
-        List<TopLevelItem> items = new ArrayList<TopLevelItem>();
+        List<TopLevelItem> items = new ArrayList<>();
 
         synchronized (this) {
-            names = new TreeSet<String>(jobNames);
+            names = new TreeSet<>(jobNames);
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
-        List<TopLevelItem> parentItems = new ArrayList<TopLevelItem>(parent.getItems());
+        List<TopLevelItem> parentItems = new ArrayList<>(parent.getItems());
         includeItems(parent, parentItems, names);
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
@@ -223,13 +223,13 @@ public class ListView extends View implements DirectlyModifiableView {
 
         // check the filters
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(parentItems);
-        if (recurse) allItems = expand(allItems, new ArrayList<TopLevelItem>());
+        List<TopLevelItem> allItems = new ArrayList<>(parentItems);
+        if (recurse) allItems = expand(allItems, new ArrayList<>());
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
         // for sanity, trim off duplicates
-        items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
+        items = new ArrayList<>(new LinkedHashSet<>(items));
         
         return items;
     }
@@ -459,12 +459,12 @@ public class ListView extends View implements DirectlyModifiableView {
         setIncludeRegex(req.getParameter("useincluderegex") != null ? req.getParameter("includeRegex") : null);
 
         if (columns == null) {
-            columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
+            columns = new DescribableList<>(this);
         }
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
         
         if (jobFilters == null) {
-        	jobFilters = new DescribableList<ViewJobFilter,Descriptor<ViewJobFilter>>(this);
+        	jobFilters = new DescribableList<>(this);
         }
         jobFilters.rebuildHetero(req, json, ViewJobFilter.all(), "jobFilters");
 
@@ -545,7 +545,7 @@ public class ListView extends View implements DirectlyModifiableView {
         private void renameViewItem(String oldFullName, String newFullName, ViewGroup vg, ListView lv) {
             boolean needsSave;
             synchronized (lv) {
-                Set<String> oldJobNames = new HashSet<String>(lv.jobNames);
+                Set<String> oldJobNames = new HashSet<>(lv.jobNames);
                 lv.jobNames.clear();
                 for (String oldName : oldJobNames) {
                     lv.jobNames.add(Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, oldName, vg.getItemGroup()));

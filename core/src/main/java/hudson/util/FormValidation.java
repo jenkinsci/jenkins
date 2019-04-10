@@ -596,7 +596,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if(method !=null) {
-                names = new ArrayList<String>();
+                names = new ArrayList<>();
                 findParameters(method);
             } else {
                 names = null;

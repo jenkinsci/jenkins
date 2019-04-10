@@ -194,7 +194,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<>(AuthorizationStrategy.class);
     
     /**
      * {@link AuthorizationStrategy} that implements the semantics

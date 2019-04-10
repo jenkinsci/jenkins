@@ -148,7 +148,7 @@ public class Iterators {
      * Remove duplicates from another iterator.
      */
     public static final class DuplicateFilterIterator<T> extends FilterIterator<T> {
-        private final Set<T> seen = new HashSet<T>();
+        private final Set<T> seen = new HashSet<>();
 
         public DuplicateFilterIterator(Iterator<? extends T> core) {
             super(core);
@@ -336,7 +336,7 @@ public class Iterators {
      */
     public static <T> Iterator<T> removeDups(Iterator<T> iterator) {
         return new FilterIterator<T>(iterator) {
-            final Set<T> found = new HashSet<T>();
+            final Set<T> found = new HashSet<>();
             @Override
             protected boolean filter(T t) {
                 return found.add(t);
