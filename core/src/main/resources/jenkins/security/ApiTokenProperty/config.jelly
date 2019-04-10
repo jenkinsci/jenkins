@@ -108,7 +108,7 @@ THE SOFTWARE.
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                    <st:include page="../../../lib/layout/svg-icon-token-revoke.jelly" />
+                                    <st:include page="/lib/layout/svg-icon-token-revoke.jelly" />
                                 </a>
                             </span>
                         </div>
@@ -130,7 +130,7 @@ THE SOFTWARE.
                             <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
                                data-confirm="${%ConfirmRevokeSingle}"
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                <st:include page="../../../lib/layout/svg-icon-token-revoke.jelly" />
+                                <st:include page="/lib/layout/svg-icon-token-revoke.jelly" />
                             </a>
                             <l:copyButton message="${%Copied}" text="" clazz="invisible"/>
                             <div class="error token-error-message"><!-- filled in case of error --></div>
