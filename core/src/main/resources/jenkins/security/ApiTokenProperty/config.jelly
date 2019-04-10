@@ -108,7 +108,7 @@ THE SOFTWARE.
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                    <l:icon class="icon-text-error icon-sm" alt="${%RevokeToken}" />
+                                    <st:include page="../../../lib/layout/svg-icon-token-revoke.jelly" />
                                 </a>
                             </span>
                         </div>
@@ -127,12 +127,12 @@ THE SOFTWARE.
                             <span class="token-cancel">
                                 <f:repeatableDeleteButton value="${%Cancel}" />
                             </span>
-                            <l:copyButton message="${%Copied}" text="" clazz="invisible"/>
                             <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
                                data-confirm="${%ConfirmRevokeSingle}"
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                <l:icon class="icon-text-error icon-sm"/>
+                                <st:include page="../../../lib/layout/svg-icon-token-revoke.jelly" />
                             </a>
+                            <l:copyButton message="${%Copied}" text="" clazz="invisible"/>
                             <div class="error token-error-message"><!-- filled in case of error --></div>
                             <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
                         </div>

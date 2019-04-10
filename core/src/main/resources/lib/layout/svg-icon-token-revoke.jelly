@@ -1,0 +1,36 @@
+<!--
+The MIT License
+
+Copyright (c) 2019 - CloudBees
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Icon used for revoking the token in the user config screen
+  </st:documentation>
+  <svg class="token-revoke-icon" width="22" height="24" viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" fill-rule="evenodd">
+          <path d="M9.753 15.32H3.07v2.042h6.65v3.064H2.559A2.556 2.556 0 0 1 0 17.872V2.553A2.556 2.556 0 0 1 2.558 0H15.86a2.556 2.556 0 0 1 2.559 2.553v9.192h-4.605a4.091 4.091 0 0 0-4.061 3.574zM3.07 5.105h5.628V3.064H3.07v2.042zm0 4.085h11.256V7.15H3.07V9.19zm0 4.086h6.14v-2.043H3.07v2.043z" fill="#788594"/>
+          <path d="M14.326 13.787h5.116A2.556 2.556 0 0 1 22 16.34v5.107A2.556 2.556 0 0 1 19.442 24h-5.116a2.556 2.556 0 0 1-2.559-2.553V16.34a2.556 2.556 0 0 1 2.559-2.553zm4.545 2.043l-1.987 1.984-1.988-1.984-1.082 1.08 1.988 1.984-1.988 1.983 1.082 1.08 1.988-1.983 1.987 1.983 1.082-1.08-1.987-1.983 1.987-1.984-1.082-1.08z" fill="#B33127"/>
+      </g>
+  </svg>
+</j:jelly>
