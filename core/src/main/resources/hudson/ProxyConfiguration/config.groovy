@@ -11,7 +11,7 @@ f.entry(title:_("Port"),field:"port") {
 f.entry(title:_("User name"),field:"userName") {
     f.textbox()
 }
-f.entry(title:_("Password"),field:"secretPassword") {
+f.entry(title:_("Password"),field:"password") {
     f.password()
 }
 f.entry(title:_("No Proxy Host"),field:"noProxyHost") {
@@ -22,5 +22,5 @@ f.advanced(){
         f.textbox()
     }
     f.validateButton(title:_("Validate Proxy"), 
-                     method:"validateProxy", with:"testUrl,name,port,userName,secretPassword,noProxyHost")
+                     method:"validateProxy", with:"testUrl,name,port,userName,password,noProxyHost")
 }

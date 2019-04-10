@@ -135,7 +135,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
         this.userName = Util.fixEmptyAndTrim(userName);
-        this.secretPassword = Secret.fromString(password);
+        this.secretPassword = password != null ? Secret.fromString(password) : null;
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
         this.testUrl = Util.fixEmptyAndTrim(testUrl);
         this.authenticator = newAuthenticator();
@@ -158,21 +158,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return userName;
     }
 
-    /**
-     * Use {@link #getSecretPassword()} instead
-     * @return the proxy password
-     */
-    @Deprecated
-    public String getPassword() {
-        return Secret.toString(secretPassword);
-    }
-
-    public Secret getSecretPassword() {
+    public Secret getPassword() {
         return secretPassword;
     }
 
     /**
-     * Use {@link #getSecretPassword()} instead
+     * Use {@link #getPassword()} instead
      * @return the encrypted proxy password
      */
     @Deprecated
@@ -218,8 +209,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     @DataBoundSetter
-    public void setSecretPassword(Secret secretPassword) {
-        this.secretPassword = secretPassword;
+    public void setPassword(Secret password) {
+        this.secretPassword = password;
     }
 
     @DataBoundSetter
@@ -418,7 +409,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         @RequirePOST
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
-                @QueryParameter("userName") String userName, @QueryParameter("secretPassword") Secret password,
+                @QueryParameter("userName") String userName, @QueryParameter("password") Secret password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
