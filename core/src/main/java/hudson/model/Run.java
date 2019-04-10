@@ -118,8 +118,8 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream;
+import org.apache.commons.compress.compressors.snappy.FramedSnappyCompressorInputStream;
 import org.apache.commons.compress.compressors.snappy.SnappyCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.IOUtils;
@@ -1470,11 +1470,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     return new GZIPInputStream(fis);
                 } else if (lName.endsWith(".xz")) {
                     return new XZCompressorInputStream(fis);
-                } else if (lName.endsWith(".bzip2") || lName.endsWith(".bz2")) {
-                    return new BZip2CompressorInputStream(fis);
                 } else if (lName.endsWith(".lzma") || lName.endsWith(".lz")) {
                     return new LZMACompressorInputStream(fis);
-                } else if (lName.endsWith(".snappy") || lName.endsWith(".sz")) {
+                } else if (lName.endsWith(".sz")) {
+                    //Assume framed snappy format
+                    return new FramedSnappyCompressorInputStream(fis);
+                } else if (lName.endsWith(".snappy")) {
+                    //Assume raw, unframed snappy format
                     return new SnappyCompressorInputStream(fis);
                 } else {
                     //Uncompressed file, hopefully
