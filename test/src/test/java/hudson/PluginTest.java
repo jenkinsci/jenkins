@@ -24,6 +24,14 @@
 
 package hudson;
 
+import hudson.model.UpdateCenter;
+import jenkins.model.Jenkins;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Future;
+import org.junit.Ignore;
+
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.junit.Rule;
@@ -57,4 +65,17 @@ public class PluginTest {
         r.createWebClient().assertFails("plugin/credentials/meta-inf/manifest.mf", HttpServletResponse.SC_BAD_REQUEST);
     }
 
+    @Ignore("TODO observed to fail in CI with 404 due to external UC issues")
+    @Test
+    @Issue("SECURITY-925")
+    public void preventTimestamp2_toBeServed() throws Exception {
+        // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
+        Jenkins.getInstance().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
+        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Arrays.asList("credentials"), true);
+
+        for (Future<UpdateCenter.UpdateCenterJob> job : pluginInstalled) {
+            job.get();
+        }
+        r.createWebClient().assertFails("plugin/credentials/.timestamp2", HttpServletResponse.SC_BAD_REQUEST);
+    }
 }
