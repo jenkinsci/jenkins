@@ -1085,6 +1085,11 @@ public abstract class Launcher {
             getChannel().call(new KillTask(modelEnvVars));
         }
 
+        @Override
+        public String toString() {
+            return "RemoteLauncher[" + getChannel() + "]";
+        }
+
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
