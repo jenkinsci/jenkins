@@ -26,6 +26,7 @@ package hudson.cli;
 import hudson.remoting.CallableFilter;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -79,7 +80,7 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         // remoting sets the context classloader to the RemoteClassLoader,
         // which slows down the classloading. we don't load anything from CLI,
         // so counter that effect.
-        Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+        Thread.currentThread().setContextClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
 
         PrintStream out = new PrintStream(stdout);
         PrintStream err = new PrintStream(stderr);

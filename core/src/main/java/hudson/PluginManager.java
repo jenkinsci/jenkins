@@ -64,6 +64,7 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -358,7 +359,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // load up rules for the core first
         try {
-            compatibilityTransformer.loadRules(getClass().getClassLoader());
+            compatibilityTransformer.loadRules(new CatcherClassLoader(getClass().getClassLoader()));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
         }
@@ -1155,7 +1156,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
-				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
+				// Java11 Telemetry: It only loads the strategy class
+			    Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
 				Object strategy = klazz.getConstructor(PluginManager.class)
 						.newInstance(this);
 				if (strategy instanceof PluginStrategy) {
@@ -2091,6 +2093,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return "classLoader " +  getClass().getName();
         }
     }
+
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     public static final Permission UPLOAD_PLUGINS = new Permission(Jenkins.PERMISSIONS, "UploadPlugins", Messages._PluginManager_UploadPluginsPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);

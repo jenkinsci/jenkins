@@ -59,6 +59,7 @@ import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -655,7 +656,8 @@ public class SlaveComputer extends Computer {
         // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
         // it'll have a catastrophic impact on the communication.
-        channel.pinClassLoader(getClass().getClassLoader());
+        //Java11 Telemetry: does it need to be serializable or closeable or similar?
+        channel.pinClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);

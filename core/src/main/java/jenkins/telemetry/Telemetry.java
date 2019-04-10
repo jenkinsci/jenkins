@@ -155,6 +155,7 @@ public abstract class Telemetry implements ExtensionPoint {
 
         @Override
         protected void execute(TaskListener listener) throws IOException, InterruptedException {
+            LOGGER.warning("In execute!!!!");
             if (isDisabled()) {
                 LOGGER.info("Collection of anonymous usage statistics is disabled, skipping telemetry collection and submission");
                 return;

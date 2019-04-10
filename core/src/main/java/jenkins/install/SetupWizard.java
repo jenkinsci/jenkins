@@ -473,6 +473,7 @@ public class SetupWizard extends PageDecorator {
         if (initialPluginList == null) {
             // fall back to local file
             try {
+                //Java11 Telemetry: it only loads a resource
                 ClassLoader cl = getClass().getClassLoader();
                 URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
                 String initialPluginJson = IOUtils.toString(localPluginData.openStream(), "utf-8");

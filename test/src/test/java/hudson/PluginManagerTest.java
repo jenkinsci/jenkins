@@ -489,6 +489,7 @@ public class PluginManagerTest {
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
         File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
+        //Java11 Telemetry: it only loads a resource
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);

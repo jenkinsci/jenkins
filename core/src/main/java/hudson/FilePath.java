@@ -116,6 +116,7 @@ import jenkins.SlaveToMasterFileCallable;
 import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.VirtualFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -1054,7 +1055,7 @@ public final class FilePath implements Serializable {
      * so that one can perform local file operations.
      */
     public <T> T act(final FileCallable<T> callable) throws IOException, InterruptedException {
-        return act(callable,callable.getClass().getClassLoader());
+        return act(callable, new CatcherClassLoader(callable.getClass().getClassLoader()));
     }
 
     private <T> T act(final FileCallable<T> callable, ClassLoader cl) throws IOException, InterruptedException {
@@ -1824,7 +1825,7 @@ public final class FilePath implements Serializable {
         if (filter != null && !(filter instanceof Serializable)) {
             throw new IllegalArgumentException("Non-serializable filter of " + filter.getClass());
         }
-        return act(new ListFilter(filter), (filter != null ? filter : this).getClass().getClassLoader());
+        return act(new ListFilter(filter), new CatcherClassLoader((filter != null ? filter : this).getClass().getClassLoader()));
     }
     private class ListFilter extends SecureFileCallable<List<FilePath>> {
         private final FileFilter filter;
@@ -3028,7 +3029,7 @@ public final class FilePath implements Serializable {
 
         public FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
-            this.classLoader = callable.getClass().getClassLoader();
+            this.classLoader = new CatcherClassLoader(callable.getClass().getClassLoader());
         }
 
         private FileCallableWrapper(FileCallable<T> callable, ClassLoader classLoader) {

@@ -43,6 +43,7 @@ import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.stapler.TypedFilter;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -870,7 +871,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             // doing this early allows InitStrategy to set environment upfront
+            //Telemetry: add interceptor classloader
+            Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+
+            //context.setClassLoader(new WebAppClassLoader(new MyCustomClassLoader(), context));
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
@@ -911,7 +916,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             this.pluginManager = pluginManager;
             WebApp webApp = WebApp.get(servletContext);
             // JSON binding needs to be able to see all the classes from all the plugins
-            webApp.setClassLoader(pluginManager.uberClassLoader);
+            ClassLoader catcherClassLoader = new CatcherClassLoader(pluginManager.uberClassLoader);
+            webApp.setClassLoader(catcherClassLoader);
             webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
 
             TypedFilter typedFilter = new TypedFilter();
@@ -924,7 +930,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             webApp.setFilteredDoActionTriggerListener(actionListener);
             webApp.setFilteredFieldTriggerListener(actionListener);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, catcherClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 

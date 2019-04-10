@@ -18,6 +18,8 @@
 package jenkins.util;
 
 import java.nio.file.Files;
+
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -35,7 +37,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -424,7 +425,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             savedContextLoader = LoaderUtils.getContextClassLoader();
             ClassLoader loader = this;
             if (project != null && "only".equals(project.getProperty("build.sysclasspath"))) {
-                loader = this.getClass().getClassLoader();
+                loader = new CatcherClassLoader(this.getClass().getClassLoader());
             }
             LoaderUtils.setContextClassLoader(loader);
             isContextLoaderSaved = true;
@@ -862,7 +863,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {
-        ClassLoader ret = getClass().getClassLoader();
+        ClassLoader ret = new CatcherClassLoader(getClass().getClassLoader());
         while (ret != null && ret.getParent() != null) {
             ret = ret.getParent();
         }

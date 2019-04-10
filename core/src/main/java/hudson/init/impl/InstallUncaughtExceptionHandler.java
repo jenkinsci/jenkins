@@ -1,21 +1,17 @@
 package hudson.init.impl;
 
 import hudson.init.Initializer;
-import java.io.EOFException;
 import jenkins.model.Jenkins;
+import jenkins.telemetry.impl.java11.Java11Telemetry;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
-import org.kohsuke.stapler.compression.UncaughtExceptionHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Deals with exceptions that get thrown all the way up to the Stapler rendering layer.
@@ -81,18 +77,16 @@ public class InstallUncaughtExceptionHandler {
 
     }
 
-    private static void getInfoJava11(Throwable e){
-        if (e.getCause() != null && e.getCause() instanceof ClassNotFoundException) {
-            String notFoundClass = e.getCause().getMessage();
-            if (notFoundClass != null) {
-                String[] removedClasses = new String[] {"java.sql.", "javax.activation.", "javax.annotation.",
-                        "javax.jws.", "javax.lang.model.", "javax.rmi.", "javax.script.", "javax.smartcardio.",
-                        "javax.sql.", "javax.tools.", "javax.transaction.xa.", "javax.xml.bind.", "javax.xml.crypto.",
-                        "javax.xml.soap.", "javax.xml.ws."};
-                if (Stream.of(removedClasses).anyMatch(clazz -> notFoundClass.startsWith(clazz))) {
-                    LOGGER.log(Level.SEVERE, "Class removed on Java 11 not found: " + notFoundClass, e);
-                } else {
-                    LOGGER.log(Level.INFO, "Class NOT removed on Java 11 not found: " + notFoundClass, e);
+    private static void getInfoJava11(Throwable e) {
+        if (e.getCause() != null && Java11Telemetry.UNCAUGHT_EXCEPTIONS.contains(e.getCause().getClass())) {
+            String rootCause = e.getCause().getMessage().replace('/', '.');
+            if (rootCause != null) {
+                if (Java11Telemetry.MOVED_PACKAGES.get().anyMatch(clazz -> rootCause.startsWith(clazz))) {
+                    LOGGER.log(Level.SEVERE, "Class moved out of Java 11 not found: " + rootCause, e);
+                }
+                //TODO: Remove this else before PR, just here to check if any other exception is missed
+                else {
+                    LOGGER.log(Level.INFO, "Class NOT moved out of Java 11 not found: " + rootCause, e);
                 }
 
             }

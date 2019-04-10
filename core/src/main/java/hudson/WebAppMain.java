@@ -28,6 +28,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
+
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
@@ -114,7 +116,7 @@ public class WebAppMain implements ServletContextListener {
             JVM jvm;
             try {
                 jvm = new JVM();
-                new URLClassLoader(new URL[0],getClass().getClassLoader());
+                new URLClassLoader(new URL[0], new CatcherClassLoader(getClass().getClassLoader()));
             } catch(SecurityException e) {
                 throw new InsufficientPermissionDetected(e);
             }
