@@ -263,7 +263,7 @@ public class Nodes implements Saveable {
                             executor.interrupt(Result.ABORTED, new CauseOfInterruption() {
                                 @Override
                                 public String getShortDescription() {
-                                    return "Node was removed by " + User.current().getId();
+                                    return "Node was removed by " + (User.current() == null ? "(no user)" : User.current().getId());
                                 }
                             });
                         }
