@@ -1450,22 +1450,34 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns an input stream that reads from the log file.
-     * It will use a gzip-compressed log file (log.gz) if that exists.
+     * Returns an input stream that reads from the log.
      *
-     * @throws IOException 
-     * @return An input stream from the log file. 
-     *   If the log file does not exist, the error message will be returned to the output.
+     * The underlying log data may be uncompressed or compressed with various
+     * methods.
+     *
+     * @throws IOException
+     * @return An input stream from the log file.
+     *   If the log can't be read, an error message will be returned to the
+     *   output.
      * @since 1.349
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
-        File logFile = getLogFile();
-        
-        if (logFile.exists() ) {
+        //List all possible log files with arbitrary extensions
+        File logRoot = this.getRootDir();
+        String[] logNames = logRoot.list(
+            (dir, name) -> (name.equals("log") || name.startsWith("log."))
+        );
+        //Sort, to ensure a predictable order
+        Arrays.sort(logNames);
+
+        for (String logName : logNames) {
+            File logFile = new File(logRoot, logName);
+            if (!logFile.isFile()) { continue; }
+
             // Checking if the log file is compressed
             try {
                 InputStream fis = Files.newInputStream(logFile.toPath());
-                String lName = logFile.getName().toLowerCase();
+                String lName = logName.toLowerCase();
                 if (lName.endsWith(".gz")) {
                     return new GZIPInputStream(fis);
                 } else if (lName.endsWith(".xz")) {
@@ -1483,11 +1495,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     return fis;
                 }
             } catch (InvalidPathException e) {
-                throw new IOException(e);
+                //Silently try the next path
+            } catch (IOException e) {
+                //Log this warning to the Jenkins log
+                LOGGER.warning(String.format(
+                        "Failed to read run log file: '%s'; Reason: %s",
+                        logFile.getPath(),
+                        e
+                ));
             }
         }
-        String message = "No such file: " + logFile;
-        return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+        String message = String.format(
+                "No log files found or readable: %s%s%s",
+                logRoot.getPath(),
+                File.separator,
+                logNames
+        );
+        return new ByteArrayInputStream(
+                charset != null ? message.getBytes(charset) : message.getBytes()
+        );
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
