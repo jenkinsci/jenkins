@@ -43,7 +43,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 import javax.annotation.CheckForNull;
@@ -60,7 +59,7 @@ import javax.annotation.Nonnull;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener extends AbstractTaskListener implements TaskListener, SerializableOnlyOverRemoting, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     @Nonnull
     private PrintStream out;
     @CheckForNull
