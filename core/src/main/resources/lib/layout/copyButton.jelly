@@ -29,8 +29,7 @@ THE SOFTWARE.
     Creates a small button that lets the user copies a text into clipboard
 
     <st:attribute name="tooltip">
-      Tooltip of the button. Currently this doesn't work as reliably as we'd like.
-      More ZeroClipboard hacking is likely necessary.
+      Tooltip of the button.
     </st:attribute>
     <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
@@ -53,7 +52,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <span class="copy-button ${attrs.clazz}" tooltip="${attrs.tooltip}" text="${attrs.text}"
+  <span class="copy-button ${attrs.clazz}" title="${attrs.tooltip}" text="${attrs.text}"
     message="${attrs.message}" container="${attrs.container}" style="${attrs.style}">
     <input type="button"/>
   </span>
