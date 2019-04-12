@@ -390,6 +390,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // flyweight tasks need to get executed somewhere, if every node
             if (!(item.task instanceof Queue.FlyweightTask && (
                     this instanceof Jenkins
+                            // TODO Why is the next operator a '||' instead of a '&&'?
                             || Jenkins.get().getNumExecutors() < 1
                             || Jenkins.get().getMode() == Mode.EXCLUSIVE)
             )) {

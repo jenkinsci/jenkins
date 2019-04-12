@@ -1712,6 +1712,7 @@ public class Queue extends ResourceController implements Saveable {
             Label lbl = p.getAssignedLabel();
 
             if (lbl != null && lbl.equals(h.getSelfLabel())) {
+                // the flyweight task is bound to the master
                 if (h.canTake(p) == null) {
                     return createFlyWeightTaskRunnable(p, h.toComputer());
                 } else {
@@ -1719,10 +1720,13 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            Map<Node, Integer> hashSource = new HashMap<>(h.getNodes().size());
+            if (lbl == null && h.canTake(p) == null) {
+                // The flyweight task is not tied to a specific label, so execute on master if possible.
+                // This will ensure that actual agent disconnects do not impact flyweight tasks randomly assigned to them.
+                return createFlyWeightTaskRunnable(p, h.toComputer());
+            }
 
-            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+            Map<Node, Integer> hashSource = new HashMap<>(h.getNodes().size());
 
             for (Node n : h.getNodes()) {
                 hashSource.put(n, n.getNumExecutors() * 100);
