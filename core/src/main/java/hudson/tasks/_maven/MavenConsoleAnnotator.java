@@ -76,6 +76,11 @@ public class MavenConsoleAnnotator extends LineTransformationOutputStream {
     }
 
     @Override
+    public void flush() throws IOException {
+        out.flush();
+    }
+
+    @Override
     public void close() throws IOException {
         super.close();
         out.close();
