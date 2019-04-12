@@ -1506,10 +1506,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
         String message = String.format(
-                "No log files found or readable: %s%s%s",
+                "No log files found or readable: %s%slog[.gz|.xz|.lz|.sz]",
                 logRoot.getPath(),
-                File.separator,
-                logNames
+                File.separator
         );
         return new ByteArrayInputStream(
                 charset != null ? message.getBytes(charset) : message.getBytes()
