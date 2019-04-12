@@ -107,7 +107,6 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
@@ -1813,8 +1812,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    updateSymlinks(listener);
-
                     setResult(job.run(listener));
 
                     LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
@@ -1926,36 +1923,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
-     * Normally you do not need to call this explicitly, since {@link #execute} does so,
-     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
-     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
-     * @param listener probably unused
-     * @throws InterruptedException probably not thrown
-     * @since 1.530
+     * @deprecated After JENKINS-37862 this no longer does anything.
      */
-    public final void updateSymlinks(@Nonnull TaskListener listener) throws InterruptedException {
-        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
-        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
-    }
-    /**
-     * Backward compatibility.
-     *
-     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
-     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
-     * resolves to the symlink created by {@link PeepholePermalink}.
-     */
-    private void createSymlink(@Nonnull TaskListener listener, @Nonnull String name, @Nonnull PermalinkProjectAction.Permalink target) throws InterruptedException {
-        File buildDir = getParent().getBuildDir();
-        File rootDir = getParent().getRootDir();
-        String targetDir;
-        if (buildDir.equals(new File(rootDir, "builds"))) {
-            targetDir = "builds" + File.separator + target.getId();
-        } else {
-            targetDir = buildDir + File.separator + target.getId();
-        }
-        Util.createSymlink(rootDir, targetDir, name, listener);
-    }
+    @Deprecated
+    public final void updateSymlinks(@Nonnull TaskListener listener) throws InterruptedException {}
 
     /**
      * Handles a fatal build problem (exception) that occurred during the build.
