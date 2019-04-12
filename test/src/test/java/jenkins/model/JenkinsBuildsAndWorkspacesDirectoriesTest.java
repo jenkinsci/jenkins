@@ -1,7 +1,6 @@
 package jenkins.model;
 
 import hudson.Functions;
-import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -21,12 +20,10 @@ import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -353,45 +350,4 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
         });
     }
 
-    @Test
-    @Issue("JENKINS-17137")
-    public void externalBuildDirectorySymlinks() throws Exception {
-        assumeFalse(Functions.isWindows()); // symlinks may not be available
-
-        // Hack to get String builds usable in lambda below
-        final List<String> builds = new ArrayList<>();
-
-        story.then(steps -> {
-            builds.add(story.j.createTmpDir().toString());
-            setBuildsDirProperty(builds.get(0) + "/${ITEM_FULL_NAME}");
-        });
-
-        story.then(steps -> {
-
-            assertEquals(builds.get(0) + "/${ITEM_FULL_NAME}", story.j.jenkins.getRawBuildsDir());
-            FreeStyleProject p = story.j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
-            FreeStyleBuild b1 = p.scheduleBuild2(0).get();
-            File link = new File(p.getRootDir(), "lastStable");
-            assertTrue(link.exists());
-            assertEquals(resolveAll(link).getAbsolutePath(), b1.getRootDir().getAbsolutePath());
-            FreeStyleBuild b2 = p.scheduleBuild2(0).get();
-            assertTrue(link.exists());
-            assertEquals(resolveAll(link).getAbsolutePath(), b2.getRootDir().getAbsolutePath());
-            b2.delete();
-            assertTrue(link.exists());
-            assertEquals(resolveAll(link).getAbsolutePath(), b1.getRootDir().getAbsolutePath());
-            b1.delete();
-            assertFalse(link.exists());
-        });
-    }
-
-    private File resolveAll(File link) throws InterruptedException, IOException {
-        while (true) {
-            File f = Util.resolveSymlinkToFile(link);
-            if (f == null) {
-                return link;
-            }
-            link = f;
-        }
-    }
 }
