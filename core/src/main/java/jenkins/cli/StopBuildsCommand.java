@@ -38,13 +38,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Extension
 public class StopBuildsCommand extends CLICommand {
-
-    private static final Logger LOGGER = Logger.getLogger(StopBuildsCommand.class.getName());
 
     @VisibleForTesting
     @Argument(usage = "Name of the job(s) to stop", required = true, multiValued = true)
@@ -60,32 +56,29 @@ public class StopBuildsCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         final HashSet<String> names = new HashSet<>();
         names.addAll(jobNames);
-        final StringBuilder resultBuilder = new StringBuilder();
         for (final String jobName : names) {
             Item item = jenkins.getItemByFullName(jobName);
             if (item instanceof Job) {
-                stopJobBuilds((Job) item, jobName, resultBuilder);
+                stopJobBuilds((Job) item, jobName);
             } else if (item != null) {
-                resultBuilder.append(String.format("Cannot abort runs for %s. Unsupported job type: %s\n", item, item.getClass()));
+                stdout.println(String.format("Cannot abort runs for %s. Unsupported job type: %s", item, item.getClass()));
             } else {
-                resultBuilder.append(String.format("Job with name %s not found.\n", jobName));
+                stdout.println(String.format("Job with name %s not found.", jobName));
             }
         }
 
-        stdout.print(resultBuilder.toString());
         return 0;
     }
 
     private void stopJobBuilds(final Job job,
-                               final String jobName,
-                               final StringBuilder resultBuilder) throws IOException, ServletException {
+                               final String jobName) throws IOException, ServletException {
         final Run lastBuild = job.getLastBuild();
         final List<String> stoppedBuildsNames = new ArrayList<>();
         if (lastBuild != null) {
             stopBuild(lastBuild, jobName, stoppedBuildsNames);
             checkAndStopPreviousBuilds(lastBuild, jobName, stoppedBuildsNames);
         }
-        updateResultOutput(resultBuilder, jobName, stoppedBuildsNames);
+        updateResultOutput(jobName, stoppedBuildsNames);
     }
 
     private void stopBuild(final Run build,
@@ -97,9 +90,8 @@ public class StopBuildsCommand extends CLICommand {
             Executor executor = build.getExecutor();
             if (executor != null) {
                 executor.doStop();
-                logBuildStopped(jobName, buildName);
             } else {
-                LOGGER.log(Level.INFO, String.format("Build %s in job %s not stopped", buildName, jobName));
+                stdout.println(String.format("Build %s in job %s not stopped", buildName, jobName));
             }
         }
     }
@@ -114,22 +106,18 @@ public class StopBuildsCommand extends CLICommand {
         }
     }
 
-    private void updateResultOutput(final StringBuilder result,
-                                    final String jobName,
+    private void updateResultOutput(final String jobName,
                                     final List<String> stoppedBuildNames) {
         if (stoppedBuildNames.isEmpty()) {
-            result.append(String.format("No builds stopped for job '%s'", jobName));
+            stdout.println(String.format("No builds stopped for job '%s'", jobName));
         } else {
-            result.append(String.format("Builds stopped for job '%s': ", jobName));
+            stdout.print(String.format("Builds stopped for job '%s': ", jobName));
             for (String buildName : stoppedBuildNames) {
-                result.append(buildName).append("; ");
+                stdout.print(buildName);
+                stdout.print("; ");
             }
+            stdout.println();
         }
-        result.append("\n");
-    }
-
-    private void logBuildStopped(final String jobName, final String buildName) {
-        LOGGER.log(Level.INFO, String.format("Build %s in job %s aborted", buildName, jobName));
     }
 
 }
