@@ -45,7 +45,6 @@ import static org.junit.Assert.*;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -56,7 +55,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 public class UpdateSiteTest {
 
@@ -151,6 +149,26 @@ public class UpdateSiteTest {
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
+    }
+
+    @Test
+    public void isPluginUpdateCompatible() throws Exception {
+
+        // TODO: factor out the sites init
+        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = new URL(baseUrl, "/plugins/minJavaVersion-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        // END TODO
+
+        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
+        assertNotNull(tasksPlugin);
+        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
+        assertFalse(tasksPlugin.isForNewerJava());
+        assertTrue(tasksPlugin.isCompatible());
+
     }
 
     @Issue("JENKINS-55048")

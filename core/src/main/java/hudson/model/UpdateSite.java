@@ -1043,6 +1043,18 @@ public class UpdateSite {
             return pm.getPlugin(name);
         }
 
+        @Exported
+        public boolean isCompatible() {
+            return isCompatible(new PluginManager.MetadataCache());
+        }
+
+        @Exported
+        public boolean isCompatible(PluginManager.MetadataCache cache) {
+            return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
+                    isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
+                    !isNeededDependenciesForNewerJenkins(cache) && !isNeededDependenciesForNewerJava();
+        }
+
         /**
          * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
          * value (i.e., it's only directly compatible with that version or later), this will check to
