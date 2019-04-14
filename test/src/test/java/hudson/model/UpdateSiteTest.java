@@ -151,6 +151,7 @@ public class UpdateSiteTest {
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
 
+    @Issue("JENKINS-56477")
     @Test
     public void isPluginUpdateCompatible() throws Exception {
 
