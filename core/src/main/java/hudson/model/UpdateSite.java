@@ -1048,7 +1048,6 @@ public class UpdateSite {
             return isCompatible(new PluginManager.MetadataCache());
         }
 
-        @Exported
         public boolean isCompatible(PluginManager.MetadataCache cache) {
             return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
                     isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
