@@ -5,6 +5,9 @@ function checkPluginsWithoutWarnings() {
         if(candidate.type === "checkbox" && candidate.dataset.compatWarning === 'false') {
             candidate.checked = true;
         }
+        else if(inputs[i].type === "checkbox") {
+            candidate.checked = false;
+        }
     }
 }
 function showhideCategories(hdr,on) {
