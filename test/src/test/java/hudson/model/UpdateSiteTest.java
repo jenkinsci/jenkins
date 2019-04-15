@@ -160,7 +160,6 @@ public class UpdateSiteTest {
         assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
         assertFalse(tasksPlugin.isForNewerJava());
         assertTrue(tasksPlugin.isCompatible());
-
     }
 
     @Issue("JENKINS-55048")
