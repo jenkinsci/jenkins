@@ -1043,11 +1043,17 @@ public class UpdateSite {
             return pm.getPlugin(name);
         }
 
+        /**
+         * Returns true if the plugin and its dependencies are fully compatible with the current installation
+         *
+         * @since TODO
+         */
         @Exported
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
 
+        @Restricted(NoExternalUse.class) // table.jelly
         public boolean isCompatible(PluginManager.MetadataCache cache) {
             return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
                     isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
