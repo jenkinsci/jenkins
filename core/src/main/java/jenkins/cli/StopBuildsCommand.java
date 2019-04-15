@@ -78,7 +78,7 @@ public class StopBuildsCommand extends CLICommand {
                                final String jobName) throws IOException, ServletException {
         final Run lastBuild = job.getLastBuild();
         final List<String> stoppedBuildsNames = new ArrayList<>();
-        if (lastBuild != null) {
+        if (lastBuild != null && lastBuild.isBuilding()) {
             stopBuild(lastBuild, jobName, stoppedBuildsNames);
             checkAndStopPreviousBuilds(lastBuild, jobName, stoppedBuildsNames);
         }
@@ -88,15 +88,13 @@ public class StopBuildsCommand extends CLICommand {
     private void stopBuild(final Run build,
                            final String jobName,
                            final List<String> stoppedBuildNames) throws IOException, ServletException {
-        if (build.isBuilding()) {
-            final String buildName = build.getDisplayName();
-            stoppedBuildNames.add(buildName);
-            Executor executor = build.getExecutor();
-            if (executor != null) {
-                executor.doStop();
-            } else {
-                stdout.println(String.format("Build %s in job %s not stopped", buildName, jobName));
-            }
+        final String buildName = build.getDisplayName();
+        stoppedBuildNames.add(buildName);
+        Executor executor = build.getExecutor();
+        if (executor != null) {
+            executor.doStop();
+        } else {
+            stdout.println(String.format("Build %s in job %s not stopped", buildName, jobName));
         }
     }
 
