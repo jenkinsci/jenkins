@@ -87,15 +87,12 @@ public class StopBuildsCommandTest {
         assertThat(out.toString(), equalTo("No builds stopped for job 'jobName'\n"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void shouldReportNotSupportedType() throws Exception {
         when(jenkins.getItemByFullName(TEST_JOB_NAME)).thenReturn(mock(AbstractItem.class));
 
         runWith(Collections.singletonList(TEST_JOB_NAME));
 
-        String output = out.toString();
-        assertThat(output, containsString("Cannot abort runs for "));
-        assertThat(output, containsString("Unsupported job type"));
         verifyZeroInteractions(executor);
     }
 
@@ -115,7 +112,7 @@ public class StopBuildsCommandTest {
         assertThat(out.toString(), equalTo("Builds stopped for job 'jobName': buildName; buildName2; \n"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void shouldDoNothingIfJobNotFound() throws Exception {
         when(jenkins.getItemByFullName(TEST_JOB_NAME)).thenReturn(null);
 
@@ -124,7 +121,6 @@ public class StopBuildsCommandTest {
         verifyZeroInteractions(lastBuild, job);
         verify(jenkins).getItemByFullName(TEST_JOB_NAME);
         verifyNoMoreInteractions(jenkins);
-        assertThat(out.toString(), equalTo("Job with name jobName not found.\n"));
     }
 
     @Test
@@ -174,6 +170,7 @@ public class StopBuildsCommandTest {
         when(lastBuild.isBuilding()).thenReturn(true);
         when(lastBuild.getExecutor()).thenReturn(executor);
         when(job.getLastBuild()).thenReturn(lastBuild);
+        when(job.getName()).thenReturn(jobName);
 
         when(jenkins.getItemByFullName(jobName)).thenReturn(job);
     }

@@ -56,15 +56,19 @@ public class StopBuildsCommand extends CLICommand {
         Jenkins jenkins = Jenkins.get();
         final HashSet<String> names = new HashSet<>();
         names.addAll(jobNames);
+
+        final List<Job> jobsToStop = new ArrayList<>();
         for (final String jobName : names) {
             Item item = jenkins.getItemByFullName(jobName);
             if (item instanceof Job) {
-                stopJobBuilds((Job) item, jobName);
-            } else if (item != null) {
-                stdout.println(String.format("Cannot abort runs for %s. Unsupported job type: %s", item, item.getClass()));
+                jobsToStop.add((Job) item);
             } else {
-                stdout.println(String.format("Job with name %s not found.", jobName));
+                throw new IllegalArgumentException("Invalid job name = " + jobName);
             }
+        }
+
+        for (final Job job : jobsToStop) {
+            stopJobBuilds(job, job.getName());
         }
 
         return 0;
