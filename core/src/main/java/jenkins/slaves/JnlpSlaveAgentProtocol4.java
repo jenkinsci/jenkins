@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -68,14 +67,16 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol4.class.getName());
 
+    private boolean broken;
+
     /**
      * Our keystore.
      */
-    private final KeyStore keyStore;
+    private KeyStore keyStore;
     /**
      * Our trust manager.
      */
-    private final TrustManager trustManager;
+    private TrustManager trustManager;
 
     /**
      * The provider of our {@link IOHub}
@@ -91,22 +92,12 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     private SSLContext sslContext;
 
-    /**
-     * Constructor.
-     *
-     * @throws KeyStoreException      if things go wrong.
-     * @throws KeyManagementException if things go wrong.
-     * @throws IOException            if things go wrong.
-     */
-    public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
+    private void initialize() throws Exception {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
-        if (identityCertificate == null) {
-            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
-        }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
-        if (privateKey == null) {
-            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+        if (identityCertificate == null || privateKey == null) {
+            throw new IllegalStateException("Thought instance-identity was installed, but maybe not?");
         }
 
         // prepare our keyStore so we can provide our authentication
@@ -144,6 +135,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             throw new IllegalStateException("Java runtime specification requires support for TLS algorithm", e);
         }
         sslContext.init(kmf.getKeyManagers(), trustManagers, null);
+        handler = new JnlpProtocol4Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting, hub.getHub(), sslContext, false, true);
     }
 
     /**
@@ -154,8 +146,6 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     @Inject
     public void setHub(IOHubProvider hub) {
         this.hub = hub;
-        handler = new JnlpProtocol4Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting, hub.getHub(),
-                sslContext, false, true);
     }
 
     /**
@@ -179,6 +169,23 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     @Override
     public String getName() {
+        if (handler == null) {
+            if (InstanceIdentityProvider.RSA.getCertificate() == null) {
+                // instance-identity not installed, so disabled.
+                return null;
+            }
+            if (broken) {
+                // Do not repeatedly try to initialize.
+                return null;
+            }
+            try {
+                initialize();
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, null, x);
+                broken = true;
+                return null;
+            }
+        }
         return handler.getName();
     }
 
@@ -188,10 +195,13 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         try {
+            if (getName() == null) {
+                throw new IOException("disabled");
+            }
             X509Certificate certificate = (X509Certificate) keyStore.getCertificate("jenkins");
             if (certificate == null
                     || certificate.getNotAfter().getTime() < System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1)) {
-                LOGGER.log(Level.INFO, "Updating {0} TLS certificate to retain validity", getName());
+                LOGGER.log(Level.INFO, "Updating {0} TLS certificate to retain validity", handler.getName());
                 X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
                 RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
                 char[] password = "password".toCharArray();
