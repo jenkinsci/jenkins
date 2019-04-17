@@ -31,6 +31,8 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 
 import javax.servlet.ServletException;
@@ -40,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Extension
+@Restricted(NoExternalUse.class)
 public class StopBuildsCommand extends CLICommand {
 
     @VisibleForTesting
