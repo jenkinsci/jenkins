@@ -205,18 +205,18 @@ public class AtomicFileWriter extends Writer {
             try {
                 Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e1) {
-                e1.addSuppressed(e);
+                e.addSuppressed(e1);
                 LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
                            new Path[]{tmpPath, destPath});
                 try {
                     Files.deleteIfExists(tmpPath);
                 } catch (IOException e2) {
-                    e2.addSuppressed(e1);
+                    e1.addSuppressed(e2);
                     LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
-                    throw e2;
+                    throw e;
                 }
 
-                throw e1;
+                throw e;
             }
         }
     }
