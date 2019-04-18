@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "32a57d160bc4d8b44929ed17e6af013c9da28b1b"
+  athRevision: "817a2fa3fb7f46ed96d2480be7aa3a542c28c1fd"
   athImage: "jenkins/ath@sha256:284c2fdfaf1a51e95783126367c0a88c07af83ff9234063d12ba3001959628e8"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
