@@ -49,6 +49,8 @@ public class StopBuildsCommand extends CLICommand {
     @Argument(usage = "Name of the job(s) to stop", required = true, multiValued = true)
     /*private */ List<String> jobNames;
 
+    private boolean isAnyBuildStopped;
+
     @Override
     public String getShortDescription() {
         return "Stop all running builds for job(s)";
@@ -74,54 +76,41 @@ public class StopBuildsCommand extends CLICommand {
             stopJobBuilds(job, job.getName());
         }
 
+        if (!isAnyBuildStopped) {
+            stdout.println("No builds stopped;");
+        }
+
         return 0;
     }
 
     private void stopJobBuilds(final Job job,
                                final String jobName) throws IOException, ServletException {
         final Run lastBuild = job.getLastBuild();
-        final List<String> stoppedBuildsNames = new ArrayList<>();
         if (lastBuild != null && lastBuild.isBuilding()) {
-            stopBuild(lastBuild, jobName, stoppedBuildsNames);
-            checkAndStopPreviousBuilds(lastBuild, jobName, stoppedBuildsNames);
+            stopBuild(lastBuild, jobName);
+            checkAndStopPreviousBuilds(lastBuild, jobName);
         }
-        updateResultOutput(jobName, stoppedBuildsNames);
     }
 
     private void stopBuild(final Run build,
-                           final String jobName,
-                           final List<String> stoppedBuildNames) throws IOException, ServletException {
+                           final String jobName) throws IOException, ServletException {
         final String buildName = build.getDisplayName();
-        stoppedBuildNames.add(buildName);
         Executor executor = build.getExecutor();
         if (executor != null) {
+            isAnyBuildStopped = true;
             executor.doStop();
+            stdout.println(String.format("Build %s stopped for job '%s';", buildName, jobName));
         } else {
             stdout.println(String.format("Build %s in job %s not stopped", buildName, jobName));
         }
     }
 
     private void checkAndStopPreviousBuilds(final Run lastBuild,
-                                            final String jobName,
-                                            final List<String> stoppedBuildsNames) throws IOException, ServletException {
+                                            final String jobName) throws IOException, ServletException {
         Run build = lastBuild.getPreviousBuildInProgress();
         while (build != null) {
-            stopBuild(build, jobName, stoppedBuildsNames);
+            stopBuild(build, jobName);
             build = build.getPreviousBuildInProgress();
-        }
-    }
-
-    private void updateResultOutput(final String jobName,
-                                    final List<String> stoppedBuildNames) {
-        if (stoppedBuildNames.isEmpty()) {
-            stdout.println(String.format("No builds stopped for job '%s'", jobName));
-        } else {
-            stdout.print(String.format("Builds stopped for job '%s': ", jobName));
-            for (String buildName : stoppedBuildNames) {
-                stdout.print(buildName);
-                stdout.print("; ");
-            }
-            stdout.println();
         }
     }
 
