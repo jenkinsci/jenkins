@@ -1818,10 +1818,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return viewGroupMixIn.getViews();
     }
 
-    public Collection<View> getAllViews() {
-        return super.getAllViews();
-    }
-
     @Override
     public void addView(View v) throws IOException {
         viewGroupMixIn.addView(v);
