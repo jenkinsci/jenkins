@@ -33,6 +33,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import jenkins.model.Jenkins;
 
+import javax.annotation.Nonnull;
+
 /**
  * Container of {@link View}s.
  *
@@ -67,6 +69,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * @since TODO
      */
+    @Nonnull
     default Collection<View> getAllViews() {
         final Collection<View> views = new LinkedHashSet<>(getViews());
 
