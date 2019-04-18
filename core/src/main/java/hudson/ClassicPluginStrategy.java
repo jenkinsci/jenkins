@@ -550,6 +550,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         e.execute();
     }
 
+    private static int hits;
+
     /**
      * Used to load classes from dependency plugins.
      */
@@ -560,6 +562,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         private final File _for;
 
         private List<Dependency> dependencies;
+
 
         /**
          * Topologically sorted list of transient dependencies.
@@ -616,6 +619,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 //            return r;
 //        }
 
+
+
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             if (PluginManager.FAST_LOOKUP) {
@@ -626,6 +631,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
                         //not found. try next
+                        // TODO: maramonleon: We hit this CNFE a lot of times during startup (at least with one job persisted with a
+                        // step defined in a plugin. Is it right? Or there is something wrong here.
+                        System.out.print(hits++==0? hits : ", " + hits);
                     }
                 }
             } else {
@@ -727,7 +735,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             } catch ( ClassNotFoundException e) {
                 // When this method is called from some places, it shouldn't report an exception, either because
                 // it was already reported or because it's expected and caught on the caller
-                if (!calledFromLoadClass(e) && !calledFromXstream2(e)) {
+                if (!calledFromLoadClass(e) && !calledFromXstream2(e) && !(calledFromDependencyClassLoaderFindClass(e))) {
                     Java11Telemetry.reportException(name, e);
                 }
                 throw e;
@@ -747,6 +755,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         private boolean calledFromXstream2(ClassNotFoundException e) {
             return calledFrom(e, XStream2.class, "findConverter");
+        }
+
+        private boolean calledFromDependencyClassLoaderFindClass(ClassNotFoundException e) {
+            return calledFrom(e, DependencyClassLoader.class, "findClass");
         }
 
         /**

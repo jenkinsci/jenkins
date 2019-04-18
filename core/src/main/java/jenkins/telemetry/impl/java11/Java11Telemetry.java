@@ -56,10 +56,28 @@ public class Java11Telemetry extends Telemetry {
         java.xml.ws with javax.jws, javax.jws.soap, javax.xml.soap, and all javax.xml.ws.* packages
         java.xml.ws.annotation with javax.annotation package
          */
+
+        /* Some packages here are not removed
         MOVED_PACKAGES = () -> Stream.of("java.sql.", "javax.activation.", "javax.annotation.",
                 "javax.jws.", "javax.lang.model.", "javax.rmi.", "javax.script.", "javax.smartcardio.",
                 "javax.sql.", "javax.tools.", "javax.transaction.", "javax.xml.bind.", "javax.xml.crypto.",
                 "javax.xml.soap.", "javax.xml.ws.", "org.omg.", "javax.activity");
+
+                "java.sql."
+                "javax.lang.model."
+                "javax.script."
+                "javax.smartcardio."
+                "javax.sql."
+                "javax.tools."
+                "javax.xml.crypto."
+        */
+
+        //List: https://openliberty.io/blog/2019/02/06/java-11.html#java-11-changes-that-impact-open-liberty
+        //https://docs.oracle.com/en/java/javase/11/migrate/index.html#JSMIG-GUID-4B3D2D73-359C-4ADA-937E-BAEA79CFDF0F
+        MOVED_PACKAGES = () -> Stream.of("javax.activation", "javax.annotation",
+                "javax.jws.*", "javax.rmi", "javax.rmi.CORBA",
+                "javax.transaction", "javax.xml.bind.*",
+                "javax.xml.soap", "javax.xml.ws.*", "org.omg.*", "javax.activity");
     }
 
     @Nonnull

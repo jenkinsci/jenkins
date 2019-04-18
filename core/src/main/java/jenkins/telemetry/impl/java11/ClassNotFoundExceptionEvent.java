@@ -29,7 +29,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.Serializable;
-import org.apache.commons.lang3.ClassUtils;
+//import org.apache.commons.lang3.ClassUtils;
 
 @Restricted(NoExternalUse.class)
 public final class ClassNotFoundExceptionEvent implements Serializable {
@@ -65,7 +65,7 @@ public final class ClassNotFoundExceptionEvent implements Serializable {
 
         for (int i = 0; i < stackTrace.length; i++) {
             StackTraceElement current = stackTrace[i];
-            stackTraceAbbreviated[i] = new StackTraceElement(ClassUtils.getShortCanonicalName(current.getClassName()), current.getMethodName(), current.getFileName(), current.getLineNumber());
+            //stackTraceAbbreviated[i] = new StackTraceElement(ClassUtils.getShortCanonicalName(current.getClassName()), current.getMethodName(), current.getFileName(), current.getLineNumber());
         }
 
         return stackTraceAbbreviated;
