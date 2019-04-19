@@ -38,6 +38,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class NodesTest {
@@ -86,6 +88,28 @@ public class NodesTest {
         Node newNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(newNode);
         assertThat(r.jenkins.getNode("foo"), sameInstance(newNode));
+    }
+
+    @Test
+    @Issue("JENKINS-56403")
+    public void replaceNodeShouldRemoveOldNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "", null);
+        Node newNode = r.createSlave("foo-new", "", null);
+        r.jenkins.addNode(oldNode);
+        r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
+        r.jenkins.getNodesObject().load();
+        assertNull(r.jenkins.getNode("foo"));
+    }
+
+    @Test
+    @Issue("JENKINS-56403")
+    public void replaceNodeShouldNotRemoveIdenticalOldNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "", null);
+        Node newNode = r.createSlave("foo", "", null);
+        r.jenkins.addNode(oldNode);
+        r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
+        r.jenkins.getNodesObject().load();
+        assertNotNull(r.jenkins.getNode("foo"));
     }
 
     private static class InvalidNode extends Slave {
