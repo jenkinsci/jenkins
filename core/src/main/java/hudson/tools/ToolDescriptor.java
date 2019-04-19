@@ -41,6 +41,8 @@ import jenkins.model.Jenkins;
 import jenkins.tools.ToolConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -87,8 +89,8 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             return emptyArray_unsafeCast();
         }
     }
-    
-    //TODO: Get rid of it? 
+
+    //TODO: Get rid of it?
     //It's unsafe according to http://stackoverflow.com/questions/2927391/whats-the-reason-i-cant-create-generic-array-types-in-java
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings(value = "BC_IMPOSSIBLE_DOWNCAST",
@@ -134,6 +136,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Default value for {@link ToolInstallation#getProperties()} used in the form binding.
      * @since 1.305
      */
+    @Restricted(NoExternalUse.class)
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
                 = new DescribableList<>(NOOP);
