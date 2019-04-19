@@ -250,14 +250,18 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
     }
 
-    private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+    private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
         String pluginName = atts.getValue("Short-Name");
         
         String jenkinsVersion = atts.getValue("Jenkins-Version");
         if (jenkinsVersion==null)
             jenkinsVersion = atts.getValue("Hudson-Version");
-        
-        optionalDependencies.addAll(DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion));
+
+        for (Dependency d : DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion)) {
+            LOGGER.fine(() -> "implied dep " + pluginName + " → " + d.shortName);
+            pluginManager.considerDetachedPlugin(d.shortName);
+            optionalDependencies.add(d);
+        }
     }
 
     /**
