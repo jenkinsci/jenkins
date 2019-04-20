@@ -121,9 +121,15 @@ THE SOFTWARE.
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
   <j:set var="computersSize" value="${computers.size()}"/>
+    <j:set var="busyExecutors" value="0"/>
+    <j:set var="totalExecutors" value="0"/>
+    <j:forEach var="computer" items="${computers}">
+      <j:set var="busyExecutors" value="${busyExecutors + computer.countBusy()}"/>
+      <j:set var="totalExecutors" value="${totalExecutors + computer.countExecutors()}"/>
+    </j:forEach>
     <l:pane width="3" id="executors"
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
-        collapsedText="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
+        collapsedText="${%Computers(computersSize - 1, busyExecutors, totalExecutors)}">
       <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
 
       <j:forEach var="c" items="${computers}">

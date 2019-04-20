@@ -38,7 +38,7 @@ THE SOFTWARE.
       Specify the number of columns in the table
       (so that the title can stretch to the entire table width.
     </st:attribute>
-    <st:attribute name="id">
+    <st:attribute name="id" use="required">
       @id of the table, if specified.
     </st:attribute>
     <st:attribute name="class">
@@ -46,6 +46,9 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="footer">
       Footer of the box. Can include HTML.
+    </st:attribute>
+    <st:attribute name="collapsedText">
+      Text shown when the pane is collapsed
     </st:attribute>
   </st:documentation>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
