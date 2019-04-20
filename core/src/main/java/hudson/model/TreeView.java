@@ -140,9 +140,20 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public View getView(String name) {
-        for (View v : views)
-            if(v.getViewName().equals(name))
+        //Top level views returned first if match
+        for (View v : views) {
+            if (v.getViewName().equals(name)) {
                 return v;
+            }
+        }
+        for (View v : views) {
+            if (v instanceof ViewGroup) {
+                View nestedView = ((ViewGroup) v).getView(name);
+                if (nestedView != null) {
+                    return nestedView;
+                }
+            }
+        }
         return null;
     }
 
