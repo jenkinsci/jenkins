@@ -30,7 +30,7 @@ src=$1
 dst=$2
 for p in 20 40 60 80 100
 do
-  convert $src -alpha off -fill white -colorize ${p}% -transparent-color white -alpha on $t.$p.gif
+  convert $src -fill white -colorize ${p}% $t.$p.gif
 done
 convert -delay 10 $src $t.20.gif $t.40.gif $t.60.gif $t.80.gif $t.100.gif $t.80.gif $t.60.gif $t.40.gif $t.20.gif -loop 0 $dst
 
