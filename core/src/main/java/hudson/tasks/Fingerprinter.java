@@ -149,6 +149,20 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return caseSensitive;
     }
 
+    /**
+     * We ensure that fields are initialized to
+     * default values after deserialization.
+     */
+    protected Object readResolve() {
+        if(defaultExcludes == null) {
+            defaultExcludes = true;
+        }
+        if(caseSensitive == null) {
+            caseSensitive = true;
+        }
+        return this;
+    }
+
     @Deprecated
     public boolean getRecordBuildArtifacts() {
         return recordBuildArtifacts != null && recordBuildArtifacts;
