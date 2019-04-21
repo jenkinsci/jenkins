@@ -62,7 +62,7 @@ public class StopBuildsCommandTest {
         project.scheduleBuild2(0).waitForStart();
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName;\n"));
+        assertThat(stdout, equalTo("Build #1 stopped for job jobName\n"));
 
         waitForLastBuildToStop(project);
     }
@@ -76,7 +76,7 @@ public class StopBuildsCommandTest {
 
         final String out = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(out, equalTo("No builds stopped;\n"));
+        assertThat(out, equalTo("No builds stopped\n"));
     }
 
     @Test
@@ -92,8 +92,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #2 stopped for job jobName;\n" +
-                "Build #1 stopped for job jobName;\n"));
+        assertThat(stdout, equalTo("Build #2 stopped for job jobName\n" +
+                "Build #1 stopped for job jobName\n"));
         waitForLastBuildToStop(project);
     }
 
@@ -140,9 +140,9 @@ public class StopBuildsCommandTest {
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout,
-                equalTo("Exception occurred while trying to stop build #1 for job jobName;\n" +
-                        "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission;\n" +
-                        "No builds stopped;\n"));
+                equalTo("Exception occurred while trying to stop build #1 for job jobName\n" +
+                        "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission\n" +
+                        "No builds stopped\n"));
     }
 
     private CLICommandInvoker.Result runWith(final List<String> jobNames) throws Exception {
@@ -165,8 +165,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(inputNames).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName;\n" +
-                "Build #1 stopped for job jobName2;\n"));
+        assertThat(stdout, equalTo("Build #1 stopped for job jobName\n" +
+                "Build #1 stopped for job jobName2\n"));
 
         waitForLastBuildToStop(project);
         waitForLastBuildToStop(project2);
