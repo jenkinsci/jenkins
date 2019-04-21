@@ -42,7 +42,6 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -135,6 +134,18 @@ public class StopBuildsCommandTest {
         List<String> inputNames = Arrays.asList(TEST_JOB_NAME, TEST_JOB_NAME, TEST_JOB_NAME_2);
 
         setupAndAssertTwoBuildsStop(inputNames, TEST_JOB_NAME_2);
+    }
+
+    @Test
+    public void shouldReportBuildStopError() throws Exception {
+        when(executor.doStop()).thenThrow(new SecurityException("test message"));
+
+        runWith(Collections.singletonList(TEST_JOB_NAME));
+
+        assertThat(out.toString(),
+                equalTo("Exception occurred while trying to stop build buildName for job jobName;\n" +
+                        "Exception class: SecurityException, message: test message;\n" +
+                        "No builds stopped;\n"));
     }
 
     private void runWith(final List<String> jobNames) throws Exception {
