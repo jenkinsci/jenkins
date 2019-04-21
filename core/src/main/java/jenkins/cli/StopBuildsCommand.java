@@ -45,9 +45,8 @@ import java.util.List;
 @Restricted(NoExternalUse.class)
 public class StopBuildsCommand extends CLICommand {
 
-    @VisibleForTesting
     @Argument(usage = "Name of the job(s) to stop", required = true, multiValued = true)
-    /*private */ List<String> jobNames;
+    private List<String> jobNames;
 
     private boolean isAnyBuildStopped;
 
