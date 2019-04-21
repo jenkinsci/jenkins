@@ -1045,10 +1045,11 @@ public class UpdateSite {
 
         /**
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
+         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
          *
          * @since TODO
          */
-        @Exported
+        @Restricted(NoExternalUse.class)
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
