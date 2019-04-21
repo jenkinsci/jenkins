@@ -74,7 +74,7 @@ public class StopBuildsCommandTest {
         runWith(Collections.singletonList(TEST_JOB_NAME));
 
         verify(executor).doStop();
-        assertThat(out.toString(), equalTo("Build buildName stopped for job 'jobName';\n"));
+        assertThat(out.toString(), equalTo("Build buildName stopped for job jobName;\n"));
     }
 
     @Test
@@ -109,8 +109,8 @@ public class StopBuildsCommandTest {
 
         verify(executor).doStop();
         verify(previousBuildExecutor).doStop();
-        assertThat(out.toString(), equalTo("Build buildName stopped for job 'jobName';\n" +
-                "Build buildName2 stopped for job 'jobName';\n"));
+        assertThat(out.toString(), equalTo("Build buildName stopped for job jobName;\n" +
+                "Build buildName2 stopped for job jobName;\n"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -157,8 +157,8 @@ public class StopBuildsCommandTest {
 
         verify(executor).doStop();
         verify(secondExecutor).doStop();
-        assertThat(out.toString(), equalTo("Build buildName stopped for job 'jobName';\n" +
-                "Build buildName2 stopped for job 'jobName2';\n"));
+        assertThat(out.toString(), equalTo("Build buildName stopped for job jobName;\n" +
+                "Build buildName2 stopped for job jobName2;\n"));
     }
 
     private void mockJobWithLastBuild(final AbstractBuild lastBuild,

@@ -99,7 +99,7 @@ public class StopBuildsCommand extends CLICommand {
         if (executor != null) {
             isAnyBuildStopped = true;
             executor.doStop();
-            stdout.println(String.format("Build %s stopped for job '%s';", buildName, jobName));
+            stdout.println(String.format("Build %s stopped for job %s;", buildName, jobName));
         } else {
             stdout.println(String.format("Build %s in job %s not stopped", buildName, jobName));
         }
