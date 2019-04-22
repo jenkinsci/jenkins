@@ -58,8 +58,7 @@ public class StopBuildsCommandTest {
 
     @Test
     public void shouldStopLastBuild() throws Exception {
-        final FreeStyleProject project = j.createFreeStyleProject(TEST_JOB_NAME);
-        project.getBuildersList().add(createLongRunningScript());
+        final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
         project.scheduleBuild2(0).waitForStart();
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
@@ -82,8 +81,7 @@ public class StopBuildsCommandTest {
 
     @Test
     public void shouldStopSeveralWorkingBuilds() throws Exception {
-        final FreeStyleProject project = j.createFreeStyleProject(TEST_JOB_NAME);
-        project.getBuildersList().add(createLongRunningScript());
+        final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
         project.setConcurrentBuild(true);
 
         setupSlaveWithTwoExecutors();
@@ -129,7 +127,7 @@ public class StopBuildsCommandTest {
 
     @Test
     public void shouldReportBuildStopError() throws Exception {
-        final FreeStyleProject project = j.createFreeStyleProject(TEST_JOB_NAME);
+        final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
@@ -155,11 +153,8 @@ public class StopBuildsCommandTest {
     private void setupAndAssertTwoBuildsStop(final List<String> inputNames) throws Exception {
         setupSlaveWithTwoExecutors();
 
-        final FreeStyleProject project = j.createFreeStyleProject(TEST_JOB_NAME);
-        project.getBuildersList().add(createLongRunningScript());
-
-        final FreeStyleProject project2 = j.createFreeStyleProject(TEST_JOB_NAME_2);
-        project2.getBuildersList().add(createLongRunningScript());
+        final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
+        final FreeStyleProject project2 = createLongRunningProject(TEST_JOB_NAME_2);
 
         project.scheduleBuild2(0).waitForStart();
         project2.scheduleBuild2(0).waitForStart();
@@ -173,8 +168,10 @@ public class StopBuildsCommandTest {
         waitForLastBuildToStop(project2);
     }
 
-    private Builder createLongRunningScript() {
-        return createScriptBuilder("sleep 50000");
+    private FreeStyleProject createLongRunningProject(final String jobName) throws IOException {
+        final FreeStyleProject project = j.createFreeStyleProject(jobName);
+        project.getBuildersList().add(createScriptBuilder("sleep 50000"));
+        return project;
     }
 
     private void setupSlaveWithTwoExecutors() throws hudson.model.Descriptor.FormException, IOException, URISyntaxException {
