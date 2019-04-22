@@ -141,7 +141,7 @@ public class StopBuildsCommandTest {
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout,
-                equalTo("Exception occurred while trying to stop build #1 for job jobName" + LN +
+                equalTo("Exception occurred while trying to stop build #1 for job jobName. " +
                         "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission" + LN +
                         "No builds stopped" + LN));
     }
