@@ -23,7 +23,6 @@
  */
 package jenkins.cli;
 
-import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.Executor;
@@ -72,7 +71,7 @@ public class StopBuildsCommand extends CLICommand {
         }
 
         for (final Job job : jobsToStop) {
-            stopJobBuilds(job, job.getName());
+            stopJobBuilds(job);
         }
 
         if (!isAnyBuildStopped) {
@@ -82,9 +81,9 @@ public class StopBuildsCommand extends CLICommand {
         return 0;
     }
 
-    private void stopJobBuilds(final Job job,
-                               final String jobName) throws IOException, ServletException {
+    private void stopJobBuilds(final Job job) throws IOException, ServletException {
         final Run lastBuild = job.getLastBuild();
+        final String jobName = job.getFullDisplayName();
         if (lastBuild != null && lastBuild.isBuilding()) {
             stopBuild(lastBuild, jobName);
             checkAndStopPreviousBuilds(lastBuild, jobName);
