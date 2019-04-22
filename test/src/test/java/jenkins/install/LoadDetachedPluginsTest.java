@@ -119,7 +119,7 @@ public class LoadDetachedPluginsTest {
             Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
             assertThat("Script-security should be installed", scriptSecurity, notNullValue());
             assertThat("Dependencies of detached plugins should be upgraded to the required version",
-                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.18.1")));
+                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.56")));
             assertNoFailedPlugins(r);
         });
     }
