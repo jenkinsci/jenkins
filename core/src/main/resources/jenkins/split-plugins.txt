@@ -35,6 +35,6 @@ ssh-cli-auth 2.173 2.0-rc40.c46bec1d8a48
 sshd 2.173 3.0-rc148.48ceb19bcbc2
 slave-installer 2.173 2.0-rc44.ab2f7e7f005e
 windows-slave-installer 2.173 2.0-rc123.ae41fe54ecb4
-launchd-slave-installer 2.173 2.0-rc25.c98006c47829
-upstart-slave-installer 2.173 2.0-rc17.8d1b4962adee
-systemd-slave-installer 2.173 2.0-rc19.e31fde3af4f1
+launchd-slave-installer 2.173 2.0-rc26.6273363c4bca
+upstart-slave-installer 2.173 2.0-rc18.53973b21b41e
+systemd-slave-installer 2.173 2.0-rc20.aa01447ca753

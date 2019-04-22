@@ -413,19 +413,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>launchd-slave-installer</artifactId>
-                  <version>2.0-rc25.c98006c47829</version> <!-- TODO https://github.com/jenkinsci/launchd-slave-installer-module/pull/3 -->
+                  <version>2.0-rc26.6273363c4bca</version> <!-- TODO https://github.com/jenkinsci/launchd-slave-installer-module/pull/3 -->
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>upstart-slave-installer</artifactId>
-                  <version>2.0-rc17.8d1b4962adee</version> <!-- TODO https://github.com/jenkinsci/upstart-slave-installer-module/pull/2 -->
+                  <version>2.0-rc18.53973b21b41e</version> <!-- TODO https://github.com/jenkinsci/upstart-slave-installer-module/pull/2 -->
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>systemd-slave-installer</artifactId>
-                  <version>2.0-rc19.e31fde3af4f1</version> <!-- TODO https://github.com/jenkinsci/systemd-slave-installer-module/pull/3 -->
+                  <version>2.0-rc20.aa01447ca753</version> <!-- TODO https://github.com/jenkinsci/systemd-slave-installer-module/pull/3 -->
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
