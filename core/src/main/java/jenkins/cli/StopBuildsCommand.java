@@ -67,7 +67,7 @@ public class StopBuildsCommand extends CLICommand {
             if (item instanceof Job) {
                 jobsToStop.add((Job) item);
             } else {
-                throw new IllegalArgumentException("Invalid job name = " + jobName);
+                throw new IllegalArgumentException("Job not found: " + jobName);
             }
         }
 

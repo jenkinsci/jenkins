@@ -105,14 +105,14 @@ public class StopBuildsCommandTest {
 
         final String stderr = runWith(Collections.singletonList(testFolderName)).stderr();
 
-        assertThat(stderr, equalTo(LN + "ERROR: Invalid job name = folder" + LN));
+        assertThat(stderr, equalTo(LN + "ERROR: Job not found: folder" + LN));
     }
 
     @Test
     public void shouldDoNothingIfJobNotFound() throws Exception {
         final String stderr = runWith(Collections.singletonList(TEST_JOB_NAME)).stderr();
 
-        assertThat(stderr, equalTo(LN + "ERROR: Invalid job name = jobName" + LN));
+        assertThat(stderr, equalTo(LN + "ERROR: Job not found: jobName" + LN));
     }
 
     @Test
