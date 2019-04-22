@@ -267,9 +267,7 @@ public class WindowsInstallerLink extends ManagementLink {
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
-            // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
-            // from JNLP), also put this link on the navigation bar to increase
-            // visibility
+            // TODO possibly now unused (JNLP installation mode is long gone):
             if(SystemProperties.getString(WindowsInstallerLink.class.getName()+".prominent")!=null)
                 Jenkins.getInstance().getActions().add(link);
 
