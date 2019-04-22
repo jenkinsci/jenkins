@@ -54,6 +54,7 @@ public class StopBuildsCommandTest {
 
     private static final String TEST_JOB_NAME = "jobName";
     private static final String TEST_JOB_NAME_2 = "jobName2";
+    private static final String LN = System.lineSeparator();
 
     @Test
     public void shouldStopLastBuild() throws Exception {
@@ -62,7 +63,7 @@ public class StopBuildsCommandTest {
         project.scheduleBuild2(0).waitForStart();
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName\n"));
+        assertThat(stdout, equalTo("Build #1 stopped for job jobName" + LN));
 
         waitForLastBuildToStop(project);
     }
@@ -76,7 +77,7 @@ public class StopBuildsCommandTest {
 
         final String out = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(out, equalTo("No builds stopped\n"));
+        assertThat(out, equalTo("No builds stopped" + LN));
     }
 
     @Test
@@ -92,8 +93,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #2 stopped for job jobName\n" +
-                "Build #1 stopped for job jobName\n"));
+        assertThat(stdout, equalTo("Build #2 stopped for job jobName" + LN +
+                "Build #1 stopped for job jobName" + LN));
         waitForLastBuildToStop(project);
     }
 
@@ -104,14 +105,14 @@ public class StopBuildsCommandTest {
 
         final String stderr = runWith(Collections.singletonList(testFolderName)).stderr();
 
-        assertThat(stderr, equalTo("\nERROR: Invalid job name = folder\n"));
+        assertThat(stderr, equalTo(LN + "ERROR: Invalid job name = folder" + LN));
     }
 
     @Test
     public void shouldDoNothingIfJobNotFound() throws Exception {
         final String stderr = runWith(Collections.singletonList(TEST_JOB_NAME)).stderr();
 
-        assertThat(stderr, equalTo("\nERROR: Invalid job name = jobName\n"));
+        assertThat(stderr, equalTo(LN + "ERROR: Invalid job name = jobName" + LN));
     }
 
     @Test
@@ -140,9 +141,9 @@ public class StopBuildsCommandTest {
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout,
-                equalTo("Exception occurred while trying to stop build #1 for job jobName\n" +
-                        "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission\n" +
-                        "No builds stopped\n"));
+                equalTo("Exception occurred while trying to stop build #1 for job jobName" + LN +
+                        "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission" + LN +
+                        "No builds stopped" + LN));
     }
 
     private CLICommandInvoker.Result runWith(final List<String> jobNames) throws Exception {
@@ -165,8 +166,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(inputNames).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName\n" +
-                "Build #1 stopped for job jobName2\n"));
+        assertThat(stdout, equalTo("Build #1 stopped for job jobName" + LN +
+                "Build #1 stopped for job jobName2" + LN));
 
         waitForLastBuildToStop(project);
         waitForLastBuildToStop(project2);
