@@ -62,7 +62,7 @@ public class StopBuildsCommandTest {
         project.scheduleBuild2(0).waitForStart();
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName" + LN));
+        assertThat(stdout, equalTo("Build '#1' stopped for job 'jobName'" + LN));
 
         waitForLastBuildToStop(project);
     }
@@ -91,8 +91,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
-        assertThat(stdout, equalTo("Build #2 stopped for job jobName" + LN +
-                "Build #1 stopped for job jobName" + LN));
+        assertThat(stdout, equalTo("Build '#2' stopped for job 'jobName'" + LN +
+                "Build '#1' stopped for job 'jobName'" + LN));
         waitForLastBuildToStop(project);
     }
 
@@ -103,14 +103,14 @@ public class StopBuildsCommandTest {
 
         final String stderr = runWith(Collections.singletonList(testFolderName)).stderr();
 
-        assertThat(stderr, equalTo(LN + "ERROR: Job not found: folder" + LN));
+        assertThat(stderr, equalTo(LN + "ERROR: Job not found: 'folder'" + LN));
     }
 
     @Test
     public void shouldDoNothingIfJobNotFound() throws Exception {
         final String stderr = runWith(Collections.singletonList(TEST_JOB_NAME)).stderr();
 
-        assertThat(stderr, equalTo(LN + "ERROR: Job not found: jobName" + LN));
+        assertThat(stderr, equalTo(LN + "ERROR: Job not found: 'jobName'" + LN));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class StopBuildsCommandTest {
         final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout,
-                equalTo("Exception occurred while trying to stop build #1 for job jobName. " +
+                equalTo("Exception occurred while trying to stop build '#1' for job 'jobName'. " +
                         "Exception class: AccessDeniedException2, message: anonymous is missing the Job/Cancel permission" + LN +
                         "No builds stopped" + LN));
     }
@@ -161,8 +161,8 @@ public class StopBuildsCommandTest {
 
         final String stdout = runWith(inputNames).stdout();
 
-        assertThat(stdout, equalTo("Build #1 stopped for job jobName" + LN +
-                "Build #1 stopped for job jobName2" + LN));
+        assertThat(stdout, equalTo("Build '#1' stopped for job 'jobName'" + LN +
+                "Build '#1' stopped for job 'jobName2'" + LN));
 
         waitForLastBuildToStop(project);
         waitForLastBuildToStop(project2);
