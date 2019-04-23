@@ -32,12 +32,10 @@ import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
-import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.telemetry.impl.java11.CatcherClassLoader;
-import jenkins.telemetry.impl.java11.Java11Telemetry;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
@@ -289,13 +287,21 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
                 classLoader.addPathFiles( paths );
+
+                //TODO: Remove this comment if ATH goes well
+                //Java11 Telemetry: If it's not parent first, we shouldn't add the Catcher here, it's going to
+                //throw a CNFE for every class because CatcherCL will be the first searching the
+                //class
+
+                // The catcher class loader delegates in its parent. What its parent do is up to him (parent first or
+                // not).
                 return new CatcherClassLoader(classLoader);
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
         classLoader.addPathFiles(paths);
-        return classLoader;
+        return new CatcherClassLoader(classLoader);
     }
 
     /**
@@ -550,8 +556,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         e.execute();
     }
 
-    private static int hits;
-
     /**
      * Used to load classes from dependency plugins.
      */
@@ -631,9 +635,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
                         //not found. try next
-                        // TODO: maramonleon: We hit this CNFE a lot of times during startup (at least with one job persisted with a
-                        // step defined in a plugin. Is it right? Or there is something wrong here.
-                        System.out.print(hits++==0? hits : ", " + hits);
                     }
                 }
             } else {
@@ -649,11 +650,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            ClassNotFoundException e = new ClassNotFoundException(name);
-            //Java11 Telemetry This one is wrapped by a AntClassLoader2, where the report is taking into account. If we set
-            //it here, we have false-positives
-            //Java11Telemetry.reportException(name, e);
-            throw e;
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -717,85 +714,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (!DISABLE_TRANSFORMER)
                 classData = pluginManager.getCompatibilityTransformer().transform(classname, classData, this);
             return super.defineClassFromData(container, classData, classname);
-        }
-
-        /**
-         * The {@link AntClassLoader#findClass(String)} is called directly (for example via {@link jenkins.ClassLoaderReflectionToolkit},
-         * so we overwrite the method to report the issues.
-         *
-         * @param name The name of the class to be loaded. Must not be <code>null</code>.
-         *
-         * @return the class
-         * @throws ClassNotFoundException when the class is not found
-         */
-        @Override
-        public Class<?> findClass(String name) throws ClassNotFoundException {
-            try {
-                return super.findClass(name);
-            } catch ( ClassNotFoundException e) {
-                // When this method is called from some places, it shouldn't report an exception, either because
-                // it was already reported or because it's expected and caught on the caller
-                if (!calledFromLoadClass(e) && !calledFromXstream2(e) && !(calledFromDependencyClassLoaderFindClass(e))) {
-                    Java11Telemetry.reportException(name, e);
-                }
-                throw e;
-            }
-        }
-
-        /**
-         * If the {@link #findClass} method is called from {@link AntClassLoader#loadClass(String, boolean)} the failure
-         * should be managed in the loadClass method, not here. Because not always the findClass raise an CNFE it's a
-         * genuine one.
-         * @param e exception to check if it's raised from the loadClass
-         * @return true if called from loadClass
-         */
-        private boolean calledFromLoadClass(ClassNotFoundException e) {
-            return calledFrom(e, AntClassLoader.class, "loadClass");
-        }
-
-        private boolean calledFromXstream2(ClassNotFoundException e) {
-            return calledFrom(e, XStream2.class, "findConverter");
-        }
-
-        private boolean calledFromDependencyClassLoaderFindClass(ClassNotFoundException e) {
-            return calledFrom(e, DependencyClassLoader.class, "findClass");
-        }
-
-        /**
-         * Check if the throwable was thrown by the class and the method specified.
-         * @param throwable stack trace to look at
-         * @param clazz class to look for in the stack trace
-         * @param method method where the throwable was thrown in the clazz
-         * @return true if the method of the clazz has thrown the throwable
-         */
-        private boolean calledFrom(Throwable throwable, Class clazz, String method) {
-            StackTraceElement[] trace = throwable.getStackTrace();
-            for (StackTraceElement el : trace) {
-                //Create an object of the class in the trace to see if it's a AntClassLoader or a subclass. There is no
-                //risk to get into a CNFE because the class is in the trace, it was already loaded. But we avoid exceptions
-                // just in case, something goes wrong
-                try {
-                    Class previousClass = Class.forName(el.getClassName());
-                    if (previousClass.isInstance(AntClassLoader.class) && el.getMethodName().equals("loadClass")) {
-                        return true;
-                    }
-                } catch (ClassNotFoundException e1) {
-                    // It shouldn't happen, but just in case
-                    return false;
-                }
-
-            }
-            return false;
-        }
-
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            try {
-                return super.loadClass(name, resolve);
-            } catch (ClassNotFoundException e) {
-                Java11Telemetry.reportException(name, e);
-                throw e;
-            }
         }
 
     }

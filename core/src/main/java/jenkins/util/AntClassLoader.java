@@ -20,6 +20,7 @@ package jenkins.util;
 import java.nio.file.Files;
 
 import jenkins.telemetry.impl.java11.CatcherClassLoader;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -1072,27 +1073,39 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         if (theClass != null) {
             return theClass;
         }
-        if (isParentFirst(classname)) {
-            try {
-                theClass = findBaseClass(classname);
-                log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-            } catch (ClassNotFoundException cnfe) {
-                theClass = findClass(classname);
-                log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-            }
-        } else {
-            try {
-                theClass = findClass(classname);
-                log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
-            } catch (ClassNotFoundException cnfe) {
-                if (ignoreBase) {
-                    throw cnfe;
+
+        try {
+            if (isParentFirst(classname)) {
+                try {
+                    theClass = findBaseClass(classname);
+                    log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
+                            Project.MSG_DEBUG);
+                } catch (ClassNotFoundException cnfe) {
+                    theClass = findClass(classname);
+                    log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
+                            Project.MSG_DEBUG);
                 }
-                theClass = findBaseClass(classname);
-                log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
+            } else {
+                try {
+                    theClass = findClass(classname);
+                    log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
+                } catch (ClassNotFoundException cnfe) {
+                    if (ignoreBase) {
+                        throw cnfe;
+                    }
+                    theClass = findBaseClass(classname);
+                    log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
+                }
             }
+        } catch (ClassNotFoundException cnfe) {
+            //Java11-Telemetry: We avoid reporting errors from AntClassLoader.loadClass because a CNFE raised here
+            //could be expected, because we catch it and try to load the class again with the opposite way (findClass or
+            //findBaseClass). But if after both tries it raises a CNFE, then, we report it specifically here.
+
+            //To catch CNFE thrown from this.getClass().getClassLoader().loadClass(classToLoad); from a plugin step or
+            //a plugin page
+            MissingClassTelemetry.reportExceptionIfNeeded(classname, cnfe);
+            throw cnfe;
         }
         if (resolve) {
             resolveClass(theClass);

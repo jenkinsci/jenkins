@@ -3,8 +3,11 @@ package jenkins.telemetry;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
+import jenkins.telemetry.impl.java11.MissingClassEvents;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,16 +25,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-public class Java11TelemetryTest {
+/**
+ * This test needs to be here to be able to modify the {@link Telemetry#ENDPOINT} as it's package protected.
+ */
+public class MissingClassTelemetryTest {
+    private static final String TELEMETRY_ENDPOINT = "uplink";
+    private CatcherClassLoader cl;
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -40,27 +44,46 @@ public class Java11TelemetryTest {
     @Before
     public void prepare() throws Exception {
         received = null;
-        Telemetry.ENDPOINT = j.getURL().toString() + "uplink/events";
+        cl = new CatcherClassLoader(this.getClass().getClassLoader());
+        Telemetry.ENDPOINT = j.getURL().toString() + TELEMETRY_ENDPOINT + "/events";
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
     }
 
-
+    /**
+     * Test if the telemetry sent works and the received data is the expected for a specific case (5 occurrences of the
+     * same stack trace).
+     * @throws InterruptedException if the thread is interrupted while sleeping
+     */
     @Test
-    public void infoSentTest() throws InterruptedException {
-        Correlator correlator = ExtensionList.lookupSingleton(Correlator.class);
-        String correlationId = "00000000-0000-0000-0000-000000000000";
-        correlator.setCorrelationId(correlationId);
+    public void telemetrySentWorks() throws InterruptedException {
+        // Generate 5 events
+        for(int i = 0; i < 5; i++) {
+            try {
+                cl.loadClass("sun.java.MyNonExistentClass");
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
 
+        // Run the telemetry sent
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
         do {
+
             Thread.sleep(250);
         } while (received == null); // this might end up being flaky due to 1 to many active telemetry trials
 
-        assertEquals(this.getClass().getName(), received.getString("type"));
-        //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
-        assertEquals(DigestUtils.sha256Hex(correlationId + "test-data"), received.getString("correlator"));
+
+        // The telemetry stuff sent is the class expected, the number of events is 1, the class not found is the
+        // expected and the number of occurrences is the expected
+        assertEquals(MissingClassTelemetry.class.getName(), received.getString("type"));
+        JSONArray events = received.getJSONObject("payload").getJSONArray("classmissingevents");
+        assertEquals(1, events.size());
+        assertTrue(((JSONObject) events.get(0)).get("className").equals("sun.java.MyNonExistentClass"));
+        assertEquals(5, Integer.parseInt( (String) ((JSONObject) events.get(0)).get("occurrences")));
     }
 
+    /**
+     * Avoid crumb checking (CSRF)
+     */
     @TestExtension
     public static class NoCrumb extends CrumbExclusion {
         @Override
@@ -79,10 +102,7 @@ public class Java11TelemetryTest {
         public void doEvents(StaplerRequest request, StaplerResponse response) throws IOException {
             StringWriter sw = new StringWriter();
             IOUtils.copy(request.getInputStream(), sw, StandardCharsets.UTF_8);
-            JSONObject json = JSONObject.fromObject(sw.toString());
-            correlators.add(json.getString("correlator"));
-            types.add(json.getString("type"));
-            received = true;
+            received = JSONObject.fromObject(sw.toString());
         }
 
         @CheckForNull
@@ -100,7 +120,7 @@ public class Java11TelemetryTest {
         @CheckForNull
         @Override
         public String getUrlName() {
-            return "uplink";
+            return TELEMETRY_ENDPOINT;
         }
     }
 }

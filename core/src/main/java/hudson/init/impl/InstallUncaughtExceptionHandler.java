@@ -2,7 +2,7 @@ package hudson.init.impl;
 
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
-import jenkins.telemetry.impl.java11.Java11Telemetry;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
@@ -10,6 +10,7 @@ import org.kohsuke.stapler.compression.CompressionFilter;
 import javax.servlet.ServletException;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,21 +79,13 @@ public class InstallUncaughtExceptionHandler {
     }
 
     private static void getInfoJava11(Throwable e) {
-        if (e.getCause() != null && Java11Telemetry.UNCAUGHT_EXCEPTIONS.contains(e.getCause().getClass())) {
-            String rootCause = e.getCause().getMessage().replace('/', '.');
+        if (e.getCause() != null && Arrays.stream(MissingClassTelemetry.getCollectibleThrowables()).anyMatch(aClass -> aClass.equals(e.getCause().getClass()))) {
+            String rootCause = e.getCause().getMessage() == null ? "EmptyCause" : e.getCause().getMessage().replace('/', '.');
             if (rootCause != null) {
-                if (Java11Telemetry.MOVED_PACKAGES.get().anyMatch(clazz -> rootCause.startsWith(clazz))) {
-                    LOGGER.log(Level.SEVERE, "Class moved out of Java 11 not found: " + rootCause, e);
-                }
-                //TODO: Remove this else before PR, just here to check if any other exception is missed
-                else {
-                    LOGGER.log(Level.INFO, "Class NOT moved out of Java 11 not found: " + rootCause, e);
-                }
-
+                MissingClassTelemetry.reportExceptionIfNeeded(rootCause, e);
             }
         }
     }
 
     private InstallUncaughtExceptionHandler() {}
-
 }
