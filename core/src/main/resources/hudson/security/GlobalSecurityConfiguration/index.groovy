@@ -43,7 +43,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             }
 
             f.section(title: _("Agents")) {
-                f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
+                f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
                     if (my.slaveAgentPortEnforced) {
                         if (my.slaveAgentPort == -1) {
                             text(_("slaveAgentPortEnforcedDisabled"))

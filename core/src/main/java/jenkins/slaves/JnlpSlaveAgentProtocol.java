@@ -34,7 +34,7 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  * so it can't impersonate a valid agent.
  *
  * <p>
- * We don't want to force the JNLP agents to be restarted
+ * We don't want to force the inbound agents to be restarted
  * whenever the server restarts, so right now this secret master key
  * is generated once and used forever, which makes this whole scheme
  * less secure.

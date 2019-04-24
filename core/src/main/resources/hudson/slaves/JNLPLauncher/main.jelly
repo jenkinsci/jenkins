@@ -95,7 +95,7 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <p>
-        ${%Connected via JNLP agent.}
+        ${%Agent is connected.}
       </p>
     </j:otherwise>
   </j:choose>
