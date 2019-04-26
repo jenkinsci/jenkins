@@ -394,6 +394,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
+        for (Dependency d : optionalDependencies) {
+            assert d.optional : d + " included among optionalDependencies of " + shortName + " but was not marked optional";
+        }
         this.archive = archive;
     }
 
