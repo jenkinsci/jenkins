@@ -7,7 +7,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +26,9 @@ import java.util.Arrays;
  * @since 1.498
  */
 public class HMACConfidentialKey extends ConfidentialKey {
-    private volatile SecretKey key;
+
+    private ConfidentialStore lastCS;
+    private SecretKey key;
     private Mac mac;
     private final int length;
 
@@ -67,7 +68,9 @@ public class HMACConfidentialKey extends ConfidentialKey {
      * Computes the message authentication code for the specified byte sequence.
      */
     public synchronized byte[] mac(byte[] message) {
-        if (mac == null) {
+        ConfidentialStore cs = ConfidentialStore.get();
+        if (mac == null || cs != lastCS) {
+            lastCS = cs;
             mac = createMac();
         }
         return chop(mac.doFinal(message));
@@ -117,22 +120,20 @@ public class HMACConfidentialKey extends ConfidentialKey {
         }
     }
 
-    private SecretKey getKey() {
-        if (key==null) {
-            synchronized (this) {
-                if (key==null) {
-                    try {
-                        byte[] encoded = load();
-                        if (encoded==null) {
-                            KeyGenerator kg = KeyGenerator.getInstance(ALGORITHM);
-                            SecretKey key = kg.generateKey();
-                            store(encoded=key.getEncoded());
-                        }
-                        key = new SecretKeySpec(encoded,ALGORITHM);
-                    } catch (IOException | NoSuchAlgorithmException e) {
-                        throw new Error("Failed to load the key: "+getId(),e);
-                    }
+    private synchronized SecretKey getKey() {
+        ConfidentialStore cs = ConfidentialStore.get();
+        if (key == null || cs != lastCS) {
+            lastCS = cs;
+            try {
+                byte[] encoded = load();
+                if (encoded == null) {
+                    KeyGenerator kg = KeyGenerator.getInstance(ALGORITHM);
+                    SecretKey key = kg.generateKey();
+                    store(encoded = key.getEncoded());
                 }
+                key = new SecretKeySpec(encoded, ALGORITHM);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                throw new Error("Failed to load the key: " + getId(), e);
             }
         }
         return key;
