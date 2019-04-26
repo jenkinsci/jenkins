@@ -92,7 +92,7 @@ THE SOFTWARE.
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
                              checked="${installedOk ? 'checked' : null}"
                              disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"
-                             data-compat-warning="${!p.isCompatibleWithInstalledVersion()}" />
+                             data-compat-warning="${!p.isCompatible(cache)}" />
                     </td>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
