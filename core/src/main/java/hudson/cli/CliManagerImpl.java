@@ -80,7 +80,8 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         // remoting sets the context classloader to the RemoteClassLoader,
         // which slows down the classloading. we don't load anything from CLI,
         // so counter that effect.
-        Thread.currentThread().setContextClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
+        //Thread.currentThread().setContextClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
+        Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 
         PrintStream out = new PrintStream(stdout);
         PrintStream err = new PrintStream(stderr);

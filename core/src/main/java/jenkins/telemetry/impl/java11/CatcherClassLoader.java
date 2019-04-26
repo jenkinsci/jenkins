@@ -58,14 +58,15 @@ public class CatcherClassLoader extends ClassLoader {
      * Usually, the {@link ClassLoader} calls its parent and finally this method. So if we are here, it's the last
      * element of the chain. It doesn't happen in {@link jenkins.util.AntClassLoader} so it has an special management
      * on {@link hudson.ClassicPluginStrategy}
+     *
+     *
      */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         ClassNotFoundException e = new ClassNotFoundException(name);
-        MissingClassTelemetry.reportExceptionIfAllowedAndConvenient(name, e);
+        MissingClassTelemetry.reportExceptionIfAllowedAndInteresting(name, e);
         throw e;
     }
-
 
     // TODO: Remove when tested on ATH
     private void warnIfAlreadyInTheChain() {

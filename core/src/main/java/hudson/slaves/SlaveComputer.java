@@ -657,7 +657,8 @@ public class SlaveComputer extends Computer {
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
         // it'll have a catastrophic impact on the communication.
         //Java11 Telemetry: does it need to be serializable or closeable or similar?
-        channel.pinClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
+        //channel.pinClassLoader(new CatcherClassLoader(getClass().getClassLoader()));
+        channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);

@@ -116,7 +116,10 @@ public class WebAppMain implements ServletContextListener {
             JVM jvm;
             try {
                 jvm = new JVM();
-                new URLClassLoader(new URL[0], new CatcherClassLoader(getClass().getClassLoader()));
+                //java11 telemetry: this codes seems to be here only to check permission. This sentence has no effect
+                //on future class loading related behavior
+                //new URLClassLoader(new URL[0], new CatcherClassLoader(getClass().getClassLoader()));
+                new URLClassLoader(new URL[0], getClass().getClassLoader());
             } catch(SecurityException e) {
                 throw new InsufficientPermissionDetected(e);
             }

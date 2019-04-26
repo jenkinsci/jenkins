@@ -42,9 +42,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,14 +76,14 @@ public class MissingClassTelemetry extends Telemetry {
      * don't have to send this exception.
      */
     private static String[][] IGNORED_PLACES = {
-            // This method produces some CNFEs caught later in code. So we set a reportExceptionIfNeeded specifically in
+            // This method produces some CNFEs caught later in code. So we set a reportExceptionIfInteresting specifically in
             // the right lines inside the method.
             {AntClassLoader.class.getName(), "loadClass" },
             {XStream2.class.getName(), "findConverter"},
             {ClassicPluginStrategy.class.getName() + "$" + "DependencyClassLoader", "findClass"},
             {groovy.grape.Grape.class.getName(), "getInstance"},
             {groovy.lang.MetaClassImpl.class.getName(), "addProperties"},
-            // This method produces some CNFEs caught later in code. So we set a reportExceptionIfNeeded specifically in
+            // This method produces some CNFEs caught later in code. So we set a reportExceptionIfInteresting specifically in
             // the right lines inside the method.
             {hudson.PluginManager.UberClassLoader.class.getName(), "findClass"}
     };
@@ -194,7 +192,7 @@ public class MissingClassTelemetry extends Telemetry {
      * @param name the name of the class
      * @param e the exception thrown
      */
-    public static void reportExceptionIfNeeded(@Nonnull String name, @Nonnull Throwable e) {
+    public static void reportExceptionIfInteresting(@Nonnull String name, @Nonnull Throwable e) {
         if (isFromMovedPackage(name)) {
             events.put(e);
 
@@ -208,9 +206,9 @@ public class MissingClassTelemetry extends Telemetry {
      * @param name The name of the class
      * @param e the throwable where it was thrown
      */
-    public static void reportExceptionIfAllowedAndConvenient(@Nonnull String name, @Nonnull Throwable e) {
+    public static void reportExceptionIfAllowedAndInteresting(@Nonnull String name, @Nonnull Throwable e) {
         if (!calledFromIgnoredPlace(e)) {
-            reportExceptionIfNeeded(name, e);
+            reportExceptionIfInteresting(name, e);
         }
     }
 

@@ -426,7 +426,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             savedContextLoader = LoaderUtils.getContextClassLoader();
             ClassLoader loader = this;
             if (project != null && "only".equals(project.getProperty("build.sysclasspath"))) {
-                loader = new CatcherClassLoader(this.getClass().getClassLoader());
+                //loader = new CatcherClassLoader(this.getClass().getClassLoader());
+                loader = this.getClass().getClassLoader();
             }
             LoaderUtils.setContextClassLoader(loader);
             isContextLoaderSaved = true;
@@ -864,7 +865,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {
-        ClassLoader ret = new CatcherClassLoader(getClass().getClassLoader());
+        //ClassLoader ret = new CatcherClassLoader(getClass().getClassLoader());
+        ClassLoader ret = getClass().getClassLoader();
         while (ret != null && ret.getParent() != null) {
             ret = ret.getParent();
         }
@@ -1104,7 +1106,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
 
             //To catch CNFE thrown from this.getClass().getClassLoader().loadClass(classToLoad); from a plugin step or
             //a plugin page
-            MissingClassTelemetry.reportExceptionIfNeeded(classname, cnfe);
+            MissingClassTelemetry.reportExceptionIfInteresting(classname, cnfe);
             throw cnfe;
         }
         if (resolve) {

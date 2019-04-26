@@ -360,7 +360,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // load up rules for the core first
         try {
-            compatibilityTransformer.loadRules(new CatcherClassLoader(getClass().getClassLoader()));
+            //compatibilityTransformer.loadRules(new CatcherClassLoader(getClass().getClassLoader()));
+            compatibilityTransformer.loadRules(getClass().getClassLoader());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
         }
@@ -2055,7 +2056,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             ClassNotFoundException cnfe = new ClassNotFoundException(name);
             // We ignored this method in MissingClassTelemetry because some CNFE are expected, but if we are here
             // it's a CNFE to report.
-            MissingClassTelemetry.reportExceptionIfNeeded(name, cnfe);
+            MissingClassTelemetry.reportExceptionIfInteresting(name, cnfe);
             throw cnfe;
         }
 

@@ -82,7 +82,7 @@ public class InstallUncaughtExceptionHandler {
         if (e.getCause() != null && Arrays.stream(MissingClassTelemetry.getCollectibleThrowables()).anyMatch(aClass -> aClass.equals(e.getCause().getClass()))) {
             String rootCause = e.getCause().getMessage() == null ? "EmptyCause" : e.getCause().getMessage().replace('/', '.');
             if (rootCause != null) {
-                MissingClassTelemetry.reportExceptionIfNeeded(rootCause, e);
+                MissingClassTelemetry.reportExceptionIfInteresting(rootCause, e);
             }
         }
     }

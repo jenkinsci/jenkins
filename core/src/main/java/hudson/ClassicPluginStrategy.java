@@ -36,6 +36,7 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.telemetry.impl.java11.CatcherClassLoader;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
@@ -295,13 +296,15 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
                 // The catcher class loader delegates in its parent. What its parent do is up to him (parent first or
                 // not).
-                return new CatcherClassLoader(classLoader);
+                //return new CatcherClassLoader(classLoader);
+                return classLoader;
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
         classLoader.addPathFiles(paths);
-        return new CatcherClassLoader(classLoader);
+        //return new CatcherClassLoader(classLoader);
+        return classLoader;
     }
 
     /**
@@ -650,7 +653,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            throw new ClassNotFoundException(name);
+            ClassNotFoundException e = new ClassNotFoundException(name);
+            MissingClassTelemetry.reportExceptionIfAllowedAndInteresting(name, e);
+            throw e;
         }
 
         @Override
