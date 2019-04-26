@@ -255,6 +255,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Get the list of components that depend on this plugin.
+     * Note that the list will include elements of {@link #getOptionalDependents}.
      * @return The list of components that depend on this plugin.
      */
     public @Nonnull Set<String> getDependents() {
@@ -290,6 +291,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Does this plugin have anything that depends on it.
+     * Note that optional dependents are included.
      * @return {@code true} if something (Jenkins core, or another plugin) depends on this
      * plugin, otherwise {@code false}.
      */
@@ -441,6 +443,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return getBaseName(fileName);
     }
 
+    /**
+     * Gets all dependencies of this plugin on other plugins.
+     * Note that the list will <em>usually</em> include the members of {@link #getOptionalDependencies}
+     * (missing optional dependencies will however be omitted).
+     */
     @Exported
     public List<Dependency> getDependencies() {
         return dependencies;
@@ -756,7 +763,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public void setHasCycleDependency(boolean hasCycle){
         hasCycleDependency = hasCycle;
     }
-    
+
+    /**
+     * Is this plugin bundled in the WAR?
+     * Normally false as noted in {@link PluginManager#loadBundledPlugins}:
+     * this does <em>not</em> apply to “detached” plugins.
+     */
     @Exported
     public boolean isBundled() {
         return isBundled;
