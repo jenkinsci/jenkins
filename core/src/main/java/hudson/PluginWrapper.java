@@ -275,6 +275,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Like {@link #getDependents} but excluding optional dependencies.
+     * @since TODO
+     */
+    public @Nonnull Set<String> getMandatoryDependents() {
+        Set<String> s = new HashSet<>(dependents);
+        s.removeAll(optionalDependents);
+        return s;
+    }
+
+    /**
      * @return The list of components that depend optionally on this plugin.
      */
     public @Nonnull Set<String> getOptionalDependents() {
@@ -297,6 +307,17 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public boolean hasDependents() {
         return (isBundled || !dependents.isEmpty());
+    }
+
+    /**
+     * Like {@link #hasDependents} but excluding optional dependencies.
+     * @since TODO
+     */
+    public boolean hasMandatoryDependents() {
+        if (isBundled) {
+            return true;
+        }
+        return dependents.stream().anyMatch(d -> !optionalDependents.contains(d));
     }
 
     /**
@@ -326,10 +347,19 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Does this plugin depend on any other plugins.
+     * Note that this include optional dependencies.
      * @return {@code true} if this plugin depends on other plugins, otherwise {@code false}.
      */
     public boolean hasDependencies() {
-        return (dependencies != null && !dependencies.isEmpty());
+        return !dependencies.isEmpty();
+    }
+
+    /**
+     * Like {@link #hasDependencies} but omitting optional dependencies.
+     * @since TODO
+     */
+    public boolean hasMandatoryDependencies() {
+        return dependencies.stream().anyMatch(d -> !d.optional);
     }
 
     @ExportedBean
@@ -451,6 +481,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @Exported
     public List<Dependency> getDependencies() {
         return dependencies;
+    }
+
+    /**
+     * Like {@link #getDependencies} but omits optional dependencies.
+     * @since TODO
+     */
+    public List<Dependency> getMandatoryDependencies() {
+        return dependencies.stream().filter(d -> !d.optional).collect(Collectors.toList());
     }
 
     public List<Dependency> getOptionalDependencies() {
