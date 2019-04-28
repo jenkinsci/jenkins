@@ -34,8 +34,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -81,7 +79,7 @@ public class StopBuildsCommand extends CLICommand {
         return 0;
     }
 
-    private void stopJobBuilds(final Job job) throws IOException, ServletException {
+    private void stopJobBuilds(final Job job) {
         final Run lastBuild = job.getLastBuild();
         final String jobName = job.getFullDisplayName();
         if (lastBuild != null && lastBuild.isBuilding()) {
@@ -91,7 +89,7 @@ public class StopBuildsCommand extends CLICommand {
     }
 
     private void stopBuild(final Run build,
-                           final String jobName) throws IOException, ServletException {
+                           final String jobName) {
         final String buildName = build.getDisplayName();
         Executor executor = build.getExecutor();
         if (executor != null) {
@@ -109,7 +107,7 @@ public class StopBuildsCommand extends CLICommand {
     }
 
     private void checkAndStopPreviousBuilds(final Run lastBuild,
-                                            final String jobName) throws IOException, ServletException {
+                                            final String jobName) {
         Run build = lastBuild.getPreviousBuildInProgress();
         while (build != null) {
             stopBuild(build, jobName);
