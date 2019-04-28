@@ -3,6 +3,8 @@ The MIT License
 
 Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
+Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -26,22 +28,9 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fullDisplayName} ${%Changes}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <t:buildCaption autorefresh="true">${%Changes}</t:buildCaption>
-      <j:choose>
-        <j:when test="${it.hasChangeSetComputed()}">
-          <st:include page="index.jelly" it="${it.changeSet}" />
-        </j:when>
-        <j:when test="${it.building}">
-          ${%Not yet determined}
-        </j:when>
-        <j:otherwise>
-          ${%Failed to determine} (<a href="console">${%log}</a>)
-        </j:otherwise>
-      </j:choose>
-    </l:main-panel>
-  </l:layout>
-</j:jelly>
+<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<st:setHeader name="X-Building" value="${it.building}" />
+<l:ajax>
+  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
+</l:ajax>
+</st:compress>
