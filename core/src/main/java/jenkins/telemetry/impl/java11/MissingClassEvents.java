@@ -49,7 +49,7 @@ public class MissingClassEvents {
      * Add a new exception to the store. If the same exception already exists, it increases the occurrences. If we
      * already get the maximum number of exceptions, it doesn't add any value.
      * @param t the exception to store
-     * @return the occurrences stored for this throwable. 1 the fist time it's stored. >1 for successive stores of the
+     * @return the occurrences stored for this throwable. 1 the fist time it's stored. &gt; 1 for successive stores of the
      * same <strong>stack trace</strong>. 0 if we already stored MAX_EVENTS_PER_SEND (100) events for a single send.
      */
     public long put(@Nonnull Throwable t) {
