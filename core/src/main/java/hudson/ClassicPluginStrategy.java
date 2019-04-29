@@ -96,7 +96,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
      */
-    //Java11 Telemetry: the coreClassLoader is wrapped by a CatcherAntClassLoader
     private final MaskingClassLoader coreClassLoader = new MaskingClassLoader(getClass().getClassLoader());
 
     public ClassicPluginStrategy(PluginManager pluginManager) {
@@ -286,22 +285,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
                 classLoader.addPathFiles( paths );
-
-                //TODO: Remove this comment if ATH goes well
-                //Java11 Telemetry: If it's not parent first, we shouldn't add the Catcher here, it's going to
-                //throw a CNFE for every class because CatcherCL will be the first searching the
-                //class
-
-                // The catcher class loader delegates in its parent. What its parent do is up to him (parent first or
-                // not).
-                //return new CatcherClassLoader(classLoader);
                 return classLoader;
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
         classLoader.addPathFiles(paths);
-        //return new CatcherClassLoader(classLoader);
         return classLoader;
     }
 
@@ -568,7 +557,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         private List<Dependency> dependencies;
 
-
         /**
          * Topologically sorted list of transient dependencies.
          */
@@ -623,8 +611,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 //            }
 //            return r;
 //        }
-
-
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -716,7 +702,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classData = pluginManager.getCompatibilityTransformer().transform(classname, classData, this);
             return super.defineClassFromData(container, classData, classname);
         }
-
     }
 
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");

@@ -6,9 +6,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Date;
 import java.util.concurrent.Callable;
-import java.util.function.BiPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

@@ -17,9 +17,6 @@
  */
 package jenkins.util;
 
-import java.nio.file.Files;
-
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
@@ -43,6 +40,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
@@ -426,7 +424,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             savedContextLoader = LoaderUtils.getContextClassLoader();
             ClassLoader loader = this;
             if (project != null && "only".equals(project.getProperty("build.sysclasspath"))) {
-                //loader = new CatcherClassLoader(this.getClass().getClassLoader());
                 loader = this.getClass().getClassLoader();
             }
             LoaderUtils.setContextClassLoader(loader);
@@ -865,7 +862,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {
-        //ClassLoader ret = new CatcherClassLoader(getClass().getClassLoader());
         ClassLoader ret = getClass().getClassLoader();
         while (ret != null && ret.getParent() != null) {
             ret = ret.getParent();
@@ -1100,13 +1096,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                 }
             }
         } catch (ClassNotFoundException cnfe) {
-            //Java11-Telemetry: We avoid reporting errors from AntClassLoader.loadClass because a CNFE raised here
-            //could be expected, because we catch it and try to load the class again with the opposite way (findClass or
-            //findBaseClass). But if after both tries it raises a CNFE, then, we report it specifically here.
-
             //To catch CNFE thrown from this.getClass().getClassLoader().loadClass(classToLoad); from a plugin step or
             //a plugin page
-            MissingClassTelemetry.reportExceptionIfInteresting(classname, cnfe);
+            MissingClassTelemetry.reportException(classname, cnfe);
             throw cnfe;
         }
         if (resolve) {

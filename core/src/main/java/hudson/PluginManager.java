@@ -64,7 +64,6 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -152,8 +151,14 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.init.InitMilestone.*;
-import static java.util.logging.Level.*;
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -360,7 +365,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // load up rules for the core first
         try {
-            //compatibilityTransformer.loadRules(new CatcherClassLoader(getClass().getClassLoader()));
             compatibilityTransformer.loadRules(getClass().getClassLoader());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
@@ -1157,7 +1161,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
-				// Java11 Telemetry: It only loads the strategy class
 			    Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
 				Object strategy = klazz.getConstructor(PluginManager.class)
 						.newInstance(this);
@@ -2050,9 +2053,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
             // not found in any of the classloader. delegate.
             ClassNotFoundException cnfe = new ClassNotFoundException(name);
-            // We ignored this method in MissingClassTelemetry because some CNFE are expected, but if we are here
-            // it's a CNFE to report.
-            MissingClassTelemetry.reportExceptionIfInteresting(name, cnfe);
+            MissingClassTelemetry.reportException(name, cnfe);
             throw cnfe;
         }
 
@@ -2095,7 +2096,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return "classLoader " +  getClass().getName();
         }
     }
-
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     public static final Permission UPLOAD_PLUGINS = new Permission(Jenkins.PERMISSIONS, "UploadPlugins", Messages._PluginManager_UploadPluginsPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);

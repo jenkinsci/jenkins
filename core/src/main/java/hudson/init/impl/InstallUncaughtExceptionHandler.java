@@ -78,6 +78,8 @@ public class InstallUncaughtExceptionHandler {
 
     }
 
+    private InstallUncaughtExceptionHandler() {}
+
     /**
      * If the exception if one of the <i>collectible</i> exceptions then call the report method of the Telemetry class
      * @param e the exception
@@ -90,6 +92,4 @@ public class InstallUncaughtExceptionHandler {
             }
         }
     }
-
-    private InstallUncaughtExceptionHandler() {}
 }

@@ -58,8 +58,35 @@ import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.FilePathFilter;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.SlaveToMasterFileCallable;
+import jenkins.SoloFilePathFilter;
+import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.VirtualFile;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
+import org.jenkinsci.remoting.RoleChecker;
+import org.jenkinsci.remoting.RoleSensitive;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
 
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -82,15 +109,16 @@ import java.net.URLConnection;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -107,42 +135,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import jenkins.FilePathFilter;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
-import jenkins.SoloFilePathFilter;
-import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
-import jenkins.util.ContextResettingExecutorService;
-import jenkins.util.VirtualFile;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
-import org.jenkinsci.remoting.RoleChecker;
-import org.jenkinsci.remoting.RoleSensitive;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Function;
-import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
-
-import java.util.Collections;
-import org.apache.tools.ant.BuildException;
         
 /**
  * {@link File} like object with remoting support.
@@ -1056,7 +1052,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * so that one can perform local file operations.
      */
     public <T> T act(final FileCallable<T> callable) throws IOException, InterruptedException {
-        //return act(callable, new CatcherClassLoader(callable.getClass().getClassLoader()));
         return act(callable, callable.getClass().getClassLoader());
     }
 
@@ -1827,7 +1822,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if (filter != null && !(filter instanceof Serializable)) {
             throw new IllegalArgumentException("Non-serializable filter of " + filter.getClass());
         }
-        //return act(new ListFilter(filter), new CatcherClassLoader((filter != null ? filter : this).getClass().getClassLoader()));
         return act(new ListFilter(filter), (filter != null ? filter : this).getClass().getClassLoader());
     }
     private class ListFilter extends SecureFileCallable<List<FilePath>> {
@@ -3030,7 +3024,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         public FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
-            //this.classLoader = new CatcherClassLoader(callable.getClass().getClassLoader());
             this.classLoader = callable.getClass().getClassLoader();
         }
 

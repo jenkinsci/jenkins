@@ -877,8 +877,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
-            //context.setClassLoader(new WebAppClassLoader(new MyCustomClassLoader(), context));
-
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
 
