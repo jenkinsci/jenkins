@@ -35,8 +35,6 @@ import hudson.util.MaskingClassLoader;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
-import jenkins.telemetry.impl.java11.CatcherClassLoader;
-import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
@@ -653,9 +651,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            ClassNotFoundException e = new ClassNotFoundException(name);
-            MissingClassTelemetry.reportExceptionIfAllowedAndInteresting(name, e);
-            throw e;
+            throw new ClassNotFoundException(name);
         }
 
         @Override

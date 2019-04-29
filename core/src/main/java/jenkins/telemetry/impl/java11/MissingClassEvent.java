@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 
 /**
- * We can already catch ClassNotFoundException and NoClassDefFoundError
+ * Store an event regarding missing classes. We can already catch ClassNotFoundException and NoClassDefFoundError
  */
 class MissingClassEvent implements Serializable {
     private String time;

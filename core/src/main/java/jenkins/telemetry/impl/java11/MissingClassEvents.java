@@ -24,6 +24,8 @@
 
 package jenkins.telemetry.impl.java11;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,8 +34,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MissingClassEvents {
 
-    // for testing purposes
-    /* package */ static int MAX_EVENTS_PER_SEND = 100;
+    /**
+     * Only 100 exceptions a day (period of telemetry)
+     */
+    @VisibleForTesting
+    /* package */ static /* final */ int MAX_EVENTS_PER_SEND = 100;
+
+    /**
+     * List of events, one per stack trace.
+     */
     private ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
 
     /**
@@ -72,7 +81,9 @@ public class MissingClassEvents {
      * Used to send via telemetry the events and restart the events store.
      * @return the number of events stored since previous call to this method.
      */
-    public ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
+
+    @VisibleForTesting
+    /* package */ ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> currentEvents = events;
         events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
         return currentEvents;

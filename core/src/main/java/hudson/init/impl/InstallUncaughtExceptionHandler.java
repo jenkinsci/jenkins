@@ -30,7 +30,7 @@ public class InstallUncaughtExceptionHandler {
                 }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
-                    getInfoJava11(e);
+                    reportMissingClassJava11Telemetry(e);
                     WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
@@ -73,16 +73,20 @@ public class InstallUncaughtExceptionHandler {
                                      + ") died unexpectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicative of a bug in the code.",
                        ex);
 
-            getInfoJava11(ex);
+            reportMissingClassJava11Telemetry(ex);
         }
 
     }
 
-    private static void getInfoJava11(Throwable e) {
+    /**
+     * If the exception if one of the <i>collectible</i> exceptions then call the report method of the Telemetry class
+     * @param e the exception
+     */
+    private static void reportMissingClassJava11Telemetry(Throwable e) {
         if (e.getCause() != null && Arrays.stream(MissingClassTelemetry.getCollectibleThrowables()).anyMatch(aClass -> aClass.equals(e.getCause().getClass()))) {
             String rootCause = e.getCause().getMessage() == null ? "EmptyCause" : e.getCause().getMessage().replace('/', '.');
             if (rootCause != null) {
-                MissingClassTelemetry.reportExceptionIfInteresting(rootCause, e);
+                MissingClassTelemetry.reportException(rootCause, e);
             }
         }
     }

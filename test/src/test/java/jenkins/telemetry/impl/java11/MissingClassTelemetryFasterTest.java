@@ -34,12 +34,43 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+/**
+ * Tests without a running Jenkins for Java11 Telemetry of ClassNotFoundException.
+ */
 public class MissingClassTelemetryFasterTest {
     private CatcherClassLoader cl;
 
     @Before
     public void cleanEvents() {
         cl = new CatcherClassLoader(this.getClass().getClassLoader());
+    }
+
+    @Test
+    public void maxNumberEvents() {
+        // Backup to restore at the end of the test
+        int maxEventsBefore = MissingClassEvents.MAX_EVENTS_PER_SEND;
+
+        try {
+            MissingClassEvents.MAX_EVENTS_PER_SEND = 1;
+
+            try {
+                cl.loadClass("sun.java.MyNonExistentClass");
+            } catch (ClassNotFoundException ignored) {
+            }
+
+            try {
+                cl.loadClass("sun.java.MyNonExistentJavaClass");
+            } catch (ClassNotFoundException ignored) {
+            }
+
+
+            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = MissingClassTelemetry.getEvents().getEventsAndClean();
+
+            // Only one class miss gathered with two occurrences
+            assertEquals(1, eventsGathered.size());
+        } finally {
+            MissingClassEvents.MAX_EVENTS_PER_SEND = maxEventsBefore;
+        }
     }
 
     /**

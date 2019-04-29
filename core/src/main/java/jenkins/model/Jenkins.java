@@ -873,9 +873,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // doing this early allows InitStrategy to set environment upfront
             //Telemetry: add interceptor classloader
             //This line allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes at this way.
+            //allow us to detect failures in every plugin loading classes by this way.
             Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
-            //Thread.currentThread().setContextClassLoader(Thread.currentThread().getContextClassLoader());
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             //context.setClassLoader(new WebAppClassLoader(new MyCustomClassLoader(), context));
@@ -921,11 +920,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             //Telemetry: add interceptor classloader
             //This line allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
-            //allow us to detect failures in every plugin loading classes at this way.
+            //allow us to detect failures in every plugin loading classes by this way.
             // JSON binding needs to be able to see all the classes from all the plugins
             ClassLoader catcherClassLoader = new CatcherClassLoader(pluginManager.uberClassLoader);
             webApp.setClassLoader(catcherClassLoader);
-            //webApp.setClassLoader(pluginManager.uberClassLoader);
             webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
 
             TypedFilter typedFilter = new TypedFilter();
@@ -941,8 +939,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             //Telemetry: add interceptor classloader
             //This line allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
             //allow us to detect failures in every plugin loading classes at this way.
-            adjuncts = new AdjunctManager(servletContext, catcherClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
-            //adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, catcherClassLoader, "adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 
