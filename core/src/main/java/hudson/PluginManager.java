@@ -151,14 +151,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.init.InitMilestone.COMPLETED;
-import static hudson.init.InitMilestone.PLUGINS_LISTED;
-import static hudson.init.InitMilestone.PLUGINS_PREPARED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import static hudson.init.InitMilestone.*;
+import static java.util.logging.Level.*;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -1161,7 +1155,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
-			    Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
+				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
 				Object strategy = klazz.getConstructor(PluginManager.class)
 						.newInstance(this);
 				if (strategy instanceof PluginStrategy) {
