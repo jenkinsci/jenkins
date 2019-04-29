@@ -89,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.1</version>
+      <version>5.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -100,7 +100,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -459,11 +459,9 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
-          <connectors>
-            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                <port>${port}</port>
-            </connector>
-          </connectors>
+          <httpConnector>
+              <port>${port}</port>
+          </httpConnector>
           <additionalClassesDirectories>
             <!-- load resources straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>

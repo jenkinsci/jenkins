@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
@@ -93,6 +96,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -107,6 +111,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,9 +126,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -1065,6 +1073,66 @@ public class QueueTest {
             if (o instanceof Queue) {
                 count++;
             }
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelItem_PermissionIsChecked() throws Exception {
+        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId());
+    }
+
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelQueue_PermissionIsChecked() throws Exception {
+        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue");
+    }
+
+    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider) throws Exception {
+        Queue q = r.jenkins.getQueue();
+
+        r.jenkins.setCrumbIssuer(null);
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.CANCEL).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().to("user")
+        );
+
+        // prevent execution to push stuff into the queue
+        r.jenkins.setNumExecutors(0);
+        assertThat(q.getItems().length, equalTo(0));
+
+        FreeStyleProject testProject = r.createFreeStyleProject("test");
+        testProject.scheduleBuild(new UserIdCause());
+
+        Queue.Item[] items = q.getItems();
+        assertThat(items.length, equalTo(1));
+        Queue.Item currentOne = items[0];
+        assertFalse(currentOne.getFuture().isCancelled());
+
+        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+
+        { // user without right cannot cancel
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
+            wc.login("user");
+            Page p = wc.getPage(request);
+            // currently the endpoint return a redirection to the previously visited page, none in our case
+            // (so force no redirect to avoid false positive error)
+            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+
+            assertFalse(currentOne.getFuture().isCancelled());
+        }
+        { // user with right can
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
+            wc.login("admin");
+            Page p = wc.getPage(request);
+            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+
+            assertTrue(currentOne.getFuture().isCancelled());
         }
     }
 }

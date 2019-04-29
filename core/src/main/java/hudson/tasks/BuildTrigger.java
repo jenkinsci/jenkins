@@ -256,10 +256,10 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         // Check all downstream Project of the project, not just those defined by BuildTrigger
         // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
         final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
-        List<Dependency> downstreamProjects = new ArrayList<Dependency>(
+        List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        Collections.sort(downstreamProjects, new Comparator<Dependency>() {
+        downstreamProjects.sort(new Comparator<Dependency>() {
             public int compare(Dependency lhs, Dependency rhs) {
                 // Swapping lhs/rhs to get reverse sort:
                 return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
@@ -267,7 +267,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         });
 
         for (Dependency dep : downstreamProjects) {
-            List<Action> buildActions = new ArrayList<Action>();
+            List<Action> buildActions = new ArrayList<>();
             if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                 AbstractProject p = dep.getDownstreamProject();
                 // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
@@ -275,7 +275,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                     continue;
                 }
-                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[0]));
                 if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
                     String name = ModelHyperlinkNote.encodeTo(p);
                     if (scheduled) {

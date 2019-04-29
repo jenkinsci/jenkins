@@ -48,7 +48,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      *            the listener of the current build
      * @return the path to the global settings.xml
      */
-    public static final FilePath getSettingsFilePath(GlobalSettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static FilePath getSettingsFilePath(GlobalSettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath settingsPath = null;
         if (settings != null) {
             settingsPath = settings.supplySettings(build, listener);
@@ -67,7 +67,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      *            the listener of the current build
      * @return the path to the global settings.xml
      */
-    public static final String getSettingsRemotePath(GlobalSettingsProvider provider, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static String getSettingsRemotePath(GlobalSettingsProvider provider, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath fp = getSettingsFilePath(provider, build, listener);
         return fp == null ? null : fp.getRemote();
     }

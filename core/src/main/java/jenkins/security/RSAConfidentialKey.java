@@ -48,6 +48,8 @@ import java.security.spec.RSAPublicKeySpec;
  * @author Kohsuke Kawaguchi
  */
 public abstract class RSAConfidentialKey extends ConfidentialKey {
+
+    private ConfidentialStore lastCS;
     private RSAPrivateKey priv;
     private RSAPublicKey pub;
 
@@ -71,7 +73,9 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
      */
     protected synchronized RSAPrivateKey getPrivateKey() {
         try {
-            if (priv == null) {
+            ConfidentialStore cs = ConfidentialStore.get();
+            if (priv == null || cs != lastCS) {
+                lastCS = cs;
                 byte[] payload = load();
                 if (payload == null) {
                     KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
@@ -90,9 +94,7 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
                 }
             }
             return priv;
-        } catch (IOException e) {
-            throw new Error("Failed to load the key: " + getId(), e);
-        } catch (GeneralSecurityException e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new Error("Failed to load the key: " + getId(), e);
         }
     }

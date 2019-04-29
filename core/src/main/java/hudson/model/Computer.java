@@ -31,7 +31,6 @@ import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
 import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
@@ -151,9 +150,9 @@ import static javax.servlet.http.HttpServletResponse.*;
 @ExportedBean
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
 
-    private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
+    private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
-    private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
+    private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<>();
 
     private int numExecutors;
 
@@ -199,8 +198,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
      */
-    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList
-            <TerminationRequest>());
+    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * This method captures the information of a request to terminate a computer instance. Method is public as
@@ -242,7 +240,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      */
     public List<TerminationRequest> getTerminatedBy() {
-        return new ArrayList<TerminationRequest>(terminatedBy);
+        return new ArrayList<>(terminatedBy);
     }
 
     public Computer(Node node) {
@@ -261,7 +259,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @SuppressWarnings("deprecation")
     public List<Action> getActions() {
-    	List<Action> result = new ArrayList<Action>();
+    	List<Action> result = new ArrayList<>();
     	result.addAll(super.getActions());
     	synchronized (this) {
     		if (transientActions == null) {
@@ -328,7 +326,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public AnnotatedLargeText<Computer> getLogText() {
         checkPermission(CONNECT);
-        return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
+        return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
     public ACL getACL() {
@@ -651,7 +649,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract boolean isConnecting();
 
     /**
-     * Returns true if this computer is supposed to be launched via JNLP.
+     * Returns true if this computer is supposed to be launched via inbound protocol.
      * @deprecated since 2008-05-18.
      *     See {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
      */
@@ -665,7 +663,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns true if this computer can be launched by Hudson proactively and automatically.
      *
      * <p>
-     * For example, JNLP agents return {@code false} from this, because the launch process
+     * For example, inbound agents return {@code false} from this, because the launch process
      * needs to be initiated from the agent side.
      */
     @Exported
@@ -911,7 +909,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (Jenkins.getInstanceOrNull() == null) {
             return;
         }
-        Set<Integer> availableNumbers  = new HashSet<Integer>();
+        Set<Integer> availableNumbers  = new HashSet<>();
         for (int i = 0; i < numExecutors; i++)
             availableNumbers.add(i);
 
@@ -966,7 +964,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @StaplerDispatchable
     public List<Executor> getExecutors() {
-        return new ArrayList<Executor>(executors);
+        return new ArrayList<>(executors);
     }
 
     /**
@@ -975,7 +973,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @StaplerDispatchable
     public List<OneOffExecutor> getOneOffExecutors() {
-        return new ArrayList<OneOffExecutor>(oneOffExecutors);
+        return new ArrayList<>(oneOffExecutors);
     }
 
     /**
@@ -999,7 +997,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class)
     public List<DisplayExecutor> getDisplayExecutors() {
         // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
-        List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
+        List<DisplayExecutor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
         int index = 0;
         for (Executor e: executors) {
             if (e.isDisplayCell()) {
@@ -1154,7 +1152,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported(inline=true)
     public Map<String/*monitor name*/,Object> getMonitorData() {
-        Map<String,Object> r = new HashMap<String, Object>();
+        Map<String,Object> r = new HashMap<>();
         if (hasPermission(CONNECT)) {
             for (NodeMonitor monitor : NodeMonitor.getAll())
                 r.put(monitor.getClass().getName(), monitor.data(this));
@@ -1245,7 +1243,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * <p>
      * Since it's possible that the agent is not reachable from the master (it may be behind a firewall,
-     * connecting to master via JNLP), this method may return null.
+     * connecting to master via inbound protocol), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.
@@ -1325,7 +1323,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
         
         public List<String> call() throws IOException {
-            List<String> names = new ArrayList<String>();
+            List<String> names = new ArrayList<>();
 
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
             while (nis.hasMoreElements()) {

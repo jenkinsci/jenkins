@@ -33,13 +33,14 @@ import hudson.slaves.RetentionStrategy;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import jenkins.model.Configuration;
 
@@ -94,6 +95,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
     /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
+    @Restricted(NoExternalUse.class)
+    public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
+    	return disabledAdministrativeMonitors;
+    }
+    
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */

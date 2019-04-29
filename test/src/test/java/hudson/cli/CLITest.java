@@ -155,7 +155,6 @@ public class CLITest {
         User.get("admin").addProperty(new UserPropertyImpl(IOUtils.toString(CLITest.class.getResource("id_rsa.pub"))));
         FreeStyleProject p = r.createFreeStyleProject("p");
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
-        doInterrupt(p, "-remoting", "-i", privkey.getAbsolutePath());
         doInterrupt(p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
         doInterrupt(p, "-http", "-auth", "admin:admin");
     }
@@ -182,7 +181,7 @@ public class CLITest {
         grabCliJar();
 
         String url = r.getURL().toExternalForm() + "not-jenkins/";
-        for (String transport : Arrays.asList("-remoting", "-http", "-ssh")) {
+        for (String transport : Arrays.asList("-http", "-ssh")) {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -245,7 +244,7 @@ public class CLITest {
         assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
         assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
 
-        for (String transport: Arrays.asList("-remoting", "-http", "-ssh")) {
+        for (String transport: Arrays.asList("-http", "-ssh")) {
 
             String url = r.getURL().toString() + "cli-proxy/";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

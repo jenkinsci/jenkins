@@ -55,7 +55,7 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
         return Messages.NullIdDescriptorMonitor_DisplayName();
     }
 
-    private final List<Descriptor> problems = new ArrayList<Descriptor>();
+    private final List<Descriptor> problems = new ArrayList<>();
 
     @Override
     public boolean isActivated() {

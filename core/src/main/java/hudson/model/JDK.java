@@ -39,7 +39,6 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -164,9 +163,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
             return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
-        } catch (IOException e) {
-            return false;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             return false;
         }
     }

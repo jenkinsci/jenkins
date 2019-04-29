@@ -50,6 +50,8 @@ THE SOFTWARE.
             <title>${%Create an account! [Jenkins]}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
+            <!-- mobile friendly layout -->
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <!-- css styling, will fallback to default implementation -->
             <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
             <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css"/>

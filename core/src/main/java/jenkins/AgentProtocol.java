@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+
 import jenkins.model.Jenkins;
 
 /**

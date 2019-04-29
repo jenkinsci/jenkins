@@ -55,7 +55,7 @@ public abstract class BootFailure extends ErrorObject {
      * Parses the boot attempt file carefully so as not to cause the entire hook script to fail to execute.
      */
     protected List<Date> loadAttempts(File home) {
-        List<Date> dates = new ArrayList<Date>();
+        List<Date> dates = new ArrayList<>();
         if (home!=null) {
             File f = getBootFailureFile(home);
             try {

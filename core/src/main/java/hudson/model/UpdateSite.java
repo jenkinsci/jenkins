@@ -335,11 +335,7 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
-            } catch (JSONException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
-                return null;
-            } catch (IOException e) {
+            } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
                 return null;
@@ -355,7 +351,7 @@ public class UpdateSite {
      */
     @Exported
     public List<Plugin> getAvailables() {
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         Data data = getData();
         if(data==null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
@@ -415,7 +411,7 @@ public class UpdateSite {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
         
-        List<Plugin> r = new ArrayList<Plugin>();
+        List<Plugin> r = new ArrayList<>();
         for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
@@ -515,13 +511,13 @@ public class UpdateSite {
         /**
          * Plugins in the repository, keyed by their artifact IDs.
          */
-        public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
+        public final Map<String,Plugin> plugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         /**
          * List of warnings (mostly security) published with the update site.
          *
          * @since 2.40
          */
-        private final Set<Warning> warnings = new HashSet<Warning>();
+        private final Set<Warning> warnings = new HashSet<>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -1048,6 +1044,24 @@ public class UpdateSite {
         }
 
         /**
+         * Returns true if the plugin and its dependencies are fully compatible with the current installation
+         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         *
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isCompatible() {
+            return isCompatible(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isCompatible(PluginManager.MetadataCache cache) {
+            return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
+                    isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
+                    !isNeededDependenciesForNewerJenkins(cache) && !isNeededDependenciesForNewerJava();
+        }
+
+        /**
          * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
          * value (i.e., it's only directly compatible with that version or later), this will check to
          * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
@@ -1073,7 +1087,7 @@ public class UpdateSite {
          */
         @Exported
         public List<Plugin> getNeededDependencies() {
-            List<Plugin> deps = new ArrayList<Plugin>();
+            List<Plugin> deps = new ArrayList<>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;

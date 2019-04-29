@@ -53,7 +53,7 @@ public class RepositoryBrowsers {
      * Only returns those {@link RepositoryBrowser} descriptors that extend from the given type.
      */
     public static List<Descriptor<RepositoryBrowser<?>>> filter(Class<? extends RepositoryBrowser> t) {
-        List<Descriptor<RepositoryBrowser<?>>> r = new ArrayList<Descriptor<RepositoryBrowser<?>>>();
+        List<Descriptor<RepositoryBrowser<?>>> r = new ArrayList<>();
         for (Descriptor<RepositoryBrowser<?>> d : RepositoryBrowser.all())
             if(d.isSubTypeOf(t))
                 r.add(d);

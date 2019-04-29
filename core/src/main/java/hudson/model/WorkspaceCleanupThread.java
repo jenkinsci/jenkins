@@ -65,7 +65,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             LOGGER.fine("Disabled. Skipping execution");
             return;
         }
-        List<Node> nodes = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<>();
         Jenkins j = Jenkins.getInstance();
         nodes.add(j);
         nodes.addAll(j.getNodes());
@@ -82,10 +82,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 boolean check;
                 try {
                     check = shouldBeDeleted(item, ws, node);
-                } catch (IOException x) {
-                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
-                    continue;
-                } catch (InterruptedException x) {
+                } catch (IOException | InterruptedException x) {
                     Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 }
@@ -94,9 +91,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     try {
                         ws.deleteRecursive();
                         WorkspaceList.tempDir(ws).deleteRecursive();
-                    } catch (IOException x) {
-                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
-                    } catch (InterruptedException x) {
+                    } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
                 }

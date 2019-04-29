@@ -141,7 +141,7 @@ public abstract class AbstractMarkupText {
     public List<MarkupText.SubText> findTokens(Pattern pattern) {
         String text = getText();
         Matcher m = pattern.matcher(text);
-        List<SubText> r = new ArrayList<SubText>();
+        List<SubText> r = new ArrayList<>();
 
         while(m.find()) {
             int idx = m.start();

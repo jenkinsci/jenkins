@@ -48,7 +48,6 @@ import com.google.common.base.Function;
 import com.thoughtworks.xstream.XStream;
 
 import hudson.Functions;
-import hudson.Main;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
@@ -317,7 +316,7 @@ public class InstallUtil {
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
-	Map<String,String> statuses = new HashMap<String,String>();
+	Map<String,String> statuses = new HashMap<>();
 	for(UpdateCenterJob j : installingPlugins) {
 		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
 			InstallationJob ij = (InstallationJob)j;

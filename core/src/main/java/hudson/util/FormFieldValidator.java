@@ -273,7 +273,7 @@ public abstract class FormFieldValidator {
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while((line=in.readLine())!=null)
-                if(line.indexOf(literal)!=-1)
+                if(line.contains(literal))
                     return true;
             return false;
         }
@@ -622,9 +622,9 @@ public abstract class FormFieldValidator {
                     return;
                 }
                 
-                com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+                java.util.Base64.getDecoder().decode(v);
                 ok();
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 fail();
             }
         }

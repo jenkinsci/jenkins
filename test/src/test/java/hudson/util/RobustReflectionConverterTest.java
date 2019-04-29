@@ -276,13 +276,10 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .asUser("test")
                     .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
                     .withArgs(
-                            p.getFullName(),
-                            "--username",
-                            "test",
-                            "--password",
-                            "test"
+                            p.getFullName()
                     )
                     .invoke();
             
@@ -311,13 +308,10 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .asUser("test")
                     .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
                     .withArgs(
-                            p.getFullName(),
-                            "--username",
-                            "test",
-                            "--password",
-                            "test"
+                            p.getFullName()
                     )
                     .invoke();
             assertNotEquals(0, ret.returnCode());

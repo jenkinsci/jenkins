@@ -35,6 +35,7 @@ import hudson.security.ACLContext;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.util.concurrent.TimeUnit;
 
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
@@ -63,7 +64,6 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
-import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -160,7 +160,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
      */
-    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = SystemProperties.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
+    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = (int)TimeUnit.SECONDS.toMillis(SystemProperties.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60));
 
     public static final String PREDEFINED_UPDATE_SITE_ID = "default";
 
@@ -189,18 +189,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
      */
-    private final Vector<UpdateCenterJob> jobs = new Vector<UpdateCenterJob>();
+    private final Vector<UpdateCenterJob> jobs = new Vector<>();
 
     /**
      * {@link UpdateSite}s from which we've already installed a plugin at least once.
      * This is used to skip network tests.
      */
-    private final Set<UpdateSite> sourcesUsed = new HashSet<UpdateSite>();
+    private final Set<UpdateSite> sourcesUsed = new HashSet<>();
 
     /**
      * List of {@link UpdateSite}s to be used.
      */
-    private final PersistedList<UpdateSite> sites = new PersistedList<UpdateSite>(this);
+    private final PersistedList<UpdateSite> sites = new PersistedList<>(this);
 
     /**
      * Update center configuration data
@@ -225,7 +225,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Simple connection status enum.
      */
     @Restricted(NoExternalUse.class)
-    static enum ConnectionStatus {
+    enum ConnectionStatus {
         /**
          * Connection status has not started yet.
          */
@@ -338,7 +338,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @StaplerDispatchable
     public List<UpdateCenterJob> getJobs() {
         synchronized (jobs) {
-            return new ArrayList<UpdateCenterJob>(jobs);
+            return new ArrayList<>(jobs);
         }
     }
 
@@ -918,7 +918,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Exported
     public List<Plugin> getAvailables() {
-        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        Map<String,Plugin> pluginMap = new LinkedHashMap<>();
         for (UpdateSite site : sites) {
             for (Plugin plugin: site.getAvailables()) {
                 final Plugin existing = pluginMap.get(plugin.name);
@@ -935,7 +935,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
-        return new ArrayList<Plugin>(pluginMap.values());
+        return new ArrayList<>(pluginMap.values());
     }
 
     /**
@@ -943,7 +943,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * A plugin with multiple categories will appear multiple times in the list.
      */
     public PluginEntry[] getCategorizedAvailables() {
-        TreeSet<PluginEntry> entries = new TreeSet<PluginEntry>();
+        TreeSet<PluginEntry> entries = new TreeSet<>();
         for (Plugin p : getAvailables()) {
             if (p.categories==null || p.categories.length==0)
                 entries.add(new PluginEntry(p, getCategoryDisplayName(null)));
@@ -951,7 +951,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 for (String c : p.categories)
                     entries.add(new PluginEntry(p, getCategoryDisplayName(c)));
         }
-        return entries.toArray(new PluginEntry[entries.size()]);
+        return entries.toArray(new PluginEntry[0]);
     }
 
     private static String getCategoryDisplayName(String category) {
@@ -966,7 +966,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public List<Plugin> getUpdates() {
-        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        Map<String,Plugin> pluginMap = new LinkedHashMap<>();
         for (UpdateSite site : sites) {
             for (Plugin plugin: site.getUpdates()) {
                 final Plugin existing = pluginMap.get(plugin.name);
@@ -983,7 +983,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
-        return new ArrayList<Plugin>(pluginMap.values());
+        return new ArrayList<>(pluginMap.values());
     }
 
     /**
@@ -997,7 +997,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      */
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
-        List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
+        List <Future<FormValidation>> futures = new ArrayList<>();
         for (UpdateSite site : getSites()) {
             Future<FormValidation> future = site.updateDirectly(DownloadService.signatureCheck);
             if (future != null) {
@@ -1005,7 +1005,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
-        List<FormValidation> results = new ArrayList<FormValidation>();
+        List<FormValidation> results = new ArrayList<>();
         for (Future<FormValidation> f : futures) {
             results.add(f.get());
         }
@@ -1888,7 +1888,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return VerificationResult.FAIL;
     }
 
-    private static enum VerificationResult {
+    private enum VerificationResult {
         PASS,
         NOT_PROVIDED,
         NOT_COMPUTED,

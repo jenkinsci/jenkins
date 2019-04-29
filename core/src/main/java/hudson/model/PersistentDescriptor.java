@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
  * {@link Descriptor#load()} method is annotated as {@link PostConstruct} so it get automatically invoked after
  * constructor and field injection.
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since 2.140
  */
 public interface PersistentDescriptor extends Saveable {
 

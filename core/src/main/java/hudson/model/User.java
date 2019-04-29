@@ -87,8 +87,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -96,8 +94,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.dao.DataAccessException;
-
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 /**
  * Represents a user.
@@ -728,7 +724,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         AllUsers.clear();
     }
 
-    private static final File getConfigFileFor(String id) {
+    private static File getConfigFileFor(String id) {
         return new File(getUserFolderFor(id), "config.xml");
     }
     

@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import javax.annotation.CheckForNull;
 
@@ -376,7 +377,7 @@ public abstract class LoadStatistics {
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
-    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
+    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", (int)TimeUnit.SECONDS.toMillis(10));
 
     /**
      * Periodically update the load statistics average.
