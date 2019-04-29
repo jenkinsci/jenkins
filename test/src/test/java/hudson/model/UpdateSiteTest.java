@@ -45,7 +45,6 @@ import static org.junit.Assert.*;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -56,7 +55,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 public class UpdateSiteTest {
 
@@ -153,16 +151,20 @@ public class UpdateSiteTest {
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
 
+    @Issue("JENKINS-56477")
+    @Test
+    public void isPluginUpdateCompatible() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
+        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
+        assertNotNull(tasksPlugin);
+        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
+        assertFalse(tasksPlugin.isForNewerJava());
+        assertTrue(tasksPlugin.isCompatible());
+    }
+
     @Issue("JENKINS-55048")
     @Test public void minimumJavaVersion() throws Exception {
-        // TODO: factor out the sites init
-        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
-        sites.clear();
-        URL url = new URL(baseUrl, "/plugins/minJavaVersion-update-center.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
-        // END TODO
+        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
 
         final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
         assertNotNull(tasksPlugin);
@@ -186,5 +188,13 @@ public class UpdateSiteTest {
         assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/",new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID,"http://hudson-ci.org/").isLegacyDefault());
         assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/",new UpdateSite("dummy","http://updates.hudson-labs.org/").isLegacyDefault());
         assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
+    }
+
+
+    private UpdateSite getUpdateSite(String path) throws Exception {
+        URL url = new URL(baseUrl, path);
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        return site;
     }
 }

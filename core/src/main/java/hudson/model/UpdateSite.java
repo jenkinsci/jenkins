@@ -1044,6 +1044,24 @@ public class UpdateSite {
         }
 
         /**
+         * Returns true if the plugin and its dependencies are fully compatible with the current installation
+         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         *
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isCompatible() {
+            return isCompatible(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean isCompatible(PluginManager.MetadataCache cache) {
+            return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
+                    isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
+                    !isNeededDependenciesForNewerJenkins(cache) && !isNeededDependenciesForNewerJava();
+        }
+
+        /**
          * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
          * value (i.e., it's only directly compatible with that version or later), this will check to
          * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
