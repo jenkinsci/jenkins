@@ -1072,6 +1072,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             return theClass;
         }
 
+        //Surround the former logic with a try-catch to report missing class exceptions via Java11 telemetry
         try {
             if (isParentFirst(classname)) {
                 try {
