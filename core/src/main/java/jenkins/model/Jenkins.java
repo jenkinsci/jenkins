@@ -2084,6 +2084,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Adds one more {@link Node} to Jenkins.
+     * If a node of the same name already exists then that node will be replaced.
      */
     public void addNode(Node n) throws IOException {
         nodes.addNode(n);
