@@ -24,6 +24,10 @@
 
 package jenkins.telemetry.impl.java11;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+@Restricted(NoExternalUse.class)
 public class CatcherClassLoader extends ClassLoader {
 
     public CatcherClassLoader(ClassLoader parent) {

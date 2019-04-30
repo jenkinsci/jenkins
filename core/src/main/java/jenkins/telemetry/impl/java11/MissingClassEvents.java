@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MissingClassEvents {
 
@@ -53,27 +54,34 @@ public class MissingClassEvents {
      * same <strong>stack trace</strong>. 0 if we already stored MAX_EVENTS_PER_SEND (100) events for a single send.
      */
     public long put(@Nonnull Throwable t) {
-        long occurrences = 0;
+        // A final object to pass it to the function
+        final AtomicLong occurrences = new AtomicLong();
 
         // We need the key (the stack trace) to be a list and unmodifiable
         List<StackTraceElement> key = Collections.unmodifiableList(Arrays.asList(t.getStackTrace()));
-        MissingClassEvent oldEvent = events.get(key);
-        if (oldEvent == null) {
-            // It's a new element, the size will increase
-            if (events.size() < MAX_EVENTS_PER_SEND) {
-                // Create the new value
-                MissingClassEvent newEvent = new MissingClassEvent(t);
-                events.put(key, newEvent);
-                occurrences = 1;
-            }
-        } else {
-            occurrences = oldEvent.getOccurrences() + 1;
-            // We update the occurrences and the last time it happened
-            oldEvent.setOccurrences(occurrences);
-            oldEvent.setTime(MissingClassTelemetry.clientDateString());
-        }
+        events.compute(key, (stackTraceElements, missingClassEvent) -> {
 
-        return occurrences;
+            if (missingClassEvent == null) {
+                // It's a new element, the size will increase
+                if (events.size() < MAX_EVENTS_PER_SEND) {
+                    // Create the new value
+                    MissingClassEvent newEvent = new MissingClassEvent(t);
+                    occurrences.set(1);
+                    return newEvent;
+                } else {
+                    return null;
+                }
+
+            } else {
+                // We update the occurrences and the last time it happened
+                occurrences.set(missingClassEvent.getOccurrences());
+                missingClassEvent.setOccurrences(occurrences.incrementAndGet());
+                missingClassEvent.setTime(MissingClassTelemetry.clientDateString());
+                return missingClassEvent;
+            }
+        });
+
+        return occurrences.get();
     }
 
     /**
@@ -83,7 +91,7 @@ public class MissingClassEvents {
      */
 
     @VisibleForTesting
-    /* package */ ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
+    /* package */ synchronized ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> currentEvents = events;
         events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
         return currentEvents;
