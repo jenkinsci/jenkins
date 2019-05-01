@@ -619,21 +619,21 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
-            LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
+            LOGGER.log(Level.FINEST, "new interceptor delegating to {0}", oldInterceptor);
             this.oldInterceptor = oldInterceptor;
         }
 
         private boolean isApplicable(Class type, JSONObject json) {
             if (Modifier.isAbstract(type.getModifiers())) {
-                LOGGER.log(Level.FINER, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
+                LOGGER.log(Level.FINEST, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
             if (!Describable.class.isAssignableFrom(type)) {
-                LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
+                LOGGER.log(Level.FINEST, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
             if (Boolean.TRUE.equals(processed.put(json, true))) {
-                LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
+                LOGGER.log(Level.FINEST, "already processed {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
             return true;
@@ -642,7 +642,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         @Override
         public Object instantiate(Class actualType, JSONObject json) {
             if (isApplicable(actualType, json)) {
-                LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
+                LOGGER.log(Level.FINEST, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
                 try {
                     final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
                     if (descriptor != null) {
@@ -668,7 +668,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (jsonSource instanceof JSONObject) {
                 JSONObject json = (JSONObject) jsonSource;
                 if (isApplicable(targetTypeErasure, json)) {
-                    LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
+                    LOGGER.log(Level.FINEST, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
                         return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
                     } catch (Exception x) {
@@ -676,7 +676,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                     }
                 }
             } else {
-                LOGGER.log(Level.FINER, "ignoring non-object {0}", jsonSource);
+                LOGGER.log(Level.FINEST, "ignoring non-object {0}", jsonSource);
             }
             return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
         }

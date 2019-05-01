@@ -33,13 +33,13 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
             Class<?> elementClazz = clazz.getComponentType();
             // does not seem possible to fall in an infinite loop since array cannot be recursively defined
             if (isClassAcceptable(elementClazz)) {
-                LOGGER.log(Level.FINE,
+                LOGGER.log(Level.FINEST,
                         "Class {0} is acceptable because it is an Array of acceptable elements {1}",
                         new Object[]{clazz.getName(), elementClazz.getName()}
                 );
                 return true;
             } else {
-                LOGGER.log(Level.FINE,
+                LOGGER.log(Level.FINEST,
                         "Class {0} is not acceptable because it is an Array of non-acceptable elements {1}",
                         new Object[]{clazz.getName(), elementClazz.getName()}
                 );
@@ -183,7 +183,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
         Class<?> returnType = fieldRef.getReturnType();
 
         boolean isOk = isClassAcceptable(returnType);
-        LOGGER.log(Level.FINE, "Field analyzed: {0} => {1}", new Object[]{fieldRef.getName(), isOk});
+        LOGGER.log(Level.FINEST, "Field analyzed: {0} => {1}", new Object[]{fieldRef.getName(), isOk});
         return isOk;
     }
 
@@ -264,7 +264,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
         Class<?> returnType = function.getReturnType();
 
         boolean isOk = isClassAcceptable(returnType);
-        LOGGER.log(Level.FINE, "Function analyzed: {0} => {1}", new Object[]{signature, isOk});
+        LOGGER.log(Level.FINEST, "Function analyzed: {0} => {1}", new Object[]{signature, isOk});
         return isOk;
     }
 

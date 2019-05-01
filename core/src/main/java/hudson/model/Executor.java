@@ -415,7 +415,7 @@ public class Executor extends Thread implements ModelObject {
 
                 setName(getName() + " : executing " + executable.toString());
                 Authentication auth = workUnit.context.item.authenticate();
-                LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
+                LOGGER.log(FINEST, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
                 if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM)) { // i.e., unspecified
                     if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
                         LOGGER.fine("no QueueItemAuthenticator implementations installed");
@@ -472,7 +472,7 @@ public class Executor extends Thread implements ModelObject {
             workUnit.context.abort(problems);
         }
        long time = System.currentTimeMillis() - startTime;
-        LOGGER.log(FINE, "{0} completed {1} in {2}ms", new Object[]{getName(), executable, time});
+        LOGGER.log(FINEST, "{0} completed {1} in {2}ms", new Object[]{getName(), executable, time});
         try {
             workUnit.context.synchronizeEnd(this, executable, problems, time);
         } catch (InterruptedException e) {
@@ -484,7 +484,7 @@ public class Executor extends Thread implements ModelObject {
 
     private void finish2() {
         for (RuntimeException e1 : owner.getTerminatedBy()) {
-            LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
+            LOGGER.log(Level.FINEST, String.format("%s termination trace", getName()), e1);
         }
         owner.removeExecutor(this);
         if (this instanceof OneOffExecutor) {

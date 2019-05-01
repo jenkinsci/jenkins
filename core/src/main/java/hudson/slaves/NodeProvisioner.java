@@ -239,7 +239,7 @@ public class NodeProvisioner {
 
                                     try {
                                         jenkins.addNode(node);
-                                        LOGGER.log(Level.INFO,
+                                        LOGGER.log(Level.FINEST,
                                                 "{0} provisioning successfully completed. "
                                                         + "We have now {1,number,integer} computer(s)",
                                                 new Object[]{f.displayName, jenkins.getComputers().length});
@@ -300,7 +300,7 @@ public class NodeProvisioner {
                     int queueLengthSnapshot = snapshot.getQueueLength();
 
                     if (queueLengthSnapshot <= availableSnapshot) {
-                        LOGGER.log(Level.FINER,
+                        LOGGER.log(Level.FINEST,
                                 "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
                                 new Object[]{queueLengthSnapshot, availableSnapshot});
                         provisioningState = null;
@@ -315,10 +315,10 @@ public class NodeProvisioner {
                 for (Strategy strategy : strategies.isEmpty()
                         ? Collections.<Strategy>singletonList(new StandardStrategyImpl())
                         : strategies) {
-                    LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
+                    LOGGER.log(Level.FINEST, "Consulting {0} provisioning strategy with state {1}",
                             new Object[]{strategy, provisioningState});
                     if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
-                        LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
+                        LOGGER.log(Level.FINEST, "Provisioning strategy {0} declared provisioning complete",
                                 strategy);
                         break;
                     }
@@ -677,7 +677,7 @@ public class NodeProvisioner {
                 }
                 float m = calcThresholdMargin(state.getTotalSnapshot());
                 if (excessWorkload > 1 - m) {// and there's more work to do...
-                    LOGGER.log(Level.FINE, "Excess workload {0,number,#.###} detected. "
+                    LOGGER.log(Level.FINEST, "Excess workload {0,number,#.###} detected. "
                                     + "(planned capacity={1,number,#.###},connecting capacity={7,number,#.###},"
                                     + "Qlen={2,number,#.###},available={3,number,#.###}&{4,number,integer},"
                                     + "online={5,number,integer},m={6,number,#.###})",
@@ -718,7 +718,7 @@ public class NodeProvisioner {
 
                             for (PlannedNode ac : additionalCapacities) {
                                 excessWorkload -= ac.numExecutors;
-                                LOGGER.log(Level.INFO, "Started provisioning {0} from {1} with {2,number,integer} "
+                                LOGGER.log(Level.FINEST, "Started provisioning {0} from {1} with {2,number,integer} "
                                                 + "executors. Remaining excess workload: {3,number,#.###}",
                                         new Object[]{ac.displayName, c.name, ac.numExecutors, excessWorkload});
                             }

@@ -96,7 +96,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             } else if (launcher instanceof ComputerLauncherFilter) {
                 launcher = ((ComputerLauncherFilter) launcher).getCore();
             } else if (null != (l = getDelegate(launcher))) {  // TODO remove when all plugins are fixed
-                LOGGER.log(Level.INFO, "Connecting {0} as an inbound agent where the launcher {1} does not mark "
+                LOGGER.log(Level.FINE, "Connecting {0} as an inbound agent where the launcher {1} does not mark "
                                 + "itself correctly as being an inbound agent",
                         new Object[]{clientName, computer.getLauncher().getClass()});
                 launcher = l;
@@ -125,7 +125,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             if (cookie != null && cookie.equals(ch.getProperty(COOKIE_NAME))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
-                LOGGER.log(Level.INFO, "Disconnecting {0} as we are reconnected from the current peer", clientName);
+                LOGGER.log(Level.FINE, "Disconnecting {0} as we are reconnected from the current peer", clientName);
                 try {
                     computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
                 } catch (ExecutionException | TimeoutException | InterruptedException e) {

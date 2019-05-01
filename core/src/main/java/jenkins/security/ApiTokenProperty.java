@@ -156,7 +156,7 @@ public class ApiTokenProperty extends UserProperty {
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
-        LOGGER.log(Level.FINE, "Deprecated usage of getApiToken");
+        LOGGER.log(Level.FINEST, "Deprecated usage of getApiToken");
         if(LOGGER.isLoggable(Level.FINER)){
             LOGGER.log(Level.FINER, "Deprecated usage of getApiToken (trace)", new Exception());
         }
@@ -318,7 +318,7 @@ public class ApiTokenProperty extends UserProperty {
         // just to keep the same level of security
         user.checkPermission(Jenkins.ADMINISTER);
 
-        LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
+        LOGGER.log(Level.FINEST, "Deprecated usage of changeApiToken");
 
         ApiTokenStore.HashedToken existingLegacyToken = tokenStore.getLegacyToken();
         _changeApiToken();
@@ -443,7 +443,7 @@ public class ApiTokenProperty extends UserProperty {
             // you are the user or you have ADMINISTER permission
             u.checkPermission(Jenkins.ADMINISTER);
 
-            LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
+            LOGGER.log(Level.FINEST, "Deprecated action /changeToken used, consider using /generateNewToken instead");
 
             if(!mustDisplayLegacyApiToken(u)){
                 // user does not have legacy token and the capability to create one without an existing one is disabled

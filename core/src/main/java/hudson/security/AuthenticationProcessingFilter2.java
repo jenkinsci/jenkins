@@ -115,7 +115,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
     @Override
     protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         super.onUnsuccessfulAuthentication(request, response, failed);
-        LOGGER.log(Level.FINE, "Login attempt failed", failed);
+        LOGGER.log(Level.FINEST, "Login attempt failed", failed);
         Authentication auth = failed.getAuthentication();
         if (auth != null) {
             SecurityListener.fireFailedToLogIn(auth.getName());

@@ -60,7 +60,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
             List<SlaveRestarter> effective = ch.call(new FindEffectiveRestarters(restarters));
 
-            LOGGER.log(FINE, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
+            LOGGER.log(FINEST, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
         } catch (Throwable e) {
             Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
@@ -90,7 +90,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
                     try {
                         for (SlaveRestarter r : restarters) {
                             try {
-                                LOGGER.info("Restarting agent via "+r);
+                                LOGGER.finest("Restarting agent via "+r);
                                 r.restart();
                             } catch (Exception x) {
                                 LOGGER.log(SEVERE, "Failed to restart agent with "+r, x);

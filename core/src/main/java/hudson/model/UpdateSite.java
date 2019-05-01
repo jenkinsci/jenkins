@@ -221,7 +221,7 @@ public class UpdateSite {
             }
         }
 
-        LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
+        LOGGER.finest("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
         data = new Data(o);
@@ -1341,10 +1341,10 @@ public class UpdateSite {
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
-                    LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    LOGGER.log(Level.FINEST, "Adding dependent install of " + dep.name + " for plugin " + name);
                     dep.deploy(dynamicLoad);
                 } else {
-                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.FINEST, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
                 }
             }
             PluginWrapper pw = getInstalled();

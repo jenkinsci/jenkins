@@ -238,7 +238,7 @@ public abstract class Proc {
         }
 
         private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
-            Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
+            Logger.getLogger(Proc.class.getName()).log(Level.FINEST, "Running: {0}", name);
             this.name = name;
             this.out = out;
             this.cookie = EnvVars.createCookie();

@@ -79,7 +79,7 @@ public class DisplayNameListener extends ItemListener {
                 // This means that the displayname was never set, so we want to set it
                 // to null as it was before
                 try {
-                    LOGGER.info(String.format("onRenamed():Setting displayname to null for item.name=%s", item.getName()));
+                    LOGGER.finest(String.format("onRenamed():Setting displayname to null for item.name=%s", item.getName()));
                     abstractItem.setDisplayName(null);
                 }
                 catch(IOException ioe) {

@@ -78,7 +78,7 @@ public class PosixAPI {
         }
 
         public void warn(WARNING_ID warning_id, String s, Object... objects) {
-            LOGGER.fine(s);
+            LOGGER.finest(s);
         }
 
         public boolean isVerbose() {

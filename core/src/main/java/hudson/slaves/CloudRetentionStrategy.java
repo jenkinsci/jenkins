@@ -54,7 +54,7 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
         if (c.isIdle() && !disabled && computerNode != null) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
-                LOGGER.log(Level.INFO, "Disconnecting {0}", c.getName());
+                LOGGER.log(Level.FINEST, "Disconnecting {0}", c.getName());
                 try {
                     computerNode.terminate();
                 } catch (InterruptedException | IOException e) {

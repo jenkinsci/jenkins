@@ -167,7 +167,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Either of the parameter can be null.
      */
     public void killAll(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
-        LOGGER.fine("killAll: process="+proc+" and envs="+modelEnvVars);
+        LOGGER.finest("killAll: process="+proc+" and envs="+modelEnvVars);
         OSProcess p = get(proc);
         if(p!=null) p.killRecursively();
         if(modelEnvVars!=null)
@@ -518,7 +518,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             if (getVeto() != null) 
                 return;
 
-            LOGGER.log(FINER, "Killing recursively {0}", getPid());
+            LOGGER.log(FINEST, "Killing recursively {0}", getPid());
             // Firstly try to kill the root process gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
             killSoftly();
             p.killRecursively();
@@ -531,7 +531,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return;
             }
             
-            LOGGER.log(FINER, "Killing {0}", getPid());
+            LOGGER.log(FINEST, "Killing {0}", getPid());
             // Firstly try to kill it gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
             killSoftly();
             p.kill();
@@ -722,7 +722,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
             });
             if(processes==null) {
-                LOGGER.info("No /proc");
+                LOGGER.finest("No /proc");
                 return;
             }
 
@@ -771,7 +771,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return;
             try {
                 int pid = getPid();
-                LOGGER.fine("Killing pid="+pid);
+                LOGGER.finest("Killing pid="+pid);
                 UnixReflection.destroy(pid);
                 // after sending SIGTERM, wait for the process to cease to exist
                 int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
@@ -807,7 +807,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         private void killRecursively(long deadline) throws InterruptedException {
             // We kill individual processes of a tree, so handling vetoes inside #kill() is enough for UnixProcess es
-            LOGGER.fine("Recursively killing pid="+getPid());
+            LOGGER.finest("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren()) {
                 if (p instanceof UnixProcess) {
                     ((UnixProcess)p).killRecursively(deadline);
@@ -1631,7 +1631,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 int count = size.getValue()/sizeOf_kinfo_proc;
-                LOGGER.fine("Found "+count+" processes");
+                LOGGER.finest("Found "+count+" processes");
 
                 for( int base=0; base<size.getValue(); base+=sizeOf_kinfo_proc) {
                     int pid = m.getInt(base+ kinfo_proc_pid_offset);

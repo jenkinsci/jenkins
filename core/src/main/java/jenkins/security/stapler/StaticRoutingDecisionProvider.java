@@ -137,49 +137,49 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
             throw new ExceptionInInitializerError(e);
         }
         
-        LOGGER.log(Level.FINE, "Found {0} getter in the standard whitelist", whitelistSignaturesFromFixedList.size());
+        LOGGER.log(Level.FINEST, "Found {0} getter in the standard whitelist", whitelistSignaturesFromFixedList.size());
     }
     
     public synchronized StaticRoutingDecisionProvider add(@Nonnull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.add(signature)) {
-            LOGGER.log(Level.INFO, "Signature [{0}] added to the whitelist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] added to the whitelist", signature);
             save();
             resetMetaClassCache();
         } else {
-            LOGGER.log(Level.INFO, "Signature [{0}] was already present in the whitelist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] was already present in the whitelist", signature);
         }
         return this;
     }
     
     public synchronized StaticRoutingDecisionProvider addBlacklistSignature(@Nonnull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.add(signature)) {
-            LOGGER.log(Level.INFO, "Signature [{0}] added to the blacklist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] added to the blacklist", signature);
             save();
             resetMetaClassCache();
         } else {
-            LOGGER.log(Level.INFO, "Signature [{0}] was already present in the blacklist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] was already present in the blacklist", signature);
         }
         return this;
     }
     
     public synchronized StaticRoutingDecisionProvider remove(@Nonnull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.remove(signature)) {
-            LOGGER.log(Level.INFO, "Signature [{0}] removed from the whitelist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] removed from the whitelist", signature);
             save();
             resetMetaClassCache();
         } else {
-            LOGGER.log(Level.INFO, "Signature [{0}] was not present in the whitelist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] was not present in the whitelist", signature);
         }
         return this;
     }
     
     public synchronized StaticRoutingDecisionProvider removeBlacklistSignature(@Nonnull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.remove(signature)) {
-            LOGGER.log(Level.INFO, "Signature [{0}] removed from the blacklist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] removed from the blacklist", signature);
             save();
             resetMetaClassCache();
         } else {
-            LOGGER.log(Level.INFO, "Signature [{0}] was not present in the blacklist", signature);
+            LOGGER.log(Level.FINEST, "Signature [{0}] was not present in the blacklist", signature);
         }
         return this;
     }
@@ -218,14 +218,14 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         if (!file.exists()) {
             if ((whitelistSignaturesFromUserControlledList != null && whitelistSignaturesFromUserControlledList.isEmpty()) ||
                     (blacklistSignaturesFromUserControlledList != null && blacklistSignaturesFromUserControlledList.isEmpty())) {
-                LOGGER.log(Level.INFO, "No whitelist source file found at " + file + " so resetting user-controlled whitelist");
+                LOGGER.log(Level.FINEST, "No whitelist source file found at " + file + " so resetting user-controlled whitelist");
             }
             whitelistSignaturesFromUserControlledList = new HashSet<>();
             blacklistSignaturesFromUserControlledList = new HashSet<>();
             return;
         }
 
-        LOGGER.log(Level.INFO, "Whitelist source file found at " + file);
+        LOGGER.log(Level.FINEST, "Whitelist source file found at " + file);
 
         try {
             whitelistSignaturesFromUserControlledList = new HashSet<>();

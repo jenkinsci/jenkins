@@ -529,7 +529,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req,this);
-            LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
+            LOGGER.log(Level.FINEST, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
             if(seed!=null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
                 return seed.substring(req.getContextPath().length()+1)+'/';
@@ -542,23 +542,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
                         String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
-                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+                        LOGGER.log(Level.FINEST, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
                         return base + shortUrl;
                     } else {
-                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
+                        LOGGER.log(Level.FINEST, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
                     }
                 } else {
-                    LOGGER.log(Level.FINER, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                    LOGGER.log(Level.FINEST, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
                 }
             } else {
-                LOGGER.log(Level.FINER, "no ancestors for {0} from {1}", new Object[] {this, uri});
+                LOGGER.log(Level.FINEST, "no ancestors for {0} from {1}", new Object[] {this, uri});
             }
         } else {
-            LOGGER.log(Level.FINER, "no current request for {0}", this);
+            LOGGER.log(Level.FINEST, "no current request for {0}", this);
         }
         // otherwise compute the path normally
         String base = getParent().getUrl();
-        LOGGER.log(Level.FINER, "falling back to {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+        LOGGER.log(Level.FINEST, "falling back to {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
         return base + shortUrl;
     }
 

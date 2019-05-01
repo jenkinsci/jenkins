@@ -197,7 +197,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         public void run() {
                             try {
                                 if(!oldRoot.equals(installationDir)) {
-                                    LOGGER.info("Moving data");
+                                    LOGGER.finest("Moving data");
                                     Move mv = new Move();
                                     Project p = new Project();
                                     p.addBuildListener(createLogger());
@@ -210,7 +210,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     mv.setFailOnError(false); // plugins can also fail to move
                                     mv.execute();
                                 }
-                                LOGGER.info("Starting a Windows service");
+                                LOGGER.finest("Starting a Windows service");
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
                                 int r = runElevated(
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);

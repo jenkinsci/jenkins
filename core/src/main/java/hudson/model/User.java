@@ -392,7 +392,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(id);
-            LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", id);
+            LOGGER.log(Level.FINEST, "Impersonation of the user {0} was a success", id);
             return userDetails;
         } catch (UserMayOrMayNotExistException e) {
             LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", id);
@@ -1179,7 +1179,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
                 String id = resolver.resolveCanonicalId(idOrFullName, context);
                 if (id != null) {
-                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[]{resolver, idOrFullName, id});
+                    LOGGER.log(Level.FINEST, "{0} mapped {1} to {2}", new Object[]{resolver, idOrFullName, id});
                     return id;
                 }
             }

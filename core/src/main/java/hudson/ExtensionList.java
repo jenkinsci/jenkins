@@ -373,7 +373,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Loads all the extensions.
      */
     protected List<ExtensionComponent<T>> load() {
-        LOGGER.fine(() -> String.format("Loading ExtensionList '%s'", extensionType.getName()));
+        LOGGER.finest(() -> String.format("Loading ExtensionList '%s'", extensionType.getName()));
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(Level.FINER, String.format("Loading ExtensionList '%s' from", extensionType.getName()), new Throwable("Only present for stacktrace information"));
         }

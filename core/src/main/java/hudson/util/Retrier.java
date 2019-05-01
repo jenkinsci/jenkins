@@ -81,7 +81,7 @@ public class Retrier <V>{
             if (!success) {
                 if (currentAttempt < attempts) {
                     LOGGER.log(Level.WARNING, Messages.Retrier_AttemptFailed(currentAttempt, action));
-                    LOGGER.log(Level.FINE, Messages.Retrier_Sleeping(delay, action));
+                    LOGGER.log(Level.FINEST, Messages.Retrier_Sleeping(delay, action));
                     try {
                         Thread.sleep(delay);
                     } catch (InterruptedException ie) {
@@ -91,10 +91,10 @@ public class Retrier <V>{
                     }
                 } else {
                     // Failed to perform the action
-                    LOGGER.log(Level.INFO, Messages.Retrier_NoSuccess(action, attempts));
+                    LOGGER.log(Level.FINEST, Messages.Retrier_NoSuccess(action, attempts));
                 }
             } else {
-                LOGGER.log(Level.INFO, Messages.Retrier_Success(action, currentAttempt));
+                LOGGER.log(Level.FINEST, Messages.Retrier_Success(action, currentAttempt));
             }
         }
 

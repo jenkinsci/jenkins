@@ -75,10 +75,10 @@ public class BasicHeaderProcessor implements Filter {
                 }
 
                 for (BasicHeaderAuthenticator a : all()) {
-                    LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
+                    LOGGER.log(FINEST, "Attempting to authenticate with {0}", a);
                     Authentication auth = a.authenticate(req, rsp, username, password);
                     if (auth!=null) {
-                        LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth,a});
+                        LOGGER.log(FINEST, "Request authenticated as {0} by {1}", new Object[]{auth,a});
                         success(req, rsp, chain, auth);
                         return;
                     }
@@ -144,7 +144,7 @@ public class BasicHeaderProcessor implements Filter {
     }
 
     protected void fail(HttpServletRequest req, HttpServletResponse rsp, BadCredentialsException failure) throws IOException, ServletException {
-        LOGGER.log(FINE, "Authentication of BASIC header failed");
+        LOGGER.log(FINEST, "Authentication of BASIC header failed");
 
         rememberMeServices.loginFail(req, rsp);
 

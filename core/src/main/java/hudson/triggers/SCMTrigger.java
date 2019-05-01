@@ -177,16 +177,16 @@ public class SCMTrigger extends Trigger<Item> {
 
         DescriptorImpl d = getDescriptor();
 
-        LOGGER.fine("Scheduling a polling for "+job);
+        LOGGER.finest("Scheduling a polling for "+job);
         if (d.synchronousPolling) {
-        	LOGGER.fine("Running the trigger directly without threading, " +
+        	LOGGER.finest("Running the trigger directly without threading, " +
         			"as it's already taken care of by Trigger.Cron");
             new Runner(additionalActions).run();
         } else {
             // schedule the polling.
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
-        	LOGGER.fine("scheduling the trigger to (asynchronously) run");
+        	LOGGER.finest("scheduling the trigger to (asynchronously) run");
             d.queue.execute(new Runner(additionalActions));
             d.clogCheck();
         }
@@ -636,7 +636,7 @@ public class SCMTrigger extends Trigger<Item> {
                     LOGGER.log(Level.SEVERE, "Failed to record SCM polling for " + job, e);
                 }
 
-                LOGGER.log(Level.FINE, "Skipping polling for {0} due to veto from {1}",
+                LOGGER.log(Level.FINEST, "Skipping polling for {0} due to veto from {1}",
                         new Object[]{job.getFullDisplayName(), veto}
                 );
                 return;
@@ -660,9 +660,9 @@ public class SCMTrigger extends Trigger<Item> {
                     queueActions[0] = new CauseAction(cause);
                     System.arraycopy(additionalActions, 0, queueActions, 1, additionalActions.length);
                     if (p.scheduleBuild2(p.getQuietPeriod(), queueActions) != null) {
-                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Triggering "+name);
+                        LOGGER.finest("SCM changes detected in "+ job.getFullDisplayName()+". Triggering "+name);
                     } else {
-                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Job is already in the queue");
+                        LOGGER.finest("SCM changes detected in "+ job.getFullDisplayName()+". Job is already in the queue");
                     }
                 }
             } finally {

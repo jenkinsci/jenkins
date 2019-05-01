@@ -62,7 +62,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
     @Override protected void execute(TaskListener listener) throws InterruptedException, IOException {
         if (disabled) {
-            LOGGER.fine("Disabled. Skipping execution");
+            LOGGER.finest("Disabled. Skipping execution");
             return;
         }
         List<Node> nodes = new ArrayList<>();
@@ -104,7 +104,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
         // (Could even invert master loop so that one FileCallable takes care of all known items.)
         if(!dir.exists()) {
-            LOGGER.log(Level.FINE, "Directory {0} does not exist", dir);
+            LOGGER.log(Level.FINEST, "Directory {0} does not exist", dir);
             return false;
         }
 
@@ -121,15 +121,15 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         if (item instanceof AbstractProject<?,?>) {
             AbstractProject<?,?> p = (AbstractProject<?,?>) item;
             Node lb = p.getLastBuiltOn();
-            LOGGER.log(Level.FINER, "Directory {0} is last built on {1}", new Object[] {dir, lb});
+            LOGGER.log(Level.FINEST, "Directory {0} is last built on {1}", new Object[] {dir, lb});
             if(lb!=null && lb.equals(n)) {
                 // this is the active workspace. keep it.
-                LOGGER.log(Level.FINE, "Directory {0} is the last workspace for {1}", new Object[] {dir, p});
+                LOGGER.log(Level.FINEST, "Directory {0} is the last workspace for {1}", new Object[] {dir, p});
                 return false;
             }
             
             if(!p.getScm().processWorkspaceBeforeDeletion((Job<?, ?>) p,dir,n)) {
-                LOGGER.log(Level.FINE, "Directory deletion of {0} is vetoed by SCM", dir);
+                LOGGER.log(Level.FINEST, "Directory deletion of {0} is vetoed by SCM", dir);
                 return false;
             }
         }
@@ -138,12 +138,12 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         if (item instanceof Job<?,?>) {
             Job<?,?> j = (Job<?,?>) item;
             if (j.isBuilding()) {
-                LOGGER.log(Level.FINE, "Job {0} is building, so not deleting", item.getFullDisplayName());
+                LOGGER.log(Level.FINEST, "Job {0} is building, so not deleting", item.getFullDisplayName());
                 return false;
             }
         }
 
-        LOGGER.log(Level.FINER, "Going to delete directory {0}", dir);
+        LOGGER.log(Level.FINEST, "Going to delete directory {0}", dir);
         return true;
     }
 

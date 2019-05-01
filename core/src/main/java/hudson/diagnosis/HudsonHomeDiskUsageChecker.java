@@ -47,12 +47,12 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
             long total = Jenkins.getInstance().getRootDir().getTotalSpace();
             if(free<=0 || total<=0) {
                 // information unavailable. pointless to try.
-                LOGGER.info("JENKINS_HOME disk usage information isn't available. aborting to monitor");
+                LOGGER.finest("JENKINS_HOME disk usage information isn't available. aborting to monitor");
                 cancel();
                 return;
             }
 
-            LOGGER.fine("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
+            LOGGER.finest("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
 
 
             // if it's more than 90% full and less than the minimum, activate

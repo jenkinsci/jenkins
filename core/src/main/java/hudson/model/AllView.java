@@ -161,7 +161,7 @@ public class AllView extends View {
                 for (Locale l : Locale.getAvailableLocales()) {
                     if (primaryView.equals(Messages._Hudson_ViewName().toString(l))) {
                         // bingo JENKINS-38606 detected
-                        LOGGER.log(Level.INFO,
+                        LOGGER.log(Level.FINEST,
                                 "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
                                 new Object[] {allView.owner, primaryView, DEFAULT_VIEW_NAME});
                         allView.name = DEFAULT_VIEW_NAME;

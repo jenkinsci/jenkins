@@ -198,7 +198,7 @@ public class XStream2 extends XStream {
                         }
                         v = null;
                     }
-                    LOGGER.log(Level.FINE, "JENKINS-21017: nulling out {0} in {1}", new Object[] {f, o});
+                    LOGGER.log(Level.FINEST, "JENKINS-21017: nulling out {0} in {1}", new Object[] {f, o});
                     Fields.write(f, o, v);
                 });
             }

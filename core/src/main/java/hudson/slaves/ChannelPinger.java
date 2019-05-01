@@ -113,7 +113,7 @@ public class ChannelPinger extends ComputerListener {
         // both sides can notice it and take compensation actions.
         try {
             channel.call(new SetUpRemotePing(pingTimeoutSeconds, pingIntervalSeconds));
-            LOGGER.fine("Set up a remote ping for " + channel.getName());
+            LOGGER.finest("Set up a remote ping for " + channel.getName());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to set up a ping for " + channel.getName(), e);
         }
@@ -183,7 +183,7 @@ public class ChannelPinger extends ComputerListener {
     @VisibleForTesting
     @Restricted(NoExternalUse.class)
     public static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
-        LOGGER.log(Level.FINE, "setting up ping on {0} with a {1} seconds interval and {2} seconds timeout", new Object[] {channel.getName(), intervalSeconds, timeoutSeconds});
+        LOGGER.log(Level.FINEST, "setting up ping on {0} with a {1} seconds interval and {2} seconds timeout", new Object[] {channel.getName(), intervalSeconds, timeoutSeconds});
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, TimeUnit.SECONDS.toMillis(timeoutSeconds), TimeUnit.SECONDS.toMillis(intervalSeconds)) {
             @Override
@@ -198,9 +198,9 @@ public class ChannelPinger extends ComputerListener {
                         computer.disconnect(new OfflineCause.ChannelTermination(exception));
                     }
                     if (inClosed) {
-                        LOGGER.log(Level.FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
+                        LOGGER.log(Level.FINEST,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
                     } else {
-                        LOGGER.log(Level.INFO,"Ping failed. Terminating the channel "+channel.getName()+".",cause);
+                        LOGGER.log(Level.FINEST,"Ping failed. Terminating the channel "+channel.getName()+".",cause);
                     }
             }
             /** Keep in a separate method so we do not even try to do class loading on {@link PingFailureAnalyzer} from an agent JVM. */
@@ -223,14 +223,14 @@ public class ChannelPinger extends ComputerListener {
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel channel, IOException cause) {
-                LOGGER.fine("Terminating ping thread for " + channel.getName());
+                LOGGER.finest("Terminating ping thread for " + channel.getName());
                 isInClosed.set(true);
                 t.interrupt();  // make sure the ping thread is terminated
             }
         });
 
         t.start();
-        LOGGER.log(Level.FINE, "Ping thread started for {0} with a {1} seconds interval and a {2} seconds timeout",
+        LOGGER.log(Level.FINEST, "Ping thread started for {0} with a {1} seconds interval and a {2} seconds timeout",
                    new Object[] { channel, intervalSeconds, timeoutSeconds });
     }
 }

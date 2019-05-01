@@ -134,7 +134,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
 
     @Override
     protected void fix(TaskListener listener) throws Exception {
-        LOGGER.info("Initiating a re-keying of secrets. See "+getLogFile());
+        LOGGER.finest("Initiating a re-keying of secrets. See "+getLogFile());
 
         SecretRewriter rewriter = new SecretRewriter();
 
@@ -144,7 +144,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
             int count = rewriter.rewriteRecursive(Jenkins.getInstance().getRootDir(), listener);
             log.printf("Completed re-keying %d files on %s\n",count,new Date());
             new RekeySecretAdminMonitor().done.on();
-            LOGGER.info("Secret re-keying completed");
+            LOGGER.finest("Secret re-keying completed");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
             Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));

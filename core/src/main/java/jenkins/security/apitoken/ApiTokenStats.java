@@ -203,7 +203,7 @@ public class ApiTokenStats implements Saveable {
         if (userFolder == null && this.user != null) {
             userFolder = user.getUserFolder();
             if (userFolder == null) {
-                LOGGER.log(Level.INFO, "No user folder yet for user {0}", user.getId());
+                LOGGER.log(Level.FINEST, "No user folder yet for user {0}", user.getId());
                 return null;
             }
             this.parent = userFolder;

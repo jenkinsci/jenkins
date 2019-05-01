@@ -1002,12 +1002,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.log(Level.WARNING, null, x);
                 }
                 if (LOG_STARTUP_PERFORMANCE)
-                    LOGGER.info(String.format("Took %dms for item listener %s startup",
+                    LOGGER.finest(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
 
             if (LOG_STARTUP_PERFORMANCE)
-                LOGGER.info(String.format("Took %dms for complete Jenkins startup",
+                LOGGER.finest(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
 
             STARTUP_MARKER_FILE.on();
@@ -1095,7 +1095,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     long start = System.currentTimeMillis();
                     super.runTask(task);
                     if(LOG_STARTUP_PERFORMANCE)
-                        LOGGER.info(String.format("Took %dms for %s by %s",
+                        LOGGER.finest(String.format("Took %dms for %s by %s",
                                 System.currentTimeMillis()-start, taskName, name));
                 } catch (Exception | Error x) {
                     if (containsLinkageError(x)) {
@@ -2525,11 +2525,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (filter == null) {
                 // Fix for #3069: This filter is not necessarily initialized before the servlets.
                 // when HudsonFilter does come back, it'll initialize itself.
-                LOGGER.fine("HudsonFilter has not yet been initialized: Can't perform security setup for now");
+                LOGGER.finest("HudsonFilter has not yet been initialized: Can't perform security setup for now");
             } else {
-                LOGGER.fine("HudsonFilter has been previously initialized: Setting security up");
+                LOGGER.finest("HudsonFilter has been previously initialized: Setting security up");
                 filter.reset(securityRealm);
-                LOGGER.fine("Security is now fully set up");
+                LOGGER.finest("Security is now fully set up");
             }
             if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
                 User.rekey();
@@ -3065,7 +3065,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             buildsDir = newBuildsDir;
             mustSave = true;
         } else if (!isDefaultBuildDir()) {
-            LOGGER.log(Level.INFO, "Using non default builds directories: {0}.", buildsDir);
+            LOGGER.log(Level.FINEST, "Using non default builds directories: {0}.", buildsDir);
         }
 
         String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
@@ -3076,7 +3076,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             workspaceDir = newWorkspacesDir;
             mustSave = true;
         } else if (!isDefaultWorkspaceDir()) {
-            LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
+            LOGGER.log(Level.FINEST, "Using non default workspaces directories: {0}.", workspaceDir);
         }
 
         if (mustSave) {
@@ -3253,10 +3253,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(BulkChange.contains(this))   return;
 
         if (initLevel == InitMilestone.COMPLETED) {
-            LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
+            LOGGER.log(FINEST, "setting version {0} to {1}", new Object[] {version, VERSION});
             version = VERSION;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+            LOGGER.log(FINEST, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
         }
 
         getConfigFile().write(this);
@@ -3288,7 +3288,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cleanUpStarted = true;
         }
         try {
-            LOGGER.log(Level.INFO, "Stopping Jenkins");
+            LOGGER.log(Level.FINEST, "Stopping Jenkins");
 
             final List<Throwable> errors = new ArrayList<>();
 
@@ -3324,7 +3324,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpReleaseAllLoggers(errors);
 
-            LOGGER.log(Level.INFO, "Jenkins stopped");
+            LOGGER.log(Level.FINEST, "Jenkins stopped");
 
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
@@ -3351,7 +3351,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void fireBeforeShutdown(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Notifying termination");
+        LOGGER.log(Level.FINEST, "Notifying termination");
         for (ItemListener l : ItemListener.all()) {
             try {
                 l.onBeforeShutdown();
@@ -3447,7 +3447,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpShutdownUDPBroadcast(List<Throwable> errors) {
         if(udpBroadcastThread!=null) {
-            LOGGER.log(Level.FINE, "Shutting down {0}", udpBroadcastThread.getName());
+            LOGGER.log(Level.FINEST, "Shutting down {0}", udpBroadcastThread.getName());
             try {
                 udpBroadcastThread.shutdown();
             } catch (OutOfMemoryError e) {
@@ -3466,7 +3466,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpCloseDNSMulticast(List<Throwable> errors) {
         if(dnsMultiCast!=null) {
-            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
+            LOGGER.log(Level.FINEST, "Closing DNS Multicast service");
             try {
                 dnsMultiCast.close();
             } catch (OutOfMemoryError e) {
@@ -3484,7 +3484,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpInterruptReloadThread(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Interrupting reload thread");
+        LOGGER.log(Level.FINEST, "Interrupting reload thread");
         try {
             interruptReloadThread();
         } catch (SecurityException e) {
@@ -3504,7 +3504,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownTriggers(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Shutting down triggers");
+        LOGGER.log(Level.FINEST, "Shutting down triggers");
         try {
             final java.util.Timer timer = Trigger.timer;
             if (timer != null) {
@@ -3517,10 +3517,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 }, 0);
                 if (latch.await(10, TimeUnit.SECONDS)) {
-                    LOGGER.log(Level.FINE, "Triggers shut down successfully");
+                    LOGGER.log(Level.FINEST, "Triggers shut down successfully");
                 } else {
                     timer.cancel();
-                    LOGGER.log(Level.INFO, "Gave up waiting for triggers to finish running");
+                    LOGGER.log(Level.FINEST, "Gave up waiting for triggers to finish running");
                 }
             }
             Trigger.timer = null;
@@ -3538,7 +3538,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownTimer(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Shutting down timer");
+        LOGGER.log(Level.FINEST, "Shutting down timer");
         try {
             Timer.shutdown();
         } catch (SecurityException e) {
@@ -3559,7 +3559,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
         if(tcpSlaveAgentListener!=null) {
-            LOGGER.log(FINE, "Shutting down TCP/IP agent listener");
+            LOGGER.log(FINEST, "Shutting down TCP/IP agent listener");
             try {
                 tcpSlaveAgentListener.shutdown();
             } catch (OutOfMemoryError e) {
@@ -3617,7 +3617,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownThreadPoolForLoad(List<Throwable> errors) {
-        LOGGER.log(FINE, "Shuting down Jenkins load thread pool");
+        LOGGER.log(FINEST, "Shuting down Jenkins load thread pool");
         try {
             threadPoolForLoad.shutdown();
         } catch (SecurityException e) {
@@ -3663,7 +3663,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpPluginServletFilters(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Stopping filters");
+        LOGGER.log(Level.FINEST, "Stopping filters");
         try {
             PluginServletFilter.cleanUp();
         } catch (OutOfMemoryError e) {
@@ -3680,7 +3680,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpReleaseAllLoggers(List<Throwable> errors) {
-        LOGGER.log(Level.FINE, "Releasing all loggers");
+        LOGGER.log(Level.FINEST, "Releasing all loggers");
         try {
             LogFactory.releaseAll();
         } catch (OutOfMemoryError e) {
@@ -4244,7 +4244,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                    LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
+                    LOGGER.finest(String.format("Restarting VM as requested by %s",exitUser));
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
@@ -4278,14 +4278,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if (isQuietingDown) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 10 seconds");
+                        LOGGER.finest("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                        LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
+                        LOGGER.finest(String.format("Restarting VM as requested by %s",exitUser));
                         for (RestartListener listener : RestartListener.all())
                             listener.onRestart();
                         lifecycle.restart();
                     } else {
-                        LOGGER.info("Safe-restart mode cancelled");
+                        LOGGER.finest("Safe-restart mode cancelled");
                     }
                 } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
@@ -4340,7 +4340,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
+                    LOGGER.finest(String.format("Shutting down VM as requested by %s from %s",
                             getAuthentication().getName(), req != null ? req.getRemoteAddr() : "???"));
 
                     cleanUp();
@@ -4368,7 +4368,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
-                    LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
+                    LOGGER.finest(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
@@ -5011,13 +5011,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     File pom = new File(dir, "pom.xml");
                     if (pom.exists() && "pom".equals(XMLUtils.getValue("/project/artifactId", pom))) {
                         pom =  pom.getCanonicalFile();
-                        LOGGER.info("Reading version from: " + pom.getAbsolutePath());
+                        LOGGER.finest("Reading version from: " + pom.getAbsolutePath());
                         ver = XMLUtils.getValue("/project/version", pom);
                         break;
                     }
                     dir = dir.getParentFile();
                 }
-                LOGGER.info("Jenkins is in dev mode, using version: " + ver);
+                LOGGER.finest("Jenkins is in dev mode, using version: " + ver);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Unable to read Jenkins version: " + e.getMessage(), e);
             }

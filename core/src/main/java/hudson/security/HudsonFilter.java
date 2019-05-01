@@ -107,11 +107,11 @@ public class HudsonFilter implements Filter {
             Jenkins hudson = Jenkins.getInstanceOrNull();
             if (hudson != null) {
                 // looks like we are initialized after Hudson came into being. initialize it now. See #3069
-                LOGGER.fine("Security wasn't initialized; Initializing it...");
+                LOGGER.finest("Security wasn't initialized; Initializing it...");
                 SecurityRealm securityRealm = hudson.getSecurityRealm();
                 reset(securityRealm);
-                LOGGER.fine("securityRealm is " + securityRealm);
-                LOGGER.fine("Security initialized");
+                LOGGER.finest("securityRealm is " + securityRealm);
+                LOGGER.finest("Security initialized");
             }
         } catch (ExceptionInInitializerError e) {
             // see HUDSON-4592. In some containers this happens before

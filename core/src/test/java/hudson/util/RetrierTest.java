@@ -29,7 +29,7 @@ public class RetrierTest {
                 (
                         // action to perform
                         () -> {
-                            LOG.info("action performed");
+                            LOG.finest("action performed");
                             return true;
                         },
                         // check the result and return true if success
@@ -71,7 +71,7 @@ public class RetrierTest {
                 (
                         // action to perform
                         () -> {
-                            LOG.info("action performed");
+                            LOG.finest("action performed");
                             return true;
                         },
                         // check the result and return true if success
@@ -123,7 +123,7 @@ public class RetrierTest {
                 (
                         // action to perform
                         () -> {
-                            LOG.info("action performed");
+                            LOG.finest("action performed");
                             return false;
                         },
                         // check the result and return true if success

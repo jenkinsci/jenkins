@@ -275,7 +275,7 @@ public class SlaveComputer extends Computer {
         if(!forceReconnect && isConnecting())
             return lastConnectActivity;
         if(forceReconnect && isConnecting())
-            logger.fine("Forcing a reconnect on "+getName());
+            logger.finest("Forcing a reconnect on "+getName());
 
         closeChannel();
         return lastConnectActivity = Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Object>() {
@@ -771,7 +771,7 @@ public class SlaveComputer extends Computer {
         numRetryAttempt++;
         if(numRetryAttempt<6 || (numRetryAttempt%12)==0) {
             // initially retry several times quickly, and after that, do it infrequently.
-            logger.info("Attempting to reconnect "+nodeName);
+            logger.finest("Attempting to reconnect "+nodeName);
             connect(true);
         }
     }

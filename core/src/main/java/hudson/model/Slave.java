@@ -130,7 +130,7 @@ public abstract class Slave extends Node implements Serializable {
      * Job allocation strategy.
      */
     private Mode mode = Mode.NORMAL;
-
+    
     /**
      * Agent availability strategy.
      */
@@ -429,7 +429,7 @@ public abstract class Slave extends Node implements Serializable {
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
-                LOGGER.log(Level.FINE, "found {0}", res);
+                LOGGER.log(Level.FINEST, "found {0}", res);
             }
             return res;
         }
@@ -444,7 +444,7 @@ public abstract class Slave extends Node implements Serializable {
                             try (JarFile jf = new JarFile(actualJar, false)) {
                                 Manifest mf = jf.getManifest();
                                 if (mf != null && mainClass.getName().equals(mf.getMainAttributes().getValue("Main-Class"))) {
-                                    LOGGER.log(Level.FINE, "found {0}", actualJar);
+                                    LOGGER.log(Level.FINEST, "found {0}", actualJar);
                                     return actualJar.toURI().toURL();
                                 }
                             }

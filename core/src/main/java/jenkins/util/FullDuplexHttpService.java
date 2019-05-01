@@ -100,7 +100,7 @@ public abstract class FullDuplexHttpService {
         {// wait until we have the other channel
             long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
             while (upload == null && System.currentTimeMillis() < end) {
-                LOGGER.log(Level.FINE, "Waiting for upload stream for {0}: {1}", new Object[] {uuid, this});
+                LOGGER.log(Level.FINEST, "Waiting for upload stream for {0}: {1}", new Object[] {uuid, this});
                 wait(1000);
             }
 
@@ -108,7 +108,7 @@ public abstract class FullDuplexHttpService {
                 throw new IOException("HTTP full-duplex channel timeout: " + uuid);
             }
 
-            LOGGER.log(Level.FINE, "Received upload stream {0} for {1}: {2}", new Object[] {upload, uuid, this});
+            LOGGER.log(Level.FINEST, "Received upload stream {0} for {1}: {2}", new Object[] {upload, uuid, this});
         }
 
         try {
@@ -134,7 +134,7 @@ public abstract class FullDuplexHttpService {
 
         // publish the upload channel
         upload = in;
-        LOGGER.log(Level.FINE, "Recording upload stream {0} for {1}: {2}", new Object[] {upload, uuid, this});
+        LOGGER.log(Level.FINEST, "Recording upload stream {0} for {1}: {2}", new Object[] {upload, uuid, this});
         notify();
 
         // wait until we are done
@@ -169,12 +169,12 @@ public abstract class FullDuplexHttpService {
 
                 if (req.getHeader("Side").equals("download")) {
                     FullDuplexHttpService service = createService(req, uuid);
-                    LOGGER.log(Level.FINE, "Processing download side for {0}: {1}", new Object[] {uuid, service});
+                    LOGGER.log(Level.FINEST, "Processing download side for {0}: {1}", new Object[] {uuid, service});
                     services.put(uuid, service);
                     try {
                         service.download(req, rsp);
                     } finally {
-                        LOGGER.log(Level.FINE, "Finished download side for {0}: {1}", new Object[] {uuid, service});
+                        LOGGER.log(Level.FINEST, "Finished download side for {0}: {1}", new Object[] {uuid, service});
                         services.remove(uuid);
                     }
                 } else {
@@ -182,11 +182,11 @@ public abstract class FullDuplexHttpService {
                     if (service == null) {
                         throw new IOException("No download side found for " + uuid);
                     }
-                    LOGGER.log(Level.FINE, "Processing upload side for {0}: {1}", new Object[] {uuid, service});
+                    LOGGER.log(Level.FINEST, "Processing upload side for {0}: {1}", new Object[] {uuid, service});
                     try {
                         service.upload(req, rsp);
                     } finally {
-                        LOGGER.log(Level.FINE, "Finished upload side for {0}: {1}", new Object[] {uuid, service});
+                        LOGGER.log(Level.FINEST, "Finished upload side for {0}: {1}", new Object[] {uuid, service});
                     }
                 }
             } catch (InterruptedException e) {

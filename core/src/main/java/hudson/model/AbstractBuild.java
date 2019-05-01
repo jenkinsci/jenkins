@@ -688,7 +688,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
                     try {
                         if (!perform(bs,listener)) {
-                            LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
+                            LOGGER.log(Level.FINEST, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                             r = false;
                             if (phase) {
                                 setResult(Result.FAILURE);
@@ -712,7 +712,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
 
             if (e instanceof AbortException) {
-                LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, buildStep});
+                LOGGER.log(Level.FINEST, "{0} : {1} failed", new Object[] {AbstractBuild.this, buildStep});
                 listener.error("Step ‘" + buildStep + "’ failed: " + e.getMessage());
             } else {
                 String msg = "Step ‘" + buildStep + "’ aborted due to exception: ";
@@ -790,7 +790,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
             for (BuildStep bs : steps)
                 if (!bs.prebuild(AbstractBuild.this,listener)) {
-                    LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
+                    LOGGER.log(Level.FINEST, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                     return false;
                 }
             return true;

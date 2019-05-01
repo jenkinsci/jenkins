@@ -214,7 +214,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
         File disableFile = new File(archive.getPath() + ".disabled");
         if (disableFile.exists()) {
-            LOGGER.info("Plugin " + archive.getName() + " is disabled");
+            LOGGER.finest("Plugin " + archive.getName() + " is disabled");
         }
 
         // compute dependencies
@@ -397,7 +397,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         DependencyClassLoader classLoader = findAncestorDependencyClassLoader(depender.classLoader);
         if (classLoader != null) {
             classLoader.updateTransientDependencies();
-            LOGGER.log(Level.INFO, "Updated dependency of {0}", depender.getShortName());
+            LOGGER.log(Level.FINEST, "Updated dependency of {0}", depender.getShortName());
         }
     }
 

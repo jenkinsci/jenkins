@@ -241,7 +241,7 @@ public class WebAppMain implements ServletContextListener {
                         BootFailure.getBootFailureFile(_home).delete();
 
                         // at this point we are open for business and serving requests normally
-                        LOGGER.info("Jenkins is fully up and running");
+                        LOGGER.finest("Jenkins is fully up and running");
                         success = true;
                     } catch (Error e) {
                         new HudsonFailedToLoad(e).publish(context,_home);
@@ -385,7 +385,7 @@ public class WebAppMain implements ServletContextListener {
             terminated = true;
             Thread t = initThread;
             if (t != null && t.isAlive()) {
-                LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
+                LOGGER.log(Level.FINEST, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
                 t.interrupt();
             }
 

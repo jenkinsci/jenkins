@@ -130,7 +130,7 @@ public class ClassFilterImpl extends ClassFilter {
             Boolean r = f.permits(_c);
             if (r != null) {
                 if (r) {
-                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), true});
+                    LOGGER.log(Level.FINEST, "{0} specifies a policy for {1}: {2}", new Object[] {f, _c.getName(), true});
                 } else {
                     notifyRejected(_c, _c.getName(), String.format("%s specifies a policy for %s: %s ", f, _c.getName(), r));
                 }
@@ -148,32 +148,32 @@ public class ClassFilterImpl extends ClassFilter {
                 return true;
             }
             if (c.isArray()) {
-                LOGGER.log(Level.FINE, "permitting {0} since it is an array", name);
+                LOGGER.log(Level.FINEST, "permitting {0} since it is an array", name);
                 return false;
             }
             if (Throwable.class.isAssignableFrom(c)) {
-                LOGGER.log(Level.FINE, "permitting {0} since it is a throwable", name);
+                LOGGER.log(Level.FINEST, "permitting {0} since it is a throwable", name);
                 return false;
             }
             if (Enum.class.isAssignableFrom(c)) { // Class.isEnum seems to be false for, e.g., java.util.concurrent.TimeUnit$6
-                LOGGER.log(Level.FINE, "permitting {0} since it is an enum", name);
+                LOGGER.log(Level.FINEST, "permitting {0} since it is an enum", name);
                 return false;
             }
             String location = codeSource(c);
             if (location != null) {
                 if (isLocationWhitelisted(location)) {
-                    LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
+                    LOGGER.log(Level.FINEST, "permitting {0} due to its location in {1}", new Object[] {name, location});
                     return false;
                 }
             } else {
                 ClassLoader loader = c.getClassLoader();
                 if (loader != null && loader.getClass().getName().equals("hudson.remoting.RemoteClassLoader")) {
-                    LOGGER.log(Level.FINE, "permitting {0} since it was loaded by a remote class loader", name);
+                    LOGGER.log(Level.FINEST, "permitting {0} since it was loaded by a remote class loader", name);
                     return false;
                 }
             }
             if (WHITELISTED_CLASSES.contains(name)) {
-                LOGGER.log(Level.FINE, "tolerating {0} by whitelist", name);
+                LOGGER.log(Level.FINEST, "tolerating {0} by whitelist", name);
                 return false;
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
@@ -192,11 +192,11 @@ public class ClassFilterImpl extends ClassFilter {
     private boolean isLocationWhitelisted(String _loc) {
         return codeSourceCache.computeIfAbsent(_loc, loc -> {
             if (loc.equals(JENKINS_LOC)) {
-                LOGGER.log(Level.FINE, "{0} seems to be the location of Jenkins core, OK", loc);
+                LOGGER.log(Level.FINEST, "{0} seems to be the location of Jenkins core, OK", loc);
                 return true;
             }
             if (loc.equals(REMOTING_LOC)) {
-                LOGGER.log(Level.FINE, "{0} seems to be the location of Remoting, OK", loc);
+                LOGGER.log(Level.FINEST, "{0} seems to be the location of Remoting, OK", loc);
                 return true;
             }
             if (loc.matches("file:/.+[.]jar")) {
@@ -204,13 +204,13 @@ public class ClassFilterImpl extends ClassFilter {
                     Manifest mf = jf.getManifest();
                     if (mf != null) {
                         if (isPluginManifest(mf)) {
-                            LOGGER.log(Level.FINE, "{0} seems to be a Jenkins plugin, OK", loc);
+                            LOGGER.log(Level.FINEST, "{0} seems to be a Jenkins plugin, OK", loc);
                             return true;
                         } else {
-                            LOGGER.log(Level.FINE, "{0} does not look like a Jenkins plugin", loc);
+                            LOGGER.log(Level.FINEST, "{0} does not look like a Jenkins plugin", loc);
                         }
                     } else {
-                        LOGGER.log(Level.FINE, "ignoring {0} with no manifest", loc);
+                        LOGGER.log(Level.FINEST, "ignoring {0} with no manifest", loc);
                     }
                 } catch (Exception x) {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
@@ -224,34 +224,34 @@ public class ClassFilterImpl extends ClassFilter {
                     if (manifestFile.isFile()) {
                         try (InputStream is = new FileInputStream(manifestFile)) {
                             if (isPluginManifest(new Manifest(is))) {
-                                LOGGER.log(Level.FINE, "{0} looks like a Jenkins plugin based on {1}, OK", new Object[] {loc, manifestFile});
+                                LOGGER.log(Level.FINEST, "{0} looks like a Jenkins plugin based on {1}, OK", new Object[] {loc, manifestFile});
                                 return true;
                             } else {
-                                LOGGER.log(Level.FINE, "{0} does not look like a Jenkins plugin", manifestFile);
+                                LOGGER.log(Level.FINEST, "{0} does not look like a Jenkins plugin", manifestFile);
                             }
                         }
                     } else {
-                        LOGGER.log(Level.FINE, "{0} has no matching {1}", new Object[] {loc, manifestFile});
+                        LOGGER.log(Level.FINEST, "{0} has no matching {1}", new Object[] {loc, manifestFile});
                     }
                 } catch (Exception x) {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
                 }
             }
             if (loc.endsWith("/target/classes/") || loc.matches(".+/build/classes/[^/]+/main/")) {
-                LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
+                LOGGER.log(Level.FINEST, "{0} seems to be current plugin classes, OK", loc);
                 return true;
             }
             if (Main.isUnitTest) {
                 if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar") || loc.matches(".+/build/classes/[^/]+/test/")) {
-                    LOGGER.log(Level.FINE, "{0} seems to be test classes, OK", loc);
+                    LOGGER.log(Level.FINEST, "{0} seems to be test classes, OK", loc);
                     return true;
                 }
                 if (loc.matches(".+/jenkins-test-harness-.+[.]jar")) {
-                    LOGGER.log(Level.FINE, "{0} seems to be jenkins-test-harness, OK", loc);
+                    LOGGER.log(Level.FINEST, "{0} seems to be jenkins-test-harness, OK", loc);
                     return true;
                 }
             }
-            LOGGER.log(Level.FINE, "{0} is not recognized; rejecting", loc);
+            LOGGER.log(Level.FINEST, "{0} is not recognized; rejecting", loc);
             return false;
         });
     }
@@ -304,7 +304,7 @@ public class ClassFilterImpl extends ClassFilter {
             Boolean r = f.permits(name);
             if (r != null) {
                 if (r) {
-                    LOGGER.log(Level.FINER, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, true});
+                    LOGGER.log(Level.FINEST, "{0} specifies a policy for {1}: {2}", new Object[] {f, name, true});
                 } else {
                     notifyRejected(null, name,
                             String.format("%s specifies a policy for %s: %s", f, name, r));

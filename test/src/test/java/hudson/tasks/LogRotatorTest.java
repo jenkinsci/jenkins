@@ -239,14 +239,14 @@ public class LogRotatorTest {
         public @Override boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
                 throws IOException, InterruptedException {
             archiver.perform(build, launcher, listener);
-            Logger.getAnonymousLogger().log(Level.INFO, "Building #{0}", build.getNumber());
+            Logger.getAnonymousLogger().log(Level.FINEST, "Building #{0}", build.getNumber());
             synchronized (waitLock) {
                 if (waitBuildNumber < build.getNumber()) {
                     waitBuildNumber = build.getNumber();
                     waitLock.notifyAll();
                 }
             }
-            Logger.getAnonymousLogger().log(Level.INFO, "Waiting #{0}", build.getNumber());
+            Logger.getAnonymousLogger().log(Level.FINEST, "Waiting #{0}", build.getNumber());
             synchronized (syncLock) {
                 while (build.getNumber() > syncBuildNumber) {
                     try {
@@ -257,14 +257,14 @@ public class LogRotatorTest {
                     }
                 }
             }
-            Logger.getAnonymousLogger().log(Level.INFO, "Done #{0}", build.getNumber());
+            Logger.getAnonymousLogger().log(Level.FINEST, "Done #{0}", build.getNumber());
             return true;
         }
         
         public void release(int upToBuildNumber) {
             synchronized (syncLock) {
                 if (syncBuildNumber < upToBuildNumber) {
-                    Logger.getAnonymousLogger().log(Level.INFO, "Signal #{0}", upToBuildNumber);
+                    Logger.getAnonymousLogger().log(Level.FINEST, "Signal #{0}", upToBuildNumber);
                     syncBuildNumber = upToBuildNumber;
                     syncLock.notifyAll();
                 }

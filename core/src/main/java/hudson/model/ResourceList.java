@@ -133,7 +133,7 @@ public final class ResourceList {
                 else // Otherwise set it to a very large value, since it's read/write conflict
                     v = MAX_INT;
                 if(r.getKey().isCollidingWith(l,unbox(v))) {
-                    LOGGER.info("Collision with " + r + " and " + l);
+                    LOGGER.finest("Collision with " + r + " and " + l);
                     return r.getKey();
                 }
             }

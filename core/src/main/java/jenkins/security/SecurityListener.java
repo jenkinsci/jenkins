@@ -108,7 +108,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since TODO */
     public static void fireUserCreated(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "new user created: {0}", username);
+        LOGGER.log(Level.FINEST, "new user created: {0}", username);
         for (SecurityListener l : all()) {
             l.userCreated(username);
         }
@@ -116,7 +116,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since 1.569 */
     public static void fireFailedToAuthenticate(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "failed to authenticate: {0}", username);
+        LOGGER.log(Level.FINEST, "failed to authenticate: {0}", username);
         for (SecurityListener l : all()) {
             l.failedToAuthenticate(username);
         }
@@ -124,7 +124,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since 1.569 */
     public static void fireLoggedIn(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "logged in: {0}", username);
+        LOGGER.log(Level.FINEST, "logged in: {0}", username);
         for (SecurityListener l : all()) {
             l.loggedIn(username);
         }
@@ -132,7 +132,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since 1.569 */
     public static void fireFailedToLogIn(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "failed to log in: {0}", username);
+        LOGGER.log(Level.FINEST, "failed to log in: {0}", username);
         for (SecurityListener l : all()) {
             l.failedToLogIn(username);
         }
@@ -140,7 +140,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since 1.569 */
     public static void fireLoggedOut(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "logged out: {0}", username);
+        LOGGER.log(Level.FINEST, "logged out: {0}", username);
         for (SecurityListener l : all()) {
             l.loggedOut(username);
         }

@@ -221,7 +221,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         public void doRun() {
             while(new Date().getTime() >= cal.getTimeInMillis()) {
-                LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
+                LOGGER.log(Level.FINEST, "cron checking {0}", cal.getTime());
                 try {
                     checkTriggers(cal);
                 } catch (Throwable e) {
@@ -242,7 +242,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
         if (scmd.synchronousPolling) {
-            LOGGER.fine("using synchronous polling");
+            LOGGER.finest("using synchronous polling");
 
             // Check that previous synchronous polling job is done to prevent piling up too many jobs
             if (previousSynchronousPolling == null || previousSynchronousPolling.isDone()) {
@@ -254,14 +254,14 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
-                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                LOGGER.finest("synchronously triggering SCMTrigger for project " + t.job.getName());
                                 t.run();
                             }
                         }
                     }
                 }));
             } else {
-                LOGGER.fine("synchronous polling has detected unfinished jobs, will not trigger additional jobs.");
+                LOGGER.finest("synchronous polling has detected unfinished jobs, will not trigger additional jobs.");
             }
         }
 
@@ -270,7 +270,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             for (Trigger t : p.getTriggers().values()) {
                 if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t !=null && t.spec != null && t.tabs != null) {
-                        LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
+                        LOGGER.log(Level.FINEST, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
                         if (t.tabs.check(cal)) {
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
@@ -282,7 +282,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 LOGGER.log(Level.WARNING, t.getClass().getName() + ".run() failed for " + p, e);
                             }
                         } else {
-                            LOGGER.log(Level.FINER, "did not trigger {0}", p);
+                            LOGGER.log(Level.FINEST, "did not trigger {0}", p);
                         }
                     } else {
                         LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());

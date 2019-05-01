@@ -59,7 +59,7 @@ public class FullDuplexHttpStream {
         UUID uuid = UUID.randomUUID(); // so that the server can correlate those two connections
 
         // server->client
-        LOGGER.fine("establishing download side");
+        LOGGER.finest("establishing download side");
         HttpURLConnection con = (HttpURLConnection) target.openConnection();
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
@@ -74,10 +74,10 @@ public class FullDuplexHttpStream {
         if (con.getHeaderField("Hudson-Duplex") == null) {
             throw new CLI.NotTalkingToJenkinsException("There's no Jenkins running at " + target + ", or is not serving the HTTP Duplex transport");
         }
-        LOGGER.fine("established download side"); // calling getResponseCode or getHeaderFields breaks everything
+        LOGGER.finest("established download side"); // calling getResponseCode or getHeaderFields breaks everything
 
         // client->server uses chunked encoded POST for unlimited capacity.
-        LOGGER.fine("establishing upload side");
+        LOGGER.finest("establishing upload side");
         con = (HttpURLConnection) target.openConnection();
         con.setDoOutput(true); // request POST
         con.setRequestMethod("POST");
@@ -89,7 +89,7 @@ public class FullDuplexHttpStream {
         	con.addRequestProperty ("Authorization", authorization);
         }
         output = con.getOutputStream();
-        LOGGER.fine("established upload side");
+        LOGGER.finest("established upload side");
     }
 
     // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.

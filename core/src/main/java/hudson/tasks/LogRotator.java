@@ -110,7 +110,7 @@ public class LogRotator extends BuildDiscarder {
 
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
-        LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
+        LOGGER.log(FINEST, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
         // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();
@@ -127,7 +127,7 @@ public class LogRotator extends BuildDiscarder {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
-                LOGGER.log(FINE, "{0} is to be removed", r);
+                LOGGER.log(FINEST, "{0} is to be removed", r);
                 r.delete();
             }
         }
@@ -141,7 +141,7 @@ public class LogRotator extends BuildDiscarder {
                     break;
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
-                    LOGGER.log(FINE, "{0} is to be removed", r);
+                    LOGGER.log(FINEST, "{0} is to be removed", r);
                     r.delete();
                 }
                 r = r.getNextBuild();
@@ -154,7 +154,7 @@ public class LogRotator extends BuildDiscarder {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
-                LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
+                LOGGER.log(FINEST, "{0} is to be purged of artifacts", r);
                 r.deleteArtifacts();
             }
         }
@@ -168,7 +168,7 @@ public class LogRotator extends BuildDiscarder {
                     break;
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
-                    LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
+                    LOGGER.log(FINEST, "{0} is to be purged of artifacts", r);
                     r.deleteArtifacts();
                 }
                 r = r.getNextBuild();
@@ -178,19 +178,19 @@ public class LogRotator extends BuildDiscarder {
 
     private boolean shouldKeepRun(Run r, Run lsb, Run lstb) {
         if (r.isKeepLog()) {
-            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s marked as a keeper", r);
+            LOGGER.log(FINEST, "{0} is not to be removed or purged of artifacts because it’s marked as a keeper", r);
             return true;
         }
         if (r == lsb) {
-            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s the last successful build", r);
+            LOGGER.log(FINEST, "{0} is not to be removed or purged of artifacts because it’s the last successful build", r);
             return true;
         }
         if (r == lstb) {
-            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s the last stable build", r);
+            LOGGER.log(FINEST, "{0} is not to be removed or purged of artifacts because it’s the last stable build", r);
             return true;
         }
         if (r.isBuilding()) {
-            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s still building", r);
+            LOGGER.log(FINEST, "{0} is not to be removed or purged of artifacts because it’s still building", r);
             return true;
         }
         return false;
@@ -198,7 +198,7 @@ public class LogRotator extends BuildDiscarder {
 
     private boolean tooNew(Run r, Calendar cal) {
         if (!r.getTimestamp().before(cal)) {
-            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s still new", r);
+            LOGGER.log(FINEST, "{0} is not to be removed or purged of artifacts because it’s still new", r);
             return true;
         } else {
             return false;

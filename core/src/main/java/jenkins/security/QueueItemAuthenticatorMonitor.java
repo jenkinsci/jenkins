@@ -122,7 +122,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
 
             if (!(li.task instanceof Job<?, ?>)) {
                 // Only care about jobs for now -- Do not react to folder scans and similar
-                LOGGER.log(Level.FINE, displayName + " is not a job");
+                LOGGER.log(Level.FINEST, displayName + " is not a job");
                 return;
             }
 
@@ -130,11 +130,11 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
             Authentication buildAuthentication = li.authenticate();
             boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM;
             if (!buildRunsAsSystem) {
-                LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
+                LOGGER.log(Level.FINEST, displayName + " does not run as SYSTEM");
                 return;
             }
 
-            LOGGER.log(Level.FINE, displayName + " is running as SYSTEM");
+            LOGGER.log(Level.FINEST, displayName + " is running as SYSTEM");
             if (isQueueItemAuthenticatorConfigured()) {
                 anyBuildLaunchedAsSystemWithAuthenticatorPresent = true;
             }

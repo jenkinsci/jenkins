@@ -164,19 +164,19 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
             }
             User user = User.getById(value.userId, false);
             if (user == null) {
-                LOGGER.log(Level.INFO, "User not found id={0}", value.userId);
+                LOGGER.log(Level.FINEST, "User not found id={0}", value.userId);
             } else {
                 ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
                 if (apiTokenProperty == null) {
-                    LOGGER.log(Level.INFO, "User without apiTokenProperty found id={0}", value.userId);
+                    LOGGER.log(Level.FINEST, "User without apiTokenProperty found id={0}", value.userId);
                 } else {
                     ApiTokenStore.HashedToken revokedToken = apiTokenProperty.getTokenStore().revokeToken(value.uuid);
                     if (revokedToken == null) {
-                        LOGGER.log(Level.INFO, "User without selected token id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
+                        LOGGER.log(Level.FINEST, "User without selected token id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
                     } else {
                         apiTokenProperty.deleteApiToken();
                         user.save();
-                        LOGGER.log(Level.INFO, "Revocation success for user id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
+                        LOGGER.log(Level.FINEST, "Revocation success for user id={0}, tokenUuid={1}", new Object[]{value.userId, value.uuid});
                     }
                 }
             }

@@ -629,7 +629,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
             if (duplicatesInQueue.isEmpty()) {
-                LOGGER.log(Level.FINE, "{0} added to queue", p);
+                LOGGER.log(Level.FINEST, "{0} added to queue", p);
 
                 // put the item in the queue
                 WaitingItem added = new WaitingItem(due, p, actions);
@@ -638,7 +638,7 @@ public class Queue extends ResourceController implements Saveable {
                 return ScheduleResult.created(added);
             }
 
-            LOGGER.log(Level.FINE, "{0} is already in the queue", p);
+            LOGGER.log(Level.FINEST, "{0} is already in the queue", p);
 
             // but let the actions affect the existing stuff.
             for (Item item : duplicatesInQueue) {
@@ -721,7 +721,7 @@ public class Queue extends ResourceController implements Saveable {
     public boolean cancel(Task p) {
         lock.lock();
         try { try {
-            LOGGER.log(Level.FINE, "Cancelling {0}", p);
+            LOGGER.log(Level.FINEST, "Cancelling {0}", p);
             for (WaitingItem item : waitingList) {
                 if (item.task.equals(p)) {
                     return item.cancel(this);
@@ -743,7 +743,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     public boolean cancel(Item item) {
-        LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
+        LOGGER.log(Level.FINEST, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
         lock.lock();
         try { try {
             return item.cancel(this);
@@ -1461,7 +1461,7 @@ public class Queue extends ResourceController implements Saveable {
         lock.lock();
         try { try {
 
-            LOGGER.log(Level.FINE, "Queue maintenance started on {0} with {1}", new Object[] {this, snapshot});
+            LOGGER.log(Level.FINEST, "Queue maintenance started on {0} with {1}", new Object[] {this, snapshot});
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<>();
@@ -1589,7 +1589,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (causeOfBlockage != null) {
                     p.leave(this);
                     new BlockedItem(p, causeOfBlockage).enter(this);
-                    LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                    LOGGER.log(Level.FINEST, "Catching that {0} is blocked in the last minute", p);
                     // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
                     // so that other buildables which might have been blocked by this can see the state change
                     updateSnapshot();
@@ -1629,7 +1629,7 @@ public class Queue extends ResourceController implements Saveable {
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
                         // check if we can execute other projects
-                        LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
+                        LOGGER.log(Level.FINEST, "Failed to map {0} to executors. candidates={1} parked={2}",
                                 new Object[]{p, candidates, parked.values()});
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
                         continue;
@@ -2583,7 +2583,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /*package*/ void enter(Queue q) {
-            LOGGER.log(Level.FINE, "{0} is blocked", this);
+            LOGGER.log(Level.FINEST, "{0} is blocked", this);
             blockedProjects.add(this);
             for (QueueListener ql : QueueListener.all()) {
                 try {
@@ -2598,7 +2598,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = blockedProjects.remove(this);
             if (r) {
-                LOGGER.log(Level.FINE, "{0} no longer blocked", this);
+                LOGGER.log(Level.FINEST, "{0} no longer blocked", this);
                 for (QueueListener ql : QueueListener.all()) {
                     try {
                         ql.onLeaveBlocked(this);
@@ -2706,7 +2706,7 @@ public class Queue extends ResourceController implements Saveable {
         /*package*/ boolean leave(Queue q) {
             boolean r = q.buildables.remove(this);
             if (r) {
-                LOGGER.log(Level.FINE, "{0} no longer blocked", this);
+                LOGGER.log(Level.FINEST, "{0} no longer blocked", this);
                 for (QueueListener ql : QueueListener.all()) {
                     try {
                         ql.onLeaveBuildable(this);

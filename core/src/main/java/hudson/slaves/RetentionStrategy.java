@@ -256,7 +256,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
                 if (needComputer) {
                     // we've been in demand for long enough
-                    logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
+                    logger.log(Level.FINEST, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     c.connect(false);
                 }
@@ -264,7 +264,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
-                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                    logger.log(Level.FINEST, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
                     c.disconnect(new OfflineCause.IdleOfflineCause());
                 } else {

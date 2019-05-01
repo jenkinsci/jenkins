@@ -54,7 +54,7 @@ import java.util.logging.Logger;
         new ReflectiveFilePathFilter() {
             protected boolean op(String op, File f) throws SecurityException {
                 if (BYPASS) {
-                    LOGGER.log(Level.FINE, "agent allowed to {0} {1}", new Object[] {op, f});
+                    LOGGER.log(Level.FINEST, "agent allowed to {0} {1}", new Object[] {op, f});
                     return true;
                 } else {
                     return false;

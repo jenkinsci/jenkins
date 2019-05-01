@@ -112,7 +112,7 @@ public final class TcpSlaveAgentListener extends Thread {
             TcpSlaveAgentListenerRescheduler.schedule(t, e);
         });
 
-        LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
+        LOGGER.log(Level.FINEST, "TCP agent listener started on port {0}", getPort());
 
         start();
     }
@@ -242,7 +242,7 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void run() {
             try {
-                LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
+                LOGGER.log(Level.FINEST, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
@@ -395,10 +395,10 @@ public final class TcpSlaveAgentListener extends Thread {
         public void handle(Socket socket) throws IOException, InterruptedException {
             try {
                 try (OutputStream stream = socket.getOutputStream()) {
-                    LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
+                    LOGGER.log(Level.FINEST, "Received ping request from {0}", socket.getRemoteSocketAddress());
                     stream.write(ping);
                     stream.flush();
-                    LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
+                    LOGGER.log(Level.FINEST, "Sent ping response to {0}", socket.getRemoteSocketAddress());
                 }
             } finally {
                 socket.close();
@@ -407,17 +407,17 @@ public final class TcpSlaveAgentListener extends Thread {
 
         public boolean connect(Socket socket) throws IOException {
             try {
-                LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                LOGGER.log(Level.FINEST, "Requesting ping from {0}", socket.getRemoteSocketAddress());
                 try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                     out.writeUTF("Protocol:Ping");
                     try (InputStream in = socket.getInputStream()) {
                         byte[] response = new byte[ping.length];
                         int responseLength = in.read(response);
                         if (responseLength == ping.length && Arrays.equals(response, ping)) {
-                            LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                            LOGGER.log(Level.FINEST, "Received ping response from {0}", socket.getRemoteSocketAddress());
                             return true;
                         } else {
-                            LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                            LOGGER.log(Level.FINEST, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
                                     new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?
@@ -487,7 +487,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     int port = Jenkins.getInstance().getSlaveAgentPort();
                     if (port != -1) {
                         new TcpSlaveAgentListener(port).start();
-                        LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+                        LOGGER.log(Level.FINEST, "Restarted TcpSlaveAgentListener");
                     } else {
                         LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + originThread + ". Port is disabled, not rescheduling", cause);
                     }

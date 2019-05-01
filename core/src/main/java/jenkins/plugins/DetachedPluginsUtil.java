@@ -88,13 +88,13 @@ public class DetachedPluginsUtil {
                 continue;
             }
             if (BREAK_CYCLES.contains(pluginName + ' ' + detached.shortName)) {
-                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[]{pluginName, detached.shortName});
+                LOGGER.log(Level.FINEST, "skipping implicit dependency {0} → {1}", new Object[]{pluginName, detached.shortName});
                 continue;
             }
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
                 out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requiredVersion));
-                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}",
+                LOGGER.log(Level.FINEST, "adding implicit dependency {0} → {1} because of {2}",
                            new Object[]{pluginName, detached.shortName, jenkinsVersion});
             }
         }

@@ -145,7 +145,7 @@ public class SetupWizard extends PageDecorator {
             if(iapf.exists()) {
                 String setupKey = iapf.readToString().trim();
                 String ls = System.lineSeparator();
-                LOGGER.info(ls + ls + "*************************************************************" + ls
+                LOGGER.finest(ls + ls + "*************************************************************" + ls
                         + "*************************************************************" + ls
                         + "*************************************************************" + ls
                         + ls
@@ -343,7 +343,7 @@ public class SetupWizard extends PageDecorator {
     }
     
     private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
-        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
+        LOGGER.log(Level.FINEST, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
         JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
     }
 

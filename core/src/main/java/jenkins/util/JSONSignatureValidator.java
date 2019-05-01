@@ -78,7 +78,7 @@ public class JSONSignatureValidator {
                         } catch (CertificateNotYetValidException e) {
                             warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert.toString(), name));
                         }
-                        LOGGER.log(Level.FINE, "Add certificate found in json doc: \r\n\tsubjectDN: {0}\r\n\tissuer: {1}", new Object[]{c.getSubjectDN(), c.getIssuerDN()});
+                        LOGGER.log(Level.FINEST, "Add certificate found in json doc: \r\n\tsubjectDN: {0}\r\n\tissuer: {1}", new Object[]{c.getSubjectDN(), c.getIssuerDN()});
                         certs.add(c);
                     } catch (IllegalArgumentException ex) {
                         throw new IOException("Could not decode certificate", ex);
@@ -103,7 +103,7 @@ public class JSONSignatureValidator {
                     case ERROR:
                         return resultSha512;
                     case WARNING:
-                        LOGGER.log(Level.INFO, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
+                        LOGGER.log(Level.FINEST, "JSON data source '" + name + "' does not provide a SHA-512 content checksum or signature. Looking for SHA-1.");
                         break;
                     case OK:
                         // fall through
@@ -263,7 +263,7 @@ public class JSONSignatureValidator {
             }
             try {
                 TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);
-                LOGGER.log(Level.FINE, "Add Certificate Authority {0}: {1}",
+                LOGGER.log(Level.FINEST, "Add Certificate Authority {0}: {1}",
                         new Object[]{cert, (certificateAuthority.getTrustedCert() == null ? null : certificateAuthority.getTrustedCert().getSubjectDN())});
                 anchors.add(certificateAuthority);
             } catch (IllegalArgumentException e) {
@@ -294,7 +294,7 @@ public class JSONSignatureValidator {
                 }
                 try {
                     TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);
-                    LOGGER.log(Level.FINE, "Add Certificate Authority {0}: {1}",
+                    LOGGER.log(Level.FINEST, "Add Certificate Authority {0}: {1}",
                             new Object[]{cert, (certificateAuthority.getTrustedCert() == null ? null : certificateAuthority.getTrustedCert().getSubjectDN())});
                     anchors.add(certificateAuthority);
                 } catch (IllegalArgumentException e) {

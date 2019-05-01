@@ -58,17 +58,17 @@ public class DependencyRunner implements Runnable {
         try {
             Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
             // Get all top-level projects
-            LOGGER.fine("assembling top level projects");
+            LOGGER.finest("assembling top level projects");
             for (AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class))
                 if (p.getUpstreamProjects().size() == 0) {
-                    LOGGER.fine("adding top level project " + p.getName());
+                    LOGGER.finest("adding top level project " + p.getName());
                     topLevelProjects.add(p);
                 } else {
-                    LOGGER.fine("skipping project since not a top level project: " + p.getName());
+                    LOGGER.finest("skipping project since not a top level project: " + p.getName());
                 }
             populate(topLevelProjects);
             for (AbstractProject p : polledProjects) {
-                    LOGGER.fine("running project in correct dependency order: " + p.getName());
+                    LOGGER.finest("running project in correct dependency order: " + p.getName());
                 runnable.run(p);
             }
         } finally {
@@ -81,11 +81,11 @@ public class DependencyRunner implements Runnable {
             if (polledProjects.contains(p)) {
                 // Project will be readded at the queue, so that we always use
                 // the longest path
-            	LOGGER.fine("removing project " + p.getName() + " for re-add");
+            	LOGGER.finest("removing project " + p.getName() + " for re-add");
                 polledProjects.remove(p);
             }
 
-            LOGGER.fine("adding project " + p.getName());
+            LOGGER.finest("adding project " + p.getName());
             polledProjects.add(p);
 
             // Add all downstream dependencies

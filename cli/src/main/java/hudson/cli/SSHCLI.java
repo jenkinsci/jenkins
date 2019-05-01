@@ -25,6 +25,9 @@
 package hudson.cli;
 
 import hudson.util.QuotedStringTokenizer;
+
+import static java.util.logging.Level.FINEST;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
@@ -36,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -74,7 +76,7 @@ class SSHCLI {
             return -1;
         }
 
-        CLI.LOGGER.log(FINE, "Connecting via SSH to: {0}", endpointDescription);
+        CLI.LOGGER.log(FINEST, "Connecting via SSH to: {0}", endpointDescription);
 
         int sshPort = Integer.parseInt(endpointDescription.split(":")[1]);
         String sshHost = endpointDescription.split(":")[0];
@@ -103,7 +105,7 @@ class SSHCLI {
             cf.await();
             try (ClientSession session = cf.getSession()) {
                 for (KeyPair pair : provider.getKeys()) {
-                    CLI.LOGGER.log(FINE, "Offering {0} private key", pair.getPrivate().getAlgorithm());
+                    CLI.LOGGER.log(FINEST, "Offering {0} private key", pair.getPrivate().getAlgorithm());
                     session.addPublicKeyIdentity(pair);
                 }
                 session.auth().verify(10000L);

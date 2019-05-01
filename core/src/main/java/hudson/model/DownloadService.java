@@ -226,14 +226,14 @@ public class DownloadService extends PageDecorator {
             for (Downloadable d : Downloadable.all()) {
                 TextFile f = d.getDataFile();
                 if (f == null || !f.exists()) {
-                    LOGGER.log(Level.FINE, "Updating metadata for " + d.getId());
+                    LOGGER.log(Level.FINEST, "Updating metadata for " + d.getId());
                     try {
                         d.updateNow();
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to update metadata for " + d.getId(), e);
                     }
                 } else {
-                    LOGGER.log(Level.FINER, "Skipping update of metadata for " + d.getId());
+                    LOGGER.log(Level.FINEST, "Skipping update of metadata for " + d.getId());
                 }
             }
         }
@@ -390,7 +390,7 @@ public class DownloadService extends PageDecorator {
             TextFile df = getDataFile();
             df.write(json);
             df.file.setLastModified(dataTimestamp);
-            LOGGER.info("Obtained the updated data file for "+id);
+            LOGGER.finest("Obtained the updated data file for "+id);
             return FormValidation.ok();
         }
 

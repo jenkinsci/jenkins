@@ -64,7 +64,7 @@ public class FullDuplexHttpServiceTest {
         OutputStream os = con.getOutputStream();
         os.write(33);
         os.flush();
-        Logger.getLogger(FullDuplexHttpServiceTest.class.getName()).info("uploaded initial content");
+        Logger.getLogger(FullDuplexHttpServiceTest.class.getName()).finest("uploaded initial content");
         assertEquals(0, is.read()); // see FullDuplexHttpStream.getInputStream
         assertEquals(66, is.read());
     }

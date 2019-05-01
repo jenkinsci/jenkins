@@ -38,7 +38,7 @@ public class InstallUncaughtExceptionHandler {
         });
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
-            LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");
+            LOGGER.log(Level.FINEST, "Successfully installed a global UncaughtExceptionHandler.");
         }
         catch (SecurityException ex) {
             LOGGER.log(Level.SEVERE,

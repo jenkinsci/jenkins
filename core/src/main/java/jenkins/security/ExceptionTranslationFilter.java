@@ -116,7 +116,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		try {
 			chain.doFilter(request, response);
 
-			LOGGER.finer("Chain processed normally");
+			LOGGER.finest("Chain processed normally");
 		}
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
@@ -149,20 +149,20 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 	private void handleException(ServletRequest request, ServletResponse response, FilterChain chain,
 			AcegiSecurityException exception) throws IOException, ServletException {
 		if (exception instanceof AuthenticationException) {
-			LOGGER.log(Level.FINER, "Authentication exception occurred; redirecting to authentication entry point", exception);
+			LOGGER.log(Level.FINEST, "Authentication exception occurred; redirecting to authentication entry point", exception);
 
 			sendStartAuthentication(request, response, chain, (AuthenticationException) exception);
 		}
 		else if (exception instanceof AccessDeniedException) {
 			if (authenticationTrustResolver.isAnonymous(SecurityContextHolder.getContext().getAuthentication())) {
-					LOGGER.log(Level.FINER, "Access is denied (user is anonymous); redirecting to authentication entry point",
+					LOGGER.log(Level.FINEST, "Access is denied (user is anonymous); redirecting to authentication entry point",
 						exception);
 
 				sendStartAuthentication(request, response, chain, new InsufficientAuthenticationException(
 						"Full authentication is required to access this resource",exception));
 			}
 			else {
-				LOGGER.log(Level.FINER, "Access is denied (user is not anonymous); delegating to AccessDeniedHandler",
+				LOGGER.log(Level.FINEST, "Access is denied (user is not anonymous); delegating to AccessDeniedHandler",
 						exception);
 
 				accessDeniedHandler.handle(request, response, (AccessDeniedException) exception);
@@ -193,7 +193,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
 		SavedRequest savedRequest = new SavedRequest(httpRequest, portResolver);
 
-		LOGGER.finer("Authentication entry point being called; SavedRequest added to Session: " + savedRequest);
+		LOGGER.finest("Authentication entry point being called; SavedRequest added to Session: " + savedRequest);
 
 		if (createSessionAllowed) {
 			// Store the HTTP request itself. Used by AbstractProcessingFilter

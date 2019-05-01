@@ -119,7 +119,7 @@ public class InitStrategy {
             return new InitStrategy(); // default
         }
         InitStrategy s = it.next();
-        LOGGER.log(Level.FINE, "Using {0} as InitStrategy", s);
+        LOGGER.log(Level.FINEST, "Using {0} as InitStrategy", s);
         return s;
     }
 

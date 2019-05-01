@@ -59,7 +59,7 @@ abstract public class FullDuplexHttpChannel extends FullDuplexHttpService {
         PingThread ping = new PingThread(channel) {
             @Override
             protected void onDead(Throwable diagnosis) {
-                LOGGER.log(Level.INFO, "Duplex-HTTP session " + uuid + " is terminated", diagnosis);
+                LOGGER.log(Level.FINEST, "Duplex-HTTP session " + uuid + " is terminated", diagnosis);
                 // this will cause the channel to abort and subsequently clean up
                 try {
                     upload.close();

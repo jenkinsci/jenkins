@@ -1272,11 +1272,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             try {
                 InetAddress ia = InetAddress.getByName(address);
                 if(!(ia instanceof Inet4Address)) {
-                    LOGGER.log(Level.FINE, "{0} is not an IPv4 address", address);
+                    LOGGER.log(Level.FINEST, "{0} is not an IPv4 address", address);
                     continue;
                 }
                 if(!ComputerPinger.checkIsReachable(ia, 3)) {
-                    LOGGER.log(Level.FINE, "{0} didn't respond to ping", address);
+                    LOGGER.log(Level.FINEST, "{0} didn't respond to ping", address);
                     continue;
                 }
                 cachedHostName = ia.getCanonicalHostName();
@@ -1328,21 +1328,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
             while (nis.hasMoreElements()) {
                 NetworkInterface ni =  nis.nextElement();
-                LOGGER.log(Level.FINE, "Listing up IP addresses for {0}", ni.getDisplayName());
+                LOGGER.log(Level.FINEST, "Listing up IP addresses for {0}", ni.getDisplayName());
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
                     if(ia.isLoopbackAddress()) {
-                        LOGGER.log(Level.FINE, "{0} is a loopback address", ia);
+                        LOGGER.log(Level.FINEST, "{0} is a loopback address", ia);
                         continue;
                     }
 
                     if(!(ia instanceof Inet4Address)) {
-                        LOGGER.log(Level.FINE, "{0} is not an IPv4 address", ia);
+                        LOGGER.log(Level.FINEST, "{0} is not an IPv4 address", ia);
                         continue;
                     }
 
-                    LOGGER.log(Level.FINE, "{0} is a viable candidate", ia);
+                    LOGGER.log(Level.FINEST, "{0} is a viable candidate", ia);
                     names.add(ia.getHostAddress());
                 }
             }
@@ -1645,7 +1645,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 newLocation.getParentFile().mkdirs();
                 boolean relocationSuccessful=f.renameTo(newLocation);
                 if (relocationSuccessful) { // The operation will fail if mkdir fails
-                    LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                    LOGGER.log(Level.FINEST, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } else {
                     LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 }

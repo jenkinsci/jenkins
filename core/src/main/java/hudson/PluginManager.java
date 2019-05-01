@@ -252,7 +252,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public static @NonNull PluginManager createDefault(@NonNull Jenkins jenkins) {
         String pmClassName = SystemProperties.getString(CUSTOM_PLUGIN_MANAGER);
         if (!StringUtils.isBlank(pmClassName)) {
-            LOGGER.log(FINE, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
+            LOGGER.log(FINEST, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
             try {
                 final Class<? extends PluginManager> klass = Class.forName(pmClassName).asSubclass(PluginManager.class);
                 // Iteration is in declaration order
@@ -446,7 +446,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     private boolean isDuplicate(PluginWrapper p) {
                                         String shortName = p.getShortName();
                                         if (inspectedShortNames.containsKey(shortName)) {
-                                            LOGGER.info("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
+                                            LOGGER.finest("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
                                             return true;
                                         }
 
@@ -723,7 +723,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
         if (lastExecVersion.isNewerThan(InstallUtil.NEW_INSTALL_VERSION) && lastExecVersion.isOlderThan(Jenkins.getVersion())) {
 
-            LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
+            LOGGER.log(FINEST, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
@@ -759,7 +759,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             });
 
-            LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
+            LOGGER.log(FINEST, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
 
             InstallUtil.saveLastExecVersion();
@@ -789,7 +789,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         return false;
                     }
                 });
-                LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
+                LOGGER.log(FINEST, "Upgraded detached plugins (and dependencies): {0}",
                         new Object[]{loadedDetached});
             }
         }
@@ -858,7 +858,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
         try (ACLContext context = ACL.as(ACL.SYSTEM)) {
-            LOGGER.info("Attempting to dynamic load "+arc);
+            LOGGER.finest("Attempting to dynamic load "+arc);
             PluginWrapper p = null;
             String sn;
             try {
@@ -955,7 +955,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             } catch (ExtensionRefreshException e) {
                 throw new IOException("Failed to refresh extensions after installing " + sn + " plugin", e);
             }
-            LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+            LOGGER.finest("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
     }
 
@@ -1012,7 +1012,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
-        LOGGER.log(FINE, "Copying {0}", src);
+        LOGGER.log(FINEST, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);
@@ -1158,7 +1158,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 				Object strategy = klazz.getConstructor(PluginManager.class)
 						.newInstance(this);
 				if (strategy instanceof PluginStrategy) {
-					LOGGER.info("Plugin strategy: " + strategyName);
+					LOGGER.finest("Plugin strategy: " + strategyName);
 					return (PluginStrategy) strategy;
 				} else {
 					LOGGER.warning("Plugin strategy (" + strategyName +
@@ -1171,7 +1171,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 				LOGGER.log(WARNING, "Could not instantiate plugin strategy: "
 						+ strategyName + ". Falling back to ClassicPluginStrategy", e);
 			}
-			LOGGER.info("Falling back to ClassicPluginStrategy");
+			LOGGER.finest("Falling back to ClassicPluginStrategy");
 		}
 
 		// default and fallback

@@ -64,10 +64,10 @@ public class StandardArtifactManager extends ArtifactManager {
     @Override public final boolean delete() throws IOException, InterruptedException {
         File ad = getArtifactsDir();
         if (!ad.exists()) {
-            LOG.log(Level.FINE, "no such directory {0} to delete for {1}", new Object[] {ad, build});
+            LOG.log(Level.FINEST, "no such directory {0} to delete for {1}", new Object[] {ad, build});
             return false;
         }
-        LOG.log(Level.FINE, "deleting {0} for {1}", new Object[] {ad, build});
+        LOG.log(Level.FINEST, "deleting {0} for {1}", new Object[] {ad, build});
         Util.deleteRecursive(ad);
         return true;
     }

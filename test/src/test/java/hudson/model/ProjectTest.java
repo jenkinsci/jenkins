@@ -389,10 +389,10 @@ public class ProjectTest {
 
     private QueueTaskFuture<FreeStyleBuild> waitForStart(FreeStyleProject p) throws InterruptedException, ExecutionException {
         long start = System.nanoTime();
-        LOGGER.info("Scheduling "+p);
+        LOGGER.finest("Scheduling "+p);
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
         f.waitForStart();
-        LOGGER.info("Wait:"+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
+        LOGGER.finest("Wait:"+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
         return f;
     }
 

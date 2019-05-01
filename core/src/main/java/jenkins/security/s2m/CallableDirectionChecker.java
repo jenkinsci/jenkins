@@ -50,13 +50,13 @@ public class CallableDirectionChecker extends RoleChecker {
         final String name = subject.getClass().getName();
 
         if (expected.contains(Roles.MASTER)) {
-            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role", name);
+            LOGGER.log(Level.FINEST, "Executing {0} is allowed since it is targeted for the master role", name);
             return;    // known to be safe
         }
 
         if (isWhitelisted(subject,expected)) {
             // this subject is dubious, but we are letting it through as per whitelisting
-            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to master", name);
+            LOGGER.log(Level.FINEST, "Explicitly allowing {0} to be sent from agent to master", name);
             return;
         }
 

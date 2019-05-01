@@ -103,7 +103,7 @@ public interface CustomClassFilter extends ExtensionPoint {
                         overrides.put(entry, true);
                     }
                 }
-                Logger.getLogger(Static.class.getName()).log(Level.FINE, "user-defined entries: {0}", overrides);
+                Logger.getLogger(Static.class.getName()).log(Level.FINEST, "user-defined entries: {0}", overrides);
             }
         }
 
@@ -168,7 +168,7 @@ public interface CustomClassFilter extends ExtensionPoint {
                     }
                 }
             }
-            Logger.getLogger(Contributed.class.getName()).log(Level.FINE, "plugin-defined entries: {0}", overrides);
+            Logger.getLogger(Contributed.class.getName()).log(Level.FINEST, "plugin-defined entries: {0}", overrides);
         }
 
     }

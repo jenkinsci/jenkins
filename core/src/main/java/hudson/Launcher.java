@@ -464,7 +464,7 @@ public abstract class Launcher {
         public int join() throws IOException, InterruptedException {
             // The logging around procHolderForJoin prevents the preliminary object deallocation we saw in JENKINS-23271
             final Proc procHolderForJoin = start();
-            LOGGER.log(Level.FINER, "Started the process {0}", procHolderForJoin);
+            LOGGER.log(Level.FINEST, "Started the process {0}", procHolderForJoin);
             
             if (procHolderForJoin instanceof ProcWithJenkins23271Patch) {
                 return procHolderForJoin.join();
@@ -472,7 +472,7 @@ public abstract class Launcher {
                 // Fallback to the internal handling logic
                 if (!(procHolderForJoin instanceof LocalProc)) {
                     // We consider that the process may be at risk of JENKINS-23271
-                    LOGGER.log(Level.FINE, "Process {0} of type {1} is neither {2} nor instance of {3}. "
+                    LOGGER.log(Level.FINEST, "Process {0} of type {1} is neither {2} nor instance of {3}. "
                             + "If this process operates with Jenkins agents via remote invocation, you may get into JENKINS-23271",
                             new Object[] {procHolderForJoin, procHolderForJoin.getClass(), LocalProc.class, ProcWithJenkins23271Patch.class});
                 }

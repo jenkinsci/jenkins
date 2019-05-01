@@ -39,7 +39,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         copy(p.getInputStream(), baos);
         int r = p.waitFor();
         if (r!=0)
-            LOGGER.info(exe+" cmd: output:\n"+baos);
+            LOGGER.finest(exe+" cmd: output:\n"+baos);
         return r;
     }
 

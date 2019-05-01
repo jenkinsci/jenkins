@@ -98,7 +98,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         BulkChange bc = new BulkChange(Jenkins.getInstance());
         try{
             boolean result = configure(req, req.getSubmittedForm());
-            LOGGER.log(Level.FINE, "security saved: "+result);
+            LOGGER.log(Level.FINEST, "security saved: "+result);
             Jenkins.getInstance().save();
             FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
         } finally {

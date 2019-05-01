@@ -120,7 +120,7 @@ public final class BuildReference<R> {
         for (HolderFactory f : ExtensionList.lookup(HolderFactory.class)) {
             Holder<R> h = f.make(referent);
             if (h != null) {
-                LOGGER.log(Level.FINE, "created build reference for {0} using {1}", new Object[] {referent, f});
+                LOGGER.log(Level.FINEST, "created build reference for {0} using {1}", new Object[] {referent, f});
                 return h;
             }
         }

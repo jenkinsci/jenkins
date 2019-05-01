@@ -109,7 +109,7 @@ public abstract class ProgressiveRendering {
         }
         boundObjectTable = ((BoundObjectTable) ancestor.getObject()).getTable();
         boundId = ancestor.getNextToken(0);
-        LOG.log(Level.FINE, "starting rendering {0} at {1}", new Object[] {uri, boundId});
+        LOG.log(Level.FINEST, "starting rendering {0} at {1}", new Object[] {uri, boundId});
         final ExecutorService executorService = executorService();
         executorService.submit(new Runnable() {
             @Override public void run() {
@@ -128,12 +128,12 @@ public abstract class ProgressiveRendering {
                 } finally {
                     SecurityContextHolder.setContext(orig);
                     setCurrentRequest(null);
-                    LOG.log(Level.FINE, "{0} finished in {1}msec with status {2}", new Object[] {uri, System.currentTimeMillis() - start, status});
+                    LOG.log(Level.FINEST, "{0} finished in {1}msec with status {2}", new Object[] {uri, System.currentTimeMillis() - start, status});
                 }
                 if (executorService instanceof ScheduledExecutorService) {
                     ((ScheduledExecutorService) executorService).schedule(new Runnable() {
                         @Override public void run() {
-                            LOG.log(Level.FINE, "some time has elapsed since {0} finished, so releasing", boundId);
+                            LOG.log(Level.FINEST, "some time has elapsed since {0} finished, so releasing", boundId);
                             release();
                         }
                     }, timeout() /* add some grace period for browser/network overhead */ * 2, TimeUnit.MILLISECONDS);
@@ -177,7 +177,7 @@ public abstract class ProgressiveRendering {
             }
         }
         List/*<AncestorImpl>*/ ancestors = currentRequest.ancestors;
-        LOG.log(Level.FINER, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
+        LOG.log(Level.FINEST, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
         TokenList tokens = currentRequest.tokens;
         return new RequestImpl(Stapler.getCurrent(), (HttpServletRequest) Proxy.newProxyInstance(ProgressiveRendering.class.getClassLoader(), new Class<?>[] {HttpServletRequest.class}, new InvocationHandler() {
             @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -258,7 +258,7 @@ public abstract class ProgressiveRendering {
         long elapsed = now - lastNewsTime;
         if (elapsed > timeout()) {
             status = CANCELED;
-            LOG.log(Level.FINE, "{0} canceled due to {1}msec inactivity after {2}msec", new Object[] {uri, elapsed, now - start});
+            LOG.log(Level.FINEST, "{0} canceled due to {1}msec inactivity after {2}msec", new Object[] {uri, elapsed, now - start});
             return true;
         } else {
             return false;
@@ -280,11 +280,11 @@ public abstract class ProgressiveRendering {
         Object statusJSON = status == 1 ? "done" : status == CANCELED ? "canceled" : status == ERROR ? "error" : status;
         r.put("status", statusJSON);
         if (statusJSON instanceof String) { // somehow completed
-            LOG.log(Level.FINE, "finished in news so releasing {0}", boundId);
+            LOG.log(Level.FINEST, "finished in news so releasing {0}", boundId);
             release();
         }
         lastNewsTime = System.currentTimeMillis();
-        LOG.log(Level.FINER, "news from {0}", uri);
+        LOG.log(Level.FINEST, "news from {0}", uri);
         return r;
     }
 

@@ -65,7 +65,7 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
             try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 Item actual = j.getItemByFullName(src);
                 if (actual == null) {
-                    LOGGER.log(Level.FINE, "really no item exists named {0}", src);
+                    LOGGER.log(Level.FINEST, "really no item exists named {0}", src);
                 } else {
                     LOGGER.log(Level.WARNING, "running as {0} could not find {1} of {2}", new Object[] {who.getPrincipal(), actual, type()});
                 }

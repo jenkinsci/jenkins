@@ -100,7 +100,7 @@ public class HsErrPidList extends AdministrativeMonitor {
 
 
     private void scan(String pattern) {
-        LOGGER.fine("Scanning "+pattern+" for hs_err_pid files");
+        LOGGER.finest("Scanning "+pattern+" for hs_err_pid files");
 
         pattern = pattern.replace("%p","*").replace("%%","%");
         File f = new File(pattern).getAbsoluteFile();
@@ -125,7 +125,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
     private void scanFile(File log) {
-        LOGGER.fine("Scanning "+log);
+        LOGGER.finest("Scanning "+log);
 
         try (Reader rawReader = new FileReader(log);
              BufferedReader r = new BufferedReader(rawReader)) {

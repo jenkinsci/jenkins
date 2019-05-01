@@ -36,6 +36,9 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.queue.SubTask;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
+
+import static java.util.logging.Level.FINEST;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -46,7 +49,6 @@ import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
-import static java.util.logging.Level.FINER;
 import jenkins.model.RunIdMigrator;
 
 /**
@@ -129,7 +131,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
                 if (r.isBuilding()) {
                     // Do not use RunMap.put(Run):
                     _builds.put(r.getNumber(), r);
-                    LOGGER.log(Level.FINE, "keeping reloaded {0}", r);
+                    LOGGER.log(Level.FINEST, "keeping reloaded {0}", r);
                 }
             }
         }
@@ -369,7 +371,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
                     if (pb != null) {
                         pb.getRunMixIn().nextBuildR = createReference();   // establish bi-di link
                         this.previousBuildR = pb.getRunMixIn().createReference();
-                        LOGGER.log(FINER, "Linked {0}<->{1} in getPreviousBuild()", new Object[]{this, pb});
+                        LOGGER.log(FINEST, "Linked {0}<->{1} in getPreviousBuild()", new Object[]{this, pb});
                         return pb;
                     } else {
                         this.previousBuildR = none();
@@ -403,7 +405,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
                     if (nb != null) {
                         nb.getRunMixIn().previousBuildR = createReference();   // establish bi-di link
                         this.nextBuildR = nb.getRunMixIn().createReference();
-                        LOGGER.log(FINER, "Linked {0}<->{1} in getNextBuild()", new Object[]{this, nb});
+                        LOGGER.log(FINEST, "Linked {0}<->{1} in getNextBuild()", new Object[]{this, nb});
                         return nb;
                     } else {
                         this.nextBuildR = none();

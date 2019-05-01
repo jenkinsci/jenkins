@@ -36,7 +36,7 @@ public class NodeParallelTest {
         List<Callable<Void>> tasks = Collections.nCopies(n, () -> {
             try {
                 int i = count.incrementAndGet();
-                LOGGER.log(Level.INFO, "Creating slave " + i);
+                LOGGER.log(Level.FINEST, "Creating slave " + i);
                 // JenkinsRule sync on Jenkins singleton, so this doesn't work
                 // r.createSlave();
                 DumbSlave agent = new DumbSlave("agent-"+i, "/tmp", new JNLPLauncher(true));

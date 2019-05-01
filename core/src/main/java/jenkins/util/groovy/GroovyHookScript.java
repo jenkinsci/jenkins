@@ -115,14 +115,14 @@ public class GroovyHookScript {
 
     protected void execute(URL bundled) throws IOException {
         if (bundled!=null) {
-            LOGGER.info("Executing bundled script: "+bundled);
+            LOGGER.finest("Executing bundled script: "+bundled);
             execute(new GroovyCodeSource(bundled));
         }
     }
 
     protected void execute(File f) {
         if (f.exists()) {
-            LOGGER.info("Executing "+f);
+            LOGGER.finest("Executing "+f);
             try {
                 execute(new GroovyCodeSource(f));
             } catch (IOException e) {

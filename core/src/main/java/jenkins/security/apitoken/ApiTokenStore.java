@@ -105,13 +105,13 @@ public class ApiTokenStore {
         tokenList.forEach(hashedToken -> {
             JSONObject receivedTokenData = tokenStoreDataMap.get(hashedToken.uuid);
             if (receivedTokenData == null) {
-                LOGGER.log(Level.INFO, "No token received for {0}", hashedToken.uuid);
+                LOGGER.log(Level.FINEST, "No token received for {0}", hashedToken.uuid);
                 return;
             }
             
             String name = receivedTokenData.getString("tokenName");
             if (StringUtils.isBlank(name)) {
-                LOGGER.log(Level.INFO, "Empty name received for {0}, we do not care about it", hashedToken.uuid);
+                LOGGER.log(Level.FINEST, "Empty name received for {0}, we do not care about it", hashedToken.uuid);
                 return;
             }
             
@@ -294,7 +294,7 @@ public class ApiTokenStore {
             }
         }
         
-        LOGGER.log(Level.FINER, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
+        LOGGER.log(Level.FINEST, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
         return false;
     }
     

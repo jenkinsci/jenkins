@@ -306,7 +306,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                 timestamp = System.currentTimeMillis();
                 record = this;
 
-                LOGGER.log(Level.FINE, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis()-startTime});
+                LOGGER.log(Level.FINEST, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis()-startTime});
             } catch (InterruptedException x) {
                 // interrupted by new one, fine
             } catch (Throwable t) {

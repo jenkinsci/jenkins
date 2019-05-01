@@ -89,15 +89,15 @@ class UserIdMigrator {
     }
 
     void migrateUsers(UserIdMapper mapper) throws IOException {
-        LOGGER.fine("Beginning migration of users to userId mapping.");
+        LOGGER.finest("Beginning migration of users to userId mapping.");
         Map<String, File> existingUsers = scanExistingUsers();
         for (Map.Entry<String, File> existingUser : existingUsers.entrySet()) {
             File newDirectory = mapper.putIfAbsent(existingUser.getKey(), false);
-            LOGGER.log(Level.INFO, "Migrating user '" + existingUser.getKey() + "' from 'users/" + existingUser.getValue().getName() + "/' to 'users/" + newDirectory.getName() + "/'");
+            LOGGER.log(Level.FINEST, "Migrating user '" + existingUser.getKey() + "' from 'users/" + existingUser.getValue().getName() + "/' to 'users/" + newDirectory.getName() + "/'");
             Files.move(existingUser.getValue().toPath(), newDirectory.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         mapper.save();
-        LOGGER.fine("Completed migration of users to userId mapping.");
+        LOGGER.finest("Completed migration of users to userId mapping.");
     }
 
 }

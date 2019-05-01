@@ -76,7 +76,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
                     File stage = new File(baseDir,name+".new");
                     FileUtils.copyURLToFile(exe,stage);
                     Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
-                    LOGGER.info("Scheduled a replacement of "+name);
+                    LOGGER.finest("Scheduled a replacement of "+name);
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Failed to replace "+name,e);
                 } catch (InterruptedException e) {

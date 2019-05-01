@@ -164,7 +164,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         synchronized (symlinks) {
             String target = symlinks.get(cache);
             if (target != null) {
-                LOGGER.log(Level.FINE, "readSymlink cached {0} → {1}", new Object[] {cache, target});
+                LOGGER.log(Level.FINEST, "readSymlink cached {0} → {1}", new Object[] {cache, target});
                 return target;
             }
         }
@@ -173,7 +173,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             // if this file isn't a symlink, it must be a regular file
             target = FileUtils.readFileToString(cache,"UTF-8").trim();
         }
-        LOGGER.log(Level.FINE, "readSymlink {0} → {1}", new Object[] {cache, target});
+        LOGGER.log(Level.FINEST, "readSymlink {0} → {1}", new Object[] {cache, target});
         synchronized (symlinks) {
             symlinks.put(cache, target);
         }
@@ -181,7 +181,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     static void writeSymlink(File cache, String target) throws IOException, InterruptedException {
-        LOGGER.log(Level.FINE, "writeSymlink {0} → {1}", new Object[] {cache, target});
+        LOGGER.log(Level.FINEST, "writeSymlink {0} → {1}", new Object[] {cache, target});
         synchronized (symlinks) {
             symlinks.put(cache, target);
         }

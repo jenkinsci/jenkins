@@ -298,7 +298,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected Run(@Nonnull JobT job) throws IOException {
         this(job, System.currentTimeMillis());
         this.number = project.assignBuildNumber();
-        LOGGER.log(FINER, "new {0} @{1}", new Object[] {this, hashCode()});
+        LOGGER.log(FINEST, "new {0} @{1}", new Object[] {this, hashCode()});
     }
 
     /**
@@ -342,7 +342,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
-            LOGGER.log(FINER, "reload {0} @{1}", new Object[] {this, hashCode()});
+            LOGGER.log(FINEST, "reload {0} @{1}", new Object[] {this, hashCode()});
         } else {
             LOGGER.log(WARNING, "reload {0} @{1} with anomalous state {2}", new Object[] {this, hashCode(), state});
         }
@@ -480,7 +480,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // result can only get worse
         if (result==null || r.isWorseThan(result)) {
             result = r;
-            LOGGER.log(FINE, this + " in " + getRootDir() + ": result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
+            LOGGER.log(FINEST, this + " in " + getRootDir() + ": result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
         }
     }
 
@@ -1592,7 +1592,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         if(!renamingSucceeded)
             throw new IOException(rootDir+" is in use");
-        LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
+        LOGGER.log(FINEST, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
 
         removeRunFromParent();
         }
@@ -1817,7 +1817,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -1856,7 +1856,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
-                LOGGER.log(FINER, "moving into POST_PRODUCTION on {0}", this);
+                LOGGER.log(FINEST, "moving into POST_PRODUCTION on {0}", this);
                 state = State.POST_PRODUCTION;
 
                 if (listener != null) {
@@ -1962,7 +1962,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private void handleFatalBuildProblem(@Nonnull BuildListener listener, @Nonnull Throwable e) {
         if(listener!=null) {
-            LOGGER.log(FINE, getDisplayName()+" failed to build",e);
+            LOGGER.log(FINEST, getDisplayName()+" failed to build",e);
 
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
@@ -1977,7 +1977,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Called when a job started building.
      */
     protected void onStartBuilding() {
-        LOGGER.log(FINER, "moving to BUILDING on {0}", this);
+        LOGGER.log(FINEST, "moving to BUILDING on {0}", this);
         state = State.BUILDING;
         startTime = System.currentTimeMillis();
         if (runner!=null)
@@ -1991,7 +1991,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void onEndBuilding() {
         // signal that we've finished building.
         state = State.COMPLETED;
-        LOGGER.log(FINER, "moving to COMPLETED on {0}", this);
+        LOGGER.log(FINEST, "moving to COMPLETED on {0}", this);
         if (runner!=null) {
             // MavenBuilds may be created without their corresponding runners.
             runner.checkpoints.allDone();

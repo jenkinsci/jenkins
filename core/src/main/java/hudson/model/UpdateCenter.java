@@ -42,7 +42,7 @@ import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
 
 import hudson.init.Initializer;
@@ -276,11 +276,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
             // Use the default Update Center
-            LOGGER.log(Level.FINE, "Using the default Update Center implementation");
+            LOGGER.log(Level.FINEST, "Using the default Update Center implementation");
             return createDefaultUpdateCenter(config);
         }
         
-        LOGGER.log(Level.FINE, "Using the custom update center: {0}", requiredClassName);
+        LOGGER.log(Level.FINEST, "Using the custom update center: {0}", requiredClassName);
         try {
             final Class<?> clazz = Class.forName(requiredClassName).asSubclass(UpdateCenter.class);
             if (!UpdateCenter.class.isAssignableFrom(clazz)) {
@@ -291,7 +291,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             final Class<? extends UpdateCenter> ucClazz = clazz.asSubclass(UpdateCenter.class);
             final Constructor<? extends UpdateCenter> defaultConstructor = ucClazz.getConstructor();
             final Constructor<? extends UpdateCenter> configConstructor = ucClazz.getConstructor(UpdateCenterConfiguration.class);
-            LOGGER.log(Level.FINE, "Using the constructor {0} Update Center configuration for {1}",
+            LOGGER.log(Level.FINEST, "Using the constructor {0} Update Center configuration for {1}",
                     new Object[] {config != null ? "with" : "without", requiredClassName});
             return config != null ? configConstructor.newInstance(config) : defaultConstructor.newInstance();
         } catch(ClassCastException e) {
@@ -661,7 +661,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return;
         }
 
-        LOGGER.info("Scheduling the core upgrade");
+        LOGGER.finest("Scheduling the core upgrade");
         addJob(job);
         rsp.sendRedirect2(".");
     }
@@ -689,7 +689,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         synchronized (jobs) {
             if (!isRestartScheduled()) {
                 addJob(new RestartJenkinsJob(getCoreSource()));
-                LOGGER.info("Scheduling Jenkins reboot");
+                LOGGER.finest("Scheduling Jenkins reboot");
             }
         }
         response.sendRedirect2(".");
@@ -704,7 +704,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             for (UpdateCenterJob job : jobs) {
                 if (job instanceof RestartJenkinsJob) {
                     if (((RestartJenkinsJob) job).cancel()) {
-                        LOGGER.info("Scheduled Jenkins reboot unscheduled");
+                        LOGGER.finest("Scheduled Jenkins reboot unscheduled");
                     }
                 }
             }
@@ -764,7 +764,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
-        LOGGER.info("Scheduling the core downgrade");
+        LOGGER.finest("Scheduling the core downgrade");
         addJob(job);
         rsp.sendRedirect2(".");
     }
@@ -775,7 +775,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
-        LOGGER.info("Scheduling the core downgrade");
+        LOGGER.finest("Scheduling the core downgrade");
 
         addJob(job);
         rsp.sendRedirect2(".");
@@ -1162,7 +1162,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
 
-                LOGGER.info("Downloading "+job.getName());
+                LOGGER.finest("Downloading "+job.getName());
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
@@ -1383,7 +1383,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *      {@link Future} to keeps track of the status of the execution.
          */
         public Future<UpdateCenterJob> submit() {
-            LOGGER.fine("Scheduling "+this+" to installerService");
+            LOGGER.finest("Scheduling "+this+" to installerService");
             // TODO: seems like this access to jobs should be synchronized, no?
             // It might get synch'd accidentally via the addJob method, but that wouldn't be good.
             jobs.add(this);
@@ -1495,7 +1495,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (ID_UPLOAD.equals(site.getId())) {
                 return;
             }
-            LOGGER.fine("Doing a connectivity check");
+            LOGGER.finest("Doing a connectivity check");
             Future<?> internetCheck = null;
             try {
                 final String connectionCheckUrl = site.getConnectionCheckUrl();
@@ -1721,11 +1721,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public void run() {
             try {
-                LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
+                LOGGER.finest("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
 
                 _run();
 
-                LOGGER.info("Installation successful: "+getName());
+                LOGGER.finest("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
             } catch (InstallationStatus e) {
@@ -1938,7 +1938,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         if (result512 == VerificationResult.NOT_PROVIDED && result256 == VerificationResult.NOT_PROVIDED) {
-            LOGGER.log(INFO, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 or SHA-256 failed since your configured update site does not provide either of those checksums. Falling back to SHA-1.");
+            LOGGER.log(FINEST, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 or SHA-256 failed since your configured update site does not provide either of those checksums. Falling back to SHA-1.");
         }
 
         VerificationResult result1 = verifyChecksums(entry.getSha1(), job.getComputedSHA1(), true);
@@ -2008,7 +2008,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (wasInstalled()) {
                 // Do this first so we can avoid duplicate downloads, too
                 // check to see if the plugin is already installed at the same version and skip it
-                LOGGER.info("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                LOGGER.finest("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
                 return;
             }
             try {
@@ -2039,7 +2039,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } finally {
                 synchronized(this) {
                     // There may be other threads waiting on completion
-                    LOGGER.fine("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
+                    LOGGER.finest("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
                     // some status other than Installing or Downloading needs to be set here
                     // {@link #isAlreadyInstalling()}, it will be overwritten by {@link DownloadJob#run()}
                     status = new Skipped();
@@ -2067,7 +2067,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             synchronized(ij) {
                                 if(ij.status instanceof Installing || ij.status instanceof Pending) {
                                     try {
-                                        LOGGER.fine("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                                        LOGGER.finest("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
                                         ij.wait();
                                     } catch (InterruptedException e) {
                                         throw new RuntimeException(e);
@@ -2166,11 +2166,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             try {
-                LOGGER.info("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
+                LOGGER.finest("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
 
                 _run();
 
-                LOGGER.info("Downgrade successful: "+getName());
+                LOGGER.finest("Downgrade successful: "+getName());
                 status = new Success();
                 onSuccess();
             } catch (Throwable e) {
@@ -2263,11 +2263,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             try {
-                LOGGER.info("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
+                LOGGER.finest("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
 
                 _run();
 
-                LOGGER.info("Downgrading successful: "+getName());
+                LOGGER.finest("Downgrading successful: "+getName());
                 status = new Success();
                 onSuccess();
             } catch (Throwable e) {

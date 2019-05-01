@@ -191,7 +191,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             X509Certificate certificate = (X509Certificate) keyStore.getCertificate("jenkins");
             if (certificate == null
                     || certificate.getNotAfter().getTime() < System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1)) {
-                LOGGER.log(Level.INFO, "Updating {0} TLS certificate to retain validity", getName());
+                LOGGER.log(Level.FINEST, "Updating {0} TLS certificate to retain validity", getName());
                 X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
                 RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
                 char[] password = "password".toCharArray();
