@@ -116,7 +116,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     @DataBoundSetter public void setExcludes(String excludes) {
-        this.excludes = excludes;
+        this.excludes = Util.fixEmpty(excludes);
     }
 
     @DataBoundSetter public void setDefaultExcludes(boolean defaultExcludes) {
@@ -274,7 +274,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         FindRecords(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive, long buildTimestamp) {
             this.targets = targets;
-            this.excludes = Util.fixEmpty(excludes);
+            this.excludes = excludes;
             this.defaultExcludes = defaultExcludes;
             this.caseSensitive = caseSensitive;
             this.buildTimestamp = buildTimestamp;
