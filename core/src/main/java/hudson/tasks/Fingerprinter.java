@@ -153,7 +153,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      * We ensure that fields are initialized to
      * default values after deserialization.
      */
-    protected Object readResolve() {
+    private Object readResolve() {
         if(defaultExcludes == null) {
             defaultExcludes = true;
         }
@@ -274,7 +274,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         FindRecords(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive, long buildTimestamp) {
             this.targets = targets;
-            this.excludes = excludes;
+            this.excludes = Util.fixEmpty(excludes);
             this.defaultExcludes = defaultExcludes;
             this.caseSensitive = caseSensitive;
             this.buildTimestamp = buildTimestamp;
