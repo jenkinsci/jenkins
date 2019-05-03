@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.model.Slave;
@@ -33,14 +34,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
+import org.jvnet.hudson.test.TestExtension;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class NodesTest {
 
@@ -88,6 +86,27 @@ public class NodesTest {
         Node newNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(newNode);
         assertThat(r.jenkins.getNode("foo"), sameInstance(newNode));
+        ListenerImpl l = ExtensionList.lookupSingleton(ListenerImpl.class);
+        assertEquals(0, l.deleted);
+        assertEquals(1, l.updated);
+        assertEquals(1, l.created);
+    }
+    @TestExtension("addNodeShouldReplaceExistingNode")
+    public static final class ListenerImpl extends NodeListener {
+        int deleted, updated, created;
+        @Override
+        protected void onDeleted(Node node) {
+            deleted++;
+        }
+        @Override
+        protected void onUpdated(Node oldOne, Node newOne) {
+            assertNotSame(oldOne, newOne);
+            updated++;
+        }
+        @Override
+        protected void onCreated(Node node) {
+            created++;
+        }
     }
 
     @Test
