@@ -130,7 +130,6 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
@@ -208,7 +207,7 @@ import org.apache.tools.ant.BuildException;
  * @author Kohsuke Kawaguchi
  * @see VirtualFile
  */
-public final class FilePath implements SerializableOnlyOverRemoting {
+public final class FilePath implements Serializable {
     /**
      * Maximum http redirects we will follow. This defaults to the same number as Firefox/Chrome tolerates.
      */
@@ -2986,17 +2985,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        Channel target = getChannelForSerialization();
-        if (channel != null && channel != target) {
-            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel (current=" + channel + ", target=" + target + ")");
-        }
+        Channel target = Channel.current();
+
+        if(channel!=null && channel!=target)
+            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel");
 
         oos.defaultWriteObject();
         oos.writeBoolean(channel==null);
     }
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        Channel channel = getChannelForSerialization();
+        Channel channel = Channel.current();
+        assert channel!=null;
 
         ois.defaultReadObject();
         if(ois.readBoolean()) {

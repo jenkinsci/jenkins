@@ -40,7 +40,6 @@ import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
 import jenkins.security.SlaveToMasterCallable;
-import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import jenkins.util.java.JavaUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -55,7 +54,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -97,7 +95,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.315
  */
-public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, SerializableOnlyOverRemoting {
+public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, Serializable {
     /**
      * To be filled in the constructor of the derived type.
      */
@@ -1830,7 +1828,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Represents a process tree over a channel.
      */
-    public static class Remote extends ProcessTree {
+    public static class Remote extends ProcessTree implements Serializable {
         private final IProcessTree proxy;
 
         @Deprecated
@@ -1910,8 +1908,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Use {@link Remote} as the serialized form.
      */
-    /*package*/ Object writeReplace() throws ObjectStreamException {
-        return new Remote(this, getChannelForSerialization());
+    /*package*/ Object writeReplace() {
+        return new Remote(this,Channel.current());
     }
 
 //    public static void main(String[] args) {
