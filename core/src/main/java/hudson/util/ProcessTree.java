@@ -1909,7 +1909,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Use {@link Remote} as the serialized form.
      */
     /*package*/ Object writeReplace() {
-        return new Remote(this,Channel.current());
+        return new Remote(this, Channel.current());
     }
 
 //    public static void main(String[] args) {
