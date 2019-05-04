@@ -2987,13 +2987,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        Channel target;
-        try {
-            target = getChannelForSerialization();
-        } catch (NotSerializableException x) {
-            LOGGER.log(Level.WARNING, "JENKINS-57244 violation", x);
-            target = null;
-        }
+        Channel target = _getChannelForSerialization();
         if (channel != null && channel != target) {
             throw new IllegalStateException("Can't send a remote FilePath to a different remote channel (current=" + channel + ", target=" + target + ")");
         }
@@ -3002,14 +2996,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         oos.writeBoolean(channel==null);
     }
 
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        Channel channel;
+    private Channel _getChannelForSerialization() {
         try {
-            channel = getChannelForSerialization();
+            return getChannelForSerialization();
         } catch (NotSerializableException x) {
-            LOGGER.log(Level.WARNING, "JENKINS-57244 violation", x);
-            channel = null;
+            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://jenkins.io/redirect/filepath-serialization for details.", x);
+            return null;
         }
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        Channel channel = _getChannelForSerialization();
 
         ois.defaultReadObject();
         if(ois.readBoolean()) {
