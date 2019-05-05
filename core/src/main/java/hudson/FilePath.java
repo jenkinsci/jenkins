@@ -139,6 +139,7 @@ import org.kohsuke.stapler.Stapler;
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
+import java.io.NotSerializableException;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -2986,7 +2987,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        Channel target = getChannelForSerialization();
+        Channel target = _getChannelForSerialization();
         if (channel != null && channel != target) {
             throw new IllegalStateException("Can't send a remote FilePath to a different remote channel (current=" + channel + ", target=" + target + ")");
         }
@@ -2995,8 +2996,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         oos.writeBoolean(channel==null);
     }
 
+    private Channel _getChannelForSerialization() {
+        try {
+            return getChannelForSerialization();
+        } catch (NotSerializableException x) {
+            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://jenkins.io/redirect/filepath-serialization for details.", x);
+            return null;
+        }
+    }
+
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        Channel channel = getChannelForSerialization();
+        Channel channel = _getChannelForSerialization();
 
         ois.defaultReadObject();
         if(ois.readBoolean()) {
