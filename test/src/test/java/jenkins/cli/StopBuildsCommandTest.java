@@ -28,7 +28,6 @@ import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
-import hudson.slaves.DumbSlave;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -39,7 +38,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
@@ -83,8 +81,6 @@ public class StopBuildsCommandTest {
     public void shouldStopSeveralWorkingBuilds() throws Exception {
         final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
         project.setConcurrentBuild(true);
-
-        setupSlaveWithTwoExecutors();
 
         project.scheduleBuild2(0).waitForStart();
         project.scheduleBuild2(0).waitForStart();
@@ -175,8 +171,6 @@ public class StopBuildsCommandTest {
     }
 
     private void setupAndAssertTwoBuildsStop(final List<String> inputNames) throws Exception {
-        setupSlaveWithTwoExecutors();
-
         final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
         final FreeStyleProject project2 = createLongRunningProject(TEST_JOB_NAME_2);
 
@@ -196,12 +190,6 @@ public class StopBuildsCommandTest {
         final FreeStyleProject project = j.createFreeStyleProject(jobName);
         project.getBuildersList().add(createScriptBuilder("sleep 50000"));
         return project;
-    }
-
-    private void setupSlaveWithTwoExecutors() throws hudson.model.Descriptor.FormException, IOException, URISyntaxException {
-        DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
-        slave.setNumExecutors(2);
-        j.jenkins.addNode(slave);
     }
 
     private Builder createScriptBuilder(String script) {
