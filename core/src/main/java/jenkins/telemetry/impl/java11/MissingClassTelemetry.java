@@ -36,7 +36,6 @@ import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -62,11 +61,6 @@ public class MissingClassTelemetry extends Telemetry {
     private final static LocalDate START = LocalDate.of(2019, 4, 1);
     // Gather for 2 years (who knows how long people will need to migrate to Java 11)
     private final static LocalDate END = START.plusMonths(24);
-
-    /**
-     * Classes to be caught in {@link hudson.init.impl.InstallUncaughtExceptionHandler}
-     */
-    private final static Class[] UNCAUGHT_EXCEPTIONS = new Class[] {ClassNotFoundException.class, NoClassDefFoundError.class};
 
     /**
      * Packages removed from java8 up to java11
@@ -169,13 +163,30 @@ public class MissingClassTelemetry extends Telemetry {
     /**
      * Store the exception if it's from a split package of Java.
      * @param name the name of the class
-     * @param e the exception thrown
+     * @param e the throwable to report if needed
      */
     public static void reportException(@Nonnull String name, @Nonnull Throwable e) {
+        //ClassDefFoundError uses / instead of .
+        name = name.replace('/', '.').trim();
+
         if (isFromMovedPackage(name)) {
-            events.put(e);
+            events.put(name, e);
 
             if (LOGGER.isLoggable(Level.FINE)) LOGGER.log(Level.FINE, "Added a missed class for Java 11 telemetry. Class: " + name, e);
+        }
+    }
+
+    /**
+     * Store the exception extracting the class name from the message of the throwable specified.
+     * @param e the exception to report if needed
+     */
+    public static void reportException(@Nonnull Throwable e) {
+        String name = e.getMessage();
+
+        if (name.length() == 0) {
+            LOGGER.log(Level.INFO, "No class name could be extracted from the throwable to determine if it's reportable", e);
+        } else {
+            reportException(name, e);
         }
     }
 
@@ -186,13 +197,5 @@ public class MissingClassTelemetry extends Telemetry {
             }
         }
         return false;
-    }
-
-    /**
-     * List of exception classes we are going to send via telemetry.
-     * @return the list of exception classes
-     */
-    public static Class[] getCollectibleThrowables() {
-        return Arrays.copyOf(UNCAUGHT_EXCEPTIONS, UNCAUGHT_EXCEPTIONS.length);
     }
 }

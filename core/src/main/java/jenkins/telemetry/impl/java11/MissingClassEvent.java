@@ -54,8 +54,8 @@ class MissingClassEvent {
         this.className = className;
     }
 
-    MissingClassEvent(@Nonnull Throwable t) {
-        this.className = t.getMessage();
+    MissingClassEvent(@Nonnull String name, @Nonnull Throwable t) {
+        this.className = name;
 
         StringWriter stackTrace = new StringWriter();
         t.printStackTrace(new PrintWriter(stackTrace));
@@ -79,5 +79,15 @@ class MissingClassEvent {
 
     void setTime(String time) {
         this.time = time;
+    }
+
+    @Override
+    public String toString() {
+        return "MissingClassEvent{" +
+                "time='" + time + '\'' +
+                ", occurrences=" + occurrences +
+                ", stackTrace='" + stackTrace + '\'' +
+                ", className='" + className + '\'' +
+                '}';
     }
 }

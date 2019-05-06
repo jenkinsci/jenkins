@@ -49,11 +49,12 @@ public class MissingClassEvents {
     /**
      * Add a new exception to the store. If the same exception already exists, it increases the occurrences. If we
      * already get the maximum number of exceptions, it doesn't add any value.
+     * @param name name of the class not found
      * @param t the exception to store
      * @return the occurrences stored for this throwable. 1 the fist time it's stored. &gt; 1 for successive stores of the
      * same <strong>stack trace</strong>. 0 if we already stored MAX_EVENTS_PER_SEND (100) events for a single send.
      */
-    public long put(@Nonnull Throwable t) {
+    public long put(String name, @Nonnull Throwable t) {
         // A final object to pass it to the function
         final AtomicLong occurrences = new AtomicLong();
 
@@ -65,7 +66,7 @@ public class MissingClassEvents {
                 // It's a new element, the size will increase
                 if (events.size() < MAX_EVENTS_PER_SEND) {
                     // Create the new value
-                    MissingClassEvent newEvent = new MissingClassEvent(t);
+                    MissingClassEvent newEvent = new MissingClassEvent(name, t);
                     occurrences.set(1);
                     return newEvent;
                 } else {
@@ -95,5 +96,12 @@ public class MissingClassEvents {
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> currentEvents = events;
         events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
         return currentEvents;
+    }
+
+    @Override
+    public String toString() {
+        return "MissingClassEvents{" +
+                "events=" + events +
+                '}';
     }
 }
