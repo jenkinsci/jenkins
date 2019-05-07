@@ -28,7 +28,6 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.security.captcha.CaptchaSupport;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -140,6 +139,6 @@ public class SecurityRealmTest {
          * Note: because we aren't running/testing winstone, it isn't sufficient for us to have
          * this test case, we actually need an acceptance test where we're run against winstone.
          */
-        assertThat(sessionCookies, Matchers.is(equalTo(2)));
+        assertThat(sessionCookies, is(equalTo(2)));
     }
 }
