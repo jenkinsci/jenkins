@@ -36,8 +36,13 @@ import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -61,6 +66,13 @@ public class MissingClassTelemetry extends Telemetry {
     private final static LocalDate START = LocalDate.of(2019, 4, 1);
     // Gather for 2 years (who knows how long people will need to migrate to Java 11)
     private final static LocalDate END = START.plusMonths(24);
+
+    // The types of exceptions which can be reported
+    private static final Set exceptionsToReportToJava11Telemetry =
+            new HashSet<Class>(Arrays.asList(ClassNotFoundException.class, NoClassDefFoundError.class));
+
+    @VisibleForTesting
+    /* package */ static final String CIRCULAR_REFERENCE = "Circular reference found on the exception we are analysing to report via telemetry";
 
     /**
      * Packages removed from java8 up to java11
@@ -161,7 +173,9 @@ public class MissingClassTelemetry extends Telemetry {
     }
 
     /**
-     * Store the exception if it's from a split package of Java.
+     * Store the exception if it's from a split package of Java. This method report this exception directly, it doesn't
+     * look into the causes or suppressed exceptions of the exception specified. This method tends to be used in the
+     * ClassLoader directly. Outside the class loaders is best to use {@link #reportExceptionInside(Throwable)}
      * @param name the name of the class
      * @param e the throwable to report if needed
      */
@@ -177,13 +191,16 @@ public class MissingClassTelemetry extends Telemetry {
     }
 
     /**
-     * Store the exception extracting the class name from the message of the throwable specified.
+     * Store the exception extracting the class name from the message of the throwable specified. This method report
+     * this exception directly, it doesn't look into the causes or suppressed exceptions of the exception specified.
+     * This method tends to be used in the ClassLoader directly. Outside the class loaders is best to use
+     * {@link #reportExceptionInside(Throwable)}
      * @param e the exception to report if needed
      */
     public static void reportException(@Nonnull Throwable e) {
         String name = e.getMessage();
 
-        if (name.length() == 0) {
+        if (name == null || name.length() == 0) {
             LOGGER.log(Level.INFO, "No class name could be extracted from the throwable to determine if it's reportable", e);
         } else {
             reportException(name, e);
@@ -197,5 +214,70 @@ public class MissingClassTelemetry extends Telemetry {
             }
         }
         return false;
+    }
+
+    /**
+     * Report the class not found if this exception or any of its causes or suppressed exceptions is related to missed
+     * classes.
+     * @param e the exception to look into
+     */
+    public static void reportExceptionInside(@Nonnull Throwable e) {
+        // Use a Set with equity based on == instead of equal to find cycles
+        Set<Throwable> exceptionsReviewed = Collections.newSetFromMap(new IdentityHashMap<>());
+        reportExceptionInside(e, exceptionsReviewed);
+    }
+
+    /**
+     * Find the exception to report among the exception passed and its causes and suppressed exceptions. It does a
+     * recursion and uses a Set to avoid circular references.
+     * @param e the exception
+     * @param exceptionsReviewed the set of already reviewed exceptions
+     * @return true if a exception was reported
+     */
+    private static boolean reportExceptionInside(@Nonnull Throwable e, @Nonnull Set<Throwable> exceptionsReviewed) {
+        if (exceptionsReviewed.contains(e)) {
+            LOGGER.log(Level.WARNING, CIRCULAR_REFERENCE, e);
+            // Don't go deeper, we already did
+            return false;
+        }
+
+        // Add this exception to the list of already reviewed exceptions before going deeper in its causes or suppressed
+        // exceptions
+        exceptionsReviewed.add(e);
+
+        // It this exception is the one searched
+        if (isMissedClassRelatedException(e)) {
+            MissingClassTelemetry.reportException(e);
+            return true;
+        }
+
+        // We search in its cause exception
+        if (e.getCause() != null) {
+            if (reportExceptionInside(e.getCause(), exceptionsReviewed)) {
+                return true;
+            }
+        }
+
+        // We search in its suppressed exceptions
+        for (Throwable suppressed: e.getSuppressed()) {
+            if (suppressed != null) {
+                if (reportExceptionInside(suppressed, exceptionsReviewed)) {
+                    return true;
+                }
+            }
+        }
+
+        // If this exception or its ancestors are not related with missed classes
+        return false;
+    }
+
+    /**
+     * Check if the exception specified is related with a missed class, that is, defined in the
+     * {@link #exceptionsToReportToJava11Telemetry} method.
+     * @param e the exception to look into
+     * @return true if the class is related with missed classes.
+     */
+    private static boolean isMissedClassRelatedException(Throwable e) {
+        return exceptionsToReportToJava11Telemetry.contains(e.getClass());
     }
 }

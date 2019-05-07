@@ -24,11 +24,15 @@
 package jenkins.telemetry.impl.java11;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.LoggerRule;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
@@ -39,6 +43,9 @@ import static org.junit.Assert.assertThat;
  */
 public class MissingClassTelemetryFasterTest {
     private CatcherClassLoader cl;
+
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Before
     public void cleanEvents() {
@@ -188,5 +195,129 @@ public class MissingClassTelemetryFasterTest {
         assertEquals(1, eventsGathered.values().iterator().next().getOccurrences());
         assertThat(eventsGathered.values().iterator().next().getStackTrace(), containsString("MyNonExistentClassGathered"));
         assertThat(eventsGathered.values().iterator().next().getStackTrace(), not(containsString("MyNonExistentJavaClassNotGathered")));
+    }
+
+    /**
+     * Test the cycles in the exceptions. This specific tests shows that we first look for reportable exceptions in the
+     * causes and when found a reportable exception, we stop searching. So the warning because a cycle is not logged.
+     */
+    @Test
+    public void cyclesNotReachedBecauseCNFEReported() {
+        logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
+
+        try {
+            /*
+            parent -> child -> cnfe
+                         \
+                        parent
+            We first look into the causes exceptions. When found, we don't look into the suppressed, so the cycle is not
+            found here
+             */
+
+            ClassNotFoundException cnfe = new ClassNotFoundException("sun.java.MyNonExistentClassGathered");
+            Exception child = new Exception("child", cnfe);
+            Exception parent = new Exception("parent", child); // parent -> caused by -> child
+            child.addSuppressed(parent);
+
+            // Some extra wrapping
+            throw new Exception(new Exception (new Exception (parent)));
+
+        } catch (Exception e) {
+            // Look for anything to report
+            MissingClassTelemetry.reportExceptionInside(e);
+
+            // Get the events gathered
+            MissingClassEvents events = MissingClassTelemetry.getEvents();
+            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
+
+            // One event gathered
+            assertEquals(1, eventsGathered.size());
+
+            // the circular reference has not been recorded in the log because we reached a CNFE previously
+            assertTrue(logging.getRecords().isEmpty());
+        }
+    }
+
+    /**
+     * Test the cycles in the exceptions. This specific tests shows that we first look for reportable exceptions deep
+     * in the causes and suppressed exceptions in this order. We report the cycle but also the CNFE.
+     */
+    @Test
+    public void cnfeFoundAfterCycle() {
+        logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
+
+        try {
+            ClassNotFoundException cnfe = new ClassNotFoundException("sun.java.MyNonExistentClassGathered");
+
+            /*
+            parent -> child
+               \         \
+               cnfe      parent
+             */
+            Exception child = new Exception("child");
+            Exception parent = new Exception("parent", child); // parent -> caused by -> child
+            child.addSuppressed(parent); // Boooomm!!!! The parent is a child suppressed exception -> cycle
+            parent.addSuppressed(cnfe);
+
+            // Some extra wrapping
+            throw new Exception(new Exception (new Exception (parent)));
+
+        } catch (Exception e) {
+            // Look for anything to report
+            MissingClassTelemetry.reportExceptionInside(e);
+
+            // Get the events gathered
+            MissingClassEvents events = MissingClassTelemetry.getEvents();
+            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
+
+            // One event gathered
+            assertEquals(1, eventsGathered.size());
+
+            // the circular reference has been recorded in the log
+            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+        }
+    }
+
+    /**
+     * Test the cycles in the exceptions. This specific tests shows that we first look for reportable exceptions deep
+     * in the causes and suppressed exceptions in this order. We report the cycle but also the CNFE in the parent.
+     */
+    @Test
+    public void cnfeAfterCNFENotJava11AndCycle() {
+        logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
+
+        try {
+            ClassNotFoundException cnfe = new ClassNotFoundException("sun.java.MyNonExistentClassGathered");
+            ClassNotFoundException cnfeNonJava11 = new ClassNotFoundException("MyNonExistentClassGathered");
+
+            /*
+            parent -> child -> grandchild
+               \         \          \
+               cnfe      parent     cnfe (non java11)
+             */
+            Exception grandchild = new Exception("grandchild");
+            Exception child = new Exception("child");
+            Exception parent = new Exception("parent", child); // parent -> caused by -> child
+            child.addSuppressed(parent); // Boooomm!!!! The parent is a child suppressed exception -> cycle
+            grandchild.addSuppressed(cnfeNonJava11);
+            parent.addSuppressed(cnfe);
+
+            // Some extra wrapping
+            throw new Exception(new Exception (new Exception (parent)));
+
+        } catch (Exception e) {
+            // Look for anything to report
+            MissingClassTelemetry.reportExceptionInside(e);
+
+            // Get the events gathered
+            MissingClassEvents events = MissingClassTelemetry.getEvents();
+            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
+
+            // One event gathered
+            assertEquals(1, eventsGathered.size());
+
+            // the circular reference has been recorded in the log
+            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+        }
     }
 }

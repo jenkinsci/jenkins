@@ -7,13 +7,9 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,9 +19,6 @@ import java.util.logging.Logger;
 public class InstallUncaughtExceptionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(InstallUncaughtExceptionHandler.class.getName());
-
-    private static final Set exceptionsToReportToJava11Telemetry =
-            new HashSet<Class>(Arrays.asList(ClassNotFoundException.class, NoClassDefFoundError.class));
 
     @Initializer
     public static void init(final Jenkins j) throws IOException {
@@ -38,7 +31,7 @@ public class InstallUncaughtExceptionHandler {
                 try {
                     // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
                     // here with a ClassNotFoundException in an action, for example.
-                    reportMissingClassJava11Telemetry(e);
+                    MissingClassTelemetry.reportExceptionInside(e);
                     WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
@@ -83,52 +76,10 @@ public class InstallUncaughtExceptionHandler {
 
             // If we have an exception, let's see if it's related with missing classes on Java 11 We reach
             // here with a ClassNotFoundException in an action, for example.
-            reportMissingClassJava11Telemetry(ex);
+            MissingClassTelemetry.reportExceptionInside(ex);
         }
 
     }
 
     private InstallUncaughtExceptionHandler() {}
-
-    /**
-     * Report the class not found via {@link MissingClassTelemetry} if this exception is related.
-     * @param e the exception to look into
-     * @return true if this exception or a cause of this one or a suppressed exception of this one was reported.
-     * {@link #exceptionsToReportToJava11Telemetry}.
-     */
-    private static boolean reportMissingClassJava11Telemetry(@Nonnull Throwable e) {
-        // It this exception is the one searched
-        if (isMissedClassRelatedException(e)) {
-            MissingClassTelemetry.reportException(e);
-            return true;
-        }
-
-        // We search in its cause exception
-        if (e.getCause() != null) {
-            reportMissingClassJava11Telemetry(e.getCause());
-            return true;
-        }
-
-        // We search in its suppressed exceptions
-        for (Throwable suppressed: e.getSuppressed()) {
-            if (suppressed != null) {
-                if (reportMissingClassJava11Telemetry(suppressed)) {
-                    return true;
-                }
-            }
-        }
-
-        // If this exception or its ancestors are not related with missed classes
-        return false;
-    }
-
-    /**
-     * Check if the exception specified is related with a missed class, that is, defined in the
-     * {@link #exceptionsToReportToJava11Telemetry} method.
-     * @param e the exception to look into
-     * @return true if the class is related with missed classes.
-     */
-    private static boolean isMissedClassRelatedException(Throwable e) {
-        return exceptionsToReportToJava11Telemetry.contains(e.getClass());
-    }
 }
