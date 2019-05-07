@@ -200,7 +200,7 @@ public class MissingClassTelemetry extends Telemetry {
     public static void reportException(@Nonnull Throwable e) {
         String name = e.getMessage();
 
-        if (name == null || name.length() == 0) {
+        if (name == null || name.trim().isEmpty()) {
             LOGGER.log(Level.INFO, "No class name could be extracted from the throwable to determine if it's reportable", e);
         } else {
             reportException(name, e);
