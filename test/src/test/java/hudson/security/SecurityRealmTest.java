@@ -41,8 +41,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
 
-import static org.hamcrest.Matchers.*;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -139,6 +137,6 @@ public class SecurityRealmTest {
          * Note: because we aren't running/testing winstone, it isn't sufficient for us to have
          * this test case, we actually need an acceptance test where we're run against winstone.
          */
-        assertThat(sessionCookies, is(equalTo(2)));
+        assertThat(sessionCookies, is(2));
     }
 }
