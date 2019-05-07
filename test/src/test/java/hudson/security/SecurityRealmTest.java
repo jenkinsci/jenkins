@@ -23,12 +23,11 @@
  */
 package hudson.security;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import hudson.model.User;
+import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.security.captcha.CaptchaSupport;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,11 +36,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -121,9 +115,9 @@ public class SecurityRealmTest {
         StringBuilder builder = new StringBuilder();
         int sessionCookies = 0;
 
-        final boolean debugCookies = false;
+        boolean debugCookies = false;
         for (Cookie cookie : manager.getCookies()) {
-            if (cookie.getName().startsWith("JSESSIONID.")) {
+            if (cookie.getName().startsWith("JSESSIONID")) {
                 ++sessionCookies;
 
                 if (debugCookies) {
@@ -136,8 +130,16 @@ public class SecurityRealmTest {
             }
         }
         if (debugCookies) {
-            assertThat(builder.toString(), Matchers.is(equalTo("")));
+            System.err.println(builder.toString());
         }
-        assertThat(sessionCookies, Matchers.is(equalTo(1)));
+        /* There should be two surviving JSESSION* cookies:
+         *   path:"/will-not-be-sent" -- because it wasn't sent and thus wasn't deleted.
+         *   name:"JSESSIONID" -- because this test harness isn't winstone and the cleaning
+         *                        code is only responsible for deleting "JSESSIONID." cookies.
+         *
+         * Note: because we aren't running/testing winstone, it isn't sufficient for us to have
+         * this test case, we actually need an acceptance test where we're run against winstone.
+         */
+        assertThat(sessionCookies, Matchers.is(equalTo(2)));
     }
 }
