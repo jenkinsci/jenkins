@@ -81,6 +81,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -472,20 +473,45 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-38487")
-    public void startupShouldNotFailOnFailingOnlineListener() {
-        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+    public void startupShouldNotFailOnIOExceptionOnlineListener() {
+        // We do nothing, IOExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
+
+        assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
     }
 
-    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
-    public static final class FailingOnOnlineListener extends ComputerListener {
-        
+    @TestExtension(value = "startupShouldNotFailOnIOExceptionOnlineListener")
+    public static final class IOExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
         @Override
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
             throw new IOException("Something happened (the listener always throws this exception)");
         }
     }
-    
+
+    @Test
+    @Issue("JENKINS-57111")
+    public void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
+        // We do nothing, RuntimeExceptionOnOnlineListener & JenkinsRule should cause the
+        // boot failure if the issue is not fixed.
+        assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnRuntimeExceptionOnlineListener")
+    public static final class RuntimeExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
+            throw new RuntimeException("Something happened (the listener always throws this exception)");
+        }
+    }
+
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_singleEnable_roundtrip() throws Exception {

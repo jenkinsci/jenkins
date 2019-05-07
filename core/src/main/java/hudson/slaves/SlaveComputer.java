@@ -694,7 +694,19 @@ public class SlaveComputer extends Computer {
         old = ACL.impersonate(ACL.SYSTEM);
         try {
             for (ComputerListener cl : ComputerListener.all()) {
-                cl.onOnline(this,taskListener);
+                try {
+                    cl.onOnline(this,taskListener);
+                } catch (Exception e) {
+                    // Per Javadoc log exceptions but still go online.
+                    // NOTE: this does not include Errors, which indicate a fatal problem
+                    taskListener.getLogger().format(
+                        "onOnline: %s reported an exception: %s%n",
+                        cl.getClass(),
+                        e.toString());
+                } catch (Throwable e) {
+                    closeChannel();
+                    throw e;
+                }
             }
         } finally {
             SecurityContextHolder.setContext(old);
