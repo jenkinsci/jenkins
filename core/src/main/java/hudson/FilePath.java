@@ -130,6 +130,7 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
@@ -138,6 +139,7 @@ import org.kohsuke.stapler.Stapler;
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
+import java.io.NotSerializableException;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -207,7 +209,7 @@ import org.apache.tools.ant.BuildException;
  * @author Kohsuke Kawaguchi
  * @see VirtualFile
  */
-public final class FilePath implements Serializable {
+public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Maximum http redirects we will follow. This defaults to the same number as Firefox/Chrome tolerates.
      */
@@ -2985,18 +2987,26 @@ public final class FilePath implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        Channel target = Channel.current();
-
-        if(channel!=null && channel!=target)
-            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel");
+        Channel target = _getChannelForSerialization();
+        if (channel != null && channel != target) {
+            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel (current=" + channel + ", target=" + target + ")");
+        }
 
         oos.defaultWriteObject();
         oos.writeBoolean(channel==null);
     }
 
+    private Channel _getChannelForSerialization() {
+        try {
+            return getChannelForSerialization();
+        } catch (NotSerializableException x) {
+            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://jenkins.io/redirect/filepath-serialization for details.", x);
+            return null;
+        }
+    }
+
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        Channel channel = Channel.current();
-        assert channel!=null;
+        Channel channel = _getChannelForSerialization();
 
         ois.defaultReadObject();
         if(ois.readBoolean()) {

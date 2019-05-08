@@ -54,7 +54,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.47</version>
+      <version>2.49</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -101,6 +101,12 @@ THE SOFTWARE.
           <artifactId>ant</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <!-- maven-plugin 2.14 (above) pulls in mailer 1.7, but then HelpCommandTest fails due to moved localized resources -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>1.23</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>

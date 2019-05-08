@@ -5,7 +5,6 @@ import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.SlaveComputer;
-import jenkins.model.Jenkins;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +38,6 @@ public abstract class ChannelConfigurator implements ExtensionPoint {
      * All the registered {@link ChannelConfigurator}s.
      */
     public static ExtensionList<ChannelConfigurator> all() {
-        return Jenkins.getInstance().getExtensionList(ChannelConfigurator.class);
+        return ExtensionList.lookup(ChannelConfigurator.class);
     }
 }

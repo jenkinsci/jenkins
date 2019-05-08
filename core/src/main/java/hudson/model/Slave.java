@@ -366,7 +366,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Web-bound object used to serve jar files for JNLP.
+     * Web-bound object used to serve jar files for inbound connections.
      */
     public static final class JnlpJar implements HttpResponse {
         private final String fileName;

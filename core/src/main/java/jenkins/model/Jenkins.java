@@ -1281,10 +1281,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                     all.remove(toBeRemoved);
                 } catch (BindException e) {
-                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through JNLP port %s. Change the JNLP port number", slaveAgentPort), e);
+                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through port %s. Change the port number", slaveAgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
-                            "Failed to listen to incoming agent connections through JNLP",
-                            "Failed to listen to incoming agent connections through JNLP. <a href='configureSecurity'>Change the JNLP port number</a> to solve the problem.", e);
+                            "Failed to listen to incoming agent connections",
+                            "Failed to listen to incoming agent connections. <a href='configureSecurity'>Change the inbound TCP port number</a> to solve the problem.", e);
                 }
             }
         }
@@ -2092,6 +2092,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Adds one more {@link Node} to Jenkins.
+     * If a node of the same name already exists then that node will be replaced.
      */
     public void addNode(Node n) throws IOException {
         nodes.addNode(n);
@@ -2252,7 +2253,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 })
                 .add(new CollectionSearchIndex() {// for views
                     protected View get(String key) { return getView(key); }
-                    protected Collection<View> all() { return viewGroupMixIn.getViews(); }
+                    protected Collection<View> all() { return getAllViews(); }
                 });
         return builder;
     }
@@ -4038,7 +4039,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Serves jar files for JNLP agents.
+     * Serves jar files for inbound agents.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
@@ -4754,7 +4755,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Collection<String> getUnprotectedRootActions() {
         Set<String> names = new TreeSet<>();
-        names.add("jnlpJars"); // TODO cleaner to refactor doJnlpJars into a URA
+        names.add("jnlpJars"); // TODO cleaner to refactor doJnlpJars into a URA (see also JENKINS-44100)
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {

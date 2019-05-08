@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.256</stapler.version>
+    <stapler.version>1.257</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -297,13 +297,9 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <!--
-        The version included in the transitive dependency doesn't have the source zip,
-        so explicitly using the newer version.
-      -->
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.8.3</version>
+      <version>1.9.3</version>
     </dependency>
     <dependency>
         <groupId>org.apache.commons</groupId>
