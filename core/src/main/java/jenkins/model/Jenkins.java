@@ -1046,6 +1046,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return the proxy configuration
      * @since TODO
      */
+    @CheckForNull
     public ProxyConfiguration getProxy() {
         return proxy;
     }
