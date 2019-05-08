@@ -69,6 +69,10 @@ THE SOFTWARE.
       variables seen in the caller aren't visible to them. This attribute allows you
       to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
+    <st:attribute name="titleClassMethod">
+      If set to an item of the form <tt>className#classMethod</tt>, it will be used
+      to call <tt>className.classMethod(descriptor)</tt> to calculate each item title.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -123,7 +127,19 @@ THE SOFTWARE.
       <j:set var="instance" value="${null}" />
       <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
       <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
-        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
+        <j:choose>
+          <j:when test="${titleClassMethod!=null}">
+            <j:set var="classAndMethod" value="${titleClassMethod.split(&quot;#&quot;)}"/>
+            <j:invokeStatic var="symbol" className="${classAndMethod[0]}" method="${classAndMethod[1]}">
+              <j:arg value="${descriptor}" type="hudson.model.Descriptor" />
+            </j:invokeStatic>
+            <j:set var="title" value="${symbol}: ${descriptor.displayName}"/>
+          </j:when>
+          <j:otherwise>
+            <j:set var="title" value="${descriptor.displayName}"/>
+          </j:otherwise>
+        </j:choose>
+        <div name="${attrs.name}" title="${title}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
             <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
