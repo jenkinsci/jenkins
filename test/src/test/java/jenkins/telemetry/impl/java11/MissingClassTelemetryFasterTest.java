@@ -23,6 +23,7 @@
  */
 package jenkins.telemetry.impl.java11;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,6 +55,8 @@ public class MissingClassTelemetryFasterTest {
 
     @Test
     public void maxNumberEvents() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         // Backup to restore at the end of the test
         int maxEventsBefore = MissingClassEvents.MAX_EVENTS_PER_SEND;
 
@@ -86,6 +89,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void differentEventsAlthoughSameClass() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         try {
             cl.loadClass("sun.java.MyNonExistentClass");
         } catch (ClassNotFoundException ignored) {
@@ -111,6 +116,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void addOccurrenceIfSameStackTrace() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         for (int i = 0; i < 2; i++) {
             try {
                 //Exceptions thrown at the same line, with the same stack trace become occurrences of just one event
@@ -133,6 +140,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void nonJavaClassesNotGathered() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         try {
             cl.loadClass("jenkins.MyNonExistentClass");
         } catch (ClassNotFoundException ignored) {
@@ -151,6 +160,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void maxEventsLimitedSameStackTrace() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         MissingClassEvents.MAX_EVENTS_PER_SEND = 1;
         for (int i = 0; i < 2; i++) {
             try {
@@ -174,6 +185,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void maxEventsLimitedDifferentStackTrace() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         MissingClassEvents.MAX_EVENTS_PER_SEND = 1;
 
         try {
@@ -203,6 +216,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void cyclesNotReachedBecauseCNFEReported() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
 
         try {
@@ -244,6 +259,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void cnfeFoundAfterCycle() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
 
         try {
@@ -284,6 +301,8 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void cnfeAfterCNFENotJava11AndCycle() {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         logging.record(MissingClassTelemetry.class, Logger.getLogger(MissingClassTelemetry.class.getName()).getLevel()).capture(5);
 
         try {
@@ -319,5 +338,20 @@ public class MissingClassTelemetryFasterTest {
             // the circular reference has been recorded in the log
             assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
         }
+    }
+
+    @Test
+    public void nothingGatheredWhenTelemetryDisabled() {
+        Assume.assumeFalse("The telemetry should not be enabled", MissingClassTelemetry.enabled());
+
+        try {
+            cl.loadClass("sun.java.MyNonExistentClass");
+        } catch (ClassNotFoundException ignored) {
+        }
+
+        ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = MissingClassTelemetry.getEvents().getEventsAndClean();
+
+        // No events gathered
+        assertEquals(0, eventsGathered.size());
     }
 }

@@ -30,7 +30,8 @@ public class InstallUncaughtExceptionHandler {
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
                     // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
-                    // here with a ClassNotFoundException in an action, for example.
+                    // here with a ClassNotFoundException in an action, for example. Setting the report here is the only
+                    // way to catch the missing classes when the plugin uses Thread.currentThread().getContextClassLoader().loadClass
                     MissingClassTelemetry.reportExceptionInside(e);
                     WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
@@ -74,8 +75,9 @@ public class InstallUncaughtExceptionHandler {
                                      + ") died unexpectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicative of a bug in the code.",
                        ex);
 
-            // If we have an exception, let's see if it's related with missing classes on Java 11 We reach
-            // here with a ClassNotFoundException in an action, for example.
+            // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
+            // here with a ClassNotFoundException in an action, for example. Setting the report here is the only
+            // way to catch the missing classes when the plugin uses Thread.currentThread().getContextClassLoader().loadClass
             MissingClassTelemetry.reportExceptionInside(ex);
         }
 

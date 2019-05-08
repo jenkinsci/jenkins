@@ -31,6 +31,7 @@ import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,6 +78,8 @@ public class MissingClassTelemetryTest {
      */
     @Test
     public void telemetrySentWorks() throws InterruptedException {
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
+
         // Generate 5 events
         for(int i = 0; i < 5; i++) {
             try {

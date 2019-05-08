@@ -92,7 +92,7 @@ public class MissingClassEvents {
      */
 
     @VisibleForTesting
-    /* package */ synchronized ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
+    /* package */ synchronized @Nonnull ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> currentEvents = events;
         events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
         return currentEvents;

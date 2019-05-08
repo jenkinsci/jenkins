@@ -26,10 +26,14 @@ package jenkins.telemetry.impl.java11;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
+import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -49,13 +53,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Telemetry class to gather information about class loading issues when running on java 11.
- * The use of this class is not restricted for external use because we may want to gather information from plugins
- * directly by calling report... methods.
+ * Telemetry class to gather information about missing classes when running on java 11. This class sends classes not
+ * found and in packages related with Java changes from Java 8 to Java 11. See {@link #MOVED_PACKAGES}.
  **/
 
 @Extension
-//@Restricted(NoExternalUse.class)
+@Restricted(NoExternalUse.class)
 public class MissingClassTelemetry extends Telemetry {
     private static final Logger LOGGER = Logger.getLogger(MissingClassTelemetry.class.getName());
 
@@ -68,7 +71,7 @@ public class MissingClassTelemetry extends Telemetry {
     private final static LocalDate END = START.plusMonths(24);
 
     // The types of exceptions which can be reported
-    private static final Set exceptionsToReportToJava11Telemetry =
+    private static final Set reportableExceptions =
             new HashSet<Class>(Arrays.asList(ClassNotFoundException.class, NoClassDefFoundError.class));
 
     @VisibleForTesting
@@ -82,10 +85,32 @@ public class MissingClassTelemetry extends Telemetry {
             "javax.rmi", "javax.transaction", "javax.xml.bind", "javax.xml.soap", "javax.xml.ws", "org.omg",
             "javax.activity", "com.sun", "sun"};
 
+    /**
+     * Places where a ClassNotFoundException is going to be thrown but it's ignored later in the code, so we
+     * don't have to send this exception, even though it might be related with java classes of moved packages
+     */
+    private static String[][] IGNORED_PLACES = {
+            {"hudson.util.XStream2$AssociatedConverterImpl", "findConverter"},
+            {"org.jenkinsci.plugins.workflow.cps.global.GrapeHack", "hack"},
+            {"org.codehaus.groovy.runtime.callsite.CallSiteArray", "createCallStaticSite"},
+            {"groovy.lang.MetaClassImpl", "addProperties"},
+            // We set the reportException call directly in this method when it's appropriated
+            {"hudson.PluginManager.UberClassLoader", "findClass"},
+            {"hudson.ExtensionFinder$GuiceFinder$FaultTolerantScope$1", "get"},
+            {"hudson.ExtensionFinder$GuiceFinder$SezpozModule", "resolve"},
+            {"java.beans.Introspector", "findCustomizerClass"},
+            {"com.sun.beans.finder.InstanceFinder", "instantiate"},
+            {"com.sun.beans.finder.ClassFinder", "findClass"},
+            {"java.util.ResourceBundle$Control", "newBundle"},
+            //hundreds when a job is created
+            {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
+            {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"}
+    };
+
     @Nonnull
     @Override
     public String getDisplayName() {
-        return "Java 11 related problems";
+        return "Missing classes related with Java updates";
     }
 
     @Nonnull
@@ -109,13 +134,32 @@ public class MissingClassTelemetry extends Telemetry {
         return events;
     }
 
+    /**
+     * This telemetry is only enabled when running on Java versions newer than Java 8.
+     * @return true if running on a newer Java version than Java 8
+     */
+    public static boolean enabled() {
+        return JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThan(JavaSpecificationVersion.JAVA_8);
+    }
+
     @CheckForNull
     @Override
     public JSONObject createContent() {
+        // If we are on the time window of this telemetry but we are not running on Java > 1.8, we don't send anything
+        if (!enabled()) {
+            return null;
+        }
+
+        // To avoid sending empty events
+        JSONArray events = formatEventsAndInitialize();
+        if (events.size() == 0) {
+            return null;
+        }
+
         JSONObject info = new JSONObject();
         info.put("core", Jenkins.getVersion() != null ? Jenkins.getVersion().toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
-        info.put("classMissingEvents", formatEventsAndInitialize());
+        info.put("classMissingEvents", events);
 
         return JSONObject.fromObject(info);
     }
@@ -123,13 +167,13 @@ public class MissingClassTelemetry extends Telemetry {
     /**
      * Returns the events gathered as a Map ready to use in a Json object to send via telemetry and clean the map to
      * gather another window of events.
-     * @return the map of missed classes events gathered along this window of java 11 telemetry
+     * @return the map of missed classes events gathered along this window of telemetry
      */
     @Nonnull
     private JSONArray formatEventsAndInitialize() {
         // Save the current events and clean for next (not this one) telemetry send
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> toReport = MissingClassTelemetry.events.getEventsAndClean();
-        if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Cleaned events for missed classes on telemetry for Java 11");
+        if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Cleaned events for missing classes");
 
         return formatEvents(toReport);
     }
@@ -180,14 +224,50 @@ public class MissingClassTelemetry extends Telemetry {
      * @param e the throwable to report if needed
      */
     public static void reportException(@Nonnull String name, @Nonnull Throwable e) {
-        //ClassDefFoundError uses / instead of .
-        name = name.replace('/', '.').trim();
+        if (enabled()) {
+            //ClassDefFoundError uses / instead of .
+            name = name.replace('/', '.').trim();
 
-        if (isFromMovedPackage(name)) {
-            events.put(name, e);
-
-            if (LOGGER.isLoggable(Level.FINE)) LOGGER.log(Level.FINE, "Added a missed class for Java 11 telemetry. Class: " + name, e);
+            // We call the methods in this order because if the missing class is not java related, we don't loop over the
+            // stack trace to look if it's not thrown from an ignored place avoiding an impact on performance.
+            if (isFromMovedPackage(name) && !calledFromIgnoredPlace(e)) {
+                events.put(name, e);
+                if (LOGGER.isLoggable(Level.WARNING))
+                    LOGGER.log(Level.WARNING, "Added a missed class for missing class telemetry. Class: " + name, e);
+            }
         }
+    }
+
+    /**
+     * Determine if the exception specified was thrown from an ignored place
+     * @param throwable The exception thrown
+     * @return true if in the stack trace there is an ignored method / class.
+     */
+    private static boolean calledFromIgnoredPlace(@Nonnull Throwable throwable) {
+        for(String[] ignoredPlace : IGNORED_PLACES) {
+            if (calledFrom(throwable, ignoredPlace[0], ignoredPlace[1])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if the throwable was thrown by the class and the method specified.
+     * @param throwable stack trace to look at
+     * @param clazz class to look for in the stack trace
+     * @param method method where the throwable was thrown in the clazz
+     * @return true if the method of the clazz has thrown the throwable
+     */
+    private static boolean calledFrom (@Nonnull Throwable throwable, @Nonnull String clazz, @Nonnull String method){
+        StackTraceElement[] trace = throwable.getStackTrace();
+        for (StackTraceElement el : trace) {
+            //If the exception has the class and method searched, it's called from there
+            if (clazz.equals(el.getClassName()) && el.getMethodName().equals(method)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -197,13 +277,15 @@ public class MissingClassTelemetry extends Telemetry {
      * {@link #reportExceptionInside(Throwable)}
      * @param e the exception to report if needed
      */
-    public static void reportException(@Nonnull Throwable e) {
-        String name = e.getMessage();
+    private static void reportException(@Nonnull Throwable e) {
+        if (enabled()) {
+            String name = e.getMessage();
 
-        if (name == null || name.trim().isEmpty()) {
-            LOGGER.log(Level.INFO, "No class name could be extracted from the throwable to determine if it's reportable", e);
-        } else {
-            reportException(name, e);
+            if (name == null || name.trim().isEmpty()) {
+                LOGGER.log(Level.INFO, "No class name could be extracted from the throwable to determine if it's reportable", e);
+            } else {
+                reportException(name, e);
+            }
         }
     }
 
@@ -222,9 +304,11 @@ public class MissingClassTelemetry extends Telemetry {
      * @param e the exception to look into
      */
     public static void reportExceptionInside(@Nonnull Throwable e) {
-        // Use a Set with equity based on == instead of equal to find cycles
-        Set<Throwable> exceptionsReviewed = Collections.newSetFromMap(new IdentityHashMap<>());
-        reportExceptionInside(e, exceptionsReviewed);
+        if (enabled()) {
+            // Use a Set with equity based on == instead of equal to find cycles
+            Set<Throwable> exceptionsReviewed = Collections.newSetFromMap(new IdentityHashMap<>());
+            reportExceptionInside(e, exceptionsReviewed);
+        }
     }
 
     /**
@@ -273,11 +357,11 @@ public class MissingClassTelemetry extends Telemetry {
 
     /**
      * Check if the exception specified is related with a missed class, that is, defined in the
-     * {@link #exceptionsToReportToJava11Telemetry} method.
+     * {@link #reportableExceptions} method.
      * @param e the exception to look into
      * @return true if the class is related with missed classes.
      */
     private static boolean isMissedClassRelatedException(Throwable e) {
-        return exceptionsToReportToJava11Telemetry.contains(e.getClass());
+        return reportableExceptions.contains(e.getClass());
     }
 }
