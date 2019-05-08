@@ -1055,6 +1055,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Set the proxy configuration.
      * 
      * @param proxy the proxy to set
+     * @since TODO
      */
     public void setProxy(@CheckForNull ProxyConfiguration proxy) {
         this.proxy = proxy;
