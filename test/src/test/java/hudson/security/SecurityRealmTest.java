@@ -93,6 +93,10 @@ public class SecurityRealmTest {
 
     @Test
     public void many_sessions_logout() throws Exception {
+        final String WILL_NOT_BE_SENT = "/will-not-be-sent";
+        final String LOCALHOST = "localhost";
+        final String JSESSIONID = "JSESSIONID";
+
         JenkinsRule.WebClient wc = j.createWebClient();
         CookieManager manager = wc.getCookieManager();
         manager.setCookiesEnabled(true);
@@ -104,39 +108,36 @@ public class SecurityRealmTest {
         byte[] array = new byte[7];
         Collections.nCopies(8, 1)
                 .stream()
-                .forEach(i -> addSessionCookie(manager, "localhost", "/jenkins", tomorrow));
-        addSessionCookie(manager, "localhost", "/will-not-be-sent", tomorrow);
+                .forEach(i -> addSessionCookie(manager, LOCALHOST, "/jenkins", tomorrow));
+        addSessionCookie(manager, LOCALHOST, WILL_NOT_BE_SENT, tomorrow);
 
         HtmlPage page = wc.goTo("logout");
 
+        int unexpectedSessionCookies = 2;
+
         StringBuilder builder = new StringBuilder();
-        int sessionCookies = 0;
+        builder.append("Session cookies: ");
 
-        boolean debugCookies = false;
         for (Cookie cookie : manager.getCookies()) {
-            if (cookie.getName().startsWith("JSESSIONID")) {
-                ++sessionCookies;
+            if (cookie.getName().startsWith(JSESSIONID)) {
+                String path = cookie.getPath();
 
-                if (debugCookies) {
-                    builder.append(cookie.getName());
-                    String path = cookie.getPath();
-                    if (path != null)
-                        builder.append("; Path=").append(path);
-                    builder.append("\n");
+                builder.append(cookie.getName());
+                if (path != null)
+                    builder.append("; Path=").append(path);
+                builder.append("\n");
+
+                if (WILL_NOT_BE_SENT.equals(path)) {
+                    // Because it wasn't sent and thus wasn't deleted.
+                    --unexpectedSessionCookies;
+                } else if (JSESSIONID.equals(cookie.getName())) {
+                    // Because this test harness isn't winstone and the cleaning
+                    // code is only responsible for deleting "JSESSIONID." cookies.
+                    --unexpectedSessionCookies;
                 }
             }
         }
-        if (debugCookies) {
-            System.err.println(builder.toString());
-        }
-        /* There should be two surviving JSESSION* cookies:
-         *   path:"/will-not-be-sent" -- because it wasn't sent and thus wasn't deleted.
-         *   name:"JSESSIONID" -- because this test harness isn't winstone and the cleaning
-         *                        code is only responsible for deleting "JSESSIONID." cookies.
-         *
-         * Note: because we aren't running/testing winstone, it isn't sufficient for us to have
-         * this test case, we actually need an acceptance test where we're run against winstone.
-         */
-        assertThat(sessionCookies, is(2));
+        System.err.println(builder.toString());
+        assertThat(unexpectedSessionCookies, is(0));
     }
 }
