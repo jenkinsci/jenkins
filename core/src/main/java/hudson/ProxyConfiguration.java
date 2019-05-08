@@ -62,6 +62,8 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -102,6 +104,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      *
      * @see #getNoProxyHostPatterns()
      */
+    @Restricted(NoExternalUse.class)
     public String noProxyHost;
 
     @Deprecated
@@ -135,7 +138,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
         this.userName = Util.fixEmptyAndTrim(userName);
-        this.secretPassword = password != null ? Secret.fromString(password) : null;
+        String tempPassword = Util.fixEmptyAndTrim(password);
+        this.secretPassword = tempPassword != null ? Secret.fromString(tempPassword) : null;
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
         this.testUrl = Util.fixEmptyAndTrim(testUrl);
         this.authenticator = newAuthenticator();
