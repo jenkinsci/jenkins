@@ -130,15 +130,20 @@ public class ApiTokenStats implements Saveable {
         }
     }
     
-    /**
+   /**
      * Will trigger the save
      */
-    public synchronized @Nonnull SingleTokenStats updateUsageForId(@Nonnull String tokenUuid) {
+    public @Nonnull SingleTokenStats updateUsageForId(@Nonnull String tokenUuid) {
         if(areStatsDisabled()){
             return new SingleTokenStats(tokenUuid);
         }
         
-        SingleTokenStats stats = findById(tokenUuid)
+        return updateUsageForIdIfNeeded(tokenUuid);
+    }
+    
+    
+    private synchronized SingleTokenStats updateUsageForIdIfNeeded(@Nonnull String tokenUuid) {
+    	SingleTokenStats stats = findById(tokenUuid)
                 .orElseGet(() -> {
                     SingleTokenStats result = new SingleTokenStats(tokenUuid);
                     tokenStats.add(result);

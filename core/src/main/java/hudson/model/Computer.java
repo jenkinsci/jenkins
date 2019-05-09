@@ -649,7 +649,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract boolean isConnecting();
 
     /**
-     * Returns true if this computer is supposed to be launched via JNLP.
+     * Returns true if this computer is supposed to be launched via inbound protocol.
      * @deprecated since 2008-05-18.
      *     See {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
      */
@@ -663,7 +663,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns true if this computer can be launched by Hudson proactively and automatically.
      *
      * <p>
-     * For example, JNLP agents return {@code false} from this, because the launch process
+     * For example, inbound agents return {@code false} from this, because the launch process
      * needs to be initiated from the agent side.
      */
     @Exported
@@ -1243,7 +1243,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * <p>
      * Since it's possible that the agent is not reachable from the master (it may be behind a firewall,
-     * connecting to master via JNLP), this method may return null.
+     * connecting to master via inbound protocol), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.

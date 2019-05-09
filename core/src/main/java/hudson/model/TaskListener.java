@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
 import javax.annotation.Nonnull;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -66,7 +66,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface TaskListener extends Serializable {
+public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * This writer will receive the output of the build
      */

@@ -275,7 +275,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected String charset;
 
     /**
-     * Keeps this log entries.
+     * Keeps this build.
      */
     private boolean keepLog;
 
@@ -591,8 +591,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns true if this log file should be kept and not deleted.
-     *
+     * Returns true if this build should be kept and not deleted.
+     * (Despite the name, this refers to the entire build, not merely the log file.)
      * This is used as a signal to the {@link BuildDiscarder}.
      */
     @Exported
@@ -2273,7 +2273,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Marks this build to keep the log.
+     * Marks this build to be kept.
      */
     @CLIMethod(name="keep-build")
     public final void keepLog() throws IOException {
@@ -2514,7 +2514,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     };
 
     /**
-     * {@link BuildBadgeAction} that shows the logs are being kept.
+     * {@link BuildBadgeAction} that shows the build is being kept.
      */
     public final class KeepLogBuildBadge implements BuildBadgeAction {
         public @CheckForNull String getIconFileName() { return null; }
