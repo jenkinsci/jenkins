@@ -598,13 +598,12 @@ public class NodeProvisioner {
          */
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("StrategyState{");
-            sb.append("label=").append(label);
-            sb.append(", snapshot=").append(snapshot);
-            sb.append(", plannedCapacitySnapshot=").append(plannedCapacitySnapshot);
-            sb.append(", additionalPlannedCapacity=").append(additionalPlannedCapacity);
-            sb.append('}');
-            return sb.toString();
+            String sb = "StrategyState{" + "label=" + label +
+                    ", snapshot=" + snapshot +
+                    ", plannedCapacitySnapshot=" + plannedCapacitySnapshot +
+                    ", additionalPlannedCapacity=" + additionalPlannedCapacity +
+                    '}';
+            return sb;
         }
     }
 

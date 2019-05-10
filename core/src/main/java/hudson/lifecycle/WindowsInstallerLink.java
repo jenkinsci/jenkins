@@ -287,9 +287,7 @@ public class WindowsInstallerLink extends ManagementLink {
         try {
             return new LocalLauncher(out).launch().cmds(jenkinsExe, command).stdout(out).pwd(pwd).join();
         } catch (IOException e) {
-            if (e.getMessage().contains("CreateProcess") && e.getMessage().contains("=740")) {
-                // fall through
-            } else {
+            if (!e.getMessage().contains("CreateProcess") || !e.getMessage().contains("=740")) {
                 throw e;
             }
         }

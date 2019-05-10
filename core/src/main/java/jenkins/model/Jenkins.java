@@ -4160,6 +4160,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Simulates OutOfMemoryError.
      * Useful to make sure OutOfMemoryHeapDump setting.
      */
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @RequirePOST
     public void doSimulateOutOfMemory() throws IOException {
         checkPermission(ADMINISTER);

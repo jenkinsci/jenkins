@@ -754,8 +754,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         private List<UserInfo> toList(Map<User,UserInfo> users) {
-            ArrayList<UserInfo> list = new ArrayList<>();
-            list.addAll(users.values());
+            ArrayList<UserInfo> list = new ArrayList<>(users.values());
             Collections.sort(list);
             return Collections.unmodifiableList(list);
         }

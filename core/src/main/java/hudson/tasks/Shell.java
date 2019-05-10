@@ -88,8 +88,7 @@ public class Shell extends CommandInterpreter {
             // interpreter override
             int end = command.indexOf('\n');
             if(end<0)   end=command.length();
-            List<String> args = new ArrayList<>();
-            args.addAll(Arrays.asList(Util.tokenize(command.substring(0,end).trim())));
+            List<String> args = new ArrayList<>(Arrays.asList(Util.tokenize(command.substring(0, end).trim())));
             args.add(script.getRemote());
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[0]);
