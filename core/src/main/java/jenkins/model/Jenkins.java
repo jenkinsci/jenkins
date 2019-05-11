@@ -979,16 +979,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     for (ComputerListener cl : ComputerListener.all()) {
                         try {
                             cl.onOnline(c, new LogTaskListener(LOGGER, INFO));
-                        } catch (Throwable t) {
-                            if (t instanceof Error) {
-                                // We propagate Runtime errors, because they are fatal.
-                                throw t;
-                            }
-
-                            // Other exceptions should be logged instead of failing the Jenkins startup (See listener's Javadoc)
-                            // We also throw it for InterruptedException since it's what is expected according to the javadoc
-                            LOGGER.log(SEVERE, String.format("Invocation of the computer listener %s failed for the Jenkins master node",
-                                    cl.getClass()), t);
+                        } catch (Exception e) {
+                            // Per Javadoc log exceptions but still go online.
+                            // NOTE: this does not include Errors, which indicate a fatal problem
+                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the Jenkins master node",
+                                    cl.getClass()), e);
                         }
                     }
                 }
