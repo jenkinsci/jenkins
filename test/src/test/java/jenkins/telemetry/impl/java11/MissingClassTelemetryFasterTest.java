@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
@@ -249,7 +248,7 @@ public class MissingClassTelemetryFasterTest {
             assertEquals(1, eventsGathered.size());
 
             // the circular reference has not been recorded in the log because we reached a CNFE previously
-            assertTrue(logging.getRecords().isEmpty());
+            assertEquals("No circular message was printed in logs", 0, logging.getRecords().stream().filter(r -> r.getMessage().contains(MissingClassTelemetry.CIRCULAR_REFERENCE)).count());
         }
     }
 
