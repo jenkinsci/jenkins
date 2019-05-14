@@ -893,14 +893,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         } else {
             // try and load from this loader if the parent either didn't find
             // it or wasn't consulted.
-            Enumeration e = pathComponents.elements();
-            while (e.hasMoreElements() && url == null) {
-                File pathComponent = (File) e.nextElement();
-                url = getResourceURL(pathComponent, name);
-                if (url != null) {
-                    log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
-                }
-            }
+            url = getUrl(pathComponents, name);
         }
         if (url == null && !isParentFirst(name)) {
             // this loader was first but it didn't find it - try the parent
@@ -915,6 +908,27 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         }
         if (url == null) {
             log("Couldn't load Resource " + name, Project.MSG_DEBUG);
+        }
+        return url;
+    }
+
+    /**
+     * Finds a matching file by iterating pathComponents.
+     *
+     * @param pathComponents Path to a folder, split into the individual folder names
+     * @param name File to find
+     * @return Url to found object
+     */
+    @CheckForNull
+    protected URL getUrl(Vector pathComponents, String name) {
+        Enumeration e = pathComponents.elements();
+        URL url = null;
+        while (e.hasMoreElements() && url == null) {
+            File pathComponent = (File) e.nextElement();
+            url = getResourceURL(pathComponent, name);
+            if (url != null) {
+                log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
+            }
         }
         return url;
     }
