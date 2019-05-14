@@ -33,6 +33,7 @@ import org.apache.tools.ant.util.VectorSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -772,6 +773,28 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         return parent == null ? super.getResourceAsStream(name) : parent.getResourceAsStream(name);
     }
 
+    private interface Convert<T> {
+        T convert(@Nonnull JarFile jarFile, @Nonnull JarEntry entry) throws IOException;
+    }
+
+    private <T> T storeAndConvert(JarFile jarFile, File file, String resourceName, Convert<T> convert) throws IOException {
+        if (jarFile == null) {
+            if (file.exists()) {
+                jarFile = new JarFile(file);
+                jarFiles.put(file, jarFile);
+            } else {
+                return null;
+            }
+            //to eliminate a race condition, retrieve the entry
+            //that is in the hash table under that filename
+            jarFile = (JarFile) jarFiles.get(file);
+        }
+        JarEntry entry = jarFile.getJarEntry(resourceName);
+        if (entry == null)
+            return null;
+        return convert.convert(jarFile, entry);
+    }
+
     /**
      * Returns an inputstream to a given resource in the given file which may
      * either be a directory or a zip file.
@@ -793,21 +816,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     return Files.newInputStream(resource.toPath());
                 }
             } else {
-                if (jarFile == null) {
-                    if (file.exists()) {
-                        jarFile = new JarFile(file);
-                        jarFiles.put(file, jarFile);
-                    } else {
-                        return null;
-                    }
-                    //to eliminate a race condition, retrieve the entry
-                    //that is in the hash table under that filename
-                    jarFile = (JarFile) jarFiles.get(file);
-                }
-                JarEntry entry = jarFile.getJarEntry(resourceName);
-                if (entry != null) {
-                    return jarFile.getInputStream(entry);
-                }
+                return (InputStream) storeAndConvert(jarFile, file, resourceName, (jar, entry) -> jar.getInputStream(entry));
             }
         } catch (Exception e) {
             log("Ignoring Exception " + e.getClass().getName() + ": " + e.getMessage()
@@ -1012,24 +1021,13 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     }
                 }
             } else {
-                if (jarFile == null) {
-                    if (file.exists()) {
-                        jarFile = new JarFile(file);
-                        jarFiles.put(file, jarFile);
-                    } else {
-                        return null;
-                    }
-                    // potential race-condition
-                    jarFile = (JarFile) jarFiles.get(file);
-                }
-                JarEntry entry = jarFile.getJarEntry(resourceName);
-                if (entry != null) {
+                return (URL) storeAndConvert(jarFile, file, resourceName, (jar, entry) -> {
                     try {
                         return new URL("jar:" + FILE_UTILS.getFileURL(file) + "!/" + entry);
                     } catch (MalformedURLException ex) {
                         return null;
                     }
-                }
+                });
             }
         } catch (Exception e) {
             String msg = "Unable to obtain resource from " + file + ": ";
