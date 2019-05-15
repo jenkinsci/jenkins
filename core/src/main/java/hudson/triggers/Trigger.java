@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +61,6 @@ import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
 import org.jenkinsci.Symbol;
@@ -216,7 +216,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         public long getInitialDelay() {
-            return MIN - (Calendar.getInstance().get(Calendar.SECOND) * 1000);
+            return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }
 
         public void doRun() {

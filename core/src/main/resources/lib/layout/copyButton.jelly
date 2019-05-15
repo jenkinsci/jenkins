@@ -29,8 +29,7 @@ THE SOFTWARE.
     Creates a small button that lets the user copies a text into clipboard
 
     <st:attribute name="tooltip">
-      Tooltip of the button. Currently this doesn't work as reliably as we'd like.
-      More ZeroClipboard hacking is likely necessary.
+      Tooltip of the button.
     </st:attribute>
     <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
@@ -45,9 +44,16 @@ THE SOFTWARE.
       According to ZeroClipboard documentation, having such container would improve the accuracy of invisible flash
       overlay.
     </st:attribute>
+    <st:attribute name="style">
+      Additional CSS styles to apply.
+    </st:attribute>
+    <st:attribute name="clazz">
+      Additional CSS class names, so that you can discover this tag more easily from your JavaScript.
+    </st:attribute>
   </st:documentation>
 
-  <span class="copy-button" tooltip="${attrs.tooltip}" text="${attrs.text}" message="${attrs.message}" container="${attrs.container}">
+  <span class="copy-button ${attrs.clazz}" title="${attrs.tooltip}" text="${attrs.text}"
+    message="${attrs.message}" container="${attrs.container}" style="${attrs.style}">
     <input type="button"/>
   </span>
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>

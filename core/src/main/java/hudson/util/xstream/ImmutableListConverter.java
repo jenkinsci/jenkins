@@ -80,12 +80,10 @@ public class ImmutableListConverter extends CollectionConverter {
 	                    items.add(item);
 	                } catch (CriticalXStreamException e) {
 	                    throw e;
-	                } catch (XStreamException e) {
-	                    RobustReflectionConverter.addErrorInContext(context, e);
-	                } catch (LinkageError e) {
+	                } catch (XStreamException | LinkageError e) {
 	                    RobustReflectionConverter.addErrorInContext(context, e);
 	                }
-	                reader.moveUp();
+                    reader.moveUp();
 	            }
 
                 // move back up past the elements element.

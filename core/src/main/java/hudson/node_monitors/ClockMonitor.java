@@ -77,5 +77,5 @@ public class ClockMonitor extends NodeMonitor {
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ClockMonitor();
         }
-    };
+    }
 }

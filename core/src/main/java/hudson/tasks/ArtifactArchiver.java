@@ -234,7 +234,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
+                    Fingerprinter f = new Fingerprinter(artifacts);
+                    f.setExcludes(excludes);
+                    f.setDefaultExcludes(defaultExcludes);
+                    f.setCaseSensitive(caseSensitive);
+                    f.perform(build, ws, launcher, listener);
                 }
             } else {
                 result = build.getResult();
@@ -279,7 +283,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String,String> r = new HashMap<String,String>();
+            Map<String,String> r = new HashMap<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
@@ -327,7 +331,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 return FormValidation.ok();
             }
             // defensive approach to remain case sensitive in doubtful situations
-            boolean bCaseSensitive = caseSensitive == null || !"false".equals(caseSensitive);
+            boolean bCaseSensitive = !"false".equals(caseSensitive);
             return FilePath.validateFileMask(project.getSomeWorkspace(), value, bCaseSensitive);
         }
 

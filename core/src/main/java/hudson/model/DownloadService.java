@@ -46,11 +46,11 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
-import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -92,7 +92,7 @@ public class DownloadService extends PageDecorator {
         if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
-                if(d.getDue()<now && d.lastAttempt+10*1000<now) {
+                if(d.getDue()<now && d.lastAttempt+TimeUnit.SECONDS.toMillis(10)<now) {
                     buf.append("<script>")
                        .append("Behaviour.addLoadEvent(function() {")
                        .append("  downloadService.download(")
@@ -100,7 +100,7 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
+                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.VERSION)).append('}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -309,7 +309,7 @@ public class DownloadService extends PageDecorator {
          * URLs to download from.
          */
         public List<String> getUrls() {
-            List<String> updateSites = new ArrayList<String>();
+            List<String> updateSites = new ArrayList<>();
             for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");

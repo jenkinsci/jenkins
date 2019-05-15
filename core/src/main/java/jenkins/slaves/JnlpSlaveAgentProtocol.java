@@ -2,7 +2,6 @@ package jenkins.slaves;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.Util;
 import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
@@ -10,7 +9,6 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
-import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
@@ -36,7 +34,7 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  * so it can't impersonate a valid agent.
  *
  * <p>
- * We don't want to force the JNLP agents to be restarted
+ * We don't want to force the inbound agents to be restarted
  * whenever the server restarts, so right now this secret master key
  * is generated once and used forever, which makes this whole scheme
  * less secure.

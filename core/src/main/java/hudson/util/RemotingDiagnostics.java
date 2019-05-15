@@ -75,7 +75,7 @@ public final class RemotingDiagnostics {
 
     private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object,Object>,RuntimeException> {
         public Map<Object,Object> call() {
-            return new TreeMap<Object,Object>(System.getProperties());
+            return new TreeMap<>(System.getProperties());
         }
         private static final long serialVersionUID = 1L;
     }
@@ -88,13 +88,13 @@ public final class RemotingDiagnostics {
 
     public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
-            return new AsyncFutureImpl<Map<String, String>>(Collections.singletonMap("N/A","offline"));
+            return new AsyncFutureImpl<>(Collections.singletonMap("N/A", "offline"));
         return channel.callAsync(new GetThreadDump());
     }
 
     private static final class GetThreadDump extends MasterToSlaveCallable<Map<String,String>,RuntimeException> {
         public Map<String,String> call() {
-            Map<String,String> r = new LinkedHashMap<String,String>();
+            Map<String,String> r = new LinkedHashMap<>();
                 ThreadInfo[] data = Functions.getThreadInfos();
                 Functions.ThreadGroupMap map = Functions.sortThreadsAndGetGroupMap(data);
                 for (ThreadInfo ti : data)

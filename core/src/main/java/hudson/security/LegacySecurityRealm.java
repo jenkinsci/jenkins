@@ -110,5 +110,5 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         public String getDisplayName() {
             return Messages.LegacySecurityRealm_Displayname();
         }
-    };
+    }
 }

@@ -56,14 +56,14 @@ public class InstallPluginCommand extends CLICommand {
         return Messages.InstallPluginCommand_ShortDescription();
     }
 
-    @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file (‘-remoting’ mode only), that file will be installed. " +
+    @Argument(metaVar="SOURCE",required=true,usage=
             "If this is an URL, Jenkins downloads the URL and installs that as a plugin. " +
             "If it is the string ‘=’, the file will be read from standard input of the command, and ‘-name’ must be specified. " +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
             "and the plugin will be installed from the update center. If the short name includes a minimum version number " +
             "(like ‘findbugs:1.4’), and there are multiple update centers publishing different versions, the update centers " +
             "will be searched in order for the first one publishing a version that is at least the specified version.")
-    public List<String> sources = new ArrayList<String>();
+    public List<String> sources = new ArrayList<>();
 
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
     public String name; // TODO better to parse out Short-Name from the manifest and deprecate this option
@@ -95,19 +95,6 @@ public class InstallPluginCommand extends CLICommand {
                     pm.dynamicLoad(f);
                 }
                 continue;
-            }
-
-            // is this a file?
-            if (channel!=null) {
-                FilePath f = new FilePath(channel, source);
-                if (f.exists()) {
-                    stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
-                    String n = name != null ? name : f.getBaseName();
-                    f.copyTo(getTargetFilePath(n));
-                    if (dynamicLoad)
-                        pm.dynamicLoad(getTargetFile(n));
-                    continue;
-                }
             }
 
             // is this an URL?

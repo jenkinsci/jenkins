@@ -27,8 +27,10 @@ package hudson.security;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
@@ -45,15 +47,16 @@ import java.util.Collections;
 import java.util.List;
 
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.SecurityListener;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.seed.UserSeedProperty;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.*;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
-import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Field;
@@ -61,6 +64,7 @@ import java.lang.reflect.Field;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -70,6 +74,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import javax.annotation.Nonnull;
 
+@For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
 
     @Rule
@@ -604,5 +609,146 @@ public class HudsonPrivateSecurityRealmTest {
         HtmlPage success = signup.submit(j);
         assertThat(success.getElementById("main-panel").getTextContent(), not(containsString("Success")));
         assertThat(success.getElementById("main-panel").getTextContent(), containsString(regex));
+    }
+
+    @Test
+    @Issue("SECURITY-1158")
+    public void singupNoLongerVulnerableToSessionFixation() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        // to trigger the creation of a session
+        wc.goTo("");
+        Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
+        String sessionIdBefore = sessionBefore.getValue();
+
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("alice");
+        signup.enterPassword("alice");
+        signup.enterFullName("Alice User");
+        signup.enterEmail("alice@nowhere.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
+
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+
+        Cookie sessionAfter = wc.getCookieManager().getCookie("JSESSIONID");
+        String sessionIdAfter = sessionAfter.getValue();
+
+        assertNotEquals(sessionIdAfter, sessionIdBefore);
+    }
+
+    @Test
+    @Issue("SECURITY-1245")
+    public void changingPassword_mustInvalidateAllSessions() throws Exception {
+        User alice = prepareRealmAndAlice();
+        String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
+
+        WebClient wc = j.createWebClient();
+        WebClient wc_anotherTab = j.createWebClient();
+
+        wc.login(alice.getId());
+        assertUserConnected(wc, alice.getId());
+
+        wc_anotherTab.login(alice.getId());
+        assertUserConnected(wc_anotherTab, alice.getId());
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("alice2");
+        password2.setText("alice2");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        j.submit(form);
+
+        assertUserNotConnected(wc, alice.getId());
+        assertUserNotConnected(wc_anotherTab, alice.getId());
+
+        String seedAfter = alice.getProperty(UserSeedProperty.class).getSeed();
+        assertThat(seedAfter, not(is(initialSeed)));
+    }
+
+    @Test
+    @Issue("SECURITY-1245")
+    public void notChangingPassword_hasNoImpactOnSeed() throws Exception {
+        User alice = prepareRealmAndAlice();
+        String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
+
+        WebClient wc = j.createWebClient();
+        WebClient wc_anotherTab = j.createWebClient();
+
+        wc.login(alice.getId());
+        assertUserConnected(wc, alice.getId());
+
+        wc_anotherTab.login(alice.getId());
+        assertUserConnected(wc_anotherTab, alice.getId());
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        // not changing password this time
+        HtmlForm form = configurePage.getFormByName("config");
+        j.submit(form);
+
+        assertUserConnected(wc, alice.getId());
+        assertUserConnected(wc_anotherTab, alice.getId());
+
+        String seedAfter = alice.getProperty(UserSeedProperty.class).getSeed();
+        assertThat(seedAfter, is(initialSeed));
+    }
+
+    @Test
+    @Issue("SECURITY-1245")
+    public void changingPassword_withSeedDisable_hasNoImpact() throws Exception {
+        boolean previousConfig = UserSeedProperty.DISABLE_USER_SEED;
+        try {
+            UserSeedProperty.DISABLE_USER_SEED = true;
+
+            User alice = prepareRealmAndAlice();
+
+            WebClient wc = j.createWebClient();
+            WebClient wc_anotherTab = j.createWebClient();
+
+            wc.login(alice.getId());
+            assertUserConnected(wc, alice.getId());
+
+            wc_anotherTab.login(alice.getId());
+            assertUserConnected(wc_anotherTab, alice.getId());
+
+            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+            HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+            HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+            password1.setText("alice2");
+            password2.setText("alice2");
+
+            HtmlForm form = configurePage.getFormByName("config");
+            j.submit(form);
+
+            assertUserConnected(wc, alice.getId());
+            assertUserConnected(wc_anotherTab, alice.getId());
+        } finally {
+            UserSeedProperty.DISABLE_USER_SEED = previousConfig;
+        }
+    }
+
+    private User prepareRealmAndAlice() throws Exception {
+        j.jenkins.setDisableRememberMe(false);
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        return securityRealm.createAccount("alice", "alice");
+    }
+
+    private void assertUserConnected(JenkinsRule.WebClient wc, String expectedUsername) throws Exception {
+        XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(page, hasXPath("//name", is(expectedUsername)));
+    }
+
+    private void assertUserNotConnected(JenkinsRule.WebClient wc, String notExpectedUsername) throws Exception {
+        XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
+        assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
     }
 }

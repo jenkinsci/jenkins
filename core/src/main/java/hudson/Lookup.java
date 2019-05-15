@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Kohsuke Kawaguchi
  */
 public class Lookup {
-    private final ConcurrentHashMap<Class,Object> data = new ConcurrentHashMap<Class,Object>();
+    private final ConcurrentHashMap<Class,Object> data = new ConcurrentHashMap<>();
 
     public <T> T get(Class<T> type) {
         return type.cast(data.get(type));

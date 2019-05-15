@@ -126,9 +126,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         private final Set<AperiodicWork> registered = new HashSet<>();
 
         AperiodicWorkExtensionListListener(ExtensionList<AperiodicWork> initiallyRegistered) {
-            for (AperiodicWork p : initiallyRegistered) {
-                registered.add(p);
-            }
+            registered.addAll(initiallyRegistered);
         }
 
         @Override

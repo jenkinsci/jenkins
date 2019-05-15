@@ -47,7 +47,7 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <t:buildCaption>
+      <t:buildCaption autorefresh="true">
         ${%Build} ${it.displayName}
         (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
       </t:buildCaption>

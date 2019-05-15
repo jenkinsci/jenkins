@@ -45,7 +45,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public ChoiceParameterDefinition(String name, String[] choices, String description) {
         super(name, description);
-        this.choices = new ArrayList<String>(Arrays.asList(choices));
+        this.choices = new ArrayList<>(Arrays.asList(choices));
         defaultValue = null;
     }
 

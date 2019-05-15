@@ -107,7 +107,7 @@ public abstract class ItemGroupMixIn {
                 return child.isDirectory();
             }
         });
-        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
+        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
         for (File subdir : subdirs) {
             try {
                 // Try to retain the identity of an existing child object if we can.
@@ -290,16 +290,10 @@ public abstract class ItemGroupMixIn {
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
-        } catch (TransformerException e) {
+        } catch (TransformerException | SAXException e) {
             success = false;
             throw new IOException("Failed to persist config.xml", e);
-        } catch (SAXException e) {
-            success = false;
-            throw new IOException("Failed to persist config.xml", e);
-        } catch (IOException e) {
-            success = false;
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             success = false;
             throw e;
         } finally {

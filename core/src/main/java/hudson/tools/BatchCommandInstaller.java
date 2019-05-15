@@ -50,8 +50,7 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
 
     @Override
     public String[] getCommandCall(FilePath script) {
-        String[] cmd = {"cmd", "/c", "call", script.getRemote()};
-        return cmd;
+        return new String[]{"cmd", "/c", "call", script.getRemote()};
     }
 
     private Object readResolve() throws ObjectStreamException {

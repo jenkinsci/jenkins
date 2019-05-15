@@ -1,7 +1,6 @@
 package jenkins.model;
 
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 

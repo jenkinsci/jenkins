@@ -822,7 +822,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[0]));
     }
 
     /**
@@ -1450,11 +1450,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
                 //We can roam, check that the master is set to be used as much as possible, and not tied jobs only.
-                if(Jenkins.getInstance().getMode() == Mode.EXCLUSIVE) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return Jenkins.getInstance().getMode() == Mode.EXCLUSIVE;
             }
         }
         return true;

@@ -334,7 +334,7 @@ public class NodeProvisioner {
      * Represents the decision taken by an individual {@link hudson.slaves.NodeProvisioner.Strategy}.
      * @since 1.588
      */
-    public static enum StrategyDecision {
+    public enum StrategyDecision {
         /**
          * This decision is the default decision and indicates that the {@link hudson.slaves.NodeProvisioner.Strategy}
          * either could not provision sufficient resources or did not take any action. Any remaining strategies
@@ -598,13 +598,12 @@ public class NodeProvisioner {
          */
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("StrategyState{");
-            sb.append("label=").append(label);
-            sb.append(", snapshot=").append(snapshot);
-            sb.append(", plannedCapacitySnapshot=").append(plannedCapacitySnapshot);
-            sb.append(", additionalPlannedCapacity=").append(additionalPlannedCapacity);
-            sb.append('}');
-            return sb.toString();
+            String sb = "StrategyState{" + "label=" + label +
+                    ", snapshot=" + snapshot +
+                    ", plannedCapacitySnapshot=" + plannedCapacitySnapshot +
+                    ", additionalPlannedCapacity=" + additionalPlannedCapacity +
+                    '}';
+            return sb;
         }
     }
 

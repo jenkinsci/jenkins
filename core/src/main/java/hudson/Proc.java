@@ -325,8 +325,8 @@ public abstract class Proc {
                 // see https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                if (copier!=null)   copier.join(10*1000);
-                if(copier2!=null)   copier2.join(10*1000);
+                if (copier!=null)   copier.join(TimeUnit.SECONDS.toMillis(10));
+                if(copier2!=null)   copier2.join(TimeUnit.SECONDS.toMillis(10));
                 if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.

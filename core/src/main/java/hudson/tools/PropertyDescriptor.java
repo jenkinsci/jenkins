@@ -50,7 +50,7 @@ public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Des
     }
 
     public static <D extends PropertyDescriptor<?,T>,T> List<D> for_(List<D> all, Class<? extends T> target) {
-        List<D> result = new ArrayList<D>();
+        List<D> result = new ArrayList<>();
         for (D d : all)
             if (d.isApplicable(target))
                 result.add(d);

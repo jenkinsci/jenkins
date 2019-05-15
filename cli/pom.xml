@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.24</version>
+      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sshd</groupId>
@@ -134,6 +134,24 @@
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
               <accessModifierAnnotations>true</accessModifierAnnotations>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+              <goals>
+                 <goal>add-source</goal>
+              </goals>
+              <configuration>
+                <sources>
+                  <source>${project.build.directory}/generated-sources/localizer</source>
+                </sources>
+              </configuration>
           </execution>
         </executions>
       </plugin>

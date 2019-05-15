@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.security.ACL;
-import hudson.security.Permission;
 import hudson.util.FormValidation;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
@@ -45,7 +44,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -75,7 +73,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     /**
      * Always hold at least one view.
      */
-    private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+    private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<>();
 
     private transient ViewGroupMixIn viewGroupMixIn;
 
@@ -93,7 +91,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     public Object readResolve() {
         if (views == null)
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
-            views = new CopyOnWriteArrayList<View>();
+            views = new CopyOnWriteArrayList<>();
 
         if (views.isEmpty()) {
             // preserve the non-empty invariant
