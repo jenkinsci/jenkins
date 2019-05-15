@@ -29,6 +29,7 @@ import hudson.Util;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
+import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -110,7 +111,7 @@ public class ApiTokenProperty extends UserProperty {
     
     /**
      * Store the usage information of the different token for this user
-     * The save operation can be toggled by using {@link ApiTokenPropertyConfiguration#usageStatisticsEnabled}
+     * The save operation can be toggled by using {@link ApiTokenPropertyConfiguration#setUsageStatisticsEnabled(boolean)}
      * The information are stored in a separate file to avoid problem with some configuration synchronization tools
      */
     private transient ApiTokenStats tokenStats;
@@ -358,6 +359,34 @@ public class ApiTokenProperty extends UserProperty {
         return tokenStats;
     }
 
+    // essentially meant for scripting
+    public @Nonnull String addFixedNewToken(@Nonnull String name, @Nonnull String tokenPlainValue) throws IOException {
+        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
+        user.save();
+        return tokenUuid;
+    }
+    
+    // essentially meant for scripting
+    public @Nonnull TokenUuidAndPlainValue generateNewToken(@Nonnull String name) throws IOException {
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
+        user.save();
+        return tokenUuidAndPlainValue;
+    }
+    
+    // essentially meant for scripting
+    public void revokeAllTokens() throws IOException {
+        tokenStats.removeAll();
+        tokenStore.revokeAllTokens();
+        user.save();
+    }
+    
+    // essentially meant for scripting
+    public void revokeAllTokensExceptOne(@Nonnull String tokenUuid) throws IOException {
+        tokenStats.removeAllExcept(tokenUuid);
+        tokenStore.revokeAllTokensExcept(tokenUuid);
+        user.save();
+    }
+
     @Extension
     @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
@@ -473,13 +502,47 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
             
-            ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = p.tokenStore.generateNewToken(tokenName);
-            u.save();
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
                 put("tokenUuid", tokenUuidAndPlainValue.tokenUuid); 
                 put("tokenName", tokenName); 
                 put("tokenValue", tokenUuidAndPlainValue.plainValue); 
+            }});
+        }
+    
+        /**
+         * This method is dangerous and should not be used without caution. The token passed here could have been tracked
+         * by different network system during its path.
+         * It is recommended to revoke this token after the generation of a new one.
+         */
+        @RequirePOST
+        public HttpResponse doAddFixedToken(@AncestorInPath User u, 
+                                            @QueryParameter String newTokenName, 
+                                            @QueryParameter String newTokenPlainValue) throws IOException {
+            if (!hasCurrentUserRightToGenerateNewToken(u)) {
+                return HttpResponses.forbidden();
+            }
+            
+            final String tokenName;
+            if (StringUtils.isBlank(newTokenName)) {
+                tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
+            } else {
+                tokenName = newTokenName;
+            }
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                p = forceNewInstance(u, false);
+                u.addProperty(p);
+            }
+            
+            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue);
+            u.save();
+            
+            return HttpResponses.okJSON(new HashMap<String, String>() {{
+                put("tokenUuid", tokenUuid);
+                put("tokenName", tokenName);
             }});
         }
         
@@ -539,6 +602,42 @@ public class ApiTokenProperty extends UserProperty {
                 p.tokenStats.removeId(revoked.getUuid());
             }
             u.save();
+            
+            return HttpResponses.ok();
+        }
+        
+        @RequirePOST
+        public HttpResponse doRevokeAll(@AncestorInPath User u) throws IOException {
+            // only current user + administrator can revoke token
+            u.checkPermission(Jenkins.ADMINISTER);
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+            }
+            
+            p.revokeAllTokens();
+            
+            return HttpResponses.ok();
+        }
+        
+        @RequirePOST
+        public HttpResponse doRevokeAllExcept(@AncestorInPath User u,
+                                              @QueryParameter String tokenUuid) throws IOException {
+            // only current user + administrator can revoke token
+            u.checkPermission(Jenkins.ADMINISTER);
+            
+            if(StringUtils.isBlank(tokenUuid)){
+                // using the web UI this should not occur
+                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
+            }
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+            }
+            
+            p.revokeAllTokensExceptOne(tokenUuid);
             
             return HttpResponses.ok();
         }

@@ -374,6 +374,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #securityRealm
      */
     private Boolean useSecurity;
+    
+    /**
+     * Determine if the default admin user already received a desired fixed API Token. 
+     * If it was already the case, no other will be given, to avoid forgotten system property to make the instance insecure
+     */
+    private Boolean adminAlreadyReceivedFixedApiToken;
 
     /**
      * Controls how the
