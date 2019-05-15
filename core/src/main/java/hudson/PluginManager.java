@@ -1835,15 +1835,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
                     continue;
                 }
-                if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
-                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
-                }
-                if (toInstall.isForNewerHudson()) {
-                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
-                }
-                if (toInstall.isForNewerJava()) {
-                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Java", new Object[] {toInstall.name, toInstall.version});
-                }
+                logPluginWarnings(requestedPlugin, toInstall);
                 jobs.add(toInstall.deploy(true));
             } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
                 UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
@@ -1855,15 +1847,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     LOGGER.log(WARNING, "{0}@{1} is no newer than what we already have", new Object[] {toInstall.name, toInstall.version});
                     continue;
                 }
-                if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
-                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
-                }
-                if (toInstall.isForNewerHudson()) {
-                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
-                }
-                if (toInstall.isForNewerJava()) {
-                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Java", new Object[] {toInstall.name, toInstall.version});
-                }
+                logPluginWarnings(requestedPlugin, toInstall);
                 if (!toInstall.isCompatibleWithInstalledVersion()) {
                     LOGGER.log(WARNING, "{0}@{1} is incompatible with the installed @{2}", new Object[] {toInstall.name, toInstall.version, pw.getVersion()});
                 }
@@ -1871,6 +1855,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             } // else already good
         }
         return jobs;
+    }
+
+    private void logPluginWarnings(Map.Entry<String, VersionNumber> requestedPlugin, UpdateSite.Plugin toInstall) {
+        if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
+            LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
+        }
+        if (toInstall.isForNewerHudson()) {
+            LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
+        }
+        if (toInstall.isForNewerJava()) {
+            LOGGER.log(WARNING, "{0}@{1} was built for a newer Java", new Object[] {toInstall.name, toInstall.version});
+        }
     }
 
     /**
