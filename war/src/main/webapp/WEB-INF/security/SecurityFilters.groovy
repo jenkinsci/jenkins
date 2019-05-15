@@ -33,15 +33,10 @@ import hudson.security.ChainedServletFilter
 import hudson.security.UnwrapSecurityExceptionFilter
 import hudson.security.HudsonAuthenticationEntryPoint
 import jenkins.security.BasicHeaderProcessor
-import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import jenkins.security.ExceptionTranslationFilter
-import org.acegisecurity.ui.basicauth.BasicProcessingFilter
+import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
-import hudson.security.HttpSessionContextIntegrationFilter2
-import hudson.security.SecurityRealm
-import hudson.security.NoopFilter
-import jenkins.security.ApiTokenFilter
 
 // providers that apply to both patterns
 def commonProviders() {
