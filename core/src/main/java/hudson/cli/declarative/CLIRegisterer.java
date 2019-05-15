@@ -27,9 +27,9 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
-import hudson.Functions;
 import hudson.Util;
 import hudson.cli.CLICommand;
+import hudson.cli.CLIReportUnexpectedExceptionHelper;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
@@ -42,8 +42,8 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -59,11 +59,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import static java.util.logging.Level.SEVERE;
-
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Discover {@link CLIMethod}s and register them as {@link CLICommand} implementations.
@@ -259,12 +259,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
                                 return 7;
                             } catch (Throwable e) {
-                                final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
-                                        getName());
-                                stderr.println();
-                                stderr.println("ERROR: " + errorMsg);
-                                LOGGER.log(Level.WARNING, errorMsg, e);
-                                Functions.printStackTrace(e, stderr);
+                                CLIReportUnexpectedExceptionHelper.report(getName(), LOGGER, stderr, e);
                                 return 1;
                             }
                         }

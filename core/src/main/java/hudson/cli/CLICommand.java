@@ -29,7 +29,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
-import hudson.Functions;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
@@ -293,12 +292,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
             return 7;
         } catch (Throwable e) {
-            final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
-                    getName());
-            stderr.println();
-            stderr.println("ERROR: " + errorMsg);
-            LOGGER.log(Level.WARNING, errorMsg, e);
-            Functions.printStackTrace(e, stderr);
+            CLIReportUnexpectedExceptionHelper.report(getName(), LOGGER, stderr, e);
             return 1;
         } finally {
             if(sc != null)
