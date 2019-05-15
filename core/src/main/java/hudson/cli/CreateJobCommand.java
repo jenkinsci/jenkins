@@ -45,28 +45,9 @@ public class CreateJobCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
-
-        if (h.getItemByFullName(name)!=null) {
-            throw new IllegalStateException("Job '"+name+"' already exists");
-        }
-
-        ModifiableTopLevelItemGroup ig = h;
-        int i = name.lastIndexOf('/');
-        if (i > 0) {
-            String group = name.substring(0, i);
-            Item item = h.getItemByFullName(group);
-            if (item == null) {
-                throw new IllegalArgumentException("Unknown ItemGroup " + group);
-            }
-
-            if (item instanceof ModifiableTopLevelItemGroup) {
-                ig = (ModifiableTopLevelItemGroup) item;
-            } else {
-                throw new IllegalStateException("Can't create job from CLI in " + group);
-            }
-            name = name.substring(i + 1);
-        }
+        CreateJobHelper helper = new CreateJobHelper(name);
+        ModifiableTopLevelItemGroup ig = helper.getGroup();
+        String name = helper.getName();
 
         Jenkins.checkGoodName(name);
         ig.createProjectFromXML(name, stdin);
