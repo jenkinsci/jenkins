@@ -57,7 +57,7 @@ import javax.annotation.CheckForNull;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Shell extends CommandInterpreter {
+public class Shell extends UnstableAwareCommandInterpreter {
 
     @DataBoundConstructor
     public Shell(String command) {
@@ -188,23 +188,15 @@ public class Shell extends CommandInterpreter {
          */
         @Restricted(DoNotUse.class)
         public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
-            value = Util.fixEmptyAndTrim(value);
-            if (value == null) {
-                return FormValidation.ok();
-            }
-            long unstableReturn;
-            try {
-                unstableReturn = Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                return FormValidation.error(hudson.model.Messages.Hudson_NotANumber());
-            }
-            if (unstableReturn == 0) {
-                return FormValidation.warning(hudson.tasks.Messages.Shell_invalid_exit_code_zero());
-            }
-            if (unstableReturn < 1 || unstableReturn > 255) {
-                return FormValidation.error(hudson.tasks.Messages.Shell_invalid_exit_code_range(unstableReturn));
-            }
-            return FormValidation.ok();
+            return helpCheckUnstableReturn(value);
+        }
+
+        static String invalidExitCodeZero() {
+            return hudson.tasks.Messages.Shell_invalid_exit_code_zero();
+        }
+
+        static String invalidExitCodeRange(Object unstableReturn) {
+            return hudson.tasks.Messages.Shell_invalid_exit_code_range(unstableReturn);
         }
 
         @Override

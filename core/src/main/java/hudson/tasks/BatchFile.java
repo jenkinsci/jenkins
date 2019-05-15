@@ -45,7 +45,7 @@ import javax.annotation.CheckForNull;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BatchFile extends CommandInterpreter {
+public class BatchFile extends UnstableAwareCommandInterpreter {
     @DataBoundConstructor
     public BatchFile(String command) {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Windows));
@@ -102,27 +102,19 @@ public class BatchFile extends CommandInterpreter {
          */
         @Restricted(DoNotUse.class)
         public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
-            value = Util.fixEmptyAndTrim(value);
-            if (value == null) {
-                return FormValidation.ok();
-            }
-            long unstableReturn;
-            try {
-                unstableReturn = Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                return FormValidation.error(hudson.model.Messages.Hudson_NotANumber());
-            }
-            if (unstableReturn == 0) {
-                return FormValidation.warning(hudson.tasks.Messages.BatchFile_invalid_exit_code_zero());
-            }
-            if (unstableReturn < Integer.MIN_VALUE || unstableReturn > Integer.MAX_VALUE) {
-                return FormValidation.error(hudson.tasks.Messages.BatchFile_invalid_exit_code_range(unstableReturn));
-            }
-            return FormValidation.ok();
+            return helpCheckUnstableReturn(value);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
+    }
+
+    static String invalidExitCodeZero() {
+        return hudson.tasks.Messages.BatchFile_invalid_exit_code_zero();
+    }
+
+    static String invalidExitCodeRange(long unstableReturn) {
+        return hudson.tasks.Messages.BatchFile_invalid_exit_code_range((Object) unstableReturn);
     }
 }
