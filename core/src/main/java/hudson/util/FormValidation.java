@@ -356,22 +356,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if(path!=null) {
             StringBuilder tokenizedPathBuilder = new StringBuilder();
             for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
-                if (delimiter == null) {
-                  delimiter = ", ";
-                }
-                else {
-                  tokenizedPathBuilder.append(delimiter);
-                }
-
-                tokenizedPathBuilder.append(_dir.replace('\\', '/'));
-
-                File dir = new File(_dir);
-
-                File f = new File(dir,exe);
-                if(f.exists())  return exeValidator.validate(f);
-
-                File fexe = new File(dir,exe+".exe");
-                if(fexe.exists())   return exeValidator.validate(fexe);
+                DOSToUnixPathHelper.validate(delimiter, tokenizedPathBuilder, _dir, exe, file -> exeValidator.validate(file));
             }
             tokenizedPathBuilder.append('.');
 

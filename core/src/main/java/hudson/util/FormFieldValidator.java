@@ -545,27 +545,21 @@ public abstract class FormFieldValidator {
                 if(path!=null) {
                     StringBuilder tokenizedPathBuilder = new StringBuilder();
                     for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
-                        if (delimiter == null) {
-                          delimiter = ", ";
-                        }
-                        else {
-                          tokenizedPathBuilder.append(delimiter);
-                        }
-
-                        tokenizedPathBuilder.append(_dir.replace('\\', '/'));
-                        
-                        File dir = new File(_dir);
-
-                        File f = new File(dir,exe);
-                        if(f.exists()) {
-                            checkExecutable(f);
-                            return;
-                        }
-
-                        File fexe = new File(dir,exe+".exe");
-                        if(fexe.exists()) {
-                            checkExecutable(fexe);
-                            return;
+                        Exception e = hudson.util.DOSToUnixPathHelper.validate(delimiter, tokenizedPathBuilder, _dir, exe, exe1 -> {
+                            try {
+                                checkExecutable(exe1);
+                                return null;
+                            } catch (IOException ioe) {
+                                return ioe;
+                            } catch (ServletException se) {
+                                return se;
+                            }
+                        });
+                        if (e != null) {
+                            if (e instanceof IOException)
+                                throw (IOException)e;
+                            if (e instanceof ServletException)
+                                throw (ServletException)e;
                         }
                     }
                     tokenizedPathBuilder.append('.');
