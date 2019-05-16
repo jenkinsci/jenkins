@@ -4252,24 +4252,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.setStatus(HttpURLConnection.HTTP_ACCEPTED);
     }
 
-    private boolean isRestClientAndPost(@CheckForNull StaplerRequest req) {
-        if (req == null) {
-            return false;
-        }
-
-        if (!req.getMethod().equals("POST")) {
-            return false;
-        }
-
-        // no support for multiple accept types / q-factor weighted ones
-        String acceptValue = req.getHeader("Accept");
-        if (acceptValue == null) {
-            return false;
-        }
-
-        return acceptValue.equals("application/json");
-    }
-
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
         if (Main.isUnitTest) {
             throw new RestartNotSupportedException("Restarting the master JVM is not supported in JenkinsRule-based tests");
