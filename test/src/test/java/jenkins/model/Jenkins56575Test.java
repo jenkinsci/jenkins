@@ -98,8 +98,9 @@ public class Jenkins56575Test {
 
     @Before
     public void grabCliJar() throws IOException {
-        jar = tmp.newFile("jenkins-cli.jar");
-        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        String jenkinsCLI = "jenkins-cli.jar";
+        jar = tmp.newFile(jenkinsCLI);
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars(jenkinsCLI).getURL(), jar);
     }
 
     @After
