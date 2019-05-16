@@ -177,7 +177,6 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
-import java.util.Enumeration;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
