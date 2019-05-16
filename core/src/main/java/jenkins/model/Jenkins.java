@@ -177,6 +177,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -4187,13 +4188,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
-        //Request from rest client
-        if (req != null && req.getReferer() == null && req.getMethod().equals("POST")) {
-            rsp.setStatus(200);
-            restart();
-            return;
-        }
-
         if (req == null || req.getMethod().equals("POST")) {
             restart();
         }
@@ -4201,6 +4195,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (rsp != null) {
             rsp.sendRedirect2(".");
         }
+    }
+    
+    /**
+     * REST client version of {@link #doRestart(StaplerRequest, StaplerResponse)}
+     * Perform a restart of Jenkins, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     *
+     * @since TODO
+     */
+    @RequirePOST
+    public void doRestartSimple(StaplerRequest req, StaplerResponse rsp) throws RestartNotSupportedException {
+        checkPermission(ADMINISTER);
+
+        restart();
+
+        rsp.setStatus(HttpURLConnection.HTTP_NO_CONTENT);
     }
 
     /**
@@ -4216,17 +4227,47 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
-        //Request from rest client
-        if (req != null && req.getReferer() == null && req.getMethod().equals("POST")){
-            safeRestart();
-            return HttpResponses.text("safeRestart");
-        }
-
         if (req == null || req.getMethod().equals("POST")) {
             safeRestart();
         }
 
         return HttpResponses.redirectToDot();
+    }
+
+    /**
+     * REST client version of {@link #doSafeRestart(StaplerRequest)}
+     * Queues up a restart of Jenkins for when there are no builds running, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     *
+     * @since TODO
+     */
+    @RequirePOST
+    public void doSafeRestartSimple(StaplerRequest req, StaplerResponse rsp) throws RestartNotSupportedException {
+        checkPermission(ADMINISTER);
+
+        safeRestart();
+
+        // compared to doRestartSimple, this request has no direct effect, but a delayed one, hence the different status
+        rsp.setStatus(HttpURLConnection.HTTP_ACCEPTED);
+    }
+
+    private boolean isRestClientAndPost(@CheckForNull StaplerRequest req) {
+        if (req == null) {
+            return false;
+        }
+
+        if (!req.getMethod().equals("POST")) {
+            return false;
+        }
+
+        // no support for multiple accept types / q-factor weighted ones
+        String acceptValue = req.getHeader("Accept");
+        if (acceptValue == null) {
+            return false;
+        }
+
+        return acceptValue.equals("application/json");
     }
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
