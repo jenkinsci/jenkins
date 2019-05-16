@@ -72,7 +72,7 @@ public class Jenkins56575Test {
 
     @Before
     public void setupMockLifecycle() throws Exception {
-        // to avoid Jenkins.restartableLifecycle to throw RestartNotSupportedException
+        // to avoid Jenkins.restartableLifecycle throwing RestartNotSupportedException
         // there is no problem here since we are overriding the Lifecycle and will not really do a restart
         Main.isUnitTest = false;
 
