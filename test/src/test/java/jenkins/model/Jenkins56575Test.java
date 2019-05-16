@@ -72,7 +72,10 @@ public class Jenkins56575Test {
 
     @Before
     public void setupMockLifecycle() throws Exception {
+        // to avoid Jenkins.restartableLifecycle to throw RestartNotSupportedException
+        // there is no problem here since we are overriding the Lifecycle and will not really do a restart
         Main.isUnitTest = false;
+
         j.jenkins.setCrumbIssuer(null);
 
         previousLifecycle = Lifecycle.get();
@@ -108,10 +111,8 @@ public class Jenkins56575Test {
 
     @Test
     public void testRestart_regularClient() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withRedirectEnabled(false)
-                .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "restart"), HttpMethod.POST);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false);
+        WebRequest request = preparePostRequest("restart");
 
         assertThat(verifyRestartableCalled.get(), is(false));
         assertThat(restartCalled.get(), is(false));
@@ -128,10 +129,8 @@ public class Jenkins56575Test {
     @Test
     @Issue("JENKINS-56575")
     public void testRestartSimple_restClient() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withRedirectEnabled(false)
-                .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "restartSimple"), HttpMethod.POST);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false);
+        WebRequest request = preparePostRequest("restartSimple");
 
         assertThat(verifyRestartableCalled.get(), is(false));
         assertThat(restartCalled.get(), is(false));
@@ -165,10 +164,8 @@ public class Jenkins56575Test {
 
     @Test
     public void testSafeRestart_regularClient() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withRedirectEnabled(false)
-                .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "safeRestart"), HttpMethod.POST);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false);
+        WebRequest request = preparePostRequest("safeRestart");
 
         assertThat(verifyRestartableCalled.get(), is(false));
         assertThat(restartCalled.get(), is(false));
@@ -185,10 +182,8 @@ public class Jenkins56575Test {
     @Test
     @Issue("JENKINS-56575")
     public void testSafeRestartSimple_restClient() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withRedirectEnabled(false)
-                .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "safeRestartSimple"), HttpMethod.POST);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false);
+        WebRequest request = preparePostRequest("safeRestartSimple");
 
         assertThat(verifyRestartableCalled.get(), is(false));
         assertThat(restartCalled.get(), is(false));
@@ -216,6 +211,10 @@ public class Jenkins56575Test {
 
         assertThat(verifyRestartableCalled.get(), is(true));
         assertThat(restartCalled.get(), is(true));
+    }
+
+    private WebRequest preparePostRequest(String relativeUrl) throws IOException {
+        return new WebRequest(new URL(j.getURL() + relativeUrl), HttpMethod.POST);
     }
 
     private int launchCLI(String... cmdArgs) throws Exception {
