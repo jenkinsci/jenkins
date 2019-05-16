@@ -72,7 +72,7 @@ public class RobustReflectionConverterTest {
     @Test public void randomExceptionsReported() throws Exception {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);
         assertNotNull(p);
-        assertEquals(Collections.emptyMap(), p.getTriggers());
+        assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
         Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
