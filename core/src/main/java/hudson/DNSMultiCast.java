@@ -95,7 +95,7 @@ public class DNSMultiCast implements Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
-    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled", true);
+    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled");
 
     private static class JenkinsJmDNS extends JmDNSImpl {
         private static Logger logger = Logger.getLogger(JmDNSImpl.class.getName());
@@ -134,7 +134,15 @@ public class DNSMultiCast implements Closeable {
                 this.cancelTimer();
 
                 // Cancel all services
+                // KK: this is a blocking call that doesn't fit 'abort'
+                // this.unregisterAllServices();
                 executePrivateParentMethod("disposeServiceCollectors");
+
+// KK: another blocking call
+//                if (logger.isLoggable(Level.FINER)) {
+//                    logger.finer("Wait for JmDNS cancel: " + this);
+//                }
+//                this.waitForCanceled(DNSConstants.CLOSE_TIMEOUT);
 
                 // Stop the canceler timer
                 logger.finer("Canceling the state timer");
@@ -165,7 +173,7 @@ public class DNSMultiCast implements Closeable {
                 ExecutorService _executor = (ExecutorService) executor.get(this);
                 _executor.shutdown();
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                logger.severe("Error trying to abort JmDNS: " + e.getMessage());
+                logger.log(Level.SEVERE, "Error trying to abort JmDNS", e);
                 throw new IOException(e);
             }
         }
@@ -176,7 +184,7 @@ public class DNSMultiCast implements Closeable {
                 m.setAccessible(true);
                 m.invoke(this);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                logger.severe("Error trying to abort JmDNS: " + e.getMessage());
+                logger.log(Level.SEVERE, "Error trying to abort JmDNS", e);
                 throw new IOException(e);
             }
         }
