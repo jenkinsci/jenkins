@@ -74,24 +74,24 @@ var repeatableSupport = {
         });
 
         if(children.length==0) {
-            var addButtonElements = $(this.container).childElements().findAll(function (b) {
+            const addButtonElements = $(this.container).childElements().findAll(function (b) {
                 return b.hasClassName("repeatable-add");
             });
 
             if (addButtonElements.length == 2) {
-                var buttonElement = addButtonElements[0];
-                var parentOfButton = buttonElement.parentNode;
+                const buttonElement = addButtonElements[0];
+                const parentOfButton = buttonElement.parentNode;
                 parentOfButton.removeChild(buttonElement);
             }
         } else {
             if (children.length == 1) {
-                var addButtonElements = $(this.container).childElements().findAll(function (b) {
+                const addButtonElements = $(this.container).childElements().findAll(function (b) {
                     return b.hasClassName("repeatable-add");
                 });
 
                 if (addButtonElements.length == 1 && this.enableTopButton) {
-                    var buttonElement = addButtonElements[0];
-                    var parentOfButton = buttonElement.parentNode;
+                    const buttonElement = addButtonElements[0];
+                    const parentOfButton = buttonElement.parentNode;
                     var addTopButton = document.createElement('input');
                     addTopButton.type = 'button';
                     addTopButton.value = buttonElement.textContent || buttonElement.innerText;
