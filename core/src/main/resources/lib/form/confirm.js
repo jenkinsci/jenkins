@@ -73,7 +73,7 @@
 
       var buttons = configForm.getElementsByTagName("button");
       var name;
-      for ( var i = 0; i < buttons.length; i++) {
+      for ( let i = 0; i < buttons.length; i++) {
         var button = buttons[i];
         name = button.parentNode.parentNode.getAttribute('name');
         if (name == "Submit" || name == "Apply" || name == "OK") {
@@ -88,8 +88,8 @@
       }
 
       var inputs = configForm.getElementsByTagName("input");
-      for ( var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
+      for ( let i = 0; i < inputs.length; i++) {
+        const input = inputs[i];
         if(!isIgnoringConfirm(input)){
           if (input.type == 'checkbox' || input.type == 'radio') {
             $(input).on('click', confirm);
@@ -100,16 +100,16 @@
       }
 
       inputs = configForm.getElementsByTagName("select");
-      for ( var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
+      for ( let i = 0; i < inputs.length; i++) {
+        const input = inputs[i];
         if(!isIgnoringConfirm(input)){
           $(input).on('change', confirm);
         }
       }
 
       inputs = configForm.getElementsByTagName("textarea");
-      for ( var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
+      for ( let i = 0; i < inputs.length; i++) {
+        const input = inputs[i];
         if(!isIgnoringConfirm(input)){
           $(input).on('input', confirm);
         }
