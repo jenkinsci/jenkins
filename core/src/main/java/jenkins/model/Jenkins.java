@@ -4205,6 +4205,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     @RequirePOST
+    @Restricted(NoExternalUse.class)
     public void doRestartSimple(StaplerRequest req, StaplerResponse rsp) throws RestartNotSupportedException {
         checkPermission(ADMINISTER);
 
@@ -4242,6 +4243,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     @RequirePOST
+    @Restricted(NoExternalUse.class)
     public void doSafeRestartSimple(StaplerRequest req, StaplerResponse rsp) throws RestartNotSupportedException {
         checkPermission(ADMINISTER);
 
