@@ -600,6 +600,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
+    void considerDetachedPlugin(String shortName) {
+        if (new File(rootDir, shortName + ".jpi").isFile()) {
+            LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
+            return;
+        }
+        LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
+        for (String loadedFile : loadPluginsFromWar("/WEB-INF/detached-plugins", (dir, name) -> normalisePluginName(name).equals(shortName))) {
+            String loaded = normalisePluginName(loadedFile);
+            File arc = new File(rootDir, loaded + ".jpi");
+            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            try {
+                plugins.add(strategy.createPluginWrapper(arc));
+            } catch (IOException e) {
+                failedPlugins.add(new FailedPlugin(arc.getName(), e));
+            }
+
+        }
+    }
+
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath) {
         return loadPluginsFromWar(fromPath, null);
     }

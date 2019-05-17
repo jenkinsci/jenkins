@@ -387,7 +387,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.18.1</version>
+                  <version>1.56</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

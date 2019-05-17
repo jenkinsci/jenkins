@@ -24,6 +24,7 @@
 
 package jenkins.install;
 
+import hudson.ClassicPluginStrategy;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import hudson.Plugin;
@@ -34,6 +35,8 @@ import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,18 +47,15 @@ import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import org.jvnet.hudson.test.LoggerRule;
 
 @Category(SmokeTest.class)
 public class LoadDetachedPluginsTest {
 
     @Rule public RestartableJenkinsRule rr = PluginManagerUtil.newRestartableJenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-48365")
     @Test
@@ -119,7 +119,7 @@ public class LoadDetachedPluginsTest {
             Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
             assertThat("Script-security should be installed", scriptSecurity, notNullValue());
             assertThat("Dependencies of detached plugins should be upgraded to the required version",
-                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.18.1")));
+                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.56")));
             assertNoFailedPlugins(r);
         });
     }
@@ -159,6 +159,29 @@ public class LoadDetachedPluginsTest {
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
             assertNoFailedPlugins(r);
         });
+    }
+
+    @Issue("JENKINS-55582")
+    @LocalData
+    @Test
+    public void installDetachedDependencies() {
+        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
+        rr.then(r -> {
+            List<String> activePlugins = r.jenkins.getPluginManager().getPlugins().stream().filter(PluginWrapper::isActive).map(PluginWrapper::getShortName).collect(Collectors.toList());
+            assertThat("we precreated $JENKINS_HOME/plugins/example.jpi so it had better be loaded", activePlugins, hasItem("example"));
+            { // Check that it links correctly against an implied dependency from a detached plugin:
+                Class<?> callerC = r.jenkins.pluginManager.uberClassLoader.loadClass("io.jenkins.plugins.example.Caller");
+                assertLoader(callerC, "example", r);
+                Object jdkInstaller = callerC.getMethod("use").invoke(null);
+                assertLoader(jdkInstaller.getClass(), "jdk-tool", r);
+            }
+            assertThat("it had various implicit detached dependencies so those should have been loaded too", activePlugins, hasSize(greaterThan(1)));
+        });
+    }
+    private void assertLoader(Class<?> c, String expectedPlugin, JenkinsRule r) {
+        PluginWrapper pw = r.jenkins.pluginManager.whichPlugin(c);
+        assertNotNull("did not expect to be loading " + c + " from " + c.getClassLoader(), pw);
+        assertEquals(expectedPlugin, pw.getShortName());
     }
 
     private List<PluginWrapper> getInstalledDetachedPlugins(JenkinsRule r, List<DetachedPlugin> detachedPlugins) {
