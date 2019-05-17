@@ -35,7 +35,8 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 /**
- * Utilities useful when working with various XML types.
+  * Utilities useful when working with various XML types.
+  * @since 1.596.1 and 1.600, unrestricted since TODO
  */
 public final class XMLUtils {
 
