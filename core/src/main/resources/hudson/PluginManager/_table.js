@@ -95,7 +95,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         
         // Create a map of the plugin rows, making it easy to index them.
         var plugins = {};
-        for (var i = 0; i < pluginTRs.length; i++) {
+        for (let i = 0; i < pluginTRs.length; i++) {
             var pluginTR = pluginTRs[i];
             var pluginId = pluginTR.getAttribute('data-plugin-id');
             
@@ -226,11 +226,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 
                 // Go through each dependency <span> element. Show the spans where the dependency is
                 // disabled. Hide the others. 
-                for (var i = 0; i < dependencySpans.length; i++) {
+                for (let i = 0; i < dependencySpans.length; i++) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
-                    var depPluginTR = getPluginTR(pluginId);
-                    var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                    const depPluginTR = getPluginTR(pluginId);
+                    const depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
                     if (depPluginMetadata.enableInput.checked) {
                         // It's enabled ... hide the span
                         dependencySpan.setStyle({display: 'none'});
@@ -264,7 +264,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     
                     // Go through each dependent <span> element. Show the spans where the dependent is
                     // enabled. Hide the others. 
-                    for (var i = 0; i < dependentSpans.length; i++) {
+                    for (let i = 0; i < dependentSpans.length; i++) {
                         var dependentSpan = dependentSpans[i];
                         var dependentId = dependentSpan.getAttribute('data-plugin-id');
                         
@@ -272,8 +272,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                             // show the span
                             dependentSpan.setStyle({display: 'inline-block'});
                         } else {
-                            var depPluginTR = getPluginTR(dependentId);
-                            var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                            const depPluginTR = getPluginTR(dependentId);
+                            const depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
                             if (depPluginMetadata.enableInput.checked) {
                                 // It's enabled ... show the span
                                 dependentSpan.setStyle({display: 'inline-block'});
@@ -402,7 +402,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             });
         }
 
-        for (var i = 0; i < pluginTRs.length; i++) {
+        for (let i = 0; i < pluginTRs.length; i++) {
             initPluginRowHandling(pluginTRs[i]);
         }
         
