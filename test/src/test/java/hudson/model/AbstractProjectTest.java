@@ -476,9 +476,6 @@ public class AbstractProjectTest {
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
         tpm.installDetachedPlugin("javadoc");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("display-url-api");
-        tpm.installDetachedPlugin("mailer");
         tpm.installDetachedPlugin("maven-plugin");
 
         j.jenkins.setCrumbIssuer(null);
