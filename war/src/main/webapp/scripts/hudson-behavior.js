@@ -402,12 +402,12 @@ function geval(script) {
 function fireEvent(element,event){
     if (document.createEvent) {
         // dispatch for firefox + others
-        var evt = document.createEvent("HTMLEvents");
+        const evt = document.createEvent("HTMLEvents");
         evt.initEvent(event, true, true ); // event type,bubbling,cancelable
         return !element.dispatchEvent(evt);
     } else {
         // dispatch for IE
-        var evt = document.createEventObject();
+        const evt = document.createEventObject();
         return element.fireEvent('on'+event,evt)
     }
 }
@@ -1801,9 +1801,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 var badgesOverflowing = false;
                 var nameLessThanHalf = true;
                 var detailsLessThanHalf = true;
-                var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+                const buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
                 if (buildBadge) {
-                    var badgeOverflowParams = getElementOverflowParams(buildBadge);
+                    const badgeOverflowParams = getElementOverflowParams(buildBadge);
 
                     if (badgeOverflowParams.isOverflowed) {
                         // The badges are also overflowing. In this case, we will only attempt to
@@ -1843,7 +1843,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     Element.addClassName(buildDetails, "block");
                     buildControls.parentNode.removeChild(buildControls);
                     buildDetails.parentNode.insertBefore(buildControls, buildDetails);
-                    var wrap = blockWrap(buildName, buildControls);
+                    const wrap = blockWrap(buildName, buildControls);
                     Element.addClassName(wrap, "build-name-controls");
                     indentMultiline(buildDetails);
                     nameOverflowParams = getElementOverflowParams(buildName); // recalculate
@@ -1856,7 +1856,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     // build name (first field) a block element, forcing the details and controls to wrap
                     // onto the next row (creating a second row).
                     Element.addClassName(buildName, "block");
-                    var wrap = blockWrap(buildDetails, buildControls);
+                    const wrap = blockWrap(buildDetails, buildControls);
                     indentMultiline(wrap);
                     Element.addClassName(wrap, "build-details-controls");
                     detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
@@ -1883,9 +1883,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
 
         if (buildControls && !controlsRepositioned) {
-            var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+            const buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
             if (buildBadge) {
-                var badgeOverflowParams = getElementOverflowParams(buildBadge);
+                const badgeOverflowParams = getElementOverflowParams(buildBadge);
 
                 if (badgeOverflowParams.isOverflowed) {
                     markMultiline();
@@ -1916,15 +1916,15 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
         // Insert zero-width spaces in text that may cause overflow distortions.
         var displayNames = $(bh).getElementsBySelector('.display-name');
-        for (var i = 0; i < displayNames.length; i++) {
+        for (let i = 0; i < displayNames.length; i++) {
             insertZeroWidthSpacesInElementText(displayNames[i], 2);
         }
         var descriptions = $(bh).getElementsBySelector('.desc');
-        for (var i = 0; i < descriptions.length; i++) {
+        for (let i = 0; i < descriptions.length; i++) {
             insertZeroWidthSpacesInElementText(descriptions[i], 30);
         }
 
-        for (var i = 0; i < rows.length; i++) {
+        for (let i = 0; i < rows.length; i++) {
             var row = rows[i];
             checkRowCellOverflows(row);
         }
@@ -2365,11 +2365,11 @@ function ensureVisible(e) {
     var y = pos.top;
     var h = pos.height;
 
-    var d = (y+h)-(Y+H);
+    const d = (y+h)-(Y+H);
     if (d>0) {
         document.body.scrollTop += d;
     } else {
-        var d = Y-y;
+        const d = Y-y;
         if (d>0)    document.body.scrollTop -= d;
     }
 }
