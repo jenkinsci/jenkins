@@ -47,25 +47,25 @@ function selectRecent(anchor){
 
 function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes){
     var mustCheck = false;
-    for(var i = 0; i < concernedCheckBoxes.length && !mustCheck ; i++){
-        var checkBox = concernedCheckBoxes[i];
+    for(let i = 0; i < concernedCheckBoxes.length && !mustCheck ; i++){
+        const checkBox = concernedCheckBoxes[i];
         if(!checkBox.checked){
             mustCheck = true;
         }
     }
     
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
+    for(let i = 0; i < allCheckBoxes.length ; i++){
+        const checkBox = allCheckBoxes[i];
         checkBox.checked = false;
     }
     
-    for(var i = 0; i < concernedCheckBoxes.length ; i++){
-        var checkBox = concernedCheckBoxes[i];
+    for(let i = 0; i < concernedCheckBoxes.length ; i++){
+        const checkBox = concernedCheckBoxes[i];
         checkBox.checked = mustCheck;
     }
     
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
+    for(let i = 0; i < allCheckBoxes.length ; i++){
+        const checkBox = allCheckBoxes[i];
         onCheckChanged(checkBox);
     }
 }
@@ -74,8 +74,8 @@ function confirmAndRevokeAllSelected(button){
     var parent = button.up('.legacy-token-usage');
     var allCheckBoxes = parent.querySelectorAll('.token-to-revoke');
     var allCheckedCheckBoxes = [];
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
+    for(let i = 0; i < allCheckBoxes.length ; i++){
+        const checkBox = allCheckBoxes[i];
         if(checkBox.checked){
             allCheckedCheckBoxes.push(checkBox);
         }
@@ -91,8 +91,8 @@ function confirmAndRevokeAllSelected(button){
             var url = button.getAttribute('data-url');
             var selectedValues = [];
             
-            for(var i = 0; i < allCheckedCheckBoxes.length ; i++){
-                var checkBox = allCheckedCheckBoxes[i];
+            for(let i = 0; i < allCheckedCheckBoxes.length ; i++){
+                const checkBox = allCheckedCheckBoxes[i];
                 var userId = checkBox.getAttribute('data-user-id');
                 var uuid = checkBox.getAttribute('data-uuid');
                 selectedValues.push({userId: userId, uuid: uuid});
@@ -134,7 +134,7 @@ function onCheckChanged(checkBox){
 (function(){
     document.addEventListener("DOMContentLoaded", function() {
         var allLines = document.querySelectorAll('.legacy-token-usage table tr');
-        for(var i = 0; i < allLines.length; i++){
+        for(let i = 0; i < allLines.length; i++){
             var line = allLines[i];
             if(!line.hasClassName('no-token-line')){
                 line.onclick = onLineClicked;
@@ -142,7 +142,7 @@ function onCheckChanged(checkBox){
         }
         
         var allCheckBoxes = document.querySelectorAll('.token-to-revoke');
-        for(var i = 0; i < allCheckBoxes.length; i++){
+        for(let i = 0; i < allCheckBoxes.length; i++){
             var checkBox = allCheckBoxes[i];
             checkBox.onchange = function(){ onCheckChanged(this); };
         }
