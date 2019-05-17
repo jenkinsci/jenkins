@@ -610,7 +610,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Set<String> names = new HashSet();
 
         ServletContext context = Jenkins.getActiveInstance().servletContext;
-        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
+        Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
 
@@ -875,7 +875,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         pw = i.next();
                         if(sn.equals(pw.getShortName())) {
                             i.remove();
-                            pw = null;
                             break;
                         }
                     }
@@ -1116,7 +1115,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final JarURLConnection connection = (JarURLConnection) uc;
             final URL jarURL = connection.getJarFileURL();
             if (jarURL.getProtocol().equals("file")) {
-                uc = null;
                 String file = jarURL.getFile();
                 return new File(file).lastModified();
             } else {

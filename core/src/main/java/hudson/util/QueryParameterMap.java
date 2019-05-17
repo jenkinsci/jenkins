@@ -80,6 +80,6 @@ public class QueryParameterMap {
 
     public List<String> getAll(String name) {
         List<String> v = store.get(name);
-        return v!=null? Collections.unmodifiableList(v) : Collections.<String>emptyList();
+        return v!=null? Collections.unmodifiableList(v) : Collections.emptyList();
     }
 }

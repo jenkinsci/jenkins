@@ -357,7 +357,7 @@ public class Iterators {
 
     @SafeVarargs
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
-        return com.google.common.collect.Iterators.<T>concat(iterators);
+        return com.google.common.collect.Iterators.concat(iterators);
     }
 
     /**

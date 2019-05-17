@@ -117,7 +117,7 @@ public abstract class SCMListener implements ExtensionPoint {
     @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", Run.class, SCM.class, TaskListener.class, ChangeLogSet.class)) {
-            onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
+            onChangeLogParsed(build, build.getProject().getScm(), listener, changelog);
         }
     }
 

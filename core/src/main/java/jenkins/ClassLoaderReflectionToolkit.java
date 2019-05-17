@@ -29,7 +29,7 @@ public class ClassLoaderReflectionToolkit {
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e);
         }
-        Method gCLL = null;
+        Method gCLL;
         try {
             gCLL = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
             gCLL.setAccessible(true);

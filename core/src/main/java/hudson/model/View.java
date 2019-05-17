@@ -1246,7 +1246,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+        return Jenkins.getInstance().getDescriptorList(View.class);
     }
 
     /**

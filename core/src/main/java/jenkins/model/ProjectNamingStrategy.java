@@ -56,7 +56,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
     }
 
     public static DescriptorExtensionList<ProjectNamingStrategy, ProjectNamingStrategyDescriptor> all() {
-        return Jenkins.getInstance().<ProjectNamingStrategy, ProjectNamingStrategyDescriptor> getDescriptorList(ProjectNamingStrategy.class);
+        return Jenkins.getInstance().getDescriptorList(ProjectNamingStrategy.class);
     }
 
     /**
