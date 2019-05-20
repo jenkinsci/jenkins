@@ -176,8 +176,8 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
-    public SortedSet<String> getJobNames() {
-        return jobNames;
+    public Set<String> getJobNames() {
+        return Collections.unmodifiableSet(jobNames);
     }
 
     /**
@@ -492,10 +492,8 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     @DataBoundSetter
-    public void setJobNames(List<String> jobNames) {
-        synchronized (this) {
-            this.jobNames = new TreeSet<>(jobNames);
-        }
+    public synchronized void setJobNames(Set<String> jobNames) {
+        this.jobNames = new TreeSet<>(jobNames);
     }
 
     @DataBoundSetter
