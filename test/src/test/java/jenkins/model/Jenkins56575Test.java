@@ -112,7 +112,7 @@ public class Jenkins56575Test {
 
     @Test
     public void testRestart_regularClient() throws Exception {
-        WebClient wc = j.createWebClient().withRedirectEnabled(false).withThrowExceptionOnFailingStatusCode(true);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false).withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = preparePostRequest("restart");
 
         assertThat(verifyRestartableCalled.get(), is(false));
@@ -165,7 +165,7 @@ public class Jenkins56575Test {
 
     @Test
     public void testSafeRestart_regularClient() throws Exception {
-        WebClient wc = j.createWebClient().withRedirectEnabled(false).withThrowExceptionOnFailingStatusCode(true);
+        WebClient wc = j.createWebClient().withRedirectEnabled(false).withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = preparePostRequest("safeRestart");
 
         assertThat(verifyRestartableCalled.get(), is(false));
