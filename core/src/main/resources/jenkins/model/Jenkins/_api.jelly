@@ -46,4 +46,9 @@ THE SOFTWARE.
     <a href="../safeRestart">this URL</a> to restart once no jobs are running.
     All these URLs need the admin privilege to the system.
   </p>
+  <p>
+    If you want to have a REST version of those pages, you can use <a href="../restartSimple">this URL</a> to request 
+    a direct restart and <a href="../safeRestartSimple">this URL</a> for the safe version. 
+    Compared to the regular calls, they will just reply with a 204 and 202 respectively without any page content or redirection.
+  </p>
 </j:jelly>
