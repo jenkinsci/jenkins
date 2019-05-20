@@ -283,7 +283,7 @@ public class UpdateSite {
     /**
      * Returns true if it's time for us to check for new version.
      */
-    synchronized public boolean isDue() {
+    public synchronized boolean isDue() {
         if(neverUpdate)     return false;
         if(dataTimestamp == 0)
             dataTimestamp = getDataFile().file.lastModified();
