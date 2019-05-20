@@ -328,14 +328,15 @@ public class ListView extends View implements DirectlyModifiableView {
     public String getIncludeRegex() {
         return includeRegex;
     }
-    
+
     public boolean isRecurse() {
         return recurse;
     }
-    
+
     /**
      * @since 1.568
      */
+    @DataBoundSetter
     public void setRecurse(boolean recurse) {
         this.recurse = recurse;
     }
@@ -470,7 +471,7 @@ public class ListView extends View implements DirectlyModifiableView {
             columns = new DescribableList<>(this);
         }
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
-        
+
         if (jobFilters == null) {
         	jobFilters = new DescribableList<>(this);
         }
