@@ -76,6 +76,7 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -292,7 +293,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-    
+
+    @DataBoundSetter
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
