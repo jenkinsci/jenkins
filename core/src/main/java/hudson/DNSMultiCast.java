@@ -97,6 +97,21 @@ public class DNSMultiCast implements Closeable {
 
     public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled");
 
+    /**
+     * Class that extends {@link JmDNSImpl} to add an abort method. Since {@link javax.jmdns.JmDNS#close()} might
+     * make the instance hang during the shutdown, the abort method terminate uncleanly, but rapidly and
+     * without blocking.
+     *
+     * Initially it was part of the jenkinsci/jmdns forked library, but now this class is responsible for aborting,
+     * allowing to have a direct and clean dependency to the original library.
+     *
+     * The abort() method is pretty similar to close() method. To access private methods and fields uses
+     * reflection.
+     *
+     * @since 2.178
+     *
+     * See JENKINS-25369 for further details
+     */
     private static class JenkinsJmDNS extends JmDNSImpl {
         private static Logger logger = Logger.getLogger(JmDNSImpl.class.getName());
         private final Class parent;
