@@ -37,6 +37,7 @@ import jenkins.security.ExceptionTranslationFilter
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
+import hudson.security.HttpSessionContextIntegrationFilter2
 
 // providers that apply to both patterns
 def commonProviders() {
