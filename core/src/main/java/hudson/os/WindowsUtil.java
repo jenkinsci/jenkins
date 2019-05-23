@@ -102,7 +102,7 @@ public class WindowsUtil {
      * @throws UnsupportedOperationException if this method is called on a non-Windows platform
      */
     public static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
-        if(Functions.isWindows() == false) {
+        if (!Functions.isWindows()) {
             throw new UnsupportedOperationException("Can only be called on windows platform");
         }
         Process mklink = execCmd("mklink", "/J", junction.getAbsolutePath(), target.getAbsolutePath());
