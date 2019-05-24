@@ -113,7 +113,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
     /** @see BuildableItem#scheduleBuild(int, Cause) */
     public final boolean scheduleBuild(int quietPeriod, Cause c) {
-        return scheduleBuild2(quietPeriod, c != null ? Collections.singletonList(new CauseAction(c)) : Collections.emptyList()) != null;
+        return scheduleBuild2(quietPeriod, c != null ? Collections.<Action>singletonList(new CauseAction(c)) : Collections.<Action>emptyList()) != null;
     }
 
     /**

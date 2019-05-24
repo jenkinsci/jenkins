@@ -56,7 +56,7 @@ public class ChunkedOutputStream extends OutputStream {
     private static final byte[] ZERO = new byte[]{(byte) '0'};
 
     // ----------------------------------------------------- Instance Variables
-    private OutputStream stream;
+    private OutputStream stream = null;
 
     private byte[] cache;
 

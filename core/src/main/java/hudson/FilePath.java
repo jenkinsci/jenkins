@@ -335,9 +335,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 tokens.add(path.substring(s, i));
                 s = i;
                 // Skip any extra separator chars
-                //noinspection StatementWithEmptyBody
-                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\'))
-                    ;
+                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\')) { }
                 // Add token for separator unless we reached the end
                 if (i < end) tokens.add(path.substring(s, s+1));
                 s = i;

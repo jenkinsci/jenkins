@@ -134,7 +134,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          */
         public Downloadable createDownloadable() {
             if (this instanceof DownloadFromUrlInstaller.DescriptorImpl) {
-                final DownloadFromUrlInstaller.DescriptorImpl delegate = this;
+                final DownloadFromUrlInstaller.DescriptorImpl delegate = (DownloadFromUrlInstaller.DescriptorImpl)this;
                 return new Downloadable(getId()) {
                     public JSONObject reduce(List<JSONObject> jsonList) {
                         if (isDefaultSchema(jsonList)) {

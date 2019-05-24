@@ -61,7 +61,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     }
 
     protected CopyOnWriteMap() {
-        update(Collections.emptyMap());
+        update(Collections.<K,V>emptyMap());
     }
 
     protected void update(Map<K,V> m) {
@@ -124,7 +124,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     protected abstract Map<K,V> copy();
 
     public synchronized void clear() {
-        update(Collections.emptyMap());
+        update(Collections.<K,V>emptyMap());
     }
 
     /**

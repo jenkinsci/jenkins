@@ -81,7 +81,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     private transient String javaHome;
 
     public JDK(String name, String javaHome) {
-        super(name, javaHome, Collections.emptyList());
+        super(name, javaHome, Collections.<ToolProperty<?>>emptyList());
     }
 
     @DataBoundConstructor

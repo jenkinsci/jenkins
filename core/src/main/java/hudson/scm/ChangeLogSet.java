@@ -73,7 +73,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
     @Deprecated
     protected ChangeLogSet(AbstractBuild<?, ?> build) {
-        this(build, browserFromBuild(build));
+        this((Run) build, browserFromBuild(build));
     }
     private static RepositoryBrowser<?> browserFromBuild(AbstractBuild<?,?> build) {
         if (build == null) { // not generally allowed, but sometimes done in unit tests

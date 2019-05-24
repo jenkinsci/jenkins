@@ -103,7 +103,7 @@ public class InetAddressValidator implements Serializable {
                 return false;
             }
 
-            int iIpSegment;
+            int iIpSegment = 0;
 
             try {
                 iIpSegment = Integer.parseInt(ipSegment);
@@ -176,7 +176,7 @@ public class InetAddressValidator implements Serializable {
                 if (octet.length() > IPV6_MAX_HEX_DIGITS_PER_GROUP) {
                     return false;
                 }
-                int octetInt;
+                int octetInt = 0;
                 try {
                     octetInt = Integer.parseInt(octet, BASE_16);
                 } catch (NumberFormatException e) {

@@ -870,7 +870,7 @@ public class Util {
             if (c > 122 || uriMap[c]) {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
-                    out.append(s, 0, i);
+                    out.append(s.substring(0, i));
                     enc = StandardCharsets.UTF_8.newEncoder();
                     buf = CharBuffer.allocate(1);
                     escaped = true;
@@ -1035,7 +1035,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
-        return fixNull(l, Collections.emptyList());
+        return fixNull(l, Collections.<T>emptyList());
     }
 
     /**
@@ -1049,7 +1049,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
-        return fixNull(l, Collections.emptySet());
+        return fixNull(l, Collections.<T>emptySet());
     }
 
     /**
@@ -1063,7 +1063,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
-        return fixNull(l, Collections.emptySet());
+        return fixNull(l, Collections.<T>emptySet());
     }
 
     /**
@@ -1077,7 +1077,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
-        return fixNull(l, Collections.emptySet());
+        return fixNull(l, Collections.<T>emptySet());
     }
 
     /**

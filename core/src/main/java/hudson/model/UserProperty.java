@@ -71,7 +71,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      * Returns all the registered {@link UserPropertyDescriptor}s.
      */
     public static DescriptorExtensionList<UserProperty,UserPropertyDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(UserProperty.class);
+        return Jenkins.getInstance().<UserProperty,UserPropertyDescriptor>getDescriptorList(UserProperty.class);
     }
 
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {

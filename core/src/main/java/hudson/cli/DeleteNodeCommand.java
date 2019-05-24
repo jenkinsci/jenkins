@@ -59,7 +59,7 @@ public class DeleteNodeCommand extends CLICommand {
         final HashSet<String> hs = new HashSet<>(nodes);
 
         for (String node_s : hs) {
-            Node node;
+            Node node = null;
 
             try {
                 node = jenkins.getNode(node_s);

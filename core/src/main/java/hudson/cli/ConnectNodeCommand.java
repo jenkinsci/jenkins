@@ -68,7 +68,7 @@ public class ConnectNodeCommand extends CLICommand {
         List<String> names = null;
 
         for (String node_s : hs) {
-            Computer computer;
+            Computer computer = null;
 
             try {
                 computer = jenkins.getComputer(node_s);

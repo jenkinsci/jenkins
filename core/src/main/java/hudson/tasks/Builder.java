@@ -72,6 +72,6 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
-        return Jenkins.getInstance().getDescriptorList(Builder.class);
+        return Jenkins.getInstance().<Builder,Descriptor<Builder>>getDescriptorList(Builder.class);
     }
 }

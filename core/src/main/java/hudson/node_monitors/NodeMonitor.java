@@ -146,6 +146,6 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * Returns all the registered {@link NodeMonitor} descriptors.
      */
     public static DescriptorExtensionList<NodeMonitor,Descriptor<NodeMonitor>> all() {
-        return Jenkins.getInstance().getDescriptorList(NodeMonitor.class);
+        return Jenkins.getInstance().<NodeMonitor,Descriptor<NodeMonitor>>getDescriptorList(NodeMonitor.class);
     }
 }

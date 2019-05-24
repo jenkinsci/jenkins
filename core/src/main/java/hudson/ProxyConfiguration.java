@@ -385,7 +385,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
 
-            String host;
+            String host = testUrl;
             try {
                 URL url = new URL(testUrl);
                 host = url.getHost();

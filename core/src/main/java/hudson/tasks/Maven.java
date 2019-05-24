@@ -129,7 +129,7 @@ public class Maven extends Builder {
      *
      * @since 1.322
      */
-    public boolean usePrivateRepository;
+    public boolean usePrivateRepository = false;
     
     /**
      * Provides access to the settings.xml to be used for a build.

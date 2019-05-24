@@ -2326,7 +2326,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             buf.append(host);
         } else {
             // Nginx uses the same spec as for the Host header, i.e. hostname:port
-            buf.append(host, 0, index);
+            buf.append(host.substring(0, index));
             if (index + 1 < host.length()) {
                 try {
                     port = Integer.parseInt(host.substring(index + 1));

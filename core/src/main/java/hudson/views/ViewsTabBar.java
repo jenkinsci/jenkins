@@ -65,7 +65,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      * Returns all the registered {@link ViewsTabBar} descriptors.
      */
     public static DescriptorExtensionList<ViewsTabBar, Descriptor<ViewsTabBar>> all() {
-        return Jenkins.getInstance().getDescriptorList(ViewsTabBar.class);
+        return Jenkins.getInstance().<ViewsTabBar, Descriptor<ViewsTabBar>>getDescriptorList(ViewsTabBar.class);
     }
 
     @Override

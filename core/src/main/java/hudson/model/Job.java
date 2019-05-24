@@ -216,7 +216,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
-                //noinspection StatementWithEmptyBody
                 if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
                     // allow LazyBuildMixIn.onLoad to fix it
                 } else {
@@ -725,7 +724,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported(name="allBuilds",visibility=-2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
-        return RunList.fromRuns(_getRuns().values());
+        return RunList.<RunT>fromRuns(_getRuns().values());
     }
 
     /**
@@ -757,7 +756,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets all the builds in a map.
      */
     public SortedMap<Integer, RunT> getBuildsAsMap() {
-        return Collections.unmodifiableSortedMap(_getRuns());
+        return Collections.<Integer, RunT>unmodifiableSortedMap(_getRuns());
     }
 
     /**

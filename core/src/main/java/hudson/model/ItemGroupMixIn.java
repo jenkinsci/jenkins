@@ -272,7 +272,7 @@ public abstract class ItemGroupMixIn {
         dir.mkdirs();
         boolean success = false;
         try {
-            XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
+            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(configXml));
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {

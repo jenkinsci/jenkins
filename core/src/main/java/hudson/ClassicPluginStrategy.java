@@ -137,7 +137,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 } catch (InvalidPathException e) {
                     throw new IOException(e);
                 }
-                //noinspection StatementWithEmptyBody
                 if (firstLine.startsWith("Manifest-Version:")) {
                     // this is the manifest already
                 } else {
@@ -159,7 +158,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
         final Manifest manifest;
 
-        URL baseResourceURL;
+        URL baseResourceURL = null;
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
@@ -251,18 +250,14 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
     }
 
-    private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+    private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
         String pluginName = atts.getValue("Short-Name");
         
         String jenkinsVersion = atts.getValue("Jenkins-Version");
         if (jenkinsVersion==null)
             jenkinsVersion = atts.getValue("Hudson-Version");
-
-        for (Dependency d : DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion)) {
-            LOGGER.fine(() -> "implied dep " + pluginName + " → " + d.shortName);
-            pluginManager.considerDetachedPlugin(d.shortName);
-            optionalDependencies.add(d);
-        }
+        
+        optionalDependencies.addAll(DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion));
     }
 
     /**
@@ -320,7 +315,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         List<ExtensionFinder> finders;
         if (type==ExtensionFinder.class) {
             // Avoid infinite recursion of using ExtensionFinders to find ExtensionFinders
-            finders = Collections.singletonList(new ExtensionFinder.Sezpoz());
+            finders = Collections.<ExtensionFinder>singletonList(new ExtensionFinder.Sezpoz());
         } else {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }

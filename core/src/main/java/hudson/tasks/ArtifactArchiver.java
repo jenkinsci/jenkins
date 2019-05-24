@@ -242,7 +242,6 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             } else {
                 result = build.getResult();
-                //noinspection StatementWithEmptyBody
                 if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     try {
                     	String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);

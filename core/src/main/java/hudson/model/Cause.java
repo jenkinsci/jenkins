@@ -192,7 +192,7 @@ public abstract class Cause {
         @Override
         public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
             Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
-            if (!(i instanceof Job)) {
+            if (i == null || !(i instanceof Job)) {
                 // cannot initialize upstream causes
                 return;
             }
