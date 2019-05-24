@@ -41,11 +41,11 @@ THE SOFTWARE.
         <f:entry title="${%Description}" help="/help/view-config/description.html">
           <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
-        <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
-        	<f:checkbox name="filterQueue" field="filterQueue"/>
+        <f:entry field="filterQueue">
+            <f:checkbox title="${%Filter build queue}" help="/help/view-config/filter-queue.html" name="filterQueue" />
         </f:entry>
-        <f:entry title="${%Filter build executors}" help="/help/view-config/filter-executors.html">
-        	<f:checkbox name="filterExecutors" field="filterExecutors"/>
+        <f:entry field="filterExecutors">
+            <f:checkbox title="${%Filter build executors}" help="/help/view-config/filter-executors.html" name="filterExecutors" />
         </f:entry>
 
         <!-- subtypes can put entries here. -->
