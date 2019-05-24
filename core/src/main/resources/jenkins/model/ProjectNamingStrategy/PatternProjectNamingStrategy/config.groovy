@@ -11,7 +11,6 @@ f.entry(title:_("description"), field:"description") {
     f.textbox()
 }
 
-f.entry(title:_("forceExistingJobs"), field:"forceExistingJobs") {
-    f.checkbox(name:"forceExistingJobs")
+f.entry() {
+    f.checkbox(title:_("forceExistingJobs"), field:"forceExistingJobs")
 }
-

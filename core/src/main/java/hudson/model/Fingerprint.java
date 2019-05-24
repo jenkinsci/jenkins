@@ -1008,7 +1008,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     @Deprecated
     public synchronized void add(@Nonnull AbstractBuild b) throws IOException {
-        addFor((Run) b);
+        addFor(b);
     }
 
     /**

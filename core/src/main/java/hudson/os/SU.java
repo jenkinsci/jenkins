@@ -159,7 +159,7 @@ public abstract class SU {
                 // try sudo, in the hope that the user has the permission to do so without password
                 return new LocalLauncher(listener).launchChannel(
                         args.prepend(sudoExe()).toCommandArray(),
-                        listener.getLogger(), null, Collections.<String, String>emptyMap());
+                        listener.getLogger(), null, Collections.emptyMap());
             } else {
                 // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
                 Process proc = sudoWithPass(args);

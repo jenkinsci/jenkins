@@ -1423,7 +1423,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (fingerprintAction != null) {
             return fingerprintAction.getFingerprints().values();
         }
-        return Collections.<Fingerprint>emptyList();
+        return Collections.emptyList();
     }
     
     /**

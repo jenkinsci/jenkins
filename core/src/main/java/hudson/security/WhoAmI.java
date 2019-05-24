@@ -69,7 +69,7 @@ public class WhoAmI implements UnprotectedRootAction {
         for (GrantedAuthority a : auth().getAuthorities()) {
             authorities.add(a.getAuthority());
         }
-        return (String[]) authorities.toArray(new String[0]);
+        return authorities.toArray(new String[0]);
     }
 
     @Override

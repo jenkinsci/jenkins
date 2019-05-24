@@ -143,6 +143,7 @@ public class UpdateSite {
      */
     private static final String signatureValidatorPrefix = "update site";
 
+    private static final Set<String> warnedMissing = Collections.synchronizedSet(new HashSet<>());
 
     public UpdateSite(String id, String url) {
         this.id = id;
@@ -1093,7 +1094,7 @@ public class UpdateSite {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
                 Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
-                    LOGGER.log(Level.WARNING, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
+                    LOGGER.log(warnedMissing.add(e.getKey()) ? Level.WARNING : Level.FINE, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
                     continue;
                 }
 

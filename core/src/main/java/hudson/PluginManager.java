@@ -600,6 +600,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
+    void considerDetachedPlugin(String shortName) {
+        if (new File(rootDir, shortName + ".jpi").isFile()) {
+            LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
+            return;
+        }
+        LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
+        for (String loadedFile : loadPluginsFromWar("/WEB-INF/detached-plugins", (dir, name) -> normalisePluginName(name).equals(shortName))) {
+            String loaded = normalisePluginName(loadedFile);
+            File arc = new File(rootDir, loaded + ".jpi");
+            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            try {
+                plugins.add(strategy.createPluginWrapper(arc));
+            } catch (IOException e) {
+                failedPlugins.add(new FailedPlugin(arc.getName(), e));
+            }
+
+        }
+    }
+
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath) {
         return loadPluginsFromWar(fromPath, null);
     }
@@ -610,7 +629,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Set<String> names = new HashSet();
 
         ServletContext context = Jenkins.getActiveInstance().servletContext;
-        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
+        Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
 
@@ -875,7 +894,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         pw = i.next();
                         if(sn.equals(pw.getShortName())) {
                             i.remove();
-                            pw = null;
                             break;
                         }
                     }
@@ -1116,7 +1134,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final JarURLConnection connection = (JarURLConnection) uc;
             final URL jarURL = connection.getJarFileURL();
             if (jarURL.getProtocol().equals("file")) {
-                uc = null;
                 String file = jarURL.getFile();
                 return new File(file).lastModified();
             } else {

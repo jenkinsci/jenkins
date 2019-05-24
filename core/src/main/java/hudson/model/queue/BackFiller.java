@@ -104,7 +104,7 @@ public class BackFiller extends LoadPredictor {
 
             // also ignore all load predictions as we just want to figure out some executable assignment
             // and we are not trying to figure out if this task is executable right now.
-            MappingWorksheet worksheet = new MappingWorksheet(bi, slots, Collections.<LoadPredictor>emptyList());
+            MappingWorksheet worksheet = new MappingWorksheet(bi, slots, Collections.emptyList());
             Mapping m = Jenkins.getInstance().getQueue().getLoadBalancer().map(bi.task, worksheet);
             if (m==null)    return null;
 

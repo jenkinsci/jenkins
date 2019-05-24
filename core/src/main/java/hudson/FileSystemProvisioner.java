@@ -189,7 +189,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * Returns all the registered {@link FileSystemProvisioner} descriptors.
      */
     public static DescriptorExtensionList<FileSystemProvisioner,FileSystemProvisionerDescriptor> all() {
-        return Jenkins.getInstance().<FileSystemProvisioner,FileSystemProvisionerDescriptor>getDescriptorList(FileSystemProvisioner.class);
+        return Jenkins.getInstance().getDescriptorList(FileSystemProvisioner.class);
     }
 
     /**

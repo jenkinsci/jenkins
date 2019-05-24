@@ -376,7 +376,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
-        buf.append('"').append(arg.substring(0, atIndex));
+        buf.append('"').append(arg, 0, atIndex);
         return true;
     }
 

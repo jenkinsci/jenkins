@@ -1293,7 +1293,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
+                URLConnection connection = ProxyConfiguration.open(url);
 
                 if(connection instanceof HttpURLConnection) {
                     int responseCode = ((HttpURLConnection)connection).getResponseCode();
