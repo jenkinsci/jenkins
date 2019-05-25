@@ -184,6 +184,20 @@ public class LoadDetachedPluginsTest {
         assertEquals(expectedPlugin, pw.getShortName());
     }
 
+    @Issue("JENKINS-55582")
+    @LocalData
+    @Test
+    public void nonstandardFilenames() {
+        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
+        rr.then(r -> {
+            assertTrue(r.jenkins.pluginManager.getPlugin("build-token-root").isActive());
+            assertEquals("1.2", r.jenkins.pluginManager.getPlugin("jdk-tool").getVersion());
+            /* TODO currently still loads the detached 1.0, since we only skip $shortName.[jh]pi not $shortName-$version.[jh]pi; during PLUGINS_LISTED there is a list of known filenames but not short names
+            assertEquals("1.3", r.jenkins.pluginManager.getPlugin("command-launcher").getVersion());
+            */
+        });
+    }
+
     private List<PluginWrapper> getInstalledDetachedPlugins(JenkinsRule r, List<DetachedPlugin> detachedPlugins) {
         PluginManager pluginManager = r.jenkins.getPluginManager();
         List<PluginWrapper> installedPlugins = new ArrayList<>();
