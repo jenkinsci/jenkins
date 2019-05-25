@@ -90,7 +90,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     /**
      * Whether the administrative monitors notifier should be shown.
-     * @return true if the administrative monitors notifier should be shown.
+     * @return true iff the administrative monitors notifier should be shown.
      * @throws IOException
      * @throws ServletException
      */
@@ -107,6 +107,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         List<Ancestor> ancestors = req.getAncestors();
 
         if (ancestors == null || ancestors.size() == 0) {
+            // ???
             return false;
         }
 

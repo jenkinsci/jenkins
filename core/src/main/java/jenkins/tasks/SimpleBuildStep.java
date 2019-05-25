@@ -25,16 +25,34 @@
 package jenkins.tasks;
 
 import hudson.AbortException;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
-import hudson.tasks.*;
-import jenkins.model.DependencyDeclarer;
-import jenkins.model.RunAction2;
-
-import javax.annotation.Nonnull;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.BuildListener;
+import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.InvisibleAction;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import javax.annotation.Nonnull;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.RunAction2;
+import jenkins.model.TransientActionFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A build step (like a {@link Builder} or {@link Publisher}) which may be called at an arbitrary time during a build (or multiple times), run, and be done.
@@ -82,6 +100,33 @@ public interface SimpleBuildStep extends BuildStep {
          */
         Collection<? extends Action> getProjectActions();
 
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Restricted(NoExternalUse.class)
+    @Extension
+    final class LastBuildActionFactory extends TransientActionFactory<Job> {
+
+        @Override
+        public Class<Job> type() {
+            return Job.class;
+        }
+
+        @Nonnull
+        @Override
+        public Collection<? extends Action> createFor(@Nonnull Job j) {
+            List<Action> actions = new LinkedList<>();
+            Run r = j.getLastSuccessfulBuild();
+            if (r != null) {
+                for (LastBuildAction a : r.getActions(LastBuildAction.class)) {
+                    actions.addAll(a.getProjectActions());
+                }
+            }
+            // TODO should there be an option to check lastCompletedBuild even if it failed?
+            // Not useful for, say, TestResultAction, since if you have a build that fails before recording test
+            // results, the job would then have no TestResultProjectAction.
+            return actions;
+        }
     }
 
 }

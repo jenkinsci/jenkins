@@ -231,7 +231,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             }
 
             @Override
-            public @Nonnull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) {
+            public @Nonnull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
         }
