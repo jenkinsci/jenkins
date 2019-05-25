@@ -333,7 +333,7 @@ public class SCMTrigger extends Trigger<Item> {
             int count = 0;
             // we are faster walking some items with a lazy iterator than building a list of all items just to query
             // the size. This also lets us check against SCMTriggerItem rather than AbstractProject
-            for (Item item: Jenkins.getInstance().allItems(Item.class)) {
+            for (Item item: Jenkins.get().allItems(Item.class)) {
                 if (item instanceof SCMTriggerItem) {
                     if (++count > 10) {
                         return true;
@@ -383,7 +383,7 @@ public class SCMTrigger extends Trigger<Item> {
                     return FormValidation.ok(Messages.SCMTrigger_no_schedules_hooks());
                 }
             } else {
-                return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
+                return Jenkins.get().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
                         .doCheckSpec(value, item);
             }
         }

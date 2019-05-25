@@ -310,7 +310,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(rest.equals("*fingerprint*")) {
             InputStream fingerprintInput = baseFile.open();
             try {
-                rsp.forward(Jenkins.getInstance().getFingerprint(Util.getDigestOf(fingerprintInput)), "/", req);
+                rsp.forward(Jenkins.get().getFingerprint(Util.getDigestOf(fingerprintInput)), "/", req);
             } finally {
                 fingerprintInput.close();
             }

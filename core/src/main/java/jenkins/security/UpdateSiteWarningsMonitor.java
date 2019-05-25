@@ -109,7 +109,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
 
             String pluginName = warning.component;
 
-            PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(pluginName);
+            PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(pluginName);
 
             if (!activePluginWarningsByPlugin.containsKey(plugin)) {
                 activePluginWarningsByPlugin.put(plugin, new ArrayList<>());

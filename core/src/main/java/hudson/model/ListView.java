@@ -426,7 +426,7 @@ public class ListView extends View implements DirectlyModifiableView {
         TopLevelItem item = getOwner().getItemGroup().getItem(name);
         if (item == null) {
             name = Items.getCanonicalName(getOwner().getItemGroup(), name);
-            item = Jenkins.getInstance().getItemByFullName(name, TopLevelItem.class);
+            item = Jenkins.get().getItemByFullName(name, TopLevelItem.class);
         }
         return item;
     }
@@ -523,7 +523,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
         private void locationChanged(String oldFullName, String newFullName) {
-            final Jenkins jenkins = Jenkins.getInstance();
+            final Jenkins jenkins = Jenkins.get();
             locationChanged(jenkins, oldFullName, newFullName);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
@@ -568,7 +568,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
         private void deleted(Item item) {
-            final Jenkins jenkins = Jenkins.getInstance();
+            final Jenkins jenkins = Jenkins.get();
             deleted(jenkins, item);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {

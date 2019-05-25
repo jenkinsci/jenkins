@@ -93,7 +93,7 @@ public class TreeView extends View implements ViewGroup {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        return Jenkins.getInstance().getItems();
+        return Jenkins.get().getItems();
 //        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
 //        for (String name : jobNames) {
 //            TopLevelItem item = Hudson.getInstance().getItem(name);
@@ -184,7 +184,7 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.getInstance().getViewsTabBar();
+        return Jenkins.get().getViewsTabBar();
     }
 
     public ItemGroup<? extends TopLevelItem> getItemGroup() {

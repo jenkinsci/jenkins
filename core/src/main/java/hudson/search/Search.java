@@ -413,7 +413,7 @@ public class Search implements StaplerProxy {
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.getInstance().checkPermission(Jenkins.READ);
+            Jenkins.get().checkPermission(Jenkins.READ);
         }
         return this;
     }

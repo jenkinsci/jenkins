@@ -82,7 +82,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     }
 
     private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
 
         boolean result = true;

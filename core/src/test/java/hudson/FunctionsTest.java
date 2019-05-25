@@ -266,7 +266,7 @@ public class FunctionsTest {
     private Jenkins createMockJenkins() {
         mockStatic(Jenkins.class);
         Jenkins j = mock(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(j);
+        when(Jenkins.get()).thenReturn(j);
         return j;
     }
     

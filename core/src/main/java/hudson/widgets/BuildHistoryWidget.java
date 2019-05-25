@@ -53,7 +53,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      * Returns the first queue item if the owner is scheduled for execution in the queue.
      */
     public Item getQueuedItem() {
-        return Jenkins.getInstance().getQueue().getItem(owner);
+        return Jenkins.get().getQueue().getItem(owner);
     }
 
     /**
@@ -61,7 +61,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      */
     public List<Item> getQueuedItems() {
         LinkedList<Item> list = new LinkedList<>();
-        for (Item item : Jenkins.getInstance().getQueue().getItems()) {
+        for (Item item : Jenkins.get().getQueue().getItems()) {
             if (item.task == owner) {
                 list.addFirst(item);
             }
