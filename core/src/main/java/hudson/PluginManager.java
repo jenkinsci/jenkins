@@ -1525,7 +1525,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         final UpdateCenter updateCenter = jenkins.getUpdateCenter();
         final Authentication currentAuth = Jenkins.getAuthentication();
 
-        if (!Jenkins.getInstanceOrNull().getInstallState().isSetupComplete()) {
+        if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
             updateCenter.persistInstallStatus();
             new Thread() {
