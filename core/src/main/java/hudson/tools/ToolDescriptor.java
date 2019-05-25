@@ -25,6 +25,7 @@
 package hudson.tools;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -137,6 +138,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * @since 1.305
      */
     @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.179")
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
                 = new DescribableList<>(NOOP);
