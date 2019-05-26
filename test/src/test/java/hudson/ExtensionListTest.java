@@ -6,20 +6,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import jenkins.model.Jenkins;
-import hudson.model.Descriptor;
-import hudson.model.Describable;
-import hudson.util.DescriptorList;
 import java.util.ArrayList;
-
-import java.util.List;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.util.DescriptorList;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -173,6 +176,28 @@ public class ExtensionListTest {
         LIST = new DescriptorList<Fish>();
         assertEquals(0,LIST.size());
     }
+
+	@Test
+	public void newInstanceFromRadioList() throws Exception {
+		Map<String, String> configMap = new HashMap<>();
+
+		// test for DescriptorList
+		configMap.put("value", Tai.class.getName());
+		JSONObject CONFIG = JSONObject.fromObject(configMap);
+
+		DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
+		Fish FISH = LIST.newInstanceFromRadioList(CONFIG);
+		assertTrue(FISH instanceof Tai);
+
+		// test for DescriptorExtensionList
+		configMap.put("value", Sishamo.class.getName());
+		JSONObject config = JSONObject.fromObject(configMap);
+
+		DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins
+				.<Fish, Descriptor<Fish>>getDescriptorList(Fish.class);
+		Fish fish = list.newInstanceFromRadioList(config);
+		assertTrue(fish instanceof Sishamo);
+	}
 
     public static class Car implements ExtensionPoint {
         final String name;
