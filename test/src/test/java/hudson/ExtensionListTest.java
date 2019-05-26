@@ -179,17 +179,17 @@ public class ExtensionListTest {
 
 	@Test
 	public void newInstanceFromRadioList() throws Exception {
-		Map<String, String> configMap = new HashMap<>();
-
 		// test for DescriptorList
-		configMap.put("value", Tai.class.getName());
-		JSONObject CONFIG = JSONObject.fromObject(configMap);
+		Map<String, String> CONFIGMAP = new HashMap<>();
+		CONFIGMAP.put("value", Tai.class.getName());
+		JSONObject CONFIG = JSONObject.fromObject(CONFIGMAP);
 
 		DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
 		Fish FISH = LIST.newInstanceFromRadioList(CONFIG);
 		assertTrue(FISH instanceof Tai);
 
 		// test for DescriptorExtensionList
+		Map<String, String> configMap = new HashMap<>();
 		configMap.put("value", Sishamo.class.getName());
 		JSONObject config = JSONObject.fromObject(configMap);
 
