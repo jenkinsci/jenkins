@@ -162,7 +162,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return userName;
     }
 
-    public Secret getPassword() {
+    @Deprecated
+    public String getPassword() { 
+       return Secret.toString(secretPassword);
+    }
+    
+    public Secret getSecretPassword() {
         return secretPassword;
     }
 
