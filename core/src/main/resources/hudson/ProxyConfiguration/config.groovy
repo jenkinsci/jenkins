@@ -11,7 +11,7 @@ f.entry(title:_("Port"),field:"port") {
 f.entry(title:_("User name"),field:"userName") {
     f.textbox()
 }
-f.entry(title:_("Password"),field:"password") {
+f.entry(title:_("Password"),field:"secretPassword") {
     f.password()
 }
 f.entry(title:_("No Proxy Host"),field:"noProxyHost") {

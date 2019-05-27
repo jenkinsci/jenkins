@@ -224,8 +224,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     @DataBoundSetter
-    public void setPassword(Secret password) {
-        this.secretPassword = password;
+    public void setSecretPassword(Secret secretPassword) {
+        this.secretPassword = secretPassword;
     }
 
     @DataBoundSetter
