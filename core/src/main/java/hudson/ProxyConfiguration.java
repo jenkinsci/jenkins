@@ -162,7 +162,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return userName;
     }
 
-    public Secret getPassword() {
+    @Deprecated
+    public String getPassword() { 
+       return Secret.toString(secretPassword);
+    }
+    
+    public Secret getSecretPassword() {
         return secretPassword;
     }
 
@@ -411,6 +416,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         @RequirePOST
+        @Restricted(NoExternalUse.class)
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
                 @QueryParameter("userName") String userName, @QueryParameter("password") Secret password,

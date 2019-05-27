@@ -1039,7 +1039,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Retrieve the proxy configuration.
      *
      * @return the proxy configuration
+     * @since TODO
      */
+    @CheckForNull
     public ProxyConfiguration getProxy() {
         return proxy;
     }
@@ -1048,8 +1050,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Set the proxy configuration.
      * 
      * @param proxy the proxy to set
+     * @since TODO
      */
-    public void setProxy(ProxyConfiguration proxy) {
+    public void setProxy(@CheckForNull ProxyConfiguration proxy) {
         this.proxy = proxy;
     }
 
