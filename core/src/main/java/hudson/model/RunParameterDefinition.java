@@ -165,7 +165,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return createValue(runId);
         }
 
-        Run<?,?> lastBuild = null;
+        Run<?,?> lastBuild;
         Job project = getProject();
 
         if (project == null) {

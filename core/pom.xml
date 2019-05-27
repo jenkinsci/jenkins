@@ -514,7 +514,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.27</version>
+      <version>1.28</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -527,9 +527,9 @@ THE SOFTWARE.
       <version>3.2.9</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
+      <groupId>org.jmdns</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.4.0-jenkins-3</version>
+      <version>3.5.5</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>

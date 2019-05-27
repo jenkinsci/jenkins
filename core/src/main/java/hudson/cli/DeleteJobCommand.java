@@ -40,6 +40,7 @@ import java.util.HashSet;
 @Extension
 public class DeleteJobCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
     private List<String> jobs;
 
@@ -55,11 +56,10 @@ public class DeleteJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(jobs);
+        final HashSet<String> hs = new HashSet<>(jobs);
 
         for (String job_s: hs) {
-            AbstractItem job = null;
+            AbstractItem job;
 
             try {
                 job = (AbstractItem) jenkins.getItemByFullName(job_s);

@@ -106,7 +106,7 @@ public class SecretRewriter {
                             if (!replacement.equals(elementText))
                                 modified = true;
 
-                            buf.append(line.substring(copied, sidx + 1));
+                            buf.append(line, copied, sidx + 1);
                             buf.append(replacement);
                             copied = eidx;
                         }

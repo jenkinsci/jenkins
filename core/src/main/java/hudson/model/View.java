@@ -754,8 +754,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         private List<UserInfo> toList(Map<User,UserInfo> users) {
-            ArrayList<UserInfo> list = new ArrayList<>();
-            list.addAll(users.values());
+            ArrayList<UserInfo> list = new ArrayList<>(users.values());
             Collections.sort(list);
             return Collections.unmodifiableList(list);
         }
@@ -1247,7 +1246,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+        return Jenkins.getInstance().getDescriptorList(View.class);
     }
 
     /**

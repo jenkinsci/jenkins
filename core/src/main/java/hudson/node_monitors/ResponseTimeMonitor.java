@@ -170,6 +170,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
          */
         private int failureCount() {
             int cnt=0;
+            //noinspection StatementWithEmptyBody
             for(int i=past5.length-1; i>=0 && past5[i]<0; i--, cnt++)
                 ;
             return cnt;

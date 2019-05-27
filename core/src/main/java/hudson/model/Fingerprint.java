@@ -967,8 +967,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Gets the sorted list of job names where this jar is used.
      */
     public @Nonnull List<String> getJobs() {
-        List<String> r = new ArrayList<>();
-        r.addAll(usages.keySet());
+        List<String> r = new ArrayList<>(usages.keySet());
         Collections.sort(r);
         return r;
     }
@@ -1009,7 +1008,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     @Deprecated
     public synchronized void add(@Nonnull AbstractBuild b) throws IOException {
-        addFor((Run) b);
+        addFor(b);
     }
 
     /**

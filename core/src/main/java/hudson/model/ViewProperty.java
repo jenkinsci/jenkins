@@ -63,7 +63,7 @@ public class ViewProperty implements ReconfigurableDescribable<ViewProperty>, Ex
     }
 
     public static DescriptorExtensionList<ViewProperty,ViewPropertyDescriptor> all() {
-        return Jenkins.getInstance().<ViewProperty,ViewPropertyDescriptor>getDescriptorList(ViewProperty.class);
+        return Jenkins.getInstance().getDescriptorList(ViewProperty.class);
     }
 
     public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {

@@ -223,7 +223,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Jenkins.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
+        return Jenkins.getInstance().getDescriptorList(ParameterDefinition.class);
     }
 
     /**

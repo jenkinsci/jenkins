@@ -168,6 +168,6 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
-        return Jenkins.getInstance().<Publisher,Descriptor<Publisher>>getDescriptorList(Publisher.class);
+        return Jenkins.getInstance().getDescriptorList(Publisher.class);
     }
 }

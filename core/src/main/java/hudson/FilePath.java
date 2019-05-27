@@ -335,7 +335,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 tokens.add(path.substring(s, i));
                 s = i;
                 // Skip any extra separator chars
-                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\')) { }
+                //noinspection StatementWithEmptyBody
+                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\'))
+                    ;
                 // Add token for separator unless we reached the end
                 if (i < end) tokens.add(path.substring(s, s+1));
                 s = i;
@@ -2730,12 +2732,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                                 //
                                 // this is not a very efficient/clever way to do it, but it's relatively simple
 
-                                String prefix="";
+                                StringBuilder prefix = new StringBuilder();
                                 while(true) {
                                     int idx = findSeparator(f);
                                     if(idx==-1)     break;
 
-                                    prefix+=f.substring(0,idx)+'/';
+                                    prefix.append(f.substring(0, idx)).append('/');
                                     f=f.substring(idx+1);
                                     if(hasMatch(dir,prefix+fileMask,caseSensitive))
                                         return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask, prefix+fileMask);
