@@ -190,13 +190,13 @@ public class ExtensionListTest {
 
 		// test for DescriptorExtensionList
 		Map<String, String> configMap = new HashMap<>();
-		configMap.put("value", Sishamo.class.getName());
+		configMap.put("value", Saba.class.getName());
 		JSONObject config = JSONObject.fromObject(configMap);
 
 		DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins
 				.<Fish, Descriptor<Fish>>getDescriptorList(Fish.class);
 		Fish fish = list.newInstanceFromRadioList(config);
-		assertTrue(fish instanceof Sishamo);
+		assertTrue(fish instanceof Saba);
 	}
 
     public static class Car implements ExtensionPoint {
