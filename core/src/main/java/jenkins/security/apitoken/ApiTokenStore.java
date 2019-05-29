@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Restricted(NoExternalUse.class)
@@ -186,24 +187,28 @@ public class ApiTokenStore {
         return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
     
+    private static final int VERSION_LENGTH = 2; 
+    private static final int HEX_CHAR_LENGTH = 32; 
+    private static final Pattern CHECK_32_HEX_CHAR = Pattern.compile("[a-f0-9]{32}");
+    
     /**
      * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method, 
      * it could be a good idea to generate a new token randomly and revoke this one.
      */
     public synchronized @Nonnull String addFixedNewToken(@Nonnull String name, @Nonnull String tokenPlainValue) {
-        if (tokenPlainValue.length() != 2 + 32) {
+        if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
             throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
         }
         
-        String hashVersion = tokenPlainValue.substring(0, 2);
+        String hashVersion = tokenPlainValue.substring(0, VERSION_LENGTH);
         if (!HASH_VERSION.equals(hashVersion)) {
             throw new IllegalArgumentException("The given version is not recognized: " + hashVersion);
         }
         
-        String tokenPlainHexValue = tokenPlainValue.substring(2);
+        String tokenPlainHexValue = tokenPlainValue.substring(VERSION_LENGTH);
         tokenPlainHexValue = tokenPlainHexValue.toLowerCase();
-        if (!tokenPlainHexValue.matches("[a-f0-9]{32}")) {
+        if (!CHECK_32_HEX_CHAR.matcher(tokenPlainHexValue).matches()) {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
         }
         
