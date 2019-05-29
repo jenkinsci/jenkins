@@ -91,7 +91,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <guavaVersion>11.0.1</guavaVersion>
-    <slf4jVersion>1.7.25</slf4jVersion>
+    <slf4jVersion>1.7.26</slf4jVersion>
     <maven-plugin.version>2.14</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
