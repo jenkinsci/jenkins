@@ -1418,7 +1418,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     enum WorkspaceOfflineReason {
-        nonexisting_workspace,
+        nonexistent_workspace,
         builton_node_gone,
         builton_node_no_executors,
         all_suitable_nodes_are_offline,
@@ -1466,7 +1466,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         if (ws==null || !ws.exists()) {
-            return WorkspaceOfflineReason.nonexisting_workspace;
+            return WorkspaceOfflineReason.nonexistent_workspace;
         }
 
         Node builtOn = build.getBuiltOn();
