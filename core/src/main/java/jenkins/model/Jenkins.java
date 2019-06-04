@@ -952,6 +952,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
             save();
 
+            // TODO: Trying to reproduce JENKINS-57831
+            Thread.sleep(TimeUnit.SECONDS.toMillis(60));
             launchTcpSlaveAgentListener();
 
             if (UDPBroadcastThread.PORT != -1) {
