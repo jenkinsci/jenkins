@@ -36,6 +36,8 @@ import hudson.util.ConsistentHash.Hash;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
@@ -116,6 +118,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
             try {
                 key = task.getAffinityKey();
             } catch (RuntimeException e) {
+                LOGGER.log(Level.FINE, null, e);
                 // Default implementation of Queue.Task.getAffinityKey, we assume it doesn't fail.
                 key = task.getFullDisplayName();
             }
@@ -173,5 +176,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
             }
         };
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LoadBalancer.class.getName());
 
 }
