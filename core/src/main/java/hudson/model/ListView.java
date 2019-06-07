@@ -124,6 +124,11 @@ public class ListView extends View implements DirectlyModifiableView {
         this.columns.replaceBy(columns);
     }
 
+    @DataBoundSetter
+    public void setJobFilters(List<ViewJobFilter> jobFilters) throws IOException {
+        this.jobFilters.replaceBy(jobFilters);
+    }
+
     private Object readResolve() {
         if(includeRegex!=null) {
             try {
@@ -171,6 +176,9 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
+    public Set<String> getJobNames() {
+        return Collections.unmodifiableSet(jobNames);
+    }
 
     /**
      * Returns a read-only view of all {@link Job}s in this view.
@@ -320,14 +328,15 @@ public class ListView extends View implements DirectlyModifiableView {
     public String getIncludeRegex() {
         return includeRegex;
     }
-    
+
     public boolean isRecurse() {
         return recurse;
     }
-    
+
     /**
      * @since 1.568
      */
+    @DataBoundSetter
     public void setRecurse(boolean recurse) {
         this.recurse = recurse;
     }
@@ -462,7 +471,7 @@ public class ListView extends View implements DirectlyModifiableView {
             columns = new DescribableList<>(this);
         }
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
-        
+
         if (jobFilters == null) {
         	jobFilters = new DescribableList<>(this);
         }
@@ -473,12 +482,23 @@ public class ListView extends View implements DirectlyModifiableView {
     }
     
     /** @since 1.526 */
+    @DataBoundSetter
     public void setIncludeRegex(String includeRegex) {
         this.includeRegex = Util.nullify(includeRegex);
         if (this.includeRegex == null)
             this.includePattern = null;
         else
             this.includePattern = Pattern.compile(includeRegex);
+    }
+
+    @DataBoundSetter
+    public synchronized void setJobNames(Set<String> jobNames) {
+        this.jobNames = new TreeSet<>(jobNames);
+    }
+
+    @DataBoundSetter
+    public void setStatusFilter(Boolean statusFilter) {
+        this.statusFilter = statusFilter;
     }
 
     @Extension @Symbol("list")
