@@ -596,7 +596,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -805,10 +805,6 @@ THE SOFTWARE.
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
