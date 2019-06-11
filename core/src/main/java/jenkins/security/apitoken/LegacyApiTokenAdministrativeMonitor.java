@@ -23,7 +23,7 @@
  */
 package jenkins.security.apitoken;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -38,7 +38,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -90,14 +89,14 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
+    public @CheckForNull ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         return apiTokenProperty.getTokenStore().getLegacyToken();
     }
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @Nullable ApiTokenStore.HashedToken legacyToken) {
+    public @CheckForNull ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @CheckForNull ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
@@ -113,8 +112,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-    public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasFreshToken(@Nonnull User user, @CheckForNull ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
@@ -138,8 +136,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @CheckForNull ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
