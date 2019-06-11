@@ -23,6 +23,7 @@
  */
 package jenkins.security.apitoken;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -112,6 +113,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
@@ -136,6 +138,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
