@@ -306,6 +306,11 @@ pre.console {
   margin-top: 0;
 }
 
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
+}
+
 /* tabBar */
 
 .tabBar {
