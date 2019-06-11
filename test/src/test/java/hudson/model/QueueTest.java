@@ -33,6 +33,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
@@ -1133,6 +1134,57 @@ public class QueueTest {
             assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
 
             assertTrue(currentOne.getFuture().isCancelled());
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-57805")
+    public void brokenAffinityKey() throws Exception {
+        BrokenAffinityKeyProject brokenProject = r.createProject(BrokenAffinityKeyProject.class, "broken-project");
+        // Before the JENKINS-57805 fix, the test times out because the `NullPointerException` repeatedly thrown from
+        // `BrokenAffinityKeyProject.getAffinityKey()` prevents `Queue.maintain()` from completing.
+        r.buildAndAssertSuccess(brokenProject);
+    }
+
+    public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {
+        public BrokenAffinityKeyProject(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+        @Override
+        public String getAffinityKey() {
+            throw new NullPointerException("oops!");
+        }
+        @Override
+        protected Class<BrokenAffinityKeyBuild> getBuildClass() {
+            return BrokenAffinityKeyBuild.class;
+        }
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return ExtensionList.lookupSingleton(DescriptorImpl.class);
+        }
+        @TestExtension("brokenAffinityKey")
+        public static class DescriptorImpl extends AbstractProjectDescriptor {
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new BrokenAffinityKeyProject(parent, name);
+            }
+            @Override
+            public String getDisplayName() {
+                return "Broken Affinity Key Project";
+            }
+        }
+    }
+
+    public static class BrokenAffinityKeyBuild extends Build<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> {
+        public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project) throws IOException {
+            super(project);
+        }
+        public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project, File buildDir) throws IOException {
+            super(project, buildDir);
+        }
+        @Override
+        public void run() {
+            execute(new BuildExecution());
         }
     }
 }
