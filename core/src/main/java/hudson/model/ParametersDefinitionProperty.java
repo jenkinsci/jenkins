@@ -42,6 +42,7 @@ import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;
+import jenkins.model.UserInputAction;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -159,7 +160,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()),
+                new UserInputAction(values));
         if (item!=null) {
             String url = formData.optString("redirectTo");
             if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
@@ -188,7 +190,8 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
-                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req),
+                new UserInputAction(values)).getItem();
 
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
