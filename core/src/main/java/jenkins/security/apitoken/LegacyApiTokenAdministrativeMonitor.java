@@ -112,7 +112,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasFreshToken(@Nonnull User user, @CheckForNull ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasFreshToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
