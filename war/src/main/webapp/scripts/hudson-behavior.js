@@ -317,8 +317,11 @@ function isTR(tr, nodeClass) {
 function findFollowingTR(node, className, nodeClass) {
     // identify the parent TR
     var tr = node;
-    while (!isTR(tr, nodeClass))
+    while (!isTR(tr, nodeClass)) {
         tr = tr.parentNode;
+        if (!(tr instanceof Element))
+            return null;
+    }
 
     // then next TR that matches the CSS
     do {
@@ -692,7 +695,8 @@ function labelAttachPreviousOnClick() {
 }
 
 function helpButtonOnClick() {
-    var tr = findFollowingTR(this, "help-area", "help-sibling");
+    var tr = findFollowingTR(this, "help-area", "help-sibling") ||
+             findFollowingTR(this, "help-area", "setting-help");
     var div = $(tr).down();
     if (!div.hasClassName("help"))
         div = div.next().down();
