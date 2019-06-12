@@ -61,8 +61,8 @@ THE SOFTWARE.
                class="radio-block-control block-control" checked="${checked?'true':null}" />
         ${title}
       </label>
+      <f:helpLink url="${help}" featureName="${title}" />
     </div>
-    <f:helpLink url="${help}" featureName="${title}" />
   </div>
   <j:if test="${attrs.help!=null}">
     <f:helpArea />
