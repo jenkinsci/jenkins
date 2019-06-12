@@ -294,8 +294,7 @@ public class PathRemover {
            * If on Windows a folder has a read only attribute set, the file.setWritable(true) doesn't work (JENKINS-57855)
            */
           DosFileAttributeView dos = Files.getFileAttributeView(path, DosFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
-          if (dos != null)
-          {
+          if (dos != null) {
             dos.setReadOnly(false);
           }
         }
