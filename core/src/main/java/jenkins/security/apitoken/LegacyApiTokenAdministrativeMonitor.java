@@ -96,7 +96,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @CheckForNull ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @CheckForNull ApiTokenStore.HashedToken legacyToken) {
+    public @CheckForNull ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
