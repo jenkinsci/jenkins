@@ -23,7 +23,6 @@
  */
 package jenkins.security.apitoken;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -38,6 +37,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -89,14 +89,14 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @CheckForNull ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
+    public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         return apiTokenProperty.getTokenStore().getLegacyToken();
     }
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @CheckForNull ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, ApiTokenStore.HashedToken legacyToken) {
+    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
