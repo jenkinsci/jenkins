@@ -136,7 +136,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @CheckForNull ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
