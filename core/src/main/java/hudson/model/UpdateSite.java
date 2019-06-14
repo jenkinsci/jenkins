@@ -284,12 +284,12 @@ public class UpdateSite {
     /**
      * Returns true if it's time for us to check for new version.
      */
-    public boolean isDue() {
+    public synchronized boolean isDue() {
         if(neverUpdate)     return false;
         if(dataTimestamp == 0)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
-        
+
         retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
         
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
