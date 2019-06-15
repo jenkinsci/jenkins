@@ -35,9 +35,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Utilities for the Windows Platform
- * adapted from:
+ * Utilities for the Windows Platform.
+ * Adapted from:
  * https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+ *
+ * @since TODO
  */
 public class WindowsUtil {
     private static final Pattern NEEDS_QUOTING = Pattern.compile("[\\s\"]");
