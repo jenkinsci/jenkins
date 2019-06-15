@@ -66,12 +66,6 @@ public class LocalPluginManager extends PluginManager {
         this(null, rootDir);
     }
 
-    /**
-     * If the war file has any "/WEB-INF/plugins/*.jpi", extract them into the plugin directory.
-     *
-     * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.jpi","subversion.jpi"}
-     */
     @Override
     protected Collection<String> loadBundledPlugins() {
         // this is used in tests, when we want to override the default bundled plugins with .jpl (or .hpl) versions
