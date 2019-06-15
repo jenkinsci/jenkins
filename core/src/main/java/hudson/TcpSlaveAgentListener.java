@@ -43,13 +43,13 @@ import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.util.Arrays;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -286,7 +286,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
+                if (e instanceof EOFException) {
+                    LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
+                } else {
+                    LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
+                }
                 try {
                     s.close();
                 } catch (IOException ex) {
