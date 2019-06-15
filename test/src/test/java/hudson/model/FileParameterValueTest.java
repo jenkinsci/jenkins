@@ -34,17 +34,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.stapler.Function;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -63,6 +61,8 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
         
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_cannotCreateFile_outsideOfBuildFolder");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
@@ -93,6 +93,8 @@ public class FileParameterValueTest {
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252froot-level.txt/uploaded-file.txt", uploadedContent);
         // overlong utf-8 encoding
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%afroot-level.txt/uploaded-file.txt", uploadedContent);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
     
     private void checkUrlNot200AndNotContains(JenkinsRule.WebClient wc, String url, String contentNotPresent) throws Exception {
@@ -111,10 +113,12 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
         
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashEdition");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("..\\..\\..\\..\\..\\root-level.txt", null)
         )));
-        
+
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
         
         String uploadedContent = "test-content";
@@ -134,6 +138,8 @@ public class FileParameterValueTest {
         
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..\\..\\..\\..\\..\\root-level.txt/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
     
     @Test
@@ -142,6 +148,8 @@ public class FileParameterValueTest {
         // this case was not working even before the patch
         
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_withSingleDot");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition(".", null)
         )));
@@ -162,6 +170,8 @@ public class FileParameterValueTest {
         
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/./uploaded-file.txt", uploadedContent);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
     
     @Test
@@ -170,6 +180,8 @@ public class FileParameterValueTest {
         // this case was not working even before the patch
         
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_withDoubleDot");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("..", null)
         )));
@@ -190,6 +202,8 @@ public class FileParameterValueTest {
         
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/../uploaded-file.txt", uploadedContent);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
     
     @Test
@@ -200,6 +214,8 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
         
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_cannotEraseFile_outsideOfBuildFolder");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
@@ -224,11 +240,15 @@ public class FileParameterValueTest {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
     
     @Test
     public void fileParameter_canStillUse_internalHierarchy() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_canStillUse_internalHierarchy");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
                 new FileParameterDefinition("direct-child1.txt", null),
                 new FileParameterDefinition("parent/child2.txt", null)
@@ -243,7 +263,7 @@ public class FileParameterValueTest {
                 new FileParameterValue("direct-child1.txt", uploadedFile1, "uploaded-file-1.txt"),
                 new FileParameterValue("parent/child2.txt", uploadedFile2, "uploaded-file-2.txt")
         )));
-        
+
         // files are correctly saved in the build "fileParameters" folder
         File directChild = new File(build.getRootDir(), "fileParameters/" + "direct-child1.txt");
         assertTrue(directChild.exists());
@@ -266,5 +286,7 @@ public class FileParameterValueTest {
         HtmlPage workspaceParentPage = wc.goTo(p.getUrl() + "ws" + "/parent");
         String workspaceParentContent = workspaceParentPage.getWebResponse().getContentAsString();
         assertThat(workspaceParentContent, containsString("child2.txt"));
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
 }

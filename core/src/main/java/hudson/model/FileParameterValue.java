@@ -25,20 +25,8 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.Launcher;
-import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import javax.servlet.ServletException;
-
+import jenkins.model.Jenkins;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -51,6 +39,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
@@ -89,6 +84,12 @@ public class FileParameterValue extends ParameterValue {
      */
     private String location;
 
+    /**
+     * Keeps track of the internal FileParameters state. First call on buildEnvironment() will copy the file from the
+     * request object onto the workspace and build directory.
+     */
+    private transient boolean isFileCopied = false;
+
     @DataBoundConstructor
     public FileParameterValue(String name, FileItem file) {
         this(name, file, FilenameUtils.getName(file.getName()));
@@ -124,6 +125,7 @@ public class FileParameterValue extends ParameterValue {
      */
     @Override
     public void buildEnvironment(Run<?,?> build, EnvVars env) {
+        copyFileToWorkspace(build);
         env.put(name,originalFileName);
     }
 
@@ -151,30 +153,40 @@ public class FileParameterValue extends ParameterValue {
         return file;
     }
 
-    @Override
-    public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
-        return new BuildWrapper() {
-            @Override
-            public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
-            	    listener.getLogger().println("Copying file to "+location);
-                    FilePath ws = build.getWorkspace();
-                    if (ws == null) {
-                        throw new IllegalStateException("The workspace should be created when setUp method is called");
-                    }
-                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && !ws.isDescendant(location)) {
-                        listener.error("Rejecting file path escaping base directory with relative path: " + location);
-                        // force the build to fail
-                        return null;
-                    }
-                    FilePath locationFilePath = ws.child(location);
-                    locationFilePath.getParent().mkdirs();
-            	    locationFilePath.copyFrom(file);
-                    locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
-            	}
-                return new Environment() {};
-            }
-        };
+    private void copyFileToWorkspace(Run<?,?> build) {
+        if (isFileCopied || StringUtils.isEmpty(location) || StringUtils.isEmpty(file.getName())) {
+            return;
+        }
+
+        TopLevelItem project = (TopLevelItem) build.project;
+        FilePath ws;
+        if (project instanceof FreeStyleProject && ((FreeStyleProject) project).getCustomWorkspace() != null) {
+            ws = new FilePath(new File(((FreeStyleProject) project).getCustomWorkspace()));
+        }
+        else {
+            ws = Jenkins.get().getWorkspaceFor(project);
+        }
+
+        if (ws == null) {
+            throw new IllegalStateException("The workspace should be created when setUp method is called");
+        }
+
+        FilePath locationFilePath = ws.child(location);
+
+        boolean locationFilePathIsWithinWorkspace = Paths.get(locationFilePath.getRemote()).toAbsolutePath().startsWith(Paths.get(ws.getRemote()));
+        if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && !locationFilePathIsWithinWorkspace) {
+            // force the build to fail
+            throw new IllegalStateException("The fileParameter tried to escape the expected folder: " + location);
+        }
+
+        try {
+            locationFilePath.getParent().mkdirs();
+            locationFilePath.copyFrom(file);
+            locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+            isFileCopied = true;
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Couldn't copy fileParameter to the expected folder: " + locationFilePath.getRemote());
+        }
     }
 
 	@Override
@@ -227,7 +239,7 @@ public class FileParameterValue extends ParameterValue {
      */
     public void doDynamic(StaplerRequest request, StaplerResponse response) throws ServletException, IOException {
         if (("/" + originalFileName).equals(request.getRestOfPath())) {
-            AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
+            Run build = (Run) request.findAncestor(Run.class).getObject();
             File fileParameter = getLocationUnderBuild(build);
 
             if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE) {
@@ -263,11 +275,11 @@ public class FileParameterValue extends ParameterValue {
      * @param build the build
      * @return the location to store the file parameter
      */
-    private File getLocationUnderBuild(AbstractBuild build) {
+    private File getLocationUnderBuild(Run build) {
         return new File(getFileParameterFolderUnderBuild(build), location);
     }
 
-    private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build){
+    private File getFileParameterFolderUnderBuild(Run<?,?> build){
         return new File(build.getRootDir(), FOLDER_NAME);
     }
 

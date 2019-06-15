@@ -27,47 +27,33 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
-import static hudson.cli.CLICommandInvoker.Matcher.*;
-import hudson.model.AbstractBuild;
-import hudson.model.Action;
-import hudson.model.BuildListener;
-import hudson.model.Executor;
-import hudson.model.FileParameterDefinition;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.ParameterDefinition.ParameterDescriptor;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
+import hudson.model.*;
 import hudson.model.Queue.QueueDecisionHandler;
 import hudson.model.Queue.Task;
-import hudson.model.SimpleParameterDefinition;
-import hudson.model.StringParameterDefinition;
-import hudson.model.StringParameterValue;
-import hudson.model.TopLevelItem;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.List;
-
 import net.sf.json.JSONObject;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import org.apache.commons.io.FileUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
-import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.*;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.*;
 
 /**
  * {@link BuildCommand} test.
@@ -281,6 +267,8 @@ public class BuildCommandTest {
     @Test
     public void fileParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("myjob");
+        Path tempDirWithPrefix = Files.createTempDirectory("fileParameter_canStillUse_internalHierarchy");
+        p.setCustomWorkspace(tempDirWithPrefix.toString());
         p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition("file", null)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -296,6 +284,8 @@ public class BuildCommandTest {
         FreeStyleBuild b = p.getBuildByNumber(1);
         assertNotNull(b);
         j.assertLogContains("uploaded content here", b);
+
+        FileUtils.deleteDirectory(tempDirWithPrefix.toFile());
     }
 
 }
