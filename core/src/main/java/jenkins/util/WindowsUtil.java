@@ -34,13 +34,19 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-// adapted from:
-// https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+/**
+ * Utilities for the Windows Platform
+ * adapted from:
+ * https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+ */
 public class WindowsUtil {
     private static final Pattern NEEDS_QUOTING = Pattern.compile("[\\s\"]");
 
     /**
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
+     *
+     * @param argument argument to be quoted or escaped for windows shells.
+     * @return properly quoted and escaped windows arguemnts.
      */
     public static @Nonnull String quoteArgument(@Nonnull String argument) {
         if (!NEEDS_QUOTING.matcher(argument).find()) return argument;
@@ -78,6 +84,8 @@ public class WindowsUtil {
 
     /**
      * Quotes an argument while escaping special characters suitable for use as an argument to {@code cmd.exe}.
+     * @param argument argument to be quoted or escaped for {@code cmd.exe}.
+     * @return properly quoted and escaped arguments to {@code cmd.exe}.
      */
     public static @Nonnull String quoteArgumentForCmd(@Nonnull String argument) {
         return CMD_METACHARS.matcher(quoteArgument(argument)).replaceAll("^$0");
@@ -85,6 +93,8 @@ public class WindowsUtil {
 
     /**
      * Executes a command and arguments using {@code cmd.exe /C ...}.
+     * @param argv arguments to be quoted or escaped for {@code cmd.exe /C ...}.
+     * @return properly quoted and escaped arguments to {@code cmd.exe /C ...}.
      */
     public static @Nonnull Process execCmd(String... argv) throws IOException {
         String command = Arrays.stream(argv).map(WindowsUtil::quoteArgumentForCmd).collect(Collectors.joining(" "));
