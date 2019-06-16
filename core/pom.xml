@@ -594,9 +594,9 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <scope>provided</scope>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -806,10 +806,6 @@ THE SOFTWARE.
           </archive>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
 
@@ -872,11 +868,11 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
-      <!-- FindBugs has been moved to the default build flow, but here we fail the build on errors-->
-      <id>findbugs</id>
+      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs install site". -->
+      <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
+      <id>spotbugs</id>
       <properties>
-        <!-- In the default profile we always fail the build if there FindBugs errors -->
+        <!-- In the default profile we always fail the build if there SpotBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
     </profile>
