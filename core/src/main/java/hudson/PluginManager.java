@@ -2235,6 +2235,39 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     }
 
+    /**
+     * {@link AdministrativeMonitor} that checks if there are any plugins with cycle dependencies.
+     */
+    @Extension @Symbol("pluginDeprecation")
+    public static final class PluginDeprecationMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
+        }
+
+        private transient volatile boolean isActive = false;
+
+        private transient volatile List<PluginWrapper> deprecatedPlugins;
+
+        public boolean isActivated() {
+            if(deprecatedPlugins == null){
+                deprecatedPlugins = new ArrayList<>();
+                for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
+                    if(p.isDeprecated()){
+                        deprecatedPlugins.add(p);
+                        isActive = true;
+                    }
+                }
+            }
+            return isActive;
+        }
+
+        public List<PluginWrapper> getDeprecatedPlugins() {
+            return deprecatedPlugins;
+        }
+    }
+
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {

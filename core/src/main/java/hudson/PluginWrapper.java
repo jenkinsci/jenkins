@@ -362,6 +362,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return dependencies.stream().anyMatch(d -> !d.optional);
     }
 
+    /**
+     * Is this plugin labeled deprecated?
+     * @return {@code true} when plugin contains deprecated in categories, otherwise {@code false}.
+     */
+    public boolean isDeprecated() {
+        UpdateSite.Plugin info = getInfo();
+        return info != null && Arrays.asList(info.categories).contains("deprecated");
+    }
+
     @ExportedBean
     public static final class Dependency {
         @Exported
