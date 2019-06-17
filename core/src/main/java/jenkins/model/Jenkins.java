@@ -2319,22 +2319,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         String scheme = getXForwardedHeader(req, "X-Forwarded-Proto", req.getScheme());
         buf.append(scheme).append("://");
         String host = getXForwardedHeader(req, "X-Forwarded-Host", req.getServerName());
-        int index = host.indexOf(':');
+        int index = host.lastIndexOf(':');
         int port = req.getServerPort();
         if (index == -1) {
             // Almost everyone else except Nginx put the host and port in separate headers
             buf.append(host);
         } else {
-            // Nginx uses the same spec as for the Host header, i.e. hostname:port
-            buf.append(host, 0, index);
-            if (index + 1 < host.length()) {
-                try {
-                    port = Integer.parseInt(host.substring(index + 1));
-                } catch (NumberFormatException e) {
-                    // ignore
+            if (host.startsWith("[") && host.endsWith("]")) {
+                // support IPv6 address
+                buf.append(host);
+            } else {
+                // Nginx uses the same spec as for the Host header, i.e. hostname:port
+                buf.append(host, 0, index);
+                if (index + 1 < host.length()) {
+                    try {
+                        port = Integer.parseInt(host.substring(index + 1));
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
                 }
+                // but if a user has configured Nginx with an X-Forwarded-Port, that will win out.
             }
-            // but if a user has configured Nginx with an X-Forwarded-Port, that will win out.
         }
         String forwardedPort = getXForwardedHeader(req, "X-Forwarded-Port", null);
         if (forwardedPort != null) {
