@@ -533,8 +533,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             } else
                             if (e instanceof Method) {
                                 extType = ((Method)e).getReturnType();
-                            } else
+                            } else {
                                 throw new AssertionError();
+                            }
 
                             resolve(extType);
 
@@ -745,8 +746,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             extType = ((Field) e).getType();
         } else if (e instanceof Method) {
             extType = ((Method) e).getReturnType();
-        } else
+        } else {
             throw new AssertionError();
+        }
         return extType;
     }
 
