@@ -204,6 +204,8 @@ sub processFile {
                   if ($counter) {
                      # add unique value for each added translation
                      print F "---TranslateMe ".$countervalue."--- ".($ekeys{$_} ? $ekeys{$_} : $_)."\n";
+                  } else {
+                     print F "\n";
                   }
                }
                $countervalue++;
