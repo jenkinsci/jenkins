@@ -191,23 +191,21 @@ public class NodeProvisioner {
         provisioningLock.lock();
         try {
             lastSuggestedReview = System.currentTimeMillis();
-
-            // We need to get the lock on Queue for two reasons:
-            // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
-            //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
-            //    that were provisioned since last we checked have been added.
-            // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
-            //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
-            //    anyway, we might as well get an accurate measure.
-            //
-            // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
-            // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
-            // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
-            //
-            // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
+            Runnable launchReadyNodes = () -> {
+                // We need to get the lock on Queue for two reasons:
+                // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
+                //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
+                //    that were provisioned since last we checked have been added.
+                // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
+                //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
+                //    anyway, we might as well get an accurate measure.
+                //
+                // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
+                // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
+                // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
+                //
+                // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
+                Queue.withLock(() -> {
                     Jenkins jenkins = Jenkins.get();
                     // clean up the cancelled launch activity, then count the # of executors that we are about to
                     // bring up.
@@ -307,9 +305,10 @@ public class NodeProvisioner {
                     } else {
                         provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
                     }
-                }
-            });
-
+                });
+            };
+            // Launch nodes that got ready since last clock tick
+            launchReadyNodes.run();
             if (provisioningState != null) {
                 List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
                 for (Strategy strategy : strategies.isEmpty()
@@ -322,6 +321,10 @@ public class NodeProvisioner {
                                 strategy);
                         break;
                     }
+                }
+                if (provisioningState.getAdditionalPlannedCapacity() > 0) {
+                    // Launch nodes which are already ready without waiting for the next clock tick
+                    launchReadyNodes.run();
                 }
             }
         } finally {
