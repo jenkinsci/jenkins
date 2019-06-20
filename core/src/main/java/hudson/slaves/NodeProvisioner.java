@@ -167,18 +167,21 @@ public class NodeProvisioner {
 
     /**
      * Give the {@link NodeProvisioner} a hint that now would be a good time to think about provisioning some nodes.
-     * Hints are rate limited to one every second.
+     * Hints are throttled to one every second.
      *
      * @since 1.415
      */
     public void suggestReviewNow() {
-        long now = System.currentTimeMillis();
-        if (now > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
-            lastSuggestedReview = now;
+        long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
+        if (delay < 0) {
+            LOGGER.finest("running update");
             Computer.threadPoolForRemoting.submit(() -> update());
         } else if (!queuedReview) {
             queuedReview = true;
-            Timer.get().schedule(() -> update(), now - lastSuggestedReview, TimeUnit.MILLISECONDS);
+            LOGGER.finest(() -> "running update in " + delay + " ms");
+            Timer.get().schedule(() -> update(), delay, TimeUnit.MILLISECONDS);
+        } else {
+            LOGGER.finest("ignored");
         }
     }
 
