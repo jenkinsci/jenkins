@@ -32,3 +32,32 @@ junit jaxb
 bouncycastle-api jaxb
 command-launcher jaxb
 jdk-tool jaxb
+
+#JENKINS-43610 Split Trilead out from Core
+BlameSubversion trilead-api
+digitalocean trilead-api
+docker trilead-api
+ec2 trilead-api
+ec2-cloud-axis trilead-api
+ec2-plugin trilead-api
+external-logging-elasticsearch trilead-api
+git-client trilead-api
+jclouds trilead-api
+libvirt-slave trilead-api
+mansion-cloud trilead-api
+nodepool-agents trilead-api
+openstack-cloud trilead-api
+pxe trilead-api
+scaleway-cloud trilead-api
+ssh-agent trilead-api
+ssh-cli trilead-api
+ssh-cli-auth trilead-api
+ssh-credentials trilead-api
+ssh-slaves trilead-api
+ssh2easy trilead-api
+subversion trilead-api
+svn-release-mgr trilead-api
+
+
+
+
