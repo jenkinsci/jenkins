@@ -159,6 +159,11 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String userId;
 
+    /**
+     * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     * @deprecated since FIXME
+     */
+    @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
