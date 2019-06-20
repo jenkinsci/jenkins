@@ -175,11 +175,15 @@ public class NodeProvisioner {
         long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
         if (delay < 0) {
             LOGGER.finest("running update");
+            lastSuggestedReview = System.currentTimeMillis();
             Computer.threadPoolForRemoting.submit(() -> update());
         } else if (!queuedReview) {
             queuedReview = true;
             LOGGER.finest(() -> "running update in " + delay + " ms");
-            Timer.get().schedule(() -> update(), delay, TimeUnit.MILLISECONDS);
+            Timer.get().schedule(() -> {
+                lastSuggestedReview = System.currentTimeMillis();
+                update();
+            }, delay, TimeUnit.MILLISECONDS);
         } else {
             LOGGER.finest("ignored");
         }
