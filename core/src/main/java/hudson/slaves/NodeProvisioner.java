@@ -174,18 +174,16 @@ public class NodeProvisioner {
     public void suggestReviewNow() {
         long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
         if (delay < 0) {
-            LOGGER.finest("running update");
+            LOGGER.fine("running update for " + label);
             lastSuggestedReview = System.currentTimeMillis();
-            Computer.threadPoolForRemoting.submit(() -> update());
-        } else if (!queuedReview) {
-            queuedReview = true;
-            LOGGER.finest(() -> "running update in " + delay + " ms");
-            Timer.get().schedule(() -> {
-                lastSuggestedReview = System.currentTimeMillis();
-                update();
-            }, delay, TimeUnit.MILLISECONDS);
+            Computer.threadPoolForRemoting.submit(new Runnable() {
+                public void run() {
+                    LOGGER.fine(() -> "running suggested review for " + label);
+                    update();
+                }
+            });
         } else {
-            LOGGER.finest("ignored");
+            LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
     }
 
@@ -197,6 +195,7 @@ public class NodeProvisioner {
      * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
      */
     private void update() {
+        long start = LOGGER.isLoggable(Level.FINER) ? System.nanoTime() : 0;
         provisioningLock.lock();
         try {
             lastSuggestedReview = System.currentTimeMillis();
@@ -332,6 +331,9 @@ public class NodeProvisioner {
             }
         } finally {
             provisioningLock.unlock();
+        }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer(() -> "ran update on " + label + " in " + (System.nanoTime() - start) / 1_000_000 + "ms");
         }
     }
 
