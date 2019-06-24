@@ -176,7 +176,7 @@ public class NodeProvisioner {
         if (delay < 0) {
             lastSuggestedReview = System.currentTimeMillis();
             Computer.threadPoolForRemoting.submit(() -> {
-                LOGGER.fine("running suggested review for " + label);
+                LOGGER.fine(() -> "running suggested review for " + label);
                 update();
             });
         } else if (!queuedReview) {
@@ -184,7 +184,7 @@ public class NodeProvisioner {
             LOGGER.fine(() -> "running suggested review in " + delay + " ms for " + label);
             Timer.get().schedule(() -> {
                 lastSuggestedReview = System.currentTimeMillis();
-                LOGGER.fine("running suggested review for " + label + " after " + delay + " ms");
+                LOGGER.fine(() -> "running suggested review for " + label + " after " + delay + " ms");
                 update();
             }, delay, TimeUnit.MILLISECONDS);
         } else {
