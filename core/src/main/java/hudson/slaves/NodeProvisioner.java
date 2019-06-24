@@ -176,12 +176,14 @@ public class NodeProvisioner {
         if (delay < 0) {
             LOGGER.fine("running update for " + label);
             lastSuggestedReview = System.currentTimeMillis();
-            Computer.threadPoolForRemoting.submit(new Runnable() {
-                public void run() {
-                    LOGGER.fine(() -> "running suggested review for " + label);
-                    update();
-                }
-            });
+            Computer.threadPoolForRemoting.submit(() -> update());
+        } else if (!queuedReview) {
+            queuedReview = true;
+            LOGGER.fine(() -> "running update in " + delay + " ms for " + label);
+            Timer.get().schedule(() -> {
+                lastSuggestedReview = System.currentTimeMillis();
+                update();
+            }, delay, TimeUnit.MILLISECONDS);
         } else {
             LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
