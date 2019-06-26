@@ -947,11 +947,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             //Telemetry: add interceptor classloader
             //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
             //allow us to detect failures in every plugin loading classes at this way.
-            if (!(pluginManager.uberClassLoader instanceof CatcherClassLoader)) {
-                adjuncts = new AdjunctManager(servletContext, classLoaderToAssign, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
-            } else {
-                adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
-            }
+            adjuncts = new AdjunctManager(servletContext, classLoaderToAssign, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 

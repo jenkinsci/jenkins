@@ -173,7 +173,9 @@ public class MissingClassTelemetry extends Telemetry {
     private JSONArray formatEventsAndInitialize() {
         // Save the current events and clean for next (not this one) telemetry send
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> toReport = MissingClassTelemetry.events.getEventsAndClean();
-        if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Cleaned events for missing classes");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Cleaned events for missing classes");
+        }
 
         return formatEvents(toReport);
     }
