@@ -145,7 +145,8 @@ public class MissingClassTelemetry extends Telemetry {
     @CheckForNull
     @Override
     public JSONObject createContent() {
-        // If we are on the time window of this telemetry but we are not running on Java > 1.8, we don't send anything
+        // If we are on the time window of this telemetry (checked by the Telemetry class) but we are not running on
+        // Java > 1.8 (checked here), we don't send anything
         if (!enabled()) {
             return null;
         }
