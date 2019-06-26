@@ -289,6 +289,10 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             }
             for (final ReverseBuildTrigger trigger : triggers) {
                 if (trigger.shouldTrigger(r, listener)) {
+                    // Make SpotBugs happy.
+                    if (trigger.job == null) {
+                        continue;
+                    }
                     if (!trigger.job.isBuildable()) {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(trigger.job)));
                         continue;

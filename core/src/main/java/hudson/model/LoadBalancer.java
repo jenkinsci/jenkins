@@ -36,6 +36,8 @@ import hudson.util.ConsistentHash.Hash;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
@@ -112,7 +114,15 @@ public abstract class LoadBalancer implements ExtensionPoint {
         private boolean assignGreedily(Mapping m, Task task, List<ConsistentHash<ExecutorChunk>> hashes, int i) {
             if (i==hashes.size())   return true;    // fully assigned
 
-            String key = task.getAffinityKey() + (i>0 ? String.valueOf(i) : "");
+            String key;
+            try {
+                key = task.getAffinityKey();
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.FINE, null, e);
+                // Default implementation of Queue.Task.getAffinityKey, we assume it doesn't fail.
+                key = task.getFullDisplayName();
+            }
+            key += i > 0 ? String.valueOf(i) : "";
 
             for (ExecutorChunk ec : hashes.get(i).list(key)) {
                 // let's attempt this assignment
@@ -166,5 +176,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
             }
         };
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LoadBalancer.class.getName());
 
 }

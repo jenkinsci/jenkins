@@ -24,18 +24,13 @@
 
 package jenkins.util.io;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Functions;
-import hudson.Util;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
@@ -44,6 +39,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Functions;
+import hudson.Util;
 
 @Restricted(NoExternalUse.class)
 public class PathRemover {
@@ -285,6 +289,14 @@ public class PathRemover {
             } catch (UnsupportedOperationException ignored) {
                 // PosixFileAttributes not supported, fall back to old IO.
             }
+        } else {
+          /*
+           * If on Windows a folder has a read only attribute set, the file.setWritable(true) doesn't work (JENKINS-57855)
+           */
+          DosFileAttributeView dos = Files.getFileAttributeView(path, DosFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+          if (dos != null) {
+            dos.setReadOnly(false);
+          }
         }
 
         /*

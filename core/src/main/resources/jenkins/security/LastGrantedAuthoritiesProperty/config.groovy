@@ -1,3 +1,3 @@
-package jenkins.security.LastGrantedAuthoritiesProperty;
+package jenkins.security.LastGrantedAuthoritiesProperty
 
 // nothing to configure here

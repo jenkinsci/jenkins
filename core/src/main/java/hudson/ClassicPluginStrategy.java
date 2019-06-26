@@ -186,6 +186,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
+            String canonicalName = manifest.getMainAttributes().getValue("Short-Name") + ".jpi";
+            if (!archive.getName().equals(canonicalName)) {
+                LOGGER.warning(() -> "encountered " + archive + " under a nonstandard name; expected " + canonicalName);
+            }
         }
 
         final Attributes atts = manifest.getMainAttributes();

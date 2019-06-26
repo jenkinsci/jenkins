@@ -83,9 +83,9 @@
       <version>build214-jenkins-1</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <scope>provided</scope>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -154,10 +154,6 @@
               </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
