@@ -14,6 +14,20 @@ class DOSToUnixPathHelper {
         void error(String string);
         void validate(File fexe);
     }
+    static private boolean checkPrefix(String prefix, Helper helper) {
+        File f = new File(prefix);
+        if(f.exists()) {
+            helper.checkExecutable(f);
+            return true;
+        }
+
+        File fexe = new File(prefix+".exe");
+        if(fexe.exists()) {
+            helper.checkExecutable(fexe);
+            return true;
+        }
+        return false;
+    }
     static void iteratePath(String exe, Helper helper) {
         exe = fixEmpty(exe);
         if(exe==null) {
@@ -23,17 +37,8 @@ class DOSToUnixPathHelper {
 
         if(exe.indexOf(File.separatorChar)>=0) {
             // this is full path
-            File f = new File(exe);
-            if(f.exists()) {
-                helper.checkExecutable(f);
+            if (checkPrefix(exe, helper))
                 return;
-            }
-
-            File fexe = new File(exe+".exe");
-            if(fexe.exists()) {
-                helper.checkExecutable(fexe);
-                return;
-            }
 
             helper.error("There's no such file: "+exe);
         } else {
@@ -53,18 +58,8 @@ class DOSToUnixPathHelper {
 
                     tokenizedPathBuilder.append(_dir.replace('\\', '/'));
 
-                    File dir = new File(_dir);
-
-                    File f = new File(dir, exe);
-                    if (f.exists()) {
-                        helper.validate(f);
+                    if (checkPrefix(_dir + File.pathSeparator + exe, helper))
                         return;
-                    }
-                    File fexe = new File(dir, exe+".exe");
-                    if (fexe.exists()) {
-                        helper.validate(fexe);
-                        return;
-                    }
                 }
                 tokenizedPathBuilder.append('.');
                 tokenizedPath = tokenizedPathBuilder.toString();
