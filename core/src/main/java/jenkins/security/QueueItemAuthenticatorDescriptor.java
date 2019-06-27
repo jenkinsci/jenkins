@@ -14,6 +14,6 @@ public abstract class QueueItemAuthenticatorDescriptor extends Descriptor<QueueI
     // nothing defined here yet
 
     public static DescriptorExtensionList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(QueueItemAuthenticator.class);
+        return Jenkins.get().getDescriptorList(QueueItemAuthenticator.class);
     }
 }

@@ -146,7 +146,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         if(type==null)
             return legacy;
         else
-            return Jenkins.getInstance().getDescriptorList(type);
+            return Jenkins.get().getDescriptorList(type);
     }
 
     /**

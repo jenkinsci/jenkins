@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 public class LocalPluginManager extends PluginManager {
     /**
      * Creates a new LocalPluginManager
-     * @param context Servlet context. Provided for compatibility as {@code Jenkins.getInstance().servletContext} should be used.
+     * @param context Servlet context. Provided for compatibility as {@code Jenkins.get().servletContext} should be used.
      * @param rootDir Jenkins home directory.
      */
     public LocalPluginManager(@CheckForNull ServletContext context, @NonNull File rootDir) {

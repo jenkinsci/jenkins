@@ -131,7 +131,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             }
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
+            if(n.getNumExecutors()>0 || n==Jenkins.get()) {
                 try {
                     c = n.createComputer();
                 } catch(RuntimeException ex) { // Just in case there is a bogus extension

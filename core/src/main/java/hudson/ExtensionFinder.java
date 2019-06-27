@@ -263,13 +263,13 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public GuiceFinder() {
             refreshExtensionAnnotations();
 
-            SezpozModule extensions = new SezpozModule(loadSezpozIndices(Jenkins.getInstance().getPluginManager().uberClassLoader));
+            SezpozModule extensions = new SezpozModule(loadSezpozIndices(Jenkins.get().getPluginManager().uberClassLoader));
 
             List<Module> modules = new ArrayList<>();
             modules.add(new AbstractModule() {
                 @Override
                 protected void configure() {
-                    Jenkins j = Jenkins.getInstance();
+                    Jenkins j = Jenkins.get();
                     bind(Jenkins.class).toInstance(j);
                     bind(PluginManager.class).toInstance(j.getPluginManager());
                 }
@@ -291,7 +291,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             // expose Injector via lookup mechanism for interop with non-Guice clients
-            Jenkins.getInstance().lookup.set(Injector.class,new ProxyInjector() {
+            Jenkins.get().lookup.set(Injector.class,new ProxyInjector() {
                 protected Injector resolve() {
                     return getContainer();
                 }
@@ -642,7 +642,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 4. thread Y decides to load extensions, now blocked on SZ.
             // 5. dead lock
             if (indices==null) {
-                ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
+                ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
                 indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
             }
             return indices;
@@ -676,7 +676,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         static <T extends Annotation> List<IndexItem<T,Object>> listDelta(Class<T> annotationType, List<? extends IndexItem<?,Object>> old) {
             // list up newly discovered components
             final List<IndexItem<T,Object>> delta = Lists.newArrayList();
-            ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
+            ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
             for (IndexItem<T,Object> ii : Index.load(annotationType, Object.class, cl)) {
                 if (!old.contains(ii)) {
                     delta.add(ii);

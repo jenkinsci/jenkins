@@ -124,7 +124,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
                 try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
                         new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8))), sym)),
-                        Jenkins.getInstance().pluginManager.uberClassLoader)) {
+                        Jenkins.get().pluginManager.uberClassLoader)) {
                     long timestamp = ois.readLong();
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack

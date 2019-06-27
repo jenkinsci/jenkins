@@ -487,7 +487,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         try {
             String correlationId = request.getParameter("correlationId");
             Map<String,Object> response = new HashMap<>();
-            response.put("state", Jenkins.getInstance().getInstallState().name());
+            response.put("state", Jenkins.get().getInstallState().name());
             List<Map<String, String>> installStates = new ArrayList<>();
             response.put("jobs", installStates);
             List<UpdateCenterJob> jobCopy = getJobs();
@@ -912,7 +912,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM,new File(Jenkins.getInstance().root,
+        return new XmlFile(XSTREAM,new File(Jenkins.get().root,
                                     UpdateCenter.class.getName()+".xml"));
     }
 
@@ -1029,7 +1029,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         public Data getData() {
-            UpdateSite cs = Jenkins.getInstance().getUpdateCenter().getCoreSource();
+            UpdateSite cs = Jenkins.get().getUpdateCenter().getCoreSource();
             if (cs!=null)   return cs.getData();
             return null;
         }
@@ -1439,7 +1439,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             try {
                 // safeRestart records the current authentication for the log, so set it to the managing user
                 try (ACLContext acl = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
-                    Jenkins.getInstance().safeRestart();
+                    Jenkins.get().safeRestart();
                 }
             } catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
@@ -1964,7 +1964,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Exported
         public final Plugin plugin;
 
-        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.get().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
@@ -2134,7 +2134,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        private final PluginManager pm = Jenkins.get().getPluginManager();
 
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, Authentication auth) {
             super(site, auth);
@@ -2352,7 +2352,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Restricted(NoExternalUse.class)
     public static void updateDefaultSite() {
-        final UpdateSite site = Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT);
+        final UpdateSite site = Jenkins.get().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT);
         if (site == null) {
             LOGGER.log(Level.SEVERE, "Upgrading Jenkins. Cannot retrieve the default Update Site ''{0}''. "
                     + "Plugin installation may fail.", UpdateCenter.ID_DEFAULT);
@@ -2372,7 +2372,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         }
         return this;
     }

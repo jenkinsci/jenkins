@@ -32,7 +32,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
         }
         env.put("BUILD_DISPLAY_NAME",r.getDisplayName());
 
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         String rootUrl = j.getRootUrl();
         if(rootUrl!=null) {
             env.put("BUILD_URL", rootUrl+r.getUrl());
@@ -41,7 +41,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
 
     @Override
     public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         String rootUrl = jenkins.getRootUrl();
         if(rootUrl!=null) {
             env.put("JENKINS_URL", rootUrl);

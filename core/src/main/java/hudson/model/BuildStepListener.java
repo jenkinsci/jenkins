@@ -25,7 +25,7 @@ public abstract class BuildStepListener implements ExtensionPoint {
      * Returns all the registered {@link BuildStepListener}s.
      */
     public static ExtensionList<BuildStepListener> all() {
-        // TODO should have a null-safe version when Jenkins.getInstance() is null; would require changes in ExtensionList
+        // TODO should have a null-safe version when Jenkins.getInstanceOrNull() is null; would require changes in ExtensionList
         return ExtensionList.lookup(BuildStepListener.class);
     }
 }

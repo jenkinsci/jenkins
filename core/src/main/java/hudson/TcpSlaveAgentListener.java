@@ -151,7 +151,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
     }
 
     /**
@@ -267,7 +267,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
-                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
@@ -488,7 +488,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     if (originThread.isAlive()) {
                         originThread.interrupt();
                     }
-                    int port = Jenkins.getInstance().getSlaveAgentPort();
+                    int port = Jenkins.get().getSlaveAgentPort();
                     if (port != -1) {
                         new TcpSlaveAgentListener(port).start();
                         LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");

@@ -542,7 +542,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.433 
      */
     public @CheckForNull Executor getOneOffExecutor() {
-        for( Computer c : Jenkins.getInstance().getComputers() ) {
+        for( Computer c : Jenkins.get().getComputers() ) {
             for (Executor e : c.getOneOffExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;

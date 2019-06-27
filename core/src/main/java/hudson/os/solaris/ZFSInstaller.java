@@ -108,7 +108,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 return false;       // no active ZFS pool
 
             // if we don't run on a ZFS file system, activate
-            ZFSFileSystem hudsonZfs = zfs.getFileSystemByMountPoint(Jenkins.getInstance().getRootDir());
+            ZFSFileSystem hudsonZfs = zfs.getFileSystemByMountPoint(Jenkins.get().getRootDir());
             if(hudsonZfs!=null)
                 return false;       // already on ZFS
 
@@ -132,7 +132,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
      */
     @RequirePOST
     public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(req.hasParameter("n")) {
             // we'll shut up
@@ -165,7 +165,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
             throw new IOException("Failed to obtain the current user information for "+uid);
         final String userName = pwd.pw_name;
 
-        final File home = Jenkins.getInstance().getRootDir();
+        final File home = Jenkins.get().getRootDir();
 
         // this is the actual creation of the file system.
         // return true indicating a success
@@ -233,7 +233,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
      */
     @RequirePOST
     public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
-        Jenkins hudson = Jenkins.getInstance();
+        Jenkins hudson = Jenkins.get();
         hudson.checkPermission(Jenkins.ADMINISTER);
 
         final String datasetName;
@@ -335,7 +335,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     private static boolean migrate(TaskListener listener, String target) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
 
-        File home = Jenkins.getInstance().getRootDir();
+        File home = Jenkins.get().getRootDir();
         // do the migration
         LibZFS zfs = new LibZFS();
         ZFSFileSystem existing = zfs.getFileSystemByMountPoint(home);

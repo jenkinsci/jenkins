@@ -85,7 +85,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             try {
                 VirtualChannel ch = c.getChannel();
                 futures.put(c,null);    // sentinel value

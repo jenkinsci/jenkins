@@ -150,7 +150,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (TriggerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 
@@ -237,7 +237,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     private static Future previousSynchronousPolling;
 
     public static void checkTriggers(final Calendar cal) {
-        Jenkins inst = Jenkins.getInstance();
+        Jenkins inst = Jenkins.get();
 
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
@@ -312,7 +312,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns all the registered {@link Trigger} descriptors.
      */
     public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(Trigger.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(Trigger.class);
     }
 
     /**
