@@ -72,7 +72,7 @@ THE SOFTWARE.
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
                       <j:if test="${x.lastModifiedAsCalendar.timeInMillis &gt; 0}">
-                        <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" model/DirectoryBrowserSupport/dir.jelly/>
+                        <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" pattern="yyyy-MM-dd hh:mm:ss"/>
                       </j:if>
                       <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
                         ${%N/A}
