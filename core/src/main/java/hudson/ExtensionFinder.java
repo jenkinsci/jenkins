@@ -533,8 +533,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             } else
                             if (e instanceof Method) {
                                 extType = ((Method)e).getReturnType();
-                            } else
+                            } else {
                                 throw new AssertionError();
+                            }
 
                             resolve(extType);
 
@@ -697,18 +698,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             for (IndexItem<Extension,Object> item : indices) {
                 try {
-                    AnnotatedElement e = item.element();
-                    Class<?> extType;
-                    if (e instanceof Class) {
-                        extType = (Class) e;
-                    } else
-                    if (e instanceof Field) {
-                        extType = ((Field)e).getType();
-                    } else
-                    if (e instanceof Method) {
-                        extType = ((Method)e).getReturnType();
-                    } else
-                        throw new AssertionError();
+                    Class<?> extType = getClassFromIndex(item);
 
                     if(type.isAssignableFrom(extType)) {
                         Object instance = item.instance();
@@ -733,18 +723,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     // but we can't synchronize this --- if we do, the one thread that's supposed to load a class
                     // can block while other threads wait for the entry into the element call().
                     // looking at the sezpoz code, it should be safe to do so
-                    AnnotatedElement e = item.element();
-                    Class<?> extType;
-                    if (e instanceof Class) {
-                        extType = (Class) e;
-                    } else
-                    if (e instanceof Field) {
-                        extType = ((Field)e).getType();
-                    } else
-                    if (e instanceof Method) {
-                        extType = ((Method)e).getReturnType();
-                    } else
-                        throw new AssertionError();
+                    Class<?> extType = getClassFromIndex(item);
                     // according to JDK-4993813 this is the only way to force class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
                 } catch (Exception | LinkageError e) {
@@ -756,6 +735,21 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         private Level logLevel(IndexItem<Extension, Object> item) {
             return item.annotation().optional() ? Level.FINE : Level.WARNING;
         }
+    }
+
+    private static Class<?> getClassFromIndex(IndexItem<Extension, Object> item) throws InstantiationException {
+        AnnotatedElement e = item.element();
+        Class<?> extType;
+        if (e instanceof Class) {
+            extType = (Class) e;
+        } else if (e instanceof Field) {
+            extType = ((Field) e).getType();
+        } else if (e instanceof Method) {
+            extType = ((Method) e).getReturnType();
+        } else {
+            throw new AssertionError();
+        }
+        return extType;
     }
 
     private static final Logger LOGGER = Logger.getLogger(ExtensionFinder.class.getName());
