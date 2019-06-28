@@ -90,7 +90,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <guavaVersion>11.0.1</guavaVersion>
+    <guavaVersion>24.1.1-jre</guavaVersion>
     <slf4jVersion>1.7.25</slf4jVersion>
     <maven-plugin.version>2.14</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>

@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
@@ -408,7 +407,7 @@ public class Iterators {
     }
 
     /**
-     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * Similar to {@link com.google.common.collect.Iterators#advance}.
      * @param iterator some iterator
      * @param count a nonnegative count
      */
