@@ -29,6 +29,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.LastGrantedAuthoritiesProperty;
+import jenkins.security.UserDetailsCache;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
@@ -36,9 +37,11 @@ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.codec.binary.Base64;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -52,6 +55,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -237,10 +241,14 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         // Check the user exists
         // Defer lookup until after expiry time checked, to
         // possibly avoid expensive lookup
-        UserDetails userDetails = loadUserDetails(request, response, cookieTokens);
-
-        if (userDetails == null) {
+        UserDetails userDetails;
+        try {
+            userDetails = UserDetailsCache.get().loadUserByUsername(cookieTokens[0]);
+        } catch (UsernameNotFoundException e) {
             cancelCookie(request, response, "Cookie token[0] contained a username without user associated");
+            return null;
+        } catch (DataAccessException | ExecutionException e) {
+            cancelCookie(request, response, "Cookie token[0] contained a username that could not be validated");
             return null;
         }
 
