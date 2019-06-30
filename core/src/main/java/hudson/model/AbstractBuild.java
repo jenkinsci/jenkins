@@ -338,7 +338,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     @Nonnull
     public Set<User> calculateCulprits() {
-        Set<User> c = RunWithSCM.super.calculateCulprits();
+        Set<User> users = RunWithSCM.super.calculateCulprits();
 
         AbstractBuild<P,R> p = getPreviousCompletedBuild();
         if (upstreamCulprits) {
@@ -349,14 +349,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 for (AbstractBuild.DependencyChange dep : depmap.values()) {
                     for (AbstractBuild<?, ?> b : dep.getBuilds()) {
                         for (ChangeLogSet.Entry entry : b.getChangeSet()) {
-                            c.add(entry.getAuthor());
+                            users.add(entry.getAuthor());
                         }
                     }
                 }
             }
         }
 
-        return c;
+        return users;
     }
 
     /**

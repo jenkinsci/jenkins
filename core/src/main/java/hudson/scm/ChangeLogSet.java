@@ -206,6 +206,17 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public abstract User getAuthor();
 
         /**
+         * Get from commit additional information
+         *
+         * <p>
+         * The exact definition depends on the individual SCM implementation
+         * @return
+         *     Can be empty
+         */
+        @Exported
+        public abstract String getComment();
+
+        /**
          * Returns a set of paths in the workspace that was
          * affected by this change.
          *
