@@ -2,6 +2,7 @@ package hudson.init;
 
 import com.google.inject.Injector;
 import hudson.model.Hudson;
+import hudson.model.Run;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.hudson.reactor.Milestone;
@@ -107,7 +108,19 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
         } catch (IllegalAccessException x) {
             throw (Error)new IllegalAccessError().initCause(x);
         } catch (InvocationTargetException x) {
-            throw new Error(x);
+            rethrow(x);
+        }
+    }
+
+    // Unwrap the useless InvocationTargetException and rethrow the cause as-is unless it is a checked exception
+    private void rethrow(InvocationTargetException x) {
+        Throwable cause = x.getCause();
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        } else if (cause instanceof Error) {
+            throw (Error) cause;
+        } else {
+            throw new Error(cause);
         }
     }
 
