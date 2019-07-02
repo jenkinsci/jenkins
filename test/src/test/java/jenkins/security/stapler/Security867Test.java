@@ -120,6 +120,7 @@ public class Security867Test {
     }
     
     @TestExtension
+    @StaplerViews("public")
     public static class RootAction1 implements RootAction {
         // not displayed in its own public.jelly
         public String getMyConfig() {
@@ -143,6 +144,7 @@ public class Security867Test {
     }
     
     @TestExtension
+    @StaplerViews("showConfig")
     public static class RootAction3 implements RootAction {
         // displayed in its showConfig.jelly
         public String getMyConfig() {

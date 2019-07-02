@@ -240,6 +240,7 @@ public class Functions {
 
     public static void initPageVariables(JellyContext context) {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
 
         Functions h = new Functions();
