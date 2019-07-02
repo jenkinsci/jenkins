@@ -120,6 +120,7 @@ public class EnvVars extends TreeMap<String,String> {
         }
     }
 
+    @SuppressWarnings("CopyConstructorMissesField") // does not set #platform, see its Javadoc
     public EnvVars(@Nonnull EnvVars m) {
         // this constructor is so that in future we can get rid of the downcasting.
         this((Map)m);

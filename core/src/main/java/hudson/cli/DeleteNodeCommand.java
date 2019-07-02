@@ -40,6 +40,7 @@ import java.util.List;
 @Extension
 public class DeleteNodeCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
     private List<String> nodes;
 
@@ -55,8 +56,7 @@ public class DeleteNodeCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(nodes);
+        final HashSet<String> hs = new HashSet<>(nodes);
 
         for (String node_s : hs) {
             Node node = null;
