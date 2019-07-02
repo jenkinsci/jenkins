@@ -1,0 +1,34 @@
+# This file contains the built-in whitelist of allows views for Stapler dispatch filtering.
+# This is provided as part of SECURITY-534 for backward compatibility.
+
+# Format: fully qualified class name of model class, a space, and then a space-separated list of view names to allow or deny (prefix with !)
+#         * class names can be repeated
+#         * subclasses of classes listed here are also whitelisted with the same view names
+# Example:
+# io.jenkins.plugins.example.ModelClass viewA viewB !viewC
+
+# https://plugins.jenkins.io/gerrit-trigger
+com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.actions.manual.ManualTriggerAction help-Search
+
+# https://plugins.jenkins.io/depgraph-view
+# This works experimentally even without this entry, but probably only because of buffer size, so be safe
+hudson.plugins.depgraph_view.AbstractDependencyGraphAction jsplumb
+
+# https://plugins.jenkins.io/multi-slave-config-plugin
+com.sonyericsson.hudson.plugins.multislaveconfigplugin.NodeManageLink slavefilter
+
+# https://plugins.jenkins.io/coverity
+jenkins.plugins.coverity.CheckConfig$DescriptorImpl checkConfig
+jenkins.plugins.coverity.CIMStream$DescriptorImpl defectFilters
+
+# https://plugins.jenkins.io/sounds
+net.hurstfrost.hudson.sounds.SoundsAgentAction jsonpdemo
+
+# https://plugins.jenkins.io/scm2job
+com.unitedinternet.jenkins.plugins.scm2job.SCM2Job showResultsPlain
+
+# https://plugins.jenkins.io/serenity
+com.ikokoon.serenity.hudson.SerenityProjectAction nocoverage
+
+# https://plugins.jenkins.io/pipeline-config-history
+org.jenkinsci.plugins.pipelineConfigHistory.view.PipelineConfigHistoryProjectAction configSingleFile
