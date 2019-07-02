@@ -18,14 +18,19 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import jenkins.security.HexStringConfidentialKey;
 
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -38,6 +43,9 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     
     private transient MessageDigest md;
     private boolean excludeClientIPFromCrumb;
+
+    @Restricted(NoExternalUse.class)
+    public static /* non-final: Groovy Console */ boolean EXCLUDE_SESSION_ID = SystemProperties.getBoolean(DefaultCrumbIssuer.class.getName() + ".EXCLUDE_SESSION_ID");
 
     @DataBoundConstructor
     public DefaultCrumbIssuer(boolean excludeClientIPFromCrumb) {
@@ -76,12 +84,14 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 HttpServletRequest req = (HttpServletRequest) request;
                 StringBuilder buffer = new StringBuilder();
                 Authentication a = Jenkins.getAuthentication();
-                if (a != null) {
-                    buffer.append(a.getName());
-                }
+                buffer.append(a.getName());
                 buffer.append(';');
                 if (!isExcludeClientIPFromCrumb()) {
                     buffer.append(getClientIP(req));
+                }
+                if (!EXCLUDE_SESSION_ID) {
+                    buffer.append(';');
+                    buffer.append(getSessionId(req));
                 }
 
                 md.update(buffer.toString().getBytes());
@@ -89,6 +99,14 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             }
         }
         return null;
+    }
+
+    private String getSessionId(@Nonnull HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return "NO_SESSION";
+        }
+        return session.getId();
     }
 
     /**
