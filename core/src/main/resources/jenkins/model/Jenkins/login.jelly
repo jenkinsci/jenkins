@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
+  <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
   <!-- deactivate all caching -->
   <st:setHeader name="Expires" value="0" />
   <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
   <!-- needed for cli -->
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     ${h.advertiseHeaders(response)}
@@ -35,8 +35,6 @@ THE SOFTWARE.
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
     </j:forEach>
   </j:if>
-  <!-- response contentType header -->
-  <st:contentType value="text/html;charset=UTF-8" />
   <!--
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
@@ -159,4 +157,5 @@ THE SOFTWARE.
       </j:choose>
     </body>
   </html>
+  </l:view>
 </j:jelly>

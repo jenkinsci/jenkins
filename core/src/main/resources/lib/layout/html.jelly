@@ -56,13 +56,11 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
   </st:documentation>
+<l:view contentType="text/html;charset=UTF-8">
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
-<st:contentType value="text/html;charset=UTF-8" />
 
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-${h.initPageVariables(context)}
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
   but it's too late because the headers are already committed. so ensure we always have a session.
@@ -171,4 +169,5 @@ ${h.initPageVariables(context)}
       </div>
   </body>
 </html>
+</l:view>
 </j:jelly>

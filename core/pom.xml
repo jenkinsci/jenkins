@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.257</stapler.version>
+    <stapler.version>1.257.1</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -180,7 +180,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.stapler</groupId>
       <artifactId>jenkins-stapler-support</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>

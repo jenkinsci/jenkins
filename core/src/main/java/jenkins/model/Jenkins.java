@@ -39,6 +39,7 @@ import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.stapler.DoActionFilter;
+import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
@@ -923,6 +924,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             webApp.setFilteredGetterTriggerListener(actionListener);
             webApp.setFilteredDoActionTriggerListener(actionListener);
             webApp.setFilteredFieldTriggerListener(actionListener);
+
+            webApp.setDispatchValidator(new StaplerDispatchValidator());
+            webApp.setFilteredDispatchTriggerListener(actionListener);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
@@ -4448,9 +4452,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(RUN_SCRIPTS);
-
+        req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
         try {
-            MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
+            MetaClass mc = req.getWebApp().getMetaClass(getClass());
             Script script = mc.classLoader.loadTearOff(JellyClassLoaderTearOff.class).createContext().compileScript(new InputSource(req.getReader()));
             new JellyRequestDispatcher(this,script).forward(req,rsp);
         } catch (JellyException e) {
