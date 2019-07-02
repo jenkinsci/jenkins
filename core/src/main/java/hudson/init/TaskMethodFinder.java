@@ -2,7 +2,6 @@ package hudson.init;
 
 import com.google.inject.Injector;
 import hudson.model.Hudson;
-import hudson.model.Run;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.hudson.reactor.Milestone;
