@@ -172,21 +172,23 @@ public class NodeProvisioner {
      * @since 1.415
      */
     public void suggestReviewNow() {
-        long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
-        if (delay < 0) {
-            lastSuggestedReview = System.currentTimeMillis();
-            Computer.threadPoolForRemoting.submit(() -> {
-                LOGGER.fine(() -> "running suggested review for " + label);
-                update();
-            });
-        } else if (!queuedReview) {
-            queuedReview = true;
-            LOGGER.fine(() -> "running suggested review in " + delay + " ms for " + label);
-            Timer.get().schedule(() -> {
+        if (!queuedReview) {
+            long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
+            if (delay < 0) {
                 lastSuggestedReview = System.currentTimeMillis();
-                LOGGER.fine(() -> "running suggested review for " + label + " after " + delay + " ms");
-                update();
-            }, delay, TimeUnit.MILLISECONDS);
+                Computer.threadPoolForRemoting.submit(() -> {
+                    LOGGER.fine(() -> "running suggested review for " + label);
+                    update();
+                });
+            } else {
+                queuedReview = true;
+                LOGGER.fine(() -> "running suggested review in " + delay + " ms for " + label);
+                Timer.get().schedule(() -> {
+                    lastSuggestedReview = System.currentTimeMillis();
+                    LOGGER.fine(() -> "running suggested review for " + label + " after " + delay + " ms");
+                    update();
+                }, delay, TimeUnit.MILLISECONDS);
+            }
         } else {
             LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
