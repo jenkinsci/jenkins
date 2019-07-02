@@ -32,7 +32,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.dao.DataAccessException;
+import test.security.realm.InMemorySecurityRealm;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
@@ -293,10 +295,13 @@ public class TokenBasedRememberMeServices2Test {
 
     @Test
     @Issue("JENKINS-56243")
-    public void rememberMeToken_shouldSetUserSeedInSession() throws Exception {
+    public void rememberMeToken_shouldLoadUserDetailsOnlyOnce() throws Exception {
         j.jenkins.setDisableRememberMe(false);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        LoadUserCountingSecurityRealm realm = new LoadUserCountingSecurityRealm();
+        realm.createAccount("alice");
+        j.jenkins.setSecurityRealm(realm);
         User alice = User.getOrCreateByIdOrFullName("alice");
+        realm.verifyInvocations(1);
 
         // first, start a session with a remember me token
         Cookie cookie = getRememberMeCookie(j.createWebClient().login("alice", "alice", true));
@@ -305,9 +310,32 @@ public class TokenBasedRememberMeServices2Test {
         wc.getCookieManager().addCookie(cookie);
         // trigger remember me
         String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
+        realm.verifyInvocations(1);
         String userSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
         assertEquals(userSeed, sessionSeed);
+
+        // finally, ensure that loadUserByUsername is not being called anymore
+        wc.goTo("");
+        assertUserConnected(wc, "alice");
+        realm.verifyInvocations(0);
+    }
+
+    private static class LoadUserCountingSecurityRealm extends InMemorySecurityRealm {
+        // if this class wasn't serialized into config.xml, this could be replaced by @Spy from Mockito
+        @GuardedBy("this")
+        private int counter = 0;
+
+        @Override
+        public synchronized UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            ++counter;
+            return super.loadUserByUsername(username);
+        }
+
+        synchronized void verifyInvocations(int count) {
+            assertEquals(count, counter);
+            counter = 0;
+        }
     }
 
     private Cookie createRememberMeCookie(TokenBasedRememberMeServices2 tokenService, long deltaDuration, hudson.model.User user) throws Exception {
