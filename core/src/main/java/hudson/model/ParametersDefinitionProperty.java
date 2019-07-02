@@ -108,7 +108,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @Nonnull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
-        return Collections.<Action>singleton(this);
+        return Collections.singleton(this);
     }
 
     @Deprecated
@@ -158,7 +158,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
         }
 
-    	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
+    	WaitingItem item = Jenkins.get().getQueue().schedule(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
@@ -187,7 +187,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
-        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
+        Queue.Item item = Jenkins.get().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {

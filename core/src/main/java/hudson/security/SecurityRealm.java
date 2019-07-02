@@ -628,7 +628,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
                 So we keep this here.
              */
-            rms.setKey(Jenkins.getInstance().getSecretKey());
+            rms.setKey(Jenkins.get().getSecretKey());
             rms.setParameter("remember_me"); // this is the form field name in login.jelly
             return rms;
         }
@@ -647,7 +647,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Jenkins.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
+        return Jenkins.get().getDescriptorList(SecurityRealm.class);
     }
 
 

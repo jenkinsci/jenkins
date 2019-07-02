@@ -93,7 +93,7 @@ public class InstallUtil {
     public static void proceedToNextStateFrom(InstallState prior) {
         InstallState next = getNextInstallState(prior);
         if (next != null) {
-            Jenkins.getInstance().setInstallState(next);
+            Jenkins.get().setInstallState(next);
         }
     }
     
@@ -162,7 +162,7 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
             
             // Allow for skipping
             if(shouldNotRun) {
@@ -274,15 +274,15 @@ public class InstallUtil {
     }
 
     static File getConfigFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "config.xml");
+        return new File(Jenkins.get().getRootDir(), "config.xml");
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {

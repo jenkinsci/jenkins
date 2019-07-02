@@ -355,9 +355,9 @@ public class AbstractProjectTest {
         j.createFreeStyleProject("j1");
         assertEquals("", deleteRedirectTarget("job/j1"));
         j.createFreeStyleProject("j2");
-        Jenkins.getInstance().addView(new AllView("v1"));
+        Jenkins.get().addView(new AllView("v1"));
         assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
-        MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
+        MockFolder d = Jenkins.get().createProject(MockFolder.class, "d");
         d.addView(new AllView("v2"));
         for (String n : new String[] {"j3", "j4", "j5"}) {
             d.createProject(FreeStyleProject.class, n);
@@ -476,9 +476,6 @@ public class AbstractProjectTest {
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
         tpm.installDetachedPlugin("javadoc");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("display-url-api");
-        tpm.installDetachedPlugin("mailer");
         tpm.installDetachedPlugin("maven-plugin");
 
         j.jenkins.setCrumbIssuer(null);

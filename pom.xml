@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.51</version>
+    <version>1.52</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.178</revision>
+    <revision>2.184</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -104,10 +104,10 @@ THE SOFTWARE.
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
-    <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+    <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.30</remoting.version>
+    <remoting.version>3.33</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
 
@@ -140,7 +140,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.9.2</version>
+        <version>1.9.14</version>
       </dependency>
 
       <dependency>
@@ -630,8 +630,8 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
             <configuration>
               <threshold>High</threshold>
             </configuration>

@@ -43,13 +43,13 @@ import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.util.Arrays;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -151,7 +151,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
     }
 
     /**
@@ -267,7 +267,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
-                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
@@ -286,7 +286,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
+                if (e instanceof EOFException) {
+                    LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
+                } else {
+                    LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
+                }
                 try {
                     s.close();
                 } catch (IOException ex) {
@@ -484,7 +488,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     if (originThread.isAlive()) {
                         originThread.interrupt();
                     }
-                    int port = Jenkins.getInstance().getSlaveAgentPort();
+                    int port = Jenkins.get().getSlaveAgentPort();
                     if (port != -1) {
                         new TcpSlaveAgentListener(port).start();
                         LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");

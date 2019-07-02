@@ -201,7 +201,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     @Deprecated
     default String getAbsoluteUrl() {
-        String r = Jenkins.getInstance().getRootUrl();
+        String r = Jenkins.get().getRootUrl();
         if(r==null)
             throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
         return Util.encode(r+getUrl());

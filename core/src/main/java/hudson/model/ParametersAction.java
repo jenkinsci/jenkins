@@ -180,7 +180,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return Collections.<ParameterValue>unmodifiableList(filter(parameters));
+        return Collections.unmodifiableList(filter(parameters));
     }
 
     public ParameterValue getParameter(String name) {
@@ -242,7 +242,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             parametersAction.safeParameters = this.safeParameters;
             return parametersAction;
         }
-        List<ParameterValue> combinedParameters = Lists.<ParameterValue>newArrayList(overrides);
+        List<ParameterValue> combinedParameters = Lists.newArrayList(overrides);
         Set<String> names = newHashSet();
 
         for(ParameterValue v : overrides) {

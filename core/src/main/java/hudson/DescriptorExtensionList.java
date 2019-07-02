@@ -73,7 +73,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
-        if (describableType == (Class) Publisher.class) {
+        if (describableType == Publisher.class) {
             return (DescriptorExtensionList) new Publisher.DescriptorExtensionListImpl(jenkins);
         }
         return new DescriptorExtensionList<>(jenkins, describableType);

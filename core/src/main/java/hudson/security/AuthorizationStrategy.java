@@ -29,18 +29,16 @@ import hudson.ExtensionPoint;
 import hudson.model.*;
 import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import javax.annotation.Nonnull;
-
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Controls authorization throughout Hudson.
@@ -184,7 +182,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
     public static @Nonnull DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
-        return Jenkins.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
+        return Jenkins.get().getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**

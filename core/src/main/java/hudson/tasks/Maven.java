@@ -129,7 +129,7 @@ public class Maven extends Builder {
      *
      * @since 1.322
      */
-    public boolean usePrivateRepository = false;
+    public boolean usePrivateRepository;
     
     /**
      * Provides access to the settings.xml to be used for a build.
@@ -678,14 +678,14 @@ public class Maven extends Builder {
             // newer code need not do this
             @Override
             public MavenInstallation[] getInstallations() {
-                return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
+                return Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
             }
 
             // overriding them for backward compatibility.
             // newer code need not do this
             @Override
             public void setInstallations(MavenInstallation... installations) {
-                Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
+                Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
             }
 
             /**

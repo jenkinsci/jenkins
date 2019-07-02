@@ -174,9 +174,12 @@ public class NodeProvisioner {
             lastSuggestedReview = System.currentTimeMillis();
             Computer.threadPoolForRemoting.submit(new Runnable() {
                 public void run() {
+                    LOGGER.fine(() -> "running suggested review for " + label);
                     update();
                 }
             });
+        } else {
+            LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
     }
 
@@ -188,6 +191,7 @@ public class NodeProvisioner {
      * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
      */
     private void update() {
+        long start = LOGGER.isLoggable(Level.FINER) ? System.nanoTime() : 0;
         provisioningLock.lock();
         try {
             lastSuggestedReview = System.currentTimeMillis();
@@ -326,6 +330,9 @@ public class NodeProvisioner {
             }
         } finally {
             provisioningLock.unlock();
+        }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer(() -> "ran update on " + label + " in " + (System.nanoTime() - start) / 1_000_000 + "ms");
         }
     }
 

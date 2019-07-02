@@ -76,7 +76,7 @@ public class RegistryKey {
      * @return int
      */
     private static int convertBufferToInt(byte[] buf) {
-        return (((int) (buf[0] & 0xff)) + (((int) (buf[1] & 0xff)) << 8) + (((int) (buf[2] & 0xff)) << 16) + (((int) (buf[3] & 0xff)) << 24));
+        return ((buf[0] & 0xff) + ((buf[1] & 0xff) << 8) + ((buf[2] & 0xff) << 16) + ((buf[3] & 0xff) << 24));
     }
 
     public String getStringValue(String valueName) {

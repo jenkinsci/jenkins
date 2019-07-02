@@ -147,7 +147,7 @@ public abstract class Launcher {
     @Deprecated
     @CheckForNull
     public Computer getComputer() {
-        for( Computer c : Jenkins.getInstance().getComputers() )
+        for( Computer c : Jenkins.get().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;

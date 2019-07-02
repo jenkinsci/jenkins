@@ -275,7 +275,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return null;
         }
         void broadcast() {
-            for (Computer c : Jenkins.getInstance().getComputers()) {
+            for (Computer c : Jenkins.get().getComputers()) {
                 if (c.getName().length() > 0) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
@@ -292,7 +292,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.getInstance().getLog().logRecorders.values()) {
+            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders.values()) {
                 for (Target t : recorder.targets) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
@@ -320,7 +320,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public LogRecorderManager getParent() {
-        return Jenkins.getInstance().getLog();
+        return Jenkins.get().getLog();
     }
 
     /**
@@ -426,7 +426,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }
         });
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             if (c.getName().length() == 0) {
                 continue; // master
             }

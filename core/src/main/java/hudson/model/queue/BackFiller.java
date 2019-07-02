@@ -34,7 +34,7 @@ public class BackFiller extends LoadPredictor {
         TimeRange timeRange = new TimeRange(start, end - start);
         List<FutureLoad> loads = new ArrayList<>();
 
-        for (BuildableItem bi : Jenkins.getInstance().getQueue().getBuildableItems()) {
+        for (BuildableItem bi : Jenkins.get().getQueue().getBuildableItems()) {
             TentativePlan tp = bi.getAction(TentativePlan.class);
             if (tp==null) {// do this even for bi==plan.item ensures that we have FIFO semantics in tentative plans.
                 tp = makeTentativePlan(bi);
@@ -95,7 +95,7 @@ public class BackFiller extends LoadPredictor {
         try {
             // pretend for now that all executors are available and decide some assignment that's executable.
             List<PseudoExecutorSlot> slots = new ArrayList<>();
-            for (Computer c : Jenkins.getInstance().getComputers()) {
+            for (Computer c : Jenkins.get().getComputers()) {
                 if (c.isOffline())  continue;
                 for (Executor e : c.getExecutors()) {
                     slots.add(new PseudoExecutorSlot(e));
@@ -104,8 +104,8 @@ public class BackFiller extends LoadPredictor {
 
             // also ignore all load predictions as we just want to figure out some executable assignment
             // and we are not trying to figure out if this task is executable right now.
-            MappingWorksheet worksheet = new MappingWorksheet(bi, slots, Collections.<LoadPredictor>emptyList());
-            Mapping m = Jenkins.getInstance().getQueue().getLoadBalancer().map(bi.task, worksheet);
+            MappingWorksheet worksheet = new MappingWorksheet(bi, slots, Collections.emptyList());
+            Mapping m = Jenkins.get().getQueue().getLoadBalancer().map(bi.task, worksheet);
             if (m==null)    return null;
 
             // figure out how many executors we need on each computer?

@@ -332,7 +332,7 @@ public abstract class LoadStatistics {
      */
     public LoadStatisticsSnapshot computeSnapshot() {
         if (modern) {
-            return computeSnapshot(Jenkins.getInstance().getQueue().getBuildableItems());
+            return computeSnapshot(Jenkins.get().getQueue().getBuildableItems());
         } else {
             int t = computeTotalExecutors();
             int i = computeIdleExecutors();
@@ -389,7 +389,7 @@ public abstract class LoadStatistics {
         }
 
         protected void doRun() {
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
             // update statistics on agents

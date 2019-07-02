@@ -141,7 +141,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     protected Map<Computer,T> monitor() throws InterruptedException {
         Map<Computer,T> data = new HashMap<>();
-        for( Computer c : Jenkins.getInstance().getComputers() ) {
+        for( Computer c : Jenkins.get().getComputers() ) {
             try {
                 Thread.currentThread().setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
 

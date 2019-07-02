@@ -129,7 +129,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     @Override
     public void save() throws IOException {
         // this should be a no-op unless this node instance is the node instance in Jenkins' list of nodes
-        // thus where Jenkins.getInstance() == null there is no list of nodes, so we do a no-op
+        // thus where Jenkins.get() == null there is no list of nodes, so we do a no-op
         // Nodes.updateNode(n) will only persist the node record if the node instance is in the list of nodes
         // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
         // for all other cases we do not know where to persist the node record and hence we follow the default
@@ -203,7 +203,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     @CheckForNull
     public final Computer toComputer() {
-        AbstractCIBase ciBase = Jenkins.getInstance();
+        AbstractCIBase ciBase = Jenkins.get();
         return ciBase.getComputer(this);
     }
 
@@ -390,8 +390,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // flyweight tasks need to get executed somewhere, if every node
             if (!(item.task instanceof Queue.FlyweightTask && (
                     this instanceof Jenkins
-                            || Jenkins.getInstance().getNumExecutors() < 1
-                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
+                            || Jenkins.get().getNumExecutors() < 1
+                            || Jenkins.get().getMode() == Mode.EXCLUSIVE)
             )) {
                 return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName()));   // this node is reserved for tasks that are tied to it
             }
@@ -510,7 +510,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
