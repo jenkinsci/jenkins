@@ -18,6 +18,9 @@ change-template: |-
     authors:
       - $AUTHOR
 template: |
+  **Disclaimer**: This is an automatically generated changelog draft for Jenkins weekly releases. 
+  See https://jenkins.io/changelog/ for the official changelogs. 
+
   ```yaml
   $CHANGES
   ```
