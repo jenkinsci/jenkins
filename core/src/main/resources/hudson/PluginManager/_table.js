@@ -290,6 +290,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     return true;
                 }
             }
+
+            if (pluginTR.hasClassName('detached')) {
+                infoContainer.update('<div class="title">' + i18n('detached-disable') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
+                return true;
+            }
             
             return false;
         }
@@ -318,6 +323,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 return true;
             }
             
+            if (pluginTR.hasClassName('detached')) {
+                infoContainer.update('<div class="title">' + i18n('detached-uninstall') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
+                return true;
+            }
+
             return false;
         }
 
