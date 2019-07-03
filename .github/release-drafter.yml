@@ -50,21 +50,8 @@ template: |
   $CHANGES
   ```
 replacers:
+  #TODO: How does one add a line break here?
   - search: '/\[*JENKINS-(\d+)\]*\s*-*\s*/g'
-    replace: '[JENKINS-$1](https://issues.jenkins-ci.org/browse/JENKINS-$1) - '
-  - search: '/\[*INFRA-(\d+)\]*\s*-*\s*/g'
-    replace: '[INFRA-$1](https://issues.jenkins-ci.org/browse/INFRA-$1) - '
-  - search: '/\[*WEBSITE-(\d+)\]*\s*-*\s*/g'
-    replace: '[WEBSITE-$1](https://issues.jenkins-ci.org/browse/WEBSITE-$1) - '
-  - search: '/\[*HOSTING-(\d+)\]*\s*-*\s*/g'
-    replace: '[HOSTING-$1](https://issues.jenkins-ci.org/browse/HOSTING-$1) - '  
-  # TODO(oleg_nenashev): Find a better way to reference issues
-  - search: '/\[*SECURITY-(\d+)\]*\s*-*\s*/g'
-    replace: '[SECURITY-$1](https://jenkins.io/security/advisories/) - '
-  - search: '/CVE-(\d{4})-(\d+)/g'
-    replace: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-$1-$2'
-  - search: 'JFR'
-    replace: 'Jenkinsfile Runner'
-  - search: 'CWP'
-    replace: 'Custom WAR Packager'
-  
+    replace: |
+      - issue: $1
+      
