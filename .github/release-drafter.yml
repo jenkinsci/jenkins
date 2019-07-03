@@ -1,8 +1,8 @@
 # Configuration for Release Drafter: https://github.com/toolmantim/release-drafter
 name-template: $NEXT_PATCH_VERSION
-tag-template: $NEXT_PATCH_VERSION
-# Uses a more common 2-digit versioning in Jenkins plugins. Can be replaced by semver: $MAJOR.$MINOR.$PATCH
+# Uses a more common 2-digit versioning in Jenkins weekly releases.
 version-template: $MAJOR.$MINOR
+tag-template: jenkins-$NEXT_MINOR_VERSION
 
 # Emoji reference: https://gitmoji.carloscuesta.me/
 categories:
@@ -39,10 +39,16 @@ exclude-labels:
   - no-changelog
   - skip-changelog
   - invalid
-
+change-template: |
+  - type: todo
+    message: $TITLE
+    pull: $NUMBER
+    authors: 
+      - $AUTHOR
 template: |
-  <!-- Optional: add a release summary here -->
+  ```yaml
   $CHANGES
+  ```
 replacers:
   - search: '/\[*JENKINS-(\d+)\]*\s*-*\s*/g'
     replace: '[JENKINS-$1](https://issues.jenkins-ci.org/browse/JENKINS-$1) - '
