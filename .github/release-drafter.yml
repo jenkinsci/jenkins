@@ -4,36 +4,7 @@ name-template: $NEXT_PATCH_VERSION
 version-template: $MAJOR.$MINOR
 tag-template: jenkins-$NEXT_MINOR_VERSION
 
-# Emoji reference: https://gitmoji.carloscuesta.me/
-categories:
-  - title: 🚨 Removed
-    label: removed
-  - title: ⚠️ Deprecated
-    label: deprecated
-  - title: 🚀 New features and improvements
-    labels:
-      - enhancement
-      - feature
-  - title: 🐛 Bug Fixes
-    labels:
-      - bug
-      - fix
-      - bugfix
-      - regression  
-  - title: 📝 Documentation updates
-    label: documentation
-  # Default label used by Dependabot
-  - title: 📦 Dependency updates
-    label: dependencies
-  - title: 👻 Maintenance
-    label: chore
-  # TODO: consider merging category or changing emojis
-  - title: 🚦 Internal changes
-    label: internal
-  - title: 🚦 Tests
-    labels: 
-      - test
-      - tests
+# TODO: categories are YAGNI for now, until we can extract `type` somehow
 exclude-labels:
   - reverted
   - no-changelog
