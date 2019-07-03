@@ -68,6 +68,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -326,6 +327,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         final String cookieName = "JSESSIONID.";
         for (Cookie cookie : req.getCookies()) {
             if (cookie.getName().startsWith(cookieName)) {
+                LOGGER.log(Level.FINE, "Removing cookie {0} during logout", cookie.getName());
                 // one reason users log out is to clear their session(s)
                 // so tell the browser to drop all old sessions
                 cookie.setMaxAge(0);
