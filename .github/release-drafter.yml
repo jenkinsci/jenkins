@@ -21,8 +21,10 @@ template: |
   $CHANGES
   ```
 replacers:
-  #TODO: How does one add a line break here?
   - search: '/\[*JENKINS-(\d+)\]*\s*-*\s*/g'
     replace: |
       - issue: $1
-      
+      - message: 
+  - search: '-message: - issue:'
+    replace: "- issue:"
+ 
