@@ -10,7 +10,7 @@ exclude-labels:
   - no-changelog
   - skip-changelog
   - invalid
-change-template: |
+change-template: |-
   - type: todo
     message: $TITLE
     pull: $NUMBER
@@ -22,9 +22,9 @@ template: |
   ```
 replacers:
   - search: '/\[*JENKINS-(\d+)\]*\s*-*\s*/g'
-    replace: |
+    replace: |-
       issue: $1
-        message: 
+        message:
   - search: 'message: issue:'
     replace: "issue:"
  
