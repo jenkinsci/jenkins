@@ -1002,6 +1002,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Same as {@link DetachedPluginsUtil#isDetachedPlugin}.
+     * @since TODO
      */
     @Exported
     public boolean isDetached() {
