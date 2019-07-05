@@ -601,7 +601,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     void considerDetachedPlugin(String shortName) {
-        if (new File(rootDir, shortName + ".jpi").isFile() || new File(rootDir, shortName + ".hpi").isFile()) {
+        if (new File(rootDir, shortName + ".jpi").isFile() ||
+            new File(rootDir, shortName + ".hpi").isFile() ||
+            new File(rootDir, shortName + ".jpl").isFile() ||
+            new File(rootDir, shortName + ".hpl").isFile()) {
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
             return;
         }
