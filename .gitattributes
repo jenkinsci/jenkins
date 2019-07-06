@@ -1,7 +1,9 @@
 # Handle line endings automatically for files detected as text
 # and leave all files detected as binary untouched.
 * text=auto
-
+    By Shago7932/Master
+Hello World 
+     Code of conduct
 #
 # The above will handle all files NOT found below
 #
