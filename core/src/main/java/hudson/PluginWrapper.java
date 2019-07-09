@@ -84,6 +84,7 @@ import static hudson.PluginWrapper.PluginDisableStatus.ERROR_DISABLING;
 import static hudson.PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS;
 import static hudson.PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN;
 import static java.util.logging.Level.WARNING;
+import jenkins.plugins.DetachedPluginsUtil;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 /**
@@ -997,6 +998,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @Exported
     public boolean isDeleted() {
         return !archive.exists();
+    }
+
+    /**
+     * Same as {@link DetachedPluginsUtil#isDetachedPlugin}.
+     * @since TODO
+     */
+    @Exported
+    public boolean isDetached() {
+        return DetachedPluginsUtil.isDetachedPlugin(shortName);
     }
 
     /**
