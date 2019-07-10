@@ -163,16 +163,16 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /*package*/ void removeComputer(final Computer computer) {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Map<Node,Computer> computers = getComputerMap();
-                for (Map.Entry<Node, Computer> e : computers.entrySet()) {
-                    if (e.getValue() == computer) {
-                        computers.remove(e.getKey());
-                        computer.onRemoved();
-                        return;
+        Queue.withLock(() -> {
+            Map<Node,Computer> computers = getComputerMap();
+            for (Map.Entry<Node, Computer> e : computers.entrySet()) {
+                if (e.getValue() == computer) {
+                    computers.remove(e.getKey());
+                    for (ComputerListener cl : ComputerListener.all()) {
+                       cl.onRemoved(computer);
                     }
+                    computer.onRemoved();
+                    return;
                 }
             }
         });

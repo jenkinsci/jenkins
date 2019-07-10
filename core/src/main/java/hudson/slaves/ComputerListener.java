@@ -200,6 +200,14 @@ public abstract class ComputerListener implements ExtensionPoint {
      */
     public void onTemporarilyOffline(Computer c, OfflineCause cause) {}
 
+
+    /**
+     * Called right before Computer will be removed.
+     *
+     * @since FIXME
+     */
+    public void onRemoved(Computer computer) {}
+
     /**
      * Called when configuration of the node was changed, a node is added/removed, etc.
      *
