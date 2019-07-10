@@ -816,7 +816,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     return Files.newInputStream(resource.toPath());
                 }
             } else {
-                return (InputStream) storeAndConvert(jarFile, file, resourceName, (jar, entry) -> jar.getInputStream(entry));
+                return storeAndConvert<InputStream>(jarFile, file, resourceName, (jar, entry) -> jar.getInputStream(entry));
             }
         } catch (Exception e) {
             log("Ignoring Exception " + e.getClass().getName() + ": " + e.getMessage()
@@ -1021,7 +1021,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     }
                 }
             } else {
-                return (URL) storeAndConvert(jarFile, file, resourceName, (jar, entry) -> {
+                return storeAndConvert<URL>(jarFile, file, resourceName, (jar, entry) -> {
                     try {
                         return new URL("jar:" + FILE_UTILS.getFileURL(file) + "!/" + entry);
                     } catch (MalformedURLException ex) {
