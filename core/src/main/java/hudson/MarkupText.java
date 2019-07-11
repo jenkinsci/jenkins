@@ -313,7 +313,7 @@ public class MarkupText extends AbstractMarkupText {
             buf.append(tag.markup);
         }
         if (copied<text.length()) {
-            String portion = text.substring(copied, text.length());
+            String portion = text.substring(copied);
             buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
         }
 

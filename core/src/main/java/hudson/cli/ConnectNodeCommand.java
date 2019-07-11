@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 @Extension
 public class ConnectNodeCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comma-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
 
@@ -62,13 +63,12 @@ public class ConnectNodeCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(nodes);
+        final HashSet<String> hs = new HashSet<>(nodes);
 
         List<String> names = null;
 
         for (String node_s : hs) {
-            Computer computer = null;
+            Computer computer;
 
             try {
                 computer = jenkins.getComputer(node_s);

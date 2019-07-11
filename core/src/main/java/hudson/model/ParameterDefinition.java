@@ -144,7 +144,7 @@ public abstract class ParameterDefinition implements
      */
     public String getFormattedDescription() {
         try {
-            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(description);
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";
@@ -156,7 +156,7 @@ public abstract class ParameterDefinition implements
      */
     @Override
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (ParameterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -223,7 +223,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Jenkins.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
+        return Jenkins.get().getDescriptorList(ParameterDefinition.class);
     }
 
     /**

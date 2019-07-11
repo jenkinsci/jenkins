@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.PluginManager;
+package hudson.PluginManager
 l=namespace(lib.LayoutTagLib)
 
 l.header()

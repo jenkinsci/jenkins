@@ -56,12 +56,12 @@ public class ComputerTest {
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
-        DumbSlave delete = j.createOnlineSlave(Jenkins.getInstance().getLabelAtom("delete"));
-        DumbSlave keep = j.createOnlineSlave(Jenkins.getInstance().getLabelAtom("keep"));
+        DumbSlave delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
+        DumbSlave keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
         File logFile = delete.toComputer().getLogFile();
         assertTrue(logFile.exists());
 
-        Jenkins.getInstance().removeNode(delete);
+        Jenkins.get().removeNode(delete);
 
         assertFalse("Slave log should be deleted", logFile.exists());
         assertFalse("Slave log directory should be deleted", logFile.getParentFile().exists());

@@ -24,7 +24,6 @@
 package hudson.model;
 
 import com.google.common.io.Resources;
-import hudson.ClassicPluginStrategy;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
@@ -118,7 +117,7 @@ public class UsageStatisticsTest {
             assertThat("No duplicates", reported.contains(name), is(false));
             reported.add(name);
         }
-        assertThat(reported, containsInAnyOrder("credentials"));
+        assertThat(reported, hasItem("credentials"));
 
         // Compare content to watch out for backwards compatibility
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));

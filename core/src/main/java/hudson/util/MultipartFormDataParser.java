@@ -48,7 +48,7 @@ public class MultipartFormDataParser implements AutoCloseable {
 
     public MultipartFormDataParser(HttpServletRequest request) throws ServletException {
         try {
-            for( FileItem fi : (List<FileItem>)upload.parseRequest(request) )
+            for( FileItem fi : upload.parseRequest(request))
                 byName.put(fi.getFieldName(),fi);
         } catch (FileUploadException e) {
             throw new ServletException(e);

@@ -89,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.2</version>
+      <version>5.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -110,7 +110,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.10.0</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -387,7 +387,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.18.1</version>
+                  <version>1.56</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -405,7 +405,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -418,6 +418,12 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
                   <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>trilead-api</artifactId>
+                  <version>1.0.4-rc17.8e3daef99f43</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -459,11 +465,9 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
-          <connectors>
-            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                <port>${port}</port>
-            </connector>
-          </connectors>
+          <httpConnector>
+              <port>${port}</port>
+          </httpConnector>
           <additionalClassesDirectories>
             <!-- load resources straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>

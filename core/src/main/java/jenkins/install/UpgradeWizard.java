@@ -65,8 +65,8 @@ public class UpgradeWizard extends InstallState {
         
         // If there are no platform updates, proceed to running
         if (isUpToDate) {
-            if (Jenkins.getInstance().getSetupWizard().getPlatformPluginUpdates().isEmpty()) {
-                Jenkins.getInstance().setInstallState(InstallState.RUNNING);
+            if (Jenkins.get().getSetupWizard().getPlatformPluginUpdates().isEmpty()) {
+                Jenkins.get().setInstallState(InstallState.RUNNING);
             }
         }
     }
@@ -95,7 +95,7 @@ public class UpgradeWizard extends InstallState {
         // If we don't have any platform plugins, it's considered 'up to date' in terms
         // of the updater
         try {
-            JSONArray platformPlugins = Jenkins.getInstance().getSetupWizard().getPlatformPluginUpdates();
+            JSONArray platformPlugins = Jenkins.get().getSetupWizard().getPlatformPluginUpdates();
             isUpToDate = platformPlugins.isEmpty();
         } catch(Exception e) {
             LOGGER.log(Level.WARNING, "Unable to get the platform plugin update list.", e);
@@ -110,7 +110,7 @@ public class UpgradeWizard extends InstallState {
             return false;
 
         // only admin users should see this
-        if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
             return false;
 
         // only show when Jenkins is fully up & running
@@ -135,7 +135,7 @@ public class UpgradeWizard extends InstallState {
      * Call this to show the upgrade wizard
      */
     public HttpResponse doShowUpgradeWizard() throws Exception {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HttpSession session = Stapler.getCurrentRequest().getSession(true);
         session.setAttribute(SHOW_UPGRADE_WIZARD_FLAG, true);
         return HttpResponses.redirectToContextRoot();
@@ -145,7 +145,7 @@ public class UpgradeWizard extends InstallState {
      * Call this to hide the upgrade wizard
      */
     public HttpResponse doHideUpgradeWizard() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HttpSession session = Stapler.getCurrentRequest().getSession(false);
         if(session != null) {
             session.removeAttribute(SHOW_UPGRADE_WIZARD_FLAG);
@@ -158,7 +158,7 @@ public class UpgradeWizard extends InstallState {
      */
     @RequirePOST
     public HttpResponse doSnooze() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         File f = SetupWizard.getUpdateStateFile();
         FileUtils.touch(f);
         f.setLastModified(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));

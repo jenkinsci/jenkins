@@ -165,7 +165,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
     public ConsoleAnnotationDescriptor getDescriptor() {
-        return (ConsoleAnnotationDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (ConsoleAnnotationDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -270,7 +270,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 }
             }
 
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.get();
             try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
                     jenkins != null ? jenkins.pluginManager.uberClassLoader : ConsoleNote.class.getClassLoader(),
                     ClassFilter.DEFAULT)) {

@@ -91,7 +91,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
             this.computationalData = new HashMap<>();
-            for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) )
+            for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);

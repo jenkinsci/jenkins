@@ -24,7 +24,7 @@ public class NodeMonitorUpdater extends ComputerListener {
     private static final Runnable MONITOR_UPDATER = new Runnable() {
         @Override
         public void run() {
-            for (NodeMonitor nm : Jenkins.getInstance().getComputer().getMonitors()) {
+            for (NodeMonitor nm : Jenkins.get().getComputer().getMonitors()) {
                 nm.triggerUpdate();
             }
         }

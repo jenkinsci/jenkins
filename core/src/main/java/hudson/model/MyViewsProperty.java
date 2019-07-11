@@ -237,11 +237,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.getInstance().getViewsTabBar();
+        return Jenkins.get().getViewsTabBar();
     }
 
     public List<Action> getViewActions() {
-        // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
+        // Jenkins.get().getViewActions() are tempting but they are in a wrong scope
         return Collections.emptyList();
     }
 
@@ -250,7 +250,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     public MyViewsTabBar getMyViewsTabBar() {
-        return Jenkins.getInstance().getMyViewsTabBar();
+        return Jenkins.get().getMyViewsTabBar();
     }
     
     @Extension @Symbol("myView")

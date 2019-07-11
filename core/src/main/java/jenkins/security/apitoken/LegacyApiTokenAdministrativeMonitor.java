@@ -96,7 +96,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @Nullable ApiTokenStore.HashedToken legacyToken) {
+    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
@@ -112,7 +112,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasFreshToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
@@ -136,7 +136,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }

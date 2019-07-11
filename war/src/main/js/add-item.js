@@ -260,7 +260,7 @@ $.when(getItems()).done(function(data) {
     });
 
     // Init CopyFromField
-    $('input[name="from"]', '#createItem').blur(function() {
+    $('input[name="from"]', '#createItem').on("blur input", function() {
       if (getCopyFromValue() === '') {
         $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
       } else {

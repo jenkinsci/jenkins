@@ -187,7 +187,7 @@ public class FingerprinterTest {
 
         upstreamBuild.delete();
 
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
@@ -202,7 +202,7 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = p.getDownstreamProjects();

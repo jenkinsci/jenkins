@@ -39,14 +39,14 @@ f.section(title: _("Administrative monitors configuration")) {
                         f.checkbox(name: "administrativeMonitor",
                                 title: am.displayName,
                                 checked: am.enabled,
-                                json: am.id);
+                                json: am.id)
                     }
                     tr() {
-                        td(colspan: "2");
+                        td(colspan: "2")
                         td(class: "setting-description") {
-                            st.include(from: am, page: "description", optional: true);
+                            st.include(from: am, page: "description", optional: true)
                         }
-                        td();
+                        td()
                     }
                 }
             }

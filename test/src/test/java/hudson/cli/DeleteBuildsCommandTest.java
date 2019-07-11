@@ -169,7 +169,7 @@ public class DeleteBuildsCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).isBuilding(), equalTo(false));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).isInQueue(), equalTo(true));
 
-        Jenkins.getInstance().getQueue().cancel(project);
+        Jenkins.get().getQueue().cancel(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(0));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).isBuilding(), equalTo(false));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).isInQueue(), equalTo(false));

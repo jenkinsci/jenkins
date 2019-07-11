@@ -74,7 +74,7 @@ public abstract class QueueSorter implements ExtensionPoint {
         ExtensionList<QueueSorter> all = all();
         if (all.isEmpty())  return;
 
-        Queue q = Jenkins.getInstance().getQueue();
+        Queue q = Jenkins.get().getQueue();
         if (q.getSorter()!=null)        return; // someone has already installed something. leave that alone.
 
         q.setSorter(all.get(0));

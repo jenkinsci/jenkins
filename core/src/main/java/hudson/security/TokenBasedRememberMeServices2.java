@@ -161,7 +161,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-        if(Jenkins.getInstance().isDisableRememberMe()){
+        if(Jenkins.get().isDisableRememberMe()){
             cancelCookie(request, response, null);
             return null;
         }else {
@@ -269,6 +269,14 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
                 userDetails.getAuthorities());
         auth.setDetails(authenticationDetailsSource.buildDetails(request));
 
+        // Ensure this session is linked to the user's seed
+        if (!UserSeedProperty.DISABLE_USER_SEED) {
+            User user = User.get(auth);
+            UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);
+            String sessionSeed = userSeed.getSeed();
+            request.getSession().setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+        }
+
         return auth;
     }
 
@@ -276,9 +284,11 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * @return the decoded base64 of the cookie or {@code null} if the value was not correctly encoded
      */
     private @CheckForNull String decodeCookieBase64(@Nonnull String base64EncodedValue){
-        for (int j = 0; j < base64EncodedValue.length() % 4; j++) {
-            base64EncodedValue = base64EncodedValue + "=";
+        StringBuilder base64EncodedValueBuilder = new StringBuilder(base64EncodedValue);
+        for (int j = 0; j < base64EncodedValueBuilder.length() % 4; j++) {
+            base64EncodedValueBuilder.append("=");
         }
+        base64EncodedValue = base64EncodedValueBuilder.toString();
 
         try {
             // any charset should be fine but better safe than sorry

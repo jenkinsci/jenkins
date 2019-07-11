@@ -222,7 +222,7 @@ public class ReverseBuildTriggerTest {
 
         // The reported issue was with Pipeline jobs, which calculate their dependency graphs via
         // ReverseBuildTrigger.RunListenerImpl, so an additional test may be needed downstream.
-        trigger.buildDependencyGraph(downstreamJob1, Jenkins.getInstance().getDependencyGraph());
+        trigger.buildDependencyGraph(downstreamJob1, Jenkins.get().getDependencyGraph());
     }
 
     @Issue("JENKINS-46161")

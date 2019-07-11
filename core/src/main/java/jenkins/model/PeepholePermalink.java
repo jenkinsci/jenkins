@@ -123,6 +123,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      * Start from the build 'b' and locate the build that matches the criteria going back in time
      */
     private Run<?,?> find(Run<?,?> b) {
+        //noinspection StatementWithEmptyBody
         for ( ; b!=null && !apply(b); b=b.getPreviousBuild())
             ;
         return b;

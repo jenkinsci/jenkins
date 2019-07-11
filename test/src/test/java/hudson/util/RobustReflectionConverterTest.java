@@ -72,7 +72,7 @@ public class RobustReflectionConverterTest {
     @Test public void randomExceptionsReported() throws Exception {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);
         assertNotNull(p);
-        assertEquals(Collections.emptyMap(), p.getTriggers());
+        assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
         Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
@@ -163,7 +163,7 @@ public class RobustReflectionConverterTest {
                 // unfortunately, default newInstance bypasses newInstances for members.
                 formData = formData.getJSONObject("keywordProperty");
                 @SuppressWarnings("unchecked")
-                Descriptor<AcceptOnlySpecificKeyword> d = Jenkins.getInstance().getDescriptor(AcceptOnlySpecificKeyword.class);
+                Descriptor<AcceptOnlySpecificKeyword> d = Jenkins.get().getDescriptor(AcceptOnlySpecificKeyword.class);
                 return new KeywordProperty(
                         d.newInstance(req, formData.getJSONObject("nonCriticalField")),
                         d.newInstance(req, formData.getJSONObject("criticalField"))

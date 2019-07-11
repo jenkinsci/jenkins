@@ -62,7 +62,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
     }
 
     protected File getBaseDir() {
-        return new File(Jenkins.getInstance().getRootDir(),getClass().getName());
+        return new File(Jenkins.get().getRootDir(),getClass().getName());
     }
 
     public abstract String getDisplayName();

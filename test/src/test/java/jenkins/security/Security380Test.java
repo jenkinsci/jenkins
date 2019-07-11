@@ -24,15 +24,15 @@ public class Security380Test {
     public void testGetItemsWithoutAnonRead() throws Exception {
         FullControlOnceLoggedInAuthorizationStrategy strategy = new FullControlOnceLoggedInAuthorizationStrategy();
         strategy.setAllowAnonymousRead(false);
-        Jenkins.getInstance().setAuthorizationStrategy(strategy);
+        Jenkins.get().setAuthorizationStrategy(strategy);
 
-        Jenkins.getInstance().setSecurityRealm(j.createDummySecurityRealm());
+        Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
         ACL.impersonate(Jenkins.ANONYMOUS, new Runnable() {
             @Override
             public void run() {
-                Assert.assertEquals("no items", 0, Jenkins.getInstance().getItems().size());
+                Assert.assertEquals("no items", 0, Jenkins.get().getItems().size());
             }
         });
     }
@@ -42,15 +42,15 @@ public class Security380Test {
     public void testGetItems() throws Exception {
         FullControlOnceLoggedInAuthorizationStrategy strategy = new FullControlOnceLoggedInAuthorizationStrategy();
         strategy.setAllowAnonymousRead(true);
-        Jenkins.getInstance().setAuthorizationStrategy(strategy);
+        Jenkins.get().setAuthorizationStrategy(strategy);
 
-        Jenkins.getInstance().setSecurityRealm(j.createDummySecurityRealm());
+        Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
         ACL.impersonate(Jenkins.ANONYMOUS, new Runnable() {
             @Override
             public void run() {
-                Assert.assertEquals("one item", 1, Jenkins.getInstance().getItems().size());
+                Assert.assertEquals("one item", 1, Jenkins.get().getItems().size());
             }
         });
     }
@@ -60,9 +60,9 @@ public class Security380Test {
     public void testWithUnprotectedRootAction() throws Exception {
         FullControlOnceLoggedInAuthorizationStrategy strategy = new FullControlOnceLoggedInAuthorizationStrategy();
         strategy.setAllowAnonymousRead(false);
-        Jenkins.getInstance().setAuthorizationStrategy(strategy);
+        Jenkins.get().setAuthorizationStrategy(strategy);
 
-        Jenkins.getInstance().setSecurityRealm(j.createDummySecurityRealm());
+        Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
         j.createFreeStyleProject();
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -90,7 +90,7 @@ public class Security380Test {
         }
 
         public HttpResponse doIndex() throws Exception {
-            return HttpResponses.plainText(Integer.toString(Jenkins.getInstance().getItems().size()));
+            return HttpResponses.plainText(Integer.toString(Jenkins.get().getItems().size()));
         }
     }
 }

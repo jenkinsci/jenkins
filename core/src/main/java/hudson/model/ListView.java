@@ -124,13 +124,18 @@ public class ListView extends View implements DirectlyModifiableView {
         this.columns.replaceBy(columns);
     }
 
+    @DataBoundSetter
+    public void setJobFilters(List<ViewJobFilter> jobFilters) throws IOException {
+        this.jobFilters.replaceBy(jobFilters);
+    }
+
     private Object readResolve() {
         if(includeRegex!=null) {
             try {
                 includePattern = Pattern.compile(includeRegex);
             } catch (PatternSyntaxException x) {
                 includeRegex = null;
-                OldDataMonitor.report(this, Collections.<Throwable>singleton(x));
+                OldDataMonitor.report(this, Collections.singleton(x));
             }
         }
         synchronized(this) {
@@ -171,6 +176,9 @@ public class ListView extends View implements DirectlyModifiableView {
         return columns;
     }
 
+    public Set<String> getJobNames() {
+        return Collections.unmodifiableSet(jobNames);
+    }
 
     /**
      * Returns a read-only view of all {@link Job}s in this view.
@@ -320,14 +328,15 @@ public class ListView extends View implements DirectlyModifiableView {
     public String getIncludeRegex() {
         return includeRegex;
     }
-    
+
     public boolean isRecurse() {
         return recurse;
     }
-    
+
     /**
      * @since 1.568
      */
+    @DataBoundSetter
     public void setRecurse(boolean recurse) {
         this.recurse = recurse;
     }
@@ -426,7 +435,7 @@ public class ListView extends View implements DirectlyModifiableView {
         TopLevelItem item = getOwner().getItemGroup().getItem(name);
         if (item == null) {
             name = Items.getCanonicalName(getOwner().getItemGroup(), name);
-            item = Jenkins.getInstance().getItemByFullName(name, TopLevelItem.class);
+            item = Jenkins.get().getItemByFullName(name, TopLevelItem.class);
         }
         return item;
     }
@@ -462,7 +471,7 @@ public class ListView extends View implements DirectlyModifiableView {
             columns = new DescribableList<>(this);
         }
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
-        
+
         if (jobFilters == null) {
         	jobFilters = new DescribableList<>(this);
         }
@@ -473,12 +482,23 @@ public class ListView extends View implements DirectlyModifiableView {
     }
     
     /** @since 1.526 */
+    @DataBoundSetter
     public void setIncludeRegex(String includeRegex) {
         this.includeRegex = Util.nullify(includeRegex);
         if (this.includeRegex == null)
             this.includePattern = null;
         else
             this.includePattern = Pattern.compile(includeRegex);
+    }
+
+    @DataBoundSetter
+    public synchronized void setJobNames(Set<String> jobNames) {
+        this.jobNames = new TreeSet<>(jobNames);
+    }
+
+    @DataBoundSetter
+    public void setStatusFilter(Boolean statusFilter) {
+        this.statusFilter = statusFilter;
     }
 
     @Extension @Symbol("list")
@@ -523,7 +543,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
         private void locationChanged(String oldFullName, String newFullName) {
-            final Jenkins jenkins = Jenkins.getInstance();
+            final Jenkins jenkins = Jenkins.get();
             locationChanged(jenkins, oldFullName, newFullName);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
@@ -568,7 +588,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
         private void deleted(Item item) {
-            final Jenkins jenkins = Jenkins.getInstance();
+            final Jenkins jenkins = Jenkins.get();
             deleted(jenkins, item);
             for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {

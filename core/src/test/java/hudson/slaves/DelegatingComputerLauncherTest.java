@@ -53,7 +53,7 @@ public class DelegatingComputerLauncherTest {
     public void testRecursionAvoidance() {
         PowerMockito.mockStatic(Jenkins.class);
         Jenkins mockJenkins = mock(Jenkins.class);
-        PowerMockito.when(Jenkins.getInstance()).thenReturn(mockJenkins);
+        PowerMockito.when(Jenkins.get()).thenReturn(mockJenkins);
 
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> mockList =
                 mock(DescriptorExtensionList.class);

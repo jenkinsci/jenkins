@@ -26,7 +26,6 @@ for(j = 0; j < jdks.size(); j++) {
     def jdk = jdks[j]
     builds["${buildType}-jdk${jdk}"] = {
         node(buildType.toLowerCase()) {
-            timestamps {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -73,7 +72,6 @@ for(j = 0; j < jdks.size(); j++) {
                         }
                     }
                 }
-            }
         }
     }
 }}

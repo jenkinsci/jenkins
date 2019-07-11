@@ -117,7 +117,7 @@ public abstract class SCMListener implements ExtensionPoint {
     @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", Run.class, SCM.class, TaskListener.class, ChangeLogSet.class)) {
-            onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
+            onChangeLogParsed(build, build.getProject().getScm(), listener, changelog);
         }
     }
 
@@ -140,12 +140,12 @@ public abstract class SCMListener implements ExtensionPoint {
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final void register() {
-        Jenkins.getInstance().getSCMListeners().add(this);
+        Jenkins.get().getSCMListeners().add(this);
     }
 
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final boolean unregister() {
-        return Jenkins.getInstance().getSCMListeners().remove(this);
+        return Jenkins.get().getSCMListeners().remove(this);
     }
 }

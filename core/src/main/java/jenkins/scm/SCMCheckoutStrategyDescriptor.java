@@ -30,7 +30,7 @@ public abstract class SCMCheckoutStrategyDescriptor extends Descriptor<SCMChecko
      * Returns all the registered {@link SCMCheckoutStrategy}s.
      */
     public static DescriptorExtensionList<SCMCheckoutStrategy,SCMCheckoutStrategyDescriptor> all() {
-        return Jenkins.getInstance().<SCMCheckoutStrategy,SCMCheckoutStrategyDescriptor>getDescriptorList(SCMCheckoutStrategy.class);
+        return Jenkins.get().getDescriptorList(SCMCheckoutStrategy.class);
     }
     
     public static List<SCMCheckoutStrategyDescriptor> _for(AbstractProject p) {

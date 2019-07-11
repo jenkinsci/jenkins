@@ -42,6 +42,7 @@ public class AddJobToViewCommand extends CLICommand {
     @Argument(usage="Name of the view", required=true, index=0)
     private View view;
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Job names", required=true, index=1)
     private List<TopLevelItem> jobs;
 

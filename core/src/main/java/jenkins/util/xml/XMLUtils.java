@@ -4,8 +4,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -37,9 +35,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 /**
- * Utilities useful when working with various XML types.
+  * Utilities useful when working with various XML types.
+  * @since 1.596.1 and 1.600, unrestricted since TODO
  */
-@Restricted(NoExternalUse.class)
 public final class XMLUtils {
 
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());

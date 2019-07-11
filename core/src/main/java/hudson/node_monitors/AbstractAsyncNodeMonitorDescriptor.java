@@ -1,8 +1,10 @@
 package hudson.node_monitors;
 
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
@@ -83,7 +85,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             try {
                 VirtualChannel ch = c.getChannel();
                 futures.put(c,null);    // sentinel value
@@ -93,7 +95,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
                         futures.put(c,ch.callAsync(cc));
                 }
             } catch (RuntimeException | IOException e) {
-                LOGGER.log(WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+                error(c, e);
             }
         }
 
@@ -111,7 +113,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
                 try {
                     data.put(c,f.get(Math.max(0,end-System.currentTimeMillis()), MILLISECONDS));
                 } catch (RuntimeException | TimeoutException | ExecutionException x) {
-                    LOGGER.log(WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), x);
+                    error(c, x);
                 }
             } else {
                 skipped.add(c);
@@ -119,6 +121,14 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         }
 
         return new Result<>(data, skipped);
+    }
+
+    private void error(Computer c, Throwable x) {
+        if (c instanceof SlaveComputer) {
+            Functions.printStackTrace(x, ((SlaveComputer) c).getListener().error("Failed to monitor for " + getDisplayName()));
+        } else {
+            LOGGER.log(WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), x);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());
