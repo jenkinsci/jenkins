@@ -84,7 +84,13 @@ public class HttpSessionContextIntegrationFilter2 extends HttpSessionContextInte
             return false;
         }
 
-        User userFromSession = User.getById(authentication.getName(), false);
+        User userFromSession;
+        try {
+            userFromSession = User.getById(authentication.getName(), false);
+        } catch (IllegalStateException ise) {
+            logger.warn("Encountered IllegalStateException trying to get a user. System init may not have completed yet. Invalidating user session.");
+            return false;
+        }
         if (userFromSession == null) {
             // no requirement for further test as there is no user inside
             return false;
