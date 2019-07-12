@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
-    private static int PERIOD_MINUTES = SystemProperties.getInteger(AbstractNodeMonitorDescriptor.class.getName() + ".periodMinutes", 5);
+    private static int PERIOD_MINUTES = SystemProperties.getInteger(AbstractNodeMonitorDescriptor.class.getName() + ".periodMinutes", 60);
 
     /**
      * @deprecated as of 1.522
