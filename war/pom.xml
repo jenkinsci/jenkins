@@ -423,7 +423,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>1.0.4-rc17.8e3daef99f43</version>
+                  <version>1.0.4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
