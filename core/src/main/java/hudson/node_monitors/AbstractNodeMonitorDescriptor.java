@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
-    private static int PERIOD_MINUTES = SystemProperties.getInteger(AbstractNodeMonitorDescriptor.class.getName() + ".periodMinutes", 60);
+    private static long PERIOD = TimeUnit.MINUTES.toMillis(SystemProperties.getInteger(AbstractNodeMonitorDescriptor.class.getName() + ".periodMinutes", 60));
 
     /**
      * @deprecated as of 1.522
@@ -62,7 +62,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     @Deprecated
     protected AbstractNodeMonitorDescriptor() {
-        this(TimeUnit.MINUTES.toMillis(PERIOD_MINUTES));
+        this(PERIOD);
     }
 
     /**
@@ -80,7 +80,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     @Deprecated
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
-        this(clazz,TimeUnit.MINUTES.toMillis(PERIOD_MINUTES));
+        this(clazz, PERIOD);
     }
 
     /**
