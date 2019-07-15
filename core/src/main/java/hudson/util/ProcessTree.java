@@ -26,6 +26,7 @@ package hudson.util;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
@@ -1441,7 +1442,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                      * Read the remainder of psinfo_t differently depending on whether the
                      * Java process is 32-bit or 64-bit.
                      */
-                    if (Native.POINTER_SIZE == 8) {
+                    if (Pointer.SIZE == 8) {
                         psinfo.seek(236);  // offset of pr_argc
                         argc = adjust(psinfo.readInt());
                         argp = adjustL(psinfo.readLong());
