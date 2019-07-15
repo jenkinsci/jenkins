@@ -43,7 +43,7 @@ for(j = 0; j < jdks.size(); j++) {
                         infra.runMaven(["-Pdebug", "-U", "-Dset.changelist", "help:evaluate",
                                         "-Dexpression=changelist", "-Doutput=$changelistF",
                                         runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests',
-                                        "-V", "-B", "-Dmaven.repo.local=$m2repo",
+                                        "-V", "-Dmaven.repo.local=$m2repo",
                                         "clean", "install"],
                             jdk, ["JAVA_OPTS=-Xmx1536m -Xms512m", "MAVEN_OPTS=-Xmx1536m -Xms512m"])
 
