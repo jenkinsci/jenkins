@@ -100,7 +100,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.6</version>
+      <version>1.7-20190715.235542-1</version> <!--TODO: https://github.com/jenkinsci/ssh-cli-auth-module/pull/14-->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
