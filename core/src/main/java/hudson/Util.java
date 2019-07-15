@@ -23,13 +23,13 @@
  */
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import hudson.model.TaskListener;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.util.SystemProperties;
 
+import jenkins.util.io.PathRemover;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -61,19 +61,20 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,11 +90,8 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -116,7 +114,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> filter( @Nonnull Iterable<?> base, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object i : base) {
             if(type.isInstance(i))
                 r.add(type.cast(i));
@@ -138,7 +136,7 @@ public class Util {
     private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
-     * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
+     * Replaces the occurrence of '$key' by {@code properties.get('key')}.
      *
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
@@ -146,11 +144,11 @@ public class Util {
      */
     @Nullable
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
-        return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
+        return replaceMacro(s, new VariableResolver.ByMap<>(properties));
     }
 
     /**
-     * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
+     * Replaces the occurrence of '$key' by {@code resolver.get('key')}.
      *
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
@@ -247,16 +245,18 @@ public class Util {
      *      if the operation fails.
      */
     public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
-        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
-            try {
-                tryOnceDeleteContentsRecursive(file);
-                break; // success
-            } catch (IOException ex) {
-                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
-                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
-                    throw new IOException(deleteFailExceptionMessage(file, numberOfAttempts, threadWasInterrupted), ex);
-            }
-        }
+        deleteContentsRecursive(fileToPath(file), PathRemover.PathChecker.ALLOW_ALL);
+    }
+
+    /**
+     * Deletes the given directory contents (but not the directory itself) recursively using a PathChecker.
+     * @param path a directory to delete
+     * @param pathChecker a security check to validate a path before deleting
+     * @throws IOException if the operation fails
+     */
+    @Restricted(NoExternalUse.class)
+    public static void deleteContentsRecursive(@Nonnull Path path, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveDirectoryContents(path);
     }
 
     /**
@@ -267,88 +267,7 @@ public class Util {
      * @throws IOException if it exists but could not be successfully deleted
      */
     public static void deleteFile(@Nonnull File f) throws IOException {
-        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
-            try {
-                tryOnceDeleteFile(f);
-                break; // success
-            } catch (IOException ex) {
-                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
-                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
-                    throw new IOException(deleteFailExceptionMessage(f, numberOfAttempts, threadWasInterrupted), ex);
-            }
-        }
-    }
-
-    /**
-     * Deletes this file, working around most problems which might make
-     * this difficult.
-     * 
-     * @param f
-     *            What to delete. If a directory, it'll need to be empty.
-     * @throws IOException if it exists but could not be successfully deleted,
-     * or if it represents an invalid {@link Path}.
-     */
-    private static void tryOnceDeleteFile(File f) throws IOException {
-        Path path = fileToPath(f);
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            // perhaps this file is read-only?
-            makeWritable(path);
-            /*
-             on Unix both the file and the directory that contains it has to be writable
-             for a file deletion to be successful. (Confirmed on Solaris 9)
-
-             $ ls -la
-             total 6
-             dr-xr-sr-x   2 hudson   hudson       512 Apr 18 14:41 .
-             dr-xr-sr-x   3 hudson   hudson       512 Apr 17 19:36 ..
-             -r--r--r--   1 hudson   hudson       469 Apr 17 19:36 manager.xml
-             -rw-r--r--   1 hudson   hudson         0 Apr 18 14:41 x
-             $ rm x
-             rm: x not removed: Permission denied
-             */
-            Path parent = path.getParent();
-            if (parent != null) {
-                makeWritable(parent);
-            }
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e2) {
-                // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
-                // I suspect other processes putting files in this directory
-                File[] files = f.listFiles();
-                if(files!=null && files.length>0)
-                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files), e2);
-                throw e2;
-            }
-        }
-    }
-
-    /**
-     * Makes the file at the given path writable by any means possible.
-     */
-    private static void makeWritable(@Nonnull Path path) throws IOException {
-        if (!Functions.isWindows()) {
-            try {
-                PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
-                Set<PosixFilePermission> newPermissions = attrs.permissions();
-                newPermissions.add(PosixFilePermission.OWNER_WRITE);
-                Files.setPosixFilePermissions(path, newPermissions);
-                return;
-            } catch (NoSuchFileException e) {
-                return;
-            } catch (UnsupportedOperationException e) {
-                // PosixFileAttributes not supported, fall back to old IO.
-            }
-        }
-
-        /**
-         * We intentionally do not check the return code of setWritable, because if it
-         * is false we prefer to rethrow the exception thrown by Files.deleteIfExists,
-         * which will have a more useful message than something we make up here.
-         */
-        path.toFile().setWritable(true);
+        newPathRemover(PathRemover.PathChecker.ALLOW_ALL).forceRemoveFile(fileToPath(f));
     }
 
     /**
@@ -360,137 +279,18 @@ public class Util {
      * if the operation fails.
      */
     public static void deleteRecursive(@Nonnull File dir) throws IOException {
-        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
-            try {
-                tryOnceDeleteRecursive(dir);
-                break; // success
-            } catch (IOException ex) {
-                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
-                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
-                    throw new IOException(deleteFailExceptionMessage(dir, numberOfAttempts, threadWasInterrupted), ex);
-            }
-        }
+        deleteRecursive(fileToPath(dir), PathRemover.PathChecker.ALLOW_ALL);
     }
 
     /**
-     * Deletes a file or folder, throwing the first exception encountered, but
-     * having a go at deleting everything. i.e. it does not <em>stop</em> on the
-     * first exception, but tries (to delete) everything once.
-     *
-     * @param dir
-     * What to delete. If a directory, the contents will be deleted
-     * too.
-     * @throws The first exception encountered.
+     * Deletes the given directory and contents recursively using a filter.
+     * @param dir a directory to delete
+     * @param pathChecker a security check to validate a path before deleting
+     * @throws IOException if the operation fails
      */
-    private static void tryOnceDeleteRecursive(File dir) throws IOException {
-        if(!isSymlink(dir))
-            tryOnceDeleteContentsRecursive(dir);
-        tryOnceDeleteFile(dir);
-    }
-
-    /**
-     * Deletes a folder's contents, throwing the first exception encountered,
-     * but having a go at deleting everything. i.e. it does not <em>stop</em>
-     * on the first exception, but tries (to delete) everything once.
-     *
-     * @param directory
-     * The directory whose contents will be deleted.
-     * @throws The first exception encountered.
-     */
-    private static void tryOnceDeleteContentsRecursive(File directory) throws IOException {
-        File[] directoryContents = directory.listFiles();
-        if(directoryContents==null)
-            return; // the directory didn't exist in the first place
-        IOException firstCaught = null;
-        for (File child : directoryContents) {
-            try {
-                tryOnceDeleteRecursive(child);
-            } catch (IOException justCaught) {
-                if( firstCaught==null) {
-                    firstCaught = justCaught;
-                }
-            }
-        }
-        if( firstCaught!=null )
-            throw firstCaught;
-    }
-
-    /**
-     * Pauses between delete attempts, and says if it's ok to try again.
-     * This does not wait if the wait time is zero or if we have tried
-     * too many times already.
-     * <p>
-     * See {@link #WAIT_BETWEEN_DELETION_RETRIES} for details of
-     * the pause duration.<br/>
-     * See {@link #GC_AFTER_FAILED_DELETE} for when {@link System#gc()} is called.
-     * 
-     * @return false if it is ok to continue trying to delete things, true if
-     *         we were interrupted (and should stop now).
-     */
-    @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection happens only when "
-            + "GC_AFTER_FAILED_DELETE is true. It's an experimental feature in Jenkins.")
-    private static boolean pauseBetweenDeletes(int numberOfAttemptsSoFar) {
-        long delayInMs;
-        if( numberOfAttemptsSoFar>=DELETION_MAX ) return false;
-        /* If the Jenkins process had the file open earlier, and it has not
-         * closed it then Windows won't let us delete it until the Java object
-         * with the open stream is Garbage Collected, which can result in builds
-         * failing due to "file in use" on Windows despite working perfectly
-         * well on other OSs. */
-        if (GC_AFTER_FAILED_DELETE) {
-            System.gc();
-        }
-        if (WAIT_BETWEEN_DELETION_RETRIES>=0) {
-            delayInMs = WAIT_BETWEEN_DELETION_RETRIES;
-        } else {
-            delayInMs = -numberOfAttemptsSoFar*WAIT_BETWEEN_DELETION_RETRIES;
-        }
-        if (delayInMs<=0)
-            return Thread.interrupted();
-        try {
-            Thread.sleep(delayInMs);
-            return false;
-        } catch (InterruptedException e) {
-            return true;
-        }
-    }
-
-    /**
-     * Creates a "couldn't delete file" message that explains how hard we tried.
-     * See {@link #DELETION_MAX}, {@link #WAIT_BETWEEN_DELETION_RETRIES}
-     * and {@link #GC_AFTER_FAILED_DELETE} for more details.
-     */
-    private static String deleteFailExceptionMessage(File whatWeWereTryingToRemove, int retryCount, boolean wasInterrupted) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Unable to delete '");
-        sb.append(whatWeWereTryingToRemove);
-        sb.append("'. Tried ");
-        sb.append(retryCount);
-        sb.append(" time");
-        if( retryCount!=1 ) sb.append('s');
-        if( DELETION_MAX>1 ) {
-            sb.append(" (of a maximum of ");
-            sb.append(DELETION_MAX);
-            sb.append(')');
-            if( GC_AFTER_FAILED_DELETE )
-                sb.append(" garbage-collecting");
-            if( WAIT_BETWEEN_DELETION_RETRIES!=0 && GC_AFTER_FAILED_DELETE )
-                sb.append(" and");
-            if( WAIT_BETWEEN_DELETION_RETRIES!=0 ) {
-                sb.append(" waiting ");
-                sb.append(getTimeSpanString(Math.abs(WAIT_BETWEEN_DELETION_RETRIES)));
-                if( WAIT_BETWEEN_DELETION_RETRIES<0 ) {
-                    sb.append("-");
-                    sb.append(getTimeSpanString(Math.abs(WAIT_BETWEEN_DELETION_RETRIES)*DELETION_MAX));
-                }
-            }
-            if( WAIT_BETWEEN_DELETION_RETRIES!=0 || GC_AFTER_FAILED_DELETE)
-                sb.append(" between attempts");
-        }
-        if( wasInterrupted )
-            sb.append(". The delete operation was interrupted before it completed successfully");
-        sb.append('.');
-        return sb.toString();
+    @Restricted(NoExternalUse.class)
+    public static void deleteRecursive(@Nonnull Path dir, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveRecursive(dir);
     }
 
     /*
@@ -509,9 +309,16 @@ public class Util {
      * limitations under the License.
      */
     /**
-     * Checks if the given file represents a symlink.
+     * Checks if the given file represents a symlink. Unlike {@link Files#isSymbolicLink(Path)}, this method also
+     * considers <a href="https://en.wikipedia.org/wiki/NTFS_junction_point">NTFS junction points</a> as symbolic
+     * links.
      */
     public static boolean isSymlink(@Nonnull File file) throws IOException {
+        return isSymlink(fileToPath(file));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isSymlink(@Nonnull Path path) {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
          *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
@@ -525,20 +332,9 @@ public class Util {
          *  calling readAttributes.
          */
         try {
-            Path path = fileToPath(file);
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-            if (attrs.isSymbolicLink()) {
-                return true;
-            } else if (attrs instanceof DosFileAttributes) {
-                /* Returns true for non-symbolic link reparse points and devices. We could call
-                 * WindowsFileAttributes#isReparsePoint with reflection instead to exclude devices,
-                 * but as mentioned in the above comment this does not appear to be an issue.
-                 */
-                return attrs.isOther();
-            } else {
-                return false;
-            }
-        } catch (NoSuchFileException e) {
+            return attrs.isSymbolicLink() || (attrs instanceof DosFileAttributes && attrs.isOther());
+        } catch (IOException ignored) {
             return false;
         }
     }
@@ -987,7 +783,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> createSubList(@Nonnull Collection<?> source, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object item : source) {
             if(type.isInstance(item))
                 r.add(type.cast(item));
@@ -1074,7 +870,7 @@ public class Util {
             if (c > 122 || uriMap[c]) {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
-                    out.append(s.substring(0, i));
+                    out.append(s, 0, i);
                     enc = StandardCharsets.UTF_8.newEncoder();
                     buf = CharBuffer.allocate(1);
                     escaped = true;
@@ -1195,8 +991,17 @@ public class Util {
      */
     @Nonnull
     public static String fixNull(@CheckForNull String s) {
-        if(s==null)     return "";
-        else            return s;
+        return fixNull(s, "");
+    }
+
+    /**
+     * Convert {@code null} to a default value.
+     * @param defaultValue Default value. It may be immutable or not, depending on the implementation.
+     * @since 2.144
+     */
+    @Nonnull
+    public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
+        return s != null ? s : defaultValue;
     }
 
     /**
@@ -1219,24 +1024,60 @@ public class Util {
         return fixEmpty(s.trim());
     }
 
+    /**
+     *
+     * @param l list to check.
+     * @param <T>
+     *     Type of the list.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable list</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
-        return l!=null ? l : Collections.<T>emptyList();
+        return fixNull(l, Collections.emptyList());
     }
 
+    /**
+     *
+     * @param l set to check.
+     * @param <T>
+     *     Type of the set.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.emptySet());
     }
 
+    /**
+     *
+     * @param l collection to check.
+     * @param <T>
+     *     Type of the collection.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.emptySet());
     }
 
+    /**
+     *
+     * @param l iterable to check.
+     * @param <T>
+     *     Type of the iterable.
+     * @return
+     *     {@code l} if l is not {@code null}.
+     *     An empty <b>immutable set</b> if l is {@code null}.
+     */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
-        return l!=null ? l : Collections.<T>emptySet();
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1276,7 +1117,7 @@ public class Util {
         int size = 0;
         for (Collection<? extends T> item : items)
             size += item.size();
-        List<T> r = new ArrayList<T>(size);
+        List<T> r = new ArrayList<>(size);
         for (Collection<? extends T> item : items)
             r.addAll(item);
         return r;
@@ -1343,7 +1184,7 @@ public class Util {
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
             Path path = fileToPath(new File(baseDir, symlinkPath));
-            Path target = Paths.get(targetPath, new String[0]);
+            Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
 
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
@@ -1622,9 +1463,9 @@ public class Util {
     public static int permissionsToMode(Set<PosixFilePermission> permissions) {
         PosixFilePermission[] allPermissions = PosixFilePermission.values();
         int result = 0;
-        for (int i = 0; i < allPermissions.length; i++) {
+        for (PosixFilePermission allPermission : allPermissions) {
             result <<= 1;
-            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+            result |= permissions.contains(allPermission) ? 1 : 0;
         }
         return result;
     }
@@ -1662,6 +1503,40 @@ public class Util {
             throw new IOException(e);
         }
     }
+    
+    /**
+     * Compute the number of calendar days elapsed since the given date.
+     * As it's only the calendar days difference that matter, "11.00pm" to "2.00am the day after" returns 1,
+     * even if there are only 3 hours between. As well as "10am" to "2pm" both on the same day, returns 0.
+     */
+    @Restricted(NoExternalUse.class)
+    public static long daysBetween(@Nonnull Date a, @Nonnull Date b){
+        LocalDate aLocal = a.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return ChronoUnit.DAYS.between(aLocal, bLocal);
+    }
+    
+    /**
+     * @return positive number of days between the given date and now
+     * @see #daysBetween(Date, Date)
+     */
+    @Restricted(NoExternalUse.class)
+    public static long daysElapsedSince(@Nonnull Date date){
+        return Math.max(0, daysBetween(date, new Date()));
+    }
+    
+    /**
+     * Find the specific ancestor, or throw an exception.
+     * Useful for an ancestor we know is inside the URL to ease readability
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull <T> T getNearestAncestorOfTypeOrThrow(@Nonnull StaplerRequest request, @Nonnull Class<T> clazz) {
+        T t = request.findAncestorObject(clazz);
+        if (t == null) {
+            throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
+        }
+        return t;
+    }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
@@ -1693,7 +1568,7 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3).intValue());
+    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
@@ -1705,7 +1580,7 @@ public class Util {
      * between attempts.
      */
     @Restricted(value = NoExternalUse.class)
-    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100);
 
     /**
      * If this flag is set to true then we will request a garbage collection
@@ -1721,7 +1596,7 @@ public class Util {
      * Warning: This should only ever be used if you find that your builds are
      * failing because Jenkins is unable to delete files, that this failure is
      * because Jenkins itself has those files locked "open", and even then it
-     * should only be used on slaves with relatively few executors (because the
+     * should only be used on agents with relatively few executors (because the
      * garbage collection can impact the performance of all job executors on
      * that slave).<br/>
      * i.e. Setting this flag is a act of last resort - it is <em>not</em>
@@ -1730,6 +1605,10 @@ public class Util {
      */
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+
+    private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    }
 
     /**
      * If this flag is true, native implementations of {@link FilePath#chmod}

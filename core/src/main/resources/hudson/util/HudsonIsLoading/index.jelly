@@ -23,22 +23,45 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
-  <l:layout title="Jenkins">
-    <l:header>
-      <!--meta http-equiv="refresh" content="5" /-->
-    </l:header>
-    <l:side-panel />
-    <l:main-panel>
-      <h1 style="margin-top:4em">
-        ${%Please wait while Jenkins is getting ready to work}<span id="progress">...</span>
-      </h1>
-      <p style="color:gray">
-        ${%Your browser will reload automatically when Jenkins is ready.}
-      </p>
 
-      <script>applySafeRedirector(window.location.href)</script>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
+    <j:new var="h" className="hudson.Functions" />
+    <st:statusCode value="503"/><!-- SERVICE NOT AVAILABLE -->
+    <st:setHeader name="Expires" value="0"/>
+    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <!-- response contentType header -->
+    <st:contentType value="text/html;charset=UTF-8"/>
+    <!-- get default/commong page variable -->
+    ${h.initPageVariables(context)}
+    <x:doctype name="html"/>
+    <html lang="${request.getLocale().toLanguageTag()}">
+        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+            <title>${%Starting Jenkins}</title>
+            <!-- we do not want bots on this page -->
+            <meta name="ROBOTS" content="NOFOLLOW"/>
+            <!-- mobile friendly layout -->
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
+            <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
+            <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
+        </head>
+        <body>
+            <div class="simple-page" role="main">
+                <div class="modal signup">
+                    <div class="signupIntroDefault">
+                        <div class="logo"></div>
+                        <h1 class="loading">
+                            ${%Please wait while Jenkins is getting ready to work}
+                            <span>.</span><span>.</span><span>.</span>
+                        </h1>
+                        <p>
+                            ${%Your browser will reload automatically when Jenkins is ready.}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <script src="${resURL}/scripts/loading.js" type="text/javascript"></script>
+            <script>safeRedirector(window.location.href);</script>
+        </body>
+    </html>
 </j:jelly>

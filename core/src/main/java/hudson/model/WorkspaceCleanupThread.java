@@ -65,8 +65,8 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             LOGGER.fine("Disabled. Skipping execution");
             return;
         }
-        List<Node> nodes = new ArrayList<Node>();
-        Jenkins j = Jenkins.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        Jenkins j = Jenkins.get();
         nodes.add(j);
         nodes.addAll(j.getNodes());
         for (TopLevelItem item : j.allItems(TopLevelItem.class)) {
@@ -82,10 +82,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 boolean check;
                 try {
                     check = shouldBeDeleted(item, ws, node);
-                } catch (IOException x) {
-                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
-                    continue;
-                } catch (InterruptedException x) {
+                } catch (IOException | InterruptedException x) {
                     Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 }
@@ -94,9 +91,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     try {
                         ws.deleteRecursive();
                         WorkspaceList.tempDir(ws).deleteRecursive();
-                    } catch (IOException x) {
-                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
-                    } catch (InterruptedException x) {
+                    } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
                 }
@@ -135,6 +130,15 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             
             if(!p.getScm().processWorkspaceBeforeDeletion((Job<?, ?>) p,dir,n)) {
                 LOGGER.log(Level.FINE, "Directory deletion of {0} is vetoed by SCM", dir);
+                return false;
+            }
+        }
+
+        // TODO this may only check the last build in fact:
+        if (item instanceof Job<?,?>) {
+            Job<?,?> j = (Job<?,?>) item;
+            if (j.isBuilding()) {
+                LOGGER.log(Level.FINE, "Job {0} is building, so not deleting", item.getFullDisplayName());
                 return false;
             }
         }

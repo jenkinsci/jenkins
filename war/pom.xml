@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.39</version>
+      <version>1.45</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -89,18 +89,18 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>4.2</version>
+      <version>5.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>2.1</version>
+      <version>2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -110,7 +110,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.9.2</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -387,7 +387,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.18.1</version>
+                  <version>1.56</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -405,13 +405,25 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
                   <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>trilead-api</artifactId>
+                  <version>1.0.4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -453,11 +465,9 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
-          <connectors>
-            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                <port>${port}</port>
-            </connector>
-          </connectors>
+          <httpConnector>
+              <port>${port}</port>
+          </httpConnector>
           <additionalClassesDirectories>
             <!-- load resources straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
@@ -604,7 +614,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
             <executions>
 
               <execution>

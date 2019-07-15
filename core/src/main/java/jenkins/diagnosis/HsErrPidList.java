@@ -6,18 +6,17 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
-import java.nio.file.Files;
+
 import java.nio.file.InvalidPathException;
-import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerDispatchable;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.IOUtils;
+
 import org.jenkinsci.Symbol;
 
 /**
@@ -42,7 +41,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.
      */
-    /*package*/ final List<HsErrPidFile> files = new ArrayList<HsErrPidFile>();
+    /*package*/ final List<HsErrPidFile> files = new ArrayList<>();
 
     /**
      * Used to keep a marker file memory-mapped, so that we can find hs_err_pid files that belong to us.
@@ -94,6 +93,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     /**
      * Expose files to the URL.
      */
+    @StaplerDispatchable
     public List<HsErrPidFile> getFiles() {
         return files;
     }
@@ -151,7 +151,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
     private File getSecretKeyFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"secret.key");
+        return new File(Jenkins.get().getRootDir(),"secret.key");
     }
 
     private boolean findHeader(BufferedReader r) throws IOException {

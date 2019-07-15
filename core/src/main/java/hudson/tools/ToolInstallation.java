@@ -84,7 +84,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     @XStreamSerializable
     private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
-            = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+            = new DescribableList<>(Saveable.NOOP);
 
     /**
      * @deprecated
@@ -211,7 +211,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     protected Object readResolve() {
         if(properties==null)
-            properties = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+            properties = new DescribableList<>(Saveable.NOOP);
         for (ToolProperty<?> p : properties)
             _setTool(p, this);
         return this;
@@ -241,7 +241,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Jenkins.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
+        return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

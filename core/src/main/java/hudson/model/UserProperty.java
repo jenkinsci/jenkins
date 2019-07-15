@@ -41,10 +41,10 @@ import org.kohsuke.stapler.export.ExportedBean;
  * configuration screen, and they are persisted with the user object.
  *
  * <p>
- * Configuration screen should be defined in <tt>config.jelly</tt>.
+ * Configuration screen should be defined in {@code config.jelly}.
  * Within this page, the {@link UserProperty} instance is available
- * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
- * See {@link hudson.search.UserSearchProperty}'s <tt>config.jelly</tt> for an example.
+ * as {@code instance} variable (while {@code it} refers to {@link User}.
+ * See {@link hudson.search.UserSearchProperty}'s {@code config.jelly} for an example.
  * <p>A property may also define a {@code summary.jelly} view to show in the main user screen.
  *
  * @author Kohsuke Kawaguchi
@@ -64,14 +64,14 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
 
     // descriptor must be of the UserPropertyDescriptor type
     public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (UserPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link UserPropertyDescriptor}s.
      */
     public static DescriptorExtensionList<UserProperty,UserPropertyDescriptor> all() {
-        return Jenkins.getInstance().<UserProperty,UserPropertyDescriptor>getDescriptorList(UserProperty.class);
+        return Jenkins.get().getDescriptorList(UserProperty.class);
     }
 
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {

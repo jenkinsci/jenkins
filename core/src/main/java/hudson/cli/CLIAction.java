@@ -43,8 +43,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.Extension;
-import hudson.model.FullDuplexHttpChannel;
-import hudson.remoting.Channel;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -109,9 +107,8 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             // CLI connection request
             if ("false".equals(req.getParameter("remoting"))) {
                 throw new PlainCliEndpointResponse();
-            } else if (jenkins.CLI.get().isEnabled()) {
-                throw new RemotingCliEndpointResponse();
             } else {
+                // remoting=true (the historical default) no longer supported.
                 throw HttpResponses.forbidden();
             }
         } else {
@@ -231,32 +228,6 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                             runningThread.set(null);
                         }
                     }
-                }
-            };
-        }
-    }
-
-    /**
-     * Serves Remoting-over-HTTP response.
-     */
-    private class RemotingCliEndpointResponse extends FullDuplexHttpService.Response {
-
-        RemotingCliEndpointResponse() {
-            super(duplexServices);
-        }
-
-        @Override
-        protected FullDuplexHttpService createService(StaplerRequest req, UUID uuid) throws IOException {
-            // do not require any permission to establish a CLI connection
-            // the actual authentication for the connecting Channel is done by CLICommand
-
-            return new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
-                @SuppressWarnings("deprecation")
-                @Override
-                protected void main(Channel channel) throws IOException, InterruptedException {
-                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
-                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION, Jenkins.getAuthentication());
-                    channel.setProperty(CliEntryPoint.class.getName(), new CliManagerImpl(channel));
                 }
             };
         }

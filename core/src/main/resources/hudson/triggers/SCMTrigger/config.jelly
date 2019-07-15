@@ -27,8 +27,8 @@ THE SOFTWARE.
   <f:entry title="${%Schedule}" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
     <f:textarea field="scmpoll_spec"/>
   </f:entry>
-  <f:entry field="ignorePostCommitHooks" title="${%Ignore post-commit hooks}">
-    <f:checkbox />
+  <f:entry field="ignorePostCommitHooks">
+    <f:checkbox title="${%Ignore post-commit hooks}" />
   </f:entry>
   <j:invokeStatic var="listeners" method="all" className="hudson.model.listeners.SCMPollListener"/>
   <j:forEach var="l" items="${listeners}">

@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +61,6 @@ import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
 import org.jenkinsci.Symbol;
@@ -150,7 +150,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (TriggerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 
@@ -175,7 +175,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     protected Trigger() {
         this.spec = "";
-        this.tabs = new CronTabList(Collections.<CronTab>emptyList());
+        this.tabs = new CronTabList(Collections.emptyList());
     }
 
     /**
@@ -216,7 +216,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         public long getInitialDelay() {
-            return MIN - (Calendar.getInstance().get(Calendar.SECOND) * 1000);
+            return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }
 
         public void doRun() {
@@ -237,7 +237,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     private static Future previousSynchronousPolling;
 
     public static void checkTriggers(final Calendar cal) {
-        Jenkins inst = Jenkins.getInstance();
+        Jenkins inst = Jenkins.get();
 
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
@@ -312,7 +312,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns all the registered {@link Trigger} descriptors.
      */
     public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(Trigger.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(Trigger.class);
     }
 
     /**

@@ -1,4 +1,4 @@
-package hudson.model.UsageStatistics;
+package hudson.model.UsageStatistics
 
 def f=namespace(lib.FormTagLib)
 

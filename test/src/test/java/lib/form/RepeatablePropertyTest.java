@@ -29,14 +29,20 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RepeatablePropertyTest extends HudsonTestCase implements Describable<RepeatablePropertyTest> {
@@ -46,6 +52,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     
     public ArrayList<ExcitingObject> testRepeatable;
     public ArrayList<ExcitingObject> defaults;
+    public List<ExcitingObjectContainer> testRepeatableContainer;
     
     public void testSimple() throws Exception {
         testRepeatable = createRepeatable();
@@ -68,6 +75,32 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
            new ExcitingObject("Ignore me too")
         ));
         assertFormContents(VIEW_WITH_DEFAULT, testRepeatable);
+    }
+
+    @Issue("JENKINS-37599")
+    public void testNestedRepeatableProperty() throws Exception {
+        testRepeatableContainer = Collections.emptyList();
+        // minimum="1" is set for the upper one,
+        // the form should be:
+        // * 1 ExcitingObjectCotainer
+        // * no ExcitingObject
+        final HtmlForm form = getForm("nested");
+        List<HtmlTextInput> containerNameInputs = form.getElementsByAttribute("input", "type", "text");
+        CollectionUtils.filter(containerNameInputs, new Predicate<HtmlTextInput>() {
+            @Override
+            public boolean evaluate(HtmlTextInput input) {
+                return input.getNameAttribute().endsWith(".containerName");
+            }
+        });
+        List<HtmlTextInput> greatPropertyInputs = form.getElementsByAttribute("input", "type", "text");
+        CollectionUtils.filter(greatPropertyInputs, new Predicate<HtmlTextInput>() {
+            @Override
+            public boolean evaluate(HtmlTextInput input) {
+                return input.getNameAttribute().endsWith(".greatProperty");
+            }
+        });
+        assertEquals(1, containerNameInputs.size());
+        assertEquals(0, greatPropertyInputs.size());
     }
         
     private void assertFormContents(final String viewName, final ArrayList<ExcitingObject> expected) throws Exception {
@@ -119,7 +152,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
             return greatProperty;
         }
         public Descriptor<ExcitingObject> getDescriptor() {
-            return Jenkins.getInstance().getDescriptor(ExcitingObject.class);
+            return Jenkins.get().getDescriptor(ExcitingObject.class);
         }
         @Override
         public boolean equals(Object o) {
@@ -147,4 +180,23 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         }
     }
 
+    public static final class ExcitingObjectContainer extends AbstractDescribableImpl<ExcitingObjectContainer> {
+        String containerName;
+        List<ExcitingObject> excitingObjectList;
+
+        @DataBoundConstructor
+        public ExcitingObjectContainer(String containerName, List<ExcitingObject> excitingObjectList) {
+            this.containerName = containerName;
+            this.excitingObjectList = excitingObjectList;
+        }
+        public String getContainerName() {
+            return containerName;
+        }
+        public List<ExcitingObject> getExcitingObjectList() {
+            return excitingObjectList;
+        }
+        @Extension
+        public static final class DescriptorImpl extends Descriptor<ExcitingObjectContainer> {
+        }
+    }
 }

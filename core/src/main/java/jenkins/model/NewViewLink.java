@@ -44,8 +44,7 @@ public class NewViewLink extends TransientViewActionFactory {
 
             @Override
             public String getUrlName() {
-                String urlName = Jenkins.getInstance().getRootUrl() + URL_NAME;
-                return urlName;
+                return Jenkins.get().getRootUrl() + URL_NAME;
             }
 
             private boolean hasPermission(View view) {

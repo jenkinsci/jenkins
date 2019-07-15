@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
+import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -56,12 +57,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <h2>Persistence</h2>
  * <p>
- * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
+ * Instances of {@link ParameterValue}s are persisted into build's {@code build.xml}
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
  * <h2>Associated Views</h2>
  * <h3>value.jelly</h3>
- * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
+ * The {@code value.jelly} view contributes a UI fragment to display the parameter
  * values used for a build.
  *
  * <h2>Notes</h2>
@@ -75,6 +76,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
+@StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
@@ -103,7 +105,7 @@ public abstract class ParameterValue implements Serializable {
     @Restricted(DoNotUse.class) // for value.jelly
     public String getFormattedDescription() {
         try {
-            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(description);
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";

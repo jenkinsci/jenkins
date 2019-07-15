@@ -104,7 +104,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
     public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RetentionStrategy.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(RetentionStrategy.class);
     }
 
     /**
@@ -216,8 +216,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         @GuardedBy("hudson.model.Queue.lock")
         public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
-                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
-                for (Computer o : Jenkins.getInstance().getComputers()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<>();
+                for (Computer o : Jenkins.get().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
                         final int idleExecutors = o.countIdle();
                         if (idleExecutors>0)
@@ -249,7 +249,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     Node checkedNode = c.getNode();
                     if (needExecutor && checkedNode != null && checkedNode.canTake(item) == null) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
-                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        needComputer = demandMilliseconds > TimeUnit.MINUTES.toMillis(inDemandDelay);
                         break;
                     }
                 }
@@ -262,7 +262,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});

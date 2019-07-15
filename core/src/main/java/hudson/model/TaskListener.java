@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
+import hudson.remoting.Channel;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 
@@ -32,11 +33,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
 import javax.annotation.Nonnull;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -59,11 +60,13 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
  *
  * <p>
  * {@link StreamTaskListener} is the most typical implementation of this interface.
- * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
+ *
+ * <p>
+ * Implementations are generally expected to be remotable via {@link Channel}.
  *
  * @author Kohsuke Kawaguchi
  */
-public interface TaskListener extends Serializable {
+public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * This writer will receive the output of the build
      */

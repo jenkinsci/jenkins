@@ -40,6 +40,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+
+import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -96,7 +98,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Updated atomically. Once set to this field, the index object may not be modified.
      */
     private volatile Index index = new Index();
-    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<R>(this);
+    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<>(this);
 
     /**
      * Historical holder for map.
@@ -118,11 +120,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         private final TreeMap<Integer,BuildReference<R>> byNumber;
 
         private Index() {
-            byNumber = new TreeMap<Integer,BuildReference<R>>(Collections.reverseOrder());
+            byNumber = new TreeMap<>(Collections.reverseOrder());
         }
 
         private Index(Index rhs) {
-            byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
+            byNumber = new TreeMap<>(rhs.byNumber);
         }
     }
 
@@ -188,7 +190,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         String[] kids = dir.list();
         if (kids == null) {
             // the job may have just been created
-            kids = EMPTY_STRING_ARRAY;
+            kids = MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
         SortedIntList list = new SortedIntList(kids.length / 2);
         for (String s : kids) {
@@ -221,7 +223,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer,R> getLoadedBuilds() {
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber));
     }
 
     /**
@@ -247,7 +249,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber.subMap(fromKey, toKey)));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber.subMap(fromKey, toKey)));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
@@ -530,7 +532,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Allow subtype to capture a reference.
      */
     protected BuildReference<R> createReference(R r) {
-        return new BuildReference<R>(getIdOf(r),r);
+        return new BuildReference<>(getIdOf(r), r);
     }
 
 
@@ -585,8 +587,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public enum Direction {
         ASC, DESC, EXACT
     }
-
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
 

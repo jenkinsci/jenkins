@@ -27,10 +27,13 @@ import hudson.Extension;
 import hudson.MarkupText;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +66,7 @@ public class HyperlinkNote extends ConsoleNote {
                 url = req.getContextPath()+url;
             } else {
                 // otherwise presumably this is rendered for e-mails and other non-HTTP stuff
-                url = Jenkins.getInstance().getRootUrl()+url.substring(1);
+                url = Jenkins.get().getRootUrl()+url.substring(1);
             }
         }
         text.addMarkup(charPos, charPos + length, "<a href='" + url + "'"+extraAttributes()+">", "</a>");
@@ -75,8 +78,20 @@ public class HyperlinkNote extends ConsoleNote {
     }
 
     public static String encodeTo(String url, String text) {
+        return encodeTo(url, text, HyperlinkNote::new);
+    }
+
+    @Restricted(NoExternalUse.class)
+    static String encodeTo(String url, String text, BiFunction<String, Integer, ConsoleNote> constructor) {
+        // If text contains newlines, then its stored length will not match its length when being
+        // displayed, since the display length will only include text up to the first newline,
+        // which will cause an IndexOutOfBoundsException in MarkupText#rangeCheck when
+        // ConsoleAnnotationOutputStream converts the note into markup. That stream treats '\n' as
+        // the sole end-of-line marker on all platforms, so we ignore '\r' because it will not
+        // break the conversion.
+        text = text.replace('\n', ' ');
         try {
-            return new HyperlinkNote(url,text.length()).encode()+text;
+            return constructor.apply(url,text.length()).encode()+text;
         } catch (IOException e) {
             // impossible, but don't make this a fatal problem
             LOGGER.log(Level.WARNING, "Failed to serialize "+HyperlinkNote.class,e);
@@ -92,4 +107,5 @@ public class HyperlinkNote extends ConsoleNote {
     }
 
     private static final Logger LOGGER = Logger.getLogger(HyperlinkNote.class.getName());
+    private static final long serialVersionUID = 3908468829358026949L;
 }

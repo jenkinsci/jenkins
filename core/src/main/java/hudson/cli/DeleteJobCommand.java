@@ -31,7 +31,6 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.List;
 import java.util.HashSet;
-import java.util.logging.Logger;
 
 /**
  * CLI command, which deletes a job or multiple jobs.
@@ -41,6 +40,7 @@ import java.util.logging.Logger;
 @Extension
 public class DeleteJobCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
     private List<String> jobs;
 
@@ -56,11 +56,10 @@ public class DeleteJobCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
-        hs.addAll(jobs);
+        final HashSet<String> hs = new HashSet<>(jobs);
 
         for (String job_s: hs) {
-            AbstractItem job = null;
+            AbstractItem job;
 
             try {
                 job = (AbstractItem) jenkins.getItemByFullName(job_s);

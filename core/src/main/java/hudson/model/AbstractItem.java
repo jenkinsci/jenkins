@@ -38,7 +38,6 @@ import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
@@ -58,6 +57,8 @@ import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -96,6 +97,8 @@ import javax.xml.transform.stream.StreamSource;
 import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -109,7 +112,7 @@ import org.kohsuke.stapler.Ancestor;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -586,7 +589,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -710,7 +713,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 // the 15 second delay for every child item). This happens after queue cancellation, so will be
                 // a complete set of builds in flight
                 Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
-                for (Computer c : Jenkins.getInstance().getComputers()) {
+                for (Computer c : Jenkins.get().getComputers()) {
                     for (Executor e : c.getAllExecutors()) {
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
                         final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
@@ -777,7 +780,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
         }
         getParent().onDeleted(AbstractItem.this);
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
+        Jenkins.get().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -789,7 +792,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
@@ -879,7 +882,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     return null;
                 }
             });
-            Jenkins.getInstance().rebuildDependencyGraphAsync();
+            Jenkins.get().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
             out.commit();
@@ -912,7 +915,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 return null;
             }
         });
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
+        Jenkins.get().rebuildDependencyGraphAsync();
 
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -933,6 +936,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
 
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            if (!getACL().hasPermission(Item.DISCOVER)) {
+                return null;
+            }
+            getACL().checkPermission(Item.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
+
     /**
      * Used for CLI binding.
      */
@@ -940,9 +961,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Item name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
-        AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
+        AbstractItem item = Jenkins.get().getItemByFullName(name, AbstractItem.class);
         if (item==null) {
-            AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.getInstance());
+            AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.get());
             throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
                     : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
         }

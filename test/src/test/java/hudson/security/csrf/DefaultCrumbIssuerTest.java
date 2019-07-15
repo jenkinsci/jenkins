@@ -6,10 +6,8 @@
 
 package hudson.security.csrf;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import jenkins.model.Jenkins;
-import junit.framework.Assert;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,13 +58,11 @@ public class DefaultCrumbIssuerTest {
         HtmlPage p = wc.goTo("configure");
 
         wc.removeRequestHeader(HEADER_NAME);
-        try {
-            // The crumb should no longer match if we remove the proxy info
-            r.submit(p.getFormByName("config"));
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(403,e.getStatusCode());
-        }
+        
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        // The crumb should no longer match if we remove the proxy info
+        Page page = r.submit(p.getFormByName("config"));
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
     @Issue("JENKINS-3854")
@@ -139,17 +135,19 @@ public class DefaultCrumbIssuerTest {
 
     @Issue("JENKINS-34254")
     @Test public void testRequirePostErrorPageCrumb() throws Exception {
-        Jenkins.getInstance().setCrumbIssuer(new DefaultCrumbIssuer(false));
-        WebClient wc = r.createWebClient();
-        try {
-            wc.goTo("quietDown");
-            fail("expected failure");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals("expect HTTP 405 method not allowed", 405, ex.getStatusCode());
-        }
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        WebClient wc = r.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+
+        Page page = wc.goTo("quietDown");
+        assertEquals("expect HTTP 405 method not allowed", 
+                HttpURLConnection.HTTP_BAD_METHOD,
+                page.getWebResponse().getStatusCode());
+
         HtmlPage retry = (HtmlPage) wc.getCurrentWindow().getEnclosedPage();
         HtmlPage success = r.submit(retry.getFormByName("retry"));
-        Assert.assertTrue("quieting down", r.jenkins.isQuietingDown());
+        assertEquals(HttpURLConnection.HTTP_OK, success.getWebResponse().getStatusCode());
+        assertTrue("quieting down", r.jenkins.isQuietingDown());
     }
 
 }

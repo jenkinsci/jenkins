@@ -41,11 +41,13 @@ import static org.mockito.Matchers.anyString;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({JenkinsLocationConfiguration.class, Stapler.class})
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class JenkinsGetRootUrlTest {
 
     private Jenkins jenkins;
@@ -139,7 +141,31 @@ public class JenkinsGetRootUrlTest {
         withHeader("X-Forwarded-Proto", "https");
         rootUrlFromRequestIs("https://ci/jenkins/");
     }
-    
+
+    @Issue("JENKINS-58041")
+    @Test
+    public void useForwardedProtoWithIPv6WhenPresent() {
+        configured("http://[::1]/jenkins/");
+
+        // Without a forwarded protocol, it should use the request protocol
+        accessing("http://[::1]/jenkins/");
+        rootUrlFromRequestIs("http://[::1]/jenkins/");
+        
+        accessing("http://[::1]:8080/jenkins/");
+        rootUrlFromRequestIs("http://[::1]:8080/jenkins/");
+
+        // With a forwarded protocol, it should use the forwarded protocol
+        accessing("http://[::1]/jenkins/");
+        withHeader("X-Forwarded-Host", "[::2]");
+        rootUrlFromRequestIs("http://[::2]/jenkins/");
+
+        accessing("http://[::1]:8080/jenkins/");
+        withHeader("X-Forwarded-Proto", "https");
+        withHeader("X-Forwarded-Host", "[::1]:8443");
+        rootUrlFromRequestIs("https://[::1]:8443/jenkins/");
+
+    }
+
     private void rootUrlFromRequestIs(final String expectedRootUrl) {
         
         assertThat(jenkins.getRootUrlFromRequest(), equalTo(expectedRootUrl));

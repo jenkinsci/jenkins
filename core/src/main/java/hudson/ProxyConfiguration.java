@@ -47,9 +47,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
@@ -78,12 +80,13 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @see jenkins.model.Jenkins#proxy
  */
+@StaplerAccessibleType
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
     /**
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", (int)TimeUnit.SECONDS.toMillis(20));
     
     public final String name;
     public final int port;
@@ -110,6 +113,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     
     private String testUrl;
 
+    private transient Authenticator authenticator;
+
+    private transient boolean authCacheSeeded;
+
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
     }
@@ -129,7 +136,21 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.userName = Util.fixEmptyAndTrim(userName);
         this.secretPassword = Secret.fromString(password);
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
-        this.testUrl =Util.fixEmptyAndTrim(testUrl);
+        this.testUrl = Util.fixEmptyAndTrim(testUrl);
+        this.authenticator = newAuthenticator();
+    }
+
+    private Authenticator newAuthenticator() {
+        return new Authenticator() {
+            @Override
+            public PasswordAuthentication getPasswordAuthentication() {
+                String userName = getUserName();
+                if (getRequestorType() == RequestorType.PROXY && userName != null) {
+                    return new PasswordAuthentication(userName, getPassword().toCharArray());
+                }
+                return null;
+            }
+        };
     }
 
     public String getUserName() {
@@ -209,11 +230,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
+        authenticator = newAuthenticator();
         return this;
     }
 
     public static XmlFile getXmlFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(), "proxy.xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.get().getRootDir(), "proxy.xml"));
     }
 
     public static ProxyConfiguration load() throws IOException {
@@ -234,17 +256,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         if(p==null) {
             con = url.openConnection();
         } else {
-            con = url.openConnection(p.createProxy(url.getHost()));
+            Proxy proxy = p.createProxy(url.getHost());
+            con = url.openConnection(proxy);
             if(p.getUserName()!=null) {
                 // Add an authenticator which provides the credentials for proxy authentication
-                Authenticator.setDefault(new Authenticator() {
-                    @Override
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        if (getRequestorType()!=RequestorType.PROXY)    return null;
-                        return new PasswordAuthentication(p.getUserName(),
-                                p.getPassword().toCharArray());
-                    }
-                });
+                Authenticator.setDefault(p.authenticator);
+                p.jenkins48775workaround(proxy, url);
             }
         }
         
@@ -261,25 +278,46 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
-        if (p == null) 
+        if (p == null)
             return new RetryableHttpStream(url);
 
-        InputStream is = new RetryableHttpStream(url, p.createProxy(url.getHost()));
+        Proxy proxy = p.createProxy(url.getHost());
+        InputStream is = new RetryableHttpStream(url, proxy);
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(new Authenticator() {
-
-                @Override
-                public PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType() != RequestorType.PROXY) {
-                        return null;
-                    }
-                    return new PasswordAuthentication(p.getUserName(), p.getPassword().toCharArray());
-                }
-            });
+            Authenticator.setDefault(p.authenticator);
+            p.jenkins48775workaround(proxy, url);
         }
 
         return is;
+    }
+
+    /**
+     * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
+     * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
+     * @param proxy
+     * @param url the actual URL being opened.
+     */
+    private void jenkins48775workaround(Proxy proxy, URL url) {
+        if ("https".equals(url.getProtocol()) && !authCacheSeeded && proxy != Proxy.NO_PROXY) {
+            HttpURLConnection preAuth = null;
+            try {
+                // We do not care if there is anything at this URL, all we care is that it is using the proxy
+                preAuth = (HttpURLConnection) new URL("http", url.getHost(), -1, "/").openConnection(proxy);
+                preAuth.setRequestMethod("HEAD");
+                preAuth.connect();
+            } catch (IOException e) {
+                // ignore, this is just a probe we don't care at all
+            } finally {
+                if (preAuth != null) {
+                    preAuth.disconnect();
+                }
+            }
+            authCacheSeeded = true;
+        } else if ("https".equals(url.getProtocol())){
+            // if we access any http url using a proxy then the auth cache will have been seeded
+            authCacheSeeded = authCacheSeeded || proxy != Proxy.NO_PROXY;
+        }
     }
 
     @CheckForNull
@@ -294,7 +332,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     private static ProxyConfiguration _get() {
         JenkinsJVM.checkJenkinsJVM();
         // this code could be called between the JVM flag being set and theInstance initialized
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         return jenkins == null ? null : jenkins.proxy;
     }
 
@@ -341,13 +379,13 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 @QueryParameter("userName") String userName, @QueryParameter("password") String password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
 
-            String host = testUrl;
+            String host;
             try {
                 URL url = new URL(testUrl);
                 host = url.getHost();
@@ -358,7 +396,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : (int)TimeUnit.SECONDS.toMillis(30));
                 
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {

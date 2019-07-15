@@ -26,6 +26,7 @@ package hudson;
 import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.NamingThreadFactory;
@@ -138,7 +139,7 @@ public abstract class Proc {
     @CheckForNull
     public abstract OutputStream getStdin();
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
+    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "Proc.executor")));
     
     /**
      * Like {@link #join} but can be given a maximum time to wait.
@@ -231,7 +232,7 @@ public abstract class Proc {
                 m.clear();
                 for (String e : env) {
                     int idx = e.indexOf('=');
-                    m.put(e.substring(0,idx),e.substring(idx+1,e.length()));
+                    m.put(e.substring(0,idx),e.substring(idx+1));
                 }
             }
             return pb;
@@ -325,8 +326,8 @@ public abstract class Proc {
                 // see https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                if (copier!=null)   copier.join(10*1000);
-                if(copier2!=null)   copier2.join(10*1000);
+                if (copier!=null)   copier.join(TimeUnit.SECONDS.toMillis(10));
+                if(copier2!=null)   copier2.join(TimeUnit.SECONDS.toMillis(10));
                 if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.

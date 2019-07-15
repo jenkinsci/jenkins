@@ -29,7 +29,6 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.trilead.ssh2.crypto.Base64;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
@@ -42,6 +41,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Base64;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -64,6 +65,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Kohsuke Kawaguchi
  */
 public final class Secret implements Serializable {
+    private static final Logger LOGGER = Logger.getLogger(Secret.class.getName());
+
     private static final byte PAYLOAD_V1 = 1;
     /**
      * Unencrypted secret text.
@@ -92,6 +95,8 @@ public final class Secret implements Serializable {
     @Override
     @Deprecated
     public String toString() {
+        final String from = new Throwable().getStackTrace()[1].toString();
+        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
@@ -144,7 +149,7 @@ public final class Secret implements Serializable {
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
-            return "{"+new String(Base64.encode(payload))+"}";
+            return "{"+new String(Base64.getEncoder().encode(payload))+"}";
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -170,8 +175,8 @@ public final class Secret implements Serializable {
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
             try {
-                payload = Base64.decode(data.substring(1, data.length()-1).toCharArray());
-            } catch (IOException e) {
+                payload = Base64.getDecoder().decode(data.substring(1, data.length()-1));
+            } catch (IllegalArgumentException e) {
                 return null;
             }
             switch (payload[0]) {
@@ -205,11 +210,9 @@ public final class Secret implements Serializable {
         } else {
             try {
                 return HistoricalSecrets.decrypt(data, KEY);
-            } catch (GeneralSecurityException e) {
-                return null;
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e); // impossible
-            } catch (IOException e) {
+            } catch (GeneralSecurityException | IOException e) {
                 return null;
             }
         }
@@ -294,14 +297,6 @@ public final class Secret implements Serializable {
      * The key that encrypts the data on disk.
      */
     private static final CryptoConfidentialKey KEY = new CryptoConfidentialKey(Secret.class.getName());
-
-    /**
-     * Reset the internal secret key for testing.
-     */
-    @Restricted(NoExternalUse.class)
-    /*package*/ static void resetKeyForTest() {
-        KEY.resetForTest();
-    }
 
     private static final long serialVersionUID = 1L;
 

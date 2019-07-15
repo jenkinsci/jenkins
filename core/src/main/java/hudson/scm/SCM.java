@@ -572,7 +572,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
      * at the top of the checked out module (in the above case, that would
-     * be <tt>xyz/build.xml</tt>), yet the builder doesn't know the "xyz"
+     * be {@code xyz/build.xml}), yet the builder doesn't know the "xyz"
      * part; that comes from SCM.
      *
      * <p>
@@ -678,12 +678,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * The returned object will be used to parse <tt>changelog.xml</tt>.
+     * The returned object will be used to parse {@code changelog.xml}.
      */
     public abstract ChangeLogParser createChangeLogParser();
 
     public SCMDescriptor<?> getDescriptor() {
-        return (SCMDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (SCMDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 //
@@ -727,7 +727,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Jenkins.getInstance().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
+        return Jenkins.get().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
     }
 
     /**
@@ -740,7 +740,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
         
-        final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
+        final Descriptor pd = Jenkins.get().getDescriptor((Class) project.getClass());
         List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;

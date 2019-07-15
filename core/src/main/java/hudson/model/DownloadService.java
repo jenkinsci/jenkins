@@ -46,11 +46,11 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
-import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -89,10 +89,10 @@ public class DownloadService extends PageDecorator {
         if (doesNotSupportPostMessage())  return "";
 
         StringBuilder buf = new StringBuilder();
-        if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
+        if(Jenkins.get().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
-                if(d.getDue()<now && d.lastAttempt+10*1000<now) {
+                if(d.getDue()<now && d.lastAttempt+TimeUnit.SECONDS.toMillis(10)<now) {
                     buf.append("<script>")
                        .append("Behaviour.addLoadEvent(function() {")
                        .append("  downloadService.download(")
@@ -100,7 +100,7 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
+                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.VERSION)).append('}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -302,14 +302,14 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Jenkins.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.get().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**
          * URLs to download from.
          */
         public List<String> getUrls() {
-            List<String> updateSites = new ArrayList<String>();
+            List<String> updateSites = new ArrayList<>();
             for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");
@@ -337,7 +337,7 @@ public class DownloadService extends PageDecorator {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Jenkins.getInstance().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.get().getRootDir(),"updates/"+id));
         }
 
         /**

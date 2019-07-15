@@ -14,17 +14,19 @@ def runTests = true
 def failFast = false
 def jdk = "8"
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
+properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
+def jdks = [8, 11]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
+for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
-    builds[buildType] = {
+    def jdk = jdks[j]
+    builds["${buildType}-jdk${jdk}"] = {
         node(buildType.toLowerCase()) {
-            timestamps {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -46,7 +48,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                             jdk, ["JAVA_OPTS=-Xmx1536m -Xms512m", "MAVEN_OPTS=-Xmx1536m -Xms512m"])
 
                         if (isUnix()) {
-                            sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
+                            sh 'git add . && git diff --exit-code HEAD'
                         }
                     }
                 }
@@ -55,24 +57,61 @@ for(i = 0; i < buildTypes.size(); i++) {
                 stage("${buildType} Publishing") {
                     if (runTests) {
                         junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
-                    if (buildType == 'Linux') {
+                    if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
                             archiveArtifacts artifacts: "**/*$changelist/*$changelist*",
-                                             excludes: '**/*.lastUpdated,**/jenkins-test/',
+                                             excludes: '**/*.lastUpdated,**/jenkins-test*/',
                                              allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }
                     }
                 }
+        }
+    }
+}}
+
+// TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
+builds.ath = {
+    node("docker&&highmem") {
+        // Just to be safe
+        deleteDir()
+        def fileUri
+        def metadataPath
+        dir("sources") {
+            checkout scm
+            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
+                          "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
+                sh "mvn --batch-mode --show-version -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
             }
+            dir("war/target") {
+                fileUri = "file://" + pwd() + "/jenkins.war"
+            }
+            metadataPath = pwd() + "/essentials.yml"
+        }
+        dir("ath") {
+            runATH jenkins: fileUri, metadataFile: metadataPath
         }
     }
 }
 
 builds.failFast = failFast
 parallel builds
+infra.maybePublishIncrementals()
+
+// This method sets up the Maven and JDK tools, puts them in the environment along
+// with whatever other arbitrary environment variables we passed in, and runs the
+// body we passed in within that environment.
+void withMavenEnv(List envVars = [], def javaVersion, def body) {
+    // The names here are currently hardcoded for my test environment. This needs
+    // to be made more flexible.
+    // Using the "tool" Workflow call automatically installs those tools on the
+    // node.
+    String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
+    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
+}
 
 // Integration tests, see essentials.yml
 essentialsTest()

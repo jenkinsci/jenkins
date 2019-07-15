@@ -65,7 +65,7 @@ import jenkins.model.Jenkins;
  * So generally speaking, derived classes should use instance variables
  * only for keeping configuration. You can still store objects you use
  * for processing, like a parser of some sort, but they need to be marked
- * as <tt>transient</tt>, and the code needs to be aware that they might
+ * as {@code transient}, and the code needs to be aware that they might
  * be null (which is the case when you access the field for the first time
  * the object is restored.)
  *
@@ -145,7 +145,7 @@ public interface BuildStep {
      * it owns when the rendering is requested.
      *
      * <p>
-     * This action can have optional <tt>jobMain.jelly</tt> view, which will be
+     * This action can have optional {@code jobMain.jelly} view, which will be
      * aggregated into the main panel of the job top page. The jelly file
      * should have an {@code <h2>} tag that shows the section title, followed by some
      * block elements to render the details of the section.
@@ -232,7 +232,7 @@ public interface BuildStep {
      *      {@link Extension} for registration.
      */
     @Deprecated
-    List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
+    List<Descriptor<Builder>> BUILDERS = new DescriptorList<>(Builder.class);
 
     /**
      * List of all installed publishers.
@@ -259,14 +259,14 @@ public interface BuildStep {
          * {@link Descriptor}s are actually stored in here.
          * Since {@link PublisherList} lives longer than {@link jenkins.model.Jenkins} we cannot directly use {@link ExtensionList}.
          */
-        private final DescriptorList<Publisher> core = new DescriptorList<Publisher>(Publisher.class);
+        private final DescriptorList<Publisher> core = new DescriptorList<>(Publisher.class);
 
         /**
          * For descriptors that are manually registered, remember what kind it was since
          * older plugins don't extend from neither {@link Recorder} nor {@link Notifier}.
          */
         /*package*/ static final WeakHashMap<Descriptor<Publisher>,Class<? extends Publisher>/*either Recorder.class or Notifier.class*/>
-                KIND = new WeakHashMap<Descriptor<Publisher>, Class<? extends Publisher>>();
+                KIND = new WeakHashMap<>();
 
         private PublisherList() {
         }

@@ -1,11 +1,11 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import hudson.model.queue.Tasks;
 import hudson.util.DescribableList;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -21,13 +21,9 @@ import java.util.List;
  * @since 1.520
  */
 @Extension @Symbol("queueItemAuthenticator")
-public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
+public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     private final DescribableList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> authenticators
-        = new DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor>(this);
-
-    public QueueItemAuthenticatorConfiguration() {
-        load();
-    }
+        = new DescribableList<>(this);
 
     private Object readResolve() {
         authenticators.setOwner(this);

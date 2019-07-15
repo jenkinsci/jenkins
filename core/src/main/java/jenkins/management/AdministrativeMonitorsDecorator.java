@@ -28,17 +28,13 @@ import hudson.Functions;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
-import hudson.util.HttpResponses;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.model.Jenkins;
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -78,7 +74,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     public Collection<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         Collection<AdministrativeMonitor> active = new ArrayList<>();
-        for (AdministrativeMonitor am : Jenkins.getInstance().getActiveAdministrativeMonitors()) {
+        for (AdministrativeMonitor am : Jenkins.get().getActiveAdministrativeMonitors()) {
             if (am instanceof ReverseProxySetupMonitor) {
                 // TODO make reverse proxy monitor work when shown on any URL
                 continue;
@@ -119,11 +115,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         Object o = a.getObject();
 
         // don't show while Jenkins is loading
-        if (o instanceof HudsonIsLoading) {
-            return false;
-        }
-        // … or restarting
-        if (o instanceof HudsonIsRestarting) {
+        if (o instanceof HudsonIsLoading || o instanceof HudsonIsRestarting) {
             return false;
         }
 

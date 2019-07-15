@@ -26,7 +26,6 @@ package hudson.cli;
 import java.util.Collection;
 
 import hudson.model.Item;
-import hudson.model.Items;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.Extension;
@@ -66,7 +65,8 @@ public class ListJobsCommand extends CLICommand {
 
                 // If item group was found use it's jobs.
                 if (item instanceof ModifiableTopLevelItemGroup) {
-                    jobs = ((ModifiableTopLevelItemGroup) item).getAllItems(TopLevelItem.class);
+                    jobs = ((ModifiableTopLevelItemGroup) item).getItems();
+
                 }
                 // No view and no item group with the given name found.
                 else {

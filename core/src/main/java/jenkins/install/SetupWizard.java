@@ -21,8 +21,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
 import org.acegisecurity.Authentication;
@@ -58,11 +60,8 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import jenkins.CLI;
 
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
@@ -131,16 +130,6 @@ public class SetupWizard extends PageDecorator {
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
-                    // Disable CLI over Remoting
-                    CLI.get().setEnabled(false);
-
-                    // Disable old Non-Encrypted protocols ()
-                    HashSet<String> newProtocols = new HashSet<>(jenkins.getAgentProtocols());
-                    newProtocols.removeAll(Arrays.asList(
-                            "JNLP2-connect", "JNLP-connect", "CLI-connect"   
-                    ));
-                    jenkins.setAgentProtocols(newProtocols);
-                    
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
     
@@ -248,7 +237,7 @@ public class SetupWizard extends PageDecorator {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
 
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -279,7 +268,20 @@ public class SetupWizard extends PageDecorator {
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
             auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
-            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            
+            HttpSession session = req.getSession(false);
+            if (session != null) {
+                // avoid session fixation
+                session.invalidate();
+            }
+            HttpSession newSession = req.getSession(true);
+
+            UserSeedProperty userSeed = newUser.getProperty(UserSeedProperty.class);
+            String sessionSeed = userSeed.getSeed();
+            // include the new seed
+            newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+            
+            CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
                 data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
@@ -298,7 +300,7 @@ public class SetupWizard extends PageDecorator {
                 admin.save(); // recreate this initial user if something failed
             }
         }
-    }
+    }    
     
     @RequirePOST
     @Restricted(NoExternalUse.class)
@@ -507,7 +509,7 @@ public class SetupWizard extends PageDecorator {
                                         for (UpdateSite site : jenkins.getUpdateCenter().getSiteList()) {
                                             UpdateSite.Plugin sitePlug = site.getPlugin(pluginName);
                                             if (sitePlug != null
-                                                    && !sitePlug.isForNewerHudson()
+                                                    && !sitePlug.isForNewerHudson() && !sitePlug.isForNewerJava()
                                                     && !sitePlug.isNeededDependenciesForNewerJenkins()) {
                                                 foundCompatibleVersion = true;
                                                 break;

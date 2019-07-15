@@ -47,6 +47,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import jenkins.model.SimplePageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
@@ -133,8 +134,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -288,7 +287,7 @@ public class Functions {
     }
 
     public JDK.DescriptorImpl getJDKDescriptor() {
-        return Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
+        return Jenkins.get().getDescriptorByType(JDK.DescriptorImpl.class);
     }
 
     /**
@@ -397,11 +396,11 @@ public class Functions {
      * is chosen, this part remains intact.
      *
      * <p>
-     * The <tt>524</tt> is the path from {@link Job} to {@link Run}.
+     * The {@code 524} is the path from {@link Job} to {@link Run}.
      *
      * <p>
-     * The <tt>bbb</tt> portion is the path after that till the last
-     * {@link Run} subtype. The <tt>ccc</tt> portion is the part
+     * The {@code bbb} portion is the path after that till the last
+     * {@link Run} subtype. The {@code ccc} portion is the part
      * after that.
      */
     public static final class RunUrl {
@@ -466,7 +465,7 @@ public class Functions {
     }
 
     public static Map getSystemProperties() {
-        return new TreeMap<Object,Object>(System.getProperties());
+        return new TreeMap<>(System.getProperties());
     }
 
     /**
@@ -480,7 +479,7 @@ public class Functions {
     }
 
     public static Map getEnvVars() {
-        return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        return new TreeMap<>(EnvVars.masterEnvVars);
     }
 
     public static boolean isWindows() {
@@ -545,7 +544,7 @@ public class Functions {
      * @since 1.525
      */
     public static <T> Iterable<T> reverse(Collection<T> collection) {
-        List<T> list = new ArrayList<T>(collection);
+        List<T> list = new ArrayList<>(collection);
         Collections.reverse(list);
         return list;
     }
@@ -619,7 +618,7 @@ public class Functions {
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Used by <tt>layout.jelly</tt> to control the auto refresh behavior.
+     * Used by {@code layout.jelly} to control the auto refresh behavior.
      *
      * @param noAutoRefresh
      *      On certain pages, like a page with forms, will have annoying interference
@@ -763,7 +762,7 @@ public class Functions {
     }
 
     public static void checkPermission(Permission permission) throws IOException, ServletException {
-        checkPermission(Jenkins.getInstance(),permission);
+        checkPermission(Jenkins.get(),permission);
     }
 
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
@@ -773,7 +772,7 @@ public class Functions {
     }
 
     /**
-     * This version is so that the 'checkPermission' on <tt>layout.jelly</tt>
+     * This version is so that the 'checkPermission' on {@code layout.jelly}
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
@@ -792,7 +791,7 @@ public class Functions {
                     return;
                 }
             }
-            checkPermission(Jenkins.getInstance(),permission);
+            checkPermission(Jenkins.get(),permission);
         }
     }
 
@@ -803,7 +802,7 @@ public class Functions {
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return hasPermission(Jenkins.getInstance(),permission);
+        return hasPermission(Jenkins.get(),permission);
     }
 
     /**
@@ -823,7 +822,7 @@ public class Functions {
                     return ((AccessControlled)o).hasPermission(permission);
                 }
             }
-            return Jenkins.getInstance().hasPermission(permission);
+            return Jenkins.get().hasPermission(permission);
         }
     }
 
@@ -846,7 +845,7 @@ public class Functions {
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if(rootUrl !=null)
             // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
             return rootUrl;
@@ -913,7 +912,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     /**
@@ -952,7 +951,7 @@ public class Functions {
     @RestrictedSince("2.12")
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
                 result.add(npd);
@@ -968,7 +967,7 @@ public class Functions {
      */
     public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicableAsGlobal()) {
                 result.add(npd);
@@ -1011,7 +1010,7 @@ public class Functions {
         List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
         for (Tag d : r) answer.add(d.d);
 
-        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
     }
 
     /**
@@ -1111,7 +1110,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner().getItemGroup())) {
+            if(ig== Jenkins.get() || (view != null && ig == view.getOwner().getItemGroup())) {
                 assert i instanceof TopLevelItem;
                 if (view != null) {
                     // assume p and the current page belong to the same view, so return a relative path
@@ -1557,30 +1556,13 @@ public class Functions {
     /**
      * Converts the Hudson build status to CruiseControl build status,
      * which is either Success, Failure, Exception, or Unknown.
+     *
+     * @deprecated This functionality has been moved to ccxml plugin.
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("since TODO")
     public static String toCCStatus(Item i) {
-        if (i instanceof Job) {
-            Job j = (Job) i;
-            switch (j.getIconColor()) {
-            case ABORTED:
-            case ABORTED_ANIME:
-            case RED:
-            case RED_ANIME:
-            case YELLOW:
-            case YELLOW_ANIME:
-                return "Failure";
-            case BLUE:
-            case BLUE_ANIME:
-                return "Success";
-            case DISABLED:
-            case DISABLED_ANIME:
-            case GREY:
-            case GREY_ANIME:
-            case NOTBUILT:
-            case NOTBUILT_ANIME:
-                return "Unknown";
-            }
-        }
         return "Unknown";
     }
 
@@ -1694,13 +1676,13 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in <tt>slave-agent.jnlp.jelly</tt> to specify the destination
+     * This is primarily used in {@code slave-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
      */
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
-        String url = Jenkins.getInstance().getRootUrl();
+        String url = Jenkins.get().getRootUrl();
         try {
             if(url!=null) {
                 String host = new URL(url).getHost();
@@ -1747,7 +1729,7 @@ public class Functions {
     /**
      * If the given href link is matching the current page, return true.
      *
-     * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
+     * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
@@ -1772,7 +1754,18 @@ public class Functions {
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
-    
+    /**
+     * Gets only one {@link SimplePageDecorator}.
+     * @since 2.128
+     */
+    public static SimplePageDecorator getSimplePageDecorator() {
+        return SimplePageDecorator.first();
+    }
+
+    public static List<SimplePageDecorator> getSimplePageDecorators() {
+        return SimplePageDecorator.all();
+    }
+
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
@@ -1821,7 +1814,7 @@ public class Functions {
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
-        String cp = Stapler.getCurrentRequest().getContextPath();
+        String cp = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
@@ -1996,7 +1989,7 @@ public class Functions {
         if(size < 1024){
             return size + " " + measure;
         }
-        Double number = new Double(size);
+        double number = size;
         if(number>=1024){
             number = number/1024;
             measure = "KB";
@@ -2061,14 +2054,4 @@ public class Functions {
             return true;
         }
     }
-
-    @Restricted(NoExternalUse.class) // for cc.xml.jelly
-    public static Collection<TopLevelItem> getCCItems(View v) {
-        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
-            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
-        } else {
-            return v.getItems();
-        }
-    }
-
 }

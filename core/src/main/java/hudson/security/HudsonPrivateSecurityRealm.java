@@ -24,6 +24,7 @@
 package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -42,6 +43,8 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import jenkins.security.SecurityListener;
+import jenkins.util.SystemProperties;
+import jenkins.security.seed.UserSeedProperty;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -74,16 +77,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -264,6 +268,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @SuppressWarnings("ACL.impersonate")
     private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            // avoid session fixation
+            session.invalidate();
+        }
+        req.getSession(true);
+        
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
         a = this.getSecurityComponents().manager.authenticate(a);
@@ -312,11 +323,20 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccountFromSetupWizard(StaplerRequest req) throws IOException, AccountCreationFailedException {
         checkPermission(Jenkins.ADMINISTER);
         SignupInfo si = validateAccountCreationForm(req, false);
-        if (si.errorMessage != null) {
-            throw new AccountCreationFailedException(si.errorMessage);
+        if (!si.errors.isEmpty()) {
+            String messages = getErrorMessages(si);
+            throw new AccountCreationFailedException(messages);
         } else {
             return createAccount(si);
         }
+    }
+
+    private String getErrorMessages(SignupInfo si) {
+        StringBuilder messages = new StringBuilder();
+        for (String message : si.errors.values()) {
+            messages.append(message).append(" | ");
+        }
+        return messages.toString();
     }
 
     /**
@@ -342,7 +362,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Try to make this user a super-user
      */
     private void tryToMakeAdmin(User u) {
-        AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy as = Jenkins.get().getAuthorizationStrategy();
         for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
             if (adder.add(as, u, Jenkins.ADMINISTER)) {
                 return;
@@ -363,7 +383,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
         SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
 
-        if (si.errorMessage != null) {
+        if (!si.errors.isEmpty()) {
             // failed. ask the user to try again.
             req.getView(this, formView).forward(req, rsp);
             return null;
@@ -377,7 +397,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
      * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
-     * SignupInfo#errorMessage} set to a non-null value if any of the supported fields are invalid
+     * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
     private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
@@ -385,24 +405,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         SignupInfo si = new SignupInfo(req);
 
         if (validateCaptcha && !validateCaptcha(si.captcha)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
-        }
-
-        if (si.password1 != null && !si.password1.equals(si.password2)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
-        }
-
-        if (!(si.password1 != null && si.password1.length() != 0)) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
+            si.errors.put("captcha", Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage());
         }
 
         if (si.username == null || si.username.length() == 0) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
+            si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired());
         } else if(!containsOnlyAcceptableCharacters(si.username)) {
             if (ID_REGEX == null) {
-                si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharacters();
+                si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharacters());
             } else {
-                si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharactersCustom(ID_REGEX);
+                si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameInvalidCharactersCustom(ID_REGEX));
             }
         } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
@@ -410,7 +422,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
-                    si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
+                    si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken());
+        }
+
+        if (si.password1 != null && !si.password1.equals(si.password2)) {
+            si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch());
+        }
+
+        if (!(si.password1 != null && si.password1.length() != 0)) {
+            si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 
         if (si.fullname == null || si.fullname.length() == 0) {
@@ -418,31 +438,32 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
-            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
+            si.errors.put("email", Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress());
         }
 
         if (!User.isIdOrFullnameAllowed(si.username)) {
-            si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
+            si.errors.put("username", hudson.model.Messages.User_IllegalUsername(si.username));
         }
 
         if (!User.isIdOrFullnameAllowed(si.fullname)) {
-            si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
+            si.errors.put("fullname", hudson.model.Messages.User_IllegalFullname(si.fullname));
         }
         req.setAttribute("data", si); // for error messages in the view
         return si;
     }
 
     /**
-     * Creates a new account from a valid signup info. A signup info is valid if its {@link SignupInfo#errorMessage}
-     * field is null.
+     * Creates a new account from a valid signup info. A signup info is valid if its {@link SignupInfo#errors}
+     * field is empty.
      *
      * @param si the valid signup info to create an account from
      * @return a valid {@link User} object created from given signup info
      * @throws IllegalArgumentException if an invalid signup info is passed
      */
     private User createAccount(SignupInfo si) throws IOException {
-        if (si.errorMessage != null) {
-            throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + si.errorMessage);
+        if (!si.errors.isEmpty()) {
+            String messages = getErrorMessages(si);
+            throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + messages);
         }
         // register the user
         User user = createAccount(si.username, si.password1);
@@ -450,7 +471,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if (isMailerPluginPresent()) {
             try {
                 // legacy hack. mail support has moved out to a separate plugin
-                Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+                Class<?> up = Jenkins.get().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
                 Constructor<?> c = up.getDeclaredConstructor(String.class);
                 user.addProperty((UserProperty) c.newInstance(si.email));
             } catch (ReflectiveOperationException e) {
@@ -473,7 +494,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public boolean isMailerPluginPresent() {
         try {
             // mail support has moved to a separate plugin
-            return null != Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+            return null != Jenkins.get().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
         } catch (ClassNotFoundException e) {
             LOGGER.finer("Mailer plugin not present");
         }
@@ -486,8 +507,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccount(String userName, String password) throws IOException {
         User user = User.getById(userName, true);
         user.addProperty(Details.fromPlainPassword(password));
+        SecurityListener.fireUserCreated(user.getId());
         return user;
     }
+
+    /**
+     * Creates a new user account by registering a JBCrypt Hashed password with the user.
+     *
+     * @param userName The user's name
+     * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
+     */
+    public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
+        if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
+            throw new IllegalArgumentException("this method should only be called with a pre-hashed password");
+        }
+        User user = User.getById(userName, true);
+        user.addProperty(Details.fromHashedPassword(hashedPassword));
+        SecurityListener.fireUserCreated(user.getId());
+        return user;
+    }
+
 
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
@@ -497,15 +536,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getACL();
+        return Jenkins.get().getACL();
     }
 
     public void checkPermission(Permission permission) {
-        Jenkins.getInstance().checkPermission(permission);
+        Jenkins.get().checkPermission(permission);
     }
 
     public boolean hasPermission(Permission permission) {
-        return Jenkins.getInstance().hasPermission(permission);
+        return Jenkins.get().hasPermission(permission);
     }
 
 
@@ -526,8 +565,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is to map users under the security realm URL.
      * This in turn helps us set up the right navigation breadcrumb.
      */
+    @Restricted(NoExternalUse.class)
     public User getUser(String id) {
-        return User.getById(id, true);
+        return User.getById(id, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(Jenkins.ADMINISTER));
     }
 
     // TODO
@@ -537,9 +577,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public String username,password1,password2,fullname,email,captcha;
 
         /**
-         * To display an error message, set it here.
+         * To display a general error message, set it here.
+         *
          */
         public String errorMessage;
+
+        /**
+         * Add field-specific error messages here.
+         * Keys are field names (e.g. {@code password2}), values are the messages.
+         */
+        // TODO i18n?
+        public HashMap<String, String> errors = new HashMap<String, String>();
 
         public SignupInfo() {
         }
@@ -675,13 +723,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     if(data.startsWith(prefix))
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                 }
+
+                User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
+                // the UserSeedProperty is not touched by the configure page
+                UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
+                if (userSeedProperty != null) {
+                    userSeedProperty.renewSeed();
+                }
+
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
             @Override
             public boolean isEnabled() {
                 // this feature is only when HudsonPrivateSecurityRealm is enabled
-                return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                return Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
             public UserProperty newInstance(User user) {
@@ -697,7 +753,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
-            if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
+            if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
             else
                 return null;    // not applicable now
@@ -722,7 +778,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *
      * <p>
      * The salt is prepended to the hashed password and returned. So the encoded password is of the form
-     * <tt>SALT ':' hash(PASSWORD,SALT)</tt>.
+     * {@code SALT ':' hash(PASSWORD,SALT)}.
      *
      * <p>
      * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling
@@ -731,11 +787,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /*package*/ static final PasswordEncoder CLASSIC = new PasswordEncoder() {
         private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
 
-        public String encodePassword(String rawPass, Object _) throws DataAccessException {
+        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return hash(rawPass);
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
+        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             // pull out the sale from the encoded password
             int i = encPass.indexOf(':');
             if(i<0) return false;
@@ -770,21 +826,54 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
-    private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
-        public String encodePassword(String rawPass, Object _) throws DataAccessException {
+    private static class JBCryptEncoder implements PasswordEncoder {
+        // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
+        // and for 18, it's "only" 20s
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int MAXIMUM_BCRYPT_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumBCryptLogRound", 18);
+
+        private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
+
+        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
             return BCrypt.hashpw(rawPass,BCrypt.gensalt());
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
+        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
             return BCrypt.checkpw(rawPass,encPass);
         }
-    };
+
+        /**
+         * Returns true if the supplied hash looks like a bcrypt encoded hash value, based off of the
+         * implementation defined in jBCrypt and: https://en.wikipedia.org/wiki/Bcrypt.
+         *
+         */
+        public boolean isHashValid(String hash) {
+            Matcher matcher = BCRYPT_PATTERN.matcher(hash);
+            if (matcher.matches()) {
+                String logNumOfRound = matcher.group(1);
+                // no number format exception due to the expression
+                int logNumOfRoundInt = Integer.parseInt(logNumOfRound);
+                if (logNumOfRoundInt > 0 && logNumOfRoundInt <= MAXIMUM_BCRYPT_LOG_ROUND) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
     /**
      * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
      * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
      */
-    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
+    /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
+        /**
+         * Magic header used to detect if a password is bcrypt hashed.
+         */
+        private static final String JBCRYPT_HEADER = "#jbcrypt:";
+
         /*
             CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
             to designate JBCRYPT-format hash.
@@ -796,14 +885,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
-            if (encPass.startsWith(JBCRYPT_HEADER))
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()),rawPass,salt);
-            else
-                return CLASSIC.isPasswordValid(encPass,rawPass,salt);
+            if (isPasswordHashed(encPass)) {
+                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()), rawPass, salt);
+            } else {
+                return CLASSIC.isPasswordValid(encPass, rawPass, salt);
+            }
         }
 
-        private static final String JBCRYPT_HEADER = "#jbcrypt:";
-    };
+        /**
+         * Returns true if the supplied password starts with a prefix indicating it is already hashed.
+         */
+        public boolean isPasswordHashed(String password) {
+            if (password == null) {
+                return false;
+            }
+            return password.startsWith(JBCRYPT_HEADER) && JBCRYPT_ENCODER.isHashValid(password.substring(JBCRYPT_HEADER.length()));
+        }
+
+    }
+
+    public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
@@ -833,7 +934,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private boolean needsToCreateFirstUser() {
             return !hasSomeUser()
-                && Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {

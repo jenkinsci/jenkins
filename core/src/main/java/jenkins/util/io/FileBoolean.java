@@ -5,7 +5,6 @@ import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +29,7 @@ public class FileBoolean {
     }
 
     public FileBoolean(Class owner, String name) {
-        this(new File(Jenkins.getInstance().getRootDir(),owner.getName().replace('$','.')+'/'+name));
+        this(new File(Jenkins.get().getRootDir(),owner.getName().replace('$','.')+'/'+name));
     }
 
     /**

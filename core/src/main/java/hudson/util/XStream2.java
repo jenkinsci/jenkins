@@ -54,6 +54,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
+import jenkins.util.xstream.SafeURLConverter;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
@@ -89,9 +90,9 @@ public class XStream2 extends XStream {
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
 
     private RobustReflectionConverter reflectionConverter;
-    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
     private final @CheckForNull ClassOwnership classOwnership;
-    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<>();
 
     /**
      * Hook to insert {@link Mapper}s after they are created.
@@ -248,6 +249,8 @@ public class XStream2 extends XStream {
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
+        // SECURITY-637 against URL deserialization
+        registerConverter(new SafeURLConverter(),10); 
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
@@ -394,7 +397,7 @@ public class XStream2 extends XStream {
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
         private final ConcurrentHashMap<Class<?>,Converter> cache =
-                new ConcurrentHashMap<Class<?>,Converter>();
+                new ConcurrentHashMap<>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
@@ -442,11 +445,7 @@ public class XStream2 extends XStream {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
-            } catch (InstantiationException e) {
-                InstantiationError x = new InstantiationError();
-                x.initCause(e);
-                throw x;
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | InvocationTargetException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
                 throw x;

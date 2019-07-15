@@ -37,14 +37,27 @@ THE SOFTWARE.
           ${%Connect agent to Jenkins one of these ways:}
         </p>
         <ul>
-          <li>
-            <p>
-              <a href="slave-agent.jnlp" id="jnlp-link">
-                <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-              </a>
-              ${%Launch agent from browser}
-            </p>
-          </li>
+          <j:choose>
+            <j:when test="${it.launcher.javaWebStartSupported}">
+              <li>
+                <p>
+                  <a href="slave-agent.jnlp" id="jnlp-link">
+                    <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
+                  </a>
+                  ${%Launch agent from browser}
+                </p>
+              </li>
+            </j:when>
+            <j:otherwise>
+              <li>
+                <p>
+                  <a href="https://jenkins.io/redirect/java11-java-web-start">
+                    ${%Java Web Start is not available for the JVM version running Jenkins}
+                  </a>
+                </p>
+              </li>
+            </j:otherwise>
+          </j:choose>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
               <li>
@@ -67,6 +80,11 @@ THE SOFTWARE.
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
                 <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
+                <p>
+                  ${%Run from agent command line, with the secret stored in a file:}
+                </p>
+                <pre>echo ${it.jnlpMac} > secret-file
+java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
               </li>
             </j:otherwise>
           </j:choose>
@@ -82,7 +100,7 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <p>
-        ${%Connected via JNLP agent.}
+        ${%Agent is connected.}
       </p>
     </j:otherwise>
   </j:choose>

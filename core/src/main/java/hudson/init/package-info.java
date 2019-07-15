@@ -33,7 +33,7 @@
  *
  * <p>
  * Such micro-scopic dependencies are organized into a bigger directed acyclic graph, which is then executed
- * via <tt>Session</tt>. During execution of the reactor, additional tasks can be discovered and added to
+ * via {@code Session}. During execution of the reactor, additional tasks can be discovered and added to
  * the DAG. We use this additional indirection to:
  *
  * <ol>
@@ -44,4 +44,3 @@
  */
 package hudson.init;
 
-import org.jvnet.hudson.reactor.Task;

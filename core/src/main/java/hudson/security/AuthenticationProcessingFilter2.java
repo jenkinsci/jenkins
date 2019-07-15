@@ -30,16 +30,19 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import hudson.Util;
+import hudson.model.User;
 import jenkins.security.SecurityListener;
+import jenkins.security.seed.UserSeedProperty;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
  * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
- * we can pick up the hidden "from" form field defined in <tt>login.jelly</tt>
+ * we can pick up the hidden "from" form field defined in {@code login.jelly}
  * to send the user back to where he came from, after a successful authentication.
  * 
  * @author Kohsuke Kawaguchi
@@ -87,7 +90,19 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
         // doFilter method.
         request.getSession().invalidate();
-        request.getSession();
+        HttpSession newSession = request.getSession();
+
+        if (!UserSeedProperty.DISABLE_USER_SEED) {
+            User user = User.getById(authResult.getName(), true);
+
+            UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);
+            String sessionSeed = userSeed.getSeed();
+            newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+        }
+
+        // as the request comes from Acegi redirect, that's not a Stapler one
+        // thus it's not possible to retrieve it in the SecurityListener in that case
+        // for that reason we need to keep the above code that apply quite the same logic as UserSeedSecurityListener
         SecurityListener.fireLoggedIn(authResult.getName());
     }
 

@@ -25,7 +25,6 @@ package hudson.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import hudson.console.ModelHyperlinkNote;
@@ -176,8 +175,8 @@ public abstract class Cause {
             upstreamBuild = up.getNumber();
             upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
-            upstreamCauses = new ArrayList<Cause>();
-            Set<String> traversed = new HashSet<String>();
+            upstreamCauses = new ArrayList<>();
+            Set<String> traversed = new HashSet<>();
             for (Cause c : up.getCauses()) {
                 upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
@@ -192,8 +191,8 @@ public abstract class Cause {
 
         @Override
         public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
-            Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
-            if (i == null || !(i instanceof Job)) {
+            Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
+            if (!(i instanceof Job)) {
                 // cannot initialize upstream causes
                 return;
             }
@@ -235,7 +234,7 @@ public abstract class Cause {
                 return c;
             }
             UpstreamCause uc = (UpstreamCause) c;
-            List<Cause> cs = new ArrayList<Cause>();
+            List<Cause> cs = new ArrayList<>();
             if (depth > 0) {
                 if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
                     for (Cause c2 : uc.upstreamCauses) {
@@ -276,7 +275,7 @@ public abstract class Cause {
          * @since 1.505
          */
         public @CheckForNull Run<?,?> getUpstreamRun() {
-            Job<?,?> job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
+            Job<?,?> job = Jenkins.get().getItemByFullName(upstreamProject, Job.class);
             return job != null ? job.getBuildByNumber(upstreamBuild) : null;
         }
 
@@ -334,7 +333,7 @@ public abstract class Cause {
             public ConverterImpl(XStream2 xstream) { super(xstream); }
             @Override protected void callback(UpstreamCause uc, UnmarshallingContext context) {
                 if (uc.upstreamCause != null) {
-                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<Cause>();
+                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<>();
                     uc.upstreamCauses.add(uc.upstreamCause);
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
@@ -487,7 +486,7 @@ public abstract class Cause {
         public String getShortDescription() {
             if(note != null) {
                 try {
-                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.getInstance().getMarkupFormatter().translate(note));
+                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.get().getMarkupFormatter().translate(note));
                 } catch (IOException x) {
                     // ignore
                 }

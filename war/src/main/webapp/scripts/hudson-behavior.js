@@ -529,6 +529,16 @@ function makeButton(e,onclick) {
     Element.addClassName(be,clsName);
     if(n) // copy the name
         be.setAttribute("name",n);
+
+    // keep the data-* attributes from the source
+    var length = e.attributes.length;
+    for (var i = 0; i < length; i++) {
+        var attribute = e.attributes[i];
+        var attributeName = attribute.name;
+        if (attributeName.startsWith('data-')) {
+            btn._button.setAttribute(attributeName, attribute.value);
+        }
+    }
     return btn;
 }
 
@@ -1515,6 +1525,10 @@ function refreshPart(id,url) {
                             window.clearInterval(intervalID);
                         return;
                     }
+                    if (!rsp.responseText) {
+                        console.log("Failed to retrieve response for ID " + id + ", perhaps Jenkins is unavailable");
+                        return;
+                    }
                     var p = hist.up();
 
                     var div = document.createElement('div');
@@ -1845,7 +1859,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     var wrap = blockWrap(buildDetails, buildControls);
                     indentMultiline(wrap);
                     Element.addClassName(wrap, "build-details-controls");
-                    $(displayName).setStyle({width: '100%'});
                     detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
                     expandLeftWithRight(detailsOverflowParams, controlsOverflowParams);
                     setBuildControlWidths();
@@ -2589,7 +2602,12 @@ function buildFormTree(form) {
                     addProperty(p, e.name.substring(r), e.value);
                 }
                 break;
-
+            case "password":
+                p = findParent(e);
+                addProperty(p, e.name, e.value);
+                // must be kept in sync with RedactSecretJsonForTraceSanitizer.REDACT_KEY
+                addProperty(p, "$redact", shortenName(e.name));
+                break;
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
@@ -2872,6 +2890,20 @@ function applySafeRedirector(url) {
 }
 
 // logic behind <f:validateButton />
+function safeValidateButton(yuiButton) {
+    var button = yuiButton._button;
+    var descriptorUrl = button.getAttribute('data-validate-button-descriptor-url');
+    var method = button.getAttribute('data-validate-button-method');
+    var checkUrl = descriptorUrl + "/" + method;
+
+    // optional, by default = empty string
+    var paramList = button.getAttribute('data-validate-button-with') || '';
+    
+    validateButton(checkUrl, paramList, yuiButton);
+}
+
+// this method should not be called directly, only get called by safeValidateButton
+// kept "public" for legacy compatibility
 function validateButton(checkUrl,paramList,button) {
   button = button._button;
 

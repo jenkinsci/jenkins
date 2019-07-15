@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
+import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
@@ -146,7 +147,7 @@ public abstract class Launcher {
     @Deprecated
     @CheckForNull
     public Computer getComputer() {
-        for( Computer c : Jenkins.getInstance().getComputers() )
+        for( Computer c : Jenkins.get().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;
@@ -165,6 +166,8 @@ public abstract class Launcher {
         protected FilePath pwd;
         @CheckForNull
         protected OutputStream stdout = NULL_OUTPUT_STREAM, stderr;
+        @CheckForNull
+        private TaskListener stdoutListener;
         @CheckForNull
         protected InputStream stdin = NULL_INPUT_STREAM;
         @CheckForNull
@@ -194,14 +197,14 @@ public abstract class Launcher {
         }
 
         public ProcStarter cmds(File program, String... args) {
-            commands = new ArrayList<String>(args.length+1);
+            commands = new ArrayList<>(args.length + 1);
             commands.add(program.getPath());
             commands.addAll(Arrays.asList(args));
             return this;
         }
 
         public ProcStarter cmds(List<String> args) {
-            commands = new ArrayList<String>(args);
+            commands = new ArrayList<>(args);
             return this;
         }
 
@@ -280,22 +283,25 @@ public abstract class Launcher {
          * Sets STDOUT destination.
          * 
          * @param out Output stream. 
-         *            Use {@code null} to send STDOUT to <tt>/dev/null</tt>.
+         *            Use {@code null} to send STDOUT to {@code /dev/null}.
          * @return {@code this}
          */
         public ProcStarter stdout(@CheckForNull OutputStream out) {
             this.stdout = out;
+            stdoutListener = null;
             return this;
         }
 
         /**
          * Sends the stdout to the given {@link TaskListener}.
          * 
-         * @param out Task listener
+         * @param out Task listener (must be safely remotable)
          * @return {@code this}
          */
         public ProcStarter stdout(@Nonnull TaskListener out) {
-            return stdout(out.getLogger());
+            stdout = out.getLogger();
+            stdoutListener = out;
+            return this;
         }
 
         /**
@@ -329,7 +335,7 @@ public abstract class Launcher {
 
         /**
          * Controls where the stdin of the process comes from.
-         * By default, <tt>/dev/null</tt>.
+         * By default, {@code /dev/null}.
          * 
          * @return {@code this}
          */
@@ -391,7 +397,7 @@ public abstract class Launcher {
          */
         @Nonnull
         public String[] envs() {
-            return envs != null ? envs.clone() : new String[0];
+            return envs != null ? envs.clone() : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 
         /**
@@ -490,6 +496,7 @@ public abstract class Launcher {
         @Nonnull
         public ProcStarter copy() {
             ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs).quiet(quiet);
+            rhs.stdoutListener = stdoutListener;
             rhs.reverseStdin  = this.reverseStdin;
             rhs.reverseStderr = this.reverseStderr;
             rhs.reverseStdout = this.reverseStdout;
@@ -754,6 +761,7 @@ public abstract class Launcher {
                 buf.append(c);
         }
         listener.getLogger().println(buf.toString());
+        listener.getLogger().flush();
     }
 
     /**
@@ -767,7 +775,7 @@ public abstract class Launcher {
      */
     protected final void maskedPrintCommandLine(@Nonnull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
         if(mask==null) {
-            printCommandLine(cmd.toArray(new String[cmd.size()]),workDir);
+            printCommandLine(cmd.toArray(new String[0]),workDir);
             return;
         }
         
@@ -1041,7 +1049,7 @@ public abstract class Launcher {
         }
 
         public Proc launch(ProcStarter ps) throws IOException {
-            final OutputStream out = ps.stdout == null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
+            final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream  in  = (ps.stdin==null || ps.stdin==NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin,false);
             
@@ -1049,7 +1057,7 @@ public abstract class Launcher {
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
-                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener)));
+                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener)));
             } catch (InterruptedException e) {
                 throw (IOException)new InterruptedIOException().initCause(e);
             }
@@ -1076,6 +1084,11 @@ public abstract class Launcher {
         @Override
         public void kill(final Map<String,String> modelEnvVars) throws IOException, InterruptedException {
             getChannel().call(new KillTask(modelEnvVars));
+        }
+
+        @Override
+        public String toString() {
+            return "RemoteLauncher[" + getChannel() + "]";
         }
 
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
@@ -1265,6 +1278,7 @@ public abstract class Launcher {
         private final @CheckForNull OutputStream err;
         private final @CheckForNull String workDir;
         private final @Nonnull TaskListener listener;
+        private final @CheckForNull TaskListener stdoutListener;
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
 
@@ -1272,7 +1286,7 @@ public abstract class Launcher {
                 @CheckForNull InputStream in, boolean reverseStdin, 
                 @CheckForNull OutputStream out, boolean reverseStdout, 
                 @CheckForNull OutputStream err, boolean reverseStderr, 
-                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener) {
+                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener, @CheckForNull TaskListener stdoutListener) {
             this.cmd = new ArrayList<>(cmd);
             this.masks = masks;
             this.env = env;
@@ -1281,6 +1295,7 @@ public abstract class Launcher {
             this.err = err;
             this.workDir = workDir;
             this.listener = listener;
+            this.stdoutListener = stdoutListener;
             this.reverseStdin = reverseStdin;
             this.reverseStdout = reverseStdout;
             this.reverseStderr = reverseStderr;
@@ -1290,7 +1305,12 @@ public abstract class Launcher {
         public RemoteProcess call() throws IOException {
             final Channel channel = getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
-            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
+            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stderr(err).quiet(quiet);
+            if (stdoutListener != null) {
+                ps.stdout(stdoutListener.getLogger());
+            } else {
+                ps.stdout(out);
+            }
             if(workDir!=null)   ps.pwd(workDir);
             if (reverseStdin)   ps.writeStdin();
             if (reverseStdout)  ps.readStdout();

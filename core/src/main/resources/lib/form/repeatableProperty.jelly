@@ -67,7 +67,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
-  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}" enableTopButton="${attrs.enableTopButton}">
+  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}" minimum="${attrs.minimum ?: 0}" enableTopButton="${attrs.enableTopButton}">
     <table style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
       <d:invokeBody/>

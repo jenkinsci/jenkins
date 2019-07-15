@@ -26,12 +26,16 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -54,7 +58,7 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.24</version>
+      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sshd</groupId>
@@ -62,6 +66,12 @@
       <version>1.7.0</version>
       <optional>true</optional> <!-- do not expose to core -->
     </dependency>
+	<!-- ed25519 algorithm, see JENKINS-45318 -->
+	<dependency>
+  	  <groupId>net.i2p.crypto</groupId>
+	  <artifactId>eddsa</artifactId>
+	  <version>0.3.0</version>
+	</dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
@@ -73,9 +83,13 @@
       <version>build214-jenkins-1</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <scope>provided</scope>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
     </dependency>
   </dependencies>
 
@@ -125,7 +139,21 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+              <goals>
+                 <goal>add-source</goal>
+              </goals>
+              <configuration>
+                <sources>
+                  <source>${project.build.directory}/generated-sources/localizer</source>
+                </sources>
+              </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

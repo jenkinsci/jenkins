@@ -47,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
  *
  * <p>
- * This object must have the <tt>myViewTabs.jelly</tt>. This view
+ * This object must have the {@code myViewTabs.jelly}. This view
  * is called once when the My Views main panel is built.
  * The "views" attribute is set to the "Collection of views".
  *
@@ -64,7 +64,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<MyViewsTabBar, Descriptor<MyViewsTabBar>> all() {
-        return Jenkins.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
+        return Jenkins.get().getDescriptorList(MyViewsTabBar.class);
     }
 
     public MyViewsTabBarDescriptor getDescriptor() {
@@ -83,7 +83,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
     @SuppressWarnings("unused") // invoked from stapler view
     public List<View> sort(@Nonnull List<? extends View> views) {
         List<View> result = new ArrayList<>(views);
-        Collections.sort(result, new Comparator<View>() {
+        result.sort(new Comparator<View>() {
             @Override
             public int compare(View o1, View o2) {
                 return o1.getDisplayName().compareTo(o2.getDisplayName());

@@ -26,7 +26,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
 
     @Override
     protected List<FilePathRule> create() {
-        return new ArrayList<FilePathRule>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -42,7 +42,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.replace("<BUILDDIR>","<JOBDIR>/builds/<BUILDID>");
         line = line.replace("<BUILDID>","(?:[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]|[0-9]+)");
         line = line.replace("<JOBDIR>","<JENKINS_HOME>/jobs/.+");
-        line = line.replace("<JENKINS_HOME>","\\Q"+Jenkins.getInstance().getRootDir().getPath()+"\\E");
+        line = line.replace("<JENKINS_HOME>","\\Q"+Jenkins.get().getRootDir().getPath()+"\\E");
 
         // config file is always /-separated even on Windows, so bring it back to \-separation.
         // This is done in the context of regex, so it has to be \\, which means in the source code it is \\\\

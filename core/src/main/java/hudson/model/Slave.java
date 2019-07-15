@@ -84,7 +84,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * Information about a Hudson agent node.
  *
  * <p>
- * Ideally this would have been in the <tt>hudson.slaves</tt> package,
+ * Ideally this would have been in the {@code hudson.slaves} package,
  * but for compatibility reasons, it can't.
  *
  * <p>
@@ -146,8 +146,8 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
 
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
-                                    new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties =
+            new DescribableList<>(this);
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -159,6 +159,11 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String userId;
 
+    /**
+     * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     * @deprecated since FIXME
+     */
+    @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
@@ -180,9 +185,10 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
+    @Deprecated
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -196,7 +202,7 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.getInstance().getNode(name);
+         Slave node = (Slave) Jenkins.get().getNode(name);
 
        if(node!=null){
             this.userId= node.getUserId(); //agent has already existed
@@ -231,7 +237,7 @@ public abstract class Slave extends Node implements Serializable {
     public ComputerLauncher getLauncher() {
         if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
             try {
-                launcher = (ComputerLauncher) Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
+                launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
                 agentCommand = null;
                 save();
             } catch (Exception x) {
@@ -365,7 +371,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Web-bound object used to serve jar files for JNLP.
+     * Web-bound object used to serve jar files for inbound connections.
      */
     public static final class JnlpJar implements HttpResponse {
         private final String fileName;
@@ -424,7 +430,7 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
             
-            URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
@@ -529,7 +535,12 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Gets the corresponding computer object.
+     *
+     * @return
+     *      this method can return null if there's no {@link Computer} object for this node,
+     *      such as when this node has no executors at all.
      */
+    @CheckForNull
     public SlaveComputer getComputer() {
         return (SlaveComputer)toComputer();
     }
@@ -554,12 +565,12 @@ public abstract class Slave extends Node implements Serializable {
      */
     protected Object readResolve() {
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+            nodeProperties = new DescribableList<>(this);
         return this;
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Jenkins.getInstance().getDescriptorOrDie(getClass());
+        Descriptor d = Jenkins.get().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
@@ -598,7 +609,7 @@ public abstract class Slave extends Node implements Serializable {
         @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
-                    Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(
+                    Jenkins.get().getDescriptorList(
                             ComputerLauncher.class);
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, all)
                     : DescriptorVisibilityFilter.apply(it, all);
@@ -630,9 +641,9 @@ public abstract class Slave extends Node implements Serializable {
         @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
-            List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+            List<NodePropertyDescriptor> result = new ArrayList<>();
             Collection<NodePropertyDescriptor> list =
-                    (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+                    (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
             for (NodePropertyDescriptor npd : it == null
                     ? DescriptorVisibilityFilter.applyType(clazz, list)
                     : DescriptorVisibilityFilter.apply(it, list)) {

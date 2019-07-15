@@ -17,7 +17,7 @@
  */
 package jenkins.util;
 
-import java.nio.file.Files;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -35,12 +35,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
@@ -546,7 +546,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *         separated by the path separator for the system.
      */
     public String getClasspath() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         boolean firstPass = true;
         Enumeration componentEnum = pathComponents.elements();
         while (componentEnum.hasMoreElements()) {
@@ -1071,27 +1071,36 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         if (theClass != null) {
             return theClass;
         }
-        if (isParentFirst(classname)) {
-            try {
-                theClass = findBaseClass(classname);
-                log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-            } catch (ClassNotFoundException cnfe) {
-                theClass = findClass(classname);
-                log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
-                        Project.MSG_DEBUG);
-            }
-        } else {
-            try {
-                theClass = findClass(classname);
-                log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
-            } catch (ClassNotFoundException cnfe) {
-                if (ignoreBase) {
-                    throw cnfe;
+
+        //Surround the former logic with a try-catch to report missing class exceptions via Java11 telemetry
+        try {
+            if (isParentFirst(classname)) {
+                try {
+                    theClass = findBaseClass(classname);
+                    log("Class " + classname + " loaded from parent loader " + "(parentFirst)",
+                            Project.MSG_DEBUG);
+                } catch (ClassNotFoundException cnfe) {
+                    theClass = findClass(classname);
+                    log("Class " + classname + " loaded from ant loader " + "(parentFirst)",
+                            Project.MSG_DEBUG);
                 }
-                theClass = findBaseClass(classname);
-                log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
+            } else {
+                try {
+                    theClass = findClass(classname);
+                    log("Class " + classname + " loaded from ant loader", Project.MSG_DEBUG);
+                } catch (ClassNotFoundException cnfe) {
+                    if (ignoreBase) {
+                        throw cnfe;
+                    }
+                    theClass = findBaseClass(classname);
+                    log("Class " + classname + " loaded from parent loader", Project.MSG_DEBUG);
+                }
             }
+        } catch (ClassNotFoundException cnfe) {
+            //To catch CNFE thrown from this.getClass().getClassLoader().loadClass(classToLoad); from a plugin step or
+            //a plugin page
+            MissingClassTelemetry.reportException(classname, cnfe);
+            throw cnfe;
         }
         if (resolve) {
             resolveClass(theClass);
@@ -1562,8 +1571,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                 ReflectUtil.newInstance(subClassToLoad,
                                         CONSTRUCTOR_ARGS,
                                         new Object[] {
-                                            parent, project, path,
-                                            Boolean.valueOf(parentFirst)
+                                            parent, project, path, parentFirst
                                         });
         }
         return new AntClassLoader(parent, project, path, parentFirst);

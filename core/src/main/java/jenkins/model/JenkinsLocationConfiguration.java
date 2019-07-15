@@ -3,6 +3,7 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import org.jenkinsci.Symbol;
@@ -31,7 +32,7 @@ import javax.annotation.Nonnull;
  * @since 1.494
  */
 @Extension @Symbol("location")
-public class JenkinsLocationConfiguration extends GlobalConfiguration {
+public class JenkinsLocationConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
      */
@@ -57,10 +58,6 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
             throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
         }
         return config;
-    }
-
-    public JenkinsLocationConfiguration() {
-        load();
     }
 
     @Override
@@ -160,7 +157,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * Checks the URL in <tt>global.jelly</tt>
+     * Checks the URL in {@code global.jelly}
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
         if(value.startsWith("http://localhost"))

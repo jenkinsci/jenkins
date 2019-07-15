@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.PersistentDescriptor;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
@@ -87,11 +88,10 @@ public class Shell extends CommandInterpreter {
             // interpreter override
             int end = command.indexOf('\n');
             if(end<0)   end=command.length();
-            List<String> args = new ArrayList<String>();
-            args.addAll(Arrays.asList(Util.tokenize(command.substring(0,end).trim())));
+            List<String> args = new ArrayList<>(Arrays.asList(Util.tokenize(command.substring(0, end).trim())));
             args.add(script.getRemote());
             args.set(0,args.get(0).substring(2));   // trim off "#!"
-            return args.toArray(new String[args.size()]);
+            return args.toArray(new String[0]);
         } else
             return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
     }
@@ -131,15 +131,11 @@ public class Shell extends CommandInterpreter {
     }
 
     @Extension @Symbol("shell")
-    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> implements PersistentDescriptor {
         /**
          * Shell executable, or null to default.
          */
         private String shell;
-
-        public DescriptorImpl() {
-            load();
-        }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
@@ -168,9 +164,7 @@ public class Shell extends CommandInterpreter {
             String interpreter = null;
             try {
                 interpreter = channel.call(new Shellinterpreter());
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
             if (interpreter == null) {

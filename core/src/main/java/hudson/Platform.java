@@ -47,7 +47,7 @@ public enum Platform {
      */
     public final char pathSeparator;
 
-    private Platform(char pathSeparator) {
+    Platform(char pathSeparator) {
         this.pathSeparator = pathSeparator;
     }
 

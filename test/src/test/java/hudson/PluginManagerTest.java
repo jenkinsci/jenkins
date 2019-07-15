@@ -46,6 +46,8 @@ import java.util.concurrent.Future;
 
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
+import jenkins.model.GlobalConfiguration;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -251,7 +253,7 @@ public class PluginManagerTest {
     // org.jenkinsci.plugins.dependencytest.depender:
     //   public class Depender {
     //     public static String getValue() {
-    //       if (Jenkins.getInstance().getPlugin("dependee") != null) {
+    //       if (Jenkins.get().getPlugin("dependee") != null) {
     //         return Dependee.getValue();
     //       }
     //       return "depender";
@@ -291,7 +293,7 @@ public class PluginManagerTest {
         try {
             callDependerValue();
             fail();
-        } catch (ClassNotFoundException _) {
+        } catch (ClassNotFoundException ex) {
         }
         
         // No extensions exist.
@@ -329,7 +331,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
         
         // Load dependee.
@@ -342,8 +344,8 @@ public class PluginManagerTest {
         assertEquals("dependee", callDependerValue());
         
         // No extensions exist.
-        // extensions in depender is not loaded.
-        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        // extensions in depender are loaded.
+        assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
     @Issue("JENKINS-21486")
@@ -378,7 +380,7 @@ public class PluginManagerTest {
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
-        } catch( ClassNotFoundException _ ){
+        } catch( ClassNotFoundException ex ){
         }
     }
 
@@ -532,5 +534,21 @@ public class PluginManagerTest {
         URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
 
         assertEquals(fromPlugin, fromToolkit);
+    }
+
+    // Sources for jenkins-50336.hpi are available at https://github.com/Vlatombe/jenkins-50336
+    //
+    // package io.jenkins.plugins;
+    // import org.jenkinsci.plugins.variant.OptionalExtension;
+    // import jenkins.model.GlobalConfiguration;
+    // @OptionalExtension public class MyGlobalConfiguration extends GlobalConfiguration {}
+    //
+    @Issue("JENKINS-50336")
+    @Test
+    public void optionalExtensionCanBeFoundAfterDynamicLoadOfVariant() throws Exception {
+        dynamicLoad("variant.hpi");
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
+        dynamicLoad("jenkins-50336.hpi");
+        assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
     }
 }
