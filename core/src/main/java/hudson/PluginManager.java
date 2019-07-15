@@ -64,6 +64,7 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -601,7 +602,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     void considerDetachedPlugin(String shortName) {
-        if (new File(rootDir, shortName + ".jpi").isFile() || new File(rootDir, shortName + ".hpi").isFile()) {
+        if (new File(rootDir, shortName + ".jpi").isFile() ||
+            new File(rootDir, shortName + ".hpi").isFile() ||
+            new File(rootDir, shortName + ".jpl").isFile() ||
+            new File(rootDir, shortName + ".hpl").isFile()) {
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
             return;
         }
@@ -2065,7 +2069,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 loaded.put(name, null);
             }
             // not found in any of the classloader. delegate.
-            throw new ClassNotFoundException(name);
+            ClassNotFoundException cnfe = new ClassNotFoundException(name);
+            MissingClassTelemetry.reportException(name, cnfe);
+            throw cnfe;
         }
 
         @Override

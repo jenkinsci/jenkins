@@ -405,7 +405,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -418,6 +418,12 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
                   <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>trilead-api</artifactId>
+                  <version>1.0.4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>

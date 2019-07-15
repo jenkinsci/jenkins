@@ -48,7 +48,7 @@ complete {
         rewriteLicense([], license("BSD License","http://jaxen.codehaus.org/license.html"))
     }
 
-    match("*:dom4j") {
+    match("org.jenkins-ci.dom4j:dom4j") {
         rewriteLicense([],license("BSD License","http://dom4j.sourceforge.net/dom4j-1.6.1/license.html"))
     }
 

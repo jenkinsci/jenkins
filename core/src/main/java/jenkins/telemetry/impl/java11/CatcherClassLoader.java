@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 Jesse Glick.
+ * Copyright (c) 2019 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,30 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model;
+package jenkins.telemetry.impl.java11;
 
-import java.io.File;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public class PeepholePermalinkTest {
+@Restricted(NoExternalUse.class)
+public class CatcherClassLoader extends ClassLoader {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Issue("JENKINS-17681")
-    @Test public void symlinks() throws Exception {
-        File link = new File(tmp.getRoot(), "link");
-        PeepholePermalink.writeSymlink(link, "stuff");
-        PeepholePermalink.symlinks.clear(); // so we actually test the filesystem
-        assertEquals("stuff", PeepholePermalink.readSymlink(link));
+    public CatcherClassLoader(ClassLoader parent) {
+        super(parent);
     }
 
+
+    /**
+     * Usually, the {@link ClassLoader} calls its parent and finally this method. So if we are here, it's the last
+     * element of the chain. It doesn't happen in {@link jenkins.util.AntClassLoader} so it has an special management
+     * on {@link hudson.ClassicPluginStrategy}
+     *
+     *
+     */
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        ClassNotFoundException e = new ClassNotFoundException(name);
+        MissingClassTelemetry.reportException(name, e);
+        throw e;
+    }
 }
