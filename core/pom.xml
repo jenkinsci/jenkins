@@ -56,11 +56,6 @@ THE SOFTWARE.
       <!-- specified in the parent -->
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>cli</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
       <version>1.6</version>

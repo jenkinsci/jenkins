@@ -31,7 +31,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -407,19 +406,17 @@ public abstract class Slave extends Node implements Serializable {
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-            
+
+            File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
             if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
-                File cliJar = Which.jarFile(CLI.class);
-                if (cliJar.isFile()) {
-                    name = "jenkins-cli.jar";
-                } else {
-                    URL res = findExecutableJar(cliJar, CLI.class);
-                    if (res != null) {
-                        return res;
-                    }
+                name = "jenkins-cli.jar";
+                // We know that Remoting CLI and Jenkins CLI are located in the same directory.
+                // TODO(oleg_nenashev): It is a hack, rework?
+                URL res = findExecutableJar(remotingJar, "hudson.cli.CLI");
+                if (res != null) {
+                    return res;
                 }
             } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
-                File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
                 if (remotingJar.isFile()) {
                     name = "lib/" + remotingJar.getName();
                 } else {
@@ -441,6 +438,10 @@ public abstract class Slave extends Node implements Serializable {
 
         /** Useful for {@code JenkinsRule.createSlave}, {@code hudson-dev:run}, etc. */
         private @CheckForNull URL findExecutableJar(File notActuallyJAR, Class<?> mainClass) throws IOException {
+            return findExecutableJar(notActuallyJAR, mainClass.getName());
+        }
+
+        private @CheckForNull URL findExecutableJar(File notActuallyJAR, @Nonnull String className) throws IOException {
             if (notActuallyJAR.getName().equals("classes")) {
                 File[] siblings = notActuallyJAR.getParentFile().listFiles();
                 if (siblings != null) {
@@ -448,7 +449,7 @@ public abstract class Slave extends Node implements Serializable {
                         if (actualJar.getName().endsWith(".jar")) {
                             try (JarFile jf = new JarFile(actualJar, false)) {
                                 Manifest mf = jf.getManifest();
-                                if (mf != null && mainClass.getName().equals(mf.getMainAttributes().getValue("Main-Class"))) {
+                                if (mf != null && className.equals(mf.getMainAttributes().getValue("Main-Class"))) {
                                     LOGGER.log(Level.FINE, "found {0}", actualJar);
                                     return actualJar.toURI().toURL();
                                 }

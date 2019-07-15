@@ -33,7 +33,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ========================================================================
-package hudson.util;
+package hudson.cli;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -52,7 +52,7 @@ import java.util.ArrayList;
  * @see java.util.StringTokenizer
  * @author Greg Wilkins (gregw)
  */
-public class QuotedStringTokenizer
+public class CLIQuotedStringTokenizer
     extends StringTokenizer
 {
     private final static String __delim=" \t\n\r";
@@ -68,11 +68,11 @@ public class QuotedStringTokenizer
     private boolean _single=true;
 
     public static String[] tokenize(String str) {
-        return new QuotedStringTokenizer(str).toArray();
+        return new CLIQuotedStringTokenizer(str).toArray();
     }
 
     public static String[] tokenize(String str, String delimiters) {
-        return new QuotedStringTokenizer(str,delimiters).toArray();
+        return new CLIQuotedStringTokenizer(str,delimiters).toArray();
     }
 
     /* ------------------------------------------------------------ */
@@ -88,7 +88,7 @@ public class QuotedStringTokenizer
      * @param returnQuotes
      *      If true, {@link #nextToken()} will include the quotation characters when they are present.
      */
-    public QuotedStringTokenizer(String str,
+    public CLIQuotedStringTokenizer(String str,
                                  String delim,
                                  boolean returnDelimiters,
                                  boolean returnQuotes)
@@ -108,7 +108,7 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
-    public QuotedStringTokenizer(String str,
+    public CLIQuotedStringTokenizer(String str,
                                  String delim,
                                  boolean returnDelimiters)
     {
@@ -116,14 +116,14 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
-    public QuotedStringTokenizer(String str,
+    public CLIQuotedStringTokenizer(String str,
                                  String delim)
     {
         this(str,delim,false,false);
     }
 
     /* ------------------------------------------------------------ */
-    public QuotedStringTokenizer(String str)
+    public CLIQuotedStringTokenizer(String str)
     {
         this(str,null,false,false);
     }

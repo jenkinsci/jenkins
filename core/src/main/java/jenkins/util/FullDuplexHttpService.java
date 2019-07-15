@@ -23,7 +23,6 @@
  */
 package jenkins.util;
 
-import hudson.cli.FullDuplexHttpStream;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
 import hudson.util.ChunkedInputStream;
@@ -45,7 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Server-side counterpart to {@link FullDuplexHttpStream}.
+ * Server-side counterpart to {@code hudson.cli.FullDuplexHttpStream} in the CLI package.
  * <p>
  * To use, bind this to an endpoint with {@link RootAction} (you will also need a {@link CrumbExclusion}).
  * @since 2.54

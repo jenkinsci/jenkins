@@ -130,9 +130,7 @@ public class SlaveTest {
         // Spot-check correct requests
         assertJnlpJarUrlIsAllowed(slave, "agent.jar");
         assertJnlpJarUrlIsAllowed(slave, "slave.jar");
-        assertJnlpJarUrlIsAllowed(slave, "remoting.jar");
-        assertJnlpJarUrlIsAllowed(slave, "jenkins-cli.jar");
-        assertJnlpJarUrlIsAllowed(slave, "hudson-cli.jar");
+       assertJnlpJarUrlIsAllowed(slave, "hudson-cli.jar");
 
         // Check that requests to other WEB-INF contents fail
         assertJnlpJarUrlFails(slave, "web.xml");
@@ -150,6 +148,15 @@ public class SlaveTest {
         assertJnlpJarUrlFails(slave, "..\\foo\\bar");
         assertJnlpJarUrlFails(slave, "foo/../../bar");
         assertJnlpJarUrlFails(slave, "./../foo/bar");
+    }
+
+    @Issue("JENKINS-58494")
+    public void shouldResolveCLIJARsAsJNLPJars() throws Exception {
+        Slave slave = j.createSlave();
+
+        // Spot-check correct requests
+        assertJnlpJarUrlIsAllowed(slave, "jenkins-cli.jar");
+        assertJnlpJarUrlIsAllowed(slave, "hudson-cli.jar");
     }
 
     private void assertJnlpJarUrlFails(@Nonnull Slave slave, @Nonnull String url) throws Exception {

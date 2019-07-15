@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
@@ -82,7 +81,7 @@ class SSHCLI {
         StringBuilder command = new StringBuilder();
 
         for (String arg : args) {
-            command.append(QuotedStringTokenizer.quote(arg));
+            command.append(CLIQuotedStringTokenizer.quote(arg));
             command.append(' ');
         }
 
