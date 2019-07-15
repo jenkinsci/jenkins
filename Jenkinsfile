@@ -111,6 +111,14 @@ void withMavenEnv(List envVars = [], def javaVersion, def body) {
     // node.
     String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
     String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
+    
+    // Add any additional environment variables.
+    mvnEnv.addAll(envVars)
+    
+    // Invoke the body closure we're passed within the environment we've created.
+    withEnv(mvnEnv) {
+        body.call()
+    }
 }
 
 // Integration tests, see essentials.yml
@@ -118,4 +126,3 @@ essentialsTest()
 
 // Publish to incrementals if everything is fine
 infra.maybePublishIncrementals()
-
