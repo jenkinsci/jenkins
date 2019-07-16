@@ -628,13 +628,23 @@ public class Functions {
     	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
     }
 
-    public static boolean useLocalTime() {
+    public static boolean useUserTimeZone() {
         return TimeZoneProperty.forCurrentUser() != "";
     }
 
-    public static String getTimeZone() {
+    public static String getUserTimeZone() {
         return TimeZoneProperty.forCurrentUser();
     }
+
+    public static String getUserTimeZonePostfix() {
+        if (!useUserTimeZone()) {
+            return "";
+        }
+
+        TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
+        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+    }
+
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
