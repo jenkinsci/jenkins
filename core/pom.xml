@@ -117,11 +117,6 @@ THE SOFTWARE.
       <version>3.0.45</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>trilead-putty-extension</artifactId>
-      <version>1.2</version>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <version>${stapler.version}</version>
