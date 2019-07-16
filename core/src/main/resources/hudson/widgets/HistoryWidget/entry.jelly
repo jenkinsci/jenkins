@@ -41,7 +41,10 @@ THE SOFTWARE.
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
         <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" />
+          <j:choose>
+            <j:when test="${h.useLocalTime()}"><i:formatDate value="${build.timestamp.time}" type="both" dateStyle="long" timeStyle="long" timeZone="${h.getTimeZone()}" /></j:when>
+            <j:otherwise><i:formatDate value="${build.timestamp.time}" type="both" dateStyle="long" timeStyle="long" timeZone="${h.getTimeZone()}" /></j:otherwise>
+          </j:choose>
         </a>
         <j:if test="${build.building}">
 	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
