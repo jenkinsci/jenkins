@@ -733,7 +733,7 @@ LABEL.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url( "../images/16x16/warning.png" );
+    background-image: url("../images/16x16/warning.png");
     background-size: 16px 16px;
     background-position: left center;
     background-repeat: no-repeat;
@@ -749,7 +749,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
+    background-image: url("../images/16x16/go-next.png"); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
