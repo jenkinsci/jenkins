@@ -629,7 +629,7 @@ public class Functions {
     }
 
     public static boolean useUserTimeZone() {
-        return TimeZoneProperty.forCurrentUser() != "";
+        return TimeZoneProperty.forCurrentUser() != null;
     }
 
     public static String getUserTimeZone() {
