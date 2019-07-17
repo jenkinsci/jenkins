@@ -7,9 +7,15 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
 
+/**
+ * A UserProperty that allows a user to specify a time zone for displaying time.
+ *
+ * @author Nathan Grubb
+ */
 public class TimeZoneProperty extends UserProperty implements Saveable {
     /**
      * Time Zone ID defined by the user.
@@ -32,7 +38,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
     }
 
     @Extension
-    @Symbol("timeZone")
+    @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
         @Override
@@ -66,6 +72,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         }
     }
 
+    @Nullable
     public static String forCurrentUser() {
         final User current = User.current();
         if (current == null) {
