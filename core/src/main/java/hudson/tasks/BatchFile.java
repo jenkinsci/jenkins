@@ -25,7 +25,6 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import hudson.util.LineEndingConversion;
@@ -101,20 +100,32 @@ public class BatchFile extends UnstableAwareCommandInterpreter {
          * Performs on-the-fly validation of the errorlevel.
          */
         @Restricted(DoNotUse.class)
-        public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
-            return helpCheckUnstableReturn(value);
+        static public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
+            return helpCheckUnstableReturn(value, new InvalidExitCodeHelper() {
+                @Override
+                public String messageZero() {
+                    return hudson.tasks.Messages.BatchFile_invalid_exit_code_zero();
+                }
+
+                @Override
+                public String messageRange(Object unstableReturn) {
+                    return hudson.tasks.Messages.BatchFile_invalid_exit_code_range((Object) unstableReturn);
+                }
+
+                @Override
+                public int min() {
+                    return Integer.MIN_VALUE;
+                }
+
+                @Override
+                public int max() {
+                    return Integer.MAX_VALUE;
+                }
+            });
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
-    }
-
-    static String invalidExitCodeZero() {
-        return hudson.tasks.Messages.BatchFile_invalid_exit_code_zero();
-    }
-
-    static String invalidExitCodeRange(long unstableReturn) {
-        return hudson.tasks.Messages.BatchFile_invalid_exit_code_range((Object) unstableReturn);
     }
 }

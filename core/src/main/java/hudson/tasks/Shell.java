@@ -187,16 +187,28 @@ public class Shell extends UnstableAwareCommandInterpreter {
          * Performs on-the-fly validation of the exit code.
          */
         @Restricted(DoNotUse.class)
-        public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
-            return helpCheckUnstableReturn(value);
-        }
+        public static FormValidation doCheckUnstableReturn(@QueryParameter String value) {
+            return helpCheckUnstableReturn(value, new InvalidExitCodeHelper() {
+                @Override
+                public String messageZero() {
+                    return hudson.tasks.Messages.Shell_invalid_exit_code_zero();
+                }
 
-        static String invalidExitCodeZero() {
-            return hudson.tasks.Messages.Shell_invalid_exit_code_zero();
-        }
+                @Override
+                public String messageRange(Object unstableReturn) {
+                    return hudson.tasks.Messages.Shell_invalid_exit_code_range(unstableReturn);
+                }
 
-        static String invalidExitCodeRange(Object unstableReturn) {
-            return hudson.tasks.Messages.Shell_invalid_exit_code_range(unstableReturn);
+                @Override
+                public int min() {
+                    return 1;
+                }
+
+                @Override
+                public int max() {
+                    return 25;
+                }
+            });
         }
 
         @Override

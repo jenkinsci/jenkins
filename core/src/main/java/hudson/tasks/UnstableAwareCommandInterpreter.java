@@ -2,8 +2,6 @@ package hudson.tasks;
 
 import hudson.Util;
 import hudson.util.FormValidation;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.QueryParameter;
 
 public abstract class UnstableAwareCommandInterpreter extends CommandInterpreter {
@@ -11,12 +9,20 @@ public abstract class UnstableAwareCommandInterpreter extends CommandInterpreter
         super(command);
     }
 
-    static String invalidExitCodeZero() { return null; };
-    static String invalidExitCodeRange(Object o) { return null; };
+    interface InvalidExitCodeHelper {
+        String messageZero();
+
+        String messageRange(Object unstableReturn);
+
+        int min();
+
+        int max();
+    }
+
     /**
      * Performs on-the-fly validation of the exit code.
      */
-    protected static FormValidation helpCheckUnstableReturn(@QueryParameter String value) {
+    protected static FormValidation helpCheckUnstableReturn(@QueryParameter String value, InvalidExitCodeHelper helper) {
         value = Util.fixEmptyAndTrim(value);
         if (value == null) {
             return FormValidation.ok();
@@ -28,10 +34,10 @@ public abstract class UnstableAwareCommandInterpreter extends CommandInterpreter
             return FormValidation.error(hudson.model.Messages.Hudson_NotANumber());
         }
         if (unstableReturn == 0) {
-            return FormValidation.warning(invalidExitCodeZero());
+            return FormValidation.warning(helper.messageZero());
         }
-        if (unstableReturn < 1 || unstableReturn > 255) {
-            return FormValidation.error(invalidExitCodeRange(unstableReturn));
+        if (unstableReturn < helper.min() || unstableReturn > helper.max()) {
+            return FormValidation.error(helper.messageRange(unstableReturn));
         }
         return FormValidation.ok();
     }
