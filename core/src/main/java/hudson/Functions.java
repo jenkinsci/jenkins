@@ -672,6 +672,7 @@ public class Functions {
         return TimeZoneProperty.forCurrentUser() != null;
     }
 
+    @Nullable
     public static String getUserTimeZone() {
         return TimeZoneProperty.forCurrentUser();
     }
