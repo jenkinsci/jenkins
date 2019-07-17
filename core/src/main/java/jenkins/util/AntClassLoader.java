@@ -816,7 +816,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     return Files.newInputStream(resource.toPath());
                 }
             } else {
-                return storeAndConvert(jarFile, file, resourceName, (jar, entry) -> jar.getInputStream(entry));
+                return storeAndConvert(jarFile, file, resourceName, JarFile::getInputStream);
             }
         } catch (Exception e) {
             log("Ignoring Exception " + e.getClass().getName() + ": " + e.getMessage()
