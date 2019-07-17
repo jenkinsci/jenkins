@@ -773,11 +773,12 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         return parent == null ? super.getResourceAsStream(name) : parent.getResourceAsStream(name);
     }
 
-    private interface Convert<T> {
+    @FunctionalInterface
+    private interface Converter<T> {
         T convert(@Nonnull JarFile jarFile, @Nonnull JarEntry entry) throws IOException;
     }
 
-    private <T> T storeAndConvert(JarFile jarFile, File file, String resourceName, Convert<T> convert) throws IOException {
+    private <T> T storeAndConvert(JarFile jarFile, File file, String resourceName, Converter<T> converter) throws IOException {
         if (jarFile == null) {
             if (file.exists()) {
                 jarFile = new JarFile(file);
@@ -792,7 +793,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         JarEntry entry = jarFile.getJarEntry(resourceName);
         if (entry == null)
             return null;
-        return convert.convert(jarFile, entry);
+        return converter.convert(jarFile, entry);
     }
 
     /**
