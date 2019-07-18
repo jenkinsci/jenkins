@@ -1,6 +1,11 @@
 [![][ButlerImage]][website] 
 
 # About
+
+[![Weekly Release](https://img.shields.io/badge/dynamic/yaml.svg?url=https://raw.githubusercontent.com/jenkins-infra/jenkins.io/master/content/_data/changelogs/weekly.yml&label=Weekly%20Release&query=$[-1:].version&color=green)](https://jenkins.io/changelog/)
+[![LTS Release](https://img.shields.io/badge/dynamic/yaml.svg?url=https://raw.githubusercontent.com/jenkins-infra/jenkins.io/master/content/_data/changelogs/lts.yml&label=LTS%20Release&query=$[-1:].version&color=blue)](https://jenkins.io/changelog-stable/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
+
 In a nutshell, Jenkins is the leading open-source automation server. 
 Built with Java, it provides over 1000 plugins to support automating virtually anything, 
 so that humans can actually spend their time doing things machines cannot.
