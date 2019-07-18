@@ -93,7 +93,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.
-            LOGGER.log(Level.WARNING, "Invalid user time zone {0} defaulting to {1}", new Object[]{tzp.timeZoneName, tz.getID()});
+            LOGGER.log(Level.WARNING, "Invalid user time zone {0} defaulting to {1} for {2}", new Object[]{tzp.timeZoneName, tz.getID(), current.getId()});
         }
 
         return tz.getID();
