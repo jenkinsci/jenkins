@@ -84,6 +84,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
             return null;
         }
 
-        return tzp.timeZoneName;
+        TimeZone tz = TimeZone.getTimeZone(tzp.timeZoneName);
+        return tz.getID();
     }
 }
