@@ -10,6 +10,8 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * A UserProperty that allows a user to specify a time zone for displaying time.
@@ -23,6 +25,8 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
      */
     @CheckForNull
     private String timeZoneName;
+
+    private static final Logger LOGGER = Logger.getLogger(TimeZoneProperty.class.getName());
 
     @DataBoundConstructor
     public TimeZoneProperty(@CheckForNull String timeZoneName) {
@@ -85,6 +89,13 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         }
 
         TimeZone tz = TimeZone.getTimeZone(tzp.timeZoneName);
+        if (tz.getID() != tzp.timeZoneName) {
+            //TimeZone.getTimeZone returns GMT on invalid time zone so
+            //warn the user if the time zone returned is different from
+            //the one they specified.
+            LOGGER.log(Level.WARNING, "Invalid user time zone {0} defaulting to {1}", new Object[]{tzp.timeZoneName, tz.getID()});
+        }
+
         return tz.getID();
     }
 }
