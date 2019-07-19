@@ -37,7 +37,7 @@ public class TimeZonePropertyTest {
         user.addProperty(tzp);
 
         String timeZone = TimeZoneProperty.forCurrentUser();
-        assertEquals("GMT", timeZone);
+        assertEquals(TimeZone.getDefault().getID(), timeZone);
     }
 
     @Test
