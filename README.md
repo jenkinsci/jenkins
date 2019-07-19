@@ -2,8 +2,8 @@
 
 # About
 
-[![Weekly Release](https://img.shields.io/badge/dynamic/yaml.svg?url=https://raw.githubusercontent.com/jenkins-infra/jenkins.io/master/content/_data/changelogs/weekly.yml&label=Weekly%20Release&query=$[-1:].version&color=green)](https://jenkins.io/changelog/)
-[![LTS Release](https://img.shields.io/badge/dynamic/yaml.svg?url=https://raw.githubusercontent.com/jenkins-infra/jenkins.io/master/content/_data/changelogs/lts.yml&label=LTS%20Release&query=$[-1:].version&color=blue)](https://jenkins.io/changelog-stable/)
+[![Weekly Release](https://img.shields.io/badge/dynamic/json.svg?url=http://ftp-nyc.osuosl.org/pub/jenkins/updates/current/update-center.actual.json&label=Weekly%20Release&query=$.core.version&color=green)](https://jenkins.io/changelog/)
+[![LTS Release](https://img.shields.io/badge/dynamic/json.svg?url=http://ftp-nyc.osuosl.org/pub/jenkins/updates/stable/update-center.actual.json&label=LTS%20Release&query=$.core.version&color=blue)](https://jenkins.io/changelog-stable/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
