@@ -26,12 +26,16 @@
 
 #tasks {
   margin-bottom: 20px;
+  display: inline-block;
 }
 
 #tasks .task {
   margin-bottom: 4px;
   font-size: 14px;
+  max-width: 325px;
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* buildQueue */
