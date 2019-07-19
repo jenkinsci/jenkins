@@ -93,17 +93,8 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.
-
-            //Figure out what the default time zone is for Jenkins
-            //so we can use that in this case.
-            String timeZoneArg = System.getProperty("org.apache.commons.jelly.tags.fmt.timeZone");
-            tz = TimeZone.getTimeZone(timeZoneArg);
-
-            if (tz.getID() != timeZoneArg) {
-               return TimeZone.getDefault().getID();
-            }
-
-            LOGGER.log(Level.WARNING, "Invalid user time zone {0} defaulting to {1} for {2}", new Object[]{tzp.timeZoneName, tz.getID(), current.getId()});
+            LOGGER.log(Level.WARNING, "Invalid user time zone {0} for {1}", new Object[]{tzp.timeZoneName, current.getId()});
+            return null;
         }
 
         return tz.getID();
