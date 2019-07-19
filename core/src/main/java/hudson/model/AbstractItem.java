@@ -255,6 +255,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfirmRename(@QueryParameter String newName) throws IOException {
+
+        if (!isNameEditable()) {
+            throw new IllegalArgumentException("Trying to rename an item that has not editable name.");
+        }
+
         newName = newName == null ? null : newName.trim();
         FormValidation validationError = doCheckNewName(newName);
         if (validationError.kind != FormValidation.Kind.OK) {
@@ -351,6 +356,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * you can use this method.
      */
     protected void renameTo(final String newName) throws IOException {
+
+        if (!isNameEditable()) {
+            throw new IllegalArgumentException("Trying to rename an item that has not editable name.");
+        }
+
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         String oldName = this.name;

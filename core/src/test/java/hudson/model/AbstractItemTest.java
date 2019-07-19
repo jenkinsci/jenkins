@@ -4,8 +4,12 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -90,5 +94,58 @@ public class AbstractItemTest {
         i.setDisplayNameOrNull(displayName);
         assertEquals(displayName, i.getDisplayNameOrNull());
         assertEquals(displayName, i.getDisplayName());
+    }
+
+    private class NameNotEditableItem extends AbstractItem {
+
+        protected NameNotEditableItem(ItemGroup parent, String name){
+            super(parent, name);
+        }
+
+        @Override
+        public Collection<? extends Job> getAllJobs() {
+            return null;
+        }
+
+        @Override
+        public boolean isNameEditable() {
+            return false; //so far it's the default value, but it's good to be explicit for test.
+        }
+    }
+
+    @Test
+    public void renameMethodShouldThrowExceptionWhenNotIsNameEditable() throws IOException {
+
+        //GIVEN
+        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
+
+        //WHEN
+        try {
+            item.renameTo("NewName");
+            fail("An item with isNameEditable false must throw exception when trying to rename it.");
+        } catch (IllegalArgumentException e) {
+
+            //THEN
+            assertEquals(e.getMessage(),"Trying to rename an item that has not editable name.");
+            assertEquals("NameNotEditableItem",item.getName());
+        }
+    }
+
+    @Test
+    public void doConfirmRenameMustThrowExceptionWhenNotIsNameEditable() throws IOException {
+
+        //GIVEN
+        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
+
+        //WHEN
+        try {
+            item.doConfirmRename("MyNewName");
+            fail("An item with isNameEditable false must throw exception when trying to call doConfirmRename.");
+        } catch (IllegalArgumentException e) {
+
+            //THEN
+            assertEquals(e.getMessage(),"Trying to rename an item that has not editable name.");
+            assertEquals("NameNotEditableItem",item.getName());
+        }
     }
 }
