@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import org.jenkinsci.Symbol;
@@ -37,8 +38,13 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         this(null);
     }
 
+    @Override
     public void save() throws IOException {
         user.save();
+    }
+
+    public void setTimeZoneName(@CheckForNull String timeZoneName) {
+        this.timeZoneName = timeZoneName;
     }
 
     @Extension
@@ -53,6 +59,16 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         @Override
         public UserProperty newInstance(User user) {
             return new TimeZoneProperty();
+        }
+
+        @Override
+        public synchronized void load() {
+            super.load();
+        }
+
+        @Override
+        public synchronized void save() {
+            super.save();
         }
 
         @Override

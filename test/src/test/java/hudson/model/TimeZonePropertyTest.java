@@ -27,7 +27,7 @@ public class TimeZonePropertyTest {
     }
 
     @Test
-    public void testEnsureInvalidTimeZoneDefaultsToGMT() throws IOException {
+    public void testEnsureInvalidTimeZoneDefaultsToNull() throws IOException {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.get("John Smith", true, java.util.Collections.emptyMap());
@@ -36,8 +36,7 @@ public class TimeZonePropertyTest {
         TimeZoneProperty tzp = new TimeZoneProperty("InvalidTimeZoneName");
         user.addProperty(tzp);
 
-        String timeZone = TimeZoneProperty.forCurrentUser();
-        assertEquals(TimeZone.getDefault().getID(), timeZone);
+        assertEquals(null, TimeZoneProperty.forCurrentUser());
     }
 
     @Test
