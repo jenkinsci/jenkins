@@ -799,7 +799,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     }
 
-    /*package*/ synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
+    @Restricted(NoExternalUse.class)
+    public synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
         addConnectionCheckJob(job.site);
         return job.submit();
     }
@@ -1595,7 +1596,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         if (dynamicLoad) {
                             try {
                                 // remove the existing, disabled inactive plugin to force a new one to load
-                                pm.dynamicLoad(getDestination(), true);
+                                pm.dynamicLoad(getDestination(), true, null);
                             } catch (Exception e) {
                                 LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
                                 error = e;
@@ -1971,6 +1972,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected final boolean dynamicLoad;
 
+        @CheckForNull List<PluginWrapper> batch;
+
         /**
          * @deprecated as of 1.442
          */
@@ -2027,7 +2030,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 if (dynamicLoad) {
                     try {
-                        pm.dynamicLoad(getDestination());
+                        pm.dynamicLoad(getDestination(), false, batch);
                     } catch (RestartRequiredException e) {
                         throw new SuccessButRequiresRestart(e.message);
                     } catch (Exception e) {
@@ -2123,6 +2126,37 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 throw new IOException("Failed to rename "+src+" to "+dst);
             }
         }
+
+        void setBatch(List<PluginWrapper> batch) {
+            this.batch = batch;
+        }
+
+    }
+
+    @Restricted(NoExternalUse.class)
+    public final class CompleteBatchJob extends UpdateCenterJob {
+
+        private final List<PluginWrapper> batch;
+        private final long start;
+
+        public CompleteBatchJob(List<PluginWrapper> batch, long start, UUID correlationId) {
+            super(getCoreSource());
+            this.batch = batch;
+            this.start = start;
+            setCorrelationId(correlationId);
+        }
+
+        @Override
+        public void run() {
+            LOGGER.info("Completing installing of plugin batch…");
+            try {
+                Jenkins.get().getPluginManager().start(batch);
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, "Failed to start some plugins", x);
+            }
+            LOGGER.log(INFO, "Completed installation of {0} plugins in {1}", new Object[] {batch.size(), Util.getTimeSpanString((System.nanoTime() - start) / 1_000_000)});
+        }
+
     }
 
     /**

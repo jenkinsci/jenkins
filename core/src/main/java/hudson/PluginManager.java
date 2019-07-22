@@ -346,11 +346,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     private final PluginStrategy strategy;
 
-    /**
-     * Temporarily set while {@link #install(Collection, boolean, UUID)} is installing a batch of plugins.
-     */
-    private volatile List<PluginWrapper> batch;
-
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
 
@@ -877,14 +872,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * TODO: revisit where/how to expose this. This is an experiment.
      */
     public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
-        dynamicLoad(arc, false);
+        dynamicLoad(arc, false, null);
     }
 
     /**
      * Try the dynamicLoad, removeExisting to attempt to dynamic load disabled plugins
      */
     @Restricted(NoExternalUse.class)
-    public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
+    public void dynamicLoad(File arc, boolean removeExisting, @CheckForNull List<PluginWrapper> batch) throws IOException, InterruptedException, RestartRequiredException {
         try (ACLContext context = ACL.as(ACL.SYSTEM)) {
             LOGGER.info("Attempting to dynamic load "+arc);
             PluginWrapper p = null;
@@ -950,7 +945,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    private void start(List<PluginWrapper> plugins) throws Exception {
+    @Restricted(NoExternalUse.class)
+    public void start(List<PluginWrapper> plugins) throws Exception {
         Jenkins.get().refreshExtensions();
 
         for (PluginWrapper p : plugins) {
@@ -1503,6 +1499,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad, @CheckForNull UUID correlationId) {
         List<Future<UpdateCenter.UpdateCenterJob>> installJobs = new ArrayList<>();
 
+        LOGGER.log(INFO, "Starting installation of a batch of {0} plugins plus their dependencies", plugins.size());
+        long start = System.nanoTime();
+        List<PluginWrapper> batch = new ArrayList<>();
+
         for (String n : plugins) {
             // JENKINS-22080 plugin names can contain '.' as could (according to rumour) update sites
             int index = n.indexOf('.');
@@ -1534,18 +1534,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }
-            Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
+            Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId, batch);
             installJobs.add(jobFuture);
         }
 
-        trackInitialPluginInstall(installJobs);
-
-        return installJobs;
-    }
-
-    private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
         final Jenkins jenkins = Jenkins.get();
         final UpdateCenter updateCenter = jenkins.getUpdateCenter();
+
+        installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
+
         final Authentication currentAuth = Jenkins.getAuthentication();
 
         if (!jenkins.getInstallState().isSetupComplete()) {
@@ -1583,44 +1580,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }.start();
         }
-        
-        // Fire a one-off thread to wait for the plugins to be deployed and then
-        // refresh the dependent plugins list.
-        new Thread() {
-            @Override
-            public void run() {
-                LOGGER.info("Starting installation of a batch of " + installJobs.size() + " plugins");
-                long start = System.nanoTime();
-                batch = new ArrayList<>();
-                try {
-                INSTALLING: while (true) {
-                    for (Future<UpdateCenter.UpdateCenterJob> deployJob : installJobs) {
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            LOGGER.log(SEVERE, "Unexpected error while waiting for some plugins to install. Plugin Manager state may be invalid. Please restart Jenkins ASAP.", e);
-                        }
-                        if (!deployJob.isCancelled() && !deployJob.isDone()) {
-                            // One of the plugins is not installing/canceled, so
-                            // go back to sleep and try again in a while.
-                            continue INSTALLING;
-                        }
-                    }
-                    // All the plugins are loaded and may now be started.
-                    try {
-                        PluginManager.this.start(batch);
-                    } catch (Exception x) {
-                        LOGGER.log(Level.WARNING, "Failed to start some plugins", x);
-                    }
-                    break;
-                }
-                LOGGER.info("Completed installation of " + installJobs.size() + " plugins in " + Util.getTimeSpanString((System.nanoTime() - start) / 1_000_000));
-                } finally {
-                    batch = null;
-                }
-            }
-        }.start();
-        
+
+        return installJobs;
     }
 
     private UpdateSite.Plugin getPlugin(String pluginName, String siteName) {

@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <tr id="row${it.id}">
+    <td style="vertical-align: top; padding-right:1em">${%Loading plugin extensions}</td>
+    <td style="vertical-align:middle">
+      <!-- TODO could set an actual status icon, if this is ever actually displayed in the UI (normally run from setup wizard which does not use this display) -->
+      <l:icon class="icon-blue' icon-md"/>
+    </td>
+  </tr>
+</j:jelly>
