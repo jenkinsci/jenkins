@@ -84,7 +84,6 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.accmod.Restricted;
@@ -150,6 +149,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static hudson.init.InitMilestone.*;
 import static java.util.logging.Level.*;
@@ -345,6 +345,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Strategy for creating and initializing plugins
      */
     private final PluginStrategy strategy;
+
+    /**
+     * Temporarily set while {@link #install(Collection, boolean, UUID)} is installing a batch of plugins.
+     */
+    private volatile List<PluginWrapper> batch;
 
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -928,9 +933,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 p.resolvePluginDependencies();
                 strategy.load(p);
 
-                Jenkins.get().refreshExtensions();
+                if (batch != null) {
+                    batch.add(p);
+                } else {
+                    start(Collections.singletonList(p));
+                }
 
-                p.getPlugin().postInitialize();
             } catch (Exception e) {
                 failedPlugins.add(new FailedPlugin(sn, e));
                 activePlugins.remove(p);
@@ -938,46 +946,54 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
-            // run initializers in the added plugin
-            Reactor r = new Reactor(InitMilestone.ordering());
-            final ClassLoader loader = p.classLoader;
-            r.addAll(new InitializerFinder(loader) {
-                @Override
-                protected boolean filter(Method e) {
-                    return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
-                }
-            }.discoverTasks(r));
-            try {
-                new InitReactorRunner().run(r);
-            } catch (ReactorException e) {
-                throw new IOException("Failed to initialize "+ sn +" plugin",e);
-            }
-
-            // recalculate dependencies of plugins optionally depending the newly deployed one.
-            for (PluginWrapper depender: plugins) {
-                if (depender.equals(p)) {
-                    // skip itself.
-                    continue;
-                }
-                for (Dependency d: depender.getOptionalDependencies()) {
-                    if (d.shortName.equals(p.getShortName())) {
-                        // this plugin depends on the newly loaded one!
-                        // recalculate dependencies!
-                        getPluginStrategy().updateDependency(depender, p);
-                        break;
-                    }
-                }
-            }
-
-            // Redo who depends on who.
-            resolveDependentPlugins();
-
-            try {
-                Jenkins.get().refreshExtensions();
-            } catch (ExtensionRefreshException e) {
-                throw new IOException("Failed to refresh extensions after installing " + sn + " plugin", e);
-            }
             LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+        }
+    }
+
+    private void start(List<PluginWrapper> plugins) throws Exception {
+        Jenkins.get().refreshExtensions();
+
+        for (PluginWrapper p : plugins) {
+            p.getPlugin().postInitialize();
+        }
+
+        // run initializers in the added plugins
+        Reactor r = new Reactor(InitMilestone.ordering());
+        Set<ClassLoader> loaders = plugins.stream().map(p -> p.classLoader).collect(Collectors.toSet());
+        r.addAll(new InitializerFinder(uberClassLoader) {
+            @Override
+            protected boolean filter(Method e) {
+                return !loaders.contains(e.getDeclaringClass().getClassLoader()) || super.filter(e);
+            }
+        }.discoverTasks(r));
+        new InitReactorRunner().run(r);
+
+        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
+
+        // recalculate dependencies of plugins optionally depending the newly deployed ones.
+        for (PluginWrapper depender: this.plugins) {
+            if (plugins.contains(depender)) {
+                // skip itself.
+                continue;
+            }
+            for (Dependency d: depender.getOptionalDependencies()) {
+                PluginWrapper dependee = pluginsByName.get(d.shortName);
+                if (dependee != null) {
+                    // this plugin depends on the newly loaded one!
+                    // recalculate dependencies!
+                    getPluginStrategy().updateDependency(depender, dependee);
+                    break;
+                }
+            }
+        }
+
+        // Redo who depends on who.
+        resolveDependentPlugins();
+
+        try {
+            Jenkins.get().refreshExtensions();
+        } catch (ExtensionRefreshException e) {
+            throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
     }
 
@@ -1573,6 +1589,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         new Thread() {
             @Override
             public void run() {
+                LOGGER.info("Starting installation of a batch of " + installJobs.size() + " plugins");
+                long start = System.nanoTime();
+                batch = new ArrayList<>();
+                try {
                 INSTALLING: while (true) {
                     for (Future<UpdateCenter.UpdateCenterJob> deployJob : installJobs) {
                         try {
@@ -1586,9 +1606,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                             continue INSTALLING;
                         }
                     }
-                    // All the plugins are installed. It's now safe to refresh.
-                    resolveDependentPlugins();
+                    // All the plugins are loaded and may now be started.
+                    try {
+                        PluginManager.this.start(batch);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "Failed to start some plugins", x);
+                    }
                     break;
+                }
+                LOGGER.info("Completed installation of " + installJobs.size() + " plugins in " + Util.getTimeSpanString((System.nanoTime() - start) / 1_000_000));
+                } finally {
+                    batch = null;
                 }
             }
         }.start();
