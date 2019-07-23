@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * @author kingfai
@@ -141,10 +142,10 @@ public class AbstractItemTest {
         try {
             item.doConfirmRename("MyNewName");
             fail("An item with isNameEditable false must throw exception when trying to call doConfirmRename.");
-        } catch (IllegalArgumentException e) {
+        } catch (Failure f) {
 
             //THEN
-            assertEquals(e.getMessage(),"Trying to rename an item that has not editable name.");
+            assertEquals(f.getMessage(),"This item has not an editable name.");
             assertEquals("NameNotEditableItem",item.getName());
         }
     }
