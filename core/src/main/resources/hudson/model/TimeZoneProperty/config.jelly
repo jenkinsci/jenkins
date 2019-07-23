@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry field="timeZoneName" title="${%Time Zone}">
+  <f:entry field="timeZoneName" title="${%title}">
     <f:select />
   </f:entry>
 </j:jelly>
