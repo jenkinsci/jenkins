@@ -363,7 +363,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>2.3</version>
+                  <version>${matrix-auth.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
