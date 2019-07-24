@@ -801,7 +801,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Restricted(NoExternalUse.class)
     public synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
-        addConnectionCheckJob(job.site);
+        if (job.site != null) {
+            addConnectionCheckJob(job.site);
+        }
         return job.submit();
     }
 
@@ -847,7 +849,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull UpdateSite site) {
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
-                if (job instanceof ConnectionCheckJob && job.site.getId().equals(site.getId())) {
+                if (job instanceof ConnectionCheckJob && job.site != null && job.site.getId().equals(site.getId())) {
                     return (ConnectionCheckJob) job;
                 }
             }
@@ -1332,7 +1334,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Which {@link UpdateSite} does this belong to?
          */
-        public final UpdateSite site;
+        public final @CheckForNull UpdateSite site;
 
         /**
          * Simple correlation ID that can be used to associated a batch of jobs e.g. the
@@ -1345,7 +1347,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected Throwable error;
 
-        protected UpdateCenterJob(UpdateSite site) {
+        protected UpdateCenterJob(@CheckForNull UpdateSite site) {
             this.site = site;
         }
 
@@ -1493,7 +1495,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public void run() {
             connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.UNCHECKED);
             connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.UNCHECKED);
-            if (ID_UPLOAD.equals(site.getId())) {
+            if (site == null || ID_UPLOAD.equals(site.getId())) {
                 return;
             }
             LOGGER.fine("Doing a connectivity check");
@@ -2120,7 +2122,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected void replace(File dst, File src) throws IOException {
-            if (!site.getId().equals(ID_UPLOAD)) {
+            if (site == null || !site.getId().equals(ID_UPLOAD)) {
                 verifyChecksums(this, plugin, src);
             }
 
@@ -2300,6 +2302,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         protected URL getURL() throws MalformedURLException {
+            if (site == null) {
+                throw new MalformedURLException("no update site defined");
+            }
             return new URL(site.getData().core.url);
         }
 
@@ -2317,6 +2322,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected void replace(File dst, File src) throws IOException {
+            if (site == null) {
+                throw new IOException("no update site defined");
+            }
             verifyChecksums(this, site.getData().core, src);
             Lifecycle.get().rewriteHudsonWar(src);
         }
@@ -2328,6 +2336,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         protected URL getURL() throws MalformedURLException {
+            if (site == null) {
+                throw new MalformedURLException("no update site defined");
+            }
             return new URL(site.getData().core.url);
         }
 
