@@ -143,6 +143,12 @@ THE SOFTWARE.
       <artifactId>bootstrap</artifactId>
       <version>1.3.2</version>
       <classifier>core-assets</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.ui</groupId>
+          <artifactId>jquery-detached</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
