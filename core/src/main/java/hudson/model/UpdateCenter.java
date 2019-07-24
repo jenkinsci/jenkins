@@ -1661,8 +1661,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected abstract File getDestination();
 
+        /**
+         * Code name used for logging.
+         */
         @Exported
         public abstract String getName();
+
+        /**
+         * Display name used for the GUI.
+         * @since TODO
+         */
+        public String getDisplayName() {
+            return getName();
+        }
 
         /**
          * Called when the whole thing went successfully.
@@ -2002,7 +2013,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return new File(baseDir, plugin.name + ".hpi");
         }
 
+        @Override
         public String getName() {
+            return plugin.name;
+        }
+
+        @Override
+        public String getDisplayName() {
             return plugin.getDisplayName();
         }
 
@@ -2193,7 +2210,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return new File(baseDir, plugin.name + ".bak");
         }
 
+        @Override
         public String getName() {
+            return plugin.name;
+        }
+
+        @Override
+        public String getDisplayName() {
             return plugin.getDisplayName();
         }
 
