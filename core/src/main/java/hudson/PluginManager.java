@@ -881,7 +881,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting, @CheckForNull List<PluginWrapper> batch) throws IOException, InterruptedException, RestartRequiredException {
         try (ACLContext context = ACL.as(ACL.SYSTEM)) {
-            LOGGER.info("Attempting to dynamic load "+arc);
+            LOGGER.log(FINE, "Attempting to dynamic load {0}", arc);
             PluginWrapper p = null;
             String sn;
             try {
@@ -941,7 +941,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 throw new IOException("Failed to install "+ sn +" plugin",e);
             }
 
-            LOGGER.log(INFO, "Plugin {0}:{1} dynamically {2}", new Object[] {p.getShortName(), p.getVersion(), batch != null ? "loaded but not yet started" : "installed"});
+            LOGGER.log(FINE, "Plugin {0}:{1} dynamically {2}", new Object[] {p.getShortName(), p.getVersion(), batch != null ? "loaded but not yet started" : "installed"});
         }
     }
 
