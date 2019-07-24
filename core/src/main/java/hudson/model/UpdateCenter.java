@@ -2155,6 +2155,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private final List<PluginWrapper> batch;
         private final long start;
+        @Exported(inline = true)
+        public volatile CompleteBatchJobStatus status = new Pending();
 
         public CompleteBatchJob(List<PluginWrapper> batch, long start, UUID correlationId) {
             super(getCoreSource());
@@ -2166,12 +2168,34 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             LOGGER.info("Completing installing of plugin batch…");
+            status = new Running();
             try {
                 Jenkins.get().getPluginManager().start(batch);
+                status = new Success();
             } catch (Exception x) {
+                status = new Failure(x);
                 LOGGER.log(Level.WARNING, "Failed to start some plugins", x);
             }
             LOGGER.log(INFO, "Completed installation of {0} plugins in {1}", new Object[] {batch.size(), Util.getTimeSpanString((System.nanoTime() - start) / 1_000_000)});
+        }
+
+        @ExportedBean
+        public abstract class CompleteBatchJobStatus {
+            @Exported
+            public final int id = iota.incrementAndGet();
+        }
+
+        public class Pending extends CompleteBatchJobStatus {}
+
+        public class Running extends CompleteBatchJobStatus {}
+
+        public class Success extends CompleteBatchJobStatus {}
+
+        public class Failure extends CompleteBatchJobStatus {
+            Failure(Throwable problemStackTrace) {
+                this.problemStackTrace = problemStackTrace;
+            }
+            public final Throwable problemStackTrace;
         }
 
     }
