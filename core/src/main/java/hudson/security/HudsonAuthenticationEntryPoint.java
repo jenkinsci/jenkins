@@ -80,7 +80,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
-            rsp.setStatus(SC_FORBIDDEN);
+            rsp.setStatus(SC_UNAUTHORIZED);
             rsp.setContentType("text/html;charset=UTF-8");
 
             Functions.advertiseHeaders(rsp);
