@@ -1541,7 +1541,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         final Jenkins jenkins = Jenkins.get();
         final UpdateCenter updateCenter = jenkins.getUpdateCenter();
 
-        installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
+        if (dynamicLoad) {
+            installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
+        }
 
         final Authentication currentAuth = Jenkins.getAuthentication();
 
