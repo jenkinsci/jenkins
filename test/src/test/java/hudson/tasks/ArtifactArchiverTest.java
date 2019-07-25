@@ -54,16 +54,19 @@ import org.jenkinsci.plugins.structs.describable.DescribableModel;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import org.junit.ClassRule;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class ArtifactArchiverTest {
-    
+
+    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
@@ -312,6 +315,7 @@ public class ArtifactArchiverTest {
         p.setAssignedNode(slave);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assumeFalse(FILENAME + " should not be readable by " + System.getProperty("user.name"), new File(build.getWorkspace().child(FILENAME).getRemote()).canRead());
         j.assertBuildStatus(Result.FAILURE, build);
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);

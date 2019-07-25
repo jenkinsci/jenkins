@@ -95,16 +95,18 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Test
     public void badValueForBuildsDir() {
         story.then((rule) -> {
-            final List<String> badValues = Arrays.asList(
+            final List<String> badValues = new ArrayList<>(Arrays.asList(
                     "blah",
                     "$JENKINS_HOME",
                     "$JENKINS_HOME/builds",
                     "$ITEM_FULL_NAME",
                     "/path/to/builds",
                     "/invalid/$JENKINS_HOME",
-                    "relative/ITEM_FULL_NAME",
-                    "/foo/$ITEM_FULL_NAME",
-                    "/$ITEM_FULLNAME");
+                    "relative/ITEM_FULL_NAME"));
+            if (!new File("/").canWrite()) {
+                badValues.add("/foo/$ITEM_FULL_NAME");
+                badValues.add("/$ITEM_FULLNAME");
+            } // else perhaps running as root
 
             for (String badValue : badValues) {
                 try {
