@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -174,10 +175,14 @@ public class InstallPluginCommand extends CLICommand {
     private static File moveToFinalLocation(File tmpFile) throws Exception {
         String pluginName;
         try (JarFile jf = new JarFile(tmpFile)) {
-            pluginName = jf.getManifest().getMainAttributes().getValue("Short-Name");
+            Manifest mf = jf.getManifest();
+            if (mf == null) {
+                throw new IllegalArgumentException("JAR lacks a manifest");
+            }
+            pluginName = mf.getMainAttributes().getValue("Short-Name");
         }
         if (pluginName == null) {
-            throw new IllegalArgumentException("JAR does not look like a plugin");
+            throw new IllegalArgumentException("JAR manifest lacks a Short-Name attribute and so does not look like a plugin");
         }
         File target = new File(Jenkins.get().getPluginManager().rootDir, pluginName + ".jpi");
         Files.move(tmpFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
