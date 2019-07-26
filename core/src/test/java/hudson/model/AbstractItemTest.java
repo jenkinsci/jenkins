@@ -4,16 +4,14 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Test;
-import org.kohsuke.stapler.HttpResponse;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author kingfai
@@ -115,7 +113,8 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void renameMethodShouldThrowExceptionWhenNotIsNameEditable() throws IOException {
+    @Issue("JENKINS-58571")
+    public void renameMethodShouldThrowExceptionWhenNotIsNameEditable() {
 
         //GIVEN
         NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
@@ -124,7 +123,7 @@ public class AbstractItemTest {
         try {
             item.renameTo("NewName");
             fail("An item with isNameEditable false must throw exception when trying to rename it.");
-        } catch (IllegalArgumentException e) {
+        } catch (IOException e) {
 
             //THEN
             assertEquals(e.getMessage(),"Trying to rename an item that has not editable name.");
@@ -132,21 +131,4 @@ public class AbstractItemTest {
         }
     }
 
-    @Test
-    public void doConfirmRenameMustThrowExceptionWhenNotIsNameEditable() throws IOException {
-
-        //GIVEN
-        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
-
-        //WHEN
-        try {
-            item.doConfirmRename("MyNewName");
-            fail("An item with isNameEditable false must throw exception when trying to call doConfirmRename.");
-        } catch (Failure f) {
-
-            //THEN
-            assertEquals(f.getMessage(),"This item has not an editable name.");
-            assertEquals("NameNotEditableItem",item.getName());
-        }
-    }
 }
