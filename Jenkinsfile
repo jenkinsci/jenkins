@@ -106,6 +106,7 @@ infra.maybePublishIncrementals()
 void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
     if (buildType == 'Linux') {
         // I.e., a Maven container using ACI. No need to install tools.
+        sh 'apt-get update && apt-get install -y git libfontconfig1 libfreetype6' // TODO pending https://github.com/jenkinsci/jnlp-agents/pull/5
         return withEnv(envVars) {
             body.call()
         }
