@@ -12,6 +12,8 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class SetBuildDescriptionCommand extends CLICommand implements Serializable {
 
+    private static final long serialVersionUID = 2690066739899830515L;
+
     @Override
     public String getShortDescription() {
         return Messages.SetBuildDescriptionCommand_ShortDescription();

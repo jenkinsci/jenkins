@@ -105,16 +105,16 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
                 "</head>" +
-                "<body style='background-color:white; color:white;'>\n" +
-                "\n\n"+
-                "Authentication required\n"+
-                "<!--\n",loginForm);
+                "<body style='background-color:white; color:white;'>%n" +
+                "%n%n"+
+                "Authentication required%n"+
+                "<!--%n",loginForm);
 
             if (cause!=null)
                 cause.report(out);
 
             out.printf(
-                "-->\n\n"+
+                "-->%n%n"+
                 "</body></html>");
             // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
             // See http://support.microsoft.com/kb/294807

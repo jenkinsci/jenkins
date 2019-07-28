@@ -1,5 +1,6 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,8 @@ public class TaskActionTest {
             Thread.sleep(10);
         }
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        annotatedText.writeLogTo(0, os);
+        final long length = annotatedText.writeLogTo(0, os);
+        assertEquals(220, length);
         assertTrue(os.toString("UTF-8").startsWith("a linkCompleted"));
     }
 }
