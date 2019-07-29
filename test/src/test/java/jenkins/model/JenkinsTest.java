@@ -331,7 +331,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-58548")
-    public void testDoScriptDoesNotOutputExtraWhitespace() throws Exception {
+    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         WebClient wc = j.createWebClient().login("admin");
         TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
