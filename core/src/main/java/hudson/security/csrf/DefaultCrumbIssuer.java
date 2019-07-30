@@ -50,7 +50,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     @DataBoundConstructor
     public DefaultCrumbIssuer(boolean excludeClientIPFromCrumb) {
         try {
-            this.md = MessageDigest.getInstance("MD5");
+            this.md = MessageDigest.getInstance("SHA-256");
             this.excludeClientIPFromCrumb = excludeClientIPFromCrumb;
         } catch (NoSuchAlgorithmException e) {
             this.md = null;
