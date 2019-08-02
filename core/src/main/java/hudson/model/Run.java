@@ -6,6 +6,7 @@
  * Darek Ostolski, CloudBees, Inc.
  *
  * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +45,8 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.Path;
+import java.nio.file.AtomicMoveNotSupportedException;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -74,8 +77,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.lang.UnsupportedOperationException;
+import java.lang.SecurityException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -119,6 +126,7 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1566,34 +1574,52 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void delete() throws IOException {
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
-            throw new IOException(this + ": " + rootDir + " looks to have already been deleted; siblings: " + Arrays.toString(project.getBuildDir().list()));
+            //No root directory found to delete. Somebody seems to have nuked
+            //it externally. Logging a warning before dropping the build
+            LOGGER.warning(String.format(
+                    "%s: %s looks to have already been deleted, assuming build dir was already cleaned up",
+                    this, rootDir
+            ));
+            //Still firing the delete listeners; just no need to clean up rootDir
+            RunListener.fireDeleted(this);
+            synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+                removeRunFromParent();
+            }
+            return;
         }
         
+        //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
-
+        
         if (artifactManager != null) {
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
-
-        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
-        File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
-        if (tmp.exists()) {
+        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+            File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
+            
+            if (tmp.exists()) {
+                Util.deleteRecursive(tmp);
+            }
+            boolean renamingSucceeded = true;
+            try {
+                Path path = Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE);
+            } catch (UnsupportedOperationException | IOException | SecurityException ex) {
+                // Fall back to previous < Java 7 variant
+                renamingSucceeded = rootDir.renameTo(tmp);
+            }
+            
             Util.deleteRecursive(tmp);
-        }
-        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
-        boolean renamingSucceeded = rootDir.renameTo(tmp);
-        Util.deleteRecursive(tmp);
-        // some user reported that they see some left-over .xyz files in the workspace,
-        // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
-        if(tmp.exists())
-            tmp.deleteOnExit();
-
-        if(!renamingSucceeded)
-            throw new IOException(rootDir+" is in use");
-        LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
-
-        removeRunFromParent();
+            // some user reported that they see some left-over .xyz files in the workspace,
+            // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
+            if (tmp.exists()) {
+                tmp.deleteOnExit();
+            }
+            if (!renamingSucceeded) {
+                throw new IOException(rootDir + " is in use");
+            }
+            LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
+            removeRunFromParent();
         }
     }
 

@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +100,7 @@ public class LogRotator extends BuildDiscarder {
     public LogRotator(int daysToKeep, int numToKeep) {
         this(daysToKeep, numToKeep, -1, -1);
     }
-    
+
     public LogRotator(int daysToKeep, int numToKeep, int artifactDaysToKeep, int artifactNumToKeep) {
         this.daysToKeep = daysToKeep;
         this.numToKeep = numToKeep;
@@ -108,8 +109,44 @@ public class LogRotator extends BuildDiscarder {
         
     }
 
+    /**
+     * This method calls {@link Run#delete()} with all checked exceptions
+     * properly caught and reported in the log.
+     * 
+     * @param r the run to delete, must not be null.
+     */
+    protected void deleteRun(Run<?,?> r) {
+        try {
+            r.delete();
+        } catch (IOException ex) {
+            LOGGER.log(
+                    SEVERE,
+                    String.format("Failed to rotate logs for %s", r),
+                    ex
+            );
+        }
+    }
+
+    /**
+     * This method calls {@link Run#deleteArtifacts()} with all checked exceptions
+     * properly caught and reported in the log.
+     * 
+     * @param r the run for which to delete artifacts, must not be null.
+     */
+    protected void deleteArtifacts(Run<?,?> r) {
+        try {
+            r.deleteArtifacts();
+        } catch (IOException ex) {
+            LOGGER.log(
+                    SEVERE,
+                    String.format("Failed to remove artifacts for %s", r),
+                    ex
+            );
+        }
+    }
+    
     @SuppressWarnings("rawtypes")
-    public void perform(Job<?,?> job) throws IOException, InterruptedException {
+    public void perform(Job<?,?> job) throws InterruptedException {
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
         // always keep the last successful and the last stable builds
@@ -128,7 +165,7 @@ public class LogRotator extends BuildDiscarder {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
-                r.delete();
+                deleteRun(r);
             }
         }
 
@@ -142,7 +179,7 @@ public class LogRotator extends BuildDiscarder {
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be removed", r);
-                    r.delete();
+                    deleteRun(r);
                 }
                 r = r.getNextBuild();
             }
@@ -155,7 +192,7 @@ public class LogRotator extends BuildDiscarder {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                r.deleteArtifacts();
+                deleteArtifacts(r);
             }
         }
 
@@ -169,7 +206,7 @@ public class LogRotator extends BuildDiscarder {
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                    r.deleteArtifacts();
+                    deleteArtifacts(r);
                 }
                 r = r.getNextBuild();
             }
