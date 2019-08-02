@@ -1,5 +1,8 @@
 /*
  * The MIT License
+ * 
+ * Copyright (c) 2018-2019 Intel Corporation
+ * Copyright (c) 2015-2017, Intel Deutschland GmbH
  *
  * Copyright (c) 2010, InfraDNA, Inc.
  *
@@ -32,12 +35,15 @@ import hudson.remoting.AsyncFutureImpl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import javax.annotation.Nonnull;
 
 /**
- * Created when {@link hudson.model.Queue.Item} is created so that the caller can track the progress of the task.
+ * Created when {@link hudson.model.Queue.Item} is created so that the caller
+ * can track the progress of the task.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -60,6 +66,10 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         this.task = task;
     }
 
+    public String toString() {
+        return String.format("FutureImpl waiting for: [%s]", task);
+    }
+    
     public Future<Executable> getStartCondition() {
         return start;
     }
@@ -70,17 +80,34 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        Queue q = Jenkins.get().getQueue();
-        synchronized (q) {
-            synchronized (this) {
-                if(!executors.isEmpty()) {
-                    if(mayInterruptIfRunning)
-                        for (Executor e : executors)
-                            e.interrupt();
-                    return mayInterruptIfRunning;
+        final boolean mayInterrupt = mayInterruptIfRunning;
+        final FutureImpl self = this;
+        
+        //Cancel while holding an exclusive lock on the queue and this future
+        //Note, this is the same order of locking as before, when the queue was also synchronized
+        Callable<Boolean> worker = new Callable<Boolean> () {
+            public Boolean call() {
+                Queue q = Jenkins.getInstance().getQueue();
+                synchronized (self) {
+                    if(!executors.isEmpty()) {
+                        if (mayInterrupt)
+                            for (Executor e : executors)
+                                e.interrupt();
+                        return mayInterrupt;
+                    }
+                    /* Cancel based on the future; not on the task.
+                     * Canceling based on the latter will be Russian Roulette, if
+                     * the same instance of task (usually a Project instance) exists
+                     * twice in the same internal Queue data structure.
+                     */
+                    return q.cancel(self);
                 }
-                return q.cancel(task);
             }
+        };
+        try {
+            return Queue.withLock(worker) == true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

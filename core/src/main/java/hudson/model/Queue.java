@@ -1,9 +1,12 @@
 /*
  * The MIT License
- *
+ * 
+ * Copyright (c) 2018-2019 Intel Corporation
+ * Copyright (c) 2015-2017, Intel Deutschland GmbH
+ * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -22,6 +25,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -675,6 +679,14 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
+    private void updateSnapshot() {
+        Snapshot revised = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "{0} → {1}; leftItems={2}", new Object[] {snapshot, revised, leftItems.asMap()});
+        }
+        snapshot = revised;
+    }
+    
 
     /**
      * @deprecated as of 1.311
@@ -713,7 +725,16 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Cancels the item in the queue. If the item is scheduled more than once, cancels the first occurrence.
+     * Cancels the item in the queue. If the item is scheduled more than once,
+     * cancels the <b>first</b> occurrence.
+     * <p>
+     * Be aware, that the same task can be multiple times in the Queue, e.g. if
+     * parameters are set on the project. In that case, it is Russian Roulette,
+     * whether or not you cancel the correct task.
+     * <p>
+     * If you have access to either the {@link Item} or a {@link FutureImpl},
+     * use those to cancel the build instead, via {@link #cancel(Item)} or
+     * {@link #cancel(FutureImpl)}
      *
      * @return true if the project was indeed in the queue and was removed.
      *         false if this was no-op.
@@ -733,13 +754,33 @@ public class Queue extends ResourceController implements Saveable {
             lock.unlock();
         }
     }
-
-    private void updateSnapshot() {
-        Snapshot revised = new Snapshot(waitingList, blockedProjects, buildables, pendings);
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "{0} → {1}; leftItems={2}", new Object[] {snapshot, revised, leftItems.asMap()});
+    
+    /**
+     * Cancels a task based on its {@link FutureImpl}.
+     * <p>
+     * This is significantly more reliable than cancelling based on the
+     * {@link Task}, since that one will cancel the first occurrence of the
+     * task, not a specific occurrence.
+     * 
+     * @param future the future of the specific {@link Item} to cancel in the queue.
+     * @return True, if the item was indeed in the queue and was removed.
+     *         False, if this was no-op.
+     */
+    public boolean cancel(FutureImpl future) {
+        lock.lock();
+        try {
+            LOGGER.log(Level.FINE, "Cancelling {0}", future);
+            for (WaitingItem item : waitingList) {
+                if (item.getFuture() == future) {
+                    return item.cancel(this);
+                }
+            }
+            // use bitwise-OR to make sure that both branches get evaluated all the time
+            return blockedProjects.cancel(future)!=null | buildables.cancel(future)!=null;
+        } finally {
+            updateSnapshot();
+            lock.unlock();
         }
-        snapshot = revised;
     }
 
     public boolean cancel(Item item) {
@@ -2900,6 +2941,15 @@ public class Queue extends ResourceController implements Saveable {
     		}
     		return null;
     	}
+        
+        public T get(FutureImpl f) {
+            for (T item: this) {
+                if (item.getFuture() == f) {
+                    return item;
+                }
+            }
+            return null;
+        }
 
     	public List<T> getAll(Task task) {
     		List<T> result = new ArrayList<T>();
@@ -2926,6 +2976,18 @@ public class Queue extends ResourceController implements Saveable {
     		}
     		return null;
     	}
+    	
+        public T remove(FutureImpl f) {
+            Iterator<T> it = iterator();
+            while (it.hasNext()) {
+                T t = it.next();
+                if (t.getFuture() == f) {
+                    it.remove();
+                    return t;
+                }
+            }
+            return null;
+        }
 
     	public void put(Task task, T item) {
     		assert item.task.equals(task);
@@ -2937,11 +2999,32 @@ public class Queue extends ResourceController implements Saveable {
     	}
 
         /**
-         * Works like {@link #remove(Task)} but also marks the {@link Item} as cancelled.
+         * Marks the first {@link Item} associated with the given {@link Task}
+         * as cancelled.
+         * <p>
+         * As such, beware if more than one instance of {@link Task} can exist
+         * in this list.
+         * <p>
+         * Use {@link #cancel(FutureImpl)} instead, if possible.
+         * 
          */
         public T cancel(Task p) {
             T x = get(p);
             if(x!=null) x.cancel(Queue.this);
+            return x;
+        }
+        
+        /**
+         * Marks the {@link Item} associated with the given Future as cancelled.
+         * <p>
+         * The {@link Queue} itself must ensure that the write-lock on
+         * {@link Queue#qLock} has been acquired before calling this method.
+         */
+        public T cancel(FutureImpl f) {
+            T x = get(f);
+            if(x!=null) {
+                x.cancel(Queue.this);
+            }
             return x;
         }
 

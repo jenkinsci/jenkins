@@ -2,6 +2,8 @@
  * The MIT License
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2015-2017, Intel Deutschland GmbH
+ * Copyright (c) 2018-2019 Intel Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -48,6 +51,8 @@ import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.LeftItem;
+import hudson.model.Queue.Task;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SaveableListener;
@@ -113,12 +118,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -1187,4 +1194,111 @@ public class QueueTest {
             execute(new BuildExecution());
         }
     }
+    
+    /**
+     * A simple task, that waits eternally and allows concurrent builds.
+     * 
+     * @author Martin Schroeder
+     */
+    private static class InfiniteWaitTask extends TestTask{
+        InfiniteWaitTask(AtomicInteger cnt) {
+            super(cnt);
+        }
+        
+        @Override
+        public void doRun() {
+            try {
+                Thread.sleep(Integer.MAX_VALUE);
+            } catch (InterruptedException e) { }
+        }
+        
+        @Override
+        public boolean isConcurrentBuild() {
+            //Test must be concurrent, else buildables.size() is always == 1
+            return true;
+        }
+    }
+    
+    /**
+     * This test checks if {@link QueueTaskFuture#cancel(boolean)}
+     * actually works correctly, and cancels the item, instead of the first
+     * random {@link Task} that it finds in the Queue.
+     * <p>
+     * This is, because previous implementations of Jenkins had a design
+     * defect, that caused the wrong task to be cancelled.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void cancelFutureOfTask() throws Exception {
+        Queue q = r.jenkins.getQueue();
+        
+        //Create an infinitely waiting, concurrent task
+        Task t = new InfiniteWaitTask(new AtomicInteger(0));
+        
+        //Ensure that only a single executor is available
+        r.jenkins.setNumExecutors(1);
+        r.jenkins.reload();
+        
+        //Schedule ONE job that will block the one executor
+        //This is done, so the other jobs will be buildable, not blocked
+        q.schedule2(t, 0);
+        //Wait, for it to be scheduled
+        Thread.sleep(1000);
+        
+        //Create 64 unique instances of the same Task to run
+        List<Map.Entry<Long, QueueTaskFuture<?>>> futures =
+                new ArrayList<Map.Entry<Long, QueueTaskFuture<?>>>();
+        for (int i = 0; i < 64; i++) {
+            //Add a salt-parameter, to ensure the tasks will not be merged
+            ParametersAction salt = new ParametersAction(
+                    new StringParameterValue("SALT", Integer.toString(i))
+            );
+            List<Action> actions = Collections.singletonList((Action) salt);
+            Queue.Item item = q.schedule2(t, 0, actions).getItem();
+            
+            Assert.assertNotNull(item);
+            Map.Entry<Long, QueueTaskFuture<?>> entry =
+                    new AbstractMap.SimpleEntry<Long, QueueTaskFuture<?>>(
+                            item.getId(), item.getFuture()
+                    );
+            futures.add(entry);
+        }
+        
+        //Shuffle the list with a predictable seed; to avoid the Queue having the
+        //same order as the future's list, to maximize the error detection
+        Collections.shuffle(futures, new Random(42L));
+        
+        //Wait for the jobs to be put into the queue's buildables
+        Thread.sleep(2000);
+        
+        //Cancel the builds one after another; and verify that the correct
+        //buildable (that owns the given future) was cancelled
+        for (Map.Entry<Long, QueueTaskFuture<?>> entry : futures) {
+            Long qId = entry.getKey();
+            QueueTaskFuture<?> f = entry.getValue();
+            
+            String fName = String.format("Future[qId=%d]", qId);
+            
+            //Cancel item
+            f.cancel(true);
+            //Check that the flag was set correctly
+            Assert.assertTrue(
+                    fName + " did not have its cancelled flag set properly",
+                    f.isCancelled()
+            );
+            
+            //Fetch the item from the Queue, based on the id
+            //It must either be null (already gone) or a LeftItem
+            Queue.Item qItem = q.getItem(qId);
+            Assert.assertTrue(
+                    String.format(
+                            "%s has not been properly cancelled",
+                            fName
+                    ),
+                    (qItem == null) || (qItem instanceof LeftItem)
+            );
+        }
+    }
+    
 }
