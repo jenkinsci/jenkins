@@ -49,14 +49,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
 
     @DataBoundConstructor
     public DefaultCrumbIssuer(boolean excludeClientIPFromCrumb) {
-        try {
-            this.md = MessageDigest.getInstance("SHA-256");
-            this.excludeClientIPFromCrumb = excludeClientIPFromCrumb;
-        } catch (NoSuchAlgorithmException e) {
-            this.md = null;
-            this.excludeClientIPFromCrumb = false;
-            LOGGER.log(Level.SEVERE, "Can't find MD5", e);
-        }
+        this.excludeClientIPFromCrumb = excludeClientIPFromCrumb;
+        initializeMessageDigest();
     }
 
     public boolean isExcludeClientIPFromCrumb() {
@@ -64,14 +58,17 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     }
     
     private Object readResolve() {
-        try {
-            this.md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            this.md = null;
-            LOGGER.log(Level.SEVERE, "Can't find MD5", e);
-        }
-        
+        initializeMessageDigest();
         return this;
+    }
+
+    private void initializeMessageDigest() {
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            md = null;
+            LOGGER.log(Level.SEVERE, e, () -> "Cannot find SHA-256 MessageDigest implementation.");
+        }
     }
     
     /**
