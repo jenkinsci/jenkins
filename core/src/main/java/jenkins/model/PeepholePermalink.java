@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -144,8 +145,8 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         Map<String, Integer> cache = new TreeMap<>();
         File storage = storageFor(buildDir);
         if (storage.isFile()) {
-            try {
-                Files.lines(storage.toPath(), StandardCharsets.UTF_8).forEach(line -> {
+            try (Stream<String> lines = Files.lines(storage.toPath(), StandardCharsets.UTF_8)) {
+                lines.forEach(line -> {
                     int idx = line.indexOf(' ');
                     if (idx == -1) {
                         return;
