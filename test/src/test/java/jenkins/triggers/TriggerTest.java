@@ -44,7 +44,6 @@ public class TriggerTest {
             Thread.sleep(100);
         }
         j.waitUntilNoActivity();
-        j.interactiveBreak();
         assertThat(l.getMessages().toArray(new String[0]) [0],
                 containsString("Trigger " + BadTimerTrigger.class.getName()
                         + ".run() triggered by " + p.toString() + " spent too much time "));
