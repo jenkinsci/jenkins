@@ -1,11 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2018-2019 Intel Corporation
- * Copyright (c) 2015-2017, Intel Deutschland GmbH
- * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
