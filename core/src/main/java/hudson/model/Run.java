@@ -4,7 +4,6 @@
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
  * Darek Ostolski, CloudBees, Inc.
- *
  * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
  * Copyright (c) 2019 Intel Corporation
  * 
