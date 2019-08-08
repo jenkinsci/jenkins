@@ -126,7 +126,26 @@ public class AbstractItemTest {
         } catch (IOException e) {
 
             //THEN
-            assertEquals(e.getMessage(),"Trying to rename an item that has not editable name.");
+            assertEquals(e.getMessage(),"Trying to rename an item that does not support this operation.");
+            assertEquals("NameNotEditableItem",item.getName());
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-58571")
+    public void doConfirmRenameMustThrowFormFailureWhenNotIsNameEditable() throws IOException {
+
+        //GIVEN
+        NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
+
+        //WHEN
+        try {
+            item.doConfirmRename("MyNewName");
+            fail("An item with isNameEditable false must throw exception when trying to call doConfirmRename.");
+        } catch (Failure f) {
+
+            //THEN
+            assertEquals(f.getMessage(),"Trying to rename an item that does not support this operation.");
             assertEquals("NameNotEditableItem",item.getName());
         }
     }

@@ -277,6 +277,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Restricted(NoExternalUse.class)
     public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
 
+        if (!isNameEditable()) {
+            return FormValidation.error("Trying to rename an item that does not support this operation.");
+        }
+
         // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
         if (!hasPermission(Item.CONFIGURE)) {
             if (parent instanceof AccessControlled) {
@@ -355,7 +359,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected void renameTo(final String newName) throws IOException {
 
         if (!isNameEditable()) {
-            throw new IOException("Trying to rename an item that has not editable name.");
+            throw new IOException("Trying to rename an item that does not support this operation.");
         }
 
         // always synchronize from bigger objects first
