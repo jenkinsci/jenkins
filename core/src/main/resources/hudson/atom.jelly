@@ -24,8 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:view contentType="application/atom+xml;charset=UTF-8">
-    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <l:view contentType="application/atom+xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
     <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
     <feed xmlns="http://www.w3.org/2005/Atom">
       <title>${title}</title>

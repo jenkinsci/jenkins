@@ -24,8 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:view contentType="text/xml;charset=UTF-8">
-    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <l:view contentType="text/xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
     <!-- RSS 2.0 feed. See http://cyber.law.harvard.edu/rss/rss.html for the format -->
     <rss version="2.0">
       <channel>
