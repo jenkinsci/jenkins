@@ -35,6 +35,9 @@
         <st:contentType value="${attrs.contentType}"/>
     </j:if>
     <j:new var="h" className="hudson.Functions"/>
-    ${h.initPageVariables(context)}
+    <!-- JENKINS-58548: avoid using a JEXL expression here as it outputs untrimmed whitespace -->
+    <j:invoke on="${h}" method="initPageVariables">
+        <j:arg value="${context}"/>
+    </j:invoke>
     <d:invokeBody/>
 </j:jelly>
