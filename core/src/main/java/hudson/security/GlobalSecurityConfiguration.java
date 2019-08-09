@@ -182,11 +182,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     public String getUrlName() {
         return "configureSecurity";
     }
-    
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
-    }
 
     public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
         public boolean apply(GlobalConfigurationCategory input) {

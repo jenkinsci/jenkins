@@ -69,11 +69,6 @@ public class GlobalToolConfiguration extends ManagementLink {
         return "configureTools";
     }
 
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
-    }
-
     @RequirePOST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());

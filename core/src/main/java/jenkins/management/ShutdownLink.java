@@ -26,6 +26,7 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -52,6 +53,11 @@ public class ShutdownLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return Jenkins.get().isQuietingDown() ? "cancelQuietDown" : "quietDown";
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     @Override

@@ -78,7 +78,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.273
  * @see Jenkins#administrativeMonitors
  */
-@LegacyInstancesAreScopedToHudson
+@LegacyInstancesAreScopedToHudson // TODO check permissions on more admin monitors
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
@@ -149,6 +149,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @RequirePOST
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
     }
@@ -158,7 +159,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         return this;
     }
 

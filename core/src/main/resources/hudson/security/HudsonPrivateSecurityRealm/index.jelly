@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}">
+  <l:layout permission="${app.SYSTEM_READ}" title="${%Users}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Users}</h1>
@@ -43,10 +43,12 @@ THE SOFTWARE.
             <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
-              <a href="${user.url}/configure"><l:icon class="icon-gear2 icon-lg"/></a>
-              <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><l:icon class="icon-edit-delete icon-md"/></a>
-              </j:if>
+              <l:hasPermission permission="${app.ADMINISTER}">
+                <a href="${user.url}/configure"><l:icon class="icon-gear2 icon-lg"/></a>
+                <j:if test="${user.canDelete()}">
+                  <a href="${user.url}/delete"><l:icon class="icon-edit-delete icon-md"/></a>
+                </j:if>
+              </l:hasPermission>
             </td>
           </tr>
         </j:forEach>

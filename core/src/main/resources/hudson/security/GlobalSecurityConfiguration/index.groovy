@@ -12,7 +12,7 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, cssclass:request.getParameter('decorate')) {
+l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
     l.main_panel {
         h1 {
             l.icon(class: 'icon-secure icon-xlg')
@@ -95,13 +95,18 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
             }
 
-            f.bottomButtonBar {
-                f.submit(value:_("Save"))
-                f.apply()
+            l.hasPermission(app.ADMINISTER) {
+                text("Hi I'm hereeeejjj")
+                f.bottomButtonBar {
+                    f.submit(value: _("Save"))
+                    f.apply()
+                }
             }
         }
 
-        st.adjunct(includes: "lib.form.confirm")
+        l.hasPermission(app.ADMINISTER) {
+            st.adjunct(includes: "lib.form.confirm")
+        }
     }
 }
 

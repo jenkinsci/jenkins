@@ -26,6 +26,7 @@ package jenkins.security.apitoken;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.HttpResponses;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,6 +55,7 @@ public class ApiTokenPropertyDisabledDefaultAdministrativeMonitor extends Admini
     
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (no == null) {
             ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(false);
         } else {

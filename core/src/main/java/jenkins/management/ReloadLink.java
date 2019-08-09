@@ -26,6 +26,9 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 /**
@@ -41,6 +44,11 @@ public class ReloadLink extends ManagementLink {
 
     public String getDisplayName() {
         return Messages.ReloadLink_DisplayName();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     @Override

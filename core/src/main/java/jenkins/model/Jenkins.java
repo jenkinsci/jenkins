@@ -2249,7 +2249,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex();
-        if (hasPermission(ADMINISTER)) {
+        if (hasPermission(SYSTEM_READ)) {
                 builder.add("configure", "config", "configure")
                     .add("manage")
                     .add("log");
@@ -5231,6 +5231,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+    public static final Permission SYSTEM_READ = new Permission(PERMISSIONS,"SystemRead", hudson.model.Messages._Jenkins_SystemReadPermission_Description(),ADMINISTER, PermissionScope.JENKINS);
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 

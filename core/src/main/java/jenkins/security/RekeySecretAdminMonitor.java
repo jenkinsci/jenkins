@@ -88,6 +88,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
 
     @RequirePOST
     public HttpResponse doScan(StaplerRequest req) throws IOException, GeneralSecurityException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(req.hasParameter("background")) {
             start(false);
         } else
