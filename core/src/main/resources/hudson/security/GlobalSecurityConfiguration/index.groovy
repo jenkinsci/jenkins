@@ -95,8 +95,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName, csscl
                 }
             }
 
-            l.hasPermission(app.ADMINISTER) {
-                text("Hi I'm hereeeejjj")
+            l.hasPermission(permission: app.ADMINISTER) {
                 f.bottomButtonBar {
                     f.submit(value: _("Save"))
                     f.apply()

@@ -33,7 +33,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
                 }
             }
 
-            if (app.hasPermission(app.ADMINISTER)) {
+            l.hasPermission(permission: app.ADMINISTER) {
                 f.bottomButtonBar {
                     f.submit(value: _("Save"))
                     f.apply(value: _("Apply"))
