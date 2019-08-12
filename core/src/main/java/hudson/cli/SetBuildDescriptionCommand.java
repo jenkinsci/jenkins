@@ -1,5 +1,6 @@
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -9,10 +10,11 @@ import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 
+
+// TODO: Remove Serializable
+@SuppressFBWarnings(value = "SE_NO_SERIALVERSIONID", justification = "The Serializable should be removed.")
 @Extension
 public class SetBuildDescriptionCommand extends CLICommand implements Serializable {
-
-    private static final long serialVersionUID = 2690066739899830515L;
 
     @Override
     public String getShortDescription() {
