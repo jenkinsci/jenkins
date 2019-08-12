@@ -255,7 +255,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfirmRename(@QueryParameter String newName) throws IOException {
-
         newName = newName == null ? null : newName.trim();
         FormValidation validationError = doCheckNewName(newName);
         if (validationError.kind != FormValidation.Kind.OK) {
