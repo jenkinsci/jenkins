@@ -38,6 +38,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -326,6 +327,15 @@ public class JenkinsTest {
 
         wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    @Test
+    @Issue("JENKINS-58548")
+    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        WebClient wc = j.createWebClient().login("admin");
+        TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
+        assertEquals("hello", page.getContent());
     }
 
     @Test
