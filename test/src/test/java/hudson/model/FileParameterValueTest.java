@@ -267,4 +267,26 @@ public class FileParameterValueTest {
         String workspaceParentContent = workspaceParentPage.getWebResponse().getContentAsString();
         assertThat(workspaceParentContent, containsString("child2.txt"));
     }
+
+    @Test
+    @Issue("JENKINS-12999")
+    public void fileParameter_deleteTmpFile() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+            p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+                    new FileParameterDefinition("fpv_test", null)
+        )));
+            
+        String uploadedContent = "test-content";
+        File uploadedFile = tmp.newFile();
+        FileUtils.write(uploadedFile, uploadedContent);
+            
+    	  FileParameterValue fpv = 
+    		    new FileParameterValue("fpv_test", uploadedFile, "uploaded-file.txt");
+        FreeStyleBuild build = 
+    		    p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(fpv)).get();
+            
+    	  assertThat(build.getResult(), equalTo(Result.SUCCESS));
+        // confirm that the tmp file has been deleted
+    	  assertThat(fpv.getFile(), equalTo(null));       
+    }
 }
