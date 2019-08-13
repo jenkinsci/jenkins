@@ -91,7 +91,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 }
                 if (!EXCLUDE_SESSION_ID) {
                     buffer.append(';');
-                    buffer.append(getSessionId(req));
+                    buffer.append(req.getSession().getId());
                 }
 
                 md.update(buffer.toString().getBytes());
@@ -99,14 +99,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             }
         }
         return null;
-    }
-
-    private String getSessionId(@Nonnull HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "NO_SESSION";
-        }
-        return session.getId();
     }
 
     /**

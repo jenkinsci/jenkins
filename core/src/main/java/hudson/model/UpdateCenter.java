@@ -1512,7 +1512,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                 if(e.getMessage().contains("Connection timed out")) {
                                     // Google can't be down, so this is probably a proxy issue
                                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl)));
                                     return;
                                 }
                             }
@@ -1534,12 +1534,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
-                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(e.getMessage()));
+                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage())));
                 addStatus(e);
                 error = e;
             } catch (Exception e) {
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
-                statuses.add(Functions.printThrowable(e));
+                addStatus(e);
                 error = e;
             }
             
@@ -1553,7 +1553,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
-        private void addStatus(UnknownHostException e) {
+        private void addStatus(Throwable e) {
             statuses.add("<pre>"+ Functions.xmlEscape(Functions.printThrowable(e))+"</pre>");
         }
 
