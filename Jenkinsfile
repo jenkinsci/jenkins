@@ -3,10 +3,6 @@
 /*
  * This Jenkinsfile is intended to run on https://ci.jenkins.io and may fail anywhere else.
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
- *
- * The required labels are "java" and "docker" - "java" would be any node that can run Java builds. It doesn't need
- * to have Java installed, but some setups may have nodes that shouldn't have heavier builds running on them, so we
- * make this explicit. "docker" would be any node with docker installed.
  */
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
@@ -15,7 +11,6 @@ def failFast = false
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
-// see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
 def jdks = [8, 11]
 
@@ -25,7 +20,8 @@ for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
     builds["${buildType}-jdk${jdk}"] = {
-        node(buildType.toLowerCase()) {
+        // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
+        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -41,7 +37,7 @@ for(j = 0; j < jdks.size(); j++) {
                         // See below for what this method does - we're passing an arbitrary environment
                         // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
                         withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], jdk) {
+                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
                             def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
@@ -107,7 +103,14 @@ infra.maybePublishIncrementals()
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
 // body we passed in within that environment.
-void withMavenEnv(List envVars = [], def javaVersion, def body) {
+void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
+    if (buildType == 'Linux') {
+        // I.e., a Maven container using ACI. No need to install tools.
+        return withEnv(envVars) {
+            body.call()
+        }
+    }
+    
     // The names here are currently hardcoded for my test environment. This needs
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the

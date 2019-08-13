@@ -1319,7 +1319,7 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
-            return deploy(dynamicLoad, null);
+            return deploy(dynamicLoad, null, null);
         }
 
         /**
@@ -1334,18 +1334,19 @@ public class UpdateSite {
          *      the plugin will only take effect after the reboot.
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
+         * @param batch if defined, a list of plugins to add to, which will be started later
          */
         @Restricted(NoExternalUse.class)
-        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
                     LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
-                    dep.deploy(dynamicLoad);
+                    dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch);
                 } else {
-                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.FINE, "Dependent install of {0} for plugin {1} already added, skipping", new Object[] {dep.name, name});
                 }
             }
             PluginWrapper pw = getInstalled();
@@ -1362,6 +1363,7 @@ public class UpdateSite {
             }
             UpdateCenter.InstallationJob job = createInstallationJob(this, uc, dynamicLoad);
             job.setCorrelationId(correlationId);
+            job.setBatch(batch);
             return uc.addJob(job);
         }
 
