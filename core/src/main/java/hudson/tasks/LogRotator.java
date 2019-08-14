@@ -114,6 +114,7 @@ public class LogRotator extends BuildDiscarder {
      * properly caught and reported in the log.
      * 
      * @param r the run to delete, must not be null.
+     * @since TODO
      */
     protected void deleteRun(Run<?,?> r) {
         try {
@@ -132,6 +133,7 @@ public class LogRotator extends BuildDiscarder {
      * properly caught and reported in the log.
      * 
      * @param r the run for which to delete artifacts, must not be null.
+     * @since TODO
      */
     protected void deleteArtifacts(Run<?,?> r) {
         try {

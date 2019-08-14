@@ -1602,9 +1602,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             boolean renamingSucceeded = true;
             try {
-                Path path = Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE);
+                Path path = Files.move(
+                        Util.fileToPath(rootDir),
+                        Util.fileToPath(tmp),
+                        StandardCopyOption.ATOMIC_MOVE
+                );
             } catch (UnsupportedOperationException | IOException | SecurityException ex) {
                 // Fall back to previous < Java 7 variant
+                LOGGER.fine(String.format(
+                        "Atomic move of '%s' failed. Reason: [%s] %s. Retry with simple renaming",
+                        rootDir.getPath(),
+                        ex.getClass().getName(),
+                        ex.getMessage()
+                ));
                 renamingSucceeded = rootDir.renameTo(tmp);
             }
             
