@@ -101,8 +101,7 @@ builds.ath = {
 
 builds.failFast = failFast
 parallel builds
-// TODO: Restore Incrementals once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-// infra.maybePublishIncrementals()
+infra.maybePublishIncrementals()
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
