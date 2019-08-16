@@ -3836,10 +3836,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @RequirePOST
-    public synchronized HttpRedirect doQuietDown() throws IOException {
+    public synchronized HttpRedirect doQuietDown() {
         try {
             return doQuietDown(false,0);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new AssertionError(); // impossible
         }
     }
