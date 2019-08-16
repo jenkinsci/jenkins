@@ -7,7 +7,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
-Built with Java, it provides over 1000 plugins to support automating virtually anything, 
+Built with Java, it provides over 1600 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
 so that humans can actually spend their time doing things machines cannot.
 
 # What to Use Jenkins for and When to Use It
