@@ -5,7 +5,7 @@
  */
 package hudson.security.csrf;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -118,8 +118,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             String newCrumb = issueCrumb(request, salt);
             if ((newCrumb != null) && (crumb != null)) {
                 // String.equals() is not constant-time, but this is
-                return MessageDigest.isEqual(newCrumb.getBytes(Charset.forName("US-ASCII")),
-                        crumb.getBytes(Charset.forName("US-ASCII")));
+                return MessageDigest.isEqual(newCrumb.getBytes(StandardCharsets.US_ASCII),
+                        crumb.getBytes(StandardCharsets.US_ASCII));
             }
         }
         return false;

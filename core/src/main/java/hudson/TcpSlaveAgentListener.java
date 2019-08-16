@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
@@ -140,7 +139,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), StandardCharsets.UTF_8);
     }
 
     /**
