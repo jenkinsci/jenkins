@@ -328,6 +328,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
@@ -354,6 +356,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @RequirePOST
     public HttpResponse doClear() throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         handler.clear();
         return HttpResponses.redirectToDot();
     }
@@ -381,6 +385,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
         // Disable logging for all our targets,

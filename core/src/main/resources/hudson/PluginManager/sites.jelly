@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+<l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}" norefresh="true">
   <st:include page="sidepanel.jelly"/>
   <l:main-panel>
     <form method="post" action="updateSources">
@@ -50,16 +50,18 @@ THE SOFTWARE.
               </j:forEach>
             </select>
           </td>
-          <td id="buttonBar" style="width:13em;">
-            <style>
-              #buttonBar INPUT {
-                width: 10em;
-              }
-            </style>
-            <input type="submit" value="${%Add...}" name="add" />
-            <br />
-            <input type="submit" value="${%Remove}" name="remove" disabled="${empty(app.updateCenter.sources)?'true':null}"/>
-          </td>
+          <l:hasPermission permission="${app.ADMINISTER}">
+            <td id="buttonBar" style="width:13em;">
+              <style>
+                #buttonBar INPUT {
+                  width: 10em;
+                }
+              </style>
+              <input type="submit" value="${%Add...}" name="add" />
+              <br />
+              <input type="submit" value="${%Remove}" name="remove" disabled="${empty(app.updateCenter.sources)?'true':null}"/>
+            </td>
+          </l:hasPermission>
         </tr>
       </local:tabBar>
     </form>

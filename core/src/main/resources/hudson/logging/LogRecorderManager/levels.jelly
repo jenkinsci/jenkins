@@ -51,25 +51,27 @@ THE SOFTWARE.
       </j:forEach>
     </table>
     <p>${%defaultLoggerMsg}</p>
-    <h2>${%Adjust Levels}</h2>
-    <form action="configLogger" method="post" name="configLogger">
-      ${%Name}: <input type="text" name="name" width="40" />
-      ${%Level}:
-      <select name="level">
-        <option>inherit</option>
-        <option>off</option>
-        <option>severe</option>
-        <option>warning</option>
-        <option>info</option>
-        <option>config</option>
-        <option>fine</option>
-        <option>finer</option>
-        <option>finest</option>
-        <option>all</option>
-      </select>
-      <st:nbsp/>
-      <f:submit />
-    </form>
+    <l:hasPermission permission="${app.ADMINISTER}">
+      <h2>${%Adjust Levels}</h2>
+      <form action="configLogger" method="post" name="configLogger">
+        ${%Name}: <input type="text" name="name" width="40" />
+        ${%Level}:
+        <select name="level">
+          <option>inherit</option>
+          <option>off</option>
+          <option>severe</option>
+          <option>warning</option>
+          <option>info</option>
+          <option>config</option>
+          <option>fine</option>
+          <option>finer</option>
+          <option>finest</option>
+          <option>all</option>
+        </select>
+        <st:nbsp/>
+        <f:submit />
+      </form>
+    </l:hasPermission>
   </l:main-panel>
 </l:layout>
 </j:jelly>

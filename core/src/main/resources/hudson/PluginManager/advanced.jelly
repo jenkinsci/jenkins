@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+<l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}" norefresh="true">
   <st:include page="sidepanel.jelly"/>
   <l:main-panel>
     <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
@@ -35,19 +35,19 @@ THE SOFTWARE.
       <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
         <tr style="border-top:none; white-space: normal">
           <td>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
-              <h1>${%HTTP Proxy Configuration}</h1>
-              <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                <j:scope>
-                  <j:set var="instance" value="${app.proxy}"/>
-                  <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                  <st:include from="${descriptor}" page="${descriptor.configPage}" />
-                </j:scope>
+            <h1>${%HTTP Proxy Configuration}</h1>
+            <f:form method="post" action="proxyConfigure" name="proxyConfigure">
+              <j:scope>
+                <j:set var="instance" value="${app.proxy}"/>
+                <j:set var="descriptor" value="${it.proxyDescriptor}"/>
+                <st:include from="${descriptor}" page="${descriptor.configPage}" />
+              </j:scope>
+              <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
                 <f:block>
                   <f:submit />
                 </f:block>
-              </f:form>
-            </l:hasPermission>
+              </l:hasPermission>
+            </f:form>
 
             <l:hasPermission permission="${app.pluginManager.UPLOAD_PLUGINS}">
               <h1>${%Upload Plugin}</h1>
@@ -66,33 +66,33 @@ THE SOFTWARE.
                 </f:block>
               </f:form>
             </l:hasPermission>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
-              <h1>${%Update Site}</h1>
-              <f:form method="post" action="siteConfigure" name="siteConfigure">
-                <f:entry title="${%URL}" >
-                  <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
-                </f:entry>
+            <h1>${%Update Site}</h1>
+            <f:form method="post" action="siteConfigure" name="siteConfigure">
+              <f:entry title="${%URL}" >
+                <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
+              </f:entry>
+              <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
                 <f:block>
                   <f:submit />
                 </f:block>
-              </f:form>
-              <j:set var="hasNonDefault" value="${false}"/>
-              <j:forEach var="site" items="${app.updateCenter.sites}">
-                <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
-                  <j:set var="hasNonDefault" value="${true}"/>
-                </j:if>
-              </j:forEach>
-              <j:if test="${hasNonDefault}">
-                <h2>${%Other Sites}</h2>
-                <ul>
-                  <j:forEach var="site" items="${app.updateCenter.sites}">
-                    <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
-                      <li>${site.url}</li>
-                    </j:if>
-                  </j:forEach>
-                </ul>
+              </l:hasPermission>
+            </f:form>
+            <j:set var="hasNonDefault" value="${false}"/>
+            <j:forEach var="site" items="${app.updateCenter.sites}">
+              <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                <j:set var="hasNonDefault" value="${true}"/>
               </j:if>
-            </l:hasPermission>
+            </j:forEach>
+            <j:if test="${hasNonDefault}">
+              <h2>${%Other Sites}</h2>
+              <ul>
+                <j:forEach var="site" items="${app.updateCenter.sites}">
+                  <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                    <li>${site.url}</li>
+                  </j:if>
+                </j:forEach>
+              </ul>
+            </j:if>
           </td>
         </tr>
       </table>
