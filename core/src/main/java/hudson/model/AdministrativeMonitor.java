@@ -78,7 +78,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.273
  * @see Jenkins#administrativeMonitors
  */
-@LegacyInstancesAreScopedToHudson // TODO check permissions on more admin monitors
+@LegacyInstancesAreScopedToHudson
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.

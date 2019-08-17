@@ -22,11 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
     <div class="alert alert-warning">
-        <form method="post" action="${rootURL}/${it.url}/disable">
-            <f:submit value="${%Dismiss}"/>
-        </form>
+        <l:hasPermission permission="${app.ADMINISTER}">
+            <form method="post" action="${rootURL}/${it.url}/disable">
+                <f:submit value="${%Dismiss}"/>
+            </form>
+        </l:hasPermission>
         <j:set var="referenceAnchor">
             <a href="https://jenkins.io/redirect/csrf-protection" target="_blank">${%referenceUrlContent}</a>
         </j:set>
