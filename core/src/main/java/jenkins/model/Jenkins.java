@@ -36,6 +36,7 @@ import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import io.jenkins.plugins.systemreadpermission.SystemReadPermission;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.stapler.DoActionFilter;
@@ -5231,7 +5232,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
-    public static final Permission SYSTEM_READ = new Permission(PERMISSIONS,"SystemRead", hudson.model.Messages._Jenkins_SystemReadPermission_Description(),ADMINISTER, PermissionScope.JENKINS);
+    public static final Permission SYSTEM_READ = SystemReadPermission.SYSTEM_READ;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
