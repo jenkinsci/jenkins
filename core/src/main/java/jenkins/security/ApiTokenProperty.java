@@ -91,7 +91,7 @@ public class ApiTokenProperty extends UserProperty {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
-    
+
     /**
      * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new tokens for
      * other users. Normally a user can only generate tokens for himself.<p>
@@ -107,22 +107,22 @@ public class ApiTokenProperty extends UserProperty {
 
     private volatile Secret apiToken;
     private ApiTokenStore tokenStore;
-    
+
     /**
      * Store the usage information of the different token for this user
      * The save operation can be toggled by using {@link ApiTokenPropertyConfiguration#usageStatisticsEnabled}
      * The information are stored in a separate file to avoid problem with some configuration synchronization tools
      */
     private transient ApiTokenStats tokenStats;
-    
+
     @DataBoundConstructor
     public ApiTokenProperty() {
     }
-    
-    @Override 
+
+    @Override
     protected void setUser(User u) {
         super.setUser(u);
-    
+
         if (this.tokenStore == null) {
             this.tokenStore = new ApiTokenStore();
         }
@@ -133,7 +133,7 @@ public class ApiTokenProperty extends UserProperty {
             this.tokenStore.regenerateTokenFromLegacyIfRequired(this.apiToken);
         }
     }
-    
+
     /**
      * We don't let the external code set the API token,
      * but for the initial value of the token we need to compute the seed by ourselves.
@@ -148,7 +148,7 @@ public class ApiTokenProperty extends UserProperty {
      * Gets the API token.
      * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
      * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_LEGACY_TOKEN_TO_ADMINS}.
-     * 
+     *
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
      * @since 1.426, and since 1.638 the method performs security checks
@@ -164,7 +164,7 @@ public class ApiTokenProperty extends UserProperty {
                 ? getApiTokenInsecure()
                 : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
     }
-    
+
     /**
      * Determine if the legacy token is still present
      */
@@ -172,7 +172,7 @@ public class ApiTokenProperty extends UserProperty {
     public boolean hasLegacyToken(){
         return apiToken != null;
     }
-    
+
     @Nonnull
     @Restricted(NoExternalUse.class)
     /*package*/ String getApiTokenInsecure() {
@@ -188,22 +188,22 @@ public class ApiTokenProperty extends UserProperty {
         }
         return Util.getDigestOf(p);
     }
-    
+
     public boolean matchesPassword(String token) {
         if(StringUtils.isBlank(token)){
             return false;
         }
-    
+
         ApiTokenStore.HashedToken matchingToken = tokenStore.findMatchingToken(token);
         if(matchingToken == null){
             return false;
         }
-        
+
         tokenStats.updateUsageForId(matchingToken.getUuid());
-        
+
         return true;
     }
-    
+
     /**
      * Only for legacy token
      */
@@ -212,20 +212,20 @@ public class ApiTokenProperty extends UserProperty {
         if (SHOW_LEGACY_TOKEN_TO_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
-        
+
         User current = User.current();
         if (current == null) { // Anonymous
             return false;
         }
-        
+
         // SYSTEM user is always eligible to see tokens
         if (Jenkins.getAuthentication() == ACL.SYSTEM) {
             return true;
         }
-        
+
         return User.idStrategy().equals(user.getId(), current.getId());
     }
-    
+
     // only for Jelly
     @Restricted(NoExternalUse.class)
     public Collection<TokenInfoAndStats> getTokenList() {
@@ -237,7 +237,7 @@ public class ApiTokenProperty extends UserProperty {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     // only for Jelly
     @Immutable
     @Restricted(NoExternalUse.class)
@@ -247,24 +247,24 @@ public class ApiTokenProperty extends UserProperty {
         public final Date creationDate;
         public final long numDaysCreation;
         public final boolean isLegacy;
-        
+
         public final int useCounter;
         public final Date lastUseDate;
         public final long numDaysUse;
-        
+
         public TokenInfoAndStats(@Nonnull ApiTokenStore.HashedToken token, @Nonnull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
             this.name = token.getName();
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
-            
+
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
             this.numDaysUse = stats.getNumDaysUse();
         }
     }
-    
+
     /**
      * Allow user to rename tokens
      */
@@ -279,7 +279,7 @@ public class ApiTokenProperty extends UserProperty {
         this.tokenStore.reconfigure(tokenStoreTypedData);
         return this;
     }
-    
+
     private Map<String, JSONObject> convertToTokenMap(Object tokenStoreData) {
         if (tokenStoreData == null) {
             // in case there are no token
@@ -300,15 +300,15 @@ public class ApiTokenProperty extends UserProperty {
             }
             return result;
         }
-        
+
         throw HttpResponses.error(400, "Unexpected class received for the token store information");
     }
-    
+
     private void addJSONTokenIntoMap(Map<String, JSONObject> tokenMap, JSONObject tokenData) {
         String uuid = tokenData.getString("tokenUuid");
         tokenMap.put(uuid, tokenData);
     }
-    
+
     /**
      * Only usable if the user still has the legacy API token.
      * @deprecated Each token can be revoked now and new tokens can be requested without altering existing ones.
@@ -323,20 +323,20 @@ public class ApiTokenProperty extends UserProperty {
         ApiTokenStore.HashedToken existingLegacyToken = tokenStore.getLegacyToken();
         _changeApiToken();
         tokenStore.regenerateTokenFromLegacy(apiToken);
-    
+
         if(existingLegacyToken != null){
             tokenStats.removeId(existingLegacyToken.getUuid());
         }
         user.save();
     }
-    
+
     @Deprecated
     private void _changeApiToken(){
         byte[] random = new byte[16];   // 16x8=128bit worth of randomness, since we use md5 digest as the API token
         RANDOM.nextBytes(random);
         apiToken = Secret.fromString(Util.toHexString(random));
     }
-    
+
     /**
      * Does not revoke the token stored in the store
      */
@@ -344,12 +344,12 @@ public class ApiTokenProperty extends UserProperty {
     public void deleteApiToken(){
         this.apiToken = null;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public ApiTokenStore getTokenStore() {
         return tokenStore;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public ApiTokenStats getTokenStats() {
         return tokenStats;
@@ -370,9 +370,9 @@ public class ApiTokenProperty extends UserProperty {
         /**
          * New approach:
          * API Token are generated only when a user request a new one. The value is randomly generated
-         * without any link to the user and only displayed to him the first time. 
+         * without any link to the user and only displayed to him the first time.
          * We only store the hash for future comparisons.
-         * 
+         *
          * Legacy approach:
          * When we are creating a default {@link ApiTokenProperty} for User,
          * we need to make sure it yields the same value for the same user,
@@ -388,7 +388,7 @@ public class ApiTokenProperty extends UserProperty {
 
             return forceNewInstance(user, true);
         }
-        
+
         private ApiTokenProperty forceNewInstance(User user, boolean withLegacyToken) {
             if(withLegacyToken){
                 return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
@@ -396,13 +396,13 @@ public class ApiTokenProperty extends UserProperty {
                 return new ApiTokenProperty(null);
             }
         }
-    
+
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean isStatisticsEnabled(){
             return ApiTokenPropertyConfiguration.get().isUsageStatisticsEnabled();
         }
-    
+
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean mustDisplayLegacyApiToken(User propertyOwner) {
@@ -412,7 +412,7 @@ public class ApiTokenProperty extends UserProperty {
             }
             return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
         }
-    
+
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
@@ -459,7 +459,7 @@ public class ApiTokenProperty extends UserProperty {
                 // even if the user does not have legacy token, this method let some legacy system to regenerate one
                 p.changeApiToken();
             }
-            
+
             rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
             return HttpResponses.html(p.hasPermissionToSeeToken()
                     ? Messages.ApiTokenProperty_ChangeToken_Success()
@@ -471,36 +471,36 @@ public class ApiTokenProperty extends UserProperty {
             if(!hasCurrentUserRightToGenerateNewToken(u)){
                 return HttpResponses.forbidden();
             }
-            
+
             final String tokenName;
             if (StringUtils.isBlank(newTokenName)) {
                 tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             }else{
                 tokenName = newTokenName;
             }
-            
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, false);
                 u.addProperty(p);
             }
-            
+
             ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = p.tokenStore.generateNewToken(tokenName);
             u.save();
-            
-            return HttpResponses.okJSON(new HashMap<String, String>() {{ 
-                put("tokenUuid", tokenUuidAndPlainValue.tokenUuid); 
-                put("tokenName", tokenName); 
-                put("tokenValue", tokenUuidAndPlainValue.plainValue); 
+
+            return HttpResponses.okJSON(new HashMap<String, String>() {{
+                put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
+                put("tokenName", tokenName);
+                put("tokenValue", tokenUuidAndPlainValue.plainValue);
             }});
         }
-        
+
         @RequirePOST
         public HttpResponse doRename(@AncestorInPath User u,
                                      @QueryParameter String tokenUuid, @QueryParameter String newName) throws IOException {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
-    
+
             if (StringUtils.isBlank(newName)) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
@@ -508,40 +508,40 @@ public class ApiTokenProperty extends UserProperty {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
-            
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
-            
+
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
             if(!renameOk){
                 // that could potentially happen if the token is removed from another page
                 // between your page loaded and your action
                 return HttpResponses.errorJSON("No token found, try refreshing the page");
             }
-            
+
             u.save();
-            
+
             return HttpResponses.ok();
         }
-        
+
         @RequirePOST
         public HttpResponse doRevoke(@AncestorInPath User u,
                                      @QueryParameter String tokenUuid) throws IOException {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
-            
+
             if(StringUtils.isBlank(tokenUuid)){
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
-            
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
-            
+
             ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenUuid);
             if(revoked != null){
                 if(revoked.isLegacy()){
@@ -551,11 +551,11 @@ public class ApiTokenProperty extends UserProperty {
                 p.tokenStats.removeId(revoked.getUuid());
             }
             u.save();
-            
+
             return HttpResponses.ok();
         }
     }
-    
+
     /**
      * Only used for legacy API Token generation and change. After that token is revoked, it will be useless.
      */

@@ -40,7 +40,7 @@ public enum YesNoMaybe {
         if (v==null)    return null;
         return v.toBool();
     }
-    
+
     public Boolean toBool() {
         switch (this) {
         case YES:

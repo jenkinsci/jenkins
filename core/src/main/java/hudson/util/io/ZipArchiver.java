@@ -55,11 +55,11 @@ final class ZipArchiver extends Archiver {
     public void visit(final File f, final String _relativePath) throws IOException {
         int mode = IOUtils.mode(f);
 
-        // On Windows, the elements of relativePath are separated by 
+        // On Windows, the elements of relativePath are separated by
         // back-slashes (\), but Zip files need to have their path elements separated
         // by forward-slashes (/)
         String relativePath = _relativePath.replace('\\', '/');
-        
+
         if(f.isDirectory()) {
             ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
             // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).

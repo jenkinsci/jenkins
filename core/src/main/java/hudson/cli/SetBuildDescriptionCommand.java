@@ -22,7 +22,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
 
     @Argument(metaVar="BUILD#",usage="Number of the build",required=true,index=1)
     public int number;
-    
+
     @Argument(metaVar="DESCRIPTION",required=true,usage="Description to be set. '=' to read from stdin.", index=2)
     public String description;
 
@@ -36,10 +36,10 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         if ("=".equals(description)) {
         	description = IOUtils.toString(stdin);
         }
-        
+
         run.setDescription(description);
-        
+
         return 0;
     }
-    
+
 }

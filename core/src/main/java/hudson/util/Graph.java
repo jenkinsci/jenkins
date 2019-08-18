@@ -51,7 +51,7 @@ import javax.annotation.CheckForNull;
  * <dt>/map
  * <dd>Clickable map
  * </dl>
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.320
  */

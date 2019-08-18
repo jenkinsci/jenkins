@@ -89,7 +89,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * <p>
  * TODO: move out more stuff to {@link DumbSlave}.
- * 
+ *
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
@@ -98,9 +98,9 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
-    
+
     private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
-    
+
     /**
      * Name of this agent node.
      */
@@ -402,12 +402,12 @@ public abstract class Slave extends Node implements Serializable {
 
         public URL getURL() throws IOException {
             String name = fileName;
-            
+
             // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-            
+
             if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
                 File cliJar = Which.jarFile(CLI.class);
                 if (cliJar.isFile()) {
@@ -429,7 +429,7 @@ public abstract class Slave extends Node implements Serializable {
                     }
                 }
             }
-            
+
             URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
@@ -482,9 +482,9 @@ public abstract class Slave extends Node implements Serializable {
             listener.error("Issue with creating launcher for agent " + name + ". Computer has been disconnected");
             return new Launcher.DummyLauncher(listener);
         } else {
-            // TODO: ideally all the logic below should be inside the SlaveComputer class with proper locking to prevent race conditions, 
+            // TODO: ideally all the logic below should be inside the SlaveComputer class with proper locking to prevent race conditions,
             // but so far there is no locks for setNode() hence it requires serious refactoring
-            
+
             // Ensure that the Computer instance still points to this node
             // Otherwise we may end up running the command on a wrong (reconnected) Node instance.
             Slave node = c.getNode();
@@ -495,10 +495,10 @@ public abstract class Slave extends Node implements Serializable {
                 }
                 return new Launcher.DummyLauncher(listener);
             }
-            
+
             // RemoteLauncher requires an active Channel instance to operate correctly
             final Channel channel = c.getChannel();
-            if (channel == null) { 
+            if (channel == null) {
                 reportLauncherCreateError("The agent has not been fully initialized yet",
                                          "No remoting channel to the agent OR it has not been fully initialized yet", listener);
                 return new Launcher.DummyLauncher(listener);
@@ -513,22 +513,22 @@ public abstract class Slave extends Node implements Serializable {
                 // isUnix is always set when the channel is not null, so it should never happen
                 reportLauncherCreateError("The agent has not been fully initialized yet",
                                          "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
-                                         "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
+                                         "It is an invalid channel state, please report a bug to Jenkins if you see it.",
                                          listener);
                 return new Launcher.DummyLauncher(listener);
             }
-            
+
             return new RemoteLauncher(listener, channel, isUnix).decorateFor(this);
         }
     }
-    
+
     private void reportLauncherCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
         String message = "Issue with creating launcher for agent " + name + ". " + humanReadableMsg;
         listener.error(message);
         if (LOGGER.isLoggable(Level.WARNING)) {
             // Send stacktrace to the log as well in order to diagnose the root cause of issues like JENKINS-38527
             LOGGER.log(Level.WARNING, message
-                    + "Probably there is a race condition with Agent reconnection or disconnection, check other log entries", 
+                    + "Probably there is a race condition with Agent reconnection or disconnection, check other log entries",
                     new IllegalStateException(exceptionDetails != null ? exceptionDetails : humanReadableMsg));
         }
     }

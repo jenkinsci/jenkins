@@ -49,7 +49,7 @@ public abstract class ComputerPinger implements ExtensionPoint {
 
         return false;
     }
-    
+
     /**
      * Default pinger - use Java built-in functionality.  This doesn't always work,
      * a host may be reachable even if this returns false.

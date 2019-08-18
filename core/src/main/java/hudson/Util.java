@@ -1363,7 +1363,7 @@ public class Util {
         try {
             res = clazz.getDeclaredMethod(methodName, types);
             // private, static or final methods can not be overridden
-            if (res != null && (Modifier.isPrivate(res.getModifiers()) || Modifier.isFinal(res.getModifiers()) 
+            if (res != null && (Modifier.isPrivate(res.getModifiers()) || Modifier.isFinal(res.getModifiers())
                     || Modifier.isStatic(res.getModifiers()))) {
                 res = null;
             }
@@ -1454,7 +1454,7 @@ public class Util {
         p.load(new StringReader(properties));
         return p;
     }
-    
+
     /**
      * Closes the item and logs error to the log in the case of error.
      * Logging will be performed on the {@code WARNING} level.
@@ -1465,7 +1465,7 @@ public class Util {
      * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
-    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 
+    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger,
             @Nonnull String closeableName, @Nonnull String closeableOwner) {
         if (toClose == null) {
             return;
@@ -1524,7 +1524,7 @@ public class Util {
             throw new IOException(e);
         }
     }
-    
+
     /**
      * Compute the number of calendar days elapsed since the given date.
      * As it's only the calendar days difference that matter, "11.00pm" to "2.00am the day after" returns 1,
@@ -1536,7 +1536,7 @@ public class Util {
         LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         return ChronoUnit.DAYS.between(aLocal, bLocal);
     }
-    
+
     /**
      * @return positive number of days between the given date and now
      * @see #daysBetween(Date, Date)
@@ -1545,7 +1545,7 @@ public class Util {
     public static long daysElapsedSince(@Nonnull Date date){
         return Math.max(0, daysBetween(date, new Date()));
     }
-    
+
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability

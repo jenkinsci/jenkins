@@ -31,7 +31,7 @@ import java.net.SocketAddress;
  *
  * <p>
  * Put {@link Extension} on your implementation class to have it auto-discovered.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.304
  * @see UDPBroadcastThread

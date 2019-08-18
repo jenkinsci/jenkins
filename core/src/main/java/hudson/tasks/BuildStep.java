@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -285,7 +285,7 @@ public interface BuildStep {
             KIND.put(d,Notifier.class);
             core.add(d);
         }
-        
+
         /**
          * Adds a new publisher descriptor, which (generally speaking)
          * alter the build result based on some artifacts of the build.
@@ -293,7 +293,7 @@ public interface BuildStep {
          * <p>
          * This method adds the descriptor before all the "notifiers".
          *
-         * @see #addNotifier(Descriptor) 
+         * @see #addNotifier(Descriptor)
          */
         public void addRecorder( Descriptor<Publisher> d ) {
             KIND.put(d,Recorder.class);

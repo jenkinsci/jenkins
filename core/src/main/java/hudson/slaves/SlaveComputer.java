@@ -763,7 +763,7 @@ public class SlaveComputer extends Computer {
     @Override
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(CONNECT);
-            
+
         if(channel!=null) {
             try {
                 req.getView(this, "already-launched.jelly").forward(req, rsp);

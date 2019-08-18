@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,7 +43,7 @@ public class DisplayNameListener extends ItemListener {
 
     @Override
     /**
-     * Called after the user has clicked OK in the New Job page when 
+     * Called after the user has clicked OK in the New Job page when
      * Copy existing job has been selected.
      * The fields in item will be displayed in when the config page is loaded
      * displayed.
@@ -52,7 +52,7 @@ public class DisplayNameListener extends ItemListener {
         // bug 5056825 - Display name field should be cleared when you copy a job within the same folder.
         if(item instanceof AbstractItem && src.getParent() == item.getParent()) {
             AbstractItem dest = (AbstractItem)item;
-            try {                
+            try {
                 dest.setDisplayName(null);
             } catch(IOException ioe) {
                 LOGGER.log(Level.WARNING, String.format("onCopied():Exception while trying to clear the displayName for Item.name:%s", item.getName()), ioe);

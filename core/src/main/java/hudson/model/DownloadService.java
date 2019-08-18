@@ -369,7 +369,7 @@ public class DownloadService extends PageDecorator {
         }
 
         /**
-         * This is where the browser sends us the data. 
+         * This is where the browser sends us the data.
          */
         @RequirePOST
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
@@ -507,4 +507,3 @@ public class DownloadService extends PageDecorator {
      */
     public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
-

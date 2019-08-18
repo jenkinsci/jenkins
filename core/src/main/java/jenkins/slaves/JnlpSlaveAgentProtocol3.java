@@ -59,7 +59,7 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     public boolean isDeprecated() {
         return true;
     }
-    
+
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         handler.handle(socket,

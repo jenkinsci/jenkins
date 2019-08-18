@@ -9,7 +9,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Show "About Jenkins" link.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension @Symbol("about")

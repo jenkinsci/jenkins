@@ -33,7 +33,7 @@ import java.io.IOException;
 
 /**
  * {@link Filter} that does nothing.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class NoopFilter implements Filter {

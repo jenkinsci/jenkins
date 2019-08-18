@@ -123,7 +123,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * Parses the bean definition groovy script by first exporting the given {@link Binding}. 
+     * Parses the bean definition groovy script by first exporting the given {@link Binding}.
      */
     public void parse(InputStream script, Binding binding) {
         if (script==null)
@@ -360,7 +360,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
     /**
 	 * This method is invoked by Groovy when a method that's not defined in Java is invoked.
-     * We use that as a syntax for bean definition. 
+     * We use that as a syntax for bean definition.
 	 */
 	public Object methodMissing(String name, Object arg) {
         Object[] args = (Object[])arg;

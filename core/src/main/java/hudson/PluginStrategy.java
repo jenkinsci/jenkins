@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -60,7 +60,7 @@ public interface PluginStrategy extends ExtensionPoint {
 
 	/**
 	 * Loads the plugin and starts it.
-	 * 
+	 *
 	 * <p>
 	 * This should be done after all the classloaders are constructed for all
 	 * the plugins, so that dependencies can be properly loaded by plugins.
@@ -70,7 +70,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	/**
 	 * Optionally start services provided by the plugin. Should be called
 	 * when all plugins are loaded.
-	 * 
+	 *
 	 * @param plugin
 	 */
 	void initializeComponents(PluginWrapper plugin);
@@ -85,7 +85,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * @since 1.400
 	 */
 	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
-    
+
     /**
      * Called when a plugin is installed, but there was already a plugin installed which optionally depended on that plugin.
      * The class loader of the existing depending plugin should be updated

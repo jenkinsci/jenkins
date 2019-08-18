@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Alan Harder, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -96,7 +96,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         }
         return this;
     }
-    
+
     public ArgumentListBuilder prepend(String... args) {
         // left-shift the mask
         BitSet nm = new BitSet(this.args.size()+args.length);
@@ -114,7 +114,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * such as when adding argument for ssh and rsh.
      *
      * Normal process invocations don't need it, because each
-     * argument is treated as its own string and never merged into one. 
+     * argument is treated as its own string and never merged into one.
      */
     public ArgumentListBuilder addQuoted(String a) {
         return add('"'+a+'"', false);
@@ -133,7 +133,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         }
         return this;
     }
-    
+
     /**
      * @since 2.72
      */
@@ -262,7 +262,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     public String[] toCommandArray() {
         return args.toArray(new String[0]);
     }
-    
+
     @Override
     public ArgumentListBuilder clone() {
         ArgumentListBuilder r = new ArgumentListBuilder();
@@ -355,7 +355,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
             }
             if(i == 0 && quoted) quotedArgs.insert(0, '"'); else if (i == 0 && !quoted) quotedArgs.append('"');
             if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
-            
+
             windowsCommand.add(quotedArgs, mask.get(i));
         }
         // (comment copied from old code in hudson.tasks.Ant)

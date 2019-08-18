@@ -47,7 +47,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     public static @Nonnull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
     }
-    
+
     /**
      * Gets local configuration. For explanation when it could die, see {@link #get()}
      */

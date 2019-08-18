@@ -32,7 +32,7 @@ public class Retrier <V>{
     private String action;
     private BiFunction<Integer, Exception, V> duringActionExceptionListener;
     private Class<?>[] duringActionExceptions;
-    
+
     private Retrier(Builder<V> builder){
         this.attempts = builder.attempts;
         this.delay = builder.delay;
@@ -165,7 +165,7 @@ public class Retrier <V>{
          * @param checkResult Method to check if the result of the action was a success
          * @param action name of the action to perform, for messages purposes.
          */
-        
+
         public Builder(@Nonnull Callable<V> callable, @Nonnull BiPredicate<Integer, V> checkResult, @Nonnull String action) {
             this.callable = callable;
             this.action = action;

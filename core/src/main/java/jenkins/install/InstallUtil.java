@@ -86,7 +86,7 @@ public class InstallUtil {
             return functions.next().apply(this);
         }
     }
-    
+
     /**
      * Proceed to the state following the provided one
      */
@@ -96,7 +96,7 @@ public class InstallUtil {
             Jenkins.get().setInstallState(next);
         }
     }
-    
+
     /**
      * Returns the next state during a transition from the current install state
      */
@@ -107,7 +107,7 @@ public class InstallUtil {
         }
         // Terminal condition: getNextState() on the current install state
         installStateFilterChain.add(input -> {
-            // Initially, install state is unknown and 
+            // Initially, install state is unknown and
             // needs to be determined
             if (current == null || InstallState.UNKNOWN.equals(current)) {
                 return getDefaultInstallState();
@@ -125,11 +125,11 @@ public class InstallUtil {
             }
             return states.get(current);
         });
-        
+
         ProviderChain<InstallState> chain = new ProviderChain<>(installStateFilterChain.iterator());
         return chain.get();
     }
-    
+
     private static InstallState getDefaultInstallState() {
         // Support a simple state override. Useful for testing.
         String stateOverride = System.getProperty("jenkins.install.state", System.getenv("jenkins.install.state"));
@@ -140,18 +140,18 @@ public class InstallUtil {
                 throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
             }
         }
-        
+
         // Support a 3-state flag for running or disabling the setup wizard
         String shouldRunFlag = SystemProperties.getString("jenkins.install.runSetupWizard");
         boolean shouldRun = "true".equalsIgnoreCase(shouldRunFlag);
         boolean shouldNotRun = "false".equalsIgnoreCase(shouldRunFlag);
-        
+
         // install wizard will always run if environment specified
         if (!shouldRun) {
             if (Functions.getIsUnitTest()) {
                 return InstallState.TEST;
             }
-            
+
             if (SystemProperties.getBoolean("hudson.Main.development")) {
                 return InstallState.DEVELOPMENT;
             }
@@ -163,7 +163,7 @@ public class InstallUtil {
         // stored in them, which means it's a new install.
         if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
             Jenkins j = Jenkins.get();
-            
+
             // Allow for skipping
             if(shouldNotRun) {
                 try {
@@ -184,7 +184,7 @@ public class InstallUtil {
                     return InstallState.UPGRADE;
                 }
             }
-            
+
             return InstallState.INITIAL_SECURITY_SETUP;
         }
 

@@ -43,7 +43,7 @@ public abstract class FileVisitor {
     public boolean understandsSymlink() {
         return false;
     }
-    
+
     /**
      * Decorates a visitor by a given filter.
      */

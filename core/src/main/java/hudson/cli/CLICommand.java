@@ -117,12 +117,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public transient PrintStream stdout,stderr;
 
     /**
-     * Shared text, which is reported back to CLI if an error happens in commands 
+     * Shared text, which is reported back to CLI if an error happens in commands
      * taking lists of parameters.
      * @since 2.26
      */
     static final String CLI_LISTPARAM_SUMMARY_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
-    
+
     /**
      * Connected to stdin of the CLI agent.
      *
@@ -184,7 +184,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Entry point to the CLI command.
-     * 
+     *
      * <p>
      * The default implementation uses args4j to parse command line arguments and call {@link #run()},
      * but if that processing is undesirable, subtypes can directly override this method and leave {@link #run()}
@@ -333,7 +333,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * running as anonymous user credential.
      *
      * <p>
-     * Note that even if this method returns true, the user can still skip aut 
+     * Note that even if this method returns true, the user can still skip aut
      *
      * @param auth
      *      Always non-null.
@@ -363,7 +363,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     public Authentication getTransportAuthentication() {
-        Authentication a = transportAuth; 
+        Authentication a = transportAuth;
         if (a==null)    a = Jenkins.ANONYMOUS;
         return a;
     }
@@ -374,7 +374,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Executes the command, and return the exit code.
-     * 
+     *
      * <p>
      * This is an internal contract between {@link CLICommand} and its subtype.
      * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
@@ -443,7 +443,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Called while producing usage. This is a good method to override
      * to render the general description of the command that goes beyond
-     * a single-line summary. 
+     * a single-line summary.
      */
     protected void printUsageSummary(PrintStream stderr) {
         stderr.println(getShortDescription());

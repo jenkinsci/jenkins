@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,7 +74,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <p>
  * Proxy authentication (including NTLM) is implemented by setting a default
  * {@link Authenticator} which provides a {@link PasswordAuthentication}
- * (as described in the Java 6 tech note 
+ * (as described in the Java 6 tech note
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  *
@@ -87,7 +87,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", (int)TimeUnit.SECONDS.toMillis(20));
-    
+
     public final String name;
     public final int port;
 
@@ -110,7 +110,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * encrypted password
      */
     private Secret secretPassword;
-    
+
     private String testUrl;
 
     private transient Authenticator authenticator;
@@ -251,7 +251,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     public static URLConnection open(URL url) throws IOException {
         final ProxyConfiguration p = get();
-        
+
         URLConnection con;
         if(p==null) {
             con = url.openConnection();
@@ -264,11 +264,11 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 p.jenkins48775workaround(proxy, url);
             }
         }
-        
+
         if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
             con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         }
-        
+
         if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
             decorate(con);
         }
@@ -397,7 +397,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             try {
                 method = new GetMethod(testUrl);
                 method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : (int)TimeUnit.SECONDS.toMillis(30));
-                
+
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
@@ -405,7 +405,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
-                
+
                 int code = client.executeMethod(method);
                 if (code != HttpURLConnection.HTTP_OK) {
                     return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
@@ -417,7 +417,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                     method.releaseConnection();
                 }
             }
-            
+
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
         }
 

@@ -38,7 +38,7 @@ import java.io.IOException;
  * <p>
  * The error page is rendered into HTML, but without a stack trace. So only use
  * this exception when the error condition is anticipated by the program, and where
- * we nor users don't need to see the stack trace to figure out the root cause. 
+ * we nor users don't need to see the stack trace to figure out the root cause.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.321

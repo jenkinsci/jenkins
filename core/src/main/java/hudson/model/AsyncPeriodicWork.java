@@ -185,11 +185,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected File getLogFile() {
         return new File(getLogsRoot(), "/tasks/" + name + ".log");
     }
-    
+
     /**
      * Returns the logging level at which normal messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -197,7 +197,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getNormalLoggingLevel() {
         return Level.INFO;
     }
-    
+
     /**
      * Returns the logging level at which previous task still executing messages is displayed.
      *
@@ -212,8 +212,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     /**
      * Returns the logging level at which error messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -221,7 +221,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getErrorLoggingLevel() {
         return Level.SEVERE;
     }
-    
+
     /**
      * Executes the task.
      *

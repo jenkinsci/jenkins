@@ -24,7 +24,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
     public boolean getInsensitiveSearch() {
         return insensitiveSearch;
     }
-    
+
     public static boolean isCaseInsensitive(){
         User user = User.current();
 
@@ -34,7 +34,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
 
         return user.getProperty(UserSearchProperty.class).getInsensitiveSearch();
     }
-    
+
 
     @Extension @Symbol("search")
     public static final class DescriptorImpl extends UserPropertyDescriptor {

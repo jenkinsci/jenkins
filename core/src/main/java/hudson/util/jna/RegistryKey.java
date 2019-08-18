@@ -266,7 +266,7 @@ public class RegistryKey {
                     break; // not supported yet
                 }
                 break;
-            
+
             default:
                 check(result);
             }

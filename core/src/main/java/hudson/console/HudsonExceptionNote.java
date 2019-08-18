@@ -28,10 +28,10 @@ import hudson.MarkupText;
 import org.jenkinsci.Symbol;
 
 // TODO: the implementation has been deprecated due to JENKINS-42861
-// Consider providing alternate search mechanisms (JIRA, grepcode, etc.) as proposed in 
+// Consider providing alternate search mechanisms (JIRA, grepcode, etc.) as proposed in
 // https://github.com/jenkinsci/jenkins/pull/2808#pullrequestreview-27467560 (JENKINS-43612)
 /**
- * Placed on the beginning of the exception stack trace produced by Jenkins, 
+ * Placed on the beginning of the exception stack trace produced by Jenkins,
  * which in turn produces hyperlinked stack trace.
  *
  * <p>

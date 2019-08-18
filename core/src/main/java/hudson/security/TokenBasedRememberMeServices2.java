@@ -74,7 +74,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * Escape hatch for the check on the maximum date for the expiration duration of the remember me cookie
      */
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = 
+    public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK =
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 
     /**
@@ -306,13 +306,13 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         return cookie;
     }
 
-    @Override 
+    @Override
     protected Cookie makeCancelCookie(HttpServletRequest request) {
         Cookie cookie = super.makeCancelCookie(request);
         secureCookie(cookie, request);
         return cookie;
     }
-    
+
     /**
      * Force always the http-only flag and depending on the request, put also the secure flag.
      */

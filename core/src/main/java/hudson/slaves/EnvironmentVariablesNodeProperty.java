@@ -53,7 +53,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
      * Agent-specific environment variables
      */
     private final EnvVars envVars;
-    
+
     @DataBoundConstructor
     public EnvironmentVariablesNodeProperty(List<Entry> env) {
         this.envVars = toMap(env);
@@ -62,7 +62,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     public EnvironmentVariablesNodeProperty(Entry... env) {
         this(Arrays.asList(env));
     }
-	
+
     public EnvVars getEnvVars() {
     	return envVars;
     }
@@ -106,7 +106,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
             }
         }
     }
-	
+
 	public static class Entry {
 		public String key, value;
 
@@ -120,7 +120,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 			this.value = value;
 		}
 	}
-	
+
 	private static EnvVars toMap(List<Entry> entries) {
 		EnvVars map = new EnvVars();
         if (entries!=null)

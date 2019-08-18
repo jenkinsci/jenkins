@@ -36,7 +36,7 @@ import java.util.Map;
  * The explicit literal attributes, if specified, always take precedence over the dynamic attributes added by the map.
  *
  * <p>
- * See textbox.jelly as an example of using this tag library. 
+ * See textbox.jelly as an example of using this tag library.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.342

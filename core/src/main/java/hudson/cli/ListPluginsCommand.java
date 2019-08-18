@@ -49,7 +49,7 @@ public class ListPluginsCommand extends CLICommand {
     protected int run() {
         Jenkins h = Jenkins.get();
         h.checkPermission(Jenkins.ADMINISTER);
-        
+
         PluginManager pluginManager = h.getPluginManager();
 
         if (this.name != null) {

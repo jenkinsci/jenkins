@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 package hudson.util.io;
- 
+
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;

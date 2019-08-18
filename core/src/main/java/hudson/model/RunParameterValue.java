@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -64,7 +64,7 @@ public class RunParameterValue extends ParameterValue {
     public String getRunId() {
         return runId;
     }
-    
+
     private String[] split() {
         if (runId == null) {
             return null;
@@ -81,7 +81,7 @@ public class RunParameterValue extends ParameterValue {
         String[] r = split();
     	return r == null ? null : r[0];
     }
-    
+
     @Exported
     public String getNumber() {
         String[] r = split();
@@ -99,7 +99,7 @@ public class RunParameterValue extends ParameterValue {
     @Override
     public void buildEnvironment(Run<?,?> build, EnvVars env) {
         Run run = getRun();
-        
+
         String value = (null == run) ? "UNKNOWN" : Jenkins.get().getRootUrl() + run.getUrl();
         env.put(name, value);
 
@@ -108,7 +108,7 @@ public class RunParameterValue extends ParameterValue {
 
         env.put(name + ".number" , getNumber ());   // same as above
         env.put(name + "_NUMBER" , getNumber ());
-        
+
         // if run is null, default to the standard '#1' display name format
         env.put(name + "_NAME",  (null == run) ? "#" + getNumber() : run.getDisplayName());  // since 1.504
 
@@ -118,7 +118,7 @@ public class RunParameterValue extends ParameterValue {
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
 
     }
-    
+
     @Override
     public String toString() {
     	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";

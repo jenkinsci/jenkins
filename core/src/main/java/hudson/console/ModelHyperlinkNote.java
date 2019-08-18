@@ -64,7 +64,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
             return "Hyperlinks to models";
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = Logger.getLogger(ModelHyperlinkNote.class.getName());

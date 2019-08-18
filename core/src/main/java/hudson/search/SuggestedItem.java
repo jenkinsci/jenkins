@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -71,14 +71,14 @@ public class SuggestedItem {
      *      URL that starts with '/' but doesn't end with '/'.
      *      The path is the combined path from the {@link SearchIndex} where the search started
      *      to the final item found. Thus to convert to the actual URL, the caller would need
-     *      to prepend the URL of the object where the search started. 
+     *      to prepend the URL of the object where the search started.
      */
     public String getUrl() {
         StringBuilder buf = new StringBuilder();
         getUrl(buf);
         return buf.toString();
     }
-    
+
     private static SuggestedItem build(SearchableModelObject searchContext, Item top) {
         ItemGroup<? extends Item> parent = top.getParent();
         if (parent instanceof Item) {
@@ -87,7 +87,7 @@ public class SuggestedItem {
         }
         return new SuggestedItem(top);
     }
-    
+
     /**
      * Given a SearchItem, builds a SuggestedItem hierarchy by looking up parent items (if applicable).
      * This allows search results for items not contained within the same {@link ItemGroup} to be distinguished.

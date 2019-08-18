@@ -48,7 +48,7 @@ public class BasicApiTokenHelper {
                 );
                 if(areTokenEqual){
                     // directly return the user freshly created
-                    // and no need to check its token as the generated token 
+                    // and no need to check its token as the generated token
                     // will be the same as the one we checked just above
                     return User.getById(username, true);
                 }
@@ -59,7 +59,7 @@ public class BasicApiTokenHelper {
                 return user;
             }
         }
-        
+
         return null;
     }
 }

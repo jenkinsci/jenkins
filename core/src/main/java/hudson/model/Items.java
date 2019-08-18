@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -58,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Convenience methods related to {@link Item}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Items {
@@ -223,12 +223,12 @@ public class Items {
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
         final Jenkins jenkins = Jenkins.get();
-        
+
         List<T> r = new ArrayList<>();
         if (jenkins == null) {
             return r;
         }
-        
+
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
@@ -387,7 +387,7 @@ public class Items {
     public static XmlFile getConfigFile(Item item) {
         return getConfigFile(item.getRootDir());
     }
-    
+
     /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
      * and filter them by the given type. The returned list will represent a snapshot view of the items present at some
@@ -396,7 +396,7 @@ public class Items {
      * <p>
      * If you do not need to iterate all items, or if the order of the items is not required, consider using
      * {@link #allItems(ItemGroup, Class)} instead.
-     * 
+     *
      * @since 1.512
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {

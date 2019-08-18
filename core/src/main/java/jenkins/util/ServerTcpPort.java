@@ -18,7 +18,7 @@ public class ServerTcpPort {
         this.value = value;
         this.type = type;
     }
-    
+
     public ServerTcpPort(JSONObject o) {
         type = o.getString("type");
         value = o.optInt("value");

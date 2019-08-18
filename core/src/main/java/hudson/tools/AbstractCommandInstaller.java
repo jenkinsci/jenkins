@@ -36,7 +36,7 @@ import org.kohsuke.stapler.QueryParameter;
  * @see BatchCommandInstaller
  * @see CommandInstaller
  * @author Oleg Nenashev
- * 
+ *
  */
 public abstract class AbstractCommandInstaller extends ToolInstaller {
 

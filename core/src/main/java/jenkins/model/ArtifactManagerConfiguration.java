@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
  */
 @Extension @Symbol("artifactManager")
 public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
-    
+
     public static @Nonnull ArtifactManagerConfiguration get() {
         return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);
     }

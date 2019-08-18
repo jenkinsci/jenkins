@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2008-2009 Yahoo! Inc. 
- * All rights reserved. 
+ * Copyright (c) 2008-2009 Yahoo! Inc.
+ * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 package hudson.security.csrf;
@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
  * protect against cross site request forgeries.
- * 
+ *
  * @author dty
  */
 public class CrumbFilter implements Filter {

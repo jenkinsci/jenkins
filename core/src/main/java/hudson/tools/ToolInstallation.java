@@ -88,7 +88,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
 
     /**
      * @deprecated
-     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
+     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)}
      */
     @Deprecated
     public ToolInstallation(String name, String home) {
@@ -124,7 +124,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
 
     /**
      * Gets the home directory of this tool.
-     * 
+     *
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
      * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)

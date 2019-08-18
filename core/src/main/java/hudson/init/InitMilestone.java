@@ -46,7 +46,7 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder;
  *  <li>JOB_LOADED
  *  <li>COMPLETED
  * </ol>
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public enum InitMilestone implements Milestone {

@@ -40,7 +40,7 @@ public enum Platform {
     WINDOWS(';'),UNIX(':');
 
     /**
-     * The character that separates paths in environment variables like PATH and CLASSPATH. 
+     * The character that separates paths in environment variables like PATH and CLASSPATH.
      * On Windows ';' and on Unix ':'.
      *
      * @see File#pathSeparator

@@ -53,9 +53,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
             // Fallback if the view is not specified
             j.setPrimaryView(j.getViews().iterator().next());
         }
-        
+
         return true;
     }
 }
-
-

@@ -109,7 +109,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @return
      *      Return the real top directory inside {@code root} that contains the meat. In the above example,
      *      {@code root.child("jakarta-ant")} should be returned. If there's no directory to pull up,
-     *      return null. 
+     *      return null.
      */
     protected FilePath findPullUpDirectory(FilePath root) throws IOException, InterruptedException {
         // if the directory just contains one directory and that alone, assume that's the pull up subject
@@ -122,7 +122,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     }
 
     public static abstract class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
-        
+
         @SuppressWarnings("deprecation") // intentionally adding dynamic item here
         protected DescriptorImpl() {
             Downloadable.all().add(createDownloadable());

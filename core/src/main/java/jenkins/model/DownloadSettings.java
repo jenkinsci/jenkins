@@ -59,7 +59,7 @@ public final class DownloadSettings extends GlobalConfiguration implements Persi
     }
 
     private boolean useBrowser = false;
-    
+
     public boolean isUseBrowser() {
         return useBrowser;
     }

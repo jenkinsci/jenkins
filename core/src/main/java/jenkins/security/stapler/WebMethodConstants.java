@@ -55,13 +55,13 @@ final class WebMethodConstants {
             StaplerResponse.class,
             HttpServletResponse.class
     ));
-    
+
     static final Set<String> WEB_METHOD_PARAMETERS_NAMES = Collections.unmodifiableSet(
             WEB_METHOD_PARAMETERS.stream()
                     .map(Class::getName)
                     .collect(Collectors.toSet())
     );
-    
+
     /**
      * If a method is annotated with one of those annotations,
      * the method is considered as an explicit web method
@@ -71,7 +71,7 @@ final class WebMethodConstants {
             // plus every annotation that's annotated with InterceptorAnnotation
             // JavaScriptMethod.class not taken here because it's a special case
     );
-    
+
     static final Set<String> WEB_METHOD_ANNOTATION_NAMES;
     static {
         Set<String> webMethodAnnotationNames = WEB_METHOD_ANNOTATIONS.stream()
@@ -80,9 +80,9 @@ final class WebMethodConstants {
         webMethodAnnotationNames.add(JavaScriptMethod.class.getName());
         WEB_METHOD_ANNOTATION_NAMES = Collections.unmodifiableSet(webMethodAnnotationNames);
     }
-    
+
     /**
-     * If at least one parameter of the method is annotated with one of those annotations, 
+     * If at least one parameter of the method is annotated with one of those annotations,
      * the method is considered as an implicit web method
      */
     private static final List<Class<? extends Annotation>> WEB_METHOD_PARAMETER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(
@@ -92,7 +92,7 @@ final class WebMethodConstants {
             JsonBody.class,
             SubmittedForm.class
     ));
-    
+
     static final Set<String> WEB_METHOD_PARAMETER_ANNOTATION_NAMES = Collections.unmodifiableSet(
             WEB_METHOD_PARAMETER_ANNOTATIONS.stream()
                     .map(Class::getName)

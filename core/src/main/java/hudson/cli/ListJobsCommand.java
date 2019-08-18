@@ -35,7 +35,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * Lists all jobs (in a specific view).
- * 
+ *
  * @author Michael Koch
  */
 @Extension

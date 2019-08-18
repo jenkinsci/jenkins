@@ -70,21 +70,21 @@ import java.util.Locale;
 @Restricted(NoExternalUse.class)
 // end of [PATCH]
 public class DomainValidator implements Serializable {
-    
+
     private static final int MAX_DOMAIN_LENGTH = 253;
-    
+
     private static final long serialVersionUID = -4407125112880174009L;
-    
+
     // Regular expression strings for hostnames (derived from RFC2396 and RFC 1123)
-    
+
     // RFC2396: domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum
     // Max 63 characters
     private static final String DOMAIN_LABEL_REGEX = "\\p{Alnum}(?>[\\p{Alnum}-]{0,61}\\p{Alnum})?";
-    
+
     // RFC2396 toplabel = alpha | alpha *( alphanum | "-" ) alphanum
     // Max 63 characters
     private static final String TOP_LABEL_REGEX = "\\p{Alpha}(?>[\\p{Alnum}-]{0,61}\\p{Alnum})?";
-    
+
     // RFC2396 hostname = *( domainlabel "." ) toplabel [ "." ]
     // Note that the regex currently requires both a domain label and a top level label, whereas
     // the RFC does not. This is because the regex is used to detect if a TLD is present.
@@ -92,21 +92,21 @@ public class DomainValidator implements Serializable {
     // RFC1123 sec 2.1 allows hostnames to start with a digit
     private static final String DOMAIN_NAME_REGEX =
             "^(?:" + DOMAIN_LABEL_REGEX + "\\.)+" + "(" + TOP_LABEL_REGEX + ")\\.?$";
-    
+
     private final boolean allowLocal;
-    
+
     /**
      * Singleton instance of this validator, which
      *  doesn't consider local addresses as valid.
      */
     private static final DomainValidator DOMAIN_VALIDATOR = new DomainValidator(false);
-    
+
     /**
      * Singleton instance of this validator, which does
      *  consider local addresses valid.
      */
     private static final DomainValidator DOMAIN_VALIDATOR_WITH_LOCAL = new DomainValidator(true);
-    
+
     /**
      * RegexValidator for matching domains.
      */
@@ -118,7 +118,7 @@ public class DomainValidator implements Serializable {
     // RFC1123 sec 2.1 allows hostnames to start with a digit
     private final RegexValidator hostnameRegex =
             new RegexValidator(DOMAIN_LABEL_REGEX);
-    
+
     /**
      * Returns the singleton instance of this validator. It
      *  will not consider local addresses as valid.
@@ -128,7 +128,7 @@ public class DomainValidator implements Serializable {
         inUse = true;
         return DOMAIN_VALIDATOR;
     }
-    
+
     /**
      * Returns the singleton instance of this validator,
      *  with local validation as required.
@@ -142,12 +142,12 @@ public class DomainValidator implements Serializable {
         }
         return DOMAIN_VALIDATOR;
     }
-    
+
     /** Private constructor. */
     private DomainValidator(boolean allowLocal) {
         this.allowLocal = allowLocal;
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> parses
      * as a valid domain name with a recognized top-level domain.
@@ -173,7 +173,7 @@ public class DomainValidator implements Serializable {
         }
         return allowLocal && hostnameRegex.isValid(domain);
     }
-    
+
     // package protected for unit test access
     // must agree with isValidRootUrl() above
     final boolean isValidDomainSyntax(String domain) {
@@ -192,7 +192,7 @@ public class DomainValidator implements Serializable {
         return (groups != null && groups.length > 0)
                 || hostnameRegex.isValid(domain);
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> matches any
      * IANA-defined top-level domain. Leading dots are ignored if present.
@@ -209,7 +209,7 @@ public class DomainValidator implements Serializable {
                 || isValidGenericTld(tld)
                 || isValidCountryCodeTld(tld);
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> matches any
      * IANA-defined infrastructure top-level domain. Leading dots are
@@ -221,7 +221,7 @@ public class DomainValidator implements Serializable {
         final String key = chompLeadingDot(unicodeToASCII(iTld).toLowerCase(Locale.ENGLISH));
         return arrayContains(INFRASTRUCTURE_TLDS, key);
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> matches any
      * IANA-defined generic top-level domain. Leading dots are ignored
@@ -234,7 +234,7 @@ public class DomainValidator implements Serializable {
         return (arrayContains(GENERIC_TLDS, key) || arrayContains(genericTLDsPlus, key))
                 && !arrayContains(genericTLDsMinus, key);
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> matches any
      * IANA-defined country code top-level domain. Leading dots are
@@ -247,7 +247,7 @@ public class DomainValidator implements Serializable {
         return (arrayContains(COUNTRY_CODE_TLDS, key) || arrayContains(countryCodeTLDsPlus, key))
                 && !arrayContains(countryCodeTLDsMinus, key);
     }
-    
+
     /**
      * Returns true if the specified <code>String</code> matches any
      * widely used "local" domains (localhost or localdomain). Leading dots are
@@ -259,34 +259,34 @@ public class DomainValidator implements Serializable {
         final String key = chompLeadingDot(unicodeToASCII(lTld).toLowerCase(Locale.ENGLISH));
         return arrayContains(LOCAL_TLDS, key);
     }
-    
+
     private String chompLeadingDot(String str) {
         if (str.startsWith(".")) {
             return str.substring(1);
         }
         return str;
     }
-    
+
     // ---------------------------------------------
     // ----- TLDs defined by IANA
     // ----- Authoritative and comprehensive list at:
     // ----- http://data.iana.org/TLD/tlds-alpha-by-domain.txt
-    
+
     // Note that the above list is in UPPER case.
     // The code currently converts strings to lower case (as per the tables below)
-    
+
     // IANA also provide an HTML list at http://www.iana.org/domains/root/db
     // Note that this contains several country code entries which are NOT in
     // the text file. These all have the "Not assigned" in the "Sponsoring Organisation" column
     // For example (as of 2015-01-02):
     // .bl  country-code    Not assigned
     // .um  country-code    Not assigned
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static final String[] INFRASTRUCTURE_TLDS = new String[] {
             "arpa",               // internet infrastructure
     };
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static final String[] GENERIC_TLDS = new String[] {
             // Taken from Version 2017020400, Last Updated Sat Feb  4 07:07:01 2017 UTC
@@ -1529,7 +1529,7 @@ public class DomainValidator implements Serializable {
             "zone", // zone Outer Falls, LLC
             "zuerich", // zuerich Kanton Zürich (Canton of Zurich)
     };
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static final String[] COUNTRY_CODE_TLDS = new String[] {
             "ac",                 // Ascension Island
@@ -1828,16 +1828,16 @@ public class DomainValidator implements Serializable {
             "zm",                 // Zambia
             "zw",                 // Zimbabwe
     };
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static final String[] LOCAL_TLDS = new String[] {
             "localdomain",         // Also widely used as localhost.localdomain
             "localhost",           // RFC2606 defined
     };
-    
+
     // Additional arrays to supplement or override the built in ones.
     // The PLUS arrays are valid keys, the MINUS arrays are invalid keys
-    
+
     /*
      * This field is used to detect whether the getInstance has been called.
      * After this, the method updateTLDOverride is not allowed to be called.
@@ -1845,7 +1845,7 @@ public class DomainValidator implements Serializable {
      * synchronized methods.
      */
     private static boolean inUse = false;
-    
+
     /*
      * These arrays are mutable, but they don't need to be volatile.
      * They can only be updated by the updateTLDOverride method, and any readers must get an instance
@@ -1853,16 +1853,16 @@ public class DomainValidator implements Serializable {
      */
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static volatile String[] countryCodeTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static volatile String[] genericTLDsPlus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static volatile String[] countryCodeTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
-    
+
     // WARNING: this array MUST be sorted, otherwise it cannot be searched reliably using binary search
     private static volatile String[] genericTLDsMinus = MemoryReductionUtil.EMPTY_STRING_ARRAY;
-    
+
     /**
      * enum used by {@link DomainValidator#updateTLDOverride(DomainValidator.ArrayType, String[])}
      * to determine which override array to update / fetch
@@ -1951,7 +1951,7 @@ public class DomainValidator implements Serializable {
                 throw new IllegalArgumentException("Unexpected enum value: " + table);
         }
     }
-    
+
     /**
      * Get a copy of the internal array.
      * @param table the array type (any of the enum values)
@@ -1991,7 +1991,7 @@ public class DomainValidator implements Serializable {
         }
         return Arrays.copyOf(array, array.length); // clone the array
     }
-    
+
     /**
      * Converts potentially Unicode input to punycode.
      * If conversion fails, returns the original input.
@@ -2035,7 +2035,7 @@ public class DomainValidator implements Serializable {
             return input;
         }
     }
-    
+
     private static class IDNBUGHOLDER {
         private static boolean keepsTrailingDot() {
             final String input = "a."; // must be a valid name
@@ -2043,7 +2043,7 @@ public class DomainValidator implements Serializable {
         }
         private static final boolean IDN_TOASCII_PRESERVES_TRAILING_DOTS = keepsTrailingDot();
     }
-    
+
     /*
      * Check if input contains only ASCII
      * Treats null as all ASCII
@@ -2059,7 +2059,7 @@ public class DomainValidator implements Serializable {
         }
         return true;
     }
-    
+
     /**
      * Check if a sorted array contains the specified key
      *

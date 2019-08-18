@@ -137,7 +137,7 @@ public class ConsistentHash<T> {
          *
          * <p>
          * This is a permutation of all the nodes, where nodes with more replicas
-         * are more likely to show up early on. 
+         * are more likely to show up early on.
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
@@ -182,7 +182,7 @@ public class ConsistentHash<T> {
      * This hash function need not produce a very uniform distribution, as the
      * output is rehashed with MD5. But it does need to make sure it doesn't
      * produce the same value for two different 'T's (and that's why this returns
-     * String, not the usual int.) 
+     * String, not the usual int.)
      */
     public interface Hash<T> {
         /**
@@ -328,7 +328,7 @@ public class ConsistentHash<T> {
     }
 
     /**
-     * Takes a string, hash it with MD5, then calls {@link #lookup(int)}. 
+     * Takes a string, hash it with MD5, then calls {@link #lookup(int)}.
      */
     public T lookup(String queryPoint) {
         return lookup(md5(queryPoint));

@@ -707,7 +707,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static File getConfigFileFor(String id) {
         return new File(getUserFolderFor(id), "config.xml");
     }
-    
+
     private static File getUserFolderFor(String id){
         return new File(getRootDir(), idStrategy().filenameOf(id));
     }
@@ -715,7 +715,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
      * Exposes implementation details that may be subject to change.
-     * 
+     *
      * @return The folder containing the user configuration files or {@code null} if the user was not yet saved.
      *
      * @since 2.129

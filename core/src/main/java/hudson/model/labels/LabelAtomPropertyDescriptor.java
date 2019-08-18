@@ -31,7 +31,7 @@ import hudson.model.Descriptor;
  *
  * <p>
  * Put {@link Extension} on your descriptor implementation to have it auto-registered.
- * 
+ *
  * <p>
  * When extending this class, override <code>Descriptor.getDisplayName()</code>. In the
  * context of LabelAtomPropertyDescriptor, this function is used to determine the label of

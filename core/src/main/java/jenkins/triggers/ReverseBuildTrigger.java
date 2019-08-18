@@ -113,7 +113,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     /**
      * Gets the upstream projects.
-     * 
+     *
      * @return Upstream projects or empty("") if upstream projects is null.
      */
     public String getUpstreamProjects() {

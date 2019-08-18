@@ -17,11 +17,11 @@ import java.io.IOException;
 
 /**
  * Controls the check out behavior in {@link AbstractBuild}.
- * 
+ *
  * <p>
  * While this can work with any {@link AbstractBuild}, the primary motivation of this extension point
  * is to control the check out behaviour in matrix projects. The intended use cases include situations like:
- * 
+ *
  * <ul>
  *     <li>Check out will only happen once in {@code MatrixBuild}, and its state will be then sent
  *         to {@code MatrixRun}s by other means such as rsync.
@@ -30,7 +30,7 @@ import java.io.IOException;
  *
  * <h2>Hook Semantics</h2>
  * There are currently two hooks defined on this class:
- * 
+ *
  * <h3>pre checkout</h3>
  * <p>
  * The default implementation calls into {@link BuildWrapper#preCheckout(AbstractBuild, Launcher, BuildListener)} calls.
@@ -42,7 +42,7 @@ import java.io.IOException;
  * The default implementation uses {@link AbstractProject#checkout(AbstractBuild, Launcher, BuildListener, File)} to
  * let {@link SCM} do check out, but your {@link SCMCheckoutStrategy} impls can substitute this call with other
  * operations that substitutes this semantics.
- * 
+ *
  * <h2>State and concurrency</h2>
  * <p>
  * An instance of this object gets created for a project for which this strategy is configured, so
@@ -58,9 +58,9 @@ public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMChe
 
     /**
      * Performs the pre checkout step.
-     * 
+     *
      * This method is called by the {@link Executor} that's carrying out the build.
-     * 
+     *
      * @param build
      *      Build being in progress. Never null.
      * @param launcher
@@ -79,7 +79,7 @@ public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMChe
 
     /**
      * Performs the checkout step.
-     * 
+     *
      * See {@link #preCheckout(AbstractBuild, Launcher, BuildListener)} for the semantics of the parameters.
      */
     public void checkout(AbstractBuildExecution execution) throws IOException, InterruptedException {

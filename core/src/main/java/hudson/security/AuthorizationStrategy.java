@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,7 +55,7 @@ import java.util.Collections;
  * The corresponding {@link Describable} instance will be asked to create a new {@link AuthorizationStrategy}
  * every time the system configuration is updated. Implementations that keep more state in ACL beyond
  * the system configuration should use {@link jenkins.model.Jenkins#getAuthorizationStrategy()} to talk to the current
- * instance to carry over the state. 
+ * instance to carry over the state.
  *
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
@@ -105,7 +105,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
                 return hasPermission;
         });
     }
-    
+
     /**
      * Implementation can choose to provide different ACL for different items.
      * This can be used as a basis for more fine-grained access control.
@@ -193,7 +193,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      */
     @Deprecated
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<>(AuthorizationStrategy.class);
-    
+
     /**
      * {@link AuthorizationStrategy} that implements the semantics
      * of unsecured Hudson where everyone has full control.

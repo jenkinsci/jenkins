@@ -22,7 +22,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
 
     /**
      * configure maven launcher argument list with adequate settings path
-     * 
+     *
      * @param build
      *            the build to provide the settings for
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
@@ -39,7 +39,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
 
     /**
      * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
-     * 
+     *
      * @param settings
      *            the provider to be used
      * @param build
@@ -58,7 +58,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
 
     /**
      * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
-     * 
+     *
      * @param provider
      *            the provider to be used
      * @param build

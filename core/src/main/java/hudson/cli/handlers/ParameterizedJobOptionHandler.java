@@ -40,7 +40,7 @@ import org.kohsuke.args4j.spi.Setter;
 @MetaInfServices(OptionHandler.class)
 @SuppressWarnings("rawtypes")
 public class ParameterizedJobOptionHandler extends GenericItemOptionHandler<ParameterizedJobMixIn.ParameterizedJob> {
-    
+
     public ParameterizedJobOptionHandler(CmdLineParser parser, OptionDef option, Setter<ParameterizedJobMixIn.ParameterizedJob> setter) {
         super(parser, option, setter);
     }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -190,10 +190,10 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
 
     /**
      * Provides an opportunity for a {@link BuildWrapper} to decorate the {@link BuildListener} logger to be used by the build.
-     * 
+     *
      * <p>
      * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
-     * 
+     *
      * <p>
      * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
      * <p>({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
@@ -219,7 +219,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * Provides an opportunity for a {@link BuildWrapper} to perform some actions before SCM checkout.
      *
      * <p>
-     * This hook is called early on in the build (before {@link #setUp(AbstractBuild, Launcher, BuildListener)}, 
+     * This hook is called early on in the build (before {@link #setUp(AbstractBuild, Launcher, BuildListener)},
      * but after {@link #decorateLauncher(AbstractBuild, Launcher, BuildListener)} is invoked.)
      * The typical use is delete existing workspace before new build starts etc.
      *
@@ -229,18 +229,18 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *
      * <p>
      * The default implementation is no-op.
-     * 
+     *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param launcher
-     *      The launcher. Never null. 
+     *      The launcher. Never null.
      * @param listener
      *      Connected to the build output. Never null. Can be used for error reporting.
      * @since 1.399
      */
     public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
     }
-    
+
     /**
      * {@link Action} to be displayed in the job page.
      *
@@ -278,7 +278,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *
      * This provides an opportunity for a BuildWrapper to append any additional
      * build variables defined for the current build.
-     * 
+     *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param variables
@@ -304,7 +304,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
         // noop
     }
-    
+
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */

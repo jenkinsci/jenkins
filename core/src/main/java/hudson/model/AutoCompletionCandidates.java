@@ -120,7 +120,7 @@ public class AutoCompletionCandidates implements HttpResponse {
             @Override
             public void onItem(Item i) {
                 String itemName = contextualNameOf(i);
-                
+
                 //Check user's setting on whether to do case sensitive comparison, configured in user -> configure
                 //This is the same setting that is used by the global search field, should be consistent throughout
                 //the whole application.

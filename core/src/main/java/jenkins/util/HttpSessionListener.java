@@ -34,7 +34,7 @@ import javax.servlet.http.HttpSessionEvent;
  * {@link javax.servlet.http.HttpSessionListener} {@link ExtensionPoint} for Jenkins.
  * <p>
  * Allows plugins to listen to {@link HttpSession} lifecycle events.
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.2
  */

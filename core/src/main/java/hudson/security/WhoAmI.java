@@ -19,38 +19,38 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Expose the data needed for /whoAmI, so it can be exposed by Api.
- * 
+ *
  * @author Ryan Campbell
  *
  */
 @Extension @Symbol("whoAmI")
 @ExportedBean
 public class WhoAmI implements UnprotectedRootAction {
-    
+
     public Api getApi() {
         return new Api(this);
     }
-    
+
     @Exported
     public String getName() {
         return auth().getName();
     }
-    
+
     @Exported
     public boolean isAuthenticated() {
         return auth().isAuthenticated();
     }
-    
+
     @Exported
     public boolean isAnonymous() {
         return Functions.isAnonymous();
     }
-    
+
     @Exported
     public String getDetails() {
         return auth().getDetails() != null ? auth().getDetails().toString() : null;
     }
-    
+
     @Exported
     public String getToString() {
         return auth().toString();

@@ -22,7 +22,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
 
     /**
      * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.
-     * 
+     *
      * @param build
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
@@ -38,7 +38,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
 
     /**
      * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
-     * 
+     *
      * @param settings
      *            the provider to be used
      * @param build
@@ -57,7 +57,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
 
     /**
      * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
-     * 
+     *
      * @param settings
      *            the provider to be used
      * @param build

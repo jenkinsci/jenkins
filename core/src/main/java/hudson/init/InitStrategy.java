@@ -30,7 +30,7 @@ import java.util.ServiceLoader;
  *
  * <p>
  * To register, put {@link MetaInfServices} on your implementation.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class InitStrategy {
@@ -60,7 +60,7 @@ public class InitStrategy {
 
         return r;
     }
-    
+
     private void listPluginFiles(PluginManager pm, String extension, Collection<File> all) throws IOException {
         File[] files = pm.rootDir.listFiles(new FilterByExtension(extension));
         if (files==null)
@@ -101,7 +101,7 @@ public class InitStrategy {
 
     /**
      * Selectively skip some of the initialization tasks.
-     * 
+     *
      * @return
      *      true to skip the execution.
      */

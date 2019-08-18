@@ -37,7 +37,7 @@ import java.io.IOException;
  * If Hudson is run with a lot of jobs but no views, suggest the user that they can create views.
  *
  * <p>
- * I noticed at an user visit that some users didn't notice the '+' icon in the tab bar. 
+ * I noticed at an user visit that some users didn't notice the '+' icon in the tab bar.
  *
  * @author Kohsuke Kawaguchi
  */

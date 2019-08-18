@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Luca Domenico Milanesio, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -127,7 +127,7 @@ public abstract class ParameterDefinition implements
     public String getType() {
     	return this.getClass().getSimpleName();
     }
-    
+
     @Exported
     public String getName() {
         return name;
@@ -168,7 +168,7 @@ public abstract class ParameterDefinition implements
      */
     @CheckForNull
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
-    
+
     /**
      * Create a parameter value from a GET with query string.
      * If no value is available in the request, it returns a default value if possible, or null.
@@ -206,10 +206,10 @@ public abstract class ParameterDefinition implements
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         throw new AbortException("CLI parameter submission is not supported for the "+getClass()+" type. Please file a bug report for this");
     }
-    
+
     /**
      * Returns default parameter value for this definition.
-     * 
+     *
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */

@@ -33,7 +33,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * Copies a job from CLI.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension
@@ -77,4 +77,3 @@ public class CopyJobCommand extends CLICommand {
         return 0;
     }
 }
-

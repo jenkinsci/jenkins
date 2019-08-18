@@ -60,7 +60,7 @@ import javax.annotation.Nonnull;
  * depend on its earlier result.
  *
  * @author Kohsuke Kawaguchi
- * @see BuildStep#getRequiredMonitorService() 
+ * @see BuildStep#getRequiredMonitorService()
  * @since 1.319
  */
 public final class CheckPoint {
@@ -140,7 +140,7 @@ public final class CheckPoint {
      * This method can be only called from an {@link Executor} thread.
      *
      * @throws InterruptedException
-     *      If the build (represented by the calling executor thread) is aborted while it's waiting.  
+     *      If the build (represented by the calling executor thread) is aborted while it's waiting.
      */
     public void block() throws InterruptedException {
         Run.waitForCheckpoint(this, null, null);

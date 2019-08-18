@@ -49,7 +49,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.331
  */

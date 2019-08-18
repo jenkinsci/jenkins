@@ -87,8 +87,8 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             return emptyArray_unsafeCast();
         }
     }
-    
-    //TODO: Get rid of it? 
+
+    //TODO: Get rid of it?
     //It's unsafe according to http://stackoverflow.com/questions/2927391/whats-the-reason-i-cant-create-generic-array-types-in-java
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings(value = "BC_IMPOSSIBLE_DOWNCAST",

@@ -59,7 +59,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
      * The thread that invokes this method always holds a lock to {@link Queue}, so queue contents
      * can be safely introspected from this method, if that information is necessary to make
      * decisions.
-     * 
+     *
      * @param  task
      *      The task whose execution is being considered. Never null.
      * @param worksheet

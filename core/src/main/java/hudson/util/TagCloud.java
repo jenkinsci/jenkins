@@ -32,7 +32,7 @@ import java.util.List;
  * where each keyword gets a weight and displayed according to their weight.
  *
  * TODO: define a view on its own.
- * 
+ *
  * @since 1.322
  */
 public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
@@ -46,7 +46,7 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
         }
 
         public float scale() {
-            // TODO: it's not obvious if linear scaling is the right approach or not.  
+            // TODO: it's not obvious if linear scaling is the right approach or not.
             return weight*9/max;
         }
 

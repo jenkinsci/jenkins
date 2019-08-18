@@ -27,7 +27,7 @@ import net.sf.json.JSONArray;
 
 /**
  * This class is responsible for specific upgrade behaviors in the Jenkins UI.
- * 
+ *
  * Note an instance of this class is already an @Extension in {@link InstallState#UPGRADE}
  *
  * @author Kohsuke Kawaguchi, Keith Zantow
@@ -38,7 +38,7 @@ public class UpgradeWizard extends InstallState {
      * Is this instance fully upgraded?
      */
     private volatile boolean isUpToDate = true;
-    
+
     /**
      * Whether to show the upgrade wizard
      */
@@ -47,22 +47,22 @@ public class UpgradeWizard extends InstallState {
     /*package*/ UpgradeWizard() {
         super("UPGRADE", false);
     }
-    
+
     /**
      * Get the upgrade wizard instance
      */
     public static UpgradeWizard get() {
         return (UpgradeWizard)InstallState.UPGRADE;
     }
-    
+
     @Override
     public void initializeState() {
         applyForcedChanges();
-        
-        // Initializing this state is directly related to 
+
+        // Initializing this state is directly related to
         // running the detached plugin checks, these should be consolidated somehow
         updateUpToDate();
-        
+
         // If there are no platform updates, proceed to running
         if (isUpToDate) {
             if (Jenkins.get().getSetupWizard().getPlatformPluginUpdates().isEmpty()) {
@@ -70,13 +70,13 @@ public class UpgradeWizard extends InstallState {
             }
         }
     }
-    
+
     /**
      * Put here the different changes that are enforced after an update.
      */
     private void applyForcedChanges(){
         // Disable the legacy system of API Token only if the new system was not installed
-        // in such case it means there was already an upgrade before 
+        // in such case it means there was already an upgrade before
         // and potentially the admin has re-enabled the features
         ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ApiTokenPropertyConfiguration.get();
         if(!apiTokenPropertyConfiguration.hasExistingConfigFile()){
@@ -85,12 +85,12 @@ public class UpgradeWizard extends InstallState {
             apiTokenPropertyConfiguration.setTokenGenerationOnCreationEnabled(false);
         }
     }
-    
+
     @Override
     public boolean isSetupComplete() {
         return !isDue();
     }
-    
+
     private void updateUpToDate() {
         // If we don't have any platform plugins, it's considered 'up to date' in terms
         // of the updater
@@ -120,7 +120,7 @@ public class UpgradeWizard extends InstallState {
 
         return System.currentTimeMillis() > SetupWizard.getUpdateStateFile().lastModified();
     }
-    
+
     /**
      * Whether to show the upgrade wizard
      */
@@ -140,7 +140,7 @@ public class UpgradeWizard extends InstallState {
         session.setAttribute(SHOW_UPGRADE_WIZARD_FLAG, true);
         return HttpResponses.redirectToContextRoot();
     }
-    
+
     /**
      * Call this to hide the upgrade wizard
      */
@@ -165,7 +165,7 @@ public class UpgradeWizard extends InstallState {
         LOGGER.log(FINE, "Snoozed the upgrade wizard notice");
         return HttpResponses.redirectToContextRoot();
     }
-    
+
     @Extension
     public static class ListenForInstallComplete extends InstallStateFilter {
         @Override

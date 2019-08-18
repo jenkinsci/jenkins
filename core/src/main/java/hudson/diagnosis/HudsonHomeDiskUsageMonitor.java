@@ -56,7 +56,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     public boolean isActivated() {
         return activated;
     }
-    
+
     @Override
     public String getDisplayName() {
     	return Messages.HudsonHomeDiskUsageMonitor_DisplayName();

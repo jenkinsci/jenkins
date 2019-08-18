@@ -39,7 +39,7 @@ import static java.util.Arrays.asList;
 
 /**
  * Model object for dynamically filed combo box, which is really just {@code ArrayList<String>}
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class ComboBoxModel extends ArrayList<String> implements HttpResponse {

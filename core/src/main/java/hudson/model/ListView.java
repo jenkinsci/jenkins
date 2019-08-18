@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt, Alan Harder
  *
@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -78,7 +78,7 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @GuardedBy("this")
     /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
-    
+
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
@@ -87,12 +87,12 @@ public class ListView extends View implements DirectlyModifiableView {
      * Include regex string.
      */
     private String includeRegex;
-    
+
     /**
      * Whether to recurse in ItemGroups
      */
     private boolean recurse;
-    
+
     /**
      * Compiled include pattern from the includeRegex string.
      */
@@ -238,7 +238,7 @@ public class ListView extends View implements DirectlyModifiableView {
     	}
         // for sanity, trim off duplicates
         items = new ArrayList<>(new LinkedHashSet<>(items));
-        
+
         return items;
     }
 
@@ -269,12 +269,12 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         return allItems;
     }
-    
+
     @Override
     public boolean contains(TopLevelItem item) {
       return getItems().contains(item);
     }
-    
+
     private void includeItems(ItemGroup<? extends TopLevelItem> root, Collection<? extends Item> parentItems, SortedSet<String> names) {
         if (includePattern != null) {
             for (Item item : parentItems) {
@@ -291,7 +291,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
     }
-    
+
     public synchronized boolean jobNamesContains(TopLevelItem item) {
         if (item == null) return false;
         return jobNames.contains(item.getRelativeNameFrom(getOwner().getItemGroup()));
@@ -480,7 +480,7 @@ public class ListView extends View implements DirectlyModifiableView {
         String filter = Util.fixEmpty(req.getParameter("statusFilter"));
         statusFilter = filter != null ? "1".equals(filter) : null;
     }
-    
+
     /** @since 1.526 */
     @DataBoundSetter
     public void setIncludeRegex(String includeRegex) {

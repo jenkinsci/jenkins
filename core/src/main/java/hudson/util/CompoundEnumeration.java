@@ -34,4 +34,3 @@ public class CompoundEnumeration<T> implements Enumeration<T> {
         return cur.nextElement();
     }
 }
-

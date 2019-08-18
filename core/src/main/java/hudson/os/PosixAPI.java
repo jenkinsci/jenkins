@@ -18,7 +18,7 @@ import jnr.posix.util.DefaultPOSIXHandler;
 public class PosixAPI {
 
     private static POSIX posix;
-    
+
     /**
      * Load the JNR implementation of the POSIX APIs for the current platform.
      * Runtime exceptions will be of type {@link PosixException}.
@@ -92,7 +92,7 @@ public class PosixAPI {
         public String[] getEnv() {
             Map<String,String> envs = System.getenv();
             String[] envp = new String[envs.size()];
-            
+
             int i = 0;
             for (Map.Entry<String,String> e : envs.entrySet()) {
                 envp[i++] = e.getKey()+'+'+e.getValue();

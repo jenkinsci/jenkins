@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -70,7 +70,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * <p>
  * This object can be used in a mix-in style to provide a directory browsing capability
- * to a {@link ModelObject}. 
+ * to a {@link ModelObject}.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -80,7 +80,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     public static boolean ALLOW_SYMLINK_ESCAPE = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
 
     public final ModelObject owner;
-    
+
     public final String title;
 
     private final VirtualFile base;
@@ -103,7 +103,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param base
      *      The root of the directory that's bound to URL.
      * @param title
-     *      Used in the HTML caption. 
+     *      Used in the HTML caption.
      * @param icon
      *      The icon file name, like "folder.gif"
      * @param serveDirIndex
@@ -278,7 +278,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             if(glob!=null) {
                 List<List<Path>> filteredGlob = keepReadabilityOnlyOnDescendants(baseFile, patternUsed, glob);
-                
+
                 // serve glob
                 req.setAttribute("it", this);
                 List<Path> parentPaths = buildParentPath(base,restSize);
@@ -349,7 +349,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
-    
+
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){
         Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
             List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
@@ -361,7 +361,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 } else {
                     relativePath += "/" + current.title;
                 }
-            
+
                 if (!current.isReadable) {
                     if (patternUsed) {
                         // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
@@ -384,11 +384,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
             return mappedFragments;
         });
-    
+
         if (patternUsed) {
             pathFragmentsStream = pathFragmentsStream.filter(Objects::nonNull);
         }
-        
+
         return pathFragmentsStream.collect(Collectors.toList());
     }
 
@@ -445,7 +445,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     glob = "**";
                 }
             }
-            
+
             if (glob.isEmpty()) {
                 Map<String, VirtualFile> nameToVirtualFiles = collectRecursivelyAllLegalChildren(dir);
                 sendZipUsingMap(zos, dir, nameToVirtualFiles);
@@ -533,7 +533,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
          * File size, or null if this is not a file.
          */
         private final long size;
-        
+
         /**
          * If the current user can read the file.
          */
@@ -564,7 +564,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         public boolean isFolder() {
             return isFolder;
         }
-        
+
         public boolean isReadable() {
             return isReadable;
         }
@@ -673,7 +673,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             VirtualFile[] files = cur.list();
                 Arrays.sort(files,new FileComparator(locale));
-    
+
                 for( VirtualFile f : files ) {
                     Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead(), f.lastModified());
                     if(!f.isDirectory()) {

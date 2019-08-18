@@ -220,7 +220,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
-     * 
+     *
      * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      * @return Created instance of the computer.
      *         Can be {@code null} if the {@link Node} implementation does not support it (e.g. {@link Cloud} agent).
@@ -465,11 +465,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Gets the specified property or null if the property is not configured for this Node.
-     * 
+     *
      * @param clazz the type of the property
-     * 
+     *
      * @return null if the property is not configured
-     * 
+     *
      * @since 2.37
      */
     @CheckForNull
@@ -480,17 +480,17 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 return clazz.cast(p);
             }
         }
-        return null;      
+        return null;
     }
 
     /**
-     * Gets the property from the given classname or null if the property 
+     * Gets the property from the given classname or null if the property
      * is not configured for this Node.
-     * 
+     *
      * @param className The classname of the property
-     * 
+     *
      * @return null if the property is not configured
-     * 
+     *
      * @since 2.37
      */
     @CheckForNull
@@ -501,7 +501,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 return p;
             }
         }
-        return null;      
+        return null;
     }
 
     // used in the Jelly script to expose descriptors

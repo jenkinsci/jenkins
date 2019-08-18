@@ -54,7 +54,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
             return staplerCache.get(clazz);
         }
         boolean ret = isStaplerRelevant(clazz);
-        
+
         staplerCache.put(clazz, ret);
         return ret;
     }
@@ -120,7 +120,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
                 }
             }
         }
-    
+
         for (Class<?> parameterType : m.getParameterTypes()) {
             if (WebMethodConstants.WEB_METHOD_PARAMETERS_NAMES.contains(parameterType.getName())) {
                 return true;
@@ -215,7 +215,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
                     LOGGER.log(Level.CONFIG, "Function {0} is not acceptable because it is blacklisted by {1}", new Object[]{signature, provider});
                     return false;
                 }
-                
+
                 Class<?> type = function.getReturnType();
                 if (type != null) {
                     String typeSignature = "class " + type.getCanonicalName();

@@ -82,7 +82,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         protected Callable<DiskSpace,IOException> createCallable(Computer c) {
             Node node = c.getNode();
             if (node == null) return null;
-            
+
             FilePath p = node.getRootPath();
             if(p==null) return null;
 
@@ -96,7 +96,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     public static DiskSpaceMonitorDescriptor install() {
         return DESCRIPTOR;
     }
-    
+
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 // if the disk is really filled up we can't even create a single file,

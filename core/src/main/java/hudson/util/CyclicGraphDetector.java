@@ -63,7 +63,7 @@ public abstract class CyclicGraphDetector<N> {
         path.push(q);
         reactOnCycle(q, path.subList(i, path.size()));
     }
-    
+
     /**
      * React on detected cycles - default implementation throws an exception.
      * @param q
@@ -72,7 +72,7 @@ public abstract class CyclicGraphDetector<N> {
      */
     protected void reactOnCycle(N q, List<N> cycle) throws CycleDetectedException{
         throw new CycleDetectedException(cycle);
-    }    
+    }
 
     public static final class CycleDetectedException extends Exception {
         public final List cycle;

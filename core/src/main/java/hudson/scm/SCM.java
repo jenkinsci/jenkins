@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -165,7 +165,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public boolean supportsPolling() {
         return true;
     }
-    
+
     /**
      * Returns true if this SCM requires a checked out workspace for doing polling.
      *
@@ -228,7 +228,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @return
      *      true if {@link SCM} is OK to let Hudson proceed with deleting the workspace.
      *      False to veto the workspace deletion.
-     * 
+     *
      * @since 1.568
      */
     public boolean processWorkspaceBeforeDeletion(@Nonnull Job<?,?> project, @Nonnull FilePath workspace, @Nonnull Node node) throws IOException, InterruptedException {
@@ -310,7 +310,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
      * {@link SCM} implementation can choose to compute {@link SCMRevisionState} and add it as an action
-     * during check out, in which case this method will not called. 
+     * during check out, in which case this method will not called.
      *
      * @param build
      *      The calculated {@link SCMRevisionState} is for the files checked out in this build.
@@ -325,7 +325,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
-     *      this exception should be simply propagated all the way up. 
+     *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
     public @CheckForNull SCMRevisionState calcRevisionsFromBuild(@Nonnull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @Nonnull TaskListener listener) throws IOException, InterruptedException {
@@ -345,7 +345,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
     }
-    
+
     /**
      * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
      *
@@ -354,7 +354,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * if there's any difference. In practice, however, comparing two arbitrary repository states is an expensive
      * operation, so in this abstraction, we chose to mix (1) the act of building up a repository state and
      * (2) the act of comparing it with the earlier state, so that SCM implementations can implement this
-     * more easily. 
+     * more easily.
      *
      * <p>
      * Multiple invocations of this method may happen over time to make sure that the remote repository
@@ -607,7 +607,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         // For backwards compatibility, call the one argument version of the method.
         return getModuleRoot(workspace);
     }
-    
+
     /**
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
@@ -662,7 +662,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         // otherwise the default implementation
         return new FilePath[]{getModuleRoot(workspace,build)};
     }
-    
+
     /**
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
@@ -739,7 +739,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
-        
+
         final Descriptor pd = Jenkins.get().getDescriptor((Class) project.getClass());
         List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
         for (SCMDescriptor<?> scmDescriptor : all()) {

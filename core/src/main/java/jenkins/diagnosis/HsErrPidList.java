@@ -58,7 +58,7 @@ public class HsErrPidList extends AdministrativeMonitor {
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
-                
+
             scan("./hs_err_pid%p.log");
             if (Functions.isWindows()) {
                 File dir = Kernel32Utils.getTempDir();

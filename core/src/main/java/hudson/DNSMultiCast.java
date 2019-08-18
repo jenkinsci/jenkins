@@ -32,7 +32,7 @@ public class DNSMultiCast implements Closeable {
 
     public DNSMultiCast(final Jenkins jenkins) {
         if (disabled)   return; // escape hatch
-        
+
         // the registerService call can be slow. run these asynchronously
         MasterComputer.threadPoolForRemoting.submit(new Callable<Object>() {
             public Object call() {

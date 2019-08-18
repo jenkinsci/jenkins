@@ -438,7 +438,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         public boolean isActivated() {
             return true;
         }
-        
+
         public String getLog() {
             return record.toString();
         }

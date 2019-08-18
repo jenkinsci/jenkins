@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -140,7 +140,7 @@ public abstract class Proc {
     public abstract OutputStream getStdin();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "Proc.executor")));
-    
+
     /**
      * Like {@link #join} but can be given a maximum time to wait.
      * @param timeout number of time units
@@ -173,7 +173,7 @@ public abstract class Proc {
             latch.countDown();
         }
     }
-    
+
     /**
      * Locally launched process.
      */
@@ -313,7 +313,7 @@ public abstract class Proc {
         @Override
         public int join() throws InterruptedException, IOException {
             // show what we are waiting for in the thread title
-            // since this involves some native work, let's have some soak period before enabling this by default 
+            // since this involves some native work, let's have some soak period before enabling this by default
             Thread t = Thread.currentThread();
             String oldName = t.getName();
             if (SHOW_PID) {
@@ -504,7 +504,7 @@ public abstract class Proc {
      * Debug switch to have the thread display the process it's waiting for.
      */
     public static boolean SHOW_PID = false;
-    
+
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.

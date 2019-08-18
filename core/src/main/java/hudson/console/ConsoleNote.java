@@ -160,7 +160,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      *
      * @return
      *      if non-null value is returned, this annotator will handle the next line.
-     *      this mechanism can be used to annotate multiple lines starting at the annotated position. 
+     *      this mechanism can be used to annotate multiple lines starting at the annotated position.
      */
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 

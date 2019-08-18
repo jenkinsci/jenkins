@@ -329,7 +329,7 @@ public class HistoryPageFilter<T> {
         } else if (fitsSearchString(item.getId())) {
             return true;
         }
-        // Non of the fuzzy matches "liked" the search term. 
+        // Non of the fuzzy matches "liked" the search term.
         return false;
     }
 
@@ -337,7 +337,7 @@ public class HistoryPageFilter<T> {
         if (searchString == null) {
             return true;
         }
-        
+
         if (fitsSearchString(run.getDisplayName())) {
             return true;
         } else if (fitsSearchString(run.getDescription())) {
@@ -356,8 +356,8 @@ public class HistoryPageFilter<T> {
                 return true;
             }
         }
-        
-        // Non of the fuzzy matches "liked" the search term. 
+
+        // Non of the fuzzy matches "liked" the search term.
         return false;
     }
 

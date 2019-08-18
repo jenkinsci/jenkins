@@ -38,7 +38,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Match the name against the agent name and route the incoming agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.561  
+ * @since 1.561
  * @since 1.614 handle() returns true on handshake error as it required in {@link JnlpAgentReceiver}.
  */
 @Extension

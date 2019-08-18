@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class ChannelPinger extends ComputerListener {
     static final int PING_TIMEOUT_SECONDS_DEFAULT = 4 * 60;
     static final int PING_INTERVAL_SECONDS_DEFAULT = 5 * 60;
-    
+
     private static final Logger LOGGER = Logger.getLogger(ChannelPinger.class.getName());
     private static final String TIMEOUT_SECONDS_PROPERTY = ChannelPinger.class.getName() + ".pingTimeoutSeconds";
     private static final String INTERVAL_MINUTES_PROPERTY_DEPRECATED = ChannelPinger.class.getName() + ".pingInterval";
@@ -72,18 +72,18 @@ public class ChannelPinger extends ComputerListener {
     private int pingIntervalSeconds = PING_INTERVAL_SECONDS_DEFAULT;
 
     public ChannelPinger() {
-        
+
         Integer interval = SystemProperties.getInteger(INTERVAL_SECONDS_PROPERTY, null, Level.WARNING);
-        
+
         // if interval wasn't set we read the deprecated property in minutes
         if (interval == null) {
             interval = SystemProperties.getInteger(INTERVAL_MINUTES_PROPERTY_DEPRECATED,null, Level.WARNING);
             if (interval != null) {
                 LOGGER.warning(INTERVAL_MINUTES_PROPERTY_DEPRECATED + " property is deprecated, " + INTERVAL_SECONDS_PROPERTY + " should be used");
-                interval *= 60; //to seconds       
+                interval *= 60; //to seconds
             }
         }
-        
+
         if (interval != null) {
             pingIntervalSeconds = interval;
         }

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:digerata
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -48,7 +48,7 @@ import java.io.IOException;
  * down Hudson page load times.
  * <p>
  * To enable this filter, edit the web.xml file to include:
- * 
+ *
  * <pre>
  * &lt;filter&gt;
  * 		&lt;filter-name&gt;change-headers-filter&lt;/filter-name&gt;
@@ -62,19 +62,19 @@ import java.io.IOException;
  * 			&lt;param-value&gt;max-age=86400, public&lt;/param-value&gt;
  * 		&lt;/init-param&gt;
  * &lt;/filter&gt;
- * 
+ *
  * And down below that:
- * 
+ *
  * &lt;filter-mapping&gt;
  * 		&lt;filter-name&gt;Headers&lt;/filter-name&gt;
  * 		&lt;url-pattern&gt;/*&lt;/url-pattern&gt;
  * &lt;/filter-mapping&gt;
  * </pre>
- * 
+ *
  * <p>
- * In the case of the tomcat cache problem, it is important that the url-pattern for 
+ * In the case of the tomcat cache problem, it is important that the url-pattern for
  * the filter matches the url-pattern set for the security-constraint.
- * 
+ *
  * @author Mike Wille
  */
 public class ResponseHeaderFilter implements Filter {

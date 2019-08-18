@@ -31,7 +31,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * Creates a new job by reading stdin as a configuration XML file.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension
@@ -73,5 +73,3 @@ public class CreateJobCommand extends CLICommand {
         return 0;
     }
 }
-
-

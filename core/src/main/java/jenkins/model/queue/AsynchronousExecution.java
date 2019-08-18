@@ -98,7 +98,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Obtains the associated executor.
-     * @return Associated Executor. May be {@code null} if {@link #setExecutorWithoutCompleting(hudson.model.Executor)} 
+     * @return Associated Executor. May be {@code null} if {@link #setExecutorWithoutCompleting(hudson.model.Executor)}
      * has not been called yet.
      */
     @CheckForNull

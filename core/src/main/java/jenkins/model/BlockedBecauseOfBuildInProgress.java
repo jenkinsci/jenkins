@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  * @since 1.624
  */
 public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
-    
+
     @Nonnull
     private final Run<?, ?> build;
 

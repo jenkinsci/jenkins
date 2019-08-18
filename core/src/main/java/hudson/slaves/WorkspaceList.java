@@ -83,13 +83,13 @@ public final class WorkspaceList {
          * Multiple threads can acquire the same lock if they share the same context object.
          */
         public final Object context;
-        
+
         public int lockCount=1;
 
         private Entry(@Nonnull FilePath path, boolean quick) {
             this(path,quick,new Object()); // unique context
         }
-        
+
         private Entry(@Nonnull FilePath path, boolean quick, Object context) {
             this.path = path;
             this.quick = quick;
@@ -173,7 +173,7 @@ public final class WorkspaceList {
 
     /**
      * See {@link #allocate(FilePath)}
-     * 
+     *
      * @param context
      *      Threads that share the same context can re-acquire the same lock (which will just increment the lock count.)
      *      This allows related executors to share the same workspace.
@@ -237,7 +237,7 @@ public final class WorkspaceList {
     public synchronized Lease acquire(@Nonnull FilePath p, boolean quick) throws InterruptedException {
         return acquire(p,quick,new Object());
     }
-    
+
     /**
      * See {@link #acquire(FilePath,boolean)}
      *
@@ -264,7 +264,7 @@ public final class WorkspaceList {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "acquired " + p + (e == null ? "" : " with lock count " + e.lockCount), new Throwable("from " + this));
         }
-        
+
         if (e!=null)    e.lockCount++;
         else            inUse.put(p.getRemote(), new Entry(p,quick,context));
         return lease(p);

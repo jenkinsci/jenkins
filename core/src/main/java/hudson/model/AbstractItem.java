@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -127,7 +127,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected volatile String description;
 
     private transient ItemGroup parent;
-    
+
     protected String displayName;
 
     protected AbstractItem(ItemGroup parent, String name) {
@@ -169,7 +169,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // if the displayName is not set, then return the name as we use to do
         return getName();
     }
-    
+
     @Exported
     /**
      * This is intended to be used by the Job configuration pages where
@@ -180,9 +180,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public String getDisplayNameOrNull() {
         return displayName;
     }
-    
+
     /**
-     * This method exists so that the Job configuration pages can use 
+     * This method exists so that the Job configuration pages can use
      * getDisplayNameOrNull so that nothing is shown in the display name text
      * box if the display name is not set.
      * @param displayName
@@ -191,12 +191,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public void setDisplayNameOrNull(String displayName) throws IOException {
         setDisplayName(displayName);
     }
-    
+
     public void setDisplayName(String displayName) throws IOException {
         this.displayName = Util.fixEmptyAndTrim(displayName);
         save();
     }
-             
+
     public File getRootDir() {
         return getParent().getRootDirFor(this);
     }
@@ -486,7 +486,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if(n.length()==0)   return getDisplayName();
         else                return n+" » "+getDisplayName();
     }
-    
+
     /**
      * Gets the display name of the current item relative to the given group.
      *
@@ -498,7 +498,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public String getRelativeDisplayNameFrom(ItemGroup p) {
         return Functions.getRelativeDisplayNameFrom(this, p);
     }
-    
+
     /**
      * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
      * @since 1.512
@@ -524,7 +524,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * to perform any implementation-specific work.
      *
      * <p>
-     * 
+     *
      *
      * @param src
      *      Item from which it's copied from. The same type as {@code this}. Never null.
@@ -728,8 +728,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
                         final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
                         final SubTask subtask = executable != null ? getParentOf(executable) : null;
-                                
-                        if (subtask != null) {        
+
+                        if (subtask != null) {
                             Item item = Tasks.getItemOf(subtask);
                             if (item != null) {
                                 while (item != null) {

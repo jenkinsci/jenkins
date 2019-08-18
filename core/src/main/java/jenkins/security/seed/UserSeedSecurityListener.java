@@ -42,12 +42,12 @@ import javax.servlet.http.HttpSession;
 @Restricted(NoExternalUse.class)
 @Extension(ordinal = Integer.MAX_VALUE)
 public class UserSeedSecurityListener extends SecurityListener {
-    @Override 
+    @Override
     protected void loggedIn(@Nonnull String username) {
         putUserSeedInSession(username);
     }
-    
-    @Override 
+
+    @Override
     protected void authenticated(@Nonnull UserDetails details) {
         putUserSeedInSession(details.getUsername());
     }
@@ -63,7 +63,7 @@ public class UserSeedSecurityListener extends SecurityListener {
         HttpSession session = req.getSession(false);
         if (session == null) {
             // expected case: CLI through CLIRegisterer
-            return; 
+            return;
         }
 
         if (!UserSeedProperty.DISABLE_USER_SEED) {

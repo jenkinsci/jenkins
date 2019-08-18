@@ -48,7 +48,7 @@ import org.kohsuke.stapler.QueryParameter;
  * Implement the following methods to enable and control CodeMirror syntax highlighting
  * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
  * public String getCodeMirrorConfig()
- *   
+ *
  * <h2>Views</h2>
  * <p>
  * This extension point must have a valid {@code config.jelly} that feeds the constructor.

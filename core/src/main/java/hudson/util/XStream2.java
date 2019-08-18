@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -250,7 +250,7 @@ public class XStream2 extends XStream {
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
         // SECURITY-637 against URL deserialization
-        registerConverter(new SafeURLConverter(),10); 
+        registerConverter(new SafeURLConverter(),10);
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
@@ -408,7 +408,7 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
-            
+
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
@@ -510,7 +510,7 @@ public class XStream2 extends XStream {
          */
         @CheckForNull String ownerOf(Class<?> clazz);
     }
-    
+
     class PluginClassOwnership implements ClassOwnership {
 
         private PluginManager pm;

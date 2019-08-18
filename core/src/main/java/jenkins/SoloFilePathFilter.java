@@ -33,7 +33,7 @@ public final class SoloFilePathFilter extends FilePathFilter {
             throw new SecurityException("agent may not " + op + " " + f+"\nSee https://jenkins.io/redirect/security-144 for more details");
         return true;
     }
-    
+
     private File normalize(File file){
         return new File(FilePath.normalize(file.getAbsolutePath()));
     }

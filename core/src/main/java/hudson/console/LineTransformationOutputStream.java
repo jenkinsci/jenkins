@@ -47,7 +47,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      *      Contents of the whole line, including the EOL code like CR/LF.
      * @param len
      *      Specifies the length of the valid contents in 'b'. The rest is garbage.
-     *      This is so that the caller doesn't have to allocate an array of the exact size. 
+     *      This is so that the caller doesn't have to allocate an array of the exact size.
      */
     protected abstract void eol(byte[] b, int len) throws IOException;
 

@@ -167,7 +167,7 @@ public class BuildCommand extends CLICommand {
 
         Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication().getName())), a);
         QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
-        
+
         if (wait || sync || follow) {
             if (f == null) {
                 throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
@@ -274,4 +274,3 @@ public class BuildCommand extends CLICommand {
         }
     }
 }
-

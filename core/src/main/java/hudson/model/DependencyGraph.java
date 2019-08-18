@@ -85,7 +85,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      */
     public DependencyGraph() {
     }
-    
+
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);

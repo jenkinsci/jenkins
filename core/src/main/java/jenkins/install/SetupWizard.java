@@ -75,7 +75,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
  * initial installation is in progress
- * 
+ *
  * @since 2.0
  */
 @Restricted(NoExternalUse.class)
@@ -91,18 +91,18 @@ public class SetupWizard extends PageDecorator {
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
-    
+
     /**
      * Initialize the setup wizard, this will process any current state initializations
      */
     /*package*/ void init(boolean newInstall) throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.get();
-        
+
         if(newInstall) {
             // this was determined to be a new install, don't run the update wizard here
             setCurrentLevel(Jenkins.getVersion());
-            
-            // Create an admin user by default with a 
+
+            // Create an admin user by default with a
             // difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
@@ -110,38 +110,38 @@ public class SetupWizard extends PageDecorator {
                     HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                     jenkins.setSecurityRealm(securityRealm);
                     String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
-    
+
                     // create an admin user
                     securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
-    
+
                     // JENKINS-33599 - write to a file in the jenkins home directory
                     // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
                     // and use group 'jenkins' for admins. So we allow groups to read this file
                     iapf.touch(System.currentTimeMillis());
                     iapf.chmod(0640);
                     iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
-                    
-    
+
+
                     // Lock Jenkins down:
                     FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
-    
+
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
-    
+
                     // set master -> slave security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
                         .setMasterKillSwitch(false);
-                
+
                     jenkins.save(); // TODO could probably be removed since some of the above setters already call save
                     bc.commit();
                 }
             }
-    
+
             if(iapf.exists()) {
                 String setupKey = iapf.readToString().trim();
                 String ls = System.lineSeparator();
@@ -190,7 +190,7 @@ public class SetupWizard extends PageDecorator {
             throw new RuntimeException("Unable to remove PluginServletFilter for the SetupWizard", e);
         }
     }
- 
+
     /**
      * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
      */
@@ -268,7 +268,7 @@ public class SetupWizard extends PageDecorator {
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
             auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
-            
+
             HttpSession session = req.getSession(false);
             if (session != null) {
                 // avoid session fixation
@@ -280,7 +280,7 @@ public class SetupWizard extends PageDecorator {
             String sessionSeed = userSeed.getSeed();
             // include the new seed
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
-            
+
             CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
@@ -300,28 +300,28 @@ public class SetupWizard extends PageDecorator {
                 admin.save(); // recreate this initial user if something failed
             }
         }
-    }    
-    
+    }
+
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        
+
         Map<String, String> errors = new HashMap<>();
         // pre-check data
         checkRootUrl(errors, rootUrl);
-        
+
         if(!errors.isEmpty()){
             return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
         }
-        
+
         // use the parameters to configure the instance
         useRootUrl(errors, rootUrl);
-        
+
         if(!errors.isEmpty()){
             return HttpResponses.errorJSON(Messages.SetupWizard_ConfigureInstance_ValidationErrors(), errors);
         }
-        
+
         InstallUtil.proceedToNextStateFrom(InstallState.CONFIGURE_INSTANCE);
 
         CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
@@ -331,7 +331,7 @@ public class SetupWizard extends PageDecorator {
         }
         return HttpResponses.okJSON(data);
     }
-    
+
     private void checkRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
         if(rootUrl == null){
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Empty());
@@ -341,7 +341,7 @@ public class SetupWizard extends PageDecorator {
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Invalid());
         }
     }
-    
+
     private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
         LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
         JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
@@ -350,7 +350,7 @@ public class SetupWizard extends PageDecorator {
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
         FileUtils.writeStringToFile(getUpdateStateFile(), v.toString());
     }
-    
+
     /**
      * File that captures the state of upgrade.
      *
@@ -359,7 +359,7 @@ public class SetupWizard extends PageDecorator {
     /*package*/ static File getUpdateStateFile() {
         return new File(Jenkins.get().getRootDir(),"jenkins.install.UpgradeWizard.state");
     }
-    
+
     /**
      * What is the version the upgrade wizard has run the last time and upgraded to?.
      * If {@link #getUpdateStateFile()} is missing, presumes the baseline is 1.0
@@ -380,7 +380,7 @@ public class SetupWizard extends PageDecorator {
         }
         return from;
     }
-    
+
     /**
      * Returns the initial plugin list in JSON format
      */
@@ -402,7 +402,7 @@ public class SetupWizard extends PageDecorator {
         }
         return HttpResponses.okJSON();
     }
-    
+
     /**
      * Returns whether the system needs a restart, and if it is supported
      * e.g. { restartRequired: true, restartSupported: false }
@@ -429,7 +429,7 @@ public class SetupWizard extends PageDecorator {
         }
         return getPlatformPluginsForUpdate(version, Jenkins.getVersion());
     }
-    
+
     /**
      * Gets the suggested plugin list from the update sites, falling back to a local version
      * @return JSON array with the categorized plugin list
@@ -443,7 +443,7 @@ public class SetupWizard extends PageDecorator {
             String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
             try {
                 URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
-                
+
                 try {
                     if(connection instanceof HttpURLConnection) {
                         int responseCode = ((HttpURLConnection)connection).getResponseCode();
@@ -451,7 +451,7 @@ public class SetupWizard extends PageDecorator {
                             throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
                         }
                     }
-                    
+
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
@@ -489,7 +489,7 @@ public class SetupWizard extends PageDecorator {
             if (category instanceof JSONObject) {
                 JSONObject cat = (JSONObject)category;
                 JSONArray plugins = cat.getJSONArray("plugins");
-                
+
                 nextPlugin: for (Iterator<?> pluginIterator = plugins.iterator(); pluginIterator.hasNext();) {
                     Object pluginData = pluginIterator.next();
                     if (pluginData instanceof JSONObject) {
@@ -523,10 +523,10 @@ public class SetupWizard extends PageDecorator {
                             }
                         }
                     }
-                    
+
                     pluginIterator.remove();
                 }
-                
+
                 if (plugins.isEmpty()) {
                     categoryIterator.remove();
                 }
@@ -550,21 +550,21 @@ public class SetupWizard extends PageDecorator {
         completeSetup();
         return HttpResponses.okJSON();
     }
-    
+
     /*package*/ void completeSetup() throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         InstallUtil.saveLastExecVersion();
         setCurrentLevel(Jenkins.getVersion());
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_SETUP_COMPLETED);
     }
-    
+
     /**
      * Gets all the install states
      */
     public List<InstallState> getInstallStates() {
         return InstallState.all();
     }
-    
+
     /**
      * Returns an installState by name
      */

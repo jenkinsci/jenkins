@@ -106,7 +106,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.532
  */
 public abstract class VirtualFile implements Comparable<VirtualFile>, Serializable {
-    
+
     /**
      * Gets the base name, meaning just the last portion of the path name without any
      * directories.
@@ -169,7 +169,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Lists children of this directory. Only one level deep.
-     * 
+     *
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -179,11 +179,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public boolean supportsQuickRecursiveListing() {
         return false;
     }
-    
+
     /**
-     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile). 
+     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile).
      * Only one level deep.
-     * 
+     *
      * @return a list of descendant children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -195,7 +195,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             if (child.isDescendant("")) {
                 result.add(child);
             }
-        }        
+        }
         return result;
     }
 
@@ -404,7 +404,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public boolean isDescendant(String childRelativePath) throws IOException {
         return false;
     }
-    
+
     String joinWithForwardSlashes(Collection<String> relativePath){
         // instead of File.separator that is specific to the master, the / has the advantage to be supported
         // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
@@ -595,7 +595,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             FilePath root = new FilePath(this.root);
             String relativePath = computeRelativePathToRoot();
-            
+
             try {
                 boolean isDescendant = root.isDescendant(relativePath + potentialChildRelativePath);
                 if (isDescendant && potentialChildRelativePath.isEmpty()) {
@@ -616,7 +616,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             if (this.root.equals(this.f)) {
                 return "";
             }
-            
+
             Deque<String> relativePath = new LinkedList<>();
             File current = this.f;
             while (current != null && !current.equals(this.root)) {
@@ -814,9 +814,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     return false;
                 }
             }
-            
+
             String relativePath = computeRelativePathToRoot();
-            
+
             try {
                 return this.root.isDescendant(relativePath + potentialChildRelativePath);
             }

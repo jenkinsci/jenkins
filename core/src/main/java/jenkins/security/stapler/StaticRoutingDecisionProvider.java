@@ -58,10 +58,10 @@ import java.util.logging.Logger;
 @Extension
 public class StaticRoutingDecisionProvider extends RoutingDecisionProvider implements Saveable {
     private static final Logger LOGGER = Logger.getLogger(StaticRoutingDecisionProvider.class.getName());
-    
+
     private Set<String> whitelistSignaturesFromFixedList;
     private Set<String> whitelistSignaturesFromUserControlledList;
-    
+
     private Set<String> blacklistSignaturesFromFixedList;
     private Set<String> blacklistSignaturesFromUserControlledList;
 
@@ -100,34 +100,34 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
 
         return Decision.UNKNOWN;
     }
-    
+
     public synchronized void reload() {
         reloadFromDefault();
         reloadFromUserControlledList();
-        
+
         resetMetaClassCache();
     }
-    
+
     @VisibleForTesting
     synchronized void resetAndSave(){
         this.whitelistSignaturesFromFixedList = new HashSet<>();
         this.whitelistSignaturesFromUserControlledList = new HashSet<>();
         this.blacklistSignaturesFromFixedList = new HashSet<>();
         this.blacklistSignaturesFromUserControlledList = new HashSet<>();
-        
+
         this.save();
     }
-    
+
     private void resetMetaClassCache() {
         // to allow the change to be effective, i.e. rebuild the MetaClass using the new whitelist
         WebApp.get(Jenkins.get().servletContext).clearMetaClassCache();
     }
-    
+
     private synchronized void reloadFromDefault() {
         try (InputStream is = StaticRoutingDecisionProvider.class.getResourceAsStream("default-whitelist.txt")) {
             whitelistSignaturesFromFixedList = new HashSet<>();
             blacklistSignaturesFromFixedList = new HashSet<>();
-    
+
             parseFileIntoList(
                     IOUtils.readLines(is, StandardCharsets.UTF_8),
                     whitelistSignaturesFromFixedList,
@@ -136,10 +136,10 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
-        
+
         LOGGER.log(Level.FINE, "Found {0} getter in the standard whitelist", whitelistSignaturesFromFixedList.size());
     }
-    
+
     public synchronized StaticRoutingDecisionProvider add(@Nonnull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.add(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] added to the whitelist", signature);
@@ -150,7 +150,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         }
         return this;
     }
-    
+
     public synchronized StaticRoutingDecisionProvider addBlacklistSignature(@Nonnull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.add(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] added to the blacklist", signature);
@@ -161,7 +161,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         }
         return this;
     }
-    
+
     public synchronized StaticRoutingDecisionProvider remove(@Nonnull String signature) {
         if (this.whitelistSignaturesFromUserControlledList.remove(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] removed from the whitelist", signature);
@@ -172,7 +172,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         }
         return this;
     }
-    
+
     public synchronized StaticRoutingDecisionProvider removeBlacklistSignature(@Nonnull String signature) {
         if (this.blacklistSignaturesFromUserControlledList.remove(signature)) {
             LOGGER.log(Level.INFO, "Signature [{0}] removed from the blacklist", signature);
@@ -183,7 +183,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         }
         return this;
     }
-    
+
     /**
      * Saves the configuration info to the disk.
      */
@@ -191,20 +191,20 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         if (BulkChange.contains(this)) {
             return;
         }
-        
+
         File file = getConfigFile();
         try {
             List<String> allSignatures = new ArrayList<>(whitelistSignaturesFromUserControlledList);
             blacklistSignaturesFromUserControlledList.stream()
                     .map(signature -> "!" + signature)
                     .forEach(allSignatures::add);
-            
+
             FileUtils.writeLines(file, allSignatures);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save " + file.getAbsolutePath(), e);
         }
     }
-    
+
     /**
      * Loads the data from the disk into this object.
      *
@@ -230,7 +230,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         try {
             whitelistSignaturesFromUserControlledList = new HashSet<>();
             blacklistSignaturesFromUserControlledList = new HashSet<>();
-    
+
             parseFileIntoList(
                     FileUtils.readLines(file, StandardCharsets.UTF_8),
                     whitelistSignaturesFromUserControlledList,
@@ -240,7 +240,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
             LOGGER.log(Level.WARNING, "Failed to load " + file.getAbsolutePath(), e);
         }
     }
-    
+
     private File getConfigFile() {
         return new File(WHITELIST_PATH == null ? new File(Jenkins.get().getRootDir(), "stapler-whitelist.txt").toString() : WHITELIST_PATH);
     }
@@ -259,7 +259,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
                     }
                 });
     }
-    
+
     /** Allow script console access */
     public static String WHITELIST_PATH = SystemProperties.getString(StaticRoutingDecisionProvider.class.getName() + ".whitelist");
 

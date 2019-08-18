@@ -72,7 +72,7 @@ public class SequentialExecutionQueue implements Executor {
 
     /**
      * Returns true if too much time is spent since some {@link Runnable} is submitted into the queue
-     * until they get executed. 
+     * until they get executed.
      */
     public synchronized boolean isStarving(long threshold) {
         long now = System.currentTimeMillis();

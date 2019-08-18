@@ -108,14 +108,14 @@ public abstract class DirectedGraph<N> {
              * Nodes not yet classified for the strongly connected components
              */
             Stack<Node> pending = new Stack<>();
-            
+
             void traverse() {
                 for (Node n : nodes.values()) {
                     if (n.index==-1)
                         visit(n);
                 }
             }
-            
+
             void visit(Node v) {
                 v.index = v.lowlink = index++;
                 pending.push(v);

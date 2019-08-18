@@ -172,7 +172,7 @@ public class SystemProperties {
      * Gets the system property indicated by the specified key.
      * This behaves just like {@link System#getProperty(java.lang.String)}, except that it
      * also consults the {@link ServletContext}'s "init" parameters.
-     * 
+     *
      * @param      key   the name of the system property.
      * @return     the string value of the system property,
      *             or {@code null} if there is no property with that key.
@@ -189,7 +189,7 @@ public class SystemProperties {
             }
             return value;
         }
-        
+
         value = handler.getString(key);
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
@@ -197,7 +197,7 @@ public class SystemProperties {
             }
             return value;
         }
-        
+
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
         }
@@ -208,7 +208,7 @@ public class SystemProperties {
      * Gets the system property indicated by the specified key, or a default value.
      * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
      * that it also consults the {@link ServletContext}'s "init" parameters.
-     * 
+     *
      * @param      key   the name of the system property.
      * @param      def   a default value.
      * @return     the string value of the system property,
@@ -242,8 +242,8 @@ public class SystemProperties {
                 LOGGER.log(logLevel, "Property (system): {0} => {1}", new Object[] {key, value});
             }
             return value;
-        } 
-        
+        }
+
         value = handler.getString(key);
         if (value != null) {
             if (LOGGER.isLoggable(logLevel)) {
@@ -251,7 +251,7 @@ public class SystemProperties {
             }
             return value;
         }
-        
+
         value = def;
         if (LOGGER.isLoggable(logLevel)) {
             LOGGER.log(logLevel, "Property (default): {0} => {1}", new Object[] {key, value});
@@ -265,13 +265,13 @@ public class SystemProperties {
       * {@code "true"}. If the system property does not exist, return
       * {@code "false"}. if a property by this name exists in the {@link ServletContext}
       * and is equal to the string {@code "true"}.
-      * 
+      *
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
-      * 
+      *
       * @param   name   the system property name.
       * @return  the {@code boolean} value of the system property.
-      */  
+      */
     public static boolean getBoolean(String name) {
         return getBoolean(name, false);
     }
@@ -283,17 +283,17 @@ public class SystemProperties {
       * {@code "true"} if a property by this name exists in the {@link ServletContext}
       * and is equal to the string {@code "true"}. If that property does not
       * exist either, return the default value.
-      * 
+      *
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)} with a default
       * value, except that it also consults the {@link ServletContext}'s "init" parameters.
-      * 
+      *
       * @param   name   the system property name.
       * @param   def   a default value.
       * @return  the {@code boolean} value of the system property.
       */
     public static boolean getBoolean(String name, boolean def) {
         String v = getString(name);
-       
+
         if (v != null) {
             return Boolean.parseBoolean(v);
         }
@@ -314,14 +314,14 @@ public class SystemProperties {
         String v = getString(name);
         return v == null ? null : Boolean.parseBoolean(v);
     }
-    
+
     /**
       * Determines the integer value of the system property with the
       * specified name.
-      * 
+      *
       * This behaves just like {@link Integer#getInteger(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
-      * 
+      *
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
       */
@@ -351,11 +351,11 @@ public class SystemProperties {
     /**
       * Determines the integer value of the system property with the
       * specified name, or a default value.
-      * 
+      *
       * This behaves just like <code>Integer.getInteger(String,Integer)</code>, except that it
       * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
-      * return the default value. 
-      * 
+      * return the default value.
+      *
       * @param   name property name.
       * @param   def   a default value.
       * @param   logLevel the level of the log if the provided system property name cannot be decoded into Integer.
@@ -365,7 +365,7 @@ public class SystemProperties {
       */
     public static Integer getInteger(String name, Integer def, Level logLevel) {
         String v = getString(name);
-       
+
         if (v != null) {
             try {
                 return Integer.decode(v);
@@ -378,14 +378,14 @@ public class SystemProperties {
         }
         return def;
     }
-    
+
     /**
       * Determines the long value of the system property with the
       * specified name.
-      * 
+      *
       * This behaves just like {@link Long#getLong(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
-      * 
+      *
       * @param   name property name.
       * @return  the {@code Long} value of the property.
       */
@@ -415,11 +415,11 @@ public class SystemProperties {
     /**
       * Determines the integer value of the system property with the
       * specified name, or a default value.
-      * 
+      *
       * This behaves just like <code>Long.getLong(String,Long)</code>, except that it
       * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
-      * return the default value. 
-      * 
+      * return the default value.
+      *
       * @param   name property name.
       * @param   def   a default value.
       * @param   logLevel the level of the log if the provided system property name cannot be decoded into Long.
@@ -429,7 +429,7 @@ public class SystemProperties {
       */
     public static Long getLong(String name, Long def, Level logLevel) {
         String v = getString(name);
-       
+
         if (v != null) {
             try {
                 return Long.decode(v);

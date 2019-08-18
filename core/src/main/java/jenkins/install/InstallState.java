@@ -41,9 +41,9 @@ import org.apache.commons.lang.StringUtils;
  * In order to hook into the setup wizard lifecycle, you should
  * include something in a script that call
  * to `onSetupWizardInitialized` with a callback, for example:
- * 
+ *
  * See <em><code>upgradeWizard.js</code></em> for an example
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @StaplerAccessibleType
@@ -51,12 +51,12 @@ public class InstallState implements ExtensionPoint {
 
     /**
      * Only here for XStream compatibility. <p>
-     * 
+     *
      * Please DO NOT ADD ITEM TO THIS LIST. <p>
-     * If you add an item here, the deserialization process will break 
-     * because it is used for serialized state like "jenkins.install.InstallState$4" 
+     * If you add an item here, the deserialization process will break
+     * because it is used for serialized state like "jenkins.install.InstallState$4"
      * before the change from anonymous class to named class. If you need to add a new InstallState, you can just add a new inner named class but nothing to change in this list.
-     * 
+     *
      * @see #readResolve
      */
     @Deprecated
@@ -84,13 +84,13 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.proceedToNextStateFrom(this);
         }
     }
-    
+
     /**
      * After any setup / restart / etc. hooks are done, states should be running
      */
     @Extension
     public static final InstallState RUNNING = new InstallState("RUNNING", true);
-    
+
     /**
      * The initial set up has been completed
      */
@@ -110,7 +110,7 @@ public class InstallState implements ExtensionPoint {
             j.setInstallState(RUNNING);
         }
     }
-    
+
     /**
      * Creating an admin user for an initial Jenkins install.
      */
@@ -129,7 +129,7 @@ public class InstallState implements ExtensionPoint {
             }
         }
     }
-    
+
     @Extension
     public static final InstallState CONFIGURE_INSTANCE = new ConfigureInstance();
     private static final class ConfigureInstance extends InstallState {
@@ -144,7 +144,7 @@ public class InstallState implements ExtensionPoint {
             }
         }
     }
-    
+
     /**
      * New Jenkins install. The user has kicked off the process of installing an
      * initial set of plugins (via the install wizard).
@@ -171,7 +171,7 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.proceedToNextStateFrom(INITIAL_SECURITY_SETUP);
         }
     }
-    
+
     /**
      * New Jenkins install.
      */
@@ -191,13 +191,13 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.saveLastExecVersion();
         }
     }
-    
+
     /**
      * Upgrade of an existing Jenkins install.
      */
     @Extension
     public static final InstallState UPGRADE = new UpgradeWizard();
-    
+
     /**
      * Downgrade of an existing Jenkins install.
      */
@@ -211,14 +211,14 @@ public class InstallState implements ExtensionPoint {
             InstallUtil.saveLastExecVersion();
         }
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(InstallState.class.getName());
-    
+
     /**
      * Jenkins started in test mode (JenkinsRule).
      */
     public static final InstallState TEST = new InstallState("TEST", true);
-    
+
     /**
      * Jenkins started in development mode: Boolean.getBoolean("hudson.Main.development").
      * Can be run normally with the -Djenkins.install.runSetupWizard=true
@@ -236,7 +236,7 @@ public class InstallState implements ExtensionPoint {
         this.name = name;
         this.isSetupComplete = isSetupComplete;
     }
-    
+
     /**
      * Process any initialization this install state requires
      */
@@ -257,13 +257,13 @@ public class InstallState implements ExtensionPoint {
             LOGGER.log(Level.WARNING, "Read install state with blank name: ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
-        
+
         InstallState state = InstallState.valueOf(name);
         if (state == null) {
             LOGGER.log(Level.WARNING, "Cannot locate an extension point for the state ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
-        
+
         // Otherwise we return the actual state
         return state;
     }
@@ -274,16 +274,16 @@ public class InstallState implements ExtensionPoint {
     public boolean isSetupComplete() {
         return isSetupComplete;
     }
-    
+
     public String name() {
         return name;
     }
-    
+
     @Override
     public int hashCode() {
         return name.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if(obj instanceof InstallState) {
@@ -291,7 +291,7 @@ public class InstallState implements ExtensionPoint {
         }
         return false;
     }
-    
+
     @Override
     public String toString() {
         return "InstallState (" + name + ")";

@@ -85,7 +85,7 @@ public class HelpCommand extends CLICommand {
         }
 
         command.printUsage(stderr, command.getCmdLineParser());
-        
+
         return 0;
     }
 }

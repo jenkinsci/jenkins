@@ -68,7 +68,7 @@ final class TarArchiver extends Archiver {
         } catch (PosixException x) {
             // ignore
         }
-        
+
         e.setLinkName(target);
 
         tar.putArchiveEntry(e);

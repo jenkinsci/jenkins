@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -130,13 +130,13 @@ public class Maven extends Builder {
      * @since 1.322
      */
     public boolean usePrivateRepository;
-    
+
     /**
      * Provides access to the settings.xml to be used for a build.
      * @since 1.491
      */
     private SettingsProvider settings;
-    
+
     /**
      * Provides access to the global settings.xml to be used for a build.
      * @since 1.491
@@ -154,7 +154,7 @@ public class Maven extends Builder {
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
-    
+
     private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
     private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
 
@@ -165,11 +165,11 @@ public class Maven extends Builder {
     public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
         this(targets, name, pom, properties, jvmOptions, false, null, null);
     }
-    
+
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
-    
+
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, false);
     }
@@ -197,18 +197,18 @@ public class Maven extends Builder {
     public SettingsProvider getSettings() {
         return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
     }
-    
+
     protected void setSettings(SettingsProvider settings) {
         this.settings = settings;
     }
-    
+
     /**
      * @since 1.491
      */
     public GlobalSettingsProvider getGlobalSettings() {
         return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
-    
+
     protected void setGlobalSettings(GlobalSettingsProvider globalSettings) {
         this.globalSettings = globalSettings;
     }
@@ -326,8 +326,8 @@ public class Maven extends Builder {
             }
             if(pom!=null)
                 args.add("-f",pom);
-            
-            
+
+
             if(!S_PATTERN.matcher(targets).find()){ // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
                 if(StringUtils.isNotBlank(settingsPath)){
@@ -358,7 +358,7 @@ public class Maven extends Builder {
             wrapUpArguments(args,normalizedTarget,build,launcher,listener);
 
             buildEnvVars(env, mi);
-            
+
             if (!launcher.isUnix()) {
                 args = args.toWindowsCommand();
             }
@@ -446,11 +446,11 @@ public class Maven extends Builder {
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
-        
+
         public GlobalSettingsProvider getDefaultGlobalSettingsProvider() {
             return GlobalMavenConfig.get().getGlobalSettingsProvider();
         }
-        
+
         public SettingsProvider getDefaultSettingsProvider() {
             return GlobalMavenConfig.get().getSettingsProvider();
         }
@@ -461,7 +461,7 @@ public class Maven extends Builder {
 
 		public void setInstallations(MavenInstallation... installations) {
 			List<MavenInstallation> tmpList = new ArrayList<>();
-			// remote empty Maven installation : 
+			// remote empty Maven installation :
 			if(installations != null) {
 				Collections.addAll(tmpList, installations);
 				for(MavenInstallation installation : installations) {
@@ -495,8 +495,8 @@ public class Maven extends Builder {
         public static final int MAVEN_20 = 0;
         public static final int MAVEN_21 = 1;
         public static final int MAVEN_30 = 2;
-        
-    
+
+
         /**
          * @deprecated since 2009-02-25.
          */
@@ -551,8 +551,8 @@ public class Maven extends Builder {
          *      Represents the minimum required Maven version - constants defined above.
          */
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
-            // FIXME using similar stuff as in the maven plugin could be better 
-            // olamy : but will add a dependency on maven in core -> so not so good 
+            // FIXME using similar stuff as in the maven plugin could be better
+            // olamy : but will add a dependency on maven in core -> so not so good
             String mavenVersion = launcher.getChannel().call(new GetMavenVersion());
 
             if (!mavenVersion.equals("")) {
@@ -567,10 +567,10 @@ public class Maven extends Builder {
                 else if (mavenReqVersion == MAVEN_30) {
                     if(mavenVersion.startsWith("3."))
                         return true;
-                }                
+                }
             }
             return false;
-            
+
         }
         private class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
             private static final long serialVersionUID = -4143159957567745621L;
@@ -593,7 +593,7 @@ public class Maven extends Builder {
                 return "";
             }
         }
-        
+
         /**
          * Is this Maven 2.1.x or 2.2.x - but not Maven 3.x?
          *

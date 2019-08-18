@@ -56,7 +56,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private final String path;
         @Exported
         public final long size;
-        
+
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
 
@@ -73,7 +73,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         public String toString() {
             return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
         }
-        
+
         /**
          * The path that was checked
          */
@@ -111,7 +111,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             }
             return humanReadableSpace;
         }
-        
+
         /**
          * Sets whether this disk space amount should be treated as outside
          * the acceptable conditions or not.
@@ -120,19 +120,19 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         	this.triggered = triggered;
         }
 
-        /** 
+        /**
          * Same as {@link DiskSpace#setTriggered(boolean)}, also sets the trigger class which made the decision
          */
         protected void setTriggered(Class<? extends AbstractDiskSpaceMonitor> trigger, boolean triggered) {
             this.trigger = trigger;
             this.triggered = triggered;
         }
-        
+
         @Override
         public Class<? extends AbstractDiskSpaceMonitor> getTrigger() {
             return trigger;
         }
-        
+
         /**
          * Parses a human readable size description like "1GB", "0.5m", etc. into {@link DiskSpace}
          *

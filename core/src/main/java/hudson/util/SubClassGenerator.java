@@ -79,7 +79,7 @@ public class SubClassGenerator extends ClassLoader {
         Jenkins h = Jenkins.getInstanceOrNull();
         if (h!=null)    // null only during tests.
             ((UberClassLoader)h.pluginManager.uberClassLoader).addNamedClass(name,c); // can't change the field type as it breaks binary compatibility
-        
+
         return c;
     }
 

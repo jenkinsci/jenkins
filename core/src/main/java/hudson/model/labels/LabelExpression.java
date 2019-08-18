@@ -28,7 +28,7 @@ import hudson.util.VariableResolver;
 
 /**
  * Boolean expression of labels.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since  1.372
  */

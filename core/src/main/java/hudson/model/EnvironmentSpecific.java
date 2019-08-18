@@ -28,7 +28,7 @@ import hudson.slaves.NodeSpecific;
 
 /**
  * Represents any concept that can be adapted for a certain environment.
- * 
+ *
  * Mainly for documentation purposes.
  *
  * @since 1.286

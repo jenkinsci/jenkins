@@ -63,7 +63,7 @@ import jenkins.util.io.OnMaster;
  * and {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain the instances.
  *
  * @param <T>
- *      Type of the extension point. This class holds instances of the subtypes of 'T'. 
+ *      Type of the extension point. This class holds instances of the subtypes of 'T'.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
@@ -121,7 +121,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * @param legacyStore
      *      Place to store manually registered instances. The version of the constructor that
      *      omits this uses a new {@link Vector}, making the storage lifespan tied to the life of  {@link ExtensionList}.
-     *      If the manually registered instances are scoped to VM level, the caller should pass in a static list. 
+     *      If the manually registered instances are scoped to VM level, the caller should pass in a static list.
      */
     protected ExtensionList(Jenkins jenkins, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
         this.hudson = (Hudson)jenkins;
@@ -155,20 +155,20 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
      * Looks for the extension instance of the given type (subclasses excluded),
      * or throws an IllegalStateException.
-     * 
+     *
      * Meant to simplify call inside @Extension annotated class to retrieve their own instance.
      */
     public @Nonnull <U extends T> U getInstance(@Nonnull Class<U> type) throws IllegalStateException {
         for (T ext : this)
             if(ext.getClass()==type)
                 return type.cast(ext);
-        
+
         throw new IllegalStateException("The class " + type.getName() + " was not found, potentially not yet loaded");
     }
 
     @Override
     public @Nonnull Iterator<T> iterator() {
-        // we need to intercept mutation, so for now don't allow Iterator.remove 
+        // we need to intercept mutation, so for now don't allow Iterator.remove
         return new AdaptedIterator<ExtensionComponent<T>,T>(Iterators.readOnly(ensureLoaded().iterator())) {
             protected T adapt(ExtensionComponent<T> item) {
                 return item.getInstance();
@@ -186,7 +186,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     public T get(int index) {
         return ensureLoaded().get(index).getInstance();
     }
-    
+
     public int size() {
         return ensureLoaded().size();
     }

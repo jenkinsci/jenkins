@@ -47,7 +47,7 @@ public abstract class ComputerConnector extends AbstractDescribableImpl<Computer
      * @param host
      *      The host name / IP address of the machine to connect to.
      * @param listener
-     *      If 
+     *      If
      */
     public abstract ComputerLauncher launch(@Nonnull String host, TaskListener listener) throws IOException, InterruptedException;
 

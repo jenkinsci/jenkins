@@ -103,11 +103,11 @@ public class SHELLEXECUTEINFO extends Structure {
         }
 
         public static class ByReference extends DUMMYUNIONNAME_union implements Structure.ByReference {
-            
+
         }
 
         public static class ByValue extends DUMMYUNIONNAME_union implements Structure.ByValue {
-            
+
         }
     }
 }

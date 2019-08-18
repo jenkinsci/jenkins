@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets;
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
  * Methods are provided to put entries, and then write their contents
  * by writing to this stream using write().
- * 
+ *
  * @deprecated Use {@link org.apache.commons.compress.archivers.tar.TarArchiveOutputStream} instead
  *
  */
@@ -360,5 +360,3 @@ public class TarOutputStream extends FilterOutputStream {
         this.buffer.writeRecord(this.recordBuf);
     }
 }
-
-

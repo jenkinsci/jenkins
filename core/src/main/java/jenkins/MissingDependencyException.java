@@ -32,7 +32,7 @@ import hudson.Util;
 
 /**
  * Exception thrown if plugin resolution fails due to missing dependencies
- * 
+ *
  * @author Carlos Sanchez
  * @since 2.4
  *

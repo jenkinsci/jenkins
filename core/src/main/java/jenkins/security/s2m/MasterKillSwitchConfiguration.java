@@ -51,4 +51,3 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return jenkins.hasPermission(Jenkins.RUN_SCRIPTS) && jenkins.isUseSecurity();
     }
 }
-

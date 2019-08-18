@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -87,7 +87,7 @@ import jenkins.tasks.SimpleBuildStep;
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer, SimpleBuildStep {
     public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
-    
+
     /**
      * Comma-separated list of files/directories to be fingerprinted.
      */
@@ -174,7 +174,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
             Map<String,String> record = new HashMap<>();
-            
+
             EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
                 String expandedTargets = environment.expand(targets);
@@ -357,7 +357,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public static final class FingerprintAction implements RunAction2 {
 
         private transient Run build;
-        
+
         private static final Random rand = new Random();
 
         /**
@@ -464,7 +464,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         public Map<AbstractProject,Integer> getDependencies() {
             return getDependencies(false);
         }
-        
+
         /**
          * Gets the dependency to other builds in a map.
          *
@@ -503,7 +503,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
 
             }
-            
+
             return r;
         }
     }

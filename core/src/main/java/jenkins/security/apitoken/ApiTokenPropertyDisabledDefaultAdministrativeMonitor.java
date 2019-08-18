@@ -46,12 +46,12 @@ public class ApiTokenPropertyDisabledDefaultAdministrativeMonitor extends Admini
     public String getDisplayName() {
         return Messages.ApiTokenPropertyDisabledDefaultAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationEnabled();
     }
-    
+
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if (no == null) {

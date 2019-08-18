@@ -36,8 +36,8 @@ import jenkins.util.SystemProperties;
 
 /**
  * {@link AperiodicWork} that takes a long time to run. Similar to {@link AsyncPeriodicWork}, see {@link AsyncPeriodicWork} for
- * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}. 
- * 
+ * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}.
+ *
  * @author vjuranek
  * @since 1.410
  */
@@ -136,7 +136,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                             new Object[]{name, stopTime - startTime});
                 }
             },name+" thread");
-            thread.start(); 
+            thread.start();
         } catch (Throwable t) {
             logger.log(Level.SEVERE, name+" thread failed with error", t);
         }

@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 
 /**
  * Various convenient subtype of {@link Channel}s.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Channels {

@@ -43,7 +43,7 @@ public class CSRFAdministrativeMonitor extends AdministrativeMonitor {
     public String getDisplayName() {
         return Messages.CSRFAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return Jenkins.get().getCrumbIssuer() == null;

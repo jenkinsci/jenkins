@@ -100,7 +100,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         @RequirePOST
         public FormValidation doCheckUrl(@QueryParameter String value) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            
+
             try {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();

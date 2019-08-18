@@ -1094,7 +1094,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         return null;
     }
-    
+
     /**
      * Retrieves input stream for the Manifest url.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1107,11 +1107,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
-        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak
         if (uc instanceof JarURLConnection) {
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
-            
+
             try(final JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null && jarFile != null) {
@@ -1125,16 +1125,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                url);
                 }
             }
-        } 
+        }
 
         // If input stream is undefined, use the default implementation
         if (in == null) {
             in = url.openStream();
         }
-        
+
         return in;
     }
-    
+
     /**
      * Retrieves modification date of the specified file.
      * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
@@ -1145,7 +1145,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Nonnull
     /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
         URLConnection uc = url.openConnection();
-        
+
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
@@ -1164,7 +1164,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
         }
-        
+
         // Fallbak to the default implementation
         return uc.getLastModified();
     }
@@ -1411,9 +1411,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         return new HttpRedirect("./sites");
     }
-    
+
     /**
-     * Called to progress status beyond installing plugins, e.g. if 
+     * Called to progress status beyond installing plugins, e.g. if
      * there were failures that prevented installation from naturally proceeding
      */
     @RequirePOST
@@ -1530,7 +1530,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     index = n.indexOf('.', index + 1);
                 }
             }
-            
+
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }

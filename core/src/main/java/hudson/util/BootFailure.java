@@ -73,7 +73,7 @@ public abstract class BootFailure extends ErrorObject {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,"Failed to parse "+f,e);
-            } 
+            }
         }
         return dates;
     }

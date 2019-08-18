@@ -59,4 +59,3 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
         return true;
     }
 }
-

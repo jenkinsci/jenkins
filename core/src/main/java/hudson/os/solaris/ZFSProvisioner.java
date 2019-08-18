@@ -69,7 +69,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
 
     public void prepareWorkspace(AbstractBuild<?,?> build, FilePath ws, final TaskListener listener) throws IOException, InterruptedException {
         final String name = build.getProject().getFullName();
-        
+
         ws.act(new PrepareWorkspace(name, listener));
     }
     private class PrepareWorkspace extends MasterToSlaveFileCallable<Void> {

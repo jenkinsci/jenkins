@@ -287,7 +287,7 @@ public abstract class Cause {
         public List<Cause> getUpstreamCauses() {
             return upstreamCauses;
         }
-        
+
         @Override
         public String getShortDescription() {
             return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
@@ -426,7 +426,7 @@ public abstract class Cause {
         public String getUserId() {
             return userId;
         }
-        
+
         @Nonnull
         private String getUserIdOrUnknown() {
             return  userId != null ? userId : User.getUnknown().getId();
@@ -493,12 +493,12 @@ public abstract class Cause {
             }
             return Messages.Cause_RemoteCause_ShortDescription(addr);
         }
-        
+
         @Exported(visibility = 3)
         public String getAddr() {
             return addr;
         }
-        
+
         @Exported(visibility = 3)
         public String getNote() {
             return note;

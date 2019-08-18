@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -125,7 +125,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             safeParameters.addAll(additionalSafeParameters);
         }
     }
-    
+
     public ParametersAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
@@ -159,7 +159,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * Creates an {@link VariableResolver} that aggregates all the parameters.
      *
      * <p>
-     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
+     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}.
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         VariableResolver[] resolvers = new VariableResolver[getParameters().size()+1];
@@ -168,12 +168,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             if (p == null) continue;
             resolvers[i++] = p.createVariableResolver(build);
         }
-            
+
         resolvers[i] = build.getBuildVariableResolver();
 
         return new VariableResolver.Union<String>(resolvers);
     }
-    
+
     public Iterator<ParameterValue> iterator() {
         return getParameters().iterator();
     }

@@ -97,7 +97,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
-        
+
         PluginServletFilter container = null;
         if(j != null) {
             container = getInstance(j.servletContext);

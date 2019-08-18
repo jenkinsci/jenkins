@@ -73,7 +73,7 @@ public class FileParameterValue extends ParameterValue {
      * It's not recommended to enable for security reasons. That option is only present for backward compatibility.
      */
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
+    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE =
             Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
     private transient final FileItem file;
@@ -85,7 +85,7 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Overrides the location in the build to place this file. Initially set to {@link #getName()}
-     * The location could be directly the filename or also a hierarchical path. 
+     * The location could be directly the filename or also a hierarchical path.
      * The intermediate folders will be created automatically.
      * Take care that no escape from the current directory is allowed and will result in the failure of the build.
      */
@@ -201,8 +201,8 @@ public class FileParameterValue extends ParameterValue {
 		if (getClass() != obj.getClass())
 			return false;
 		FileParameterValue other = (FileParameterValue) obj;
-		
-		if (location == null && other.location == null) 
+
+		if (location == null && other.location == null)
 			return true; // Consider null parameters as equal
 
 		//TODO: check fingerprints or checksums to improve the behavior (JENKINS-25211)

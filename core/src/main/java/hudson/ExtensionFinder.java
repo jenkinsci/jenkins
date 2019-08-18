@@ -157,7 +157,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     /**
-     * Performs class initializations without creating instances. 
+     * Performs class initializations without creating instances.
      *
      * If two threads try to initialize classes in the opposite order, a dead lock will ensue,
      * and we can get into a similar situation with {@link ExtensionFinder}s.
@@ -231,7 +231,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         protected abstract boolean isOptional(T annotation);
     }
-    
+
     /**
      * Discovers components via sezpoz but instantiates them by using Guice.
      */
@@ -425,7 +425,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          */
         public static final Scope FAULT_TOLERANT_SCOPE = new FaultTolerantScope(true);
         private static final Scope QUIET_FAULT_TOLERANT_SCOPE = new FaultTolerantScope(false);
-        
+
         private static final class FaultTolerantScope implements Scope {
             private final boolean verbose;
             FaultTolerantScope(boolean verbose) {

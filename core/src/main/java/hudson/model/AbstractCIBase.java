@@ -99,7 +99,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
     	return disabledAdministrativeMonitors;
     }
-    
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */
@@ -138,11 +138,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                     LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
                 }
                 if (c == null) {
-                    LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node", 
+                    LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node",
                             new Object[]{n.getNodeName(), n.getClass().getName()});
                     return;
                 }
-                
+
                 computers.put(n, c);
                 if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
                     RetentionStrategy retentionStrategy = c.getRetentionStrategy();

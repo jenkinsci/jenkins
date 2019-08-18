@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -102,7 +102,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public abstract boolean isEmptySet();
 
     /**
-     * All changes in this change set. 
+     * All changes in this change set.
      */
     // method for the remote API.
     @Exported
@@ -217,16 +217,16 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          */
         @Exported
         public abstract Collection<String> getAffectedPaths();
-        
+
         /**
          * Returns a set of paths in the workspace that was
          * affected by this change.
          * <p>
-         * Noted: since this is a new interface, some of the SCMs may not have 
-         * implemented this interface. The default implementation for this 
+         * Noted: since this is a new interface, some of the SCMs may not have
+         * implemented this interface. The default implementation for this
          * interface is throw UnsupportedOperationException
          * <p>
-         * It doesn't throw NoSuchMethodException because I rather to throw a 
+         * It doesn't throw NoSuchMethodException because I rather to throw a
          * runtime exception
          *
          * @return AffectedFile never null.
@@ -265,13 +265,13 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
-        
+
         static final Logger LOGGER = Logger.getLogger(ChangeLogSet.Entry.class.getName());
     }
-    
+
     /**
      * Represents a file change. Contains filename, edit type, etc.
-     * 
+     *
      * I checked the API names against some some major SCMs and most SCMs
      * can adapt to this interface with very little changes
      *
@@ -287,8 +287,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return never null.
          */
         String getPath();
-	    
-	    
+
+
         /**
          * Return whether the file is new/modified/deleted
          */

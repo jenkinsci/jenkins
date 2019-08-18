@@ -38,8 +38,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
 /**
- * Monitors enabled protocols and warns if an {@link AgentProtocol} is deprecated. 
- * 
+ * Monitors enabled protocols and warns if an {@link AgentProtocol} is deprecated.
+ *
  * @author Oleg Nenashev
  * @since 2.75
  * @see AgentProtocol
@@ -48,7 +48,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("deprecatedAgentProtocol")
 @Restricted(NoExternalUse.class)
 public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
-    
+
     public DeprecatedAgentProtocolMonitor() {
         super();
     }
@@ -69,13 +69,13 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
         }
         return false;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public String getDeprecatedProtocols() {
         String res = getDeprecatedProtocolsString();
         return res != null ? res : "N/A";
     }
-    
+
     @CheckForNull
     public static String getDeprecatedProtocolsString() {
         final List<String> deprecatedProtocols = new ArrayList<>();

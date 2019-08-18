@@ -63,7 +63,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface CLIMethod {
     /**
-     * CLI command name. Used as {@link CLICommand#getName()} 
+     * CLI command name. Used as {@link CLICommand#getName()}
      */
     String name();
 

@@ -151,7 +151,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         public boolean isEnabled() {
             return false;
         }
-        
+
         public UserProperty newInstance(User user) {
             return null;
         }

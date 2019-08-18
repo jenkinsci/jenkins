@@ -196,7 +196,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
                 SecurityContextHolder.getContext().setAuthentication(token);
                 return u;
             } else {
-                // Unassociated identity. 
+                // Unassociated identity.
                 throw new UnclaimedIdentityException(this);
             }
         }

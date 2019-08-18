@@ -25,10 +25,10 @@ import jenkins.model.Jenkins;
  *  <dt>description.jelly</dt>
  *  <dd>Optional protocol description</dd>
  *  <dt>deprecationCause.jelly</dt>
- *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()}, 
+ *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()},
  *      clarifies the deprecation reason and provides extra documentation links</dd>
  * </dl>
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.467
  * @see TcpSlaveAgentListener
@@ -64,16 +64,16 @@ public abstract class AgentProtocol implements ExtensionPoint {
     public boolean isRequired() {
         return false;
     }
-    
+
     /**
      * Checks if the protocol is deprecated.
-     * 
+     *
      * @since 2.75
      */
     public boolean isDeprecated() {
         return false;
     }
-    
+
     /**
      * Protocol name.
      *

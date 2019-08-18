@@ -116,7 +116,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
     /**
      * A {@link ServletOutputStream} that captures all the data rather than writing to a client.
      */
-    private static class CapturingServletOutputStream extends ServletOutputStream { 
+    private static class CapturingServletOutputStream extends ServletOutputStream {
 
         private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -140,18 +140,18 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         public void write(int b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b) throws IOException {
             baos.write(b);
         }
-        
+
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             baos.write(b, off, len);
         }
-        
-        /** 
+
+        /**
          * Get the data that has been written to this ServletOutputStream.
          * @return the data that has been written to this ServletOutputStream.
          */

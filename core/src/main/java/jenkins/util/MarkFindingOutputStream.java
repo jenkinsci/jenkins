@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
  * Filtering {@link OutputStream} that looks for {@link #MARK} in the output stream and notifies the callback.
  *
  * The mark itself will be removed from the stream.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.458
  */
@@ -48,7 +48,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
-        final int start = off; 
+        final int start = off;
         final int end = off + len;
         for (int i=off; i<end; ) {
             if (MBYTES[match] == b[i]) {// another byte matched. Good. Keep going...
@@ -108,7 +108,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
     // having a new line in the end makes it work better with line-buffering transformation
     public static final String MARK = "[Jenkins:SYNC-MARK]\n";
     private static final byte[] MBYTES = toUTF8(MARK);
-    
+
     private static byte[] toUTF8(String s) {
         return s.getBytes(StandardCharsets.UTF_8);
     }

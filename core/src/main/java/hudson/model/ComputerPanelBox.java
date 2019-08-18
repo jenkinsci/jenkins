@@ -16,18 +16,18 @@ import java.util.List;
  */
 
 public abstract class ComputerPanelBox implements ExtensionPoint{
-    
+
     private Computer computer;
-    
-    
+
+
     public void setComputer(Computer computer){
         this.computer = computer;
     }
-    
+
     public Computer getComputer(){
         return computer;
     }
-    
+
     /**
      * Create boxes for the given computer in its page.
      *

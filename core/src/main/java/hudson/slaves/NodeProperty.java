@@ -55,7 +55,7 @@ import javax.annotation.Nonnull;
  * <p>
  * Plugins can contribute this extension point to add additional data to {@link Node}.
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
- * 
+ *
  * <p>
  * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page (<code>./computer/&lt;a node&gt;</code>), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
@@ -116,7 +116,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
     /**
      * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
      * Can contribute additional properties to the environment.
-     * 
+     *
      * @param build
      *      The build in progress for which an {@link Environment} object is created.
      *      Never null.

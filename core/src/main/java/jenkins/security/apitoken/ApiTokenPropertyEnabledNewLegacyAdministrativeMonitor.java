@@ -46,12 +46,12 @@ public class ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor extends Admin
     public String getDisplayName() {
         return Messages.ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
     }
-    
+
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if (no == null) {

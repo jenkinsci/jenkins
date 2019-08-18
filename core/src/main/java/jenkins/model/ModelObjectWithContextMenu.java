@@ -36,19 +36,19 @@ import java.util.List;
 
 /**
  * {@link ModelObject} that has context menu in the breadcrumb.
- * 
+ *
  * <p>
  * When the user is visiting a particular page, all the ancestor objects that has {@link ModelObject}
  * appears in the breadcrumbs. Among those which that also implements {@link ModelObjectWithContextMenu}
  * shows the drop-down menu for providing quicker access to the actions to those objects.
- *     
+ *
  * @author Kohsuke Kawaguchi
  * @see ModelObjectWithChildren
  */
 public interface ModelObjectWithContextMenu extends ModelObject {
     /**
      * Generates the context menu.
-     * 
+     *
      * The typical implementation is {@code return new ContextMenu().from(this,request,response);},
      * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
      * for more details of what it does. This should suit most implementations.
@@ -67,11 +67,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         @Exported(inline=true)
         public final List<MenuItem> items = new ArrayList<>();
-        
+
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);
         }
-        
+
         public ContextMenu add(String url, String text) {
             items.add(new MenuItem(url,null,text));
             return this;
@@ -177,13 +177,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * Default implementation of the context menu generation.
-         * 
+         *
          * <p>
          * This method uses {@code sidepanel.groovy} to run the side panel generation, captures
          * the use of {@code <l:task>} tags, and then converts those into {@link MenuItem}s. This is
          * supposed to make this work with most existing {@link ModelObject}s that follow the standard
          * convention.
-         * 
+         *
          * <p>
          * Unconventional {@link ModelObject} implementations that do not use {@code sidepanel.groovy}
          * can override {@link ModelObjectWithContextMenu#doContextMenu(StaplerRequest, StaplerResponse)}
@@ -216,7 +216,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 // fallback
                 this.addAll(((Actionable)self).getAllActions());
             }
-    
+
             return this;
         }
     }

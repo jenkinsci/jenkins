@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -57,7 +57,7 @@ public final class Permission {
         /**
          * {@inheritDoc}
          */
-        // break eclipse compilation 
+        // break eclipse compilation
         //Override
         public int compare(@Nonnull Permission one, @Nonnull Permission two) {
             return one.getId().compareTo(two.getId());
@@ -149,8 +149,8 @@ public final class Permission {
      *      See {@link #impliedBy}.
      * @throws IllegalStateException if this permission was already defined
      */
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
-            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name,
+            @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable,
             @Nonnull PermissionScope[] scopes) throws IllegalStateException {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
@@ -167,7 +167,7 @@ public final class Permission {
         ALL.add(this);
     }
 
-    public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
+    public Permission(@Nonnull PermissionGroup group, @Nonnull String name,
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, @Nonnull PermissionScope scope) {
         this(group,name,description,impliedBy,true,new PermissionScope[]{scope});
         assert scope!=null;
@@ -222,7 +222,7 @@ public final class Permission {
      *
      * <p>
      * This string representation is suitable for persistence.
-     * @return ID with the following format: <i>permissionClass.permissionName</i> 
+     * @return ID with the following format: <i>permissionClass.permissionName</i>
      * @see #fromId(String)
      */
     public @Nonnull String getId() {
@@ -274,7 +274,7 @@ public final class Permission {
     public boolean getEnabled() {
         return enabled;
     }
-    
+
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return

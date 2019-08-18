@@ -47,8 +47,8 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     private static final String LOG_MESSAGE = "New Stapler routing rules result in the URL \"{0}\" no longer being allowed. " +
             "If you consider it safe to use, add the following to the whitelist: \"{1}\". " +
             "Learn more: https://jenkins.io/redirect/stapler-routing";
-    
-    @Override 
+
+    @Override
     public boolean onDoActionTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
@@ -56,7 +56,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
         });
         return false;
     }
-    
+
     @Override
     public boolean onGetterTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node, String expression) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{

@@ -62,7 +62,7 @@ import java.net.URL;
  * in the same resource directory that you normally put Jelly scripts), which will be loaded into
  * the HTML page whenever the console notes are used. This allows you to use minimal markup in
  * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.349
  */

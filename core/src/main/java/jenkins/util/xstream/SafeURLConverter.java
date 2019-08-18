@@ -35,14 +35,14 @@ import java.net.URLStreamHandler;
 
 /**
  * Wrap the URL handler during deserialization into a specific one that does not generate DNS query on the hostname
- * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}. 
+ * for {@link URLStreamHandler#equals(URL, URL)} or {@link URLStreamHandler#hashCode(URL)}.
  * Required to protect against SECURITY-637
- * 
+ *
  * @since 2.121.3
  */
 @Restricted(NoExternalUse.class)
 public class SafeURLConverter extends URLConverter {
-    
+
     @Override
     public Object fromString(String str) {
         URL url = (URL) super.fromString(str);

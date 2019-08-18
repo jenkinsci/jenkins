@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -257,7 +257,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null.
      * @since 1.314
-     * @see #doLogout(StaplerRequest, StaplerResponse) 
+     * @see #doLogout(StaplerRequest, StaplerResponse)
      */
     protected String getPostLogOutUrl(StaplerRequest req, Authentication auth) {
         return req.getContextPath()+"/";
@@ -466,7 +466,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         case 1:
             return type.cast(m.values().iterator().next());
         default:
-            throw new IllegalArgumentException("Multiple beans of "+type+" are defined: "+m);            
+            throw new IllegalArgumentException("Multiple beans of "+type+" are defined: "+m);
         }
     }
 
@@ -503,7 +503,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
-        
+
         Binding binding = new Binding();
         SecurityComponents sc = getSecurityComponents();
         binding.setVariable("securityComponents", sc);
@@ -555,7 +555,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
         from = StringUtils.defaultIfBlank(from, "/").trim();
-        
+
         // Encode the return value
         try {
             returnValue = java.net.URLEncoder.encode(from, "UTF-8");
@@ -619,7 +619,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * <p>
      * None of the fields are ever null.
      *
-     * @see SecurityRealm#createSecurityComponents() 
+     * @see SecurityRealm#createSecurityComponents()
      */
     public static final class SecurityComponents {
         public final AuthenticationManager manager;

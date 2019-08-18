@@ -98,7 +98,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse errorJSON(@Nonnull String message) {
         return new JSONObjectResponse().error(message);
     }
-    
+
     /**
      * Set the response as an error response plus some data.
      * @param message The error "message" set on the response.
