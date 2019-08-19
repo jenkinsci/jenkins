@@ -60,12 +60,6 @@ THE SOFTWARE.
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>io.jenkins.plugins</groupId>
-      <artifactId>system-read-permission</artifactId>
-      <version>0.1-20190817.074505-1</version>
-    </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
