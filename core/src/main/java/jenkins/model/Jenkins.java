@@ -5092,6 +5092,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return jenkins != null && jenkins.hasPermission(READ) ? VERSION : null;
     }
 
+    @Restricted(NoExternalUse.class)
     public static void setJenkinsVersion(String version) {
         Jenkins.VERSION = version;
     }
