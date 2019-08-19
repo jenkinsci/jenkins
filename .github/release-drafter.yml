@@ -35,7 +35,7 @@ categories:
   - title: Major RFE
     label: major-rfe
   - title: RFEs
-    label: enhancement
+    label: rfe
   - title: Bug fixes
     label: bug
   - title: Localization
