@@ -245,7 +245,7 @@ public class Api extends AbstractModelObject {
 
     @Restricted(NoExternalUse.class)
     protected void setHeaders(StaplerResponse rsp) {
-        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+        rsp.setHeader("X-Jenkins", Jenkins.getJenkinsVersion());
         rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
     }
 

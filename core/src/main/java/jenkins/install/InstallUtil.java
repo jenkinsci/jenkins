@@ -208,11 +208,11 @@ public class InstallUtil {
      * is just restarting, or is being upgraded from an earlier version.
      */
     public static void saveLastExecVersion() {
-        if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
+        if (Jenkins.UNCOMPUTED_VERSION.equals(Jenkins.getJenkinsVersion())) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
             throw new IllegalStateException("Unexpected call to InstallUtil.saveLastExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
         }
-        saveLastExecVersion(Jenkins.VERSION);
+        saveLastExecVersion(Jenkins.getJenkinsVersion());
     }
 
     /**
@@ -286,11 +286,11 @@ public class InstallUtil {
     }
 
     private static String getCurrentExecVersion() {
-        if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
+        if (Jenkins.UNCOMPUTED_VERSION.equals(Jenkins.getJenkinsVersion())) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
             throw new IllegalStateException("Unexpected call to InstallUtil.getCurrentExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
         }
-        return Jenkins.VERSION;
+        return Jenkins.getJenkinsVersion();
     }
 
     /**

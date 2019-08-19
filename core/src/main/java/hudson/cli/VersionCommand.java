@@ -40,7 +40,7 @@ public class VersionCommand extends CLICommand {
 
     protected int run() {
         // CLICommand.main checks Hudson.READ permission.. no other check needed.
-        stdout.println(Jenkins.VERSION);
+        stdout.println(Jenkins.getJenkinsVersion());
         return 0;
     }
 }

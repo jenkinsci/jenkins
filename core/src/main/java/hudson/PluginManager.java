@@ -747,7 +747,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (lastExecVersion.isNewerThan(InstallUtil.NEW_INSTALL_VERSION) && lastExecVersion.isOlderThan(Jenkins.getVersion())) {
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
-                    new Object[] {lastExecVersion, Jenkins.VERSION});
+                    new Object[] {lastExecVersion, Jenkins.getJenkinsVersion()});
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
 
@@ -783,7 +783,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
 
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
-                    new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
+                    new Object[] {lastExecVersion, Jenkins.getJenkinsVersion(), loadedDetached});
 
             InstallUtil.saveLastExecVersion();
         } else {

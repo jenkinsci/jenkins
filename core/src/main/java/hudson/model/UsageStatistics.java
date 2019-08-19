@@ -128,7 +128,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         o.put("stat",1);
         o.put("install", j.getLegacyInstanceId());
         o.put("servletContainer", j.servletContext.getServerInfo());
-        o.put("version", Jenkins.VERSION);
+        o.put("version", Jenkins.getJenkinsVersion());
 
         List<JSONObject> nodes = new ArrayList<>();
         for( Computer c : j.getComputers() ) {

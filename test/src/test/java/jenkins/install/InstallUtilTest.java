@@ -134,7 +134,7 @@ public class InstallUtilTest {
     }
 
     private void setStoredVersion(String version) throws Exception {
-        Jenkins.VERSION = version;
+        Jenkins.setJenkinsVersion(version);
         // Force a save of the config.xml
         jenkinsRule.jenkins.save();
         Assert.assertEquals(version, Jenkins.getStoredVersion().toString());

@@ -213,6 +213,7 @@ import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
+import org.jenkinsci.bytecode.AdaptField;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
@@ -5080,10 +5081,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
+    private static String VERSION = UNCOMPUTED_VERSION;
+
     /**
      * Version number of this Jenkins.
      */
-    public static String VERSION = UNCOMPUTED_VERSION;
+    @AdaptField(name = "VERSION", was = String.class)
+    public static @CheckForNull String getJenkinsVersion() {
+        Jenkins jenkins = getInstanceOrNull();
+        return jenkins != null && jenkins.hasPermission(READ) ? VERSION : null;
+    }
+
+    public static void setJenkinsVersion(String version) {
+        Jenkins.VERSION = version;
+    }
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number

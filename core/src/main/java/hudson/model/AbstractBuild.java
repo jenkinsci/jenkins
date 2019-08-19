@@ -456,7 +456,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             
             assert builtOn==null;
             builtOn = node.getNodeName();
-            hudsonVersion = Jenkins.VERSION;
+            hudsonVersion = Jenkins.getJenkinsVersion();
             this.listener = listener;
 
             launcher = createLauncher(listener);
