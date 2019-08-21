@@ -5033,7 +5033,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
     private static void computeVersion(ServletContext context) {
-        String ver = getJenkinsVersion();
+        String ver = VERSION_ORACLE_PROVIDER.get().getVersion().orElse(UNCOMPUTED_VERSION);
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
