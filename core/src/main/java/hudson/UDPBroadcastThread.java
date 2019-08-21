@@ -91,7 +91,7 @@ public class UDPBroadcastThread extends Thread {
                 TcpSlaveAgentListener tal = jenkins.getTcpSlaveAgentListener();
 
                 StringBuilder rsp = new StringBuilder("<hudson>");
-                tag(rsp,"version", Jenkins.VERSION);
+                tag(rsp,"version", Jenkins.getJenkinsVersion());
                 tag(rsp,"url", jenkins.getRootUrl());
                 tag(rsp,"server-id", jenkins.getLegacyInstanceId());
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());

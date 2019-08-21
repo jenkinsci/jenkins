@@ -25,7 +25,7 @@ public class PluginWrapperTest {
 
     @Before
     public void before() throws Exception {
-        Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
+        Jenkins.setJenkinsVersion("2.0"); // Some value needed - tests will overwrite if necessary
     }
 
     @Test

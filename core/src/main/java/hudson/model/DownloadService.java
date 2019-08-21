@@ -100,7 +100,7 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.VERSION)).append('}')
+                       .append("{version:").append(QuotedStringTokenizer.quote(Jenkins.getJenkinsVersion())).append('}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -405,7 +405,7 @@ public class DownloadService extends PageDecorator {
                 }
                 String jsonString;
                 try {
-                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
+                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.getJenkinsVersion(), "UTF-8")));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Could not load json from " + site, e );

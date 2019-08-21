@@ -38,6 +38,9 @@ import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
+import jenkins.model.version.DefaultVersionOracle;
+import jenkins.model.version.VersionOracle;
+import jenkins.model.version.VersionOracleProvider;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerFilteredActionListener;
@@ -181,6 +184,7 @@ import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
@@ -199,7 +203,6 @@ import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import jenkins.util.io.OnMaster;
-import jenkins.util.xml.XMLUtils;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -213,6 +216,7 @@ import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
+import org.jenkinsci.bytecode.AdaptField;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
@@ -273,7 +277,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -3288,10 +3291,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(BulkChange.contains(this))   return;
 
         if (initLevel == InitMilestone.COMPLETED) {
-            LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
-            version = VERSION;
+            String version = getJenkinsVersion();
+            LOGGER.fine(() -> "Setting Jenkins version from " + this.version + " to " + version);
+            this.version = version;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+            LOGGER.fine(() -> "Refusing to set Jenkins version from " + this.version + " to " + version + " during " + initLevel);
         }
 
         getConfigFile().write(this);
@@ -5029,37 +5033,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
     private static void computeVersion(ServletContext context) {
-        // set the version
-        Properties props = new Properties();
-        try (InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties")) {
-            if(is!=null)
-                props.load(is);
-        } catch (IOException e) {
-            e.printStackTrace(); // if the version properties is missing, that's OK.
-        }
-        String ver = props.getProperty("version");
-        if(ver==null)   ver = UNCOMPUTED_VERSION;
-        if(Main.isDevelopmentMode && "${project.version}".equals(ver)) {
-            // in dev mode, unable to get version (ahem Eclipse)
-            try {
-                File dir = new File(".").getAbsoluteFile();
-                while(dir != null) {
-                    File pom = new File(dir, "pom.xml");
-                    if (pom.exists() && "pom".equals(XMLUtils.getValue("/project/artifactId", pom))) {
-                        pom =  pom.getCanonicalFile();
-                        LOGGER.info("Reading version from: " + pom.getAbsolutePath());
-                        ver = XMLUtils.getValue("/project/version", pom);
-                        break;
-                    }
-                    dir = dir.getParentFile();
-                }
-                LOGGER.info("Jenkins is in dev mode, using version: " + ver);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Unable to read Jenkins version: " + e.getMessage(), e);
-            }
-        }
-        
-        VERSION = ver;
+        String ver = getJenkinsVersion();
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
@@ -5080,17 +5054,38 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
-    /**
-     * Version number of this Jenkins.
-     */
-    public static String VERSION = UNCOMPUTED_VERSION;
+    private static final VersionOracleProvider VERSION_ORACLE_PROVIDER = new VersionOracleProvider();
 
     /**
-     * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
+     * Returns the version number of this Jenkins instance. This version is controlled by the configured
+     * {@link VersionOracle} extension, falling back to {@link DefaultVersionOracle} if none are available.
+     * This method replaces the old public static field named {@code VERSION}.
+     *
+     * @since TODO
+     */
+    @Nonnull
+    @AdaptField(name = "VERSION", was = String.class)
+    public static String getJenkinsVersion() {
+        return VERSION_ORACLE_PROVIDER.get().getVersion().orElse(UNCOMPUTED_VERSION);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    @AdaptField(name = "VERSION", was = String.class)
+    public static void setJenkinsVersion(String version) {
+        VersionOracle versionOracle = VERSION_ORACLE_PROVIDER.get();
+        if (versionOracle instanceof DefaultVersionOracle) {
+            DefaultVersionOracle provider = (DefaultVersionOracle) versionOracle;
+            provider.setVersion(version);
+        }
+    }
+
+    /**
+     * Parses {@link #getJenkinsVersion()} into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
      */
     public @CheckForNull static VersionNumber getVersion() {
-        return toVersion(VERSION);
+        return VERSION_ORACLE_PROVIDER.get().getVersion().flatMap(version -> Optional.ofNullable(toVersion(version))).orElse(null);
     }
 
     /**
@@ -5137,7 +5132,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Hash of {@link #VERSION}.
+     * Hash of {@link #getJenkinsVersion()}.
      */
     public static String VERSION_HASH;
 

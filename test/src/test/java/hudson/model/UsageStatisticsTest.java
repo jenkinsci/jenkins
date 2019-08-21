@@ -96,7 +96,7 @@ public class UsageStatisticsTest {
         assertEquals(1, o.getInt("stat"));
         assertEquals(jenkins.getLegacyInstanceId(), o.getString("install"));
         assertEquals(jenkins.servletContext.getServerInfo(), o.getString("servletContainer"));
-        assertEquals(Jenkins.VERSION, o.getString("version"));
+        assertEquals(Jenkins.getJenkinsVersion(), o.getString("version"));
 
         assertTrue(o.has("plugins"));
         assertTrue(o.has("jobs"));

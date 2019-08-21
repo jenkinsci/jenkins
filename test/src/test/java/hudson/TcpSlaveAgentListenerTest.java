@@ -43,7 +43,7 @@ public class TcpSlaveAgentListenerTest {
 
         TextPage text = wc.getPage(new URL("http://localhost:" + p + "/"));
         String c = text.getContent();
-        assertThat(c, containsString(Jenkins.VERSION));
+        assertThat(c, containsString(Jenkins.getJenkinsVersion()));
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         Page page = wc.getPage(new URL("http://localhost:" + p + "/xxx"));

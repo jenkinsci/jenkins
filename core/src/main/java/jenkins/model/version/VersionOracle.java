@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2019 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,26 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
+package jenkins.model.version;
+
+import javax.annotation.Nonnull;
+import java.util.Optional;
 
 /**
- * Retrieves the current version.
+ * Strategy to look up the version of Jenkins currently running. Custom implementations may return fake version
+ * numbers or guard access to the version with an authorization check. The configured oracle is obtained via
+ * {@link java.util.ServiceLoader}, so custom implementations should be annotated with {@link org.kohsuke.MetaInfServices}.
+ * If no oracle is available, {@link DefaultVersionOracle} is used. Custom oracles may wish to delegate to
+ * DefaultVersionOracle.
  *
- * @author Kohsuke Kawaguchi
+ * @since TODO
  */
-@Extension
-public class VersionCommand extends CLICommand {
-    @Override
-    public String getShortDescription() {
-        return Messages.VersionCommand_ShortDescription();
-    }
-
-    protected int run() {
-        // CLICommand.main checks Hudson.READ permission.. no other check needed.
-        stdout.println(Jenkins.getJenkinsVersion());
-        return 0;
-    }
+public interface VersionOracle {
+    /**
+     * Returns the version of Jenkins running or empty if it can't be calculated or if it can't be displayed.
+     */
+    @Nonnull
+    Optional<String> getVersion();
 }

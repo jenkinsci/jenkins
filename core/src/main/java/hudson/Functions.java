@@ -1409,7 +1409,7 @@ public class Functions {
     }
 
     public static String getVersion() {
-        return Jenkins.VERSION;
+        return Jenkins.getJenkinsVersion();
     }
 
     /**
@@ -2033,7 +2033,7 @@ public class Functions {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j!=null) {
             rsp.setHeader("X-Hudson","1.395");
-            rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+            rsp.setHeader("X-Jenkins", Jenkins.getJenkinsVersion());
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
