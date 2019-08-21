@@ -57,7 +57,6 @@ public class VersionOracleProvider implements Supplier<VersionOracle> {
                 }
             }
         }
-        LOGGER.fine(() -> "Returning VersionOracle: " + oracle);
         return oracle;
     }
 
