@@ -5063,16 +5063,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since TODO
      */
-    @Nonnull
     @AdaptField(name = "VERSION", was = String.class)
-    public static String getJenkinsVersion() {
-        return VERSION_ORACLE_PROVIDER.get().getVersion().orElse(UNCOMPUTED_VERSION);
+    public static @CheckForNull String getJenkinsVersion() {
+        return VERSION_ORACLE_PROVIDER.get().getVersion().orElse(null);
     }
 
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
     @AdaptField(name = "VERSION", was = String.class)
-    public static void setJenkinsVersion(String version) {
+    public static void setJenkinsVersion(@CheckForNull String version) {
         VersionOracle versionOracle = VERSION_ORACLE_PROVIDER.get();
         if (versionOracle instanceof DefaultVersionOracle) {
             DefaultVersionOracle provider = (DefaultVersionOracle) versionOracle;
@@ -5098,7 +5097,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
-        return toVersion(Jenkins.getActiveInstance().version);
+        return toVersion(Jenkins.get().version);
     }
 
     /**

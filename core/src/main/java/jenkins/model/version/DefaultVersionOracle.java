@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,15 +53,16 @@ import java.util.logging.Logger;
 public class DefaultVersionOracle implements VersionOracle {
     private static final Logger LOGGER = Logger.getLogger(DefaultVersionOracle.class.getName());
 
+    private final AtomicBoolean initialized = new AtomicBoolean();
     @GuardedBy("this")
     private volatile String version;
 
     @Nonnull
     @Override
     public Optional<String> getVersion() {
-        if (version == null) {
+        if (!initialized.get()) {
             synchronized (this) {
-                if (version == null) {
+                if (initialized.compareAndSet(false, true)) {
                     Properties properties = loadJenkinsVersionProperties();
                     version = properties.getProperty("version", Jenkins.UNCOMPUTED_VERSION);
                     if (versionRequiresPomLookup(version)) {
@@ -71,7 +73,7 @@ public class DefaultVersionOracle implements VersionOracle {
                 }
             }
         }
-        return Optional.of(version);
+        return Optional.ofNullable(version);
     }
 
     private static Properties loadJenkinsVersionProperties() {
@@ -118,6 +120,7 @@ public class DefaultVersionOracle implements VersionOracle {
     @VisibleForTesting
     public synchronized void setVersion(String version) {
         this.version = version;
+        initialized.set(true);
     }
 
     @Override
