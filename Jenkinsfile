@@ -1,5 +1,10 @@
+
 #!/usr/bin/env groovy
 
+
+
+
+----- helllo -------
 /*
  * This Jenkinsfile is intended to run on https://ci.jenkins.io and may fail anywhere else.
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
@@ -113,7 +118,7 @@ void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
             body.call()
         }
     }
-    
+
     // The names here are currently hardcoded for my test environment. This needs
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the
@@ -132,4 +137,10 @@ void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
     withEnv(mvnEnv) {
         body.call()
     }
+}
+
+{
+
+test  push 
+
 }
