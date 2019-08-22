@@ -44,8 +44,6 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.Path;
-import java.nio.file.AtomicMoveNotSupportedException;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -81,7 +79,6 @@ import java.lang.SecurityException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -125,7 +122,6 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1600,22 +1596,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if (tmp.exists()) {
                 Util.deleteRecursive(tmp);
             }
-            boolean renamingSucceeded = true;
             try {
-                Path path = Files.move(
+                Files.move(
                         Util.fileToPath(rootDir),
                         Util.fileToPath(tmp),
                         StandardCopyOption.ATOMIC_MOVE
                 );
-            } catch (UnsupportedOperationException | IOException | SecurityException ex) {
-                // Fall back to previous < Java 7 variant
-                LOGGER.fine(String.format(
-                        "Atomic move of '%s' failed. Reason: [%s] %s. Retry with simple renaming",
-                        rootDir.getPath(),
-                        ex.getClass().getName(),
-                        ex.getMessage()
-                ));
-                renamingSucceeded = rootDir.renameTo(tmp);
+            } catch (UnsupportedOperationException | SecurityException ex) {
+                throw new IOException(rootDir + " is in use");
             }
             
             Util.deleteRecursive(tmp);
@@ -1623,9 +1611,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
             if (tmp.exists()) {
                 tmp.deleteOnExit();
-            }
-            if (!renamingSucceeded) {
-                throw new IOException(rootDir + " is in use");
             }
             LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
             removeRunFromParent();
