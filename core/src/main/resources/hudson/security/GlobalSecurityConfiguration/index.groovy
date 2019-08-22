@@ -37,7 +37,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
             }
 
-            f.section(title:_("Autorization")) {
+            f.section(title:_("Authorization")) {
                 f.entry(title:_("Strategy")) {
                     table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
