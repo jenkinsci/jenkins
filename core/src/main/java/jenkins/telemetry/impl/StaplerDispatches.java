@@ -25,7 +25,6 @@ package jenkins.telemetry.impl;
 
 import hudson.Extension;
 import hudson.PluginWrapper;
-import hudson.model.UsageStatistics;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
@@ -59,7 +58,7 @@ public class StaplerDispatches extends Telemetry {
     @Nonnull
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2019, 2, 1);
+        return LocalDate.of(2019, 8, 1);
     }
 
     @Nonnull

@@ -1,4 +1,4 @@
-package jenkins.model.CauseOfInterruption.UserInterruption;
+package jenkins.model.CauseOfInterruption.UserInterruption
 
 // by default we just print the short description.
 def user = my.userOrNull

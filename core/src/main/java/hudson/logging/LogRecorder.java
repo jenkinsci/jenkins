@@ -75,7 +75,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    public final CopyOnWriteList<Target> targets = new CopyOnWriteList<Target>();
+    public final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
     
     @Restricted(NoExternalUse.class)
@@ -156,7 +156,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                     continue;
                 }
 
-                if (match.booleanValue()) {
+                if (match) {
                     // most specific logger matches, so publish
                     super.publish(record);
                 }
@@ -215,14 +215,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
             if (name.length() == 0) {
-                return Boolean.valueOf(levelSufficient); // include if level matches
+                return levelSufficient; // include if level matches
             }
             String logName = r.getLoggerName();
             if(logName==null || !logName.startsWith(name))
                 return null; // not in the domain of this logger
             String rest = logName.substring(name.length());
             if (rest.startsWith(".") || rest.length()==0) {
-                return Boolean.valueOf(levelSufficient); // include if level matches
+                return levelSufficient; // include if level matches
             }
             return null;
         }
@@ -275,7 +275,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return null;
         }
         void broadcast() {
-            for (Computer c : Jenkins.getInstance().getComputers()) {
+            for (Computer c : Jenkins.get().getComputers()) {
                 if (c.getName().length() > 0) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
@@ -292,7 +292,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.getInstance().getLog().logRecorders.values()) {
+            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders.values()) {
                 for (Target t : recorder.targets) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
@@ -320,7 +320,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public LogRecorderManager getParent() {
-        return Jenkins.getInstance().getLog();
+        return Jenkins.get().getLog();
     }
 
     /**
@@ -426,7 +426,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }
         });
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             if (c.getName().length() == 0) {
                 continue; // master
             }
@@ -466,5 +466,5 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * Log levels that can be configured for {@link Target}.
      */
     public static List<Level> LEVELS =
-            Arrays.asList(Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE);
+            Arrays.asList(Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE, Level.OFF);
 }

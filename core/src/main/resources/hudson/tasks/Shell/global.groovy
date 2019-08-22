@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell;
+package hudson.tasks.Shell
 f=namespace(lib.FormTagLib)
 
 f.section(title:_("Shell")) {

@@ -23,8 +23,9 @@
  */
 package hudson.util;
 
-import com.trilead.ssh2.crypto.digest.MD5;
-
+import java.lang.RuntimeException;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class ConsistentHash<T> {
     /**
      * All the items in the hash, to their replication factors.
      */
-    private final Map<T,Point[]> items = new HashMap<T,Point[]>();
+    private final Map<T,Point[]> items = new HashMap<>();
     private int numPoints;
 
     private final int defaultReplication;
@@ -140,15 +141,16 @@ public class ConsistentHash<T> {
          */
         Iterator<T> list(int queryPoint) {
             final int start = index(queryPoint);
-            return new DuplicateFilterIterator<T>(new Iterator<T>() {
-                int pos=0;
+            return new DuplicateFilterIterator<>(new Iterator<T>() {
+                int pos = 0;
+
                 public boolean hasNext() {
-                    return pos<owner.length;
+                    return pos < owner.length;
                 }
 
                 public T next() {
-                    if(!hasNext())  throw new NoSuchElementException();
-                    return (T)owner[(start+(pos++))%owner.length];
+                    if (!hasNext()) throw new NoSuchElementException();
+                    return (T) owner[(start + (pos++)) % owner.length];
                 }
 
                 public void remove() {
@@ -289,15 +291,18 @@ public class ConsistentHash<T> {
      * Compresses a string into an integer with MD5.
      */
     private int md5(String s) {
-        MD5 md5 = new MD5();
-        md5.update(s.getBytes());
-        byte[] digest = new byte[16];
-        md5.digest(digest);
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(s.getBytes());
+            byte[] digest = md5.digest();
 
-        // 16 bytes -> 4 bytes
-        for (int i=0; i<4; i++)
-            digest[i] ^= digest[i+4]+digest[i+8]+digest[i+12];
-        return (b2i(digest[0])<< 24)|(b2i(digest[1])<<16)|(b2i(digest[2])<< 8)|b2i(digest[3]);
+            // 16 bytes -> 4 bytes
+            for (int i=0; i<4; i++)
+                digest[i] ^= digest[i+4]+digest[i+8]+digest[i+12];
+            return (b2i(digest[0])<< 24)|(b2i(digest[1])<<16)|(b2i(digest[2])<< 8)|b2i(digest[3]);
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException("Could not generate MD5 hash", e);
+        }
     }
 
     /**

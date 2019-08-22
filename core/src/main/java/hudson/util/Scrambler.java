@@ -23,10 +23,10 @@
  */
 package hudson.util;
 
-import com.trilead.ssh2.crypto.Base64;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Scrambles, but does not encrypt, text.
@@ -37,20 +37,19 @@ import java.io.UnsupportedEncodingException;
  * @see Protector
  */
 public class Scrambler {
+    private static final Logger LOGGER = Logger.getLogger(Scrambler.class.getName());
+
     public static String scramble(String secret) {
         if(secret==null)    return null;
-        try {
-            return new String(Base64.encode(secret.getBytes("UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e); // impossible
-        }
+        return new String(Base64.getEncoder().encode(secret.getBytes(StandardCharsets.UTF_8)));
     }
 
     public static String descramble(String scrambled) {
         if(scrambled==null)    return null;
         try {
-            return new String(Base64.decode(scrambled.toCharArray()),"UTF-8");
-        } catch (IOException e) {
+            return new String(Base64.getDecoder().decode(scrambled.getBytes(StandardCharsets.UTF_8)),StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING,"Corrupted data", e);
             return "";  // corrupted data.
         }
     }

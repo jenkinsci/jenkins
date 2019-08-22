@@ -28,7 +28,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
 
     private synchronized Set<Entry<Integer,R>> all() {
         if (all==null)
-            all = new BuildReferenceMapAdapter<R>(owner,owner.all()).entrySet();
+            all = new BuildReferenceMapAdapter<>(owner, owner.all()).entrySet();
         return all;
     }
 
@@ -78,7 +78,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
             }
 
             private Entry<Integer, R> entryOf(R r) {
-                return new SimpleImmutableEntry<Integer, R>(owner.getNumberOf(r),r);
+                return new SimpleImmutableEntry<>(owner.getNumberOf(r), r);
             }
 
             public void remove() {

@@ -78,7 +78,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
-    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
+    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<>();
 
     /**
      * Gets instance of the monitor.
@@ -106,7 +106,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public Map<Saveable,VersionRange> getData() {
-        Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
+        Map<Saveable,VersionRange> r = new HashMap<>();
         for (Map.Entry<SaveableReference,VersionRange> entry : this.data.entrySet()) {
             Saveable s = entry.getKey().get();
             if (s != null) {
@@ -117,7 +117,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         OldDataMonitor odm = get(j);
         SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
         try {
@@ -166,7 +166,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @param version Hudson release when the data structure changed.
      */
     public static void report(Saveable obj, String version) {
-        OldDataMonitor odm = get(Jenkins.getInstance());
+        OldDataMonitor odm = get(Jenkins.get());
         try {
             SaveableReference ref = referTo(obj);
             while (true) {
@@ -395,7 +395,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static SaveableReference referTo(Saveable s) {
         if (s instanceof Run) {
             Job parent = ((Run) s).getParent();
-            if (Jenkins.getInstance().getItemByFullName(parent.getFullName()) == parent) {
+            if (Jenkins.get().getItemByFullName(parent.getFullName()) == parent) {
                 return new RunSaveableReference((Run) s);
             }
         }

@@ -60,11 +60,8 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import jenkins.CLI;
 
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
@@ -133,9 +130,6 @@ public class SetupWizard extends PageDecorator {
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
-                    // Disable CLI over Remoting
-                    CLI.get().setEnabled(false);
-                    
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
     
@@ -243,7 +237,7 @@ public class SetupWizard extends PageDecorator {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
 
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -287,7 +281,7 @@ public class SetupWizard extends PageDecorator {
             // include the new seed
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
             
-            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
                 data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));

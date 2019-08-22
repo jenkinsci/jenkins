@@ -301,7 +301,7 @@ public class RepeatableTest extends HudsonTestCase {
         private Fruit(String name) { this.name = name; }
 
         public Descriptor<Fruit> getDescriptor() {
-            return Jenkins.getInstance().getDescriptor(getClass());
+            return Jenkins.get().getDescriptor(getClass());
         }
     }
 

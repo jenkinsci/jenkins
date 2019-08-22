@@ -144,7 +144,7 @@ function onCheckChanged(checkBox){
         var allCheckBoxes = document.querySelectorAll('.token-to-revoke');
         for(var i = 0; i < allCheckBoxes.length; i++){
             var checkBox = allCheckBoxes[i];
-            checkBox.onchange = function(){ onCheckChanged(checkBox); };
+            checkBox.onchange = function(){ onCheckChanged(this); };
         }
     });
 })()

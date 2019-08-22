@@ -50,7 +50,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -182,7 +181,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         String p = apiToken.getPlainText();
-        if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
+        if (p.equals(Util.getDigestOf(Jenkins.get().getSecretKey()+":"+user.getId()))) {
             // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
             // force using the newer value
             apiToken = Secret.fromString(p=API_KEY_SEED.mac(user.getId()));
@@ -475,7 +474,7 @@ public class ApiTokenProperty extends UserProperty {
             
             final String tokenName;
             if (StringUtils.isBlank(newTokenName)) {
-                tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
+                tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             }else{
                 tokenName = newTokenName;
             }

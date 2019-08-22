@@ -139,7 +139,7 @@ public class Executor extends Thread implements ModelObject {
      * Cause of interruption. Access needs to be synchronized.
      */
     @GuardedBy("lock")
-    private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
+    private final List<CauseOfInterruption> causes = new Vector<>();
 
     public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
@@ -271,7 +271,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock();
         try {
             if (causes.isEmpty())   return;
-            r = new ArrayList<CauseOfInterruption>(causes);
+            r = new ArrayList<>(causes);
             causes.clear();
         } finally {
             lock.writeLock().unlock();
@@ -961,7 +961,7 @@ public class Executor extends Thread implements ModelObject {
      * Mechanism to allow threads (in particular the channel request handling threads) to
      * run on behalf of {@link Executor}.
      */
-    private static final ThreadLocal<Executor> IMPERSONATION = new ThreadLocal<Executor>();
+    private static final ThreadLocal<Executor> IMPERSONATION = new ThreadLocal<>();
 
     private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());
 }

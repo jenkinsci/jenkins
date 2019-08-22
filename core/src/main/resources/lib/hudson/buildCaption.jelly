@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 <!--
     displays a caption for build/externalRun.
+    <%@attribute name="autorefresh" required="false" description="Whether to reload this component automatically using AJAX" %>
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
@@ -45,6 +46,35 @@ THE SOFTWARE.
 	  </j:if>
 	  
 	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
+        <script>
+          (function(autorefresh){
+            function updateBuildCaptionIcon(){
+              new Ajax.Request("statusIcon",{
+                method: "get",
+                onComplete: function(rsp,_) {
+                  var isBuilding = rsp.getResponseHeader("X-Building");
+                  if (isBuilding == "true") {
+                    setTimeout(updateBuildCaptionIcon, 5000)
+                  } else {
+                    var progressBar = document.querySelector(".build-caption-progress-container");
+                    if (progressBar) {
+                      progressBar.style.display = "none";
+                    }
+                  }
+                  document.querySelector(".build-caption .icon-xlg").outerHTML = rsp.responseText;
+                }
+              });
+            }
+
+            window.addEventListener("load", function(){
+              if (autorefresh) {
+                updateBuildCaptionIcon()
+              }
+              Event.observe(window, "jenkins:consoleFinished", updateBuildCaptionIcon);
+            });
+
+          })(${autorefresh});
+        </script>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

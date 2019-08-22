@@ -32,7 +32,7 @@ import static java.util.logging.Level.WARNING;
 abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     private static final Logger LOGGER = Logger.getLogger(TaskMethodFinder.class.getName());
     protected final ClassLoader cl;
-    private final Set<Method> discovered = new HashSet<Method>();
+    private final Set<Method> discovered = new HashSet<>();
 
     private final Class<T> type;
     private final Class<? extends Enum> milestoneType;
@@ -52,7 +52,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     protected abstract boolean fatalOf(T i);
 
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
-        List<Task> result = new ArrayList<Task>();
+        List<Task> result = new ArrayList<>();
         for (Method e : Index.list(type, cl, Method.class)) {
             if (filter(e)) continue;   // already reported once
 
@@ -115,7 +115,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         assert j != null : "This method is only invoked after the Jenkins singleton instance has been set";
         if (type==Jenkins.class || type==Hudson.class)
             return j;
@@ -180,7 +180,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
         }
 
         private Collection<Milestone> toMilestones(String[] tokens, Milestone m) {
-            List<Milestone> r = new ArrayList<Milestone>();
+            List<Milestone> r = new ArrayList<>();
             for (String s : tokens) {
                 try {
                     r.add((Milestone)Enum.valueOf(milestoneType,s));

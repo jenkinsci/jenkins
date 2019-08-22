@@ -31,13 +31,32 @@ THE SOFTWARE.
     <l:main-panel>
       <table cellpadding="5" id="legend-table">
         <tr><td>
-          <l:icon class="icon-grey icon-xlg"/>
+          <l:icon class="icon-nobuilt icon-xlg"/>
+          ${%lightgrey}
+        </td></tr>
+        <tr><td>
+          <l:icon class="icon-nobuilt-anime icon-xlg"/>
+          ${%lightgrey_anime}
+        </td></tr>
+
+        <tr><td>
+          <l:icon class="icon-disabled icon-xlg"/>
           ${%grey}
         </td></tr>
         <tr><td>
-          <l:icon class="icon-grey-anime icon-xlg"/>
+          <l:icon class="icon-disabled-anime icon-xlg"/>
           ${%grey_anime}
         </td></tr>
+
+        <tr><td>
+          <l:icon class="icon-aborted icon-xlg"/>
+          ${%darkgrey}
+        </td></tr>
+        <tr><td>
+          <l:icon class="icon-aborted-anime icon-xlg"/>
+          ${%darkgrey_anime}
+        </td></tr>
+
         <tr><td>
           <l:icon class="icon-blue icon-xlg"/>
           ${%blue}

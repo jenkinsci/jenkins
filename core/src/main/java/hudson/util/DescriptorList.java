@@ -82,7 +82,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     @Deprecated
     public DescriptorList(Descriptor<T>... descriptors) {
         this.type = null;
-        this.legacy = new CopyOnWriteArrayList<Descriptor<T>>(descriptors);
+        this.legacy = new CopyOnWriteArrayList<>(descriptors);
     }
 
     /**
@@ -146,7 +146,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         if(type==null)
             return legacy;
         else
-            return Jenkins.getInstance().<T,Descriptor<T>>getDescriptorList(type);
+            return Jenkins.get().getDescriptorList(type);
     }
 
     /**

@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.cli.CLICommand;
 import java.io.File;
 import java.io.IOException;
@@ -109,9 +108,8 @@ public class FileParameterDefinition extends ParameterDefinition {
             FileUtils.copyInputStreamToFile(command.stdin, local);
             name = "stdin";
         } else {
-            FilePath src = new FilePath(command.checkChannel(), value);
-            src.copyTo(new FilePath(local));
-            name = src.getName();
+            command.checkChannel();
+            return null; // never called
         }
 
         FileParameterValue p = new FileParameterValue(getName(), local, name);

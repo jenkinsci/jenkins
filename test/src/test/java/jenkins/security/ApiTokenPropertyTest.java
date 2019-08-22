@@ -24,6 +24,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import jenkins.model.Jenkins;
@@ -95,7 +97,7 @@ public class ApiTokenPropertyTest {
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
-        String historicalInitialValue = Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + u.getId());
+        String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
 
         // we won't accept historically used initial value as it may be compromised
         ApiTokenProperty t = new ApiTokenProperty(historicalInitialValue);
@@ -139,12 +141,14 @@ public class ApiTokenPropertyTest {
         final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
         
         // Make sure that Admin can reset a token of another user
-        WebClient wc = createClientForUser("bar");
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = createClientForUser("bar")
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
-        assertEquals("method should not be allowed", 405, requirePOST.getWebResponse().getStatusCode());
+        assertEquals("method should not be allowed", 
+                HttpURLConnection.HTTP_BAD_METHOD, 
+                requirePOST.getWebResponse().getStatusCode());
 
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
+        wc.setThrowExceptionOnFailingStatusCode(true);
         WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
         HtmlPage res = wc.getPage(request);
 
@@ -163,7 +167,7 @@ public class ApiTokenPropertyTest {
         WebClient wc = createClientForUser("foo");
         WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
 
-        assertEquals(201, wc.getPage(wr).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_CREATED, wc.getPage(wr).getWebResponse().getStatusCode());
 
         j.waitUntilNoActivity();
 

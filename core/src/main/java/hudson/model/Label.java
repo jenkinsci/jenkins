@@ -110,7 +110,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
             @Override
             public int computeQueueLength() {
-                return Jenkins.getInstance().getQueue().countBuildableItemsFor(Label.this);
+                return Jenkins.get().getQueue().countBuildableItemsFor(Label.this);
             }
 
             @Override
@@ -218,7 +218,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if(nodes!=null) return nodes;
 
         Set<Node> r = new HashSet<>();
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.get();
         if(this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
@@ -241,8 +241,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public Set<Cloud> getClouds() {
         if(clouds==null) {
-            Set<Cloud> r = new HashSet<Cloud>();
-            Jenkins h = Jenkins.getInstance();
+            Set<Cloud> r = new HashSet<>();
+            Jenkins h = Jenkins.get();
             for (Cloud c : h.clouds) {
                 if(c.canProvision(this))
                     r.add(c);
@@ -381,12 +381,12 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public List<AbstractProject> getTiedJobs() {
-        List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
+        List<AbstractProject> r = new ArrayList<>();
+        for (AbstractProject<?,?> p : Jenkins.get().allItems(AbstractProject.class)) {
             if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
-        Collections.sort(r, Items.BY_FULL_NAME);
+        r.sort(Items.BY_FULL_NAME);
         return r;
     }
 
@@ -409,7 +409,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             int result = 0;
             // top level gives the map without checking security of items in the map
             // therefore best performance
-            for (TopLevelItem topLevelItem : Jenkins.getInstance().getItemMap().values()) {
+            for (TopLevelItem topLevelItem : Jenkins.get().getItemMap().values()) {
                 if (topLevelItem instanceof AbstractProject) {
                     final AbstractProject project = (AbstractProject) topLevelItem;
                     if (matches(project.getAssignedLabelString())) {
@@ -417,7 +417,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                     }
                 }
                 if (topLevelItem instanceof ItemGroup) {
-                    Stack<ItemGroup> q = new Stack<ItemGroup>();
+                    Stack<ItemGroup> q = new Stack<>();
                     q.push((ItemGroup) topLevelItem);
 
                     while (!q.isEmpty()) {
@@ -480,7 +480,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * @since 1.420
      */
     public Set<LabelAtom> listAtoms() {
-        Set<LabelAtom> r = new HashSet<LabelAtom>();
+        Set<LabelAtom> r = new HashSet<>();
         accept(ATOM_COLLECTOR,r);
         return r;
     }
@@ -558,7 +558,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Evaluates whether the current label name is equal to the name parameter.
      *
      */
-    private final boolean matches(String name) {
+    private boolean matches(String name) {
         return this.name.equals(name);
     }
 
@@ -589,7 +589,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            return Jenkins.getInstance().getLabel(reader.getValue());
+            return Jenkins.get().getLabel(reader.getValue());
         }
     }
 
@@ -609,7 +609,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if(labels.length()>0) {
             final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
             while (tokenizer.hasMoreTokens())
-                r.add(Jenkins.getInstance().getLabelAtom(tokenizer.nextToken()));
+                r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
             }
         return r;
     }
@@ -618,7 +618,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Obtains a label by its {@linkplain #getName() name}.
      */
     public static Label get(String l) {
-        return Jenkins.getInstance().getLabel(l);
+        return Jenkins.get().getLabel(l);
     }
 
     /**

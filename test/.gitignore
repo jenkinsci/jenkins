@@ -1,1 +1,3 @@
 !*.zip
+hs_err_pid*.log
+jmh-report.json

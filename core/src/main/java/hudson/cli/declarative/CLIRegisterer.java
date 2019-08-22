@@ -35,7 +35,6 @@ import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.security.CliAuthenticator;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
@@ -43,7 +42,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
@@ -207,16 +205,10 @@ public class CLIRegisterer extends ExtensionFinder {
                                 SecurityContext sc = SecurityContextHolder.getContext();
                                 Authentication old = sc.getAuthentication();
                                 try {
-                                    // authentication
-                                    CliAuthenticator authenticator = Jenkins.get().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator, parser);
-
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = authenticator.authenticate();
-                                    if (auth == Jenkins.ANONYMOUS)
-                                        auth = loadStoredAuthentication();
+                                    Authentication auth = getTransportAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 
@@ -238,24 +230,24 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 printUsage(stderr, parser);
                                 return 2;
                             } catch (IllegalStateException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 return 4;
                             } catch (IllegalArgumentException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 return 3;
                             } catch (AbortException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 return 5;
                             } catch (AccessDeniedException e) {
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + e.getMessage());
                                 return 6;
                             } catch (BadCredentialsException e) {
@@ -263,13 +255,13 @@ public class CLIRegisterer extends ExtensionFinder {
                                 // do that to the server log instead
                                 String id = UUID.randomUUID().toString();
                                 LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
                                 return 7;
                             } catch (Throwable e) {
                                 final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                                         getName());
-                                stderr.println("");
+                                stderr.println();
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
                                 Functions.printStackTrace(e, stderr);

@@ -16,7 +16,7 @@ public class CompoundEnumeration<T> implements Enumeration<T> {
     private Enumeration<? extends T> cur;
 
     public CompoundEnumeration(Enumeration... e) {
-        this((Iterable)Arrays.asList(e));
+        this(Arrays.asList(e));
     }
 
     public CompoundEnumeration(Iterable<Enumeration<? extends T>> e) {

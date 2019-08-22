@@ -26,7 +26,6 @@ package hudson.security;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
-import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import jenkins.security.BasicApiTokenHelper;
@@ -103,7 +102,7 @@ public class BasicAuthenticationFilter implements Filter {
 
         String path = req.getServletPath();
         if(authorization==null || req.getUserPrincipal() !=null || path.startsWith("/secured/")
-        || !Jenkins.getInstance().isUseSecurity()) {
+        || !Jenkins.get().isUseSecurity()) {
             // normal requests, or security not enabled
             if(req.getUserPrincipal()!=null) {
                 // before we route this request, integrate the container authentication

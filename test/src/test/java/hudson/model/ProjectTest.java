@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
@@ -252,7 +253,8 @@ public class ProjectTest {
         assertEquals("Scm retry count should be the same as global scm retry count.", 6, p.getScmCheckoutRetryCount());
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
-        form.getInputByName("hasCustomScmCheckoutRetryCount").click();
+        // required due to the new default behavior of click
+        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
@@ -371,7 +373,7 @@ public class ProjectTest {
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
         assertInstanceOf("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), BecauseOfDownstreamBuildInProgress.class);
@@ -954,7 +956,7 @@ public class ProjectTest {
 
         @Override
         public Task getOwnerTask() {
-            return (Task) Jenkins.getInstance().getItem(projectName);
+            return (Task) Jenkins.get().getItem(projectName);
         }
 
         @Override

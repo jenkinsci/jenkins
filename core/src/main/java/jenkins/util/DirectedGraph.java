@@ -44,7 +44,7 @@ public abstract class DirectedGraph<N> {
          */
         public final int index;
 
-        private final List<N> members = new ArrayList<N>();
+        private final List<N> members = new ArrayList<>();
 
         public SCC(int index) {
             this.index = index;
@@ -94,12 +94,12 @@ public abstract class DirectedGraph<N> {
      * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     public List<SCC<N>> getStronglyConnectedComponents() {
-        final Map<N, Node> nodes = new HashMap<N, Node>();
+        final Map<N, Node> nodes = new HashMap<>();
         for (N n : nodes()) {
             nodes.put(n,new Node(n));
         }
 
-        final List<SCC<N>> sccs = new ArrayList<SCC<N>>();
+        final List<SCC<N>> sccs = new ArrayList<>();
 
         class Tarjan {
             int index = 0;
@@ -107,7 +107,7 @@ public abstract class DirectedGraph<N> {
             /**
              * Nodes not yet classified for the strongly connected components
              */
-            Stack<Node> pending = new Stack<Node>();
+            Stack<Node> pending = new Stack<>();
             
             void traverse() {
                 for (Node n : nodes.values()) {
@@ -133,7 +133,7 @@ public abstract class DirectedGraph<N> {
 
                 if (v.lowlink==v.index) {
                     // found a new SCC
-                    SCC<N> scc = new SCC<N>(sccIndex++);
+                    SCC<N> scc = new SCC<>(sccIndex++);
                     sccs.add(scc);
 
                     Node w;

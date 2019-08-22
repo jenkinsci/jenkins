@@ -121,18 +121,14 @@ public class SetupWizardTest {
         wc.assertFails("setupWizard/completeInstall", 403);
     }
 
-    //TODO: The test randomly fails on Jenkins CI
-    // Oleg Nenashev: I am not able to reproduce it
     @Test
     @Issue("JENKINS-45841")
-    @Ignore
     public void shouldDisableUnencryptedProtocolsByDefault() throws Exception {
         AgentProtocolTest.assertProtocols(j.jenkins, true, 
                 "Encrypted JNLP4-protocols protocol should be enabled", "JNLP4-connect");
         AgentProtocolTest.assertProtocols(j.jenkins, false, 
                 "Non-encrypted JNLP protocols should be disabled by default", 
-                "JNLP-connect", "JNLP2-connect", "CLI-connect");
-        // The CI test fails here, presumably due to the CLI protocols.
+                "JNLP-connect", "JNLP2-connect");
         AgentProtocolTest.assertMonitorNotActive(j);
     }
         

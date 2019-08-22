@@ -1,13 +1,18 @@
 package hudson.util;
 
+import hudson.FilePath;
 import hudson.Util;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.selectors.FileSelector;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import static hudson.Util.fixEmpty;
 
@@ -119,8 +124,12 @@ public abstract class DirScanner implements Serializable {
             FileSet fs = Util.createFileSet(dir,includes,excludes);
             fs.setDefaultexcludes(useDefaultExcludes);
 
+            fs.appendSelector(new DescendantFileSelector(fs.getDir()));
+
             if(dir.exists()) {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                // due to the DescendantFileSelector usage, 
+                // the includedFiles are only the ones that are descendant
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
@@ -129,6 +138,53 @@ public abstract class DirScanner implements Serializable {
         }
 
         private static final long serialVersionUID = 1L;
+    }
+    
+    private static class DescendantFileSelector implements FileSelector{
+        private final Set<String> alreadyDeselected;
+        private final FilePath baseDirFP;
+        private final int baseDirPathLength;
+
+        private DescendantFileSelector(File basedir){
+            this.baseDirFP = new FilePath(basedir);
+            this.baseDirPathLength = basedir.getPath().length();
+            this.alreadyDeselected = new HashSet<>();
+        }
+        
+        @Override
+        public boolean isSelected(File basedir, String filename, File file) throws BuildException {
+            String parentName = file.getParent();
+            if (parentName.length() > baseDirPathLength) {
+                // remove the trailing slash
+                String parentRelativeName = parentName.substring(baseDirPathLength + 1);
+
+                // as the visit is done following depth-first approach, we just have to check the parent once
+                // and then simply using the set
+                // in case something went wrong with the order, the isDescendant is called with just a lost
+                // in terms of performance, no impact on the result
+                if (alreadyDeselected.contains(parentRelativeName)) {
+                    alreadyDeselected.add(filename);
+                    return false;
+                }
+            }
+            // else: we have the direct children of the basedir
+
+            if (file.isDirectory()) {
+                try {
+                    if (baseDirFP.isDescendant(filename)) {
+                        return true;
+                    } else {
+                        alreadyDeselected.add(filename);
+                        return false;
+                    }
+                }
+                catch (IOException | InterruptedException e) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
     }
 
     private static final long serialVersionUID = 1L;

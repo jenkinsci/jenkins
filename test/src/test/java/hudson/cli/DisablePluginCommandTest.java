@@ -67,7 +67,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void canDisablePluginWithDependantsDisabledStrategyNone() throws IOException {
+    public void canDisablePluginWithDependentsDisabledStrategyNone() throws IOException {
         disablePlugin("mandatory-depender");
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "NONE", "dependee");
 
@@ -198,7 +198,7 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * All the dependant plugins, mandatory or optional, are disabled using <i>-strategy all</i>.
+     * All the dependent plugins, mandatory or optional, are disabled using <i>-strategy all</i>.
      */
     @Test
     @Issue("JENKINS-27177")
@@ -216,7 +216,7 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * Only the mandatory dependant plugins are disabled using <i>-strategy mandatory</i>.
+     * Only the mandatory dependent plugins are disabled using <i>-strategy mandatory</i>.
      */
     @Test
     @Issue("JENKINS-27177")
@@ -249,13 +249,13 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * The return code is the first error distinct of 0 found during the process. In this case dependant plugins not
+     * The return code is the first error distinct of 0 found during the process. In this case dependent plugins not
      * disabled.
      */
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void returnCodeFirstErrorIsDependants() {
+    public void returnCodeFirstErrorIsDependents() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("dependee", "badplugin");
         assertThat(result, failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
 
@@ -310,12 +310,12 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * In quiet mode, only the errors (dependants plugins) are printed.
+     * In quiet mode, only the errors (dependents plugins) are printed.
      */
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void quietModeWithErrorDependants() {
+    public void quietModeWithErrorDependents() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-quiet", "-strategy", "none", "dependee");
         assertThat(result, failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
 
@@ -359,7 +359,7 @@ public class DisablePluginCommandTest {
     /**
      * Disable a list of plugins using the CLI command.
      * @param args Arguments to pass to the command.
-     * @return Result of the command. 0 if succeed, 16 if some plugin couldn't be disabled due to dependant plugins.
+     * @return Result of the command. 0 if succeed, 16 if some plugin couldn't be disabled due to dependent plugins.
      */
     private CLICommandInvoker.Result disablePluginsCLiCommand(String... args) {
         return new CLICommandInvoker(j, new DisablePluginCommand()).invokeWithArgs(args);

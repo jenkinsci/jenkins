@@ -77,8 +77,8 @@ public class StopButtonTest {
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = null;
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
     
         HtmlElementUtil.click(getStopLink(p));
@@ -91,8 +91,8 @@ public class StopButtonTest {
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = "Confirm message";
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
     
         HtmlElementUtil.click(getStopLink(p));
@@ -105,8 +105,8 @@ public class StopButtonTest {
         testParams.paramAlt = "Alternative text for icon";
         testParams.paramConfirm = postPayload;
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
     
         HtmlElementUtil.click(getStopLink(p));

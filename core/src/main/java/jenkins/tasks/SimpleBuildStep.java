@@ -105,7 +105,7 @@ public interface SimpleBuildStep extends BuildStep {
     @SuppressWarnings("rawtypes")
     @Restricted(NoExternalUse.class)
     @Extension
-    public static final class LastBuildActionFactory extends TransientActionFactory<Job> {
+    final class LastBuildActionFactory extends TransientActionFactory<Job> {
 
         @Override
         public Class<Job> type() {
@@ -127,7 +127,6 @@ public interface SimpleBuildStep extends BuildStep {
             // results, the job would then have no TestResultProjectAction.
             return actions;
         }
-
     }
 
 }

@@ -136,7 +136,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      */
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
-                = new DescribableList<ToolProperty<?>, ToolPropertyDescriptor>(NOOP);
+                = new DescribableList<>(NOOP);
 
         List<? extends ToolInstaller> installers = getDefaultInstallers();
         if(!installers.isEmpty())
@@ -158,7 +158,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      */
     public FormValidation doCheckHome(@QueryParameter File value) {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if (value.getPath().isEmpty()) {
             return FormValidation.ok();

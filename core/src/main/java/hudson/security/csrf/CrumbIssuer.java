@@ -24,6 +24,7 @@ import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -148,14 +149,14 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Access global configuration for the crumb issuer.
      */
     public CrumbIssuerDescriptor<CrumbIssuer> getDescriptor() {
-        return (CrumbIssuerDescriptor<CrumbIssuer>) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (CrumbIssuerDescriptor<CrumbIssuer>) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link CrumbIssuer} descriptors.
      */
     public static DescriptorExtensionList<CrumbIssuer, Descriptor<CrumbIssuer>> all() {
-        return Jenkins.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
+        return Jenkins.get().getDescriptorList(CrumbIssuer.class);
     }
 
     public Api getApi() {
@@ -167,16 +168,16 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      */
     @Initializer
     public static void initStaplerCrumbIssuer() {
-        WebApp.get(Jenkins.getInstance().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
+        WebApp.get(Jenkins.get().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest request) {
-                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
+                CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
                 return ci!=null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
             }
 
             @Override
             public void validateCrumb(StaplerRequest request, String submittedCrumb) {
-                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
+                CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
                 if (ci==null) {
                     DEFAULT.validateCrumb(request,submittedCrumb);
                 } else {
@@ -216,7 +217,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             if (text != null) {
                 try (OutputStream o = rsp.getCompressedOutputStream(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
-                    o.write(text.getBytes("UTF-8"));
+                    o.write(text.getBytes(StandardCharsets.UTF_8));
                 }
             } else {
                 super.doXml(req, rsp, xpath, wrapper, tree, depth);

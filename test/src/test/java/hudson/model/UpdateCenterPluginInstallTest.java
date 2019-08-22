@@ -26,7 +26,7 @@ package hudson.model;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
-import org.junit.Assume;
+import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -44,10 +44,14 @@ public class UpdateCenterPluginInstallTest {
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
-    public void setup() throws IOException {
-        jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
+    private void setup() {
+        try {
+            jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
+        } catch (Exception x) {
+            assumeNoException(x);
+        }
         InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
-        Assume.assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
+        assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
     }
 
     @Test
@@ -77,7 +81,7 @@ public class UpdateCenterPluginInstallTest {
         Assert.assertEquals("ok", json.get("status"));
         JSONObject status = installStatus.getJSONObject("data");
         JSONArray states = status.getJSONArray("jobs");
-        Assert.assertEquals(2, states.size());
+        Assert.assertEquals(states.toString(), 2, states.size());
 
         JSONObject pluginInstallState = states.getJSONObject(0);
         Assert.assertEquals("changelog-history", pluginInstallState.get("name"));

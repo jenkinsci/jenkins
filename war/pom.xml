@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.44</version>
+      <version>1.45</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -89,7 +89,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.1</version>
+      <version>5.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -100,7 +100,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.4</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -110,7 +110,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.10.0</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.5</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -143,6 +143,12 @@ THE SOFTWARE.
       <artifactId>bootstrap</artifactId>
       <version>1.3.2</version>
       <classifier>core-assets</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.ui</groupId>
+          <artifactId>jquery-detached</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -363,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>1.1</version>
+                  <version>${matrix-auth.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -387,13 +393,41 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.18.1</version>
+                  <version>1.56</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.6</version>
+                  <version>1.26.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                  <artifactId>workflow-api</artifactId>
+                  <version>2.35</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                  <artifactId>workflow-step-api</artifactId>
+                  <version>2.20</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of workflow-api -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>scm-api</artifactId>
+                  <version>2.4.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>structs</artifactId>
+                  <version>1.18</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -405,13 +439,25 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
                   <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>trilead-api</artifactId>
+                  <version>1.0.4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -453,11 +499,9 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
-          <connectors>
-            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                <port>${port}</port>
-            </connector>
-          </connectors>
+          <httpConnector>
+              <port>${port}</port>
+          </httpConnector>
           <additionalClassesDirectories>
             <!-- load resources straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>

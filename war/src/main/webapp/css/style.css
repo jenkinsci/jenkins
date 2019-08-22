@@ -26,12 +26,16 @@
 
 #tasks {
   margin-bottom: 20px;
+  display: inline-block;
 }
 
 #tasks .task {
   margin-bottom: 4px;
   font-size: 14px;
+  max-width: 325px;
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* buildQueue */
@@ -733,7 +737,7 @@ LABEL.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url( "../images/16x16/warning.png" );
+    background-image: url("../images/16x16/warning.png");
     background-size: 16px 16px;
     background-position: left center;
     background-repeat: no-repeat;
@@ -749,7 +753,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
+    background-image: url("../images/16x16/go-next.png"); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -1295,25 +1299,25 @@ TABLE.fingerprint-in-build TD {
   border: 1px solid #5788a1;
 }
 
-#plugins tr.has-dependants input.uninstall {
+#plugins tr.has-dependents input.uninstall {
   background-color: #e0e0e0;
   border: 1px solid #cccccc;
   color: #505050;
   background-color: white;
 }
 
-#plugins tr.all-dependants-disabled .enable input {
+#plugins tr.all-dependents-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
 }
 
-#plugins tr.has-dependants input, #plugins tr.has-disabled-dependency .enable input {
+#plugins tr.has-dependents input, #plugins tr.has-disabled-dependency .enable input {
   pointer-events: none;
   opacity: 0.2;
 }
 
-#plugins tr.has-dependants-but-disabled .enable input {
+#plugins tr.has-dependents-but-disabled .enable input {
   pointer-events: auto;
   opacity: 1.0;
   visibility: visible;
@@ -1327,7 +1331,7 @@ TABLE.fingerprint-in-build TD {
   visibility: hidden !important;
 }
 
-#plugins .dependant-list, #plugins .dependency-list {
+#plugins .dependent-list, #plugins .dependency-list {
   display: none;
 }
 

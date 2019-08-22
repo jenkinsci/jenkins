@@ -32,6 +32,7 @@ package hudson.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Implements HTTP chunking support. Writes are buffered to an internal buffer (2048 default size).
@@ -42,16 +43,20 @@ import java.io.OutputStream;
 public class ChunkedOutputStream extends OutputStream {
 
     // ------------------------------------------------------- Static Variables
-    private static final byte CRLF[] = new byte[] {(byte) 13, (byte) 10};
+    private static final byte[] CRLF = new byte[]{(byte) 13, (byte) 10};
 
-    /** End chunk */
-    private static final byte ENDCHUNK[] = CRLF;
+    /**
+     * End chunk
+     */
+    private static final byte[] ENDCHUNK = CRLF;
 
-    /** 0 */
-    private static final byte ZERO[] = new byte[] {(byte) '0'};
+    /**
+     * 0
+     */
+    private static final byte[] ZERO = new byte[]{(byte) '0'};
 
     // ----------------------------------------------------- Instance Variables
-    private OutputStream stream = null;
+    private OutputStream stream;
 
     private byte[] cache;
 
@@ -92,7 +97,7 @@ public class ChunkedOutputStream extends OutputStream {
      */
     protected void flushCache() throws IOException {
         if (cachePosition > 0) {
-            byte chunkHeader[] = (Integer.toHexString(cachePosition) + "\r\n").getBytes("US-ASCII");
+            byte[] chunkHeader = (Integer.toHexString(cachePosition) + "\r\n").getBytes(StandardCharsets.US_ASCII);
             stream.write(chunkHeader, 0, chunkHeader.length);
             stream.write(cache, 0, cachePosition);
             stream.write(ENDCHUNK, 0, ENDCHUNK.length);
@@ -110,8 +115,8 @@ public class ChunkedOutputStream extends OutputStream {
      *
      * @since 3.0
      */
-    protected void flushCacheWithAppend(byte bufferToAppend[], int off, int len) throws IOException {
-        byte chunkHeader[] = (Integer.toHexString(cachePosition + len) + "\r\n").getBytes("US-ASCII");
+    protected void flushCacheWithAppend(byte[] bufferToAppend, int off, int len) throws IOException {
+        byte[] chunkHeader = (Integer.toHexString(cachePosition + len) + "\r\n").getBytes(StandardCharsets.US_ASCII);
         stream.write(chunkHeader, 0, chunkHeader.length);
         stream.write(cache, 0, cachePosition);
         stream.write(bufferToAppend, off, len);
@@ -167,12 +172,12 @@ public class ChunkedOutputStream extends OutputStream {
      * @since 3.0
      */
     @Override
-    public void write(byte b[]) throws IOException {
+    public void write(byte[] b) throws IOException {
         this.write(b, 0, b.length);
     }
 
     @Override
-    public void write(byte src[], int off, int len) throws IOException {
+    public void write(byte[] src, int off, int len) throws IOException {
         if (len >= cache.length - cachePosition) {
             flushCacheWithAppend(src, off, len);
         } else {

@@ -48,7 +48,6 @@ import com.google.common.base.Function;
 import com.thoughtworks.xstream.XStream;
 
 import hudson.Functions;
-import hudson.Main;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
@@ -94,7 +93,7 @@ public class InstallUtil {
     public static void proceedToNextStateFrom(InstallState prior) {
         InstallState next = getNextInstallState(prior);
         if (next != null) {
-            Jenkins.getInstance().setInstallState(next);
+            Jenkins.get().setInstallState(next);
         }
     }
     
@@ -163,7 +162,7 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
             
             // Allow for skipping
             if(shouldNotRun) {
@@ -275,15 +274,15 @@ public class InstallUtil {
     }
 
     static File getConfigFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "config.xml");
+        return new File(Jenkins.get().getRootDir(), "config.xml");
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {
@@ -317,7 +316,7 @@ public class InstallUtil {
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
-	Map<String,String> statuses = new HashMap<String,String>();
+	Map<String,String> statuses = new HashMap<>();
 	for(UpdateCenterJob j : installingPlugins) {
 		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
 			InstallationJob ij = (InstallationJob)j;

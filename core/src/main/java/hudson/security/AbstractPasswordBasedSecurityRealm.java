@@ -1,25 +1,17 @@
 package hudson.security;
 
 import groovy.lang.Binding;
-import hudson.FilePath;
-import hudson.cli.CLICommand;
 import hudson.util.spring.BeanBuilder;
-import java.io.Console;
-import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.SecurityListener;
-import jenkins.security.MasterToSlaveCallable;
-import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -43,46 +35,11 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         binding.setVariable("authenticator", new Authenticator());
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
+        builder.parse(Jenkins.get().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),
                 new ImpersonatingUserDetailsService(this));
-    }
-
-    @Deprecated
-    @Override
-    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
-        return new CliAuthenticator() {
-            @Option(name="--username",usage="User name to authenticate yourself to Jenkins")
-            public String userName;
-
-            @Option(name="--password",usage="Password for authentication. Note that passing a password in arguments is insecure.")
-            public String password;
-
-            @Option(name="--password-file",usage="File that contains the password")
-            public String passwordFile;
-
-            public Authentication authenticate() throws AuthenticationException, IOException, InterruptedException {
-                if (userName==null)
-                    return command.getTransportAuthentication();    // no authentication parameter. fallback to the transport
-
-                if (passwordFile!=null)
-                    try {
-                        password = new FilePath(command.checkChannel(), passwordFile).readToString().trim();
-                    } catch (IOException e) {
-                        throw new BadCredentialsException("Failed to read "+passwordFile,e);
-                    }
-                if (password==null)
-                    password = command.checkChannel().call(new InteractivelyAskForPassword());
-
-                if (password==null)
-                    throw new BadCredentialsException("No password specified");
-
-                UserDetails d = doAuthenticate(userName, password);
-                return new UsernamePasswordAuthenticationToken(d, password, d.getAuthorities());
-            }
-        };
     }
 
     /**
@@ -150,19 +107,4 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         }
     }
 
-    /**
-     * Asks for the password.
-     */
-    private static class InteractivelyAskForPassword extends MasterToSlaveCallable<String,IOException> {
-        public String call() throws IOException {
-            Console console = System.console();
-            if (console == null)    return null;    // no terminal
-
-            char[] w = console.readPassword("Password:");
-            if (w==null)    return null;
-            return new String(w);
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
 }

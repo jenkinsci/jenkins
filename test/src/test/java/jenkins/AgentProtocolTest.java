@@ -30,12 +30,9 @@ import javax.annotation.CheckForNull;
 import jenkins.install.SetupWizardTest;
 import jenkins.model.Jenkins;
 import jenkins.slaves.DeprecatedAgentProtocolMonitor;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import org.hamcrest.core.StringContains;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -70,31 +67,21 @@ public class AgentProtocolTest {
     @LocalData
     @Issue("JENKINS-45841")
     public void testShouldNotDisableProtocolsForMigratedInstances() throws Exception {
-        assertProtocols(true, "Legacy Non-encrypted JNLP/CLI protocols should be enabled", 
-                "JNLP-connect", "JNLP2-connect", "JNLP4-connect", "CLI-connect");
-        assertProtocols(true, "Default encrypted protocols should be enabled", "JNLP4-connect", "CLI2-connect");
-        assertProtocols(true, "Protocol should be enabled due to CLI settings", "CLI2-connect");
+        assertProtocols(true, "Legacy Non-encrypted JNLP protocols should be enabled", 
+                "JNLP-connect", "JNLP2-connect", "JNLP4-connect");
+        assertProtocols(true, "Default encrypted protocols should be enabled", "JNLP4-connect");
         assertProtocols(false, "JNLP3-connect protocol should be disabled by default", "JNLP3-connect");
-        assertMonitorTriggered("JNLP-connect", "JNLP2-connect", "CLI-connect");
+        assertMonitorTriggered("JNLP-connect", "JNLP2-connect");
     }
     
     @Test
     @LocalData
     @Issue("JENKINS-45841")
     public void testShouldNotOverrideUserConfiguration() throws Exception {
-        assertEnabled("CLI-connect", "JNLP-connect", "JNLP3-connect");
-        assertDisabled("CLI2-connect", "JNLP2-connect", "JNLP4-connect");
+        assertEnabled("JNLP-connect", "JNLP3-connect");
+        assertDisabled("JNLP2-connect", "JNLP4-connect");
         assertProtocols(true, "System protocols should be always enabled", "Ping");
-        assertMonitorTriggered("JNLP-connect", "JNLP3-connect", "CLI-connect");
-    }
-    
-    @Test
-    @LocalData
-    public void testShouldDisableCLIProtocolsWhenCLIisDisabled() throws Exception {
-        assertProtocols(false, "CLI is forcefully disabled, protocols should be blocked", 
-                "CLI-connect", "CLI2-connect");
-        assertEnabled("JNLP3-connect");
-        assertMonitorTriggered("JNLP3-connect");
+        assertMonitorTriggered("JNLP-connect", "JNLP3-connect");
     }
     
     private void assertEnabled(String ... protocolNames) throws AssertionError {

@@ -45,7 +45,7 @@ public class MarkupText extends AbstractMarkupText {
     /**
      * Added mark up tags.
      */
-    private final List<Tag> tags = new ArrayList<Tag>();
+    private final List<Tag> tags = new ArrayList<>();
 
     /**
      * Represents one mark up inserted into text.
@@ -313,7 +313,7 @@ public class MarkupText extends AbstractMarkupText {
             buf.append(tag.markup);
         }
         if (copied<text.length()) {
-            String portion = text.substring(copied, text.length());
+            String portion = text.substring(copied);
             buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
         }
 

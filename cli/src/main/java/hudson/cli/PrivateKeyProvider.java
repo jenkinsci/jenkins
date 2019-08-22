@@ -24,26 +24,25 @@
 package hudson.cli;
 
 import static java.util.logging.Level.FINE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Console;
 import java.io.DataInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.DSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.trilead.ssh2.crypto.PEMDecoder;
+import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
  * Read DSA or RSA key from file(s) asking for password interactively.
@@ -141,22 +140,9 @@ public class PrivateKeyProvider {
     }
 
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
-        Object key = PEMDecoder.decode(pemString.toCharArray(), passwd);
-        if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
-            com.trilead.ssh2.signature.RSAPrivateKey x = (com.trilead.ssh2.signature.RSAPrivateKey)key;
-
-            return x.toJCEKeyPair();
-        }
-        if (key instanceof com.trilead.ssh2.signature.DSAPrivateKey) {
-            com.trilead.ssh2.signature.DSAPrivateKey x = (com.trilead.ssh2.signature.DSAPrivateKey)key;
-            KeyFactory kf = KeyFactory.getInstance("DSA");
-
-            return new KeyPair(
-                    kf.generatePublic(new DSAPublicKeySpec(x.getY(), x.getP(), x.getQ(), x.getG())),
-                    kf.generatePrivate(new DSAPrivateKeySpec(x.getX(), x.getP(), x.getQ(), x.getG())));
-        }
-
-        throw new UnsupportedOperationException("Unrecognizable key format: " + key);
+        return SecurityUtils.loadKeyPairIdentity("key",
+                new ByteArrayInputStream(pemString.getBytes(UTF_8)),
+                FilePasswordProvider.of(passwd));
     }
 
     private static final Logger LOGGER = Logger.getLogger(PrivateKeyProvider.class.getName());

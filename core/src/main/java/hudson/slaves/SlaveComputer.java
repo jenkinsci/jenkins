@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Main;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
@@ -87,6 +88,8 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -694,7 +697,19 @@ public class SlaveComputer extends Computer {
         old = ACL.impersonate(ACL.SYSTEM);
         try {
             for (ComputerListener cl : ComputerListener.all()) {
-                cl.onOnline(this,taskListener);
+                try {
+                    cl.onOnline(this,taskListener);
+                } catch (Exception e) {
+                    // Per Javadoc log exceptions but still go online.
+                    // NOTE: this does not include Errors, which indicate a fatal problem
+                    taskListener.getLogger().format(
+                        "onOnline: %s reported an exception: %s%n",
+                        cl.getClass(),
+                        e.toString());
+                } catch (Throwable e) {
+                    closeChannel();
+                    throw e;
+                }
             }
         } finally {
             SecurityContextHolder.setContext(old);
@@ -777,11 +792,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Serves jar files for JNLP agents.
+     * Serves jar files for inbound agents.
      *
      * @deprecated since 2008-08-18.
      *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
-     *      but it's left here for now just in case some old JNLP agents request it.
+     *      but it's left here for now just in case some old inbound agents request it.
      */
     @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
@@ -890,6 +905,32 @@ public class SlaveComputer extends Computer {
         return channel.call(new DetectOS()) ? "Unix" : "Windows";
     }
 
+    /**
+     * Expose real full env vars map from agent for UI presentation
+     */
+    public Map<String,String> getEnvVarsFull() throws IOException, InterruptedException {
+        if(getChannel() == null) {
+            Map<String, String> env = new TreeMap<> ();
+            env.put("N/A","N/A");
+            return env;
+        } else {
+            return getChannel().call(new ListFullEnvironment());
+        }
+    }
+
+    private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+        public Map<String,String> call() throws IOException {
+            Map<String, String> env = new TreeMap<>(System.getenv());
+            if(Main.isUnitTest || Main.isDevelopmentMode) {
+                // if unit test is launched with maven debug switch,
+                // we need to prevent forked Maven processes from seeing it, or else
+                // they'll hang
+                env.remove("MAVEN_OPTS");
+            }
+            return env;
+        }
+    }
+
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
     private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
@@ -946,7 +987,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. JNLP agents can reconnect to the master multiple times
+            // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {

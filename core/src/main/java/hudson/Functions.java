@@ -240,6 +240,7 @@ public class Functions {
 
     public static void initPageVariables(JellyContext context) {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
 
         Functions h = new Functions();
@@ -287,7 +288,7 @@ public class Functions {
     }
 
     public JDK.DescriptorImpl getJDKDescriptor() {
-        return Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
+        return Jenkins.get().getDescriptorByType(JDK.DescriptorImpl.class);
     }
 
     /**
@@ -465,7 +466,7 @@ public class Functions {
     }
 
     public static Map getSystemProperties() {
-        return new TreeMap<Object,Object>(System.getProperties());
+        return new TreeMap<>(System.getProperties());
     }
 
     /**
@@ -479,7 +480,7 @@ public class Functions {
     }
 
     public static Map getEnvVars() {
-        return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        return new TreeMap<>(EnvVars.masterEnvVars);
     }
 
     public static boolean isWindows() {
@@ -544,7 +545,7 @@ public class Functions {
      * @since 1.525
      */
     public static <T> Iterable<T> reverse(Collection<T> collection) {
-        List<T> list = new ArrayList<T>(collection);
+        List<T> list = new ArrayList<>(collection);
         Collections.reverse(list);
         return list;
     }
@@ -762,7 +763,7 @@ public class Functions {
     }
 
     public static void checkPermission(Permission permission) throws IOException, ServletException {
-        checkPermission(Jenkins.getInstance(),permission);
+        checkPermission(Jenkins.get(),permission);
     }
 
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
@@ -791,7 +792,7 @@ public class Functions {
                     return;
                 }
             }
-            checkPermission(Jenkins.getInstance(),permission);
+            checkPermission(Jenkins.get(),permission);
         }
     }
 
@@ -802,7 +803,7 @@ public class Functions {
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return hasPermission(Jenkins.getInstance(),permission);
+        return hasPermission(Jenkins.get(),permission);
     }
 
     /**
@@ -822,7 +823,7 @@ public class Functions {
                     return ((AccessControlled)o).hasPermission(permission);
                 }
             }
-            return Jenkins.getInstance().hasPermission(permission);
+            return Jenkins.get().hasPermission(permission);
         }
     }
 
@@ -845,7 +846,7 @@ public class Functions {
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if(rootUrl !=null)
             // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
             return rootUrl;
@@ -912,7 +913,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     /**
@@ -951,7 +952,7 @@ public class Functions {
     @RestrictedSince("2.12")
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
                 result.add(npd);
@@ -967,7 +968,7 @@ public class Functions {
      */
     public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicableAsGlobal()) {
                 result.add(npd);
@@ -1010,7 +1011,7 @@ public class Functions {
         List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
         for (Tag d : r) answer.add(d.d);
 
-        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
     }
 
     /**
@@ -1110,7 +1111,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner().getItemGroup())) {
+            if(ig== Jenkins.get() || (view != null && ig == view.getOwner().getItemGroup())) {
                 assert i instanceof TopLevelItem;
                 if (view != null) {
                     // assume p and the current page belong to the same view, so return a relative path
@@ -1556,30 +1557,13 @@ public class Functions {
     /**
      * Converts the Hudson build status to CruiseControl build status,
      * which is either Success, Failure, Exception, or Unknown.
+     *
+     * @deprecated This functionality has been moved to ccxml plugin.
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("since TODO")
     public static String toCCStatus(Item i) {
-        if (i instanceof Job) {
-            Job j = (Job) i;
-            switch (j.getIconColor()) {
-            case ABORTED:
-            case ABORTED_ANIME:
-            case RED:
-            case RED_ANIME:
-            case YELLOW:
-            case YELLOW_ANIME:
-                return "Failure";
-            case BLUE:
-            case BLUE_ANIME:
-                return "Success";
-            case DISABLED:
-            case DISABLED_ANIME:
-            case GREY:
-            case GREY_ANIME:
-            case NOTBUILT:
-            case NOTBUILT_ANIME:
-                return "Unknown";
-            }
-        }
         return "Unknown";
     }
 
@@ -1699,7 +1683,7 @@ public class Functions {
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
-        String url = Jenkins.getInstance().getRootUrl();
+        String url = Jenkins.get().getRootUrl();
         try {
             if(url!=null) {
                 String host = new URL(url).getHost();
@@ -2006,7 +1990,7 @@ public class Functions {
         if(size < 1024){
             return size + " " + measure;
         }
-        Double number = new Double(size);
+        double number = size;
         if(number>=1024){
             number = number/1024;
             measure = "KB";
@@ -2071,14 +2055,4 @@ public class Functions {
             return true;
         }
     }
-
-    @Restricted(NoExternalUse.class) // for cc.xml.jelly
-    public static Collection<TopLevelItem> getCCItems(View v) {
-        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
-            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
-        } else {
-            return v.getItems();
-        }
-    }
-
 }

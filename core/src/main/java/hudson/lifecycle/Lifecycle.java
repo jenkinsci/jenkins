@@ -61,7 +61,7 @@ public abstract class Lifecycle implements ExtensionPoint {
             String p = SystemProperties.getString("hudson.lifecycle");
             if(p!=null) {
                 try {
-                    ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
+                    ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
                     instance = (Lifecycle)cl.loadClass(p).newInstance();
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());

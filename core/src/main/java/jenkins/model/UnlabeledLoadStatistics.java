@@ -55,7 +55,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
     @Override
     public int computeIdleExecutors() {
         int r=0;
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             Node node = c.getNode();
             if (node != null && node.getMode() == Mode.NORMAL && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks()) {
                 r += c.countIdle();
@@ -67,7 +67,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
     @Override
     public int computeTotalExecutors() {
         int r=0;
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             Node node = c.getNode();
             if (node != null && node.getMode() == Mode.NORMAL && c.isOnline()) {
                 r += c.countExecutors();
@@ -78,7 +78,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Jenkins.getInstance().getQueue().strictCountBuildableItemsFor(null);
+        return Jenkins.get().getQueue().strictCountBuildableItemsFor(null);
     }
 
     @Override

@@ -27,8 +27,7 @@ import hudson.util.FormValidation;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
@@ -36,7 +35,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
-import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -93,7 +91,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
             DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
             Iterator<String> it = candidates.getValues().iterator();
             while (it.hasNext()) {
-                TopLevelItem item = Jenkins.getInstance().getItem(it.next(), container, TopLevelItem.class);
+                TopLevelItem item = Jenkins.get().getItem(it.next(), container, TopLevelItem.class);
                 if (item == null) {
                     continue; // ?
                 }
