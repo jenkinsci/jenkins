@@ -150,7 +150,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
 		String signatureValue = makeTokenSignature(expiryTime, (UserDetails)successfulAuthentication.getPrincipal());
 		String tokenValue = username + ":" + expiryTime + ":" + signatureValue;
-		String tokenValueBase64 = Base64.getMimeEncoder().encodeToString(tokenValue.getBytes());
+		String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
 		response.addCookie(makeValidCookie(tokenValueBase64, request, tokenValiditySeconds));
 
 		if (logger.isDebugEnabled()) {

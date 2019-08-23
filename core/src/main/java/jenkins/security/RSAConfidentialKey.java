@@ -108,6 +108,6 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
      * Gets base64-encoded public key.
      */
     public String getEncodedPublicKey() {
-        return Base64.getMimeEncoder().encodeToString(getPublicKey().getEncoded());
+        return Base64.getEncoder().encodeToString(getPublicKey().getEncoded());
     }
 }

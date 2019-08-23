@@ -51,7 +51,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
         if (key == null) {
             return null;
         }
-        byte[] encoded = Base64.getMimeEncoder().encode(key.getEncoded());
+        byte[] encoded = Base64.getEncoder().encode(key.getEncoded());
         int index = 0;
         StringBuilder buf = new StringBuilder(encoded.length + 20);
         while (index < encoded.length) {

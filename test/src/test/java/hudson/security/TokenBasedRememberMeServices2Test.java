@@ -347,7 +347,7 @@ public class TokenBasedRememberMeServices2Test {
 
         String signatureValue = tokenService.makeTokenSignature(expiryTime, user.getProperty(HudsonPrivateSecurityRealm.Details.class));
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
-        String tokenValueBase64 = Base64.getMimeEncoder().encodeToString(tokenValue.getBytes());
+        String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);
     }
 

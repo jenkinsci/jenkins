@@ -1195,15 +1195,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 if (sha1 != null) {
                     byte[] digest = sha1.digest();
-                    job.computedSHA1 = Base64.getMimeEncoder().encodeToString(digest);
+                    job.computedSHA1 = Base64.getEncoder().encodeToString(digest);
                 }
                 if (sha256 != null) {
                     byte[] digest = sha256.digest();
-                    job.computedSHA256 = Base64.getMimeEncoder().encodeToString(digest);
+                    job.computedSHA256 = Base64.getEncoder().encodeToString(digest);
                 }
                 if (sha512 != null) {
                     byte[] digest = sha512.digest();
-                    job.computedSHA512 = Base64.getMimeEncoder().encodeToString(digest);
+                    job.computedSHA512 = Base64.getEncoder().encodeToString(digest);
                 }
                 return tmp;
             } catch (IOException e) {

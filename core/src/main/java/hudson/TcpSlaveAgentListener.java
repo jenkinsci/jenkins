@@ -139,7 +139,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : Base64.getMimeEncoder().encodeToString(key.getEncoded());
+        return key == null ? null : Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     /**

@@ -33,7 +33,7 @@ public class CLIConnectionFactory {
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
      */
     public CLIConnectionFactory basicAuth(String userInfo) {
-        return authorization("Basic " + Base64.getMimeEncoder().encodeToString(userInfo.getBytes()));
+        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes()));
     }
 
 }
