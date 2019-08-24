@@ -3080,13 +3080,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
+        configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
-        configLoaded = true;
     }
 
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
