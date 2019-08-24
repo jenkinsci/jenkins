@@ -314,6 +314,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
     private transient final Queue queue;
 
+    // flag indicating if we have loaded the jenkins configuration or not yet.
+    private transient volatile boolean configLoaded = false;
+
     /**
      * Stores various objects scoped to {@link Jenkins}.
      */
@@ -3077,14 +3080,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
-
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
-
+        configLoaded = true;
     }
 
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
@@ -3285,13 +3287,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        InitMilestone currentMilestone = initLevel;
 
-        if (initLevel == InitMilestone.COMPLETED) {
+        if (!configLoaded) {
+            // someone is trying to save the config before all extensions are loaded (and possibly after as the task
+            // may run in parallel with other tasks.  OMG...!!! this is generally very bad and can lead to dataloss
+            LOGGER.log(Level.SEVERE,
+                       "An attempt to save Jenkins'' global configuration before it has been loaded has been "
+                       + "made during milestone " + currentMilestone
+                       + ".  This is indicative of a bug in the caller and may lead to full or partial loss of "
+                       + "configuration.",
+                       new IllegalStateException("call trace"));
+            // at this point we may want to terminate but the save may be called from a different thread and we
+            // can not call System.halt() because we could be running in a container :(
+            // for now just deny the save (the data will be replaced when we do load anyway
+            throw new IOException("An attempt to save the configuration was made before it was loaded");
+        }
+
+        if(BulkChange.contains(this)) {
+            return;
+        }
+        if (currentMilestone == InitMilestone.COMPLETED) {
             LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
             version = VERSION;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
         }
 
         getConfigFile().write(this);
