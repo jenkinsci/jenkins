@@ -436,10 +436,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doIncompleteInstallStatus() {
         try {
-        Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
-        if(jobs == null) {
-            jobs = Collections.emptyMap();
-        }
+            Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
+            if(jobs == null) {
+                jobs = Collections.emptyMap();
+            }
             return HttpResponses.okJSON(jobs);
         } catch (Exception e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
