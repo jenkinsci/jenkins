@@ -42,7 +42,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -172,7 +171,7 @@ public class UsageStatisticsTest {
     private void compareWithFile(String fileName, Object object) throws IOException {
 
         Class clazz = this.getClass();
-        String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), Charset.forName("UTF-8"));
+        String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
