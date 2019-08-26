@@ -573,7 +573,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         if (newestTs == 0) {
             return Messages.UpdateCenter_n_a();
         }
-        return Util.getPastTimeString(System.currentTimeMillis()-newestTs);
+        return Util.getTimeSpanString(System.currentTimeMillis()-newestTs);
     }
 
     /**

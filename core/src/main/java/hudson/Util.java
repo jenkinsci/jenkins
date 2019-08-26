@@ -753,10 +753,12 @@ public class Util {
     /**
      * Get a human readable string representing strings like "xxx days ago",
      * which should be used to point to the occurrence of an event in the past.
+     * @deprecated Actually identical to {@link #getTimeSpanString}, does not add {@code ago}.
      */
+    @Deprecated
     @Nonnull
     public static String getPastTimeString(long duration) {
-        return Messages.Util_pastTime(getTimeSpanString(duration));
+        return getTimeSpanString(duration);
     }
 
 

@@ -718,7 +718,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public @Nonnull String getTimestampString() {
         long duration = new GregorianCalendar().getTimeInMillis()-timestamp;
-        return Util.getPastTimeString(duration);
+        return Util.getTimeSpanString(duration);
     }
 
     /**
