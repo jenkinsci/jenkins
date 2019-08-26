@@ -1114,7 +1114,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             
             try(final JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
-                if (entry != null && jarFile != null) {
+                if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
                         byte[] manifestBytes = IOUtils.toByteArray(i);
                         in = new ByteArrayInputStream(manifestBytes);

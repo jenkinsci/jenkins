@@ -49,7 +49,6 @@
             { "name": "github-branch-source", "suggested": true, "added": "2.0" },
             { "name": "pipeline-github-lib", "suggested": true, "added": "2.0" },
             { "name": "pipeline-stage-view", "suggested": true, "added": "2.0" },
-            { "name": "build-pipeline-plugin" },
             { "name": "conditional-buildstep" },
             { "name": "jenkins-multijob-plugin" },
             { "name": "parameterized-trigger" },

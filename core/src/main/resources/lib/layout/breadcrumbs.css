@@ -24,6 +24,7 @@
     margin: 0;
     height: 2em;
     border-bottom: 1px solid #d3d7cf;
+    display:block;
 }
 
 #breadcrumbs LI {
@@ -31,6 +32,7 @@
     line-height:2em;
     height: 2em;
     color:#555753;
+    display:inline-block;
 }
 
 #breadcrumbs LI A {
@@ -46,6 +48,12 @@
 #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
     text-decoration:none;
     color:#555753;
+    display: block;
+    max-width: 1330px;
+    float: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 #breadcrumbs LI A:hover, #crumbs LI A:focus {
