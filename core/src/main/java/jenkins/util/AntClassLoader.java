@@ -918,6 +918,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @param name File to find
      * @return Url to found object
      */
+    @CheckForNull
     protected URL getUrl(Vector pathComponents, String name) {
         Enumeration e = pathComponents.elements();
         URL url = null;
