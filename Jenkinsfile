@@ -21,7 +21,7 @@ for(j = 0; j < jdks.size(); j++) {
     def jdk = jdks[j]
     builds["${buildType}-jdk${jdk}"] = {
         // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
+        node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : (jdk == 8 ? 'maven-windows' : 'maven-11-windows')) {
                 // First stage is actually checking out the source. Since we're using Multibranch
                 // currently, we can use "checkout scm".
                 stage('Checkout') {
@@ -34,13 +34,11 @@ for(j = 0; j < jdks.size(); j++) {
                 // Now run the actual build.
                 stage("${buildType} Build / Test") {
                     timeout(time: 180, unit: 'MINUTES') {
-                        // See below for what this method does - we're passing an arbitrary environment
-                        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
+                        withEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
+                                 "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
 
                             if(isUnix()) {
                                 sh mvnCmd
@@ -103,14 +101,9 @@ infra.maybePublishIncrementals()
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
 // body we passed in within that environment.
-void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
-    if (buildType == 'Linux') {
-        // I.e., a Maven container using ACI. No need to install tools.
-        return withEnv(envVars) {
-            body.call()
-        }
-    }
-    
+// Unnecessary in an ACI agent in which Java and Maven are preinstalled,
+// but ATH needs Docker and currently there is no Linux ACI agent with DinD.
+void withMavenEnv(List envVars = [], def javaVersion, def body) {
     // The names here are currently hardcoded for my test environment. This needs
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the
