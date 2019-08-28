@@ -180,7 +180,7 @@ public class RunIdMigratorTest {
             if (symlink != null) {
                 notation = "→" + symlink;
             } else if (kid.isFile()) {
-                notation = "'" + FileUtils.readFileToString(kid) + "'";
+                notation = "'" + FileUtils.readFileToString(kid, (Charset) null) + "'";
             } else if (kid.isDirectory()) {
                 notation = summarize(kid);
             } else {

@@ -40,7 +40,7 @@ public class TextFileTest {
     public void tail() throws Exception {
         File f = tmp.newFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
-        String whole = FileUtils.readFileToString(f);
+        String whole = FileUtils.readFileToString(f, (Charset) null);
         TextFile t = new TextFile(f);
         String tailStr = whole.substring(whole.length() - 34);
         assertEquals(tailStr, t.fastTail(tailStr.length()));

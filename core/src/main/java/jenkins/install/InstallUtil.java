@@ -28,6 +28,7 @@ import static java.util.logging.Level.WARNING;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -224,7 +225,7 @@ public class InstallUtil {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
-                String version = FileUtils.readFileToString(lastExecVersionFile);
+                String version = FileUtils.readFileToString(lastExecVersionFile, (Charset) null);
                 // JENKINS-37438 blank will force the setup
                 // wizard regardless of current state of the system
                 if (StringUtils.isBlank(version)) {

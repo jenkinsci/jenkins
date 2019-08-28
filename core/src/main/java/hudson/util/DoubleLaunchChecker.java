@@ -39,6 +39,7 @@ import static hudson.init.InitMilestone.JOB_LOADED;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -100,7 +101,7 @@ public class DoubleLaunchChecker {
         long t = timestampFile.lastModified();
         if(t!=0 && lastWriteTime!=0 && t!=lastWriteTime && !ignore) {
             try {
-                collidingId = FileUtils.readFileToString(timestampFile);
+                collidingId = FileUtils.readFileToString(timestampFile, (Charset) null);
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
             }

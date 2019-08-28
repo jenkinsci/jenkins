@@ -5,6 +5,7 @@ import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -54,7 +55,7 @@ public class SecretRewriterTest {
         FileUtils.write(f, before);
         sr.rewrite(f, null);
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
-        return FileUtils.readFileToString(f).replaceAll(System.getProperty("line.separator"), "\n").trim();
+        return FileUtils.readFileToString(f, (Charset) null).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
     private String encryptOld(String str) throws Exception {
@@ -106,11 +107,11 @@ public class SecretRewriterTest {
         assertEquals(6, sw.rewriteRecursive(t, st));
 
         for (String p : dirs) {
-            assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t, p + "/foo.xml")).trim()).matches());
+            assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t, p + "/foo.xml"), (Charset) null).trim()).matches());
         }
 
         // t2 is only reachable by following a symlink. this should be covered, too
-        assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t2, "foo.xml")).trim()).matches());
+        assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t2, "foo.xml"), (Charset) null).trim()).matches());
     }
 
 }

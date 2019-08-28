@@ -23,6 +23,7 @@
  */
 package hudson;
 
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
@@ -209,8 +210,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+            @NonNull
+            PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                   @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
             }
         },
