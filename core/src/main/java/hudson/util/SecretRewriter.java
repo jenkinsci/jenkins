@@ -86,36 +86,35 @@ public class SecretRewriter {
         try {
 
             boolean modified = false; // did we actually change anything?
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(w))) {
-                try (InputStream fin = Files.newInputStream(f.toPath())) {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(fin, StandardCharsets.UTF_8));
-                    String line;
-                    StringBuilder buf = new StringBuilder();
+            try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
+                 InputStream fin = Files.newInputStream(f.toPath());
+                 BufferedReader r = new BufferedReader(new InputStreamReader(fin, StandardCharsets.UTF_8))) {
+                String line;
+                StringBuilder buf = new StringBuilder();
 
-                    while ((line = r.readLine()) != null) {
-                        int copied = 0;
-                        buf.setLength(0);
-                        while (true) {
-                            int sidx = line.indexOf('>', copied);
-                            if (sidx < 0) break;
-                            int eidx = line.indexOf('<', sidx);
-                            if (eidx < 0) break;
+                while ((line = r.readLine()) != null) {
+                    int copied = 0;
+                    buf.setLength(0);
+                    while (true) {
+                        int sidx = line.indexOf('>', copied);
+                        if (sidx < 0) break;
+                        int eidx = line.indexOf('<', sidx);
+                        if (eidx < 0) break;
 
-                            String elementText = line.substring(sidx + 1, eidx);
-                            String replacement = tryRewrite(elementText);
-                            if (!replacement.equals(elementText))
-                                modified = true;
+                        String elementText = line.substring(sidx + 1, eidx);
+                        String replacement = tryRewrite(elementText);
+                        if (!replacement.equals(elementText))
+                            modified = true;
 
-                            buf.append(line, copied, sidx + 1);
-                            buf.append(replacement);
-                            copied = eidx;
-                        }
-                        buf.append(line.substring(copied));
-                        out.println(buf.toString());
+                        buf.append(line, copied, sidx + 1);
+                        buf.append(replacement);
+                        copied = eidx;
                     }
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
+                    buf.append(line.substring(copied));
+                    out.println(buf.toString());
                 }
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
 
             if (modified) {
@@ -143,7 +142,7 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
+            canonical = dir.toPath().toRealPath().toString();
         } catch (IOException | InvalidPathException e) {
             canonical = dir.getAbsolutePath(); //
         }

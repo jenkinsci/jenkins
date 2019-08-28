@@ -1260,43 +1260,44 @@ public class Fingerprint implements ModelObject, Saveable {
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try {
-                PrintWriter w = new PrintWriter(afw);
-                w.println("<?xml version='1.1' encoding='UTF-8'?>");
-                w.println("<fingerprint>");
-                w.print("  <timestamp>");
-                w.print(DATE_CONVERTER.toString(timestamp));
-                w.println("</timestamp>");
-                if (original != null) {
-                    w.println("  <original>");
-                    w.print("    <name>");
-                    w.print(Util.xmlEscape(original.name));
-                    w.println("</name>");
-                    w.print("    <number>");
-                    w.print(original.number);
-                    w.println("</number>");
-                    w.println("  </original>");
+                try (PrintWriter w = new PrintWriter(afw)) {
+                    w.println("<?xml version='1.1' encoding='UTF-8'?>");
+                    w.println("<fingerprint>");
+                    w.print("  <timestamp>");
+                    w.print(DATE_CONVERTER.toString(timestamp));
+                    w.println("</timestamp>");
+                    if (original != null) {
+                        w.println("  <original>");
+                        w.print("    <name>");
+                        w.print(Util.xmlEscape(original.name));
+                        w.println("</name>");
+                        w.print("    <number>");
+                        w.print(original.number);
+                        w.println("</number>");
+                        w.println("  </original>");
+                    }
+                    w.print("  <md5sum>");
+                    w.print(Util.toHexString(md5sum));
+                    w.println("</md5sum>");
+                    w.print("  <fileName>");
+                    w.print(Util.xmlEscape(fileName));
+                    w.println("</fileName>");
+                    w.println("  <usages>");
+                    for (Entry<String, RangeSet> e : usages.entrySet()) {
+                        w.println("    <entry>");
+                        w.print("      <string>");
+                        w.print(Util.xmlEscape(e.getKey()));
+                        w.println("</string>");
+                        w.print("      <ranges>");
+                        w.print(RangeSet.ConverterImpl.serialize(e.getValue()));
+                        w.println("</ranges>");
+                        w.println("    </entry>");
+                    }
+                    w.println("  </usages>");
+                    w.println("  <facets/>");
+                    w.print("</fingerprint>");
+                    w.flush();
                 }
-                w.print("  <md5sum>");
-                w.print(Util.toHexString(md5sum));
-                w.println("</md5sum>");
-                w.print("  <fileName>");
-                w.print(Util.xmlEscape(fileName));
-                w.println("</fileName>");
-                w.println("  <usages>");
-                for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
-                    w.println("    <entry>");
-                    w.print("      <string>");
-                    w.print(Util.xmlEscape(e.getKey()));
-                    w.println("</string>");
-                    w.print("      <ranges>");
-                    w.print(RangeSet.ConverterImpl.serialize(e.getValue()));
-                    w.println("</ranges>");
-                    w.println("    </entry>");
-                }
-                w.println("  </usages>");
-                w.println("  <facets/>");
-                w.print("</fingerprint>");
-                w.flush();
                 afw.commit();
             } finally {
                 afw.abort();
