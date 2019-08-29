@@ -44,7 +44,7 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
 
     @Override
     protected Build retrieve(File dir) throws IOException {
-        String n = FileUtils.readFileToString(new File(dir, "n"), (Charset) null).trim();
+        String n = FileUtils.readFileToString(new File(dir, "n"), Charset.defaultCharset()).trim();
         //new Exception("loading #" + n).printStackTrace();
         return new Build(Integer.parseInt(n));
     }

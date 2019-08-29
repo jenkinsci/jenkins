@@ -101,7 +101,7 @@ public class DoubleLaunchChecker {
         long t = timestampFile.lastModified();
         if(t!=0 && lastWriteTime!=0 && t!=lastWriteTime && !ignore) {
             try {
-                collidingId = FileUtils.readFileToString(timestampFile, (Charset) null);
+                collidingId = FileUtils.readFileToString(timestampFile, Charset.defaultCharset());
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
             }
@@ -113,7 +113,7 @@ public class DoubleLaunchChecker {
         }
 
         try {
-            FileUtils.writeStringToFile(timestampFile, getId());
+            FileUtils.writeStringToFile(timestampFile, getId(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             // if failed to write, err on the safe side and assume things are OK.

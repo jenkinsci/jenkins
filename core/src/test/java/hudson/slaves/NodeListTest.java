@@ -132,7 +132,7 @@ public class NodeListTest {
             XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
             x.write(nl);
 
-            String xml = FileUtils.readFileToString(tmp, (Charset) null);
+            String xml = FileUtils.readFileToString(tmp, Charset.defaultCharset());
             System.out.println(xml);
             assertEquals(6,xml.split("\n").length);
 
