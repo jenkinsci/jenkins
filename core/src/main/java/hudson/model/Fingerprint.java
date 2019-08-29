@@ -1,18 +1,18 @@
 /*
  * The MIT License
- *
+ * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -66,6 +66,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -107,7 +108,7 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Gets {@link Job#getFullName() the full name of the job}.
          * Such job could be since then removed, so there might not be a corresponding {@link Job}.
-         *
+         * 
          * @return A name of the job
          */
         @Exported
@@ -115,12 +116,12 @@ public class Fingerprint implements ModelObject, Saveable {
         public String getName() {
             return name;
         }
-
+          
         /**
          * Checks if the current user has permission to see this pointer.
          * @return {@code true} if the job exists and user has {@link Item#READ} permissions
-         *      or if the current user has {@link Jenkins#ADMINISTER} permissions.
-         *      If the job exists, but the current user has no permission to discover it,
+         *      or if the current user has {@link Jenkins#ADMINISTER} permissions. 
+         *      If the job exists, but the current user has no permission to discover it, 
          *      {@code false}  will be returned.
          *      If the job has been deleted and the user has no {@link Jenkins#ADMINISTER} permissions,
          *      it also returns {@code false}   in order to avoid the job existence fact exposure.
@@ -132,16 +133,16 @@ public class Fingerprint implements ModelObject, Saveable {
             if (instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
             }
-
+            
             return canDiscoverItem(name);
         }
-
-
+        
+        
 
         void setName(String newName) {
             name = newName;
         }
-
+        
         /**
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
@@ -197,7 +198,7 @@ public class Fingerprint implements ModelObject, Saveable {
          *
          * <p>
          * This is useful to check if an artifact in MavenModule
-         * belongs to MavenModuleSet.
+         * belongs to MavenModuleSet. 
          */
         public boolean belongsTo(Job job) {
             Item p = Jenkins.get().getItemByFullName(name);
@@ -846,7 +847,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     private static final DateConverter DATE_CONVERTER = new DateConverter();
-
+    
     /**
      * Time when the fingerprint has been captured.
      */
@@ -1079,7 +1080,7 @@ public class Fingerprint implements ModelObject, Saveable {
      *
      * @return true
      *      if this record was modified.
-     *
+     * 
      * @throws IOException Save failure
      */
     public synchronized boolean trim() throws IOException {
@@ -1194,7 +1195,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     /**
      * Sorts {@link FingerprintFacet}s by their timestamps.
-     * @return Sorted list of {@link FingerprintFacet}s
+     * @return Sorted list of {@link FingerprintFacet}s 
      */
     public @Nonnull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
@@ -1281,7 +1282,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 w.print(Util.xmlEscape(fileName));
                 w.println("</fileName>");
                 w.println("  <usages>");
-                for (Entry<String, RangeSet> e : usages.entrySet()) {
+                for (Map.Entry<String, RangeSet> e : usages.entrySet()) {
                     w.println("    <entry>");
                     w.print("      <string>");
                     w.print(Util.xmlEscape(e.getKey()));
@@ -1317,7 +1318,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 touched = true;
             }
         }
-
+        
         if (usages != null) {
             RangeSet r = usages.get(oldName);
             if (r != null) {
@@ -1326,12 +1327,12 @@ public class Fingerprint implements ModelObject, Saveable {
                 touched = true;
             }
         }
-
+        
         if (touched) {
             save();
         }
     }
-
+    
     public Api getApi() {
         return new Api(this);
     }
@@ -1420,7 +1421,7 @@ public class Fingerprint implements ModelObject, Saveable {
     @Override public String toString() {
         return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + ((usages == null) ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
     }
-
+    
     /**
      * Checks if the current user can Discover the item.
      * If yes, it may be displayed as a text in Fingerprint UIs.
@@ -1440,7 +1441,7 @@ public class Fingerprint implements ModelObject, Saveable {
         if (item != null) {
             return true;
         }
-          
+
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
