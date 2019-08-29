@@ -553,7 +553,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @return null if no such build exists.
      */
     public final R getSomeBuildWithWorkspace() {
-        for (R b = getLastBuild(); b!=null; b=b.getPreviousBuild()) {
+        for (R b = getLastBuild(); b != null; b = b.getPreviousBuild()) {
             FilePath ws = b.getWorkspace();
             if (ws!=null)   return b;
         }
