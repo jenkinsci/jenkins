@@ -1440,7 +1440,7 @@ public class Fingerprint implements ModelObject, Saveable {
         if (item != null) {
             return true;
         }
-
+          
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
