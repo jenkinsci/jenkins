@@ -33,7 +33,6 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author ogondza, pjanouse
@@ -42,6 +41,7 @@ import java.util.logging.Logger;
 @Extension
 public class DeleteViewCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="View names to delete", required=true, multiValued=true)
     private List<String> views;
 
@@ -57,13 +57,12 @@ public class DeleteViewCommand extends CLICommand {
         boolean errorOccurred = false;
 
         // Remove duplicates
-        final HashSet<String> hs = new HashSet<String>();
-        hs.addAll(views);
+        final HashSet<String> hs = new HashSet<>(views);
 
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
 
         for(String view_s : hs) {
-            View view = null;
+            View view;
 
             try {
                 view = voh.getView(view_s);

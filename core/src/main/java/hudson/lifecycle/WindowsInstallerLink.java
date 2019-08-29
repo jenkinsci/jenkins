@@ -54,7 +54,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -112,7 +111,7 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @RequirePOST
     public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir!=null) {
             // installation already complete
@@ -174,7 +173,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
     @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir==null) {
             // if the user reloads the page after Hudson has restarted,
@@ -185,7 +184,7 @@ public class WindowsInstallerLink extends ManagementLink {
         }
 
         rsp.forward(this,"_restart",req);
-        final File oldRoot = Jenkins.getInstance().getRootDir();
+        final File oldRoot = Jenkins.get().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
@@ -216,9 +215,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 int r = runElevated(
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
+                            } catch (IOException | InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
@@ -231,7 +228,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         }
                     });
 
-                    Jenkins.getInstance().cleanUp();
+                    Jenkins.get().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -250,7 +247,7 @@ public class WindowsInstallerLink extends ManagementLink {
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         req.setAttribute("pre",true);
-        rsp.forward(Jenkins.getInstance(),"error",req);
+        rsp.forward(Jenkins.get(),"error",req);
     }
 
     /**
@@ -270,11 +267,9 @@ public class WindowsInstallerLink extends ManagementLink {
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
-            // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
-            // from JNLP), also put this link on the navigation bar to increase
-            // visibility
+            // TODO possibly now unused (JNLP installation mode is long gone):
             if(SystemProperties.getString(WindowsInstallerLink.class.getName()+".prominent")!=null)
-                Jenkins.getInstance().getActions().add(link);
+                Jenkins.get().getActions().add(link);
 
             return link;
         }
@@ -292,9 +287,7 @@ public class WindowsInstallerLink extends ManagementLink {
         try {
             return new LocalLauncher(out).launch().cmds(jenkinsExe, command).stdout(out).pwd(pwd).join();
         } catch (IOException e) {
-            if (e.getMessage().contains("CreateProcess") && e.getMessage().contains("=740")) {
-                // fall through
-            } else {
+            if (!e.getMessage().contains("CreateProcess") || !e.getMessage().contains("=740")) {
                 throw e;
             }
         }

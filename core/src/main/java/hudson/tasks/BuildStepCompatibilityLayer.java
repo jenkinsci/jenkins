@@ -31,12 +31,10 @@ import hudson.model.Action;
 import hudson.model.Project;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.util.ReflectionUtils;
 import hudson.Launcher;
 import hudson.Util;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 

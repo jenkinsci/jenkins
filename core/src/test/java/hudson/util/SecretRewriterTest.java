@@ -1,12 +1,12 @@
 package hudson.util;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
@@ -60,7 +60,7 @@ public class SecretRewriterTest {
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());
-        return new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
     }
 
     private String encryptNew(String str) {

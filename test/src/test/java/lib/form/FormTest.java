@@ -3,6 +3,7 @@ package lib.form;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,17 +57,7 @@ public class FormTest {
     }
 
     @TestExtension("autocompleteOffByDefault")
-    public static class AutocompleteOffByDefault implements RootAction {
-        @Override
-        public String getIconFileName() {
-            return "gear2.png";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "AutocompleteOffByDefault";
-        }
-
+    public static class AutocompleteOffByDefault extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "autocompleteOffByDefault";
@@ -74,17 +65,7 @@ public class FormTest {
     }
 
     @TestExtension("autocompleteOnWhenTrue")
-    public static class AutocompleteOnWhenTrue implements RootAction {
-        @Override
-        public String getIconFileName() {
-            return "gear2.png";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "AutocompleteOnWhenTrue";
-        }
-
+    public static class AutocompleteOnWhenTrue extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "autocompleteOnWhenTrue";
@@ -92,17 +73,7 @@ public class FormTest {
     }
 
     @TestExtension("inputsCanSetAutocomplete")
-    public static class InputsCanSetAutocomplete implements RootAction {
-        @Override
-        public String getIconFileName() {
-            return "gear2.png";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "InputsCanSetAutocomplete";
-        }
-
+    public static class InputsCanSetAutocomplete extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "inputsCanSetAutocomplete";

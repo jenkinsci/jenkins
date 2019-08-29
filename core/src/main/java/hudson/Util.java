@@ -60,8 +60,11 @@ import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
@@ -88,6 +91,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -110,7 +114,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> filter( @Nonnull Iterable<?> base, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object i : base) {
             if(type.isInstance(i))
                 r.add(type.cast(i));
@@ -140,7 +144,7 @@ public class Util {
      */
     @Nullable
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
-        return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
+        return replaceMacro(s, new VariableResolver.ByMap<>(properties));
     }
 
     /**
@@ -241,7 +245,18 @@ public class Util {
      *      if the operation fails.
      */
     public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
-        newPathRemover().forceRemoveDirectoryContents(fileToPath(file));
+        deleteContentsRecursive(fileToPath(file), PathRemover.PathChecker.ALLOW_ALL);
+    }
+
+    /**
+     * Deletes the given directory contents (but not the directory itself) recursively using a PathChecker.
+     * @param path a directory to delete
+     * @param pathChecker a security check to validate a path before deleting
+     * @throws IOException if the operation fails
+     */
+    @Restricted(NoExternalUse.class)
+    public static void deleteContentsRecursive(@Nonnull Path path, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveDirectoryContents(path);
     }
 
     /**
@@ -252,7 +267,7 @@ public class Util {
      * @throws IOException if it exists but could not be successfully deleted
      */
     public static void deleteFile(@Nonnull File f) throws IOException {
-        newPathRemover().forceRemoveFile(fileToPath(f));
+        newPathRemover(PathRemover.PathChecker.ALLOW_ALL).forceRemoveFile(fileToPath(f));
     }
 
     /**
@@ -264,7 +279,18 @@ public class Util {
      * if the operation fails.
      */
     public static void deleteRecursive(@Nonnull File dir) throws IOException {
-        newPathRemover().forceRemoveRecursive(fileToPath(dir));
+        deleteRecursive(fileToPath(dir), PathRemover.PathChecker.ALLOW_ALL);
+    }
+
+    /**
+     * Deletes the given directory and contents recursively using a filter.
+     * @param dir a directory to delete
+     * @param pathChecker a security check to validate a path before deleting
+     * @throws IOException if the operation fails
+     */
+    @Restricted(NoExternalUse.class)
+    public static void deleteRecursive(@Nonnull Path dir, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+        newPathRemover(pathChecker).forceRemoveRecursive(dir);
     }
 
     /*
@@ -293,14 +319,21 @@ public class Util {
 
     @Restricted(NoExternalUse.class)
     public static boolean isSymlink(@Nonnull Path path) {
-        if (Files.isSymbolicLink(path)) return true;
         /*
-        In Windows, a directory junction is not considered a symbolic link despite being nearly the same feature.
-        To avoid relying directly on Windows-specific filesystem API calls, we can instead determine if a path is
-        logically a symbolic link by comparing its absolute path to its real path.
+         *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
+         *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
+         *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
+         *  you have to go through BasicFileAttributes and do the following check:
+         *     isSymbolicLink() || isOther()
+         *  The isOther() call will include Windows reparse points, of which a directory junction is.
+         *  It also includes includes devices, but reading the attributes of a device with NIO fails
+         *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
+         *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
+         *  calling readAttributes.
          */
         try {
-            return path.toAbsolutePath().compareTo(path.toRealPath()) != 0;
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            return attrs.isSymbolicLink() || (attrs instanceof DosFileAttributes && attrs.isOther());
         } catch (IOException ignored) {
             return false;
         }
@@ -720,10 +753,12 @@ public class Util {
     /**
      * Get a human readable string representing strings like "xxx days ago",
      * which should be used to point to the occurrence of an event in the past.
+     * @deprecated Actually identical to {@link #getTimeSpanString}, does not add {@code ago}.
      */
+    @Deprecated
     @Nonnull
     public static String getPastTimeString(long duration) {
-        return Messages.Util_pastTime(getTimeSpanString(duration));
+        return getTimeSpanString(duration);
     }
 
 
@@ -750,7 +785,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> createSubList(@Nonnull Collection<?> source, @Nonnull Class<T> type ) {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (Object item : source) {
             if(type.isInstance(item))
                 r.add(type.cast(item));
@@ -833,29 +868,50 @@ public class Util {
         CharBuffer buf = null;
         char c;
         for (int i = 0, m = s.length(); i < m; i++) {
-            c = s.charAt(i);
-            if (c > 122 || uriMap[c]) {
+            int codePoint = Character.codePointAt(s, i);
+            if((codePoint&0xffffff80)==0) { // 1 byte
+                c = s.charAt(i);
+                if (c > 122 || uriMap[c]) {
+                    if (!escaped) {
+                        out = new StringBuilder(i + (m - i) * 3);
+                        out.append(s, 0, i);
+                        enc = StandardCharsets.UTF_8.newEncoder();
+                        buf = CharBuffer.allocate(1);
+                        escaped = true;
+                    }
+                    // 1 char -> UTF8
+                    buf.put(0, c);
+                    buf.rewind();
+                    try {
+                        ByteBuffer bytes = enc.encode(buf);
+                        while (bytes.hasRemaining()) {
+                            byte b = bytes.get();
+                            out.append('%');
+                            out.append(toDigit((b >> 4) & 0xF));
+                            out.append(toDigit(b & 0xF));
+                        }
+                    } catch (CharacterCodingException ex) {
+                    }
+                } else if (escaped) {
+                    out.append(c);
+                }
+            } else {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
-                    out.append(s.substring(0, i));
-                    enc = StandardCharsets.UTF_8.newEncoder();
-                    buf = CharBuffer.allocate(1);
+                    out.append(s, 0, i);
                     escaped = true;
                 }
-                // 1 char -> UTF8
-                buf.put(0,c);
-                buf.rewind();
-                try {
-                    ByteBuffer bytes = enc.encode(buf);
-                    while (bytes.hasRemaining()) {
-                        byte b = bytes.get();
-                        out.append('%');
-                        out.append(toDigit((b >> 4) & 0xF));
-                        out.append(toDigit(b & 0xF));
-                    }
-                } catch (CharacterCodingException ex) { }
-            } else if (escaped) {
-                out.append(c);
+
+                byte[] bytes = new String(new int[] { codePoint }, 0, 1).getBytes(StandardCharsets.UTF_8);
+                for(int j=0;j<bytes.length;j++) {
+                    out.append('%');
+                    out.append(toDigit((bytes[j] >> 4) & 0xF));
+                    out.append(toDigit(bytes[j] & 0xF));
+                }
+
+                if(Character.charCount(codePoint) > 1) {
+                    i++; // we processed two characters
+                }
             }
         }
         return escaped ? out.toString() : s;
@@ -1002,7 +1058,7 @@ public class Util {
      */
     @Nonnull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
-        return fixNull(l, Collections.<T>emptyList());
+        return fixNull(l, Collections.emptyList());
     }
 
     /**
@@ -1016,7 +1072,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1030,7 +1086,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1044,7 +1100,7 @@ public class Util {
      */
     @Nonnull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
-        return fixNull(l, Collections.<T>emptySet());
+        return fixNull(l, Collections.emptySet());
     }
 
     /**
@@ -1084,7 +1140,7 @@ public class Util {
         int size = 0;
         for (Collection<? extends T> item : items)
             size += item.size();
-        List<T> r = new ArrayList<T>(size);
+        List<T> r = new ArrayList<>(size);
         for (Collection<? extends T> item : items)
             r.addAll(item);
         return r;
@@ -1430,9 +1486,9 @@ public class Util {
     public static int permissionsToMode(Set<PosixFilePermission> permissions) {
         PosixFilePermission[] allPermissions = PosixFilePermission.values();
         int result = 0;
-        for (int i = 0; i < allPermissions.length; i++) {
+        for (PosixFilePermission allPermission : allPermissions) {
             result <<= 1;
-            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+            result |= permissions.contains(allPermission) ? 1 : 0;
         }
         return result;
     }
@@ -1492,6 +1548,19 @@ public class Util {
         return Math.max(0, daysBetween(date, new Date()));
     }
     
+    /**
+     * Find the specific ancestor, or throw an exception.
+     * Useful for an ancestor we know is inside the URL to ease readability
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull <T> T getNearestAncestorOfTypeOrThrow(@Nonnull StaplerRequest request, @Nonnull Class<T> clazz) {
+        T t = request.findAncestorObject(clazz);
+        if (t == null) {
+            throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
+        }
+        return t;
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -1522,7 +1591,7 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3).intValue());
+    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
@@ -1534,7 +1603,7 @@ public class Util {
      * between attempts.
      */
     @Restricted(value = NoExternalUse.class)
-    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+    static int WAIT_BETWEEN_DELETION_RETRIES = SystemProperties.getInteger(Util.class.getName() + ".deletionRetryWait", 100);
 
     /**
      * If this flag is set to true then we will request a garbage collection
@@ -1550,7 +1619,7 @@ public class Util {
      * Warning: This should only ever be used if you find that your builds are
      * failing because Jenkins is unable to delete files, that this failure is
      * because Jenkins itself has those files locked "open", and even then it
-     * should only be used on slaves with relatively few executors (because the
+     * should only be used on agents with relatively few executors (because the
      * garbage collection can impact the performance of all job executors on
      * that slave).<br/>
      * i.e. Setting this flag is a act of last resort - it is <em>not</em>
@@ -1560,8 +1629,8 @@ public class Util {
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
-    private static PathRemover newPathRemover() {
-        return PathRemover.newRobustRemover(DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
     /**

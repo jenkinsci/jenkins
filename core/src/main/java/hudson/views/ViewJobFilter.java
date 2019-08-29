@@ -44,12 +44,12 @@ public abstract class ViewJobFilter implements ExtensionPoint, Describable<ViewJ
      * Returns all the registered {@link ViewJobFilter} descriptors.
      */
     public static DescriptorExtensionList<ViewJobFilter, Descriptor<ViewJobFilter>> all() {
-        return Jenkins.getInstance().<ViewJobFilter, Descriptor<ViewJobFilter>>getDescriptorList(ViewJobFilter.class);
+        return Jenkins.get().getDescriptorList(ViewJobFilter.class);
     }
 
     @SuppressWarnings("unchecked")
 	public Descriptor<ViewJobFilter> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
     
     /**

@@ -63,15 +63,15 @@ public class RenderOnDemandClosure {
     private final String[] adjuncts;
 
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
-        List<Script> bodyStack = new ArrayList<Script>();
+        List<Script> bodyStack = new ArrayList<>();
         for (JellyContext c = context; c!=null; c=c.getParent()) {
             Script script = (Script) c.getVariables().get("org.apache.commons.jelly.body");
             if(script!=null) bodyStack.add(script);
         }
-        this.bodyStack = bodyStack.toArray(new Script[bodyStack.size()]);
+        this.bodyStack = bodyStack.toArray(new Script[0]);
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
-        Map<String,Object> variables = new HashMap<String, Object>();
+        Map<String,Object> variables = new HashMap<>();
         for (String v : Util.fixNull(attributesToCapture).split(","))
             variables.put(v.intern(),context.getVariable(v));
 
@@ -95,6 +95,7 @@ public class RenderOnDemandClosure {
     public HttpResponse render() {
         return new HttpResponse() {
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
                 try {
                     new DefaultScriptInvoker() {
                         @Override
@@ -106,9 +107,7 @@ public class RenderOnDemandClosure {
                             }
                             try {
                                 AdjunctsInPage.get().assumeIncluded(adjuncts);
-                            } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
-                            } catch (SAXException e) {
+                            } catch (IOException | SAXException e) {
                                 LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
                             }
                             return context;

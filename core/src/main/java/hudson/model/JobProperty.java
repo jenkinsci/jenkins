@@ -102,7 +102,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      */
     @Override
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (JobPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**

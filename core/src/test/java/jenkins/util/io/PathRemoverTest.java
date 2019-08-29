@@ -30,16 +30,21 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
+import org.jvnet.hudson.test.Issue;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +91,7 @@ public class PathRemoverTest {
         given(path.toString()).willReturn(filename);
         given(path.toFile()).willReturn(file);
         given(path.getFileSystem()).willReturn(fs);
+        given(path.normalize()).willReturn(path);
         given(fs.provider()).willReturn(fsProvider);
         given(fsProvider.deleteIfExists(path)).willThrow(new FileSystemException(filename));
         given(fsProvider.readAttributes(path, BasicFileAttributes.class)).willReturn(attributes);
@@ -138,6 +144,52 @@ public class PathRemoverTest {
         remover.forceRemoveFile(file.toPath());
 
         assertFalse("Unable to delete file: " + file, file.exists());
+    }
+
+    @Test
+    public void testForceRemoveFile_SymbolicLink() throws IOException {
+        File file = tmp.newFile();
+        touchWithFileName(file);
+        Path link = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("test-link"), file.toPath());
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(link);
+
+        assertTrue("Unable to delete symbolic link: " + link, Files.notExists(link, LinkOption.NOFOLLOW_LINKS));
+        assertTrue("Should not have deleted target file: " + file, file.exists());
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveFile_DotsInPath() throws IOException {
+        Path folder = tmp.newFolder().toPath();
+        File test = tmp.newFile("test");
+        touchWithFileName(test);
+        Path path = folder.resolve("../test");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(path);
+
+        assertTrue("Unable to delete file: " + path, Files.notExists(path));
+        assertFalse(test.exists());
+        assertTrue("Should not have deleted directory: " + folder, Files.exists(folder));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
+        Path realParent = tmp.newFolder().toPath();
+        Path path = realParent.resolve("test-file");
+        touchWithFileName(path.toFile());
+        Path symParent = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("sym-parent"), realParent);
+        Path toDelete = symParent.resolve("test-file");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveFile(toDelete);
+
+        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete));
+        assertTrue("Should not have deleted directory: " + realParent, Files.exists(realParent));
+        assertTrue("Should not have deleted symlink: " + symParent, Files.exists(symParent, LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -307,6 +359,63 @@ public class PathRemoverTest {
         assertNotNull(ioException);
         assertThat(ioException.getMessage(), containsString(dir.getPath()));
         assertNotNull(interrupted.get());
+    }
+
+    @Test
+    public void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path path = tmp.newFolder().toPath();
+        Files.createSymbolicLink(path.resolve("sym-dir"), d1.toPath());
+        Files.createSymbolicLink(path.resolve("sym-file"), f2.toPath());
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(path);
+
+        assertTrue("Unable to delete directory: " + path, Files.notExists(path));
+        for (File file : Arrays.asList(d1, d1f1, f2)) {
+            assertTrue("Should not have deleted target: " + file, file.exists());
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_ContainsDotPath() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path path = Paths.get(d1.getPath(), "..", "d1");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(path);
+
+        assertTrue("Unable to delete directory: " + folder, Files.notExists(path));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
+        File folder = tmp.newFolder();
+        File d1 = new File(folder, "d1");
+        File d1f1 = new File(d1, "d1f1");
+        File f2 = new File(folder, "f2");
+        mkdirs(d1);
+        touchWithFileName(d1f1, f2);
+        Path symlink = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("linked"), folder.toPath());
+        Path d1p = symlink.resolve("d1");
+
+        PathRemover remover = PathRemover.newSimpleRemover();
+        remover.forceRemoveRecursive(d1p);
+
+        assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
+        assertFalse(d1.exists());
     }
 
     private static void mkdirs(File... dirs) {

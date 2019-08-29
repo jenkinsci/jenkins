@@ -11,8 +11,13 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
 
         var h = e.clientHeight || getTextareaHeight();
         var config = e.getAttribute("codemirror-config");
-        config += (config ? ", " : " ") + "onBlur: function(editor){editor.save()}";
+        if (!config) {
+            config = '';
+        }
         config = eval('({'+config+'})');
+        if (!config.onBlur) {
+            config.onBlur = function(editor) { editor.save(); };
+        }
         var codemirror = CodeMirror.fromTextArea(e,config);
         e.codemirrorObject = codemirror;
         if(typeof(codemirror.getScrollerElement) !== "function") {

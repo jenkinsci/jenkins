@@ -42,7 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
- * {@link ComputerLauncher} via JNLP.
+ * {@link ComputerLauncher} via inbound connections.
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
@@ -195,7 +195,7 @@ public class JNLPLauncher extends ComputerLauncher {
             // Causes JENKINS-45895 in the case of includes otherwise
             return DescriptorImpl.class.equals(getClass());
         }
-    };
+    }
 
     /**
      * Hides the JNLP launcher when the JNLP agent port is not enabled.
@@ -210,7 +210,7 @@ public class JNLPLauncher extends ComputerLauncher {
          */
         @Override
         public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.getInstance().getTcpSlaveAgentListener() != null;
+            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
         }
 
         /**
@@ -218,7 +218,7 @@ public class JNLPLauncher extends ComputerLauncher {
          */
         @Override
         public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.getInstance().getTcpSlaveAgentListener() != null;
+            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
         }
     }
 

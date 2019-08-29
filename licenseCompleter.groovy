@@ -48,7 +48,7 @@ complete {
         rewriteLicense([], license("BSD License","http://jaxen.codehaus.org/license.html"))
     }
 
-    match("*:dom4j") {
+    match("org.jenkins-ci.dom4j:dom4j") {
         rewriteLicense([],license("BSD License","http://dom4j.sourceforge.net/dom4j-1.6.1/license.html"))
     }
 
@@ -60,7 +60,7 @@ complete {
 
     match("relaxngDatatype:relaxngDatatype") {
         // see http://sourceforge.net/projects/relaxng/
-        rewriteLicense([],bsdLicense);
+        rewriteLicense([],bsdLicense)
     }
 
     match(["org.kohsuke.jinterop:j-interop","org.kohsuke.jinterop:j-interopdeps"]) {
@@ -83,7 +83,7 @@ complete {
 
     match("*:sezpoz") {
         // GPL-phobia people react to "GPL" strongly, so accept sezpoz under CDDL
-        rewriteLicense([license("CDDL or GPL 2 with Classpath Exception",null)],cddl);
+        rewriteLicense([license("CDDL or GPL 2 with Classpath Exception",null)],cddl)
     }
            
     match("net.jcip:jcip-annotations") {

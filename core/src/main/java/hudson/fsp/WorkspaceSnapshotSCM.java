@@ -94,7 +94,7 @@ public class WorkspaceSnapshotSCM extends SCM {
      * @return never null.
      */
     public Snapshot resolve() throws ResolvedFailedException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.get();
         AbstractProject<?,?> job = h.getItemByFullName(jobName, AbstractProject.class);
         if(job==null) {
             if(h.getItemByFullName(jobName)==null) {

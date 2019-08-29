@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64;

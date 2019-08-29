@@ -50,22 +50,22 @@ import javax.annotation.Nonnull;
 public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
 
     /**
-     * This method will be called periodically to allow this strategy to decide what to do with it's owning agent.
+     * This method will be called periodically to allow this strategy to decide what to do with its owning agent.
      *
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide what action to take.
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
-     *         rechecked earlier or later that this!
+     *         rechecked earlier or later than this!
      */
     @GuardedBy("hudson.model.Queue.lock")
     public abstract long check(@Nonnull T c);
 
     /**
-     * This method is called to determine whether manual launching of the agent is allowed at this point in time.
+     * This method is called to determine whether manual launching of the agent is allowed right now.
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide if manual launching is
-     * allowed at this time.
-     * @return {@code true} if manual launching of the agent is allowed at this point in time.
+     *          allowed.
+     * @return {@code true} if manual launching of the agent is allowed right now.
      */
     public boolean isManualLaunchAllowed(T c) {
         return true;
@@ -87,7 +87,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
     /**
      * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
-     * a new agent is added.)
+     * a new agent is added).
      *
      * <p>
      * The default implementation of this method delegates to {@link #check(Computer)},
@@ -104,7 +104,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
     public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RetentionStrategy.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(RetentionStrategy.class);
     }
 
     /**
@@ -216,8 +216,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         @GuardedBy("hudson.model.Queue.lock")
         public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
-                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
-                for (Computer o : Jenkins.getInstance().getComputers()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<>();
+                for (Computer o : Jenkins.get().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
                         final int idleExecutors = o.countIdle();
                         if (idleExecutors>0)
@@ -249,7 +249,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     Node checkedNode = c.getNode();
                     if (needExecutor && checkedNode != null && checkedNode.canTake(item) == null) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
-                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        needComputer = demandMilliseconds > TimeUnit.MINUTES.toMillis(inDemandDelay);
                         break;
                     }
                 }
@@ -262,7 +262,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                if (idleMilliseconds > TimeUnit.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});

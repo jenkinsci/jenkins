@@ -54,7 +54,9 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -330,7 +332,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return ok();
+        if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)
@@ -349,18 +351,19 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         // look in PATH
         String path = EnvVars.masterEnvVars.get("PATH");
-        String tokenizedPath = "";
+        String tokenizedPath;
         String delimiter = null;
         if(path!=null) {
+            StringBuilder tokenizedPathBuilder = new StringBuilder();
             for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
                 if (delimiter == null) {
                   delimiter = ", ";
                 }
                 else {
-                  tokenizedPath += delimiter;
+                  tokenizedPathBuilder.append(delimiter);
                 }
 
-                tokenizedPath += _dir.replace('\\', '/');
+                tokenizedPathBuilder.append(_dir.replace('\\', '/'));
 
                 File dir = new File(_dir);
 
@@ -370,8 +373,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 File fexe = new File(dir,exe+".exe");
                 if(fexe.exists())   return exeValidator.validate(fexe);
             }
+            tokenizedPathBuilder.append('.');
 
-            tokenizedPath += ".";
+            tokenizedPath = tokenizedPathBuilder.toString();
         } else {
             tokenizedPath = "unavailable.";
         }
@@ -461,9 +465,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
             if(!allowEmpty && v.length()==0)
                 return error(errorMessage);
 
-            com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+            Base64.getDecoder().decode(v.getBytes(StandardCharsets.UTF_8));
             return ok();
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             return error(errorMessage);
         }
     }
@@ -497,7 +501,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while((line=in.readLine())!=null)
-                if(line.indexOf(literal)!=-1)
+                if(line.contains(literal))
                     return true;
             return false;
         }
@@ -594,7 +598,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if(method !=null) {
-                names = new ArrayList<String>();
+                names = new ArrayList<>();
                 findParameters(method);
             } else {
                 names = null;
@@ -644,7 +648,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     buf.append("+qs(this).addThis()");
 
                     for (String name : names) {
-                        buf.append(".nearBy('"+name+"')");
+                        buf.append(".nearBy('").append(name).append("')");
                     }
                     buf.append(".toString()");
                 }

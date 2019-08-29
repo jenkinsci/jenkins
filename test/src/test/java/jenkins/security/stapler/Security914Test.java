@@ -33,6 +33,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestPluginManager;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
@@ -53,8 +54,8 @@ public class Security914Test {
         }
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.xml"));
         // plugin deployed in: test\target\jenkins7375296945862059919tmp
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
@@ -62,7 +63,7 @@ public class Security914Test {
         request.setAdditionalHeader("Accept-Language", "../../../../jenkinsTests.tmp/" + j.jenkins.getRootDir().getName() + "/config");
         
         Page p = wc.getPage(request);
-        assertEquals(p.getWebResponse().getStatusCode(), 404);
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
         assertNotEquals(p.getWebResponse().getContentType(), "application/xml");
     }
     
@@ -75,14 +76,14 @@ public class Security914Test {
         }
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.ini"));
         // ../ can be multiply to infinity, no impact, we just need to have enough to reach the root
         request.setAdditionalHeader("Accept-Language", "../../../../../../../../../../../../windows/win");
         
         Page p = wc.getPage(request);
-        assertEquals(p.getWebResponse().getStatusCode(), 404);
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
         assertEquals(p.getWebResponse().getContentType(), "text/html");
     }
 }

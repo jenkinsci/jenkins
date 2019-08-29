@@ -24,8 +24,8 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -34,13 +34,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.maven.MavenModuleSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -50,8 +48,6 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
-import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -60,11 +56,9 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -120,16 +114,13 @@ public class AbstractProjectTest {
 
         FreeStyleBuild b = project.scheduleBuild2(0).get();
 
-        assert b.getWorkspace().exists() : "Workspace should exist by now";
+        assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
         // make sure that the action link is protected
-        JenkinsRule.WebClient wc = j.createWebClient();
-        try {
-            wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
-            fail("Expected HTTP status code 403");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
     /**
@@ -148,7 +139,7 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
-        page = (HtmlPage) page.getAnchorByText("Workspace").click();
+        page = page.getAnchorByText("Workspace").click();
         try {
             String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
             page.getAnchorByText(wipeOutLabel);
@@ -261,65 +252,6 @@ public class AbstractProjectTest {
         }
     }
 
-    @Test
-    @Issue("JENKINS-1986")
-    public void buildSymlinks() throws Exception {
-        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
-
-        FreeStyleProject job = j.createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-                lastStable = new File(job.getRootDir(), "lastStable");
-        // First build creates links
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        FreeStyleBuild build2 = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        // Another build updates links
-        assertSymlinkForBuild(lastSuccessful, 2);
-        assertSymlinkForBuild(lastStable, 2);
-        // Delete latest build should update links
-        build2.delete();
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        // Delete all builds should remove links
-        build.delete();
-        assertFalse("lastSuccessful link should be removed", lastSuccessful.exists());
-        assertFalse("lastStable link should be removed", lastStable.exists());
-    }
-
-    private static void assertSymlinkForBuild(File file, int buildNumber)
-            throws IOException, InterruptedException {
-        assert file.exists() : "should exist and point to something that exists";
-        assert Util.isSymlink(file) : "should be symlink";
-        String s = FileUtils.readFileToString(new File(file, "log"));
-        assert s.contains("Build #" + buildNumber + "\n") : "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
-    }
-
-    @Test
-    @Issue("JENKINS-2543")
-    public void symlinkForPostBuildFailure() throws Exception {
-        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
-
-        // Links should be updated after post-build actions when final build result is known
-        FreeStyleProject job = j.createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assert Result.SUCCESS == build.getResult();
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-                lastStable = new File(job.getRootDir(), "lastStable");
-        // First build creates links
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        // Archive artifacts that don't exist to create failure in post-build action
-        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false, false));
-        build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assert Result.FAILURE == build.getResult();
-        // Links should not be updated since build failed
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-    }
-
     /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
     @Test
     @Issue("JENKINS-15156")
@@ -358,9 +290,9 @@ public class AbstractProjectTest {
         j.createFreeStyleProject("j1");
         assertEquals("", deleteRedirectTarget("job/j1"));
         j.createFreeStyleProject("j2");
-        Jenkins.getInstance().addView(new AllView("v1"));
+        Jenkins.get().addView(new AllView("v1"));
         assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
-        MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
+        MockFolder d = Jenkins.get().createProject(MockFolder.class, "d");
         d.addView(new AllView("v2"));
         for (String n : new String[] {"j3", "j4", "j5"}) {
             d.createProject(FreeStyleProject.class, n);
@@ -405,24 +337,21 @@ public class AbstractProjectTest {
         j.jenkins.setNumExecutors(0);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.getPage(j.getURL() + p.getUrl() + "build").getWebResponse();
-        assertEquals(201, rsp.getStatusCode());
+        WebResponse rsp = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
         assertNotNull(rsp.getResponseHeaderValue("Location"));
 
-        WebResponse rsp2 = wc.getPage(j.getURL() + p.getUrl() + "build").getWebResponse();
-        assertEquals(201, rsp2.getStatusCode());
+        WebResponse rsp2 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
         assertEquals(rsp.getResponseHeaderValue("Location"), rsp2.getResponseHeaderValue("Location"));
 
         p.makeDisabled(true);
 
-        try {
-            wc.getPage(j.getURL() + p.getUrl() + "build");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            // request should fail
-        }
+        WebResponse rsp3 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
     }
 
     /**
@@ -482,9 +411,6 @@ public class AbstractProjectTest {
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
         tpm.installDetachedPlugin("javadoc");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("display-url-api");
-        tpm.installDetachedPlugin("mailer");
         tpm.installDetachedPlugin("maven-plugin");
 
         j.jenkins.setCrumbIssuer(null);

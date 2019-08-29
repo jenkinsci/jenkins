@@ -78,7 +78,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     @Override
     public String getColumnCaption() {
         // Hide this column from non-admins
-        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
+        return Jenkins.get().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
     /**
@@ -106,7 +106,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new SwapSpaceMonitor();
         }
-    };
+    }
 
     /**
      * Obtains the string that represents the architecture.

@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -448,12 +447,10 @@ public class NodeTest {
         WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("<hudson/>");
-        try {
-            Page page = wc.getPage(settings);
-            fail(page.getWebResponse().getContentAsString());
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, x.getStatusCode());
-        }
+
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.getPage(settings);
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
     }
 
     /**
@@ -505,7 +502,7 @@ public class NodeTest {
         public Collection<LabelAtom> findLabels(Node node) {
             List<LabelAtom> atoms = new ArrayList<LabelAtom>();
             if(addDynamicLabel){
-                atoms.add(Jenkins.getInstance().getLabelAtom("dynamicLabel"));
+                atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
             }
             return atoms;
 

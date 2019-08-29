@@ -26,7 +26,6 @@ package jenkins.security;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +69,15 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void loggedIn(@Nonnull String username){}
 
     /**
+     * @since TODO
+     *
+     * Fired after a new user account has been created and saved to disk.
+     *
+     * @param username the user
+     */
+    protected void userCreated(@Nonnull String username) {}
+
+    /**
      * Fired when a user has failed to log in.
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
@@ -85,7 +93,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            List<String> groups = new ArrayList<String>();
+            List<String> groups = new ArrayList<>();
             for (GrantedAuthority auth : details.getAuthorities()) {
                 if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                     groups.add(auth.getAuthority());
@@ -95,6 +103,14 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
         for (SecurityListener l : all()) {
             l.authenticated(details);
+        }
+    }
+
+    /** @since TODO */
+    public static void fireUserCreated(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "new user created: {0}", username);
+        for (SecurityListener l : all()) {
+            l.userCreated(username);
         }
     }
 

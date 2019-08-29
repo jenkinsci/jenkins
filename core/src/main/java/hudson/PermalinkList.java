@@ -60,7 +60,7 @@ public final class PermalinkList extends ArrayList<Permalink> {
      * Finds the closest name match by its ID.
      */
     public Permalink findNearest(String id) {
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
         for (Permalink p : this)
             ids.add(p.getId());
         String nearest = EditDistance.findNearest(id, ids);

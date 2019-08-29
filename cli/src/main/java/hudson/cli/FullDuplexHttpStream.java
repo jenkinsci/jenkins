@@ -9,8 +9,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
-
 /**
  * Creates a capacity-unlimited bi-directional {@link InputStream}/{@link OutputStream} pair over
  * HTTP, which is a request/response protocol.
@@ -19,10 +17,6 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class FullDuplexHttpStream {
     private final URL base;
-    /**
-     * Authorization header value needed to get through the HTTP layer.
-     */
-    private final String authorization;
     
     private final OutputStream output;
     private final InputStream input;
@@ -43,28 +37,6 @@ public class FullDuplexHttpStream {
         return output;
     }
 
-    @Deprecated
-    public FullDuplexHttpStream(URL target) throws IOException {
-        this(target,basicAuth(target.getUserInfo()));
-    }
-
-    private static String basicAuth(String userInfo) {
-        if (userInfo != null)
-            return "Basic "+new String(Base64.encodeBase64(userInfo.getBytes()));
-        return null;
-    }
-
-    /**
-     * @param target something like {@code http://jenkins/cli?remoting=true}
-     *               which we then need to split into {@code http://jenkins/} + {@code cli?remoting=true}
-     *               in order to construct a crumb issuer request
-     * @deprecated use {@link #FullDuplexHttpStream(URL, String, String)} instead
-     */
-    @Deprecated
-    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
-        this(new URL(target.toString().replaceFirst("/cli.*$", "/")), target.toString().replaceFirst("^.+/(cli.*)$", "$1"), authorization);
-    }
-
     /**
      * @param base the base URL of Jenkins
      * @param relativeTarget
@@ -81,7 +53,6 @@ public class FullDuplexHttpStream {
         }
 
         this.base = tryToResolveRedirects(base, authorization);
-        this.authorization = authorization;
 
         URL target = new URL(this.base, relativeTarget);
 

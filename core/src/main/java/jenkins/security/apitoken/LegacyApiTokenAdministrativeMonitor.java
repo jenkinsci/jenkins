@@ -26,7 +26,6 @@ package jenkins.security.apitoken;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
-import hudson.node_monitors.AbstractAsyncNodeMonitorDescriptor;
 import hudson.util.HttpResponses;
 import jenkins.security.ApiTokenProperty;
 import org.jenkinsci.Symbol;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
 @Symbol("legacyApiTokenUsage")
 @Restricted(NoExternalUse.class)
 public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
-    private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LegacyApiTokenAdministrativeMonitor.class.getName());
     
     public LegacyApiTokenAdministrativeMonitor() {
         super("legacyApiToken");
@@ -92,18 +91,16 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
     @Restricted(NoExternalUse.class)
     public @Nullable ApiTokenStore.HashedToken getLegacyTokenOf(@Nonnull User user) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStore.HashedToken legacyToken = apiTokenProperty.getTokenStore().getLegacyToken();
-        return legacyToken;
+        return apiTokenProperty.getTokenStore().getLegacyToken();
     }
     
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, @Nullable ApiTokenStore.HashedToken legacyToken) {
+    public @Nullable ApiTokenProperty.TokenInfoAndStats getLegacyStatsOf(@Nonnull User user, ApiTokenStore.HashedToken legacyToken) {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
         if (legacyToken != null) {
             ApiTokenStats.SingleTokenStats legacyStats = apiTokenProperty.getTokenStats().findTokenStatsById(legacyToken.getUuid());
-            ApiTokenProperty.TokenInfoAndStats tokenInfoAndStats = new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
-            return tokenInfoAndStats;
+            return new ApiTokenProperty.TokenInfoAndStats(legacyToken, legacyStats);
         }
         
         // in case the legacy token was revoked during the request
@@ -115,7 +112,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasFreshToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasFreshToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }
@@ -139,7 +136,7 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
      */
     // used by Jelly view
     @Restricted(NoExternalUse.class)
-    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, @Nullable ApiTokenProperty.TokenInfoAndStats legacyStats) {
+    public boolean hasMoreRecentlyUsedToken(@Nonnull User user, ApiTokenProperty.TokenInfoAndStats legacyStats) {
         if (legacyStats == null) {
             return false;
         }

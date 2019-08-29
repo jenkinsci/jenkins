@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
@@ -52,6 +53,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
@@ -76,10 +78,18 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
-    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
+    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<>();
 
-    static OldDataMonitor get(Jenkins j) {
-        return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+    /**
+     * Gets instance of the monitor.
+     * @param j Jenkins instance
+     * @return Monitor instance
+     * @throws IllegalStateException Monitor not found.
+     *              It should never happen since the monitor is located in the core.
+     */
+    @Nonnull
+    static OldDataMonitor get(Jenkins j) throws IllegalStateException {
+        return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
 
     public OldDataMonitor() {
@@ -96,7 +106,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public Map<Saveable,VersionRange> getData() {
-        Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
+        Map<Saveable,VersionRange> r = new HashMap<>();
         for (Map.Entry<SaveableReference,VersionRange> entry : this.data.entrySet()) {
             Saveable s = entry.getKey().get();
             if (s != null) {
@@ -107,7 +117,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         OldDataMonitor odm = get(j);
         SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
         try {
@@ -156,7 +166,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @param version Hudson release when the data structure changed.
      */
     public static void report(Saveable obj, String version) {
-        OldDataMonitor odm = get(Jenkins.getInstance());
+        OldDataMonitor odm = get(Jenkins.get());
         try {
             SaveableReference ref = referTo(obj);
             while (true) {
@@ -385,7 +395,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static SaveableReference referTo(Saveable s) {
         if (s instanceof Run) {
             Job parent = ((Run) s).getParent();
-            if (Jenkins.getInstance().getItemByFullName(parent.getFullName()) == parent) {
+            if (Jenkins.get().getItemByFullName(parent.getFullName()) == parent) {
                 return new RunSaveableReference((Run) s);
             }
         }

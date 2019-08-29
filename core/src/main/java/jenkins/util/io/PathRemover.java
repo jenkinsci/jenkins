@@ -24,18 +24,13 @@
 
 package jenkins.util.io;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Functions;
-import hudson.Util;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
@@ -45,25 +40,36 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Functions;
+import hudson.Util;
+
 @Restricted(NoExternalUse.class)
 public class PathRemover {
 
     public static PathRemover newSimpleRemover() {
-        return new PathRemover(ignored -> false);
+        return new PathRemover(ignored -> false, PathChecker.ALLOW_ALL);
     }
 
     public static PathRemover newRemoverWithStrategy(@Nonnull RetryStrategy retryStrategy) {
-        return new PathRemover(retryStrategy);
+        return new PathRemover(retryStrategy, PathChecker.ALLOW_ALL);
     }
 
-    public static PathRemover newRobustRemover(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries));
+    public static PathRemover newFilteredRobustRemover(@Nonnull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathChecker);
     }
 
     private final RetryStrategy retryStrategy;
+    private final PathChecker pathChecker;
 
-    private PathRemover(@Nonnull RetryStrategy retryStrategy) {
+    private PathRemover(@Nonnull RetryStrategy retryStrategy, @Nonnull PathChecker pathChecker) {
         this.retryStrategy = retryStrategy;
+        this.pathChecker = pathChecker;
     }
 
     public void forceRemoveFile(@Nonnull Path path) throws IOException {
@@ -92,6 +98,14 @@ public class PathRemover {
             if (retryStrategy.shouldRetry(retryAttempt)) continue;
             throw new CompositeIOException(retryStrategy.failureMessage(path, retryAttempt), errors);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @FunctionalInterface
+    public interface PathChecker {
+        void check(@Nonnull Path path) throws SecurityException;
+
+        PathChecker ALLOW_ALL = path -> {};
     }
 
     @Restricted(NoExternalUse.class)
@@ -185,27 +199,29 @@ public class PathRemover {
             return sb.toString();
         }
     }
-    
-    private static Optional<IOException> tryRemoveFile(@Nonnull Path path) {
+
+    private Optional<IOException> tryRemoveFile(@Nonnull Path path) {
         try {
-            removeOrMakeRemovableThenRemove(path);
+            removeOrMakeRemovableThenRemove(path.normalize());
             return Optional.empty();
         } catch (IOException e) {
             return Optional.of(e);
         }
     }
 
-    private static List<IOException> tryRemoveRecursive(@Nonnull Path path) {
-        List<IOException> accumulatedErrors = Util.isSymlink(path) ? new ArrayList<>() :
-                tryRemoveDirectoryContents(path);
-        tryRemoveFile(path).ifPresent(accumulatedErrors::add);
+    private List<IOException> tryRemoveRecursive(@Nonnull Path path) {
+        Path normalized = path.normalize();
+        List<IOException> accumulatedErrors = Util.isSymlink(normalized) ? new ArrayList<>() :
+                tryRemoveDirectoryContents(normalized);
+        tryRemoveFile(normalized).ifPresent(accumulatedErrors::add);
         return accumulatedErrors;
     }
 
-    private static List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
+    private List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
+        Path normalized = path.normalize();
         List<IOException> accumulatedErrors = new ArrayList<>();
-        if (!Files.isDirectory(path)) return accumulatedErrors;
-        try (DirectoryStream<Path> children = Files.newDirectoryStream(path)) {
+        if (!Files.isDirectory(normalized)) return accumulatedErrors;
+        try (DirectoryStream<Path> children = Files.newDirectoryStream(normalized)) {
             for (Path child : children) {
                 accumulatedErrors.addAll(tryRemoveRecursive(child));
             }
@@ -215,7 +231,8 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private static void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
+    private void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
+        pathChecker.check(path);
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
@@ -254,9 +271,9 @@ public class PathRemover {
          $ rm x
          rm: x not removed: Permission denied
          */
-        Path parent = path.getParent();
-        if (parent != null && !Files.isWritable(parent)) {
-            makeWritable(parent);
+        Optional<Path> maybeParent = Optional.ofNullable(path.getParent()).map(Path::normalize).filter(p -> !Files.isWritable(p));
+        if (maybeParent.isPresent()) {
+            makeWritable(maybeParent.get());
         }
     }
 
@@ -272,6 +289,14 @@ public class PathRemover {
             } catch (UnsupportedOperationException ignored) {
                 // PosixFileAttributes not supported, fall back to old IO.
             }
+        } else {
+          /*
+           * If on Windows a folder has a read only attribute set, the file.setWritable(true) doesn't work (JENKINS-57855)
+           */
+          DosFileAttributeView dos = Files.getFileAttributeView(path, DosFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+          if (dos != null) {
+            dos.setReadOnly(false);
+          }
         }
 
         /*

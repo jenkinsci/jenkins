@@ -53,7 +53,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
     private static void install(Computer c, TaskListener listener) {
         try {
-            final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
+            final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
             VirtualChannel ch = c.getChannel();
             if (ch==null) return;  // defensive check
@@ -82,11 +82,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             }
 
             // filter out ones that doesn't apply
-            for (Iterator<SlaveRestarter> itr = restarters.iterator(); itr.hasNext(); ) {
-                SlaveRestarter r =  itr.next();
-                if (!r.canWork())
-                    itr.remove();
-            }
+            restarters.removeIf(r -> !r.canWork());
 
             e.addListener(new EngineListenerAdapter() {
                 @Override

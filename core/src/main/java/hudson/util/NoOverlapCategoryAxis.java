@@ -70,15 +70,14 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
             Rectangle2D r = null;
 
             int categoryIndex = 0;
-            Iterator iterator = ticks.iterator();
-            while (iterator.hasNext()) {
+            for (Object tick1 : ticks) {
 
-                CategoryTick tick = (CategoryTick) iterator.next();
+                CategoryTick tick = (CategoryTick) tick1;
                 g2.setFont(getTickLabelFont(tick.getCategory()));
                 g2.setPaint(getTickLabelPaint(tick.getCategory()));
 
                 CategoryLabelPosition position
-                    = this.getCategoryLabelPositions().getLabelPosition(edge);
+                        = this.getCategoryLabelPositions().getLabelPosition(edge);
                 double x0 = 0.0;
                 double x1 = 0.0;
                 double y0 = 0.0;
@@ -90,24 +89,21 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                             edge);
                     y1 = state.getCursor() - this.getCategoryLabelPositionOffset();
                     y0 = y1 - state.getMax();
-                }
-                else if (edge == RectangleEdge.BOTTOM) {
+                } else if (edge == RectangleEdge.BOTTOM) {
                     x0 = getCategoryStart(categoryIndex, ticks.size(),
                             dataArea, edge);
                     x1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
                     y0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     y1 = y0 + state.getMax();
-                }
-                else if (edge == RectangleEdge.LEFT) {
+                } else if (edge == RectangleEdge.LEFT) {
                     y0 = getCategoryStart(categoryIndex, ticks.size(),
                             dataArea, edge);
                     y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
                     x1 = state.getCursor() - this.getCategoryLabelPositionOffset();
                     x0 = x1 - state.getMax();
-                }
-                else if (edge == RectangleEdge.RIGHT) {
+                } else if (edge == RectangleEdge.RIGHT) {
                     y0 = getCategoryStart(categoryIndex, ticks.size(),
                             dataArea, edge);
                     y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
@@ -117,7 +113,7 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                 }
                 Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
                         (y1 - y0));
-                if(r==null || !r.intersects(area)) {
+                if (r == null || !r.intersects(area)) {
                     Point2D anchorPoint = RectangleAnchor.coordinates(area,
                             position.getCategoryAnchor());
                     TextBlock block = tick.getLabel();
@@ -131,7 +127,7 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                             (float) anchorPoint.getY(), position.getAngle());
                     if (plotState != null && plotState.getOwner() != null) {
                         EntityCollection entities
-                            = plotState.getOwner().getEntityCollection();
+                                = plotState.getOwner().getEntityCollection();
                         if (entities != null) {
                             String tooltip = getCategoryLabelToolTip(
                                     tick.getCategory());
@@ -141,10 +137,10 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                     }
                     r = bounds.getBounds2D();
                     // add margins in all directions
-                    r.add(r.getMaxX() + r.getWidth()/2, r.getCenterY());
-                    r.add(r.getMinX() - r.getWidth()/2, r.getCenterY());
-                    r.add(r.getCenterX(), r.getMinY() - r.getHeight()/2);
-                    r.add(r.getCenterX(), r.getMaxX() + r.getHeight()/2);
+                    r.add(r.getMaxX() + r.getWidth() / 2, r.getCenterY());
+                    r.add(r.getMinX() - r.getWidth() / 2, r.getCenterY());
+                    r.add(r.getCenterX(), r.getMinY() - r.getHeight() / 2);
+                    r.add(r.getCenterX(), r.getMaxX() + r.getHeight() / 2);
                 }
 
                 categoryIndex++;

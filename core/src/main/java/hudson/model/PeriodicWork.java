@@ -129,9 +129,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         private final Set<PeriodicWork> registered = new HashSet<>();
 
         PeriodicWorkExtensionListListener(ExtensionList<PeriodicWork> initiallyRegistered) {
-            for (PeriodicWork p : initiallyRegistered) {
-                registered.add(p);
-            }
+            registered.addAll(initiallyRegistered);
         }
 
         @Override

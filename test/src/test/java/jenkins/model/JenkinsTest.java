@@ -38,6 +38,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -47,6 +48,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
 import hudson.model.Failure;
+import hudson.model.InvisibleAction;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
@@ -68,16 +70,19 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -95,6 +100,7 @@ import javax.annotation.CheckForNull;
  * @see Jenkins
  * @see JenkinsRule
  */
+@Category(SmokeTest.class)
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -131,7 +137,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
         assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
     }
@@ -148,7 +154,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
     
@@ -160,7 +166,7 @@ public class JenkinsTest {
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
         assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
@@ -172,7 +178,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertTrue(jenkins.isNameUnique("jobName1", curJobName));
     }
 
@@ -183,7 +189,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertFalse(jenkins.isNameUnique(jobName, curJobName));
     }
 
@@ -194,7 +200,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
         assertTrue(jenkins.isNameUnique(curJobName, curJobName));
     }
@@ -209,7 +215,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
         assertEquals(FormValidation.ok(), v);
     }
@@ -225,7 +231,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
@@ -241,7 +247,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
@@ -252,7 +258,7 @@ public class JenkinsTest {
             "", "Jenkins"    
         };
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
             assertEquals(FormValidation.Kind.OK, v.kind);
@@ -266,7 +272,7 @@ public class JenkinsTest {
             "Jenkins!", "Jenkins[]", "Jenkin<>s", "^Jenkins", ".."    
         };
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
@@ -324,6 +330,15 @@ public class JenkinsTest {
     }
 
     @Test
+    @Issue("JENKINS-58548")
+    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        WebClient wc = j.createWebClient().login("admin");
+        TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
+        assertEquals("hello", page.getContent());
+    }
+
+    @Test
     public void testDoEval() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
         
@@ -333,33 +348,30 @@ public class JenkinsTest {
             grant(Jenkins.READ).everywhere().to("bob").
             grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
 
-        WebClient wc = j.createWebClient();
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .withBasicApiToken(User.getById("alice", true));
 
-        wc.withBasicApiToken(User.getById("alice", true));
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
-        assertEquals("3", eval(wc));
+        assertEquals("3", eval(wc).getWebResponse().getContentAsString());
 
         wc.withBasicApiToken(User.getById("bob", true));
-        try {
-            eval(wc);
-            fail("bob has only READ");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        Page page = eval(wc);
+        assertEquals("bob has only READ", 
+                HttpURLConnection.HTTP_FORBIDDEN, 
+                page.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(User.getById("charlie", true));
-        try {
-            eval(wc);
-            fail("charlie has ADMINISTER but not RUN_SCRIPTS");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
+        page = eval(wc);
+        assertEquals("charlie has ADMINISTER but not RUN_SCRIPTS", 
+                HttpURLConnection.HTTP_FORBIDDEN,
+                page.getWebResponse().getStatusCode());
     }
-    private String eval(WebClient wc) throws Exception {
+    private Page eval(WebClient wc) throws Exception {
         WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
-        return wc.getPage(req).getWebResponse().getContentAsString();
+        return wc.getPage(req);
     }
 
     @TestExtension("testUnprotectedRootAction")
@@ -379,22 +391,15 @@ public class JenkinsTest {
         }
 
         public HttpResponse doDynamic() {
-            assertTrue(Jenkins.getInstance().getAuthentication().getName().equals("anonymous"));
+            assertTrue(Jenkins.get().getAuthentication().getName().equals("anonymous"));
             count++;
             return HttpResponses.html("OK");
         }
     }
 
     @TestExtension("testUnprotectedRootAction")
-    public static class ProtectedRootActionImpl implements RootAction {
-        public String getIconFileName() {
-            return null;
-        }
-
-        public String getDisplayName() {
-            return null;
-        }
-
+    public static class ProtectedRootActionImpl extends InvisibleAction implements RootAction {
+        @Override
         public String getUrlName() {
             return "foobar-zot";
         }
@@ -414,13 +419,13 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
-        assertTrue(!Jenkins.getInstance().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
+        assertTrue(!Jenkins.get().hasPermission(Jenkins.ANONYMOUS, Jenkins.READ));
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(p.asText(), HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
@@ -465,8 +470,8 @@ public class JenkinsTest {
 
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
 
         WebRequest req = new WebRequest(url, HttpMethod.POST);
         Page page = wc.getPage(wc.addCrumb(req));
@@ -478,20 +483,45 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-38487")
-    public void startupShouldNotFailOnFailingOnlineListener() {
-        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+    public void startupShouldNotFailOnIOExceptionOnlineListener() {
+        // We do nothing, IOExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
+
+        assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
     }
 
-    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
-    public static final class FailingOnOnlineListener extends ComputerListener {
-        
+    @TestExtension(value = "startupShouldNotFailOnIOExceptionOnlineListener")
+    public static final class IOExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
         @Override
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
             throw new IOException("Something happened (the listener always throws this exception)");
         }
     }
-    
+
+    @Test
+    @Issue("JENKINS-57111")
+    public void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
+        // We do nothing, RuntimeExceptionOnOnlineListener & JenkinsRule should cause the
+        // boot failure if the issue is not fixed.
+        assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnRuntimeExceptionOnlineListener")
+    public static final class RuntimeExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
+            throw new RuntimeException("Something happened (the listener always throws this exception)");
+        }
+    }
+
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_singleEnable_roundtrip() throws Exception {

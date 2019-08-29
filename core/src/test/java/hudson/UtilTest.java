@@ -24,34 +24,32 @@
  */
 package hudson;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Properties;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.attribute.PosixFilePermissions;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.*;
-
+import hudson.model.TaskListener;
+import hudson.os.WindowsUtil;
+import hudson.util.StreamTaskListener;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import hudson.util.StreamTaskListener;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -160,6 +158,7 @@ public class UtilTest {
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
             "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
+            "Foo \uD800\uDF98 Foo", "Foo%20%F0%90%8E%98%20Foo"
         };
         for (int i = 0; i < data.length; i += 2) {
             assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));
@@ -258,14 +257,36 @@ public class UtilTest {
     @Test
     public void testIsSymlink_onWindows_junction() throws Exception {
         Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
-        tmp.newFolder("targetDir");
+        File targetDir = tmp.newFolder("targetDir");
         File d = tmp.newFolder("dir");
-        Process p = new ProcessBuilder()
-                .directory(d)
-                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
-                .start();
-        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
-        assertTrue(Util.isSymlink(new File(d, "junction")));
+        File junction = WindowsUtil.createJunction(new File(d, "junction"), targetDir);
+        assertTrue(Util.isSymlink(junction));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        File targetDir = tmp.newFolder();
+        File file = new File(targetDir, "test-file");
+        new FilePath(file).touch(System.currentTimeMillis());
+        File dir = tmp.newFolder();
+        File junction = WindowsUtil.createJunction(new File(dir, "junction"), targetDir);
+
+        assertTrue(Util.isSymlink(junction));
+        assertFalse(Util.isSymlink(file));
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
+        File folder = tmp.newFolder();
+        File file = new File(folder, "test-file");
+        new FilePath(file).touch(System.currentTimeMillis());
+        Path link = tmp.getRoot().toPath().resolve("sym-link");
+        Path pathWithSymlinkParent = Files.createSymbolicLink(link, folder.toPath()).resolve("test-file");
+        assertTrue(Util.isSymlink(link));
+        assertFalse(Util.isSymlink(pathWithSymlinkParent));
     }
 
     @Test
@@ -519,5 +540,43 @@ public class UtilTest {
     
     private Date parseDate(String dateString) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateString);
+    }
+
+    @Test
+    @Issue("SECURITY-904")
+    public void resolveSymlinkToFile() throws Exception {
+        //  root
+        //      /a
+        //          /aa
+        //              aa.txt
+        //          /_b => symlink to /root/b
+        //      /b
+        //          /_a => symlink to /root/a
+        File root = tmp.getRoot();
+        File a = new File(root, "a");
+        File aa = new File(a, "aa");
+        aa.mkdirs();
+        File aaTxt = new File(aa, "aa.txt");
+        FileUtils.write(aaTxt, "aa");
+
+        File b = new File(root, "b");
+        b.mkdir();
+
+        File _a = new File(b, "_a");
+        Util.createSymlink(_a.getParentFile(), a.getAbsolutePath(), _a.getName(), TaskListener.NULL);
+
+        File _b = new File(a, "_b");
+        Util.createSymlink(_b.getParentFile(), b.getAbsolutePath(), _b.getName(), TaskListener.NULL);
+
+        assertTrue(Files.isSymbolicLink(_a.toPath()));
+        assertTrue(Files.isSymbolicLink(_b.toPath()));
+
+        // direct symlinks are resolved
+        assertEquals(Util.resolveSymlinkToFile(_a), a);
+        assertEquals(Util.resolveSymlinkToFile(_b), b);
+
+        // intermediate symlinks are NOT resolved
+        assertNull(Util.resolveSymlinkToFile(new File(_a, "aa")));
+        assertNull(Util.resolveSymlinkToFile(new File(_a, "aa/aa.txt")));
     }
 }

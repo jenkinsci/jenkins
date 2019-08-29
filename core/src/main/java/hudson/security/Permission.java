@@ -253,7 +253,7 @@ public final class Permission {
 
         try {
             // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.getInstance().getPluginManager().uberClassLoader);
+            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.get().getPluginManager().uberClassLoader);
             PermissionGroup g = PermissionGroup.get(cl);
             if(g ==null)  return null;
             return g.find(id.substring(idx+1));
@@ -287,7 +287,7 @@ public final class Permission {
     /**
      * All permissions in the system but in a single list.
      */
-    private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
+    private static final List<Permission> ALL = new CopyOnWriteArrayList<>();
 
     private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
 

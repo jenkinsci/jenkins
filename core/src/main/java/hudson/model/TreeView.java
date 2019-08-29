@@ -62,12 +62,12 @@ public class TreeView extends View implements ViewGroup {
      * List of job names. This is what gets serialized.
      */
     private final Set<String> jobNames
-        = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+        = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
 
     /**
      * Nested views.
      */
-    private final CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+    private final CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<>();
 
     @DataBoundConstructor
     public TreeView(String name) {
@@ -93,7 +93,7 @@ public class TreeView extends View implements ViewGroup {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        return Jenkins.getInstance().getItems();
+        return Jenkins.get().getItems();
 //        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
 //        for (String name : jobNames) {
 //            TopLevelItem item = Hudson.getInstance().getItem(name);
@@ -140,9 +140,20 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public View getView(String name) {
-        for (View v : views)
-            if(v.getViewName().equals(name))
+        //Top level views returned first if match
+        for (View v : views) {
+            if (v.getViewName().equals(name)) {
                 return v;
+            }
+        }
+        for (View v : views) {
+            if (v instanceof ViewGroup) {
+                View nestedView = ((ViewGroup) v).getView(name);
+                if (nestedView != null) {
+                    return nestedView;
+                }
+            }
+        }
         return null;
     }
 
@@ -173,7 +184,7 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.getInstance().getViewsTabBar();
+        return Jenkins.get().getViewsTabBar();
     }
 
     public ItemGroup<? extends TopLevelItem> getItemGroup() {

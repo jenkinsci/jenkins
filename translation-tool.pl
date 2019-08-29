@@ -42,11 +42,11 @@
 # to Jenkins instead of the old name.
 
 use strict;
+use File::Basename;
 use File::Find;
-# to install the module: cpan install Config::Properties
-use Config::Properties;
+use File::Path;
 
-my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter) = (undef, undef, "./", undef, undef, undef, undef, undef, undef);
+my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter, $target) = (undef, undef, "./", undef, undef, undef, undef, undef, undef, "./");
 my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
 ## read arguments
 foreach (@ARGV) {
@@ -66,6 +66,8 @@ foreach (@ARGV) {
     $reuse = $1;
   } elsif (/^--counter$/ || /^--counter=true$/) {
      $counter = 1;
+  } elsif (/^--target=(.*)$/) {
+     $target = $1;
   } else {
     $dir=$_;
   }
@@ -78,13 +80,13 @@ if (!$lang || $lang eq "en") {
   exit();
 }
 
-print STDERR "\rFinding files ...";
+print STDERR "Finding files ...\n";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
+print STDERR "Found ".(scalar keys @files)." files\n";
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
-print STDERR "\r             ";
 
 ## process each file
 foreach (@files) {
@@ -124,6 +126,7 @@ sub processFile {
    #  efile -> english file
    my $file = shift;
    my ($ofile, $efile) = ($file, $file);
+   $ofile =~ s/$dir/$target/;
    $ofile =~ s/(\.jelly)|(\.properties)/_$lang.properties/;
    $efile =~ s/(\.jelly)/.properties/;
 
@@ -201,6 +204,8 @@ sub processFile {
                   if ($counter) {
                      # add unique value for each added translation
                      print F "---TranslateMe ".$countervalue."--- ".($ekeys{$_} ? $ekeys{$_} : $_)."\n";
+                  } else {
+                     print F "\n";
                   }
                }
                $countervalue++;
@@ -277,13 +282,23 @@ sub loadJellyFile {
 
 # Fill a hash with key/value pairs from a .properties file
 sub loadPropertiesFile {
-   my $filename = shift;
-   my $properties = Config::Properties->new();
-
-   open my $file, '<', $filename or die "unable to open property file: ". $filename;
-   $properties->load($file);
-   close(F);
-   return $properties->properties;
+   my $file = shift;
+   my %ret;
+   if (open(F, "$file")) {
+      my ($cont, $key, $val) = (0, undef, undef);
+      while (<F>) {
+         s/[\r\n]+//;
+         $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
+         if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
+           ($key, $val) = (trim($1), trim($2));
+           $ret{$key}=$val;
+         }
+         $cont = (/\\\s*$/) ? 1 : 0;
+      }
+      close(F);
+      $ret{$key} .= "\n$1" if ($cont && /\s*(.*)[\\\s]*$/);
+   }
+   return %ret;
 }
 
 # remove unused keys from a file
@@ -359,6 +374,7 @@ sub isUtf8 {
 # Note: the license is read from the head of this file
 my $license;
 sub printLicense {
+   my $file = shift;
    if (!$license && open(F, $0)) {
       $license = "";
       my $on = 0;
@@ -370,7 +386,11 @@ sub printLicense {
       close(F);
    }
    if ($license && $license ne "") {
-      open(F, ">" . shift) || die $!;
+      my $dirname = dirname($file);
+      unless (-d $dirname) {
+         mkpath($dirname);
+      }
+      open(F, ">" . $file) || die $!;
       print F "$license\n";
       close(F);
    }
@@ -404,6 +424,7 @@ Usage: $0 --lang=xx [options] [dir]
                              order to utilize them when the same key appears
      --counter=true       -> to each translated key, unique value is added to easily identify match missing translation
                              with value in source code (default false)
+     --target=folder      -> target folder for writing files
 
    Examples:
      - Look for Spanish files with incomplete keys in the 'main' folder,

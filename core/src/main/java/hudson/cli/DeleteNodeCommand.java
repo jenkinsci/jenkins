@@ -31,7 +31,6 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * CLI command, which deletes Jenkins nodes.
@@ -41,6 +40,7 @@ import java.util.logging.Logger;
 @Extension
 public class DeleteNodeCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
     private List<String> nodes;
 
@@ -56,11 +56,10 @@ public class DeleteNodeCommand extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
 
-        final HashSet<String> hs = new HashSet<String>();
-        hs.addAll(nodes);
+        final HashSet<String> hs = new HashSet<>(nodes);
 
         for (String node_s : hs) {
-            Node node = null;
+            Node node;
 
             try {
                 node = jenkins.getNode(node_s);

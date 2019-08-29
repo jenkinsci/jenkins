@@ -232,7 +232,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         }
         
         public DescriptorImpl getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(TestDescribable.DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(TestDescribable.DescriptorImpl.class);
         }
         
         @TestExtension({
@@ -251,7 +251,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         @RequirePOST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
-            Jenkins.getInstance().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
+            Jenkins.get().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
         }
         
         @Override

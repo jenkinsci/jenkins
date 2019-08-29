@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -188,7 +189,7 @@ public class Api extends AbstractModelObject {
                 // simple output allowed
                 rsp.setContentType("text/plain;charset=UTF-8");
                 String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
-                o.write(text.getBytes("UTF-8"));
+                o.write(text.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 

@@ -22,12 +22,12 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
         p()
         div(class:"behavior-loading", _("LOADING"))
         f.form(method:"post",name:"config",action:"configure") {
-            set("instance",my);
-            set("descriptor", my.descriptor);
+            set("instance",my)
+            set("descriptor", my.descriptor)
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
-                    f.checkbox()
+                f.entry() {
+                    f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
                 f.entry(title:_("Access Control")) {
@@ -43,7 +43,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             }
 
             f.section(title: _("Agents")) {
-                f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
+                f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
                     if (my.slaveAgentPortEnforced) {
                         if (my.slaveAgentPort == -1) {
                             text(_("slaveAgentPortEnforcedDisabled"))
@@ -58,7 +58,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
-                        def agentProtocols = my.agentProtocols;
+                        def agentProtocols = my.agentProtocols
                         table(width:"100%") {
                             for (AgentProtocol p : AgentProtocol.all()) {
                                 if (p.name != null && !p.required) {
@@ -66,19 +66,19 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                         f.checkbox(name: "agentProtocol",
                                                 title: p.displayName,
                                                 checked: agentProtocols.contains(p.name),
-                                                json: p.name);
+                                                json: p.name)
                                     }
                                     tr() {
-                                        td(colspan:"2");
+                                        td(colspan:"2")
                                         td(class:"setting-description"){
-                                            st.include(from:p, page: "description", optional:true);
+                                            st.include(from:p, page: "description", optional:true)
                                             if (p.deprecated) {
                                               br()
                                               text(b(_("Deprecated. ")))
-                                              st.include(from:p, page: "deprecationCause", optional:true);
+                                              st.include(from:p, page: "deprecationCause", optional:true)
                                             }
                                         }
-                                        td();
+                                        td()
                                     }
                                 }
                             }

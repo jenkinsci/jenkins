@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
@@ -30,6 +33,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
@@ -93,6 +97,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -107,6 +112,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,9 +127,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -652,7 +661,7 @@ public class QueueTest {
      * and then introduce a security restriction to prohibit that.
      */
     @Test public void permissionSensitiveSlaveAllocations() throws Exception {
-        r.jenkins.setNumExecutors(0); // restrict builds to those slaves
+        r.jenkins.setNumExecutors(0); // restrict builds to those agents
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
@@ -1065,6 +1074,117 @@ public class QueueTest {
             if (o instanceof Queue) {
                 count++;
             }
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelItem_PermissionIsChecked() throws Exception {
+        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId());
+    }
+
+    @Test
+    @Issue("SECURITY-891")
+    public void doCancelQueue_PermissionIsChecked() throws Exception {
+        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue");
+    }
+
+    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider) throws Exception {
+        Queue q = r.jenkins.getQueue();
+
+        r.jenkins.setCrumbIssuer(null);
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.CANCEL).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().to("user")
+        );
+
+        // prevent execution to push stuff into the queue
+        r.jenkins.setNumExecutors(0);
+        assertThat(q.getItems().length, equalTo(0));
+
+        FreeStyleProject testProject = r.createFreeStyleProject("test");
+        testProject.scheduleBuild(new UserIdCause());
+
+        Queue.Item[] items = q.getItems();
+        assertThat(items.length, equalTo(1));
+        Queue.Item currentOne = items[0];
+        assertFalse(currentOne.getFuture().isCancelled());
+
+        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+
+        { // user without right cannot cancel
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
+            wc.login("user");
+            Page p = wc.getPage(request);
+            // currently the endpoint return a redirection to the previously visited page, none in our case
+            // (so force no redirect to avoid false positive error)
+            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+
+            assertFalse(currentOne.getFuture().isCancelled());
+        }
+        { // user with right can
+            JenkinsRule.WebClient wc = r.createWebClient()
+                    .withRedirectEnabled(false)
+                    .withThrowExceptionOnFailingStatusCode(false);
+            wc.login("admin");
+            Page p = wc.getPage(request);
+            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+
+            assertTrue(currentOne.getFuture().isCancelled());
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-57805")
+    public void brokenAffinityKey() throws Exception {
+        BrokenAffinityKeyProject brokenProject = r.createProject(BrokenAffinityKeyProject.class, "broken-project");
+        // Before the JENKINS-57805 fix, the test times out because the `NullPointerException` repeatedly thrown from
+        // `BrokenAffinityKeyProject.getAffinityKey()` prevents `Queue.maintain()` from completing.
+        r.buildAndAssertSuccess(brokenProject);
+    }
+
+    public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {
+        public BrokenAffinityKeyProject(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+        @Override
+        public String getAffinityKey() {
+            throw new NullPointerException("oops!");
+        }
+        @Override
+        protected Class<BrokenAffinityKeyBuild> getBuildClass() {
+            return BrokenAffinityKeyBuild.class;
+        }
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return ExtensionList.lookupSingleton(DescriptorImpl.class);
+        }
+        @TestExtension("brokenAffinityKey")
+        public static class DescriptorImpl extends AbstractProjectDescriptor {
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new BrokenAffinityKeyProject(parent, name);
+            }
+            @Override
+            public String getDisplayName() {
+                return "Broken Affinity Key Project";
+            }
+        }
+    }
+
+    public static class BrokenAffinityKeyBuild extends Build<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> {
+        public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project) throws IOException {
+            super(project);
+        }
+        public BrokenAffinityKeyBuild(BrokenAffinityKeyProject project, File buildDir) throws IOException {
+            super(project, buildDir);
+        }
+        @Override
+        public void run() {
+            execute(new BuildExecution());
         }
     }
 }
