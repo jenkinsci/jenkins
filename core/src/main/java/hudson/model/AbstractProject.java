@@ -561,7 +561,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     private R getSomeBuildWithExistingWorkspace() throws IOException, InterruptedException {
-        for (R b = getLastBuild(); b!=null; b=b.getPreviousBuild()) {
+        for (R b = getLastBuild(); b != null; b = b.getPreviousBuild()) {
             FilePath ws = b.getWorkspace();
             if (ws!=null && ws.exists())   return b;
         }
