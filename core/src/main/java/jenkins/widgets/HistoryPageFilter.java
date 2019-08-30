@@ -210,7 +210,7 @@ public class HistoryPageFilter<T> {
                     }
                 }
             }
-        } else if (olderThan != null) {
+        } else {
             Iterator<ItemT> iter = items.iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();

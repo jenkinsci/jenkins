@@ -943,7 +943,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @Nonnull String getTimestampString() {
         long duration = System.currentTimeMillis()-timestamp.getTime();
-        return Util.getPastTimeString(duration);
+        return Util.getTimeSpanString(duration);
     }
 
     /**

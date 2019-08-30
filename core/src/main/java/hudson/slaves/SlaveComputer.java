@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Main;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
@@ -87,6 +88,8 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -900,6 +903,32 @@ public class SlaveComputer extends Computer {
      */
     public String getOSDescription() throws IOException, InterruptedException {
         return channel.call(new DetectOS()) ? "Unix" : "Windows";
+    }
+
+    /**
+     * Expose real full env vars map from agent for UI presentation
+     */
+    public Map<String,String> getEnvVarsFull() throws IOException, InterruptedException {
+        if(getChannel() == null) {
+            Map<String, String> env = new TreeMap<> ();
+            env.put("N/A","N/A");
+            return env;
+        } else {
+            return getChannel().call(new ListFullEnvironment());
+        }
+    }
+
+    private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+        public Map<String,String> call() throws IOException {
+            Map<String, String> env = new TreeMap<>(System.getenv());
+            if(Main.isUnitTest || Main.isDevelopmentMode) {
+                // if unit test is launched with maven debug switch,
+                // we need to prevent forked Maven processes from seeing it, or else
+                // they'll hang
+                env.remove("MAVEN_OPTS");
+            }
+            return env;
+        }
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());

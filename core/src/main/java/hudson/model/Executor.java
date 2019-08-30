@@ -767,7 +767,7 @@ public class Executor extends Thread implements ModelObject {
      *      string like "3 minutes" "1 day" etc.
      */
     public String getTimestampString() {
-        return Util.getPastTimeString(getElapsedTime());
+        return Util.getTimeSpanString(getElapsedTime());
     }
 
     /**
