@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.TaskListener;
 
 import java.io.InputStream;
@@ -15,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.file.LinkOption;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
@@ -84,10 +84,9 @@ public class SecretRewriter {
 
         AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
         try {
-
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
-                 InputStream fin = Files.newInputStream(f.toPath());
+                 InputStream fin = Files.newInputStream(Util.fileToPath(f));
                  BufferedReader r = new BufferedReader(new InputStreamReader(fin, StandardCharsets.UTF_8))) {
                 String line;
                 StringBuilder buf = new StringBuilder();
@@ -113,8 +112,6 @@ public class SecretRewriter {
                     buf.append(line.substring(copied));
                     out.println(buf.toString());
                 }
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             }
 
             if (modified) {
