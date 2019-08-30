@@ -83,7 +83,7 @@ public class AtomicFileWriterTest {
 
         final Path childFileInSymlinkToDir = Paths.get(zeSymlink.toString(), "childFileInSymlinkToDir");
 
-        new AtomicFileWriter(childFileInSymlinkToDir, Charset.forName("UTF-8"));
+        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -154,7 +154,7 @@ public class AtomicFileWriterTest {
         assertFalse(parentExistsAndIsAFile.exists());
 
         try {
-            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), Charset.forName("UTF-8"));
+            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8);
             fail("Expected a failure");
         } catch (IOException e) {
             assertThat(e.getMessage(),

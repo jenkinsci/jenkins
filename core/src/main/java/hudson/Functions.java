@@ -1664,7 +1664,7 @@ public class Functions {
         for( int i=0; i<projectName.length(); i++ ) {
             char ch = projectName.charAt(i);
             if(('a'<=ch && ch<='z')
-            || ('z'<=ch && ch<='Z')
+            || ('A'<=ch && ch<='Z')
             || ('0'<=ch && ch<='9')
             || "-_.".indexOf(ch)>=0)
                 buf.append(ch);

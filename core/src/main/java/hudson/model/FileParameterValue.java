@@ -67,6 +67,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class FileParameterValue extends ParameterValue {
     private static final String FOLDER_NAME = "fileParameters";
     private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*");
+    private static final long serialVersionUID = -143427023159076073L;
 
     /**
      * Escape hatch for SECURITY-1074, fileParameter used to escape their expected folder.
