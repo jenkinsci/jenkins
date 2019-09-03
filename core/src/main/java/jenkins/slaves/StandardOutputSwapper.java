@@ -61,10 +61,11 @@ public class StandardOutputSwapper extends ComputerListener {
             if (out<0)      throw new IOException("Failed to dup(1)");
             Constructor<FileDescriptor> c = FileDescriptor.class.getDeclaredConstructor(int.class);
             c.setAccessible(true);
-            FileOutputStream fos = new FileOutputStream(c.newInstance(out));
+            try (FileOutputStream fos = new FileOutputStream(c.newInstance(out))) {
 
-            // swap it into channel so that it'll use the new file descriptor
-            stdout.swap(fos);
+                // swap it into channel so that it'll use the new file descriptor
+                stdout.swap(fos);
+            }
 
             // close fd=1 (stdout) and duplicate fd=2 (stderr) into fd=1 (stdout)
             GNUCLibrary.LIBC.close(1);
