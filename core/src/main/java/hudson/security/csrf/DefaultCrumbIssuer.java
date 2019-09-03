@@ -18,10 +18,8 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import jenkins.security.HexStringConfidentialKey;
 

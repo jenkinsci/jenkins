@@ -4,9 +4,7 @@ import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
 
-import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
 import javax.jmdns.impl.JmDNSImpl;
 import java.io.Closeable;
 import java.io.IOException;

@@ -25,7 +25,6 @@ package hudson.model;
 
 import org.junit.Test;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
