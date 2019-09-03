@@ -179,19 +179,17 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             cache.put(getId(), b == null ? RESOLVES_TO_NONE : b.getNumber());
             File storage = storageFor(buildDir);
             LOGGER.fine(() -> "saving to " + storage + ": " + cache);
-            try {
-                try (AtomicFileWriter cw = new AtomicFileWriter(storage)) {
-                    try {
-                        for (Map.Entry<String, Integer> entry : cache.entrySet()) {
-                            cw.write(entry.getKey());
-                            cw.write(' ');
-                            cw.write(Integer.toString(entry.getValue()));
-                            cw.write('\n');
-                        }
-                        cw.commit();
-                    } finally {
-                        cw.abort();
+            try (AtomicFileWriter cw = new AtomicFileWriter(storage)) {
+                try {
+                    for (Map.Entry<String, Integer> entry : cache.entrySet()) {
+                        cw.write(entry.getKey());
+                        cw.write(' ');
+                        cw.write(Integer.toString(entry.getValue()));
+                        cw.write('\n');
                     }
+                    cw.commit();
+                } finally {
+                    cw.abort();
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, "failed to update " + storage, x);
