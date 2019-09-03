@@ -48,6 +48,7 @@ public class BootFailureTest {
 
         @Override
         public Hudson newHudson() throws Exception {
+            localPort = 0;
             ServletContext ws = createWebServer();
             wa = new WebAppMain() {
                 @Override

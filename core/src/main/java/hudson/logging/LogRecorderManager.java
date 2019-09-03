@@ -87,7 +87,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     }
 
     static File configDir() {
-        return new File(Jenkins.getInstance().getRootDir(), "log");
+        return new File(Jenkins.get().getRootDir(), "log");
     }
 
     /**
@@ -135,7 +135,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     @RequirePOST
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
             lv = null;
@@ -206,7 +206,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         }
         return this;
     }

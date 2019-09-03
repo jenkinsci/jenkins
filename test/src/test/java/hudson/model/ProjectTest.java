@@ -373,7 +373,7 @@ public class ProjectTest {
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
         assertInstanceOf("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), BecauseOfDownstreamBuildInProgress.class);
@@ -956,7 +956,7 @@ public class ProjectTest {
 
         @Override
         public Task getOwnerTask() {
-            return (Task) Jenkins.getInstance().getItem(projectName);
+            return (Task) Jenkins.get().getItem(projectName);
         }
 
         @Override

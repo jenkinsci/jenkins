@@ -198,7 +198,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         }
 
         private boolean terminating() {
-            return Jenkins.getInstance().isTerminating();
+            return Jenkins.get().isTerminating();
         }
 
         @Override

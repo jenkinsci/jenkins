@@ -107,6 +107,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     public static Collection<JobPropertyDescriptor> all() {
-        return (Collection) Jenkins.getInstance().getDescriptorList(JobProperty.class);
+        return (Collection) Jenkins.get().getDescriptorList(JobProperty.class);
     }
 }

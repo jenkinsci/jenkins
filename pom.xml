@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.51</version>
+    <version>1.52</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.181</revision>
+    <revision>2.194</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -91,9 +91,10 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <guavaVersion>11.0.1</guavaVersion>
-    <slf4jVersion>1.7.25</slf4jVersion>
+    <slf4jVersion>1.7.26</slf4jVersion>
     <maven-plugin.version>2.14</maven-plugin.version>
-    <matrix-project.version>1.4.1</matrix-project.version>
+    <matrix-auth.version>2.3</matrix-auth.version>
+    <matrix-project.version>1.14</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <access-modifier.version>1.14</access-modifier.version>
@@ -104,10 +105,10 @@ THE SOFTWARE.
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
-    <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+    <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.29</remoting.version>
+    <remoting.version>3.33</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
 
@@ -158,7 +159,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.22.0</version>
+        <version>3.0.0</version>
       </dependency>
 
       <dependency>
@@ -271,7 +272,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.9</version>
+        <version>1.12</version>
       </dependency>
 
       <dependency>
@@ -630,8 +631,8 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
             <configuration>
               <threshold>High</threshold>
             </configuration>

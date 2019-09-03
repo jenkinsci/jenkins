@@ -93,6 +93,7 @@ body {
 
 body.two-column #main-panel {
   margin-left: 320px;
+  display:block;
 }
 
 body.full-screen {
@@ -112,6 +113,7 @@ body.full-screen #main-panel {
 
   body.two-column #main-panel {
     margin-left: 0;
+    display:block;
   }
 }
 
@@ -122,6 +124,7 @@ body.full-screen #main-panel {
 
   body.two-column #main-panel {
     margin-left: 360px;
+    display:block;
   }
 }
 

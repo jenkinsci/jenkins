@@ -89,7 +89,7 @@ public class DownloadService extends PageDecorator {
         if (doesNotSupportPostMessage())  return "";
 
         StringBuilder buf = new StringBuilder();
-        if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
+        if(Jenkins.get().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now && d.lastAttempt+TimeUnit.SECONDS.toMillis(10)<now) {
@@ -302,7 +302,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Jenkins.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.get().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**
@@ -337,7 +337,7 @@ public class DownloadService extends PageDecorator {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Jenkins.getInstance().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.get().getRootDir(),"updates/"+id));
         }
 
         /**

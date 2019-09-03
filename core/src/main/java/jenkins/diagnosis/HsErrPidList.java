@@ -151,7 +151,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
     private File getSecretKeyFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"secret.key");
+        return new File(Jenkins.get().getRootDir(),"secret.key");
     }
 
     private boolean findHeader(BufferedReader r) throws IOException {

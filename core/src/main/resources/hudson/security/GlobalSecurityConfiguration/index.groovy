@@ -22,8 +22,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
         p()
         div(class:"behavior-loading", _("LOADING"))
         f.form(method:"post",name:"config",action:"configure") {
-            set("instance",my);
-            set("descriptor", my.descriptor);
+            set("instance",my)
+            set("descriptor", my.descriptor)
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
                 f.entry() {
@@ -58,7 +58,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
-                        def agentProtocols = my.agentProtocols;
+                        def agentProtocols = my.agentProtocols
                         div() {
                             for (AgentProtocol p : AgentProtocol.all()) {
                                 if (p.name != null && !p.required) {
@@ -66,15 +66,15 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                         f.checkbox(name: "agentProtocol",
                                                 title: p.displayName,
                                                 checked: agentProtocols.contains(p.name),
-                                                json: p.name);
+                                                json: p.name)
                                     }
                                     div(class: "tr") {
                                         div(class:"setting-description"){
-                                            st.include(from:p, page: "description", optional:true);
+                                            st.include(from:p, page: "description", optional:true)
                                             if (p.deprecated) {
                                               br()
                                               text(b(_("Deprecated. ")))
-                                              st.include(from:p, page: "deprecationCause", optional:true);
+                                              st.include(from:p, page: "deprecationCause", optional:true)
                                             }
                                         }
                                     }

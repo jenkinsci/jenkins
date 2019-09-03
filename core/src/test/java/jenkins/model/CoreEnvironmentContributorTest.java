@@ -48,7 +48,7 @@ public class CoreEnvironmentContributorTest {
     public void buildEnvironmentForJobShouldntUseCurrentComputer() throws IOException, InterruptedException {
         PowerMockito.mockStatic(Computer.class);
         PowerMockito.mockStatic(Jenkins.class);
-        PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
+        PowerMockito.when(Jenkins.get()).thenReturn(jenkins);
         when(jenkins.getRootDir()).thenReturn(new File("."));
         
         EnvVars env = new EnvVars();

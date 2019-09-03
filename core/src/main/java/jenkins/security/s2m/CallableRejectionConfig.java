@@ -41,7 +41,7 @@ public class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
             line = line.trim();
             if (whitelist.contains(line))   return null;    // already whitelisted
 
-            return Jenkins.getInstance().pluginManager.uberClassLoader.loadClass(line);
+            return Jenkins.get().pluginManager.uberClassLoader.loadClass(line);
         } catch (ClassNotFoundException e) {
             // no longer present in the system?
             return null;

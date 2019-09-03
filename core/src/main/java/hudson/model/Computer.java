@@ -299,7 +299,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @Nonnull File getLogDir() {
-        File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
+        File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
         if (!dir.exists() && !dir.mkdirs()) {
             LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
         }
@@ -329,7 +329,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -592,7 +592,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return LabelAtom.get(nodeName != null ? nodeName : Jenkins.getInstance().getSelfLabel().toString()).loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : Jenkins.get().getSelfLabel().toString()).loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
@@ -791,7 +791,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable)Jenkins.get().allItems(Job.class)).node(getNode());
     }
 
     /**
@@ -1064,7 +1064,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getDemandStartMilliseconds() {
         long firstDemand = Long.MAX_VALUE;
-        for (Queue.BuildableItem item : Jenkins.getInstance().getQueue().getBuildableItems(this)) {
+        for (Queue.BuildableItem item : Jenkins.get().getQueue().getBuildableItems(this)) {
             firstDemand = Math.min(item.buildableStartMilliseconds, firstDemand);
         }
         return firstDemand;
@@ -1203,7 +1203,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Node node = getNode();
         if (node==null)     return env; // bail out
 
-        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+        for (NodeProperty nodeProperty: Jenkins.get().getGlobalNodeProperties()) {
             nodeProperty.buildEnvVars(env,listener);
         }
 
@@ -1212,7 +1212,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // TODO: hmm, they don't really belong
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl); // Legacy.
             env.put("JENKINS_URL", rootUrl);
@@ -1487,7 +1487,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
-        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
+        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
@@ -1529,7 +1529,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
+        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
     }
 
     /**
@@ -1540,9 +1540,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(DELETE);
         Node node = getNode();
         if (node != null) {
-            Jenkins.getInstance().removeNode(node);
+            Jenkins.get().removeNode(node);
         } else {
-            AbstractCIBase app = Jenkins.getInstance();
+            AbstractCIBase app = Jenkins.get();
             app.removeComputer(this);
         }
         return new HttpRedirect("..");
@@ -1603,7 +1603,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIResolver
     public static Computer resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
         if (item==null) {
             List<String> names = ComputerSet.getComputerNames();
@@ -1625,7 +1625,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Initializer
     public static void relocateOldLogs() {
-        relocateOldLogs(Jenkins.getInstance().getRootDir());
+        relocateOldLogs(Jenkins.get().getRootDir());
     }
 
     /*package*/ static void relocateOldLogs(File dir) {

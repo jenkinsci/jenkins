@@ -189,7 +189,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             }
 
             if (enableFingerprintsInDependencyGraph) {
-                Jenkins.getInstance().rebuildDependencyGraphAsync();
+                Jenkins.get().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
             Functions.printStackTrace(e, listener.error(Messages.Fingerprinter_Failed()));
@@ -257,7 +257,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         Fingerprint addRecord(Run build) throws IOException {
-            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
+            FingerprintMap map = Jenkins.get().getFingerprintMap();
             return map.getOrCreate(produced?build:null, fileName, md5sum);
         }
 
@@ -440,7 +440,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                     return m;
             }
 
-            Jenkins h = Jenkins.getInstance();
+            Jenkins h = Jenkins.get();
 
             Map<String,Fingerprint> m = new TreeMap<>();
             for (Entry<String, String> r : record.entrySet()) {

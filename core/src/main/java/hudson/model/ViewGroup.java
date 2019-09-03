@@ -141,7 +141,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.417
      */
     default ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Jenkins.getInstance();
+        return Jenkins.get();
     }
 
     /**
@@ -157,7 +157,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.417
      */
     default List<Action> getViewActions() {
-        return Jenkins.getInstance().getActions();
+        return Jenkins.get().getActions();
     }
     
 }

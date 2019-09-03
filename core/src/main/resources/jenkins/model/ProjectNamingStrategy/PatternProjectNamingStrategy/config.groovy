@@ -1,4 +1,4 @@
-package jenkins.model.ProjectNamingStrategy.PatternProjectNamingStrategy;
+package jenkins.model.ProjectNamingStrategy.PatternProjectNamingStrategy
 
 
 def f=namespace(lib.FormTagLib)

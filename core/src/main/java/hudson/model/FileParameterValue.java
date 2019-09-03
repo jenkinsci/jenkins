@@ -37,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 
 import org.apache.commons.fileupload.FileItem;
@@ -65,6 +66,8 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class FileParameterValue extends ParameterValue {
     private static final String FOLDER_NAME = "fileParameters";
+    private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*");
+    private static final long serialVersionUID = -143427023159076073L;
 
     /**
      * Escape hatch for SECURITY-1074, fileParameter used to escape their expected folder.
@@ -162,7 +165,7 @@ public class FileParameterValue extends ParameterValue {
                     if (ws == null) {
                         throw new IllegalStateException("The workspace should be created when setUp method is called");
                     }
-                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && !ws.isDescendant(location)) {
+                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
                         listener.error("Rejecting file path escaping base directory with relative path: " + location);
                         // force the build to fail
                         return null;

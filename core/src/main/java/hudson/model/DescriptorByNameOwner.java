@@ -49,6 +49,6 @@ public interface DescriptorByNameOwner extends ModelObject {
      *      Either {@link Descriptor#getId()} (recommended) or the short name.
      */
     default Descriptor getDescriptorByName(String id) {
-        return Jenkins.getInstance().getDescriptorByName(id);
+        return Jenkins.get().getDescriptorByName(id);
     }
 }

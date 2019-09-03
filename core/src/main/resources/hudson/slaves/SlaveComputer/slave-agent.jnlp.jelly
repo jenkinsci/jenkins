@@ -24,8 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <st:contentType value="application/x-java-jnlp-file" />
-  <j:new var="h" className="hudson.Functions" />
+  <l:view contentType="application/x-java-jnlp-file">
   <j:set var="rootURL" value="${app.rootUrl}" />
 
   <!--
@@ -104,4 +103,5 @@ THE SOFTWARE.
         </j:if>
       </application-desc>
     </jnlp>
+  </l:view>
 </j:jelly>

@@ -502,7 +502,7 @@ public class NodeTest {
         public Collection<LabelAtom> findLabels(Node node) {
             List<LabelAtom> atoms = new ArrayList<LabelAtom>();
             if(addDynamicLabel){
-                atoms.add(Jenkins.getInstance().getLabelAtom("dynamicLabel"));
+                atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
             }
             return atoms;
 

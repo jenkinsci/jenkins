@@ -85,7 +85,7 @@ public abstract class FormFieldValidator {
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
-        this(request, response, adminOnly? Jenkins.getInstance():null, adminOnly?CHECK:null);
+        this(request, response, adminOnly? Jenkins.get():null, adminOnly?CHECK:null);
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class FormFieldValidator {
      */
     @Deprecated
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
-        this(request,response, Jenkins.getInstance(),permission);
+        this(request,response, Jenkins.get(),permission);
     }
 
     /**
@@ -135,7 +135,7 @@ public abstract class FormFieldValidator {
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wide admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
-                if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
+                if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
                     throw e;
             }
 

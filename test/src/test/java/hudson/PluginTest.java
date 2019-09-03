@@ -70,7 +70,7 @@ public class PluginTest {
     @Issue("SECURITY-925")
     public void preventTimestamp2_toBeServed() throws Exception {
         // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
-        Jenkins.getInstance().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
+        Jenkins.get().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
         List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Arrays.asList("credentials"), true);
 
         for (Future<UpdateCenter.UpdateCenterJob> job : pluginInstalled) {

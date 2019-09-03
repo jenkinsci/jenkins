@@ -24,6 +24,7 @@ import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -181,7 +182,9 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
-        if (cause != null) {
+        if (cause instanceof ClosedChannelException) {
+            LOGGER.log(Level.INFO, "{0} for {1} terminated: {2}", new Object[] {Thread.currentThread().getName(), nodeName, cause});
+        } else if (cause != null) {
             LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated",
                     cause);
         }

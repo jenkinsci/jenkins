@@ -82,7 +82,7 @@ public class HistoricalSecrets {
     @Deprecated
     /*package*/ static SecretKey getLegacyKey() throws GeneralSecurityException {
         String secret = Secret.SECRET;
-        if(secret==null)    return Jenkins.getInstance().getSecretKeyAsAES128();
+        if(secret==null)    return Jenkins.get().getSecretKeyAsAES128();
         return Util.toAes128Key(secret);
     }
 

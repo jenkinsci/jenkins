@@ -35,7 +35,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         binding.setVariable("authenticator", new Authenticator());
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
+        builder.parse(Jenkins.get().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),

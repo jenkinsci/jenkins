@@ -1,4 +1,4 @@
-package jenkins.mvn.GlobalMavenConfig;
+package jenkins.mvn.GlobalMavenConfig
 
 def f = namespace(lib.FormTagLib)
 
