@@ -112,7 +112,7 @@ THE SOFTWARE.
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
-    <!-- XXX keep these in sync -->
+    <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.14</access-modifier-annotation.version>
     <access-modifier-checker.version>1.14</access-modifier-checker.version>
   </properties>
@@ -136,7 +136,7 @@ THE SOFTWARE.
   </pluginRepositories>
 
   <dependencyManagement>
-    <!-- any dependecies that can be used by plugins must be defined in the bom and not here -->
+    <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
 
       <dependency>

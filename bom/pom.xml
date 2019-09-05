@@ -33,7 +33,6 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-bom</artifactId>
-  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins BOM</name>
