@@ -44,14 +44,14 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
                     File f = new File(dir, fragment);
                     try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
                         String line;
-                        while ((line = reader.readLine()) != null) {
+                        while ((line=reader.readLine())!=null) {
                             if (line.startsWith("#")) continue;   // comment
                             T r = parse(line);
                             if (r != null)
                                 result.add(r);
                         }
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to parse " + f, e);
+                        LOGGER.log(Level.WARNING, "Failed to parse "+f, e);
                     }
                 }
             }
