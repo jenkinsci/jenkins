@@ -221,7 +221,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.7</version>
+          <version>3.0.0-M1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -582,6 +582,31 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <altDeploymentRepository>releases::${ env.MAVEN_REPOSITORY_URL}/maven-releases/</altDeploymentRepository>
+              <altSnapshotDeploymentRepository>releases-snapshot::${ env.MAVEN_REPOSITORY_URL }/maven-snapshots</altSnapshotDeploymentRepository>
+              <deployAtEnd>false</deployAtEnd>
+              <retryFailedDeploymentCount>3</retryFailedDeploymentCount>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <!-- enable release profile during the release, create IPS package, and sign bits. -->
+                    <!-- Skip Test <arguments>-P release,sign -DskipTests=true</arguments>-->
+              <arguments>-P release,sign</arguments>
+              <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
+              <preparationGoals>clean install</preparationGoals>
+                  <!-- Skipp Test <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>-->
+              <goals>-Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>
+              <!--<goals>javadoc:javadoc deploy</goals>-->
+              <pushChanges>false</pushChanges>
+              <localCheckout>true</localCheckout>
+              <tagNameFormat>release-@{project.version}</tagNameFormat>
+            </configuration>
+          </plugin>
+          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <inherited>false</inherited>
             <executions>
@@ -610,6 +635,24 @@ THE SOFTWARE.
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <keyname>${env.GPG_KEYNAME}</keyname>
+              <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+              <!-- This is necessary for gpg to not try to use the pinentry programs -->
+              <gpgArguments>
+                  <arg>--pinentry-mode</arg>
+                  <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <configuration>
+              <keystore>${env.SIGN_KEYSTORE}</keystore>
+              <alias>${env.SIGN_ALIAS}</alias>
+              <storepass>${env.SIGN_STOREPASS}</storepass>
+              <keypass>${env.SIGN_STOREPASS}</keypass>
+            </configuration>
           </plugin>
         </plugins>
       </build>
