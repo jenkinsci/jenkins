@@ -51,7 +51,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
                                 result.add(r);
                         }
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to parse "+f, e);
+                        LOGGER.log(Level.WARNING, "Failed to parse "+f,e);
                     }
                 }
             }
