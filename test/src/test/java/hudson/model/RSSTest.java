@@ -51,8 +51,7 @@ public class RSSTest {
         assertAllRSSLinksContainRootUrl(allLinks);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        QueueTaskFuture<? extends Build<?, ?>> queueTaskFuture = p.scheduleBuild2(0);
-        j.assertBuildStatusSuccess(queueTaskFuture);
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         page = getRssPage();
         allLinks = page.getXmlDocument().getElementsByTagName("link");
@@ -83,8 +82,7 @@ public class RSSTest {
         assertAllAtomLinksContainRootUrl(allLinks);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        QueueTaskFuture<? extends Build<?, ?>> queueTaskFuture = p.scheduleBuild2(0);
-        j.assertBuildStatusSuccess(queueTaskFuture);
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         page = getAtomPage();
         allLinks = page.getXmlDocument().getElementsByTagName("link");
