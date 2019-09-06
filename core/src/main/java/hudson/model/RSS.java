@@ -77,7 +77,6 @@ public final class RSS {
         req.setAttribute("title",title);
         req.setAttribute("url",url);
         req.setAttribute("entries",entries);
-        req.setAttribute("rootURL", Jenkins.get().getRootUrl());
 
         String flavor = req.getParameter("flavor");
         if(flavor==null)    flavor="atom";
