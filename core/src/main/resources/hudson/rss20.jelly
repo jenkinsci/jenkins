@@ -29,13 +29,13 @@ THE SOFTWARE.
     <rss version="2.0">
       <channel>
         <title>${title}</title>
-        <link>${rootURL}${url}</link>
+        <link>${app.rootUrl}${url}</link>
         <description>${title}</description>
 
         <j:forEach var="e" items="${entries}" >
           <item>
             <title>${adapter.getEntryTitle(e)}</title>
-            <link>${rootURL}${h.encode(adapter.getEntryUrl(e))}</link>
+            <link>${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}</link>
             <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
             <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
             <author><st:out value="${adapter.getEntryAuthor(e)}"/></author>
