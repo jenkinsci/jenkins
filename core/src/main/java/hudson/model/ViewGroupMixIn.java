@@ -29,7 +29,6 @@ import org.kohsuke.stapler.export.Exported;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
