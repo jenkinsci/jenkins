@@ -392,7 +392,7 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * Add entire map but filter null values out.
      */
-    public void putAllExceptNull(Map<String, String> map) {
+    public void putAllNonNull(Map<String, String> map) {
         map.forEach(this::putIfNotNull);
     }
 
