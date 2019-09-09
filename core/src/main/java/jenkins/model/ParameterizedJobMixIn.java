@@ -32,7 +32,6 @@ import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
-import static hudson.model.Item.CONFIGURE;
 import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
