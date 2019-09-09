@@ -3301,7 +3301,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // at this point we may want to terminate but the save may be called from a different thread and we
             // can not call System.halt() because we could be running in a container :(
             // for now just deny the save (the data will be replaced when we do load anyway
-            throw new IOException("An attempt to save the configuration was made before it was loaded");
+            throw new IllegalStateException("An attempt to save the global configuration was made before it was loaded");
         }
 
         if(BulkChange.contains(this)) {
