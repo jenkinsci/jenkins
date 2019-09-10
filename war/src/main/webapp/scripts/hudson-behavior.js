@@ -1505,8 +1505,12 @@ function expandTextArea(button,id) {
         n = n.parentNode;
     }
 
-    n.parentNode.innerHTML = 
-        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    var parent = n.parentNode;
+    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    var textArea = parent.childNodes[0];
+    textArea.name = field.name;
+    textArea.innerText = value;
+
     layoutUpdateCallback.call();
 }
 
