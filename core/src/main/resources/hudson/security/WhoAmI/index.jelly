@@ -74,18 +74,28 @@ THE SOFTWARE.
       <h2>Request Headers</h2>
       <table>
         <j:forEach var="n" items="${request.getHeaderNames()}">
-          <j:set var="values" value="${h.getRequestHeaders(n)}"/>
-          <tr>
-            <td rowspan="${values.size()}">${n}</td>
-            <td>
-              ${values[0]}
-            </td>
-          </tr>
-          <j:forEach var="v" items="${values.subList(1,values.size())}">
+          <j:if test="${n.equalsIgnoreCase('Cookie')}">
             <tr>
-              <td>${v}</td>
+              <td rowspan="1">${n}</td>
+              <td>
+                <i>(redacted for security reasons)</i>
+              </td>
             </tr>
-          </j:forEach>
+          </j:if>
+          <j:if test="${!n.equalsIgnoreCase('Cookie')}">
+            <j:set var="values" value="${h.getRequestHeaders(n)}"/>
+            <tr>
+              <td rowspan="${values.size()}">${n}</td>
+              <td>
+                ${values[0]}
+              </td>
+            </tr>
+            <j:forEach var="v" items="${values.subList(1,values.size())}">
+              <tr>
+                <td>${v}</td>
+              </tr>
+            </j:forEach>
+          </j:if>
         </j:forEach>
       </table>
      </l:main-panel>
