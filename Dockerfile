@@ -3,6 +3,7 @@
 # If you are looking for official images, see https://github.com/jenkinsci/docker
 FROM maven:3.5.4-jdk-8 as builder
 
+# ? where is the source path, please help update the source path, thanks.
 COPY .mvn/ /jenkins/src/.mvn/
 COPY cli/ /jenkins/src/cli/
 COPY core/ /jenkins/src/core/
@@ -26,3 +27,8 @@ LABEL Description="This is an experimental image for the master branch of the Je
 
 COPY --from=builder /jenkins/src/war/target/jenkins.war /usr/share/jenkins/jenkins.war
 ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins.sh"]
+
+
+
+
+
