@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.192</revision>
+    <revision>2.195</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -108,7 +108,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.34</remoting.version>
+    <remoting.version>3.35</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
 

@@ -3,7 +3,6 @@ package hudson.triggers;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
-import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
