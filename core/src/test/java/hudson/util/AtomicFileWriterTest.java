@@ -68,7 +68,7 @@ public class AtomicFileWriterTest {
     @Before
     public void setUp() throws IOException {
         af = tmp.newFile();
-        FileUtils.writeStringToFile(af, PREVIOUS);
+        FileUtils.writeStringToFile(af, PREVIOUS, Charset.defaultCharset());
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
@@ -117,7 +117,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertEquals(expectedContent.length()+3, Files.size(af.toPath()));
-        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af));
+        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
 
     @Test
@@ -130,7 +130,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertTrue(Files.notExists(afw.getTemporaryPath()));
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
 
     @Test
@@ -142,7 +142,7 @@ public class AtomicFileWriterTest {
         } catch (IndexOutOfBoundsException e) {
         }
 
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
     @Test
     public void badPath() throws Exception {

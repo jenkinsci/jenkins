@@ -208,8 +208,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
-                                            @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
+            @Nonnull 
+            PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
+                                   @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
             }
         },
