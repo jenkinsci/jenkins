@@ -44,6 +44,19 @@ THE SOFTWARE.
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
@@ -53,7 +66,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
-      <!-- specified in the parent -->
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
