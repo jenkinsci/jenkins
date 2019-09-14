@@ -1282,7 +1282,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 w.print(Util.xmlEscape(fileName));
                 w.println("</fileName>");
                 w.println("  <usages>");
-                for (Map.Entry<String, RangeSet> e : usages.entrySet()) {
+                for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
                     w.println("    <entry>");
                     w.print("      <string>");
                     w.print(Util.xmlEscape(e.getKey()));
@@ -1296,7 +1296,6 @@ public class Fingerprint implements ModelObject, Saveable {
                 w.println("  <facets/>");
                 w.print("</fingerprint>");
                 w.flush();
-
                 afw.commit();
             } finally {
                 afw.abort();
@@ -1441,7 +1440,7 @@ public class Fingerprint implements ModelObject, Saveable {
         if (item != null) {
             return true;
         }
-
+          
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
