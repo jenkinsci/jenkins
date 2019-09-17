@@ -45,6 +45,10 @@ public class StandardArtifactManager extends ArtifactManager {
 
     private static final Logger LOG = Logger.getLogger(StandardArtifactManager.class.getName());
 
+    private static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
+            ? FilePath.TarCompression.NONE
+            : FilePath.TarCompression.GZIP;
+
     protected transient Run<?,?> build;
 
     public StandardArtifactManager(Run<?,?> build) {
@@ -58,7 +62,7 @@ public class StandardArtifactManager extends ArtifactManager {
     @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
         File dir = getArtifactsDir();
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
-        workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description);
+        workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description, TAR_COMPRESSION);
     }
 
     @Override public final boolean delete() throws IOException, InterruptedException {

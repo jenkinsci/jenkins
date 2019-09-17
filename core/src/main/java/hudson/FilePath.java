@@ -2349,6 +2349,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.532
      */
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
+        return copyRecursiveTo(scanner, target, description, GZIP);
+    }
+
+    /**
+     * Copies files according to a specified scanner to a target node.
+     * @param scanner a way of enumerating some files (must be serializable for possible delivery to remote side)
+     * @param target the destination basedir
+     * @param description a description of the fileset, for logging purposes
+     * @param compression compression to use
+     * @return the number of files copied
+     * @since TODO
+     */
+    public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description, @Nonnull TarCompression compression) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
             // local to local copy.
             return act(new CopyRecursiveLocal(target, scanner));
@@ -2357,8 +2370,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // local -> remote copy
             final Pipe pipe = Pipe.createLocalToRemote();
 
-            Future<Void> future = target.actAsync(new ReadToTar(pipe, description));
-            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe));
+            Future<Void> future = target.actAsync(new ReadToTar(pipe, description, compression));
+            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression));
             try {
                 // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
@@ -2370,9 +2383,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();
 
-            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner));
+            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner, compression));
             try {
-                readFromTar(remote + '/' + description,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
+                readFromTar(remote + '/' + description,new File(target.remote),compression.extract(pipe.getIn()));
             } catch (IOException e) {// BuildException or IOException
                 try {
                     future.get(3,TimeUnit.SECONDS);
@@ -2473,15 +2486,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private class ReadToTar extends SecureFileCallable<Void> {
         private final Pipe pipe;
         private final String description;
-        ReadToTar(Pipe pipe, String description) {
+        private final TarCompression compression;
+
+        ReadToTar(Pipe pipe, String description, @Nonnull TarCompression compression) {
             this.pipe = pipe;
             this.description = description;
+            this.compression = compression;
         }
         private static final long serialVersionUID = 1L;
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (InputStream in = pipe.getIn()) {
-                readFromTar(remote + '/' + description, f, TarCompression.GZIP.extract(in));
+                readFromTar(remote + '/' + description, f, compression.extract(in));
                 return null;
             }
         }
@@ -2489,28 +2505,32 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private class WriteToTar extends SecureFileCallable<Integer> {
         private final DirScanner scanner;
         private final Pipe pipe;
-        WriteToTar(DirScanner scanner, Pipe pipe) {
+        private final TarCompression compression;
+        WriteToTar(DirScanner scanner, Pipe pipe, @Nonnull TarCompression compression) {
             this.scanner = scanner;
             this.pipe = pipe;
+            this.compression = compression;
         }
         private static final long serialVersionUID = 1L;
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return writeToTar(new File(remote), scanner, TarCompression.GZIP.compress(pipe.getOut()));
+            return writeToTar(new File(remote), scanner, compression.compress(pipe.getOut()));
         }
     }
     private class CopyRecursiveRemoteToLocal extends SecureFileCallable<Integer> {
         private static final long serialVersionUID = 1L;
         private final Pipe pipe;
         private final DirScanner scanner;
-        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner) {
+        private final TarCompression compression;
+        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner, @Nonnull TarCompression compression) {
             this.pipe = pipe;
             this.scanner = scanner;
+            this.compression = compression;
         }
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream out = pipe.getOut()) {
-                return writeToTar(f, scanner, TarCompression.GZIP.compress(out));
+                return writeToTar(f, scanner, compression.compress(out));
             }
         }
     }
