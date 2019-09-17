@@ -30,7 +30,7 @@ public class PrivateKeyProviderTest {
      * @param file the file to load the key from
      * @param password the password
      */
-    private void assertkeyPair(File file, String password) throws IOException, GeneralSecurityException {
+    private void assertKeyPair(File file, String password) throws IOException, GeneralSecurityException {
         KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
         assertNotNull(keyPair);
         assertNotNull(keyPair.getPrivate());
