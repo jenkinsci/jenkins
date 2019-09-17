@@ -86,10 +86,7 @@ public class PrivateKeyProvider {
 
                 readFrom(key);
                 read = true;
-            } catch (IOException e) {
-
-                LOGGER.log(FINE, "Failed to load " + key, e);
-            } catch (GeneralSecurityException e) {
+            } catch (IOException | GeneralSecurityException e) {
 
                 LOGGER.log(FINE, "Failed to load " + key, e);
             }
