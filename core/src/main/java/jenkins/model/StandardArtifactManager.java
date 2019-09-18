@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.VirtualFile;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
@@ -45,7 +48,9 @@ public class StandardArtifactManager extends ArtifactManager {
 
     private static final Logger LOG = Logger.getLogger(StandardArtifactManager.class.getName());
 
-    private static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;
 
