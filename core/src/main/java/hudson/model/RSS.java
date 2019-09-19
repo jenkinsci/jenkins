@@ -82,6 +82,12 @@ public final class RSS {
         if(flavor==null)    flavor="atom";
         flavor = flavor.replace('/', '_'); // Don't allow path to any jelly
 
+        if (flavor.equals("atom")) {
+            rsp.setContentType("application/atom+xml; charset=UTF-8");
+        } else {
+            rsp.setContentType("text/xml; charset=UTF-8");
+        }
+
         req.getView(Jenkins.get(),"/hudson/"+flavor+".jelly").forward(req,rsp);
     }
 }
