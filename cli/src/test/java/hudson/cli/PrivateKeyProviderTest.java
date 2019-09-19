@@ -22,7 +22,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyDSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa").getFile());
-        assertkeyPair(file, null);
+        assertKeyPair(file, null);
     }
 
     /**
@@ -44,7 +44,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyDSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa-password").getFile());
         String password = "password";
-        assertkeyPair(file, password);
+        assertKeyPair(file, password);
     }
     
     /**
@@ -53,7 +53,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyRSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa").getFile());
-        assertkeyPair(file, null);
+        assertKeyPair(file, null);
     }
 
     /**
@@ -63,7 +63,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyRSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa-password").getFile());
         String password = "password";
-        assertkeyPair(file, password);
+        assertKeyPair(file, password);
     }
     
     /**
@@ -72,7 +72,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyOpenSSH() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh").getFile());
-        assertkeyPair(file, null);
+        assertKeyPair(file, null);
     }
     
     /**
