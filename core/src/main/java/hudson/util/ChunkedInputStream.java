@@ -344,7 +344,8 @@ public class ChunkedInputStream extends InputStream {
     static void exhaustInputStream(InputStream inStream) throws IOException {
         // read and discard the remainder of the message
         byte[] buffer = new byte[1024];
-        while (inStream.read(buffer) >= 0) {
-        }
+        //noinspection StatementWithEmptyBody
+        while (inStream.read(buffer) >= 0)
+            ;
     }
 }

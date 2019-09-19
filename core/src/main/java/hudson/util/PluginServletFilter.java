@@ -65,7 +65,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     private /*almost final*/ FilterConfig config;
 
     /**
-     * For backward compatibility with plugins that might register filters before Jenkins.getInstance()
+     * For backward compatibility with plugins that might register filters before Jenkins.get()
      * starts functioning, when we are not sure which Jenkins instance a filter belongs to, put it here,
      * and let the first Jenkins instance take over.
      */

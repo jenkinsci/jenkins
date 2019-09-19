@@ -259,7 +259,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
     public static class TestWithReturnCoreObject extends AbstractUnprotectedRootAction {
         public View.People getPeople() {
             // provide an index jelly view
-            return new View.People(Jenkins.getInstance());
+            return new View.People(Jenkins.get());
         }
     }
     
@@ -277,7 +277,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
     @TestExtension
     public static class TestWithReturnPluginObject extends AbstractUnprotectedRootAction {
         public Folder getFolder() {
-            return new Folder(Jenkins.getInstance(), "testFolder");
+            return new Folder(Jenkins.get(), "testFolder");
         }
     }
     

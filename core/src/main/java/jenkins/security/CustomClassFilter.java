@@ -154,10 +154,11 @@ public interface CustomClassFilter extends ExtensionPoint {
         public static void load() throws IOException {
             Map<String, Boolean> overrides = ExtensionList.lookup(CustomClassFilter.class).get(Contributed.class).overrides;
             overrides.clear();
-            Enumeration<URL> resources = Jenkins.getInstance().getPluginManager().uberClassLoader.getResources("META-INF/hudson.remoting.ClassFilter");
+            Enumeration<URL> resources = Jenkins.get().getPluginManager().uberClassLoader.getResources("META-INF/hudson.remoting.ClassFilter");
             while (resources.hasMoreElements()) {
                 try (InputStream is = resources.nextElement().openStream()) {
                     for (String entry : IOUtils.readLines(is, StandardCharsets.UTF_8)) {
+                        //noinspection StatementWithEmptyBody
                         if (entry.matches("#.*|\\s*")) {
                             // skip
                         } else if (entry.startsWith("!")) {

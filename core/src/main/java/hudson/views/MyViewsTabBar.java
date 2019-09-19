@@ -30,7 +30,6 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.View;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -64,7 +63,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<MyViewsTabBar, Descriptor<MyViewsTabBar>> all() {
-        return Jenkins.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
+        return Jenkins.get().getDescriptorList(MyViewsTabBar.class);
     }
 
     public MyViewsTabBarDescriptor getDescriptor() {

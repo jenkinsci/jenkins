@@ -114,6 +114,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * Returns all the registered {@link PageDecorator} descriptors.
      */
     public static ExtensionList<PageDecorator> all() {
-        return Jenkins.getInstance().<PageDecorator,PageDecorator>getDescriptorList(PageDecorator.class);
+        return Jenkins.get().getDescriptorList(PageDecorator.class);
     }
 }

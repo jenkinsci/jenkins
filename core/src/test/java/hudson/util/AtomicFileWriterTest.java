@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
@@ -69,7 +68,7 @@ public class AtomicFileWriterTest {
     @Before
     public void setUp() throws IOException {
         af = tmp.newFile();
-        FileUtils.writeStringToFile(af, PREVIOUS);
+        FileUtils.writeStringToFile(af, PREVIOUS, Charset.defaultCharset());
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
@@ -83,7 +82,7 @@ public class AtomicFileWriterTest {
 
         final Path childFileInSymlinkToDir = Paths.get(zeSymlink.toString(), "childFileInSymlinkToDir");
 
-        new AtomicFileWriter(childFileInSymlinkToDir, Charset.forName("UTF-8"));
+        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -118,7 +117,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertEquals(expectedContent.length()+3, Files.size(af.toPath()));
-        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af));
+        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
 
     @Test
@@ -131,7 +130,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertTrue(Files.notExists(afw.getTemporaryPath()));
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
 
     @Test
@@ -143,7 +142,7 @@ public class AtomicFileWriterTest {
         } catch (IndexOutOfBoundsException e) {
         }
 
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
     }
     @Test
     public void badPath() throws Exception {
@@ -154,7 +153,7 @@ public class AtomicFileWriterTest {
         assertFalse(parentExistsAndIsAFile.exists());
 
         try {
-            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), Charset.forName("UTF-8"));
+            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8);
             fail("Expected a failure");
         } catch (IOException e) {
             assertThat(e.getMessage(),

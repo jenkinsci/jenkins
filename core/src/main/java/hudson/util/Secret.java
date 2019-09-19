@@ -298,14 +298,6 @@ public final class Secret implements Serializable {
      */
     private static final CryptoConfidentialKey KEY = new CryptoConfidentialKey(Secret.class.getName());
 
-    /**
-     * Reset the internal secret key for testing.
-     */
-    @Restricted(NoExternalUse.class)
-    /*package*/ static void resetKeyForTest() {
-        KEY.resetForTest();
-    }
-
     private static final long serialVersionUID = 1L;
 
     static {

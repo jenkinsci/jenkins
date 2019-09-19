@@ -244,8 +244,8 @@ public class JSONSignatureValidator {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all
         Set<TrustAnchor> anchors = new HashSet<>(); // CertificateUtil.getDefaultRootCAs();
-        Jenkins j = Jenkins.getInstance();
-        for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+        Jenkins j = Jenkins.get();
+        for (String cert : j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
             if (cert.endsWith("/") || cert.endsWith(".txt"))  {
                 continue;       // skip directories also any text files that are meant to be documentation
             }

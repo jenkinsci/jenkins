@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -91,7 +90,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
             this.computationalData = new HashMap<>();
-            for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) )
+            for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);

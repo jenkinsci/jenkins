@@ -18,6 +18,18 @@
     <findbugs.threshold>Medium</findbugs.threshold>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.powermock</groupId>
@@ -77,15 +89,10 @@
       <artifactId>slf4j-jdk14</artifactId>
       <optional>true</optional> <!-- ditto -->
     </dependency>
-    <dependency> <!-- TODO remove and replace PrivateKeyProvider with SecurityUtils.createFileKeyPairProvider() as in SshClient -->
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-1</version>
-    </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <scope>provided</scope>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -139,7 +146,21 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+              <goals>
+                 <goal>add-source</goal>
+              </goals>
+              <configuration>
+                <sources>
+                  <source>${project.build.directory}/generated-sources/localizer</source>
+                </sources>
+              </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

@@ -106,7 +106,7 @@ public class SecretRewriter {
                             if (!replacement.equals(elementText))
                                 modified = true;
 
-                            buf.append(line.substring(copied, sidx + 1));
+                            buf.append(line, copied, sidx + 1);
                             buf.append(replacement);
                             copied = eidx;
                         }
@@ -197,7 +197,7 @@ public class SecretRewriter {
     }
 
     private static boolean isBase64(char ch) {
-        return 0<=ch && ch<128 && IS_BASE64[ch];
+        return ch<128 && IS_BASE64[ch];
     }
 
     private static boolean isBase64(String s) {

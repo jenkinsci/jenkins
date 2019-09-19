@@ -63,6 +63,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_UNKNOWN_IMG = "empty.png";
 
     private static final Map<String, String> iconIMGToClassMap = new HashMap<>();
+    private static final long serialVersionUID = 7451361788415642230L;
+
     static {
         iconIMGToClassMap.put(HEALTH_OVER_80_IMG, HEALTH_OVER_80);
         iconIMGToClassMap.put(HEALTH_61_TO_80_IMG, HEALTH_61_TO_80);

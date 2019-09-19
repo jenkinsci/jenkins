@@ -26,7 +26,6 @@ package hudson.util;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
@@ -40,6 +39,7 @@ import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
 import jenkins.security.SlaveToMasterCallable;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import jenkins.util.java.JavaUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -95,7 +96,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.315
  */
-public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, Serializable {
+public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, SerializableOnlyOverRemoting {
     /**
      * To be filled in the constructor of the derived type.
      */
@@ -1440,7 +1441,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                      * Read the remainder of psinfo_t differently depending on whether the
                      * Java process is 32-bit or 64-bit.
                      */
-                    if (Pointer.SIZE == 8) {
+                    if (Native.POINTER_SIZE == 8) {
                         psinfo.seek(236);  // offset of pr_argc
                         argc = adjust(psinfo.readInt());
                         argp = adjustL(psinfo.readLong());
@@ -1828,7 +1829,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Represents a process tree over a channel.
      */
-    public static class Remote extends ProcessTree implements Serializable {
+    public static class Remote extends ProcessTree {
         private final IProcessTree proxy;
 
         @Deprecated
@@ -1908,8 +1909,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Use {@link Remote} as the serialized form.
      */
-    /*package*/ Object writeReplace() {
-        return new Remote(this,Channel.current());
+    /*package*/ Object writeReplace() throws ObjectStreamException {
+        return new Remote(this, getChannelForSerialization());
     }
 
 //    public static void main(String[] args) {

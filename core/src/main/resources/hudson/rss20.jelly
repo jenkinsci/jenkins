@@ -23,30 +23,29 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-  <st:contentType value="text/xml;charset=UTF-8" />
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:view contentType="text/xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    <!-- RSS 2.0 feed. See http://cyber.law.harvard.edu/rss/rss.html for the format -->
+    <rss version="2.0">
+      <channel>
+        <title>${title}</title>
+        <link>${app.rootUrl}${url}</link>
+        <description>${title}</description>
 
-  <!-- RSS 2.0 feed. See http://cyber.law.harvard.edu/rss/rss.html for the format -->  
-  <rss version="2.0">
-    <channel>
-      <title>${title}</title>
-      <link>${rootURL}${url}</link>
-      <description>${title}</description>
-
-      <j:forEach var="e" items="${entries}" >
-        <item>
-          <title>${adapter.getEntryTitle(e)}</title>
-          <link>${rootURL}${h.encode(adapter.getEntryUrl(e))}</link>
-          <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
-          <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
-          <author><st:out value="${adapter.getEntryAuthor(e)}"/></author>
-          <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
-          <j:if test="${desc!=null}">
-            <description>${desc}</description>
-          </j:if>
-        </item>
-      </j:forEach>
-    </channel>
-  </rss>
+        <j:forEach var="e" items="${entries}" >
+          <item>
+            <title>${adapter.getEntryTitle(e)}</title>
+            <link>${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}</link>
+            <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
+            <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
+            <author><st:out value="${adapter.getEntryAuthor(e)}"/></author>
+            <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
+            <j:if test="${desc!=null}">
+              <description>${desc}</description>
+            </j:if>
+          </item>
+        </j:forEach>
+      </channel>
+    </rss>
+  </l:view>
 </j:jelly>

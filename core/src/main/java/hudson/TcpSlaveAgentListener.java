@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
@@ -43,13 +42,14 @@ import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.util.Arrays;
+import java.util.Base64;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -60,7 +60,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -70,7 +69,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Listens to incoming TCP connections from JNLP agents and deprecated Remoting-based CLI.
+ * Listens to incoming TCP connections, for example from agents.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
@@ -140,7 +139,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+        return key == null ? null : Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     /**
@@ -151,7 +150,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
     }
 
     /**
@@ -267,7 +266,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
-                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
@@ -286,7 +285,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
+                if (e instanceof EOFException) {
+                    LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
+                } else {
+                    LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
+                }
                 try {
                     s.close();
                 } catch (IOException ex) {
@@ -484,7 +487,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     if (originThread.isAlive()) {
                         originThread.interrupt();
                     }
-                    int port = Jenkins.getInstance().getSlaveAgentPort();
+                    int port = Jenkins.get().getSlaveAgentPort();
                     if (port != -1) {
                         new TcpSlaveAgentListener(port).start();
                         LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
@@ -550,37 +553,3 @@ public final class TcpSlaveAgentListener extends Thread {
     @Restricted(NoExternalUse.class)
     public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
-
-/*
-Pasted from http://today.java.net/pub/a/today/2005/09/01/webstart.html
-
-    Is it unrealistic to try to control access to JWS files?
-    Is anyone doing this?
-
-It is not unrealistic, and we are doing it. Create a protected web page
-with a download button or link that makes a servlet call. If the user has
-already logged in to your website, of course they can go there without
-further authentication. The servlet reads the cookies sent by the browser
-when the link is activated. It then generates a dynamic JNLP file adding
-the authentication cookie and any other required cookies (JSESSIONID, etc.)
-via <argument> tags. Write the WebStart application so that it picks up
-any required cookies from the argument list, and adds these cookies to its
-request headers on subsequent calls to the server. (Note: in the dynamic
-JNLP file, do NOT put href= in the opening jnlp tag. If you do, JWS will
-try to reload the JNLP from disk and since it's dynamic, it won't be there.
-Leave it off and JWS will be happy.)
-
-When returning the dynamic JNLP, the servlet should invoke setHeader(
-"Expires", 0 ) and addDateHeader() twice on the servlet response to set
-both "Date" and "Last-Modified" to the current date. This keeps the browser
-from using a cached copy of a prior dynamic JNLP obtained from the same URL.
-
-Note also that the JAR file(s) for the JWS application should not be on
-a password-protected path - the launcher won't know about the authentication
-cookie. But once the application starts, you can run all its requests
-through a protected path requiring the authentication cookie, because
-the application gets it from the dynamic JNLP. Just write it so that it
-can't do anything useful without going through a protected path or doing
-something to present credentials that could only have come from a valid
-user.
-*/

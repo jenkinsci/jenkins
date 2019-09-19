@@ -69,7 +69,7 @@ import java.util.TreeMap;
 public final class RemotingDiagnostics {
     public static Map<Object,Object> getSystemProperties(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
-            return Collections.<Object,Object>singletonMap("N/A","N/A");
+            return Collections.singletonMap("N/A","N/A");
         return channel.call(new GetSystemProperties());
     }
 
@@ -121,7 +121,7 @@ public final class RemotingDiagnostics {
         }
 
         public ClassLoader getClassLoader() {
-            return Jenkins.getInstance().getPluginManager().uberClassLoader;
+            return Jenkins.get().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {

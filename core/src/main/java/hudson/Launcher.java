@@ -147,7 +147,7 @@ public abstract class Launcher {
     @Deprecated
     @CheckForNull
     public Computer getComputer() {
-        for( Computer c : Jenkins.getInstance().getComputers() )
+        for( Computer c : Jenkins.get().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;
@@ -761,6 +761,7 @@ public abstract class Launcher {
                 buf.append(c);
         }
         listener.getLogger().println(buf.toString());
+        listener.getLogger().flush();
     }
 
     /**
@@ -1083,6 +1084,11 @@ public abstract class Launcher {
         @Override
         public void kill(final Map<String,String> modelEnvVars) throws IOException, InterruptedException {
             getChannel().call(new KillTask(modelEnvVars));
+        }
+
+        @Override
+        public String toString() {
+            return "RemoteLauncher[" + getChannel() + "]";
         }
 
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {

@@ -36,7 +36,6 @@ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
-import org.apache.commons.codec.binary.Base64;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.util.Assert;
@@ -51,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -150,7 +150,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
 		String signatureValue = makeTokenSignature(expiryTime, (UserDetails)successfulAuthentication.getPrincipal());
 		String tokenValue = username + ":" + expiryTime + ":" + signatureValue;
-		String tokenValueBase64 = new String(Base64.encodeBase64(tokenValue.getBytes()));
+		String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
 		response.addCookie(makeValidCookie(tokenValueBase64, request, tokenValiditySeconds));
 
 		if (logger.isDebugEnabled()) {
@@ -161,7 +161,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-        if(Jenkins.getInstance().isDisableRememberMe()){
+        if(Jenkins.get().isDisableRememberMe()){
             cancelCookie(request, response, null);
             return null;
         }else {
@@ -269,6 +269,14 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
                 userDetails.getAuthorities());
         auth.setDetails(authenticationDetailsSource.buildDetails(request));
 
+        // Ensure this session is linked to the user's seed
+        if (!UserSeedProperty.DISABLE_USER_SEED) {
+            User user = User.get(auth);
+            UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);
+            String sessionSeed = userSeed.getSeed();
+            request.getSession().setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+        }
+
         return auth;
     }
 
@@ -276,13 +284,15 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * @return the decoded base64 of the cookie or {@code null} if the value was not correctly encoded
      */
     private @CheckForNull String decodeCookieBase64(@Nonnull String base64EncodedValue){
-        for (int j = 0; j < base64EncodedValue.length() % 4; j++) {
-            base64EncodedValue = base64EncodedValue + "=";
+        StringBuilder base64EncodedValueBuilder = new StringBuilder(base64EncodedValue);
+        for (int j = 0; j < base64EncodedValueBuilder.length() % 4; j++) {
+            base64EncodedValueBuilder.append("=");
         }
+        base64EncodedValue = base64EncodedValueBuilder.toString();
 
         try {
             // any charset should be fine but better safe than sorry
-            byte[] decodedPlainValue = java.util.Base64.getDecoder().decode(base64EncodedValue.getBytes(StandardCharsets.UTF_8));
+            byte[] decodedPlainValue = Base64.getDecoder().decode(base64EncodedValue.getBytes(StandardCharsets.UTF_8));
             return new String(decodedPlainValue, StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
             return null;

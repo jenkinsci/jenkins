@@ -1,4 +1,4 @@
-package jenkins.model.CoreEnvironmentContributor;
+package jenkins.model.CoreEnvironmentContributor
 
 def l = namespace(lib.JenkinsTagLib)
 

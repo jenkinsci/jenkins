@@ -53,7 +53,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
             ((AccessDeniedException2)cause).reportAsHeaders(rsp);
         }
 
-        WebApp.get(Jenkins.getInstance().servletContext).getSomeStapler()
-                .invoke(req,rsp, Jenkins.getInstance(), "/accessDenied");
+        WebApp.get(Jenkins.get().servletContext).getSomeStapler()
+                .invoke(req,rsp, Jenkins.get(), "/accessDenied");
     }
 }

@@ -26,4 +26,15 @@ THE SOFTWARE.
   <f:entry title="${%Files to fingerprint}" field="targets">
     <f:textbox/>
   </f:entry>
+  <f:advanced>
+    <f:entry title="${%Excludes}" field="excludes">
+      <f:textbox />
+    </f:entry>
+    <f:entry field="defaultExcludes" >
+      <f:checkbox title="${%defaultExcludes}" default="true"/>
+    </f:entry>
+    <f:entry field="caseSensitive" >
+      <f:checkbox title="${%caseSensitive}" default="true"/>
+    </f:entry>
+  </f:advanced>
 </j:jelly>

@@ -24,9 +24,20 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:d="jelly:define">
+    <d:taglib uri="local">
+        <d:tag name="revokeIcon">
+            <svg class="token-revoke-icon" width="22" height="24" viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+                <title>${attrs.title}</title>
+                <g fill="none" fill-rule="evenodd">
+                    <path d="M9.753 15.32H3.07v2.042h6.65v3.064H2.559A2.556 2.556 0 0 1 0 17.872V2.553A2.556 2.556 0 0 1 2.558 0H15.86a2.556 2.556 0 0 1 2.559 2.553v9.192h-4.605a4.091 4.091 0 0 0-4.061 3.574zM3.07 5.105h5.628V3.064H3.07v2.042zm0 4.085h11.256V7.15H3.07V9.19zm0 4.086h6.14v-2.043H3.07v2.043z" fill="#788594"/>
+                    <path d="M14.326 13.787h5.116A2.556 2.556 0 0 1 22 16.34v5.107A2.556 2.556 0 0 1 19.442 24h-5.116a2.556 2.556 0 0 1-2.559-2.553V16.34a2.556 2.556 0 0 1 2.559-2.553zm4.545 2.043l-1.987 1.984-1.988-1.984-1.082 1.08 1.988 1.984-1.988 1.983 1.082 1.08 1.988-1.983 1.987 1.983 1.082-1.08-1.987-1.983 1.987-1.984-1.082-1.08z" fill="#B33127"/>
+                </g>
+            </svg>
+        </d:tag>
+    </d:taglib>
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
-    <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
+    <f:entry xmlns:local="local" title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
         <!-- ignore the whole div to prevent the "Add new token" button to trigger the confirm -->
         <div class="token-list ignore-dirty-panel">
             <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
@@ -103,12 +114,12 @@ THE SOFTWARE.
                                         </span>
                                     </j:otherwise>
                                 </j:choose>
-                                    
+
                                 <a href="#" onclick="return revokeToken(this)" class="token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                    <l:icon class="icon-text-error icon-sm" alt="${%RevokeToken}" />
+                                    <local:revokeIcon title="${%RevokeToken}" />
                                 </a>
                             </span>
                         </div>
@@ -130,8 +141,9 @@ THE SOFTWARE.
                             <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
                                data-confirm="${%ConfirmRevokeSingle}"
                                data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                <l:icon class="icon-text-error icon-sm"/>
+                                <local:revokeIcon title="${%RevokeToken}" />
                             </a>
+                            <l:copyButton message="${%Copied}" text="" clazz="invisible" tooltip="${%CopyToken}" />
                             <div class="error token-error-message"><!-- filled in case of error --></div>
                             <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
                         </div>

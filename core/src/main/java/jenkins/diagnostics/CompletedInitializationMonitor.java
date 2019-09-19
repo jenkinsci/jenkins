@@ -48,7 +48,7 @@ public class CompletedInitializationMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        final Jenkins instance = Jenkins.getInstance();
+        final Jenkins instance = Jenkins.get();
         // Safe to check in such way, because monitors are being checked in UI only.
         // So Jenkins class construction and initialization must be always finished by the call of this extension.
         return instance.getInitLevel() != InitMilestone.COMPLETED;

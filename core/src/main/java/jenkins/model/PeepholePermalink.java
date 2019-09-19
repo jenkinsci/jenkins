@@ -9,18 +9,18 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.util.AtomicFileWriter;
-import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Convenient base implementation for {@link Permalink}s that satisfy
@@ -46,8 +46,7 @@ import org.apache.commons.io.FileUtils;
  *
  * <p>
  * This base class provides a file-based caching mechanism that avoids
- * walking the long build history. The cache is a symlink to the build directory
- * where symlinks are supported, and text file that contains the build number otherwise.
+ * walking the long build history.
  *
  * <p>
  * The implementation transparently tolerates G(B) that goes from true to false over time
@@ -56,13 +55,17 @@ import org.apache.commons.io.FileUtils;
  * from false to true, then call {@link #resolve(Job)} to check the current permalink target
  * is up to date, then call {@link #updateCache(Job, Run)} if it needs updating.
  *
- * @author Kohsuke Kawaguchi
  * @since 1.507
  */
 public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
 
-    /** JENKINS-22822: avoids rereading symlinks */
-    static final Map<File,String> symlinks = new HashMap<>();
+    /**
+     * JENKINS-22822: avoids rereading caches.
+     * Top map keys are {@link builds} directories.
+     * Inner maps are from permalink name to build number.
+     * Synchronization is first on the outer map, then on the inner.
+     */
+    private static final Map<File, Map<String, Integer>> caches = new HashMap<>();
 
     /**
      * Checks if the given build satisfies the peep-hole criteria.
@@ -71,9 +74,8 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      */
     public abstract boolean apply(Run<?,?> run);
 
-    /**
-     * The file in which the permalink target gets recorded.
-     */
+    /** @deprecated No longer used. */
+    @Deprecated
     protected File getPermalinkFile(Job<?,?> job) {
         return new File(job.getBuildDir(),getId());
     }
@@ -83,32 +85,27 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      */
     @Override
     public Run<?, ?> resolve(Job<?, ?> job) {
-        File f = getPermalinkFile(job);
-        Run<?,?> b=null;
-
-        try {
-            String target = readSymlink(f);
-            if (target!=null) {
-                int n = Integer.parseInt(Util.getFileName(target));
-                if (n==RESOLVES_TO_NONE)  return null;
-
-                b = job.getBuildByNumber(n);
-                if (b!=null && apply(b))
-                    return b;   // found it (in the most efficient way possible)
-
-                // the cache is stale. start the search
-                if (b==null)
-                     b=job.getNearestOldBuild(n);
+        Map<String, Integer> cache = cacheFor(job.getBuildDir());
+        int n;
+        synchronized (cache) {
+            n = cache.getOrDefault(getId(), 0);
+        }
+        if (n == RESOLVES_TO_NONE) {
+            return null;
+        }
+        Run<?, ?> b;
+        if (n > 0) {
+            b = job.getBuildByNumber(n);
+            if (b != null && apply(b)) {
+                return b; // found it (in the most efficient way possible)
             }
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "Failed to read permalink cache:" + f, e);
-            // if we fail to read the cache, fall back to the re-computation
-        } catch (NumberFormatException e) { 
-            LOGGER.log(Level.WARNING, "Failed to parse the build number in the permalink cache:" + f, e);
-            // if we fail to read the cache, fall back to the re-computation
-        } catch (IOException e) {
-            // this happens when the symlink doesn't exist
-            // (and it cannot be distinguished from the case when the actual I/O error happened
+        } else {
+            b = null;
+        }
+
+        // the cache is stale. start the search
+        if (b == null) {
+            b = job.getNearestOldBuild(n);
         }
 
         if (b==null) {
@@ -127,77 +124,77 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      * Start from the build 'b' and locate the build that matches the criteria going back in time
      */
     private Run<?,?> find(Run<?,?> b) {
+        //noinspection StatementWithEmptyBody
         for ( ; b!=null && !apply(b); b=b.getPreviousBuild())
             ;
         return b;
     }
 
+    private static @Nonnull Map<String, Integer> cacheFor(@Nonnull File buildDir) {
+        synchronized (caches) {
+            Map<String, Integer> cache = caches.get(buildDir);
+            if (cache == null) {
+                cache = load(buildDir);
+                caches.put(buildDir, cache);
+            }
+            return cache;
+        }
+    }
+
+    private static @Nonnull Map<String, Integer> load(@Nonnull File buildDir) {
+        Map<String, Integer> cache = new TreeMap<>();
+        File storage = storageFor(buildDir);
+        if (storage.isFile()) {
+            try (Stream<String> lines = Files.lines(storage.toPath(), StandardCharsets.UTF_8)) {
+                lines.forEach(line -> {
+                    int idx = line.indexOf(' ');
+                    if (idx == -1) {
+                        return;
+                    }
+                    try {
+                        cache.put(line.substring(0, idx), Integer.parseInt(line.substring(idx + 1)));
+                    } catch (NumberFormatException x) {
+                        LOGGER.log(Level.WARNING, "failed to read " + storage, x);
+                    }
+                });
+            } catch (IOException x) {
+                LOGGER.log(Level.WARNING, "failed to read " + storage, x);
+            }
+            LOGGER.fine(() -> "loading from " + storage + ": " + cache);
+        }
+        return cache;
+    }
+
+    static @Nonnull File storageFor(@Nonnull File buildDir) {
+        return new File(buildDir, "permalinks");
+    }
+
     /**
      * Remembers the value 'n' in the cache for future {@link #resolve(Job)}.
      */
-    protected void updateCache(@Nonnull Job<?,?> job, @Nullable Run<?,?> b) {
-        final int n = b==null ? RESOLVES_TO_NONE : b.getNumber();
-
-        File cache = getPermalinkFile(job);
-        cache.getParentFile().mkdirs();
-
-        try {
-            String target = String.valueOf(n);
-            if (b != null && !new File(job.getBuildDir(), target).exists()) {
-                // (re)create the build Number->Id symlink
-                Util.createSymlink(job.getBuildDir(),b.getId(),target,TaskListener.NULL);
+    protected void updateCache(@Nonnull Job<?,?> job, @CheckForNull Run<?,?> b) {
+        File buildDir = job.getBuildDir();
+        Map<String, Integer> cache = cacheFor(buildDir);
+        synchronized (cache) {
+            cache.put(getId(), b == null ? RESOLVES_TO_NONE : b.getNumber());
+            File storage = storageFor(buildDir);
+            LOGGER.fine(() -> "saving to " + storage + ": " + cache);
+            try {
+                AtomicFileWriter cw = new AtomicFileWriter(storage);
+                try {
+                    for (Map.Entry<String, Integer> entry : cache.entrySet()) {
+                        cw.write(entry.getKey());
+                        cw.write(' ');
+                        cw.write(Integer.toString(entry.getValue()));
+                        cw.write('\n');
+                    }
+                    cw.commit();
+                } finally {
+                    cw.abort();
+                }
+            } catch (IOException x) {
+                LOGGER.log(Level.WARNING, "failed to update " + storage, x);
             }
-            writeSymlink(cache, target);
-        } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
-            cache.delete();
-        }
-    }
-
-    // File.exists returns false for a link with a missing target, so for Java 6 compatibility we have to use this circuitous method to see if it was created.
-    private static boolean exists(File link) {
-        File[] kids = link.getParentFile().listFiles();
-        return kids != null && Arrays.asList(kids).contains(link);
-    }
-
-    static String readSymlink(File cache) throws IOException, InterruptedException {
-        synchronized (symlinks) {
-            String target = symlinks.get(cache);
-            if (target != null) {
-                LOGGER.log(Level.FINE, "readSymlink cached {0} → {1}", new Object[] {cache, target});
-                return target;
-            }
-        }
-        String target = Util.resolveSymlink(cache);
-        if (target==null && cache.exists()) {
-            // if this file isn't a symlink, it must be a regular file
-            target = FileUtils.readFileToString(cache,"UTF-8").trim();
-        }
-        LOGGER.log(Level.FINE, "readSymlink {0} → {1}", new Object[] {cache, target});
-        synchronized (symlinks) {
-            symlinks.put(cache, target);
-        }
-        return target;
-    }
-
-    static void writeSymlink(File cache, String target) throws IOException, InterruptedException {
-        LOGGER.log(Level.FINE, "writeSymlink {0} → {1}", new Object[] {cache, target});
-        synchronized (symlinks) {
-            symlinks.put(cache, target);
-        }
-        StringWriter w = new StringWriter();
-        StreamTaskListener listener = new StreamTaskListener(w);
-        Util.createSymlink(cache.getParentFile(),target,cache.getName(),listener);
-        // Avoid calling resolveSymlink on a nonexistent file as it will probably throw an IOException:
-        if (!exists(cache) || Util.resolveSymlink(cache)==null) {
-          // symlink not supported. use a regular file
-          AtomicFileWriter cw = new AtomicFileWriter(cache);
-          try {
-              cw.write(target);
-              cw.commit();
-          } finally {
-              cw.abort();
-          }
         }
     }
 
@@ -212,8 +209,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
                 if (pp.resolve(j)==run) {
                     Run<?,?> r = pp.find(run.getPreviousBuild());
-                    if (LOGGER.isLoggable(Level.FINE))
-                        LOGGER.fine("Updating "+pp.getPermalinkFile(j).getName()+" permalink from deleted "+run.getNumber()+" to "+(r == null ? -1 : r.getNumber()));
+                    LOGGER.fine(() -> "Updating " + pp.getId() + " permalink from deleted " + run + " to " + (r == null ? -1 : r.getNumber()));
                     pp.updateCache(j,r);
                 }
             }
@@ -229,8 +225,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 if (pp.apply(run)) {
                     Run<?, ?> cur = pp.resolve(j);
                     if (cur==null || cur.getNumber()<run.getNumber()) {
-                        if (LOGGER.isLoggable(Level.FINE))
-                            LOGGER.fine("Updating "+pp.getPermalinkFile(j).getName()+" permalink to completed "+run.getNumber());
+                        LOGGER.fine(() -> "Updating " + pp.getId() + " permalink to completed " + run);
                         pp.updateCache(j,run);
                     }
                 }

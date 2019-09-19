@@ -177,7 +177,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException;
 
     public FileSystemProvisionerDescriptor getDescriptor() {
-        return (FileSystemProvisionerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (FileSystemProvisionerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -189,7 +189,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * Returns all the registered {@link FileSystemProvisioner} descriptors.
      */
     public static DescriptorExtensionList<FileSystemProvisioner,FileSystemProvisionerDescriptor> all() {
-        return Jenkins.getInstance().<FileSystemProvisioner,FileSystemProvisionerDescriptor>getDescriptorList(FileSystemProvisioner.class);
+        return Jenkins.get().getDescriptorList(FileSystemProvisioner.class);
     }
 
     /**

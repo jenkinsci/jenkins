@@ -129,7 +129,7 @@ public class Fingerprint implements ModelObject, Saveable {
         private boolean hasPermissionToDiscoverBuild() {
             // We expose the data to Jenkins administrators in order to
             // let them manage the data for deleted jobs (also works for SYSTEM)
-            final Jenkins instance = Jenkins.getInstance();
+            final Jenkins instance = Jenkins.get();
             if (instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
             }
@@ -149,7 +149,7 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         @WithBridgeMethods(value=AbstractProject.class, castRequired=true)
         public Job<?,?> getJob() {
-            return Jenkins.getInstance().getItemByFullName(name, Job.class);
+            return Jenkins.get().getItemByFullName(name, Job.class);
         }
 
         /**
@@ -201,7 +201,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * belongs to MavenModuleSet. 
          */
         public boolean belongsTo(Job job) {
-            Item p = Jenkins.getInstance().getItemByFullName(name);
+            Item p = Jenkins.get().getItemByFullName(name);
             while(p!=null) {
                 if(p==job)
                     return true;
@@ -828,7 +828,7 @@ public class Fingerprint implements ModelObject, Saveable {
         }
         private void locationChanged(Item item, String oldName, String newName) {
             if (item instanceof Job) {
-                Job p = Jenkins.getInstance().getItemByFullName(newName, Job.class);
+                Job p = Jenkins.get().getItemByFullName(newName, Job.class);
                 if (p != null) {
                     RunList<? extends Run> builds = p.getBuilds();
                     for (Run build : builds) {
@@ -943,7 +943,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @Nonnull String getTimestampString() {
         long duration = System.currentTimeMillis()-timestamp.getTime();
-        return Util.getPastTimeString(duration);
+        return Util.getTimeSpanString(duration);
     }
 
     /**
@@ -967,8 +967,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Gets the sorted list of job names where this jar is used.
      */
     public @Nonnull List<String> getJobs() {
-        List<String> r = new ArrayList<>();
-        r.addAll(usages.keySet());
+        List<String> r = new ArrayList<>(usages.keySet());
         Collections.sort(r);
         return r;
     }
@@ -994,7 +993,7 @@ public class Fingerprint implements ModelObject, Saveable {
     @Exported(name="usage")
     public @Nonnull List<RangeItem> _getUsages() {
         List<RangeItem> r = new ArrayList<>();
-        final Jenkins instance = Jenkins.getInstance();
+        final Jenkins instance = Jenkins.get();
         for (Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
             if (instance.hasPermission(Jenkins.ADMINISTER) || canDiscoverItem(itemName)) {
@@ -1009,7 +1008,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     @Deprecated
     public synchronized void add(@Nonnull AbstractBuild b) throws IOException {
-        addFor((Run) b);
+        addFor(b);
     }
 
     /**
@@ -1061,7 +1060,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return true;
 
         for (Entry<String,RangeSet> e : usages.entrySet()) {
-            Job j = Jenkins.getInstance().getItemByFullName(e.getKey(),Job.class);
+            Job j = Jenkins.get().getItemByFullName(e.getKey(),Job.class);
             if(j==null)
                 continue;
 
@@ -1088,7 +1087,7 @@ public class Fingerprint implements ModelObject, Saveable {
         boolean modified = false;
 
         for (Entry<String,RangeSet> e : new Hashtable<>(usages).entrySet()) {// copy because we mutate
-            Job j = Jenkins.getInstance().getItemByFullName(e.getKey(),Job.class);
+            Job j = Jenkins.get().getItemByFullName(e.getKey(),Job.class);
             if(j==null) {// no such job any more. recycle the record
                 modified = true;
                 usages.remove(e.getKey());
@@ -1350,7 +1349,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private static @Nonnull File getFingerprintFile(@Nonnull byte[] md5sum) {
         assert md5sum.length==16;
-        return new File( Jenkins.getInstance().getRootDir(),
+        return new File( Jenkins.get().getRootDir(),
             "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
     }
 
@@ -1430,7 +1429,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return {@code true} if the user can discover the item
      */
     private static boolean canDiscoverItem(@Nonnull final String fullName) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.get();
 
         // Fast check to avoid security context switches
         Item item = null;

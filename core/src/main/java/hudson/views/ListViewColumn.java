@@ -87,7 +87,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all() {
-        return Jenkins.getInstance().<ListViewColumn, Descriptor<ListViewColumn>>getDescriptorList(ListViewColumn.class);
+        return Jenkins.get().getDescriptorList(ListViewColumn.class);
     }
 
     /**
@@ -116,7 +116,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * and instead return a plain {@link Descriptor} instance.
      */
     public Descriptor<ListViewColumn> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**

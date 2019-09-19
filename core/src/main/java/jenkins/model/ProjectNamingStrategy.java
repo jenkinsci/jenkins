@@ -52,11 +52,11 @@ import org.kohsuke.stapler.QueryParameter;
 public abstract class ProjectNamingStrategy implements Describable<ProjectNamingStrategy>, ExtensionPoint {
 
     public ProjectNamingStrategyDescriptor getDescriptor() {
-        return (ProjectNamingStrategyDescriptor) Jenkins.getInstance().getDescriptor(getClass());
+        return (ProjectNamingStrategyDescriptor) Jenkins.get().getDescriptor(getClass());
     }
 
     public static DescriptorExtensionList<ProjectNamingStrategy, ProjectNamingStrategyDescriptor> all() {
-        return Jenkins.getInstance().<ProjectNamingStrategy, ProjectNamingStrategyDescriptor> getDescriptorList(ProjectNamingStrategy.class);
+        return Jenkins.get().getDescriptorList(ProjectNamingStrategy.class);
     }
 
     /**

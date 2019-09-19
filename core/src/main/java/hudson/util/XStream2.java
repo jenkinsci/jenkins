@@ -70,7 +70,7 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -308,7 +308,7 @@ public class XStream2 extends XStream {
      * @since 1.504
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
-        Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
+        Writer w = new OutputStreamWriter(out, StandardCharsets.UTF_8);
         w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }

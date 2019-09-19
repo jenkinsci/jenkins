@@ -237,7 +237,7 @@ public class SetupWizard extends PageDecorator {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
 
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -281,7 +281,7 @@ public class SetupWizard extends PageDecorator {
             // include the new seed
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
             
-            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
                 data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
@@ -607,7 +607,7 @@ public class SetupWizard extends PageDecorator {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
-            if (request instanceof HttpServletRequest) {
+            if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 String requestURI = req.getRequestURI();
                 if (requestURI.equals(req.getContextPath()) && !requestURI.endsWith("/")) {

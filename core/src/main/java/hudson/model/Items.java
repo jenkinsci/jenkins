@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -153,7 +152,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s.
      */
     public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
-        return Jenkins.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
+        return Jenkins.get().getDescriptorList(TopLevelItem.class);
     }
 
     /**
@@ -179,7 +178,7 @@ public class Items {
             acl = ((AccessControlled) c).getACL();
         } else {
             // fall back to root
-            acl = Jenkins.getInstance().getACL();
+            acl = Jenkins.get().getACL();
         }
         for (TopLevelItemDescriptor d: all()) {
             if (acl.hasCreatePermission(a, c, d) && d.isApplicableIn(c)) {
@@ -222,7 +221,7 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.get();
         
         List<T> r = new ArrayList<>();
         if (jenkins == null) {
@@ -466,11 +465,11 @@ public class Items {
      */
     public static @CheckForNull <T extends Item> T findNearest(Class<T> type, String name, ItemGroup context) {
         List<String> names = new ArrayList<>();
-        for (T item: Jenkins.getInstance().allItems(type)) {
+        for (T item: Jenkins.get().allItems(type)) {
             names.add(item.getRelativeNameFrom(context));
         }
         String nearest = EditDistance.findNearest(name, names);
-        return Jenkins.getInstance().getItem(nearest, context, type);
+        return Jenkins.get().getItem(nearest, context, type);
     }
 
     /**

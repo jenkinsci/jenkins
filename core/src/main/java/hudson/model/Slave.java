@@ -159,6 +159,11 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String userId;
 
+    /**
+     * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     * @deprecated since FIXME
+     */
+    @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
@@ -197,7 +202,7 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.getInstance().getNode(name);
+         Slave node = (Slave) Jenkins.get().getNode(name);
 
        if(node!=null){
             this.userId= node.getUserId(); //agent has already existed
@@ -232,7 +237,7 @@ public abstract class Slave extends Node implements Serializable {
     public ComputerLauncher getLauncher() {
         if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
             try {
-                launcher = (ComputerLauncher) Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
+                launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
                 agentCommand = null;
                 save();
             } catch (Exception x) {
@@ -366,7 +371,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Web-bound object used to serve jar files for JNLP.
+     * Web-bound object used to serve jar files for inbound connections.
      */
     public static final class JnlpJar implements HttpResponse {
         private final String fileName;
@@ -425,7 +430,7 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
             
-            URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
@@ -565,7 +570,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Jenkins.getInstance().getDescriptorOrDie(getClass());
+        Descriptor d = Jenkins.get().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
@@ -604,7 +609,7 @@ public abstract class Slave extends Node implements Serializable {
         @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
-                    Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(
+                    Jenkins.get().getDescriptorList(
                             ComputerLauncher.class);
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, all)
                     : DescriptorVisibilityFilter.apply(it, all);
@@ -638,7 +643,7 @@ public abstract class Slave extends Node implements Serializable {
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
             List<NodePropertyDescriptor> result = new ArrayList<>();
             Collection<NodePropertyDescriptor> list =
-                    (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+                    (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
             for (NodePropertyDescriptor npd : it == null
                     ? DescriptorVisibilityFilter.applyType(clazz, list)
                     : DescriptorVisibilityFilter.apply(it, list)) {

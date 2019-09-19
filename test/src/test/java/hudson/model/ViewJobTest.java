@@ -64,7 +64,7 @@ public class ViewJobTest {
         }
 
         @Override public TopLevelItemDescriptor getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
 
         @TestExtension public static final class DescriptorImpl extends TopLevelItemDescriptor {

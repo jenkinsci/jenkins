@@ -38,6 +38,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -81,6 +82,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -135,7 +137,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
         assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
     }
@@ -152,7 +154,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
     
@@ -164,7 +166,7 @@ public class JenkinsTest {
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
         assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
@@ -176,7 +178,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertTrue(jenkins.isNameUnique("jobName1", curJobName));
     }
 
@@ -187,7 +189,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         assertFalse(jenkins.isNameUnique(jobName, curJobName));
     }
 
@@ -198,7 +200,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
         assertTrue(jenkins.isNameUnique(curJobName, curJobName));
     }
@@ -213,7 +215,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
         assertEquals(FormValidation.ok(), v);
     }
@@ -229,7 +231,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
@@ -245,7 +247,7 @@ public class JenkinsTest {
         FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
@@ -256,7 +258,7 @@ public class JenkinsTest {
             "", "Jenkins"    
         };
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
             assertEquals(FormValidation.Kind.OK, v.kind);
@@ -270,7 +272,7 @@ public class JenkinsTest {
             "Jenkins!", "Jenkins[]", "Jenkin<>s", "^Jenkins", ".."    
         };
         
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
@@ -328,6 +330,15 @@ public class JenkinsTest {
     }
 
     @Test
+    @Issue("JENKINS-58548")
+    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        WebClient wc = j.createWebClient().login("admin");
+        TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
+        assertEquals("hello", page.getContent());
+    }
+
+    @Test
     public void testDoEval() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
         
@@ -380,7 +391,7 @@ public class JenkinsTest {
         }
 
         public HttpResponse doDynamic() {
-            assertTrue(Jenkins.getInstance().getAuthentication().getName().equals("anonymous"));
+            assertTrue(Jenkins.get().getAuthentication().getName().equals("anonymous"));
             count++;
             return HttpResponses.html("OK");
         }
@@ -472,20 +483,45 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-38487")
-    public void startupShouldNotFailOnFailingOnlineListener() {
-        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+    public void startupShouldNotFailOnIOExceptionOnlineListener() {
+        // We do nothing, IOExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
+
+        assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
     }
 
-    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
-    public static final class FailingOnOnlineListener extends ComputerListener {
-        
+    @TestExtension(value = "startupShouldNotFailOnIOExceptionOnlineListener")
+    public static final class IOExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
         @Override
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
             throw new IOException("Something happened (the listener always throws this exception)");
         }
     }
-    
+
+    @Test
+    @Issue("JENKINS-57111")
+    public void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
+        // We do nothing, RuntimeExceptionOnOnlineListener & JenkinsRule should cause the
+        // boot failure if the issue is not fixed.
+        assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnRuntimeExceptionOnlineListener")
+    public static final class RuntimeExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            onOnlineCount++;
+            throw new RuntimeException("Something happened (the listener always throws this exception)");
+        }
+    }
+
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_singleEnable_roundtrip() throws Exception {

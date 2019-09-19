@@ -66,7 +66,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             return;
         }
         List<Node> nodes = new ArrayList<>();
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         nodes.add(j);
         nodes.addAll(j.getNodes());
         for (TopLevelItem item : j.allItems(TopLevelItem.class)) {

@@ -332,7 +332,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return ok();
+        if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)
@@ -351,18 +351,19 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         // look in PATH
         String path = EnvVars.masterEnvVars.get("PATH");
-        String tokenizedPath = "";
+        String tokenizedPath;
         String delimiter = null;
         if(path!=null) {
+            StringBuilder tokenizedPathBuilder = new StringBuilder();
             for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
                 if (delimiter == null) {
                   delimiter = ", ";
                 }
                 else {
-                  tokenizedPath += delimiter;
+                  tokenizedPathBuilder.append(delimiter);
                 }
 
-                tokenizedPath += _dir.replace('\\', '/');
+                tokenizedPathBuilder.append(_dir.replace('\\', '/'));
 
                 File dir = new File(_dir);
 
@@ -372,8 +373,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 File fexe = new File(dir,exe+".exe");
                 if(fexe.exists())   return exeValidator.validate(fexe);
             }
+            tokenizedPathBuilder.append('.');
 
-            tokenizedPath += ".";
+            tokenizedPath = tokenizedPathBuilder.toString();
         } else {
             tokenizedPath = "unavailable.";
         }
@@ -646,7 +648,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     buf.append("+qs(this).addThis()");
 
                     for (String name : names) {
-                        buf.append(".nearBy('"+name+"')");
+                        buf.append(".nearBy('").append(name).append("')");
                     }
                     buf.append(".toString()");
                 }

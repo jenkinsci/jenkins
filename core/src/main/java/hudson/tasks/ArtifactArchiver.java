@@ -234,10 +234,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
+                    Fingerprinter f = new Fingerprinter(artifacts);
+                    f.setExcludes(excludes);
+                    f.setDefaultExcludes(defaultExcludes);
+                    f.setCaseSensitive(caseSensitive);
+                    f.perform(build, ws, launcher, listener);
                 }
             } else {
                 result = build.getResult();
+                //noinspection StatementWithEmptyBody
                 if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     try {
                     	String msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
@@ -344,7 +349,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
+            for (AbstractProject<?,?> p : Jenkins.get().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

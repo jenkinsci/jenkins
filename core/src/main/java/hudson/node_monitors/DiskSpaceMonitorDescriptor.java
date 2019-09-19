@@ -71,7 +71,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Override
         public String toString() {
-            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
+            if(triggered) {
+                return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
+            }
+            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path);
         }
         
         /**

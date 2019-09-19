@@ -100,7 +100,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> extends Ab
      * Returns all the registered {@link RepositoryBrowser} descriptors.
      */
     public static DescriptorExtensionList<RepositoryBrowser<?>,Descriptor<RepositoryBrowser<?>>> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RepositoryBrowser.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(RepositoryBrowser.class);
     }
 
     private static final long serialVersionUID = 1L;

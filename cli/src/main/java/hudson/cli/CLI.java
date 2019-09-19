@@ -264,7 +264,7 @@ public class CLI {
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
         } else if (auth != null) {
-            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1))).trim() : auth);
+            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1)), Charset.defaultCharset()).trim() : auth);
         }
 
         if (mode == Mode.HTTP) {

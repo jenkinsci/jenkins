@@ -46,13 +46,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -131,10 +131,11 @@ public class Nodes implements Saveable {
         if (node != oldNode) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
             // computer list for just the new node
+            AtomicReference<Node> old = new AtomicReference<>();
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
-                    nodes.put(node.getNodeName(), node);
+                    old.set(nodes.put(node.getNodeName(), node));
                     jenkins.updateComputerList();
                     jenkins.trimLabels();
                 }
@@ -155,7 +156,11 @@ public class Nodes implements Saveable {
                 });
                 throw e;
             }
-            NodeListener.fireOnCreated(node);
+            if (old.get() != null) {
+                NodeListener.fireOnUpdated(old.get(), node);
+            } else {
+                NodeListener.fireOnCreated(node);
+            }
         }
     }
 
@@ -210,6 +215,7 @@ public class Nodes implements Saveable {
         if (exists) {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             persistNode(node);
+            // TODO should this fireOnUpdated?
             return true;
         }
         return false;
@@ -233,7 +239,11 @@ public class Nodes implements Saveable {
                 }
             });
             updateNode(newOne);
+            if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
+                Util.deleteRecursive(new File(getNodesDir(), oldOne.getNodeName()));
+            }
             NodeListener.fireOnUpdated(oldOne, newOne);
+
             return true;
         } else {
             return false;

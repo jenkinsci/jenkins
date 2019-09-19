@@ -130,14 +130,15 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
+import java.io.NotSerializableException;
 
 import java.util.Collections;
 import org.apache.tools.ant.BuildException;
@@ -207,7 +208,7 @@ import org.apache.tools.ant.BuildException;
  * @author Kohsuke Kawaguchi
  * @see VirtualFile
  */
-public final class FilePath implements Serializable {
+public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Maximum http redirects we will follow. This defaults to the same number as Firefox/Chrome tolerates.
      */
@@ -333,7 +334,9 @@ public final class FilePath implements Serializable {
                 tokens.add(path.substring(s, i));
                 s = i;
                 // Skip any extra separator chars
-                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\')) { }
+                //noinspection StatementWithEmptyBody
+                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\'))
+                    ;
                 // Add token for separator unless we reached the end
                 if (i < end) tokens.add(path.substring(s, s+1));
                 s = i;
@@ -2728,12 +2731,12 @@ public final class FilePath implements Serializable {
                                 //
                                 // this is not a very efficient/clever way to do it, but it's relatively simple
 
-                                String prefix="";
+                                StringBuilder prefix = new StringBuilder();
                                 while(true) {
                                     int idx = findSeparator(f);
                                     if(idx==-1)     break;
 
-                                    prefix+=f.substring(0,idx)+'/';
+                                    prefix.append(f.substring(0, idx)).append('/');
                                     f=f.substring(idx+1);
                                     if(hasMatch(dir,prefix+fileMask,caseSensitive))
                                         return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask, prefix+fileMask);
@@ -2950,7 +2953,7 @@ public final class FilePath implements Serializable {
     private static void checkPermissionForValidate() {
         AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
         if (subject == null)
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         else
             subject.checkPermission(Item.CONFIGURE);
     }
@@ -2985,18 +2988,26 @@ public final class FilePath implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        Channel target = Channel.current();
-
-        if(channel!=null && channel!=target)
-            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel");
+        Channel target = _getChannelForSerialization();
+        if (channel != null && channel != target) {
+            throw new IllegalStateException("Can't send a remote FilePath to a different remote channel (current=" + channel + ", target=" + target + ")");
+        }
 
         oos.defaultWriteObject();
         oos.writeBoolean(channel==null);
     }
 
+    private Channel _getChannelForSerialization() {
+        try {
+            return getChannelForSerialization();
+        } catch (NotSerializableException x) {
+            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://jenkins.io/redirect/filepath-serialization for details.", x);
+            return null;
+        }
+    }
+
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        Channel channel = Channel.current();
-        assert channel!=null;
+        Channel channel = _getChannelForSerialization();
 
         ois.defaultReadObject();
         if(ois.readBoolean()) {

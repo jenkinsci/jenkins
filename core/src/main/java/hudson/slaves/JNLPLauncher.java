@@ -42,7 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
- * {@link ComputerLauncher} via JNLP.
+ * {@link ComputerLauncher} via inbound connections.
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi

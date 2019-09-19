@@ -29,6 +29,7 @@ import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -40,7 +41,6 @@ import hudson.model.PeriodicWork;
 import hudson.model.Project;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 
 import java.io.InvalidObjectException;
@@ -150,7 +150,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (TriggerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 
@@ -175,7 +175,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     protected Trigger() {
         this.spec = "";
-        this.tabs = new CronTabList(Collections.<CronTab>emptyList());
+        this.tabs = new CronTabList(Collections.emptyList());
     }
 
     /**
@@ -237,7 +237,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     private static Future previousSynchronousPolling;
 
     public static void checkTriggers(final Calendar cal) {
-        Jenkins inst = Jenkins.getInstance();
+        Jenkins inst = Jenkins.get();
 
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
@@ -275,7 +275,16 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                         if (t.tabs.check(cal)) {
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
                             try {
+                                long begin_time = System.currentTimeMillis();
                                 t.run();
+                                long end_time = System.currentTimeMillis();
+                                if ((end_time - begin_time) > CRON_THRESHOLD) {
+                                    final String msg = String.format("Trigger %s.run() triggered by %s spent too much time "
+                                                    + "(%s) in its execution, other timers can be affected",
+                                            t.getClass().getName(), p, Util.getTimeSpanString(end_time - begin_time));
+                                    LOGGER.log(Level.WARNING, msg);
+                                    SlowTriggerAdminMonitor.getInstance().report(t.getClass().getName(), msg);
+                                }
                             } catch (Throwable e) {
                                 // t.run() is a plugin, and some of them throw RuntimeException and other things.
                                 // don't let that cancel the polling activity. report and move on.
@@ -291,6 +300,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             }
         }
     }
+
+    public static long CRON_THRESHOLD = 1000*30;    // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
 
@@ -312,7 +323,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns all the registered {@link Trigger} descriptors.
      */
     public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(Trigger.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(Trigger.class);
     }
 
     /**

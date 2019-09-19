@@ -423,12 +423,12 @@ public final class RunIdMigrator {
 
         @Override
         public Object getTarget() {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             return this;
         }
 
         public String getCommand() {
-            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.getInstance().getRootDir());
+            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.get().getRootDir());
         }
     }
 }

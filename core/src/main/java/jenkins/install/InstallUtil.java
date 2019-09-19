@@ -28,6 +28,7 @@ import static java.util.logging.Level.WARNING;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -93,7 +94,7 @@ public class InstallUtil {
     public static void proceedToNextStateFrom(InstallState prior) {
         InstallState next = getNextInstallState(prior);
         if (next != null) {
-            Jenkins.getInstance().setInstallState(next);
+            Jenkins.get().setInstallState(next);
         }
     }
     
@@ -162,7 +163,7 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
             
             // Allow for skipping
             if(shouldNotRun) {
@@ -224,7 +225,7 @@ public class InstallUtil {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
-                String version = FileUtils.readFileToString(lastExecVersionFile);
+                String version = FileUtils.readFileToString(lastExecVersionFile, Charset.defaultCharset());
                 // JENKINS-37438 blank will force the setup
                 // wizard regardless of current state of the system
                 if (StringUtils.isBlank(version)) {
@@ -267,22 +268,22 @@ public class InstallUtil {
     static void saveLastExecVersion(@Nonnull String version) {
         File lastExecVersionFile = getLastExecVersionFile();
         try {
-            FileUtils.write(lastExecVersionFile, version);
+            FileUtils.write(lastExecVersionFile, version, Charset.defaultCharset());
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + lastExecVersionFile.getAbsolutePath(), e);
         }
     }
 
     static File getConfigFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "config.xml");
+        return new File(Jenkins.get().getRootDir(), "config.xml");
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
+        return new File(Jenkins.get().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {
