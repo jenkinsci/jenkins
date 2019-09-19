@@ -344,7 +344,8 @@ public class FileParameterValueTest {
             
     	  assertThat(build.getResult(), equalTo(Result.SUCCESS));
         // confirm that the tmp file has been deleted
-    	  assertThat(fpv.getFile(), equalTo(null));       
+    	  assertThat(fpv.getFile(), equalTo(null));
+    }
 
     @Test
     public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
