@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -35,12 +34,9 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;

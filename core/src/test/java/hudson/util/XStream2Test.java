@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.security.ForbiddenClassException;
 import hudson.model.Result;
 import hudson.model.Run;
