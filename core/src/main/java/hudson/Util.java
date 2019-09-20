@@ -873,9 +873,11 @@ public class Util {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);
+                        escaped = true;
+                    }
+                    if (enc == null || buf == null) {
                         enc = StandardCharsets.UTF_8.newEncoder();
                         buf = CharBuffer.allocate(1);
-                        escaped = true;
                     }
                     // 1 char -> UTF8
                     buf.put(0, c);
