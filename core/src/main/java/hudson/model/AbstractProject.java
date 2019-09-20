@@ -29,6 +29,7 @@ package hudson.model;
 
 import antlr.ANTLRException;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
@@ -97,6 +98,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -983,16 +985,139 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see TransientProjectActionFactory
      */
     @SuppressWarnings("deprecation")
+    @Nonnull
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
-        List<Action> actions = new Vector<Action>(super.getActions());
+        List<Action> actions = new Vector<>(super.getActions());
         actions.addAll(transientActions);
         // return the read only list to cause a failure on plugins who try to add an action here
         return Collections.unmodifiableList(actions);
     }
 
-    // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
+    // by historical reasons Actionable.getActions() is dealing with persistent modifiable list
+    // while child classes lock them to be unmodifiable, so addAction, addOrReplaceAction, removeActions...
+    // duplicating code. no way..
+    @SuppressWarnings("deprecation")
+    public List<Action> getPersistentActions() {
+        return super.getActions();
+    }
+
+    /**
+     * @see Actionable#addAction(hudson.model.Action)
+     */
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @Override
+    public void addAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        super.getActions().add(a);
+    }
+
+    /**
+     * @see Actionable#addOrReplaceAction(hudson.model.Action)
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean addOrReplaceAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<>(1);
+        List<Action> current = super.getActions();
+        boolean found = false;
+        for (Action a2 : current) {
+            if (!found && a.equals(a2)) {
+                found = true;
+            } else  if (a2.getClass() == a.getClass()) {
+                old.add(a2);
+            }
+        }
+        current.removeAll(old);
+        if (!found) {
+            addAction(a);
+        }
+        return !found || !old.isEmpty();
+    }
+
+    /**
+     * @see Actionable#replaceActions(java.lang.Class, hudson.model.Action)
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<>();
+        List<Action> current = super.getActions();
+        boolean found = false;
+        for (Action a1 : current) {
+            if (!found) {
+                if (a.equals(a1)) {
+                    found = true;
+                } else if (clazz.isInstance(a1)) {
+                    old.add(a1);
+                }
+            } else if (clazz.isInstance(a1) && !a.equals(a1)) {
+                old.add(a1);
+            }
+        }
+        current.removeAll(old);
+        if (!found) {
+            addAction(a);
+        }
+        return !(old.isEmpty() && found);
+    }
+
+    /**
+     * @see Actionable#removeAction(hudson.model.Action)
+     */
+    @SuppressWarnings("deprecation")
+    public boolean removeAction(@Nullable Action a) {
+        if (a == null) {
+            return false;
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        return super.getActions().removeAll(Collections.singleton(a));
+    }
+
+    /**
+     * @see Actionable#removeActions(java.lang.Class)
+     */
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<>();
+        List<Action> current = super.getActions();
+        for (Action a : current) {
+            if (clazz.isInstance(a)) {
+                old.add(a);
+            }
+        }
+        return current.removeAll(old);
+    }
+
+    /**
+     * @see Actionable#replaceAction(hudson.model.Action)
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void replaceAction(@Nonnull Action a) {
+        addOrReplaceAction(a);
+    }
+
 
     /**
      * Gets the {@link Node} where this project was last built on.
