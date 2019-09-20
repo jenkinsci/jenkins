@@ -1146,7 +1146,7 @@ public abstract class Launcher {
             }
 
             @Override
-            public boolean isAlive() throws IOException, InterruptedException {
+            public boolean isAlive() {
                 return process.isAlive();
             }
 
@@ -1263,7 +1263,7 @@ public abstract class Launcher {
     public interface RemoteProcess {
         int join() throws InterruptedException, IOException;
         void kill() throws IOException, InterruptedException;
-        boolean isAlive() throws IOException, InterruptedException;
+        boolean isAlive();
         
         @Nonnull
         IOTriplet getIOtriplet();
@@ -1344,7 +1344,7 @@ public abstract class Launcher {
                     p.kill();
                 }
 
-                public boolean isAlive() throws IOException, InterruptedException {
+                public boolean isAlive() {
                     return p.isAlive();
                 }
 

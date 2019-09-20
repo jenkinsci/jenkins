@@ -68,7 +68,7 @@ public abstract class Proc {
     /**
      * Checks if the process is still alive.
      */
-    public abstract boolean isAlive() throws IOException, InterruptedException;
+    public abstract boolean isAlive();
 
     /**
      * Terminates the process.
@@ -363,13 +363,8 @@ public abstract class Proc {
         }
 
         @Override
-        public boolean isAlive() throws IOException, InterruptedException {
-            try {
-                proc.exitValue();
-                return false;
-            } catch (IllegalThreadStateException e) {
-                return true;
-            }
+        public boolean isAlive() {
+            return proc.isAlive();
         }
 
         @Override
@@ -479,7 +474,7 @@ public abstract class Proc {
         }
 
         @Override
-        public boolean isAlive() throws IOException, InterruptedException {
+        public boolean isAlive() {
             return !process.isDone();
         }
 
