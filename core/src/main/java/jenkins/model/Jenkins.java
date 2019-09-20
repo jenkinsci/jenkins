@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
@@ -848,9 +849,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings({
+    @SuppressFBWarnings({
         "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
-        "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
+        "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
+        "DM_EXIT" // Exit is wanted here
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         oldJenkinsJVM = JenkinsJVM.isJenkinsJVM(); // capture to restore in cleanUp()
@@ -4373,6 +4375,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         new Thread("exit thread") {
             @Override
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
@@ -4401,6 +4404,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
             @Override
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
