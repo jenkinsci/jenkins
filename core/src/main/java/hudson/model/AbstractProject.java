@@ -1429,7 +1429,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private boolean isAllSuitableNodesOffline(R build) {
         Label label = getAssignedLabel();
-        List<Node> allNodes = Jenkins.get().getNodes();
 
         if (label != null) {
             //Invalid label. Put in queue to make administrator fix
