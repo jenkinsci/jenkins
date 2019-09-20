@@ -844,10 +844,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.299
      */
     public boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message) throws IOException, InterruptedException {
+        if (listener == null) {
+            listener = TaskListener.NULL;
+        }
         return installIfNecessaryFrom(archive, listener, message, MAX_REDIRECTS);
     }
 
-    private boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message, int maxRedirects) throws InterruptedException, IOException {
+    private boolean installIfNecessaryFrom(@Nonnull URL archive, @Nonnull TaskListener listener, @Nonnull String message, int maxRedirects) throws InterruptedException, IOException {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
@@ -861,9 +864,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             } catch (IOException x) {
                 if (this.exists()) {
                     // Cannot connect now, so assume whatever was last unpacked is still OK.
-                    if (listener != null) {
-                        listener.getLogger().println("Skipping installation of " + archive + " to " + remote + ": " + x);
-                    }
+                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + ": " + x);
                     return false;
                 } else {
                     throw x;
@@ -905,8 +906,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 this.mkdirs();
             }
 
-            if(listener!=null)
-                listener.getLogger().println(message);
+            listener.getLogger().println(message);
 
             if (isRemote()) {
                 // First try to download from the agent machine.
@@ -915,9 +915,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
-                    if (listener != null) {
-                        Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from master"));
-                    }
+                    Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from master"));
                 }
             }
 
