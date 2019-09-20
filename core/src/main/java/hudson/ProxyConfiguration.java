@@ -333,7 +333,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         JenkinsJVM.checkJenkinsJVM();
         // this code could be called between the JVM flag being set and theInstance initialized
         Jenkins jenkins = Jenkins.get();
-        return jenkins == null ? null : jenkins.proxy;
+        return jenkins.proxy;
     }
 
     private static void decorate(URLConnection con) throws IOException {

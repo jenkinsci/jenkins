@@ -260,7 +260,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         builds = buildMixIn.getRunMap();
 
         final Jenkins j = Jenkins.get();
-        final List<Node> nodes = j != null ? j.getNodes() : null;
+        final List<Node> nodes = j.getNodes();
         if(nodes!=null && !nodes.isEmpty()) {
             // if a new job is configured with Hudson that already has agent nodes
             // make it roamable by default

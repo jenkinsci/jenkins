@@ -333,7 +333,6 @@ public abstract class Cause {
             public ConverterImpl(XStream2 xstream) { super(xstream); }
             @Override protected void callback(UpstreamCause uc, UnmarshallingContext context) {
                 if (uc.upstreamCause != null) {
-                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<>();
                     uc.upstreamCauses.add(uc.upstreamCause);
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
