@@ -40,7 +40,6 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;

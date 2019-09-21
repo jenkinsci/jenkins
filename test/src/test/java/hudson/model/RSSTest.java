@@ -24,8 +24,6 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import hudson.model.queue.QueueTaskFuture;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

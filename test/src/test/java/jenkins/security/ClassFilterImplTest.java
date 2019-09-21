@@ -36,7 +36,6 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.Saveable;
-import hudson.remoting.ClassFilter;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
