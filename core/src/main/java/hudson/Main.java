@@ -153,8 +153,7 @@ public class Main {
                 // run the command
                 long start = System.currentTimeMillis();
 
-                List<String> cmd = new ArrayList<>();
-                cmd.addAll(Arrays.asList(args).subList(1, args.length));
+                List<String> cmd = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
                 Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
                     new DualOutputStream(System.out,new EncodingStream(os)));
 

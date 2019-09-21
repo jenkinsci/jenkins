@@ -74,7 +74,7 @@ public class DeleteNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(node_s + ": " + e.getMessage());
+                final String errorMsg = node_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;
