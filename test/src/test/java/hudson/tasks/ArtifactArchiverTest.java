@@ -47,6 +47,7 @@ import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
@@ -68,6 +69,22 @@ public class ArtifactArchiverTest {
 
     @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-26008")
+    public void testNoneCompression() throws Exception {
+        final FilePath.TarCompression prevCompression = StandardArtifactManager.TAR_COMPRESSION;
+        StandardArtifactManager.TAR_COMPRESSION = FilePath.TarCompression.NONE;
+        try {
+            final FreeStyleProject project = j.createFreeStyleProject();
+            project.getBuildersList().add(new CreateArtifact());
+            project.getPublishersList().add(new ArtifactArchiver("f"));
+            assertEquals(Result.SUCCESS, build(project));
+            assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        } finally {
+            StandardArtifactManager.TAR_COMPRESSION = prevCompression;
+        }
+    }
 
     @Test
     @Issue("JENKINS-3227")
