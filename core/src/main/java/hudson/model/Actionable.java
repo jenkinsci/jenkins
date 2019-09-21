@@ -144,7 +144,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Nonnull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        List<T> _actions = Util.filter(getPersistedActions(), type);
+        List<T> _actions = Util.filter(getActions(), type);
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
             _actions.addAll(Util.filter(createFor(taf), type));
         }
@@ -337,7 +337,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     public <T extends Action> T getAction(Class<T> type) {
         // Shortcut: if the persisted list has one, return it.
-        for (Action a : getPersistedActions()) {
+        for (Action a : getActions()) {
             if (type.isInstance(a)) {
                 return type.cast(a);
             }
