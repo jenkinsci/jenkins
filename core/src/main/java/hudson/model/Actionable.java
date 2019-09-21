@@ -78,9 +78,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Historically child classes override and return {@link hudson.model.Actionable#getActions()} as
-     * unmodifiable list, while addAction, replaceAction depends on them.
+     * Returns <b>modifiable</b> persisted actions list.
+     * @return a list of persisted actions.
+     * @since TODO
      */
+    @Nonnull
     public List<Action> getPersistedActions() {
         //this double checked synchronization is only safe if the field 'actions' is volatile
         if (actions == null) {
@@ -102,7 +104,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Exported(name="actions")
     @Nonnull
     public final List<? extends Action> getAllActions() {
-        List<Action> _actions = getPersistedActions();
+        List<Action> _actions = getActions();
         boolean adding = false;
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             Collection<? extends Action> additions = createFor(taf);
