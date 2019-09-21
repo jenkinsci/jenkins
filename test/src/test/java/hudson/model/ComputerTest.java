@@ -25,6 +25,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
@@ -118,12 +119,24 @@ public class ComputerTest {
     @Test
     public void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
-        class A extends InvisibleAction {}
+        class A extends InvisibleAction {
+            boolean f;
+
+            public A(boolean f) {
+                this.f = f;
+            }
+        }
+
+        class B extends InvisibleAction { }
+
         assertEquals(0, c.getActions(A.class).size());
-        c.addAction(new A());
+        c.addAction(new A(true));
         assertEquals(1, c.getActions(A.class).size());
-        c.addAction(new A());
+        A second = new A(true);
+        c.addAction(second);
         assertEquals(2, c.getActions(A.class).size());
+        c.replaceAction(new A(false));
+        assertThat(c.getActions(A.class), hasSize(2));
     }
 
 }

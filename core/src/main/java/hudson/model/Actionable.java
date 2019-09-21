@@ -103,6 +103,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Exported(name="actions")
     @Nonnull
+    @SuppressWarnings("deprecation")
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
@@ -143,6 +144,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @see #getAction(Class)
      */
     @Nonnull
+    @SuppressWarnings("deprecation")
     public <T extends Action> List<T> getActions(Class<T> type) {
         List<T> _actions = Util.filter(getActions(), type);
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
@@ -156,7 +158,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * <strong>Note: this method will always modify the actions</strong>
      */
-    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@Nonnull Action a) {
         if(a==null) {
@@ -180,7 +182,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
      * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@Nonnull Action a) {
         addOrReplaceAction(a);
@@ -199,7 +201,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean addOrReplaceAction(@Nonnull Action a) {
         if (a == null) {
@@ -236,7 +238,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings("deprecation")
     public boolean removeAction(@Nullable Action a) {
         if (a == null) {
             return false;
@@ -258,7 +259,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
         if (clazz == null) {
@@ -290,7 +291,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
         if (clazz == null) {
@@ -335,6 +336,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return The action or <code>null</code> if no such actions exist.
      * @see #getActions(Class)
      */
+    @SuppressWarnings("deprecation")
     public <T extends Action> T getAction(Class<T> type) {
         // Shortcut: if the persisted list has one, return it.
         for (Action a : getActions()) {
