@@ -74,6 +74,14 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Deprecated
     @Nonnull
     public List<Action> getActions() {
+       return getPersistedActions();
+    }
+
+    /**
+     * Historically child classes override and return {@link hudson.model.Actionable#getActions()} as
+     * unmodifiable list, while addAction, replaceAction depends on them.
+     */
+    public List<Action> getPersistedActions() {
         //this double checked synchronization is only safe if the field 'actions' is volatile
         if (actions == null) {
             synchronized (this) {
@@ -94,7 +102,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Exported(name="actions")
     @Nonnull
     public final List<? extends Action> getAllActions() {
-        List<Action> _actions = getActions();
+        List<Action> _actions = getPersistedActions();
         boolean adding = false;
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             Collection<? extends Action> additions = createFor(taf);
@@ -134,7 +142,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Nonnull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        List<T> _actions = Util.filter(getActions(), type);
+        List<T> _actions = Util.filter(getPersistedActions(), type);
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
             _actions.addAll(Util.filter(createFor(taf), type));
         }
@@ -152,7 +160,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         if(a==null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
-        getActions().add(a);
+        getPersistedActions().add(a);
     }
 
     /**
@@ -197,7 +205,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>(1);
-        List<Action> current = getActions();
+        List<Action> current = getPersistedActions();
         boolean found = false;
         for (Action a2 : current) {
             if (!found && a.equals(a2)) {
@@ -232,7 +240,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             return false;
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        return getActions().removeAll(Collections.singleton(a));
+        return getPersistedActions().removeAll(Collections.singleton(a));
     }
 
     /**
@@ -256,7 +264,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>();
-        List<Action> current = getActions();
+        List<Action> current = getPersistedActions();
         for (Action a : current) {
             if (clazz.isInstance(a)) {
                 old.add(a);
@@ -291,7 +299,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>();
-        List<Action> current = getActions();
+        List<Action> current = getPersistedActions();
         boolean found = false;
         for (Action a1 : current) {
             if (!found) {
@@ -327,7 +335,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     public <T extends Action> T getAction(Class<T> type) {
         // Shortcut: if the persisted list has one, return it.
-        for (Action a : getActions()) {
+        for (Action a : getPersistedActions()) {
             if (type.isInstance(a)) {
                 return type.cast(a);
             }

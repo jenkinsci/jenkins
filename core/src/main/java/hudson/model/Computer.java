@@ -257,6 +257,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
+    @Nonnull
     @SuppressWarnings("deprecation")
     public List<Action> getActions() {
         List<Action> result = new ArrayList<>(super.getActions());
@@ -268,18 +269,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         return Collections.unmodifiableList(result);
     }
-
-    @SuppressWarnings({"ConstantConditions","deprecation"})
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    @Override
-    public void addAction(@Nonnull Action a) {
-        if (a == null) {
-            throw new IllegalArgumentException("Action must be non-null");
-        }
-        super.getActions().add(a);
-    }
-
-    // TODO implement addOrReplaceAction, removeAction, removeActions, replaceActions
 
     /**
      * This is where the log from the remote agent goes.
