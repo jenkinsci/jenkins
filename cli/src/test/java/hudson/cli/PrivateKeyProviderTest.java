@@ -26,7 +26,7 @@ public class PrivateKeyProviderTest {
     }
 
     /**
-     * Extracted method to assert the keyPair private and public are not null.
+     * Asserts the keyPair private and public are not null.
      * @param file the file to load the key from
      * @param password the password
      */
