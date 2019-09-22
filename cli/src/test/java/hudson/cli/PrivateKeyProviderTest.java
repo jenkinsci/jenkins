@@ -22,7 +22,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyDSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa").getFile());
-        assertKeyPair(file, null);
+        assertKeyPairNotNull(file, null);
     }
 
     /**
@@ -30,7 +30,7 @@ public class PrivateKeyProviderTest {
      * @param file the file to load the key from
      * @param password the password
      */
-    private void assertKeyPair(File file, String password) throws IOException, GeneralSecurityException {
+    private void assertKeyPairNotNull(File file, String password) throws IOException, GeneralSecurityException {
         KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
         assertNotNull(keyPair);
         assertNotNull(keyPair.getPrivate());
@@ -44,7 +44,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyDSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa-password").getFile());
         String password = "password";
-        assertKeyPair(file, password);
+        assertKeyPairNotNull(file, password);
     }
     
     /**
@@ -53,7 +53,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyRSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa").getFile());
-        assertKeyPair(file, null);
+        assertKeyPairNotNull(file, null);
     }
 
     /**
@@ -63,7 +63,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyRSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa-password").getFile());
         String password = "password";
-        assertKeyPair(file, password);
+        assertKeyPairNotNull(file, password);
     }
     
     /**
@@ -72,7 +72,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyOpenSSH() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh").getFile());
-        assertKeyPair(file, null);
+        assertKeyPairNotNull(file, null);
     }
     
     /**
