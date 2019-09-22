@@ -149,9 +149,8 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        try (PrintWriter logw = new PrintWriter(log, true)) {
-            logw.println("Inbound agent connected from " + event.getSocket().getInetAddress());
-        }
+        PrintWriter logw = new PrintWriter(log, true);
+        logw.println("Inbound agent connected from " + event.getSocket().getInetAddress());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
