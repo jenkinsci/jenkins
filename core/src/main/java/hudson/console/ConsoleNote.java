@@ -270,10 +270,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 }
             }
 
-            Jenkins jenkins = Jenkins.get();
             try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
-                    jenkins.pluginManager.uberClassLoader,
-                    ClassFilter.DEFAULT)) {
+                    Jenkins.get().pluginManager.uberClassLoader, ClassFilter.DEFAULT)) {
                 return (ConsoleNote) ois.readObject();
             }
         } catch (Error e) {
