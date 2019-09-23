@@ -87,6 +87,12 @@ public class ProcessTreeKillerTest {
     }
 
     @Test
+    public void killNullProcess() throws Exception {
+        ProcessTree.enabled = true;
+        ProcessTree.get().killAll(null, null);
+    }
+
+    @Test
     @Issue("JENKINS-22641")
     public void processProperlyKilledUnix() throws Exception {
         ProcessTree.enabled = true;
