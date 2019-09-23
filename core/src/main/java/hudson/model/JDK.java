@@ -64,6 +64,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @since 1.577
      */
     public static final String DEFAULT_NAME = "(System)";
+    private static final long serialVersionUID = -3318291200160313357L;
 
     @Restricted(NoExternalUse.class)
     public static boolean isDefaultName(String name) {

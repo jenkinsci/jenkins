@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -209,28 +208,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+            @Nonnull 
+            PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
+                                   @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
             }
         },
         SC_FILE {
             @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+            @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
+                                            @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.servletContext, jenkins.getRootDir());
             }
         },
         FILE {
             @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+            @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
+                                            @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(File.class).newInstance(jenkins.getRootDir());
             }
         };
 
-        final @CheckForNull PluginManager create(@NonNull Class<? extends PluginManager> klass,
-                                                 @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+        final @CheckForNull PluginManager create(@Nonnull Class<? extends PluginManager> klass,
+                                                 @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
             try {
                 return doCreate(klass, jenkins);
             } catch(NoSuchMethodException e) {
@@ -239,8 +239,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
-        abstract @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                                 @NonNull Jenkins jenkins) throws ReflectiveOperationException;
+        abstract @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
+                                                 @Nonnull Jenkins jenkins) throws ReflectiveOperationException;
     }
 
     /**
@@ -250,7 +250,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return Plugin manager to use. If no custom class is configured or in case of any error, the default
      * {@link LocalPluginManager} is returned.
      */
-    public static @NonNull PluginManager createDefault(@NonNull Jenkins jenkins) {
+    public static @Nonnull PluginManager createDefault(@Nonnull Jenkins jenkins) {
         String pmClassName = SystemProperties.getString(CUSTOM_PLUGIN_MANAGER);
         if (!StringUtils.isBlank(pmClassName)) {
             LOGGER.log(FINE, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
@@ -1114,7 +1114,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             
             try(final JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
-                if (entry != null && jarFile != null) {
+                if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
                         byte[] manifestBytes = IOUtils.toByteArray(i);
                         in = new ByteArrayInputStream(manifestBytes);
@@ -1959,7 +1959,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return the list of results for every plugin and their dependent plugins.
      * @throws IOException see {@link PluginWrapper#disable()}
      */
-    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {
+    public @Nonnull List<PluginWrapper.PluginDisableResult> disablePlugins(@Nonnull PluginWrapper.PluginDisableStrategy strategy, @Nonnull List<String> plugins) throws IOException {
         // Where we store the results of each plugin disablement
         List<PluginWrapper.PluginDisableResult> results = new ArrayList<>(plugins.size());
 

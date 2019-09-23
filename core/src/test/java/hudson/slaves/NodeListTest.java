@@ -40,6 +40,7 @@ import hudson.util.DescribableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Random;
 import java.util.Set;
 
@@ -131,7 +132,7 @@ public class NodeListTest {
             XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
             x.write(nl);
 
-            String xml = FileUtils.readFileToString(tmp);
+            String xml = FileUtils.readFileToString(tmp, Charset.defaultCharset());
             System.out.println(xml);
             assertEquals(6,xml.split("\n").length);
 

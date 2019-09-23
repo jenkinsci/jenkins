@@ -1,6 +1,5 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
@@ -82,7 +81,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterProperties(@NonNull JnlpConnectionState event) {
+    public void afterProperties(@Nonnull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
@@ -144,7 +143,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void beforeChannel(@NonNull JnlpConnectionState event) {
+    public void beforeChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
@@ -162,7 +161,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterChannel(@NonNull JnlpConnectionState event) {
+    public void afterChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         try {
@@ -179,7 +178,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void channelClosed(@NonNull JnlpConnectionState event) {
+    public void channelClosed(@Nonnull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
         if (cause instanceof ClosedChannelException) {

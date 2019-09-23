@@ -18,10 +18,8 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import jenkins.security.HexStringConfidentialKey;
 
@@ -88,7 +86,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 }
                 if (!EXCLUDE_SESSION_ID) {
                     buffer.append(';');
-                    buffer.append(getSessionId(req));
+                    buffer.append(req.getSession().getId());
                 }
 
                 md.update(buffer.toString().getBytes());
@@ -96,14 +94,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             }
         }
         return null;
-    }
-
-    private String getSessionId(@Nonnull HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "NO_SESSION";
-        }
-        return session.getId();
     }
 
     /**

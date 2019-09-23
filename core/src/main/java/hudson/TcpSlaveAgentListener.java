@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketAddress;
 import java.util.Arrays;
+import java.util.Base64;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
@@ -59,7 +60,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -139,7 +139,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), StandardCharsets.UTF_8);
+        return key == null ? null : Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     /**

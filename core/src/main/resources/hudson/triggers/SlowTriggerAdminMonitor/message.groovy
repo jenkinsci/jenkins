@@ -25,7 +25,7 @@ dl {
                 th(_("Message"))
             }
 
-            tam.errors.each { String trigger, SlowTriggerAdminMonitor.Value val ->
+            tam.errors.each { trigger, val ->
                 tr {
                     td(trigger)
                     td(val.time)

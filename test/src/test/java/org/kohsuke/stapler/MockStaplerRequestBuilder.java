@@ -23,22 +23,14 @@
  */
 package org.kohsuke.stapler;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import jenkins.model.Jenkins;
-import org.eclipse.jetty.server.Request;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
-import org.springframework.web.multipart.support.DefaultMultipartHttpServletRequest;
 
 /**
  * Mocked version of {@link StaplerRequest}.

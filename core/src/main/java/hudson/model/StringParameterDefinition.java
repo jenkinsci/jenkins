@@ -132,7 +132,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     public ParameterValue createValue(String str) {
         StringParameterValue value = new StringParameterValue(getName(), str, getDescription());
-        if (isTrim() && value!=null) {
+        if (isTrim()) {
             value.doTrim();
         }
         return value;

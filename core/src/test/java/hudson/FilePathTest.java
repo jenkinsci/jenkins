@@ -664,9 +664,8 @@ public class FilePathTest {
         when(con2.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(con2.getInputStream()).thenReturn(someZippedContent());
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertTrue(d.installIfNecessaryFrom(url, null, message));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
