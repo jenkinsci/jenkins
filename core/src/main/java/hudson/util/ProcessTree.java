@@ -167,8 +167,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      */
     public void killAll(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
         LOGGER.fine("killAll: process="+proc+" and envs="+modelEnvVars);
-        OSProcess p = get(proc);
-        if(p!=null) p.killRecursively();
+
+        if (proc != null) {
+            OSProcess p = get(proc);
+            if (p != null) p.killRecursively();
+        }
+
         if(modelEnvVars!=null)
             killAll(modelEnvVars);
     }
