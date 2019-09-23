@@ -1,11 +1,13 @@
 package hudson.util;
 
+import static org.apache.tools.ant.util.FileUtils.readFully;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
 
 import hudson.EnvVars;
 import hudson.Functions;
@@ -16,6 +18,8 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
+import hudson.model.Result;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
@@ -55,12 +59,28 @@ public class ProcessTreeKillerTest {
         project.getBuildersList().add(new Maven("install", "maven"));
 
         // build the project, wait until tests are running, then cancel.
-        project.scheduleBuild2(0).waitForStart();
+        final QueueTaskFuture<FreeStyleBuild> f = project.scheduleBuild2(0);
+        final FreeStyleBuild b = f.waitForStart();
 
-        FreeStyleBuild b = project.getLastBuild();
+        String buildLog = null;
+        // wait until maven starts sleep test
+        boolean sleepTestStarted = false;
+        while (b.isBuilding()) {
+            buildLog = readFully(b.getLogReader());
+            sleepTestStarted = buildLog != null && buildLog.contains("SleepingTest");
+            if (sleepTestStarted) {
+                break;
+            }
+
+            TimeUnit.SECONDS.sleep(1);
+        }
+        assertTrue(buildLog, sleepTestStarted);
+
+        // abort build
         b.doStop();
 
-        Thread.sleep(1000);
+        // wait until build actually aborts
+        j.assertBuildStatus(Result.ABORTED, f.get());
 
         // will fail (at least on windows) if test process is still running
         b.getWorkspace().deleteRecursive();
