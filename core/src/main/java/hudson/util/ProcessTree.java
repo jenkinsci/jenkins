@@ -514,45 +514,41 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         @Override
         public void killRecursively() throws InterruptedException {
-            if (getVeto() != null) 
-                return;
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
+            killRecursively(deadline);
+        }
 
-            LOGGER.log(FINER, "Killing recursively {0}", getPid());
-            // Firstly try to kill the root process gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
-            killSoftly();
-            p.killRecursively();
-            killByKiller();
+        private void killRecursively(long deadline) throws InterruptedException {
+            LOGGER.fine("Recursively killing pid="+getPid());
+            for (OSProcess p : getChildren()) {
+                if (p instanceof WindowsOSProcess) {
+                    ((WindowsOSProcess)p).killRecursively(deadline);
+                } else {
+                    p.killRecursively(); // should not happen, fallback to non-deadline version
+                }
+            }
+            kill(deadline);
         }
 
         @Override
         public void kill() throws InterruptedException {
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
+            kill(deadline);
+        }
+
+        private void kill(long deadline) throws InterruptedException {
             if (getVeto() != null) {
                 return;
             }
-            
-            LOGGER.log(FINER, "Killing {0}", getPid());
-            // Firstly try to kill it gracefully, then do a forcekill if it does not help (algorithm is described in JENKINS-17116)
-            killSoftly();
-            p.kill();
-            killByKiller();
-        }
-
-        private void killSoftly() throws InterruptedException {
-            // send Ctrl+C to the process
+            final int pid = getPid();
+            LOGGER.log(FINER, "Killing {0}", pid);
             try {
-                if (!p.sendCtrlC()) {
-                    return;
-                }
-            }
-            catch (WinpException e) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Failed to send CTRL+C to pid=" + getPid(), e);
-                }
+                p.kill();
+            } catch (WinpException e) {
+                LOGGER.log(Level.INFO, "Failed to terminate pid=" + pid, e);
                 return;
             }
 
-            // after that wait for it to cease to exist
-            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
             int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
             do {
                 if (!p.isRunning()) {
@@ -562,6 +558,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 Thread.sleep(sleepTime);
                 sleepTime = Math.min(sleepTime * 2, 1000);
             } while (System.nanoTime() < deadline);
+            killByKiller();
         }
 
         @Override
