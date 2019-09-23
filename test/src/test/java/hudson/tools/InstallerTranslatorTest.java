@@ -37,7 +37,6 @@ import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;

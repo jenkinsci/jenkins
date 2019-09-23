@@ -36,7 +36,6 @@ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
-import org.apache.commons.codec.binary.Base64;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.util.Assert;
@@ -51,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -150,7 +150,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
 		String signatureValue = makeTokenSignature(expiryTime, (UserDetails)successfulAuthentication.getPrincipal());
 		String tokenValue = username + ":" + expiryTime + ":" + signatureValue;
-		String tokenValueBase64 = new String(Base64.encodeBase64(tokenValue.getBytes()));
+		String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
 		response.addCookie(makeValidCookie(tokenValueBase64, request, tokenValiditySeconds));
 
 		if (logger.isDebugEnabled()) {
@@ -292,7 +292,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
         try {
             // any charset should be fine but better safe than sorry
-            byte[] decodedPlainValue = java.util.Base64.getDecoder().decode(base64EncodedValue.getBytes(StandardCharsets.UTF_8));
+            byte[] decodedPlainValue = Base64.getDecoder().decode(base64EncodedValue.getBytes(StandardCharsets.UTF_8));
             return new String(decodedPlainValue, StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
             return null;

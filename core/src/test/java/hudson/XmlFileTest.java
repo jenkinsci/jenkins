@@ -9,7 +9,6 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.xml.sax.SAXParseException;
 
 import static org.hamcrest.CoreMatchers.is;

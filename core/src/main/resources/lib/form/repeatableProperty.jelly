@@ -30,11 +30,11 @@ THE SOFTWARE.
 
     Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
 
-      	<f:entry title="">
+      	<f:block>
           <div align="right">
             <f:repeatableDeleteButton />
           </div>
-        </f:entry>
+        </f:block>
     ]]>
 
     <st:attribute name="field">

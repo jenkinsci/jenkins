@@ -25,20 +25,16 @@
 package hudson;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.*;
