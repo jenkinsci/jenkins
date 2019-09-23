@@ -35,7 +35,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        if (isRelevant()) {
+        if (isRelevant() && jenkins.hasPermission(Jenkins.RUN_SCRIPTS)) {
             // don't record on/off unless this becomes relevant, so that we can differentiate
             // those who have disabled vs those who haven't cared.
             rule.setMasterKillSwitch(!json.has("masterToSlaveAccessControl"));
@@ -48,7 +48,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.hasPermission(Jenkins.RUN_SCRIPTS) && jenkins.isUseSecurity();
+        return jenkins.hasPermission(Jenkins.SYSTEM_READ) && jenkins.isUseSecurity();
     }
 }
 

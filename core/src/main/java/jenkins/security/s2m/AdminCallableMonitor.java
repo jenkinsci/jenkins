@@ -53,7 +53,6 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(dismiss!=null) {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
