@@ -80,6 +80,7 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -124,6 +125,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Gets the process given a specific ID, or null if no such process exists.
      */
+    @Nullable
     public final OSProcess get(int pid) {
         return processes.get(pid);
     }
@@ -131,6 +133,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Lists all the processes in the system.
      */
+    @Nonnull
     public final Iterator<OSProcess> iterator() {
         return processes.values().iterator();
     }
@@ -140,7 +143,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * or null if it fails (for example, maybe the snapshot is taken after
      * this process has already finished.)
      */
-    public abstract OSProcess get(Process proc);
+    @Nullable
+    public abstract OSProcess get(@Nonnull Process proc);
 
     /**
      * Kills all the processes that have matching environment variables.
@@ -154,7 +158,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * them all. This is suitable for locating daemon processes
      * that cannot be tracked by the regular ancestor/descendant relationship.
      */
-    public abstract void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
+    public abstract void killAll(@Nonnull Map<String, String> modelEnvVars) throws InterruptedException;
 
     private final long softKillWaitSeconds = Integer.getInteger("SoftKillWaitSeconds", 2 * 60); // by default processes get at most 2 minutes to respond to SIGTERM (JENKINS-17116)
 
@@ -165,7 +169,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *
      * Either of the parameter can be null.
      */
-    public void killAll(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
+    public void killAll(@Nullable Process proc, @Nullable Map<String, String> modelEnvVars) throws InterruptedException {
         LOGGER.fine("killAll: process="+proc+" and envs="+modelEnvVars);
         OSProcess p = get(proc);
         if(p!=null) p.killRecursively();
@@ -176,6 +180,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Obtains the list of killers.
      */
+    @Nonnull
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
@@ -462,7 +467,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Empty process list as a default value if the platform doesn't support it.
      */
     /*package*/ static final ProcessTree DEFAULT = new Local() {
-        public OSProcess get(final Process proc) {
+        public OSProcess get(@Nonnull final Process proc) {
             return new OSProcess(-1) {
                 public OSProcess getParent() {
                     return null;
@@ -490,7 +495,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             };
         }
 
-        public void killAll(Map<String, String> modelEnvVars) {
+        public void killAll(@Nonnull Map<String, String> modelEnvVars) {
             // no-op
         }
     };
@@ -639,13 +644,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
         }
 
+        @Nullable
         @Override
-        public OSProcess get(Process proc) {
+        public OSProcess get(@Nonnull Process proc) {
             return get(new WinProcess(proc).getPid());
         }
 
         @Override
-        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
+        public void killAll(@Nonnull Map<String, String> modelEnvVars) throws InterruptedException {
             for( OSProcess p : this) {
                 if(p.getPid()<10)
                     continue;   // ignore system processes like "idle process"
@@ -697,12 +703,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(vetoersExist);
         }
         
+        @Nullable
         @Override
-        public OSProcess get(Process proc) {
+        public OSProcess get(@Nonnull Process proc) {
             return get(UnixReflection.pid(proc));
         }
 
-        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
+        public void killAll(@Nonnull Map<String, String> modelEnvVars) throws InterruptedException {
             for (OSProcess p : this)
                 if(p.hasMatchingEnvVars(modelEnvVars))
                     p.killRecursively();
@@ -1847,13 +1854,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
         }
 
+        @Nullable
         @Override
-        public OSProcess get(Process proc) {
+        public OSProcess get(@Nonnull Process proc) {
             return null;
         }
 
         @Override
-        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
+        public void killAll(@Nonnull Map<String, String> modelEnvVars) throws InterruptedException {
             proxy.killAll(modelEnvVars);
         }
 
