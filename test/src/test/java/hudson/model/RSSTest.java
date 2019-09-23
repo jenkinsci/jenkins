@@ -42,10 +42,7 @@ public class RSSTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    //TODO remove the @Ignore 
-    // Seems the XML parser on the CI machine is different / more picky than the one on my machine, will be covered by JENKINS-59231 to improve the code coverage
     @Test
-    @Ignore("XML parser too picky on CI")
     @Issue("JENKINS-59167")
     public void absoluteURLsPresentInRSS_evenWithoutRootUrlSetup() throws Exception {
         XmlPage page = getRssPage();
@@ -76,10 +73,7 @@ public class RSSTest {
         }
     }
 
-    //TODO remove the @Ignore 
-    // Seems the XML parser on the CI machine is different / more picky than the one on my machine, will be covered by JENKINS-59231 to improve the code coverage
     @Test
-    @Ignore("XML parser too picky on CI")
     @Issue("JENKINS-59167")
     public void absoluteURLsPresentInAtom_evenWithoutRootUrlSetup() throws Exception {
         XmlPage page = getAtomPage();
