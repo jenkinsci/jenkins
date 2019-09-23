@@ -33,9 +33,7 @@ import java.util.regex.Pattern;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
-import hudson.security.*;
 import hudson.util.StreamTaskListener;
-import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.stapler.Function;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

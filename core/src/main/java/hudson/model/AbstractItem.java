@@ -77,7 +77,6 @@ import javax.annotation.Nonnull;
 
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
@@ -97,7 +96,6 @@ import javax.xml.transform.stream.StreamSource;
 import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;

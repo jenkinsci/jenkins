@@ -76,7 +76,6 @@ import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;

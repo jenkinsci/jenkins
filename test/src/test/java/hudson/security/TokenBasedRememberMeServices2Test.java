@@ -5,6 +5,7 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Base64;
 import static java.util.logging.Level.FINEST;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,6 @@ import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.codec.binary.Base64;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -347,7 +347,7 @@ public class TokenBasedRememberMeServices2Test {
 
         String signatureValue = tokenService.makeTokenSignature(expiryTime, user.getProperty(HudsonPrivateSecurityRealm.Details.class));
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
-        String tokenValueBase64 = new String(Base64.encodeBase64(tokenValue.getBytes()));
+        String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);
     }
 

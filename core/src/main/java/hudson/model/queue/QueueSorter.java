@@ -8,7 +8,6 @@ import hudson.model.LoadBalancer;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;

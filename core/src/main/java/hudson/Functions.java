@@ -1671,7 +1671,7 @@ public class Functions {
             else
                 buf.append('_');    // escape
         }
-        return projectName;
+        return String.valueOf(buf);
     }
 
     /**

@@ -1355,7 +1355,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
         View v;
         String from = req.getParameter("from");
-        View src = src = owner.getView(from);
+        View src = owner.getView(from);
 
         if(src==null) {
             if(Util.fixEmpty(from)==null)

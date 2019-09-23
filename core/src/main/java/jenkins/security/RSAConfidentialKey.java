@@ -23,7 +23,6 @@
  */
 package jenkins.security;
 
-import org.apache.commons.codec.binary.Base64;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -37,6 +36,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
 
 /**
  * RSA public/private key pair as {@link ConfidentialKey}.
@@ -108,6 +108,6 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
      * Gets base64-encoded public key.
      */
     public String getEncodedPublicKey() {
-        return new String(Base64.encodeBase64(getPublicKey().getEncoded()));
+        return Base64.getEncoder().encodeToString(getPublicKey().getEncoded());
     }
 }

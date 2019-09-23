@@ -23,6 +23,7 @@
  */
 package hudson.lifecycle;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 
 import org.kohsuke.accmod.Restricted;
@@ -59,6 +60,7 @@ public class ExitLifecycle extends Lifecycle {
     }
 
     @Override
+    @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
     public void restart() {
         Jenkins jenkins = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
 

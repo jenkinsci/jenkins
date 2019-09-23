@@ -23,7 +23,6 @@
  */
 package hudson.slaves;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
@@ -32,7 +31,6 @@ import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Which;
-import hudson.slaves.DelegatingComputerLauncher;
 import hudson.util.ArgumentListBuilder;
 
 import jenkins.security.SlaveToMasterCallable;
@@ -47,7 +45,6 @@ import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
