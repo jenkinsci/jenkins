@@ -123,6 +123,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
 /**
@@ -985,7 +986,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
-    @RequirePOST
+    @POST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 

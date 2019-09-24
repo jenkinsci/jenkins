@@ -243,6 +243,7 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.InputSource;
 
 import javax.annotation.CheckForNull;
@@ -3755,7 +3756,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
@@ -3809,7 +3810,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the node configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(ADMINISTER);
 
@@ -4941,7 +4942,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
             Jenkins.get().doConfigExecutorsSubmit(req, rsp);
         }

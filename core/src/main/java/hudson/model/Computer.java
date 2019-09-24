@@ -88,6 +88,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.GuardedBy;
@@ -1464,7 +1465,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
