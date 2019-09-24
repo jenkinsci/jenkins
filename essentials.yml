@@ -4,4 +4,4 @@ ath:
   athRevision: "e3f02c4727e4fe1e4f66e9d6a30992aaab826917"
   athImage: "jenkins/ath@sha256:284c2fdfaf1a51e95783126367c0a88c07af83ff9234063d12ba3001959628e8"
   categories:
-    - org.jenkinsci.test.acceptance.junit.SmokeTest
+    - '*'
