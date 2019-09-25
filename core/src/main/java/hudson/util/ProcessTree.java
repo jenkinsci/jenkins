@@ -156,7 +156,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      */
     public abstract void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
 
-    private final long softKillWaitSeconds = Integer.getInteger("SoftKillWaitSeconds", 2 * 60); // by default processes get at most 2 minutes to respond to SIGTERM (JENKINS-17116)
+    /**
+     * The time to wait between sending Ctrl+C and killing the process. (JENKINS-17116)
+     *
+     * The default is 5 seconds. Careful! There are other timers in the system that may
+     * interfere with this value here, e.g. in org.jenkinsci.plugins.workflow.cps.CpsThread.stop
+     */
+    private final long softKillWaitSeconds = Integer.getInteger("SoftKillWaitSeconds", 5);
 
     /**
      * Convenience method that does {@link #killAll(Map)} and {@link OSProcess#killRecursively()}.
