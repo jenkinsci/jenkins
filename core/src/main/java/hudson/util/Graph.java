@@ -25,7 +25,7 @@ package hudson.util;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartRenderingInfo;
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.plot.Plot;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -174,6 +174,6 @@ public abstract class Graph {
         render(req,info);
 
         rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
+        rsp.getWriter().println(ChartUtils.getImageMap( "map", info ));
     }
 }

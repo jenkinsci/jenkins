@@ -33,7 +33,8 @@ import org.jfree.chart.renderer.category.CategoryItemRendererState;
 import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.chart.urls.CategoryURLGenerator;
 import org.jfree.data.category.CategoryDataset;
-import org.jfree.ui.RectangleEdge;
+import org.jfree.data.DataUtils;
+import org.jfree.chart.ui.RectangleEdge;
 
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -60,8 +61,8 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
 
     public StackedAreaRenderer2() {
         setEndType(AreaRendererEndType.TRUNCATE);
-        setItemURLGenerator(this);
-        setToolTipGenerator(this);
+        setDefaultItemURLGenerator(this);
+        setDefaultToolTipGenerator(this);
     }
 
     /**
@@ -196,5 +197,41 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 }
             }
         }
+    }
+
+    /**
+     * Copied From https://github.com/jfree/jfreechart/blob/b3f5f21ba0fe32a8f7eccb6760a79df30628be3e/source/org/jfree/chart/renderer/category/StackedAreaRenderer.java#L526
+     * TODO: See if this can be replaced with getStackValues
+     * Calculates the stacked value of the all series up to, but not including
+     * <code>series</code> for the specified category, <code>category</code>.
+     * It returns 0.0 if <code>series</code> is the first series, i.e. 0.
+     *
+     * @param dataset  the dataset (<code>null</code> not permitted).
+     * @param series  the series.
+     * @param category  the category.
+     *
+     * @return double returns a cumulative value for all series' values up to
+     *         but excluding <code>series</code> for Object
+     *         <code>category</code>.
+     */
+    private double getPreviousHeight(CategoryDataset dataset,
+                                       int series, int category) {
+        double result = 0.0;
+        Number n;
+        double total = 0.0;
+        if (getRenderAsPercentages()) {
+            total = DataUtils.calculateColumnTotal(dataset, category);
+        }
+        for (int i = 0; i < series; i++) {
+            n = dataset.getValue(i, category);
+            if (n != null) {
+                double v = n.doubleValue();
+                if (getRenderAsPercentages()) {
+                    v = v / total;
+                }
+                result += v;
+            }
+        }
+        return result;
     }
 }

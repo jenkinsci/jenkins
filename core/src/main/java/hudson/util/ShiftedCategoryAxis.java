@@ -24,7 +24,7 @@
 package hudson.util;
 
 import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleEdge;
 
 import java.awt.geom.Rectangle2D;
 
