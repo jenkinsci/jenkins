@@ -1,4 +1,8 @@
-As much as possible, please adhere to the following template.
+<!-- Comment: 
+A great PR typically begins with the line below.
+Replace XXXXX with the numeric part of the issue's id you created on JIRA.
+-->
+See [JENKINS-XXXXX](https://issues.jenkins-ci.org/browse/JENKINS-XXXXX).
 
 <!-- Comment: 
 If the issue is not fully described in the ticket, add more information here (justification, pull request links, etc.).
