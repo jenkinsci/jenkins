@@ -3961,7 +3961,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return (T)copy((TopLevelItem)src,name);
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req,rsp, this));
