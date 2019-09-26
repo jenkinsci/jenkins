@@ -43,6 +43,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
 import jenkins.AgentProtocol;
@@ -55,6 +56,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
@@ -129,6 +131,18 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public int getAdvertisedPort() {
         return CLI_PORT != null ? CLI_PORT : getPort();
+    }
+
+    /**
+     * Gets the host name that we advertise protocol clients to connect to.
+     */
+    public String getAdvertisedHost() {
+        if(CLI_HOST_NAME != null) return CLI_HOST_NAME;
+        try {
+            return new URL(Jenkins.getInstanceOrNull().getRootUrl()).getHost();
+        } catch (MalformedURLException | NullPointerException e) {
+            throw new IllegalStateException("Could not get Jenkins host name", e);
+        }
     }
 
     /**
