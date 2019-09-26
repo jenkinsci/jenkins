@@ -69,7 +69,7 @@ THE SOFTWARE.
       </div>
       <j:if test="${!empty build.description}">
         <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+          <j:out value="${app.markupFormatter.translate(build.description)}"/>
         </div>
       </j:if>
       <div class="left-bar" />
