@@ -311,7 +311,7 @@ THE SOFTWARE.
     <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.10</version>
+        <version>1.19</version>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>

@@ -667,7 +667,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the length-limited description.
      * @return The length-limited description.
-     */   
+     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     */
+    @Deprecated
     public @Nonnull String getTruncatedDescription() {
         final int maxDescrLength = 100;
         if (description == null || description.length() < maxDescrLength) {
