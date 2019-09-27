@@ -984,10 +984,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        RunT r = getLastBuild();
-        while (r != null && r.isBuilding())
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
     
     /**
