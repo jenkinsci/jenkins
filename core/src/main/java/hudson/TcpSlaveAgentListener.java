@@ -135,11 +135,14 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets the host name that we advertise protocol clients to connect to.
+     * @since TODO
      */
     public String getAdvertisedHost() {
-        if(CLI_HOST_NAME != null) return CLI_HOST_NAME;
+        if (CLI_HOST_NAME != null) {
+          return CLI_HOST_NAME;
+        }
         try {
-            return new URL(Jenkins.getInstanceOrNull().getRootUrl()).getHost();
+            return new URL(Jenkins.get().getRootUrl()).getHost();
         } catch (MalformedURLException | NullPointerException e) {
             throw new IllegalStateException("Could not get Jenkins host name", e);
         }
