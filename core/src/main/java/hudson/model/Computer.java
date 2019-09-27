@@ -62,6 +62,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
@@ -300,8 +301,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
+        try {
+            IOUtils.mkdirs(dir);
+        } catch (IOException x) {
+            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
         }
         return dir;
     }
