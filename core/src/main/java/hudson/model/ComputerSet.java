@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.verb.POST;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
 
@@ -284,7 +285,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Really creates a new agent.
      */
-    @RequirePOST
+    @POST
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
@@ -342,7 +343,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
