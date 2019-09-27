@@ -581,7 +581,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
                 }
             }
-            return null;
+            return env;
         }
         
         private synchronized EnvVars getEnvironmentVariables2() throws WindowsOSProcessException {
