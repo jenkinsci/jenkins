@@ -74,7 +74,7 @@ for(j = 0; j < jdks.size(); j++) {
 
 // TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
-    node("docker&&highmem") {
+    node("docker&&highmem&&Linux") {
         // Just to be safe
         deleteDir()
         def fileUri
