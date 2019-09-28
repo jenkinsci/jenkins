@@ -333,7 +333,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.2</version>
+                  <version>1.8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -363,7 +363,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>pam-auth</artifactId>
-                  <version>1.1</version>
+                  <version>1.5.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -375,7 +375,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.20</version>
+                  <version>1.21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -405,7 +405,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.56</version>
+                  <version>1.63</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
