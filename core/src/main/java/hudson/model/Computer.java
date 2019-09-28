@@ -735,10 +735,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIcon() {
-        if(isOffline())
-            return "computer-x.png";
-        else
-            return "computer.png";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "computer-user-offline.png";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "computer-x.png";
+        return "computer.png";
     }
 
     /**
@@ -754,17 +755,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIconClassName() {
-        if(isOffline())
-            return "icon-computer-x";
-        else
-            return "icon-computer";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "icon-computer-user-offline";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "icon-computer-x";
+        return "icon-computer";
     }
 
     public String getIconAltText() {
-        if(isOffline())
-            return "[offline]";
-        else
-            return "[online]";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "[offline]";
+        return "[online]";
     }
 
     @Exported
@@ -1779,4 +1782,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    static {
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-sm", "16x16/computer-user-offline.png", Icon.ICON_SMALL_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-md", "24x24/computer-user-offline.png", Icon.ICON_MEDIUM_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-lg", "32x32/computer-user-offline.png", Icon.ICON_LARGE_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-xlg", "48x48/computer-user-offline.png", Icon.ICON_XLARGE_STYLE));
+    }
 }
