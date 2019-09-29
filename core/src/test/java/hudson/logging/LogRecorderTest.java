@@ -68,7 +68,7 @@ public class LogRecorderTest {
         assertEquals(lr.handler.getView().get(0), record);
         assertEquals(1, lr.handler.getView().size());
 
-        lr.doClear();
+        lr.handler.clear();
 
         assertEquals(0, lr.handler.getView().size());
     }
