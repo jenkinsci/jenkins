@@ -38,7 +38,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         return "configureTools";
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
         LOGGER.log(Level.FINE, "tools saved: "+result);

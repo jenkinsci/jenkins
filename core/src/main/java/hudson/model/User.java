@@ -93,6 +93,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -816,7 +817,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
