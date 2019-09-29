@@ -41,12 +41,14 @@ THE SOFTWARE.
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
 
-    <div class="manage-messages">
-    <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
-      <st:include page="message.jelly" it="${am}" />
-    </j:forEach>
-    <st:include page="downgrade.jelly" />
-    </div>
+    <l:hasPermission permission="${app.ADMINISTER}">
+      <div class="manage-messages">
+      <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+        <st:include page="message.jelly" it="${am}" />
+      </j:forEach>
+      <st:include page="downgrade.jelly" />
+      </div>
+    </l:hasPermission>
 
     <j:forEach var="m" items="${it.managementLinks}">
       <l:hasPermission permission="${m.requiredPermission}">
