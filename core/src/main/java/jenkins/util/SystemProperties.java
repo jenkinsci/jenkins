@@ -199,7 +199,7 @@ public class SystemProperties {
         }
         
         if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
+            LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, null});
         }
         return null;
     }

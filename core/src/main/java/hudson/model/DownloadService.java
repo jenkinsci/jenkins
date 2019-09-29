@@ -401,7 +401,7 @@ public class DownloadService extends PageDecorator {
             for (UpdateSite updatesite : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
                 String site = updatesite.getMetadataUrlForDownloadable(url);
                 if (site == null) {
-                    return FormValidation.warning("The update site " + site + " does not look like an update center");
+                    return FormValidation.warning("The update site " + updatesite + " does not look like an update center");
                 }
                 String jsonString;
                 try {
