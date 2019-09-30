@@ -314,12 +314,6 @@ THE SOFTWARE.
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>subversion</artifactId>
-                  <version>1.54</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
                   <version>2.11</version>
                   <type>hpi</type>
