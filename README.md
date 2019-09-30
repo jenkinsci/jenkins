@@ -22,7 +22,7 @@ Use Jenkins to automate your development workflow so you can focus on work that 
 Execute repetitive tasks, save time, and optimize your development process with Jenkins.
 
 # Downloads
-Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
+Non-source downloads such as <b>WAR</b> files and several Linux packages can be found on our [Mirrors].
 
 # Source
 Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
