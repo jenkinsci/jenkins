@@ -2719,7 +2719,7 @@ version: 2.9.0
                     method as well.
                 */
               
-                if ((UA.ie || UA.webkit || UA.gecko) && bSubmitForm) {
+                if ((UA.ie || UA.webkit) && bSubmitForm) {
         
                     oForm.submit();
                 
