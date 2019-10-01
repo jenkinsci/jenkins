@@ -72,7 +72,7 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
+        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
 
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
@@ -116,7 +116,7 @@ public class UsageStatisticsTest {
             assertThat("No duplicates", reported.contains(name), is(false));
             reported.add(name);
         }
-        assertThat(reported, hasItem("credentials"));
+        assertThat(reported, hasItem("matrix-auth"));
 
         // Compare content to watch out for backwards compatibility
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));
