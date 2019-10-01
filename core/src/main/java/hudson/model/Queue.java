@@ -2871,7 +2871,7 @@ public class Queue extends ResourceController implements Saveable {
         private final WeakReference<Queue> queue;
 
         MaintainTask(Queue queue) {
-            this.queue = new WeakReference<Queue>(queue);
+            this.queue = new WeakReference<>(queue);
         }
 
         private void periodic() {
@@ -2902,7 +2902,7 @@ public class Queue extends ResourceController implements Saveable {
     	}
 
     	public List<T> getAll(Task task) {
-    		List<T> result = new ArrayList<T>();
+    		List<T> result = new ArrayList<>();
     		for (T item: this) {
     			if (item.task.equals(task)) {
     				result.add(item);
@@ -2949,7 +2949,7 @@ public class Queue extends ResourceController implements Saveable {
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
                               + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
-            for (T t : new ArrayList<T>(this))
+            for (T t : new ArrayList<>(this))
                 t.cancel(Queue.this);
             clear();
         }
@@ -2963,10 +2963,10 @@ public class Queue extends ResourceController implements Saveable {
 
         public Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
                         List<BuildableItem> pendings) {
-            this.waitingList = new LinkedHashSet<WaitingItem>(waitingList);
-            this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
-            this.buildables = new ArrayList<BuildableItem>(buildables);
-            this.pendings = new ArrayList<BuildableItem>(pendings);
+            this.waitingList = new LinkedHashSet<>(waitingList);
+            this.blockedProjects = new ArrayList<>(blockedProjects);
+            this.buildables = new ArrayList<>(buildables);
+            this.pendings = new ArrayList<>(pendings);
         }
 
         @Override

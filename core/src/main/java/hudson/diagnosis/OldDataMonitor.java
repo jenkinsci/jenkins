@@ -294,7 +294,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @Restricted(NoExternalUse.class)
     public Iterator<VersionNumber> getVersionList() {
-        TreeSet<VersionNumber> set = new TreeSet<VersionNumber>();
+        TreeSet<VersionNumber> set = new TreeSet<>();
         for (VersionRange vr : data.values()) {
             if (vr.max != null) {
                 set.add(vr.max);
@@ -364,7 +364,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
          * does occur: just means the user will be prompted to discard less than they should have been (and
          * would see the warning again after next restart).
          */
-        List<SaveableReference> removed = new ArrayList<SaveableReference>();
+        List<SaveableReference> removed = new ArrayList<>();
         for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
             if (matchingPredicate.apply(entry)) {
                 Saveable s = entry.getKey().get();
