@@ -1251,9 +1251,9 @@ public abstract class Launcher {
     }
 
     public static class IOTriplet implements Serializable {
-        @Nonnull
+        @CheckForNull
         InputStream stdout,stderr;
-        @Nonnull
+        @CheckForNull
         OutputStream stdin;
         private static final long serialVersionUID = 1L;
     }
