@@ -58,7 +58,7 @@ public class RunListTest {
 		when(r1.getTimeInMillis()).thenReturn(200L);
 		when(r2.getTimeInMillis()).thenReturn(300L);
 
-		ArrayList<Run> list = new ArrayList<Run>();
+		ArrayList<Run> list = new ArrayList<>();
 		list.add(r2);
 		list.add(r1);
 

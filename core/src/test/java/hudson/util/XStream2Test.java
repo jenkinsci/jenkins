@@ -271,7 +271,7 @@ public class XStream2Test {
     }
 
     public static class Foo2 {
-        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
+        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<>();
     }
 
     @Issue("SECURITY-105")

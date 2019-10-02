@@ -62,7 +62,7 @@ public class UtilTest {
 
     @Test
     public void testReplaceMacro() {
-        Map<String,String> m = new HashMap<String,String>();
+        Map<String,String> m = new HashMap<>();
         m.put("A","a");
         m.put("A.B","a-b");
         m.put("AA","aa");
