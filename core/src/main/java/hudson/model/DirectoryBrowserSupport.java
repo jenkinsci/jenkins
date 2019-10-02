@@ -181,7 +181,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         String path = getPath(req);
-        if(path.replace('\\','/').indexOf("/../")!=-1) {
+        if(path.replace('\\', '/').contains("/../")) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
