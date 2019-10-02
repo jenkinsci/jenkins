@@ -91,7 +91,6 @@ public class ProcessTreeKillerTest {
 
     @Test
     public void doNotKillProcessWithCookie() throws Exception {
-        Assume.assumeFalse("This test does not involve windows", Functions.isWindows());
         ProcessTree.enabled = true;
         SpawnBuilder spawner = new SpawnBuilder();
 
@@ -114,7 +113,10 @@ public class ProcessTreeKillerTest {
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             EnvVars envvars = build.getEnvironment(listener);
             envvars.addLine("BUILD_ID=dontKillMe");
-            proc = launcher.launch().envs(envvars).cmds("nohup", "sleep", "100000").start();
+            final String[] cmd = Functions.isWindows()
+                    ? new String[]{"ping", "-n", "100000", "localhost"}
+                    : new String[]{"nohup", "sleep", "100000"};
+            proc = launcher.launch().envs(envvars).cmds(cmd).start();
             return true;
         }
     }
