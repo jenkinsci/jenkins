@@ -1059,8 +1059,8 @@ public class Functions {
         }
 
         public int compareTo(Tag that) {
-            int r = Double.compare(this.ordinal, that.ordinal);
-            if (r!=0)   return -r; // descending for ordinal
+            int r = Double.compare(that.ordinal, this.ordinal);
+            if (r!=0)   return r; // descending for ordinal by reversing the order for compare
             return this.hierarchy.compareTo(that.hierarchy);
         }
     }
