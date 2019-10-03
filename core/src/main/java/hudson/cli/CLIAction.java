@@ -85,7 +85,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.READ);
 
         // Strip trailing slash

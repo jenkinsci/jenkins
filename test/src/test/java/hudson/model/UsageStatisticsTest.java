@@ -90,7 +90,7 @@ public class UsageStatisticsTest {
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
                 new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
-        Jenkins jenkins = Jenkins.getActiveInstance();
+        Jenkins jenkins = Jenkins.get();
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
         // that would cause issues with parsing/analyzing uploaded usage statistics
         assertEquals(1, o.getInt("stat"));
@@ -136,7 +136,7 @@ public class UsageStatisticsTest {
      * @throws InterruptedException
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
-        Jenkins j = Jenkins.getActiveInstance();
+        Jenkins j = Jenkins.get();
         ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
         String value = null;
         int count = 1;

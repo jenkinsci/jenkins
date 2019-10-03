@@ -129,7 +129,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.getActiveInstance().doQuietDown();
+        j.jenkins.get().doQuietDown();
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
@@ -140,7 +140,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.getActiveInstance().doQuietDown(true, 0);
+        j.jenkins.get().doQuietDown(true, 0);
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
@@ -151,7 +151,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.getActiveInstance().doQuietDown(true, 0);
+        j.jenkins.get().doQuietDown(true, 0);
         assertJenkinsInQuietMode();
         final long time_before = System.currentTimeMillis();
         final CLICommandInvoker.Result result = command
@@ -484,7 +484,7 @@ public class QuietDownCommandTest {
     public static final void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> j.jenkins.getActiveInstance().getQueue().isBlockedByShutdown(task));
+                .until(() -> j.jenkins.get().getQueue().isBlockedByShutdown(task));
     }
 
     /**
@@ -494,6 +494,6 @@ public class QuietDownCommandTest {
     public static final void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> !j.jenkins.getActiveInstance().getQueue().isBlockedByShutdown(task));
+                .until(() -> !j.jenkins.get().getQueue().isBlockedByShutdown(task));
     }
 }

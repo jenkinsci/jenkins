@@ -242,10 +242,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(auth = getTransportAuthentication());
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+                Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+                Jenkins.get().checkPermission(Jenkins.READ);
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
             int res = run();
@@ -502,7 +502,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getActiveInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }

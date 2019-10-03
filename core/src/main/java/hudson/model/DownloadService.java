@@ -310,7 +310,7 @@ public class DownloadService extends PageDecorator {
          */
         public List<String> getUrls() {
             List<String> updateSites = new ArrayList<>();
-            for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");
                 if (baseUrlEnd != -1) {
@@ -398,7 +398,7 @@ public class DownloadService extends PageDecorator {
         public FormValidation updateNow() throws IOException {
             List<JSONObject> jsonList = new ArrayList<>();
             boolean toolInstallerMetadataExists = false;
-            for (UpdateSite updatesite : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite updatesite : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String site = updatesite.getMetadataUrlForDownloadable(url);
                 if (site == null) {
                     return FormValidation.warning("The update site " + site + " does not look like an update center");
