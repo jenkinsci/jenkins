@@ -41,7 +41,7 @@ import javax.servlet.http.HttpSession;
  * @see hudson.security.HttpSessionContextIntegrationFilter2
  * @since 1.509
  */
-@SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is intended to be not serialized and only have defaults in case of deserialization")
+@SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 
