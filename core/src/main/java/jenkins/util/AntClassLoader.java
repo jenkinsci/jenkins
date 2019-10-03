@@ -33,6 +33,7 @@ import org.apache.tools.ant.util.VectorSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
