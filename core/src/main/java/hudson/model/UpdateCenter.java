@@ -67,7 +67,6 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jenkinsci.Symbol;
@@ -118,7 +117,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -2039,11 +2037,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // if this is a bundled plugin, make sure it won't get overwritten
                 PluginWrapper pw = plugin.getInstalled();
                 if (pw!=null && pw.isBundled()) {
-                    SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-                    try {
+                    try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                         pw.doPin();
-                    } finally {
-                        SecurityContextHolder.setContext(oldContext);
                     }
                 }
 
