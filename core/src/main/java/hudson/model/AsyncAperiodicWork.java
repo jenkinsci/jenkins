@@ -114,11 +114,9 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                 long stopTime;
 
                 StreamTaskListener l = createListener();
-                try {
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     l.getLogger().printf("Started at %tc%n", new Date(startTime));
-                    try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                         execute(l);
-                    }
                 } catch (IOException e) {
                     Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                 } catch (InterruptedException e) {
