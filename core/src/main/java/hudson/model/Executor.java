@@ -39,6 +39,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -835,21 +836,39 @@ public class Executor extends Thread implements ModelObject {
     @RequirePOST
     @Deprecated
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        doStop().generateResponse(req,rsp,this);
+        doStop(req != null ? Util.fixEmpty(req.getParameter("what")) : null).generateResponse(req,rsp,this);
     }
 
     /**
      * Stops the current build.
      *
      * @since 1.489
+     * @deprecated as of 2.???
+     *      Use {@link #doStop(String)}.
      */
     @RequirePOST
+    @Deprecated
     public HttpResponse doStop() {
+        return doStop(null);
+    }
+
+    /**
+     * Stops the current build.
+     *
+     * @param what
+     *      if not null, the externalizable id ({@link Run#getExternalizableId()})
+     *      of the build the user expects to interrupt
+     * @since 2.???
+     */
+    @RequirePOST
+    public HttpResponse doStop(@CheckForNull @QueryParameter(fixEmpty = true) String what) {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                getParentOf(executable).getOwnerTask().checkAbortPermission();
-                interrupt();
+                if (what == null || (executable instanceof Run && what.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                    getParentOf(executable).getOwnerTask().checkAbortPermission();
+                    interrupt();
+                }
             }
         } finally {
             lock.writeLock().unlock();

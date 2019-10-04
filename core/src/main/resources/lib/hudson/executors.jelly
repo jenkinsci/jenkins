@@ -110,7 +110,11 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
+                    <j:invokeStatic var="runId" className="java.net.URLEncoder" method="encode">
+                      <j:arg value="${exe.externalizableId}" />
+                      <j:arg value="UTF-8" />
+                    </j:invokeStatic>
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stop?what=${runId}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
               </j:otherwise>
