@@ -951,7 +951,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
-        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        List<NodePropertyDescriptor> result = new ArrayList<>();
         Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
@@ -967,7 +967,7 @@ public class Functions {
      * @since 1.520
      */
     public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
-        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        List<NodePropertyDescriptor> result = new ArrayList<>();
         Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicableAsGlobal()) {
@@ -996,7 +996,7 @@ public class Functions {
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
-        List<Tag> r = new ArrayList<Tag>(exts.size());
+        List<Tag> r = new ArrayList<>(exts.size());
 
         for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
             Descriptor d = c.getInstance();
@@ -1008,7 +1008,7 @@ public class Functions {
         }
         Collections.sort(r);
 
-        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
+        List<Descriptor> answer = new ArrayList<>(r.size());
         for (Tag d : r) answer.add(d.d);
 
         return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
@@ -1059,8 +1059,8 @@ public class Functions {
         }
 
         public int compareTo(Tag that) {
-            int r = Double.compare(this.ordinal, that.ordinal);
-            if (r!=0)   return -r; // descending for ordinal
+            int r = Double.compare(that.ordinal, this.ordinal);
+            if (r!=0)   return r; // descending for ordinal by reversing the order for compare
             return this.hierarchy.compareTo(that.hierarchy);
         }
     }
@@ -1090,7 +1090,7 @@ public class Functions {
      * Computes the relative path from the current page to the given item.
      */
     public static String getRelativeLinkTo(Item p) {
-        Map<Object,String> ancestors = new HashMap<Object,String>();
+        Map<Object,String> ancestors = new HashMap<>();
         View view=null;
 
         StaplerRequest request = Stapler.getCurrentRequest();
@@ -1166,7 +1166,7 @@ public class Functions {
         String separationString = useDisplayName ? " » " : "/";
         
         // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
+        Map<ItemGroup,Integer> parents = new HashMap<>();
         int depth=0;
         while (g!=null) {
             parents.put(g, depth++);
@@ -1233,7 +1233,7 @@ public class Functions {
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
-        Map<Thread,StackTraceElement[]> sorted = new TreeMap<Thread,StackTraceElement[]>(new ThreadSorter());
+        Map<Thread,StackTraceElement[]> sorted = new TreeMap<>(new ThreadSorter());
         sorted.putAll(Thread.getAllStackTraces());
         return sorted;
     }
@@ -1251,7 +1251,7 @@ public class Functions {
 
     // Common code for sorting Threads/ThreadInfos by ThreadGroup
     private static class ThreadSorterBase {
-        protected Map<Long,String> map = new HashMap<Long,String>();
+        protected Map<Long,String> map = new HashMap<>();
 
         private ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
@@ -1475,7 +1475,7 @@ public class Functions {
             return Messages.Functions_NoExceptionDetails();
         }
         StringBuilder s = new StringBuilder();
-        doPrintStackTrace(s, t, null, "", new HashSet<Throwable>());
+        doPrintStackTrace(s, t, null, "", new HashSet<>());
         return s.toString();
     }
     private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
@@ -1840,7 +1840,7 @@ public class Functions {
     public List<String> getLoggerNames() {
         while (true) {
             try {
-                List<String> r = new ArrayList<String>();
+                List<String> r = new ArrayList<>();
                 Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
                 while (e.hasMoreElements())
                     r.add(e.nextElement());
@@ -1933,7 +1933,7 @@ public class Functions {
     }
 
     public static List<String> getRequestHeaders(String name) {
-        List<String> r = new ArrayList<String>();
+        List<String> r = new ArrayList<>();
         Enumeration e = Stapler.getCurrentRequest().getHeaders(name);
         while (e.hasMoreElements()) {
             r.add(e.nextElement().toString());
@@ -1949,7 +1949,7 @@ public class Functions {
     }
 
     public static ArrayList<CLICommand> getCLICommands() {
-        ArrayList<CLICommand> all = new ArrayList<CLICommand>(CLICommand.all());
+        ArrayList<CLICommand> all = new ArrayList<>(CLICommand.all());
         Collections.sort(all, new Comparator<CLICommand>() {
             public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
                 return cliCommand.getName().compareTo(cliCommand1.getName());

@@ -282,7 +282,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
-        return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
+        return new TagCloud<>(getAssignedLabels(), new WeightFunction<LabelAtom>() {
             public float weight(LabelAtom item) {
                 return item.getTiedJobCount();
             }
@@ -313,7 +313,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @return HashSet<Label>.
      */
     private HashSet<LabelAtom> getDynamicLabels() {
-        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        HashSet<LabelAtom> result = new HashSet<>();
         for (LabelFinder labeler : LabelFinder.all()) {
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
@@ -526,7 +526,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 }
 
                 try {
-                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
+                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
                 } catch (FormException e) {

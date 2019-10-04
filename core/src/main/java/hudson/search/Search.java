@@ -194,7 +194,7 @@ public class Search implements StaplerProxy {
     @ExportedBean
     public static class Result {
         @Exported
-        public List<Item> suggestions = new ArrayList<Item>();
+        public List<Item> suggestions = new ArrayList<>();
     }
 
     @ExportedBean(defaultVisibility=999)
@@ -310,7 +310,7 @@ public class Search implements StaplerProxy {
             }
         }
 
-        List<Tag> buf = new ArrayList<Tag>();
+        List<Tag> buf = new ArrayList<>();
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
@@ -372,9 +372,9 @@ public class Search implements StaplerProxy {
 
         List<SuggestedItem>[] paths = new List[tokens.length()+1]; // we won't use [0].
         for(int i=1;i<=tokens.length();i++)
-            paths[i] = new ArrayList<SuggestedItem>();
+            paths[i] = new ArrayList<>();
 
-        List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
+        List<SearchItem> items = new ArrayList<>(); // items found in 1 step
 
         LOGGER.log(Level.FINE, "tokens={0}", tokens);
         

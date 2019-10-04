@@ -106,7 +106,7 @@ public class Shell extends CommandInterpreter {
 
     @CheckForNull
     public final Integer getUnstableReturn() {
-        return new Integer(0).equals(unstableReturn) ? null : unstableReturn;
+        return Integer.valueOf(0).equals(unstableReturn) ? null : unstableReturn;
     }
 
     @DataBoundSetter
