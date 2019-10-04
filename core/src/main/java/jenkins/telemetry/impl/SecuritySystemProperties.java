@@ -24,7 +24,6 @@
 package jenkins.telemetry.impl;
 
 import hudson.Extension;
-import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import jenkins.util.SystemProperties;

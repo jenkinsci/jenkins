@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -95,7 +94,7 @@ public class DownloadService {
 
     /**
      * Loads JSON from a JSONP URL.
-     * Metadata for downloadables and update centers is offered in two formats, both designed for download from the browser (predating {@link DownloadSettings}):
+     * Metadata for downloadables and update centers is offered in two formats, both designed for download from the browser (a feature since removed):
      * HTML using {@code postMessage} for newer browsers, and JSONP as a fallback.
      * Confusingly, the JSONP files are given the {@code *.json} file extension, when they are really JavaScript and should be {@code *.js}.
      * This method extracts the JSON from a JSONP URL, since that is what we actually want when we download from the server.

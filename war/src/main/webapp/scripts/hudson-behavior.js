@@ -2743,28 +2743,6 @@ function loadScript(href,callback) {
     head.insertBefore( script, head.firstChild );
 }
 
-/**
- * Loads a dynamically created invisible IFRAME.
- */
-// TODO remove this?
-function createIframe(src,callback) {
-    var iframe = document.createElement("iframe");
-    iframe.src = src;
-    iframe.style.display = "none";
-
-    var done = false;
-    iframe.onload = iframe.onreadystatechange = function() {
-        if ( !done && (!this.readyState ||
-                this.readyState === "loaded" || this.readyState === "complete") ) {
-            done = true;
-            callback();
-        }
-    };
-
-    document.body.appendChild(iframe);
-    return iframe;
-}
-
 /*
 redirects to a page once the page is ready.
 
