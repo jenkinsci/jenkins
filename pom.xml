@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.52</version>
+    <version>1.53-SNAPSHOT</version>
     <relativePath />
   </parent>
 
@@ -110,6 +110,8 @@ THE SOFTWARE.
     <findbugs.effort>Max</findbugs.effort>
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+    <findbugs.failOnError>false</findbugs.failOnError>
+    <violations.maxViolations>0</violations.maxViolations>
 
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.14</access-modifier-annotation.version>
