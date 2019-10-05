@@ -148,7 +148,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         return ResourceDomainConfiguration.get().getResourceRootUrl();
     }
 
-    public String register(DirectoryBrowserSupport dbs, StaplerRequest req) {
+    public String getToken(DirectoryBrowserSupport dbs, StaplerRequest req) {
         String dbsFile = req.getRestOfPath();
 
         String completeUrl = req.getAncestors().get(0).getRestOfUrl();

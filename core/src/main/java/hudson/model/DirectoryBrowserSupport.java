@@ -94,7 +94,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     /**
      * Keeps track of whether this has been registered from use via {@link ResourceDomainRootAction}.
      */
-    private String resourceRootUrlKey;
+    private String resourceToken;
 
     /**
      * @deprecated as of 1.297
@@ -146,7 +146,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         if (!ResourceDomainConfiguration.isResourceRequest(req) && ResourceDomainConfiguration.isResourceDomainConfigured()) {
-            resourceRootUrlKey = ExtensionList.lookupSingleton(ResourceDomainRootAction.class).register(this, req);
+            resourceToken = ExtensionList.lookupSingleton(ResourceDomainRootAction.class).getToken(this, req);
         }
 
         try {
@@ -353,7 +353,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         } else {
             if (shouldRedirectToResourceDomain(req)) {
                 // redirect to second domain
-                rsp.sendRedirect(302, ExtensionList.lookupSingleton(ResourceDomainRootAction.class).getRedirectUrl(resourceRootUrlKey, req.getRestOfPath()));
+                rsp.sendRedirect(302, ExtensionList.lookupSingleton(ResourceDomainRootAction.class).getRedirectUrl(resourceToken, req.getRestOfPath()));
             } else {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
                     // if we're serving this from the main domain, set CSP headers
@@ -373,7 +373,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private boolean shouldRedirectToResourceDomain(StaplerRequest req) {
         boolean isResourceDomainRequest = ResourceDomainConfiguration.isResourceRequest(req);
         boolean hasConfiguredResourceDomain = ResourceDomainConfiguration.isResourceDomainConfigured();
-        return resourceRootUrlKey != null && !isResourceDomainRequest && hasConfiguredResourceDomain;
+        return resourceToken != null && !isResourceDomainRequest && hasConfiguredResourceDomain;
     }
 
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){
