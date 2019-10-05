@@ -94,7 +94,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     /**
      * Keeps track of whether this has been registered from use via {@link ResourceDomainRootAction}.
      */
-    private String resourceToken;
+    private ResourceDomainRootAction.Token resourceToken;
 
     /**
      * @deprecated as of 1.297

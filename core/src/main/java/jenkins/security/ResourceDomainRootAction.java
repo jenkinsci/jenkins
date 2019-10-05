@@ -41,6 +41,7 @@ import org.kohsuke.stapler.*;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -95,18 +96,16 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             return null;
         }
 
-        String metadata = decode(id);
-        if (metadata == null) {
+        Token token = Token.decode(id);
+        if (token == null) {
             rsp.sendError(404, "Jenkins serves only static files on this domain.");
             return null;
         }
 
-        String[] splits = metadata.split(":", 3);
-        String authenticationName = Util.fixEmpty(splits[0]);
-        String epoch = splits[1];
-        String browserUrl = splits[2];
+        String authenticationName = token.username;
+        String browserUrl = token.path;
 
-        long creationDate = Long.parseLong(epoch);
+        long creationDate = token.timestamp;
         long age = new Date().getTime() - creationDate;
 
         if (age >= 0 && age < TimeUnit.MINUTES.toMillis(VALID_FOR_MINUTES)) {
@@ -132,7 +131,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
     }
 
-    public String getRedirectUrl(String key, String restOfPath) {
+    public String getRedirectUrl(Token token, String restOfPath) {
         String resourceRootUrl = getResourceRootUrl();
         if (!resourceRootUrl.endsWith("/")) {
             resourceRootUrl += "/";
@@ -141,14 +140,14 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             // Unsure whether this can happen -- just be safe here
             restOfPath = "/" + restOfPath;
         }
-        return resourceRootUrl + getUrlName() + "/" + key + restOfPath;
+        return resourceRootUrl + getUrlName() + "/" + token.encode() + restOfPath;
     }
 
     private static String getResourceRootUrl() {
         return ResourceDomainConfiguration.get().getResourceRootUrl();
     }
 
-    public String getToken(DirectoryBrowserSupport dbs, StaplerRequest req) {
+    public Token getToken(DirectoryBrowserSupport dbs, StaplerRequest req) {
         String dbsFile = req.getRestOfPath();
 
         String completeUrl = req.getAncestors().get(0).getRestOfUrl();
@@ -157,13 +156,10 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         Authentication authentication = Jenkins.getAuthentication();
         String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();
 
-        Date date = new Date();
-
-        String value = authenticationName + ":" + date.getTime() + ":" + completeUrl;
         try {
-            return encode(value);
+            return new Token(completeUrl, authenticationName, new Date().getTime());
         } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Failed to encode " + value, ex);
+            LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + completeUrl + " user: " + authenticationName, ex);
         }
         return null;
     }
@@ -229,24 +225,42 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
     }
 
-    private String encode(String value) {
-        String mac = KEY.mac(value);
-        return mac + Util.toHexString((value.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    private String decode(String value) {
-        try {
-            String mac = value.substring(0, 64);
-            String rest = new String(Util.fromHexString(value.substring(64)), StandardCharsets.UTF_8);
-            if (!KEY.checkMac(rest, mac)) {
-                throw new IllegalArgumentException("Failed mac check for " + rest);
-            }
-            return rest;
-        } catch (Exception ex) {
-            // Choose log level that hides people messing with the URLs
-            LOGGER.log(Level.FINE, "Failure decoding", ex);
-            return null;
+    public static class Token {
+        private String path;
+        private String username;
+        private long timestamp;
+        private Token (String path, @Nullable String username, long timestamp) {
+            this.path = path;
+            this.username = username;
+            this.timestamp = timestamp;
         }
+
+        private String encode() {
+            String value = username + ":" + timestamp + ":" + path;
+            String mac = KEY.mac(value);
+            return mac + Util.toHexString((value.getBytes(StandardCharsets.UTF_8)));
+        }
+
+        private static Token decode(String value) {
+            try {
+                String mac = value.substring(0, 64);
+                String rest = new String(Util.fromHexString(value.substring(64)), StandardCharsets.UTF_8);
+                if (!KEY.checkMac(rest, mac)) {
+                    throw new IllegalArgumentException("Failed mac check for " + rest);
+                }
+
+                String[] splits = rest.split(":", 3);
+                String authenticationName = Util.fixEmpty(splits[0]);
+                String epoch = splits[1];
+                String browserUrl = splits[2];
+                return new Token(browserUrl, authenticationName, Long.parseLong(epoch));
+            } catch (Exception ex) {
+                // Choose log level that hides people messing with the URLs
+                LOGGER.log(Level.FINE, "Failure decoding", ex);
+                return null;
+            }
+        }
+
     }
 
     private static HMACConfidentialKey KEY = new HMACConfidentialKey(ResourceDomainRootAction.class, "key");
