@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -45,9 +46,9 @@ public class NodeListTest {
     @Test
     public void serialization() throws Exception {
         // create a normal and an ephemeral class, which should not be serialized
-        Node dummyNode = mock(Node.class, withSettings().serializable());
+        Node dummyNode = mock(Node.class, withSettings().serializable().defaultAnswer(CALLS_REAL_METHODS));
         when(dummyNode.getNodeName()).thenReturn("node1");
-        Node ephemeralNode = mock(Node.class, withSettings().extraInterfaces(EphemeralNode.class));
+        Node ephemeralNode = mock(Node.class, withSettings().extraInterfaces(EphemeralNode.class).defaultAnswer(CALLS_REAL_METHODS));
         when(ephemeralNode.getNodeName()).thenReturn("node2");
         NodeList nl = new NodeList(dummyNode, ephemeralNode);
 
