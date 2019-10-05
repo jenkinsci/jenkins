@@ -29,9 +29,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:header title="Jenkins">
-    <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
+    <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/atom+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
-    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
+    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/atom+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
