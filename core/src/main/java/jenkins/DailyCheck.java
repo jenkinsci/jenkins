@@ -40,6 +40,13 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Implements a daily update check for update sites and {@link hudson.model.DownloadService.Downloadable}s that are due.
+ *
+ * Note that this does not mean that update center information is at most 24 hours old, but rather 24-48 hours.
+ * Downloadables are by default due every 24 hours, as are update sites. This check runs every 24 hours, but only updates
+ * what is already due, i.e. older than 24 hours. So this ensures that update site information is never older than 48 hours.
+ */
 @Extension
 @Restricted(NoExternalUse.class)
 @Symbol("updateCenterCheck")
