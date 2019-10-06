@@ -9,12 +9,12 @@
 </p>
 <ul>
     <li>Requests to this resource root URL must be routed to this Jenkins instance.</li>
+    <li>The resource root URL must be a valid alternative choice for the Jenkins root URL for requests to be processed correctly.</li>
     <li>The Jenkins root URL must be set and it must be different from this resource root URL (in fact, a different host name is required).</li>
-    <li>Jenkins will only serve resource URL requests via the resource root URL, all other requests will get <em>HTTP 404 Not Found</em> responses.</li>
-    <li>The resource root URL must be <em>equivalent</em> to the Jenkins root URL, i.e. if there were no restrictions on responses (above), the resource root URL would be a valid alternative Jenkins root URL.</li>
+    <li>Once set, Jenkins will only serve resource URL requests via the resource root URL, all other requests will get <em>HTTP 404 Not Found</em> responses.</li>
 </ul>
 <p>
-    Once this URL has been set up correctly, Jenkins will redirect requests to workspaces, archived artifacts, and similar collections of files to URLs starting with the resource root URL.
+    Once this URL has been set up correctly, Jenkins will redirect requests to workspaces, archived artifacts, and similar collections of usually user-generated content to URLs starting with the resource root URL.
     Instead of a path like <code>job/name_here/ws</code>, resource URLs will contain a long hexadecimal string encoding that path, the user for which the URL was created, and when it was created.
     These resource URLs access static files <em>as if</em> the user for which they were created would access them:
     If the user's permission to access these files is removed, the corresponding resource URLs will not work anymore either.
