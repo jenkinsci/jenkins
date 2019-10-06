@@ -114,7 +114,7 @@ THE SOFTWARE.
                       <j:arg value="${exe.externalizableId}" />
                       <j:arg value="UTF-8" />
                     </j:invokeStatic>
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop?what=${runId}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${runId}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
               </j:otherwise>

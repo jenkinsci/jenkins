@@ -831,41 +831,43 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * @deprecated as of 1.489
-     *      Use {@link #doStop()}.
+     *      Use {@link #doStop()} or {@link #doStopBuild(String)}.
      */
     @RequirePOST
     @Deprecated
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        doStop(req != null ? Util.fixEmpty(req.getParameter("what")) : null).generateResponse(req,rsp,this);
+        (req != null ? doStopBuild(req.getParameter("runExtId")) : doStop()).generateResponse(req,rsp,this);
     }
 
     /**
-     * Stops the current build.
+     * Stops the current build.<br>
+     * You can use {@link #doStopBuild(String)} instead to ensure what will be
+     * interrupted is actually what you want to interrupt.
      *
      * @since 1.489
-     * @deprecated as of 2.???
-     *      Use {@link #doStop(String)}.
+     * @see #doStopBuild(String)
      */
     @RequirePOST
-    @Deprecated
     public HttpResponse doStop() {
-        return doStop(null);
+        return doStopBuild(null);
     }
 
     /**
-     * Stops the current build.
+     * Stops the current build, if matching the specified external id
+     * (or no id is specified, or the current {@link Executable} is not a {@link Run}).
      *
-     * @param what
+     * @param runExtId
      *      if not null, the externalizable id ({@link Run#getExternalizableId()})
      *      of the build the user expects to interrupt
      * @since 2.???
      */
     @RequirePOST
-    public HttpResponse doStop(@CheckForNull @QueryParameter(fixEmpty = true) String what) {
+    public HttpResponse doStopBuild(@CheckForNull @QueryParameter(fixEmpty = true) String runExtId) {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                if (what == null || (executable instanceof Run && what.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                if (runExtId == null || runExtId.isEmpty()
+                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
                     getParentOf(executable).getOwnerTask().checkAbortPermission();
                     interrupt();
                 }
