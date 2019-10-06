@@ -18,6 +18,7 @@
     Instead of a path like <code>job/name_here/ws</code>, resource URLs will contain a long hexadecimal string encoding that path, the user for which the URL was created, and when it was created.
     These resource URLs access static files <em>as if</em> the user for which they were created would access them:
     If the user's permission to access these files is removed, the corresponding resource URLs will not work anymore either.
+    <strong>These URLs are accessible to anyone without authentication until they expire, so users sharing these URLs with others is akin to sharing the files directly.</strong>
 </p>
 <h3>Security considerations</h3>
 <h4>Authentication</h4>
@@ -32,6 +33,7 @@
     This will generally be transparent to the user if they have a valid Jenkins session.
     If they do not have a valid session, they will need to authenticate with Jenkins again.
     When viewing e.g. pages with HTML frames, the login form will not be able to appear in a frame, and users will need to reload the top-level frame to make the login form appear.
+    Earlier expiration might negatively impact use of these URLs, while later expiration increases the likelihood of unauthorized users gaining access through URLs shared with them by authorized users.
 </p>
 <h4>Authenticity</h4>
 <p>
