@@ -1711,19 +1711,21 @@ public class Queue extends ResourceController implements Saveable {
 
             Label lbl = p.getAssignedLabel();
 
+            Computer masterComputer = h.toComputer();
             if (lbl != null && lbl.equals(h.getSelfLabel())) {
                 // the flyweight task is bound to the master
                 if (h.canTake(p) == null) {
-                    return createFlyWeightTaskRunnable(p, h.toComputer());
+                    return createFlyWeightTaskRunnable(p, masterComputer);
                 } else {
                     return null;
                 }
             }
 
-            if (lbl == null && h.canTake(p) == null) {
+            // TODO: Why is #isOnline correct here, rather than #isAcceptingTasks?
+            if (lbl == null && h.canTake(p) == null && masterComputer.isOnline()) {
                 // The flyweight task is not tied to a specific label, so execute on master if possible.
                 // This will ensure that actual agent disconnects do not impact flyweight tasks randomly assigned to them.
-                return createFlyWeightTaskRunnable(p, h.toComputer());
+                return createFlyWeightTaskRunnable(p, masterComputer);
             }
 
             Map<Node, Integer> hashSource = new HashMap<>(h.getNodes().size());
@@ -1738,7 +1740,7 @@ public class Queue extends ResourceController implements Saveable {
             String fullDisplayName = p.task.getFullDisplayName();
             for (Node n : hash.list(fullDisplayName)) {
                 final Computer c = n.toComputer();
-                if (c == null || c.isOffline()) {
+                if (c == null || c.isOffline()) { // TODO: why does this not care about #isAcceptingTasks?
                     continue;
                 }
                 if (lbl!=null && !lbl.contains(n)) {

@@ -67,6 +67,7 @@ import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -131,7 +132,10 @@ import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -557,6 +561,9 @@ public class QueueTest {
         }
         @Override public Label getAssignedLabel() {
             return assignedLabel;
+        }
+        public Computer getOwner() {
+            return exec == null ? null : exec.getOwner();
         }
     }
 
@@ -1134,6 +1141,43 @@ public class QueueTest {
 
             assertTrue(currentOne.getFuture().isCancelled());
         }
+    }
+
+    @Test
+    public void flyweightsRunOnMasterIfPossible() throws Exception {
+        r.createOnlineSlave();
+        r.jenkins.setNumExecutors(0);
+        List<TestFlyweightTask> tasks = new ArrayList<>();
+        Queue q = r.jenkins.getQueue();
+
+        for (int i = 0; i < 100; i++) {
+            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
+            tasks.add(task);
+            q.schedule2(task, 0);
+        }
+
+        q.maintain();
+        r.waitUntilNoActivityUpTo(10000);
+        Assert.assertThat(tasks, everyItem(hasProperty("owner", equalTo(Jenkins.get().toComputer()))));
+    }
+
+    @Test
+    public void flyweightsRunOnAgentIfNecessary() throws Exception {
+        r.createOnlineSlave();
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.toComputer().setTemporarilyOffline(true, new OfflineCause.UserCause(null, null));
+        List<TestFlyweightTask> tasks = new ArrayList<>();
+        Queue q = r.jenkins.getQueue();
+
+        for (int i = 0; i < 10; i++) {
+            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
+            tasks.add(task);
+            q.schedule2(task, 0);
+        }
+
+        q.maintain();
+        r.waitUntilNoActivityUpTo(10000);
+        Assert.assertThat(tasks, everyItem(hasProperty("owner", not(equalTo(Jenkins.get().toComputer())))));
     }
 
     @Test
