@@ -29,7 +29,6 @@ import hudson.Util;
 import hudson.util.FormValidation;
 import jenkins.diagnostics.RootUrlNotSetMonitor;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.UrlHelper;
 import net.sf.json.JSONObject;
@@ -40,7 +39,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,10 +54,10 @@ import java.net.URL;
  */
 @Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
 @Restricted(NoExternalUse.class)
-@Symbol("resourceDomain")
+@Symbol("resourceRoot")
 public class ResourceDomainConfiguration extends GlobalConfiguration {
 
-    private String resourceRootUrl;
+    private String url;
 
     public ResourceDomainConfiguration() {
         load();
@@ -72,7 +70,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         return true;
     }
 
-    public FormValidation doCheckResourceRootUrl(@QueryParameter("resourceRootUrl") String resourceRootUrlString) {
+    public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
         /*
         TODO Better handle difference between root URLs, host names, and origins.
          */
@@ -123,14 +121,14 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
-    public String getResourceRootUrl() {
-        return resourceRootUrl;
+    public String getUrl() {
+        return url;
     }
 
-    public void setResourceRootUrl(String resourceRootUrl) {
-        if (doCheckResourceRootUrl(resourceRootUrl).kind == FormValidation.Kind.OK) {
+    public void setUrl(String url) {
+        if (doCheckUrl(url).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL
-            this.resourceRootUrl = Util.fixEmpty(resourceRootUrl);
+            this.url = Util.fixEmpty(url);
         }
     }
 
@@ -144,7 +142,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         if (!isResourceDomainConfigured()) {
             return false;
         }
-        String resourceRootUrl = get().getResourceRootUrl();
+        String resourceRootUrl = get().getUrl();
         try {
             URL url = new URL(resourceRootUrl);
             String resourceRootHost = url.getHost();
@@ -165,7 +163,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      * @return whether a domain has been configured
      */
     public static boolean isResourceDomainConfigured() {
-        String resourceRootUrl = get().getResourceRootUrl();
+        String resourceRootUrl = get().getUrl();
         return resourceRootUrl != null && !resourceRootUrl.isEmpty();
     }
 

@@ -31,7 +31,7 @@ public class ResourceDomainTest {
 
         resourceRoot = root.toString().replace("localhost", RESOURCE_DOMAIN);
         ResourceDomainConfiguration configuration = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class);
-        configuration.setResourceRootUrl(resourceRoot);
+        configuration.setUrl(resourceRoot);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ResourceDomainTest {
             Assert.assertTrue("resource directory response forwarded to userContent index", page.getWebResponse().getResponseHeaderValue("Location").contains("/userContent"));
         }
 
-        String resourceRootUrl = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class).getResourceRootUrl();
+        String resourceRootUrl = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class).getUrl();
         {
             webClient.setThrowExceptionOnFailingStatusCode(false);
             Page page = webClient.getPage(resourceRootUrl);
