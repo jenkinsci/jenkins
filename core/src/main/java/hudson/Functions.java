@@ -382,7 +382,7 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static boolean useHidingPasswordFields() {
-        return SystemProperties.getBoolean(Functions.class.getName() + "hidingPasswordFields", true);
+        return SystemProperties.getBoolean(Functions.class.getName() + ".hidingPasswordFields", true);
     }
 
     /**
