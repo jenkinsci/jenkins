@@ -550,13 +550,13 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     public String getClasspath() {
         StringBuilder sb = new StringBuilder();
         boolean firstPass = true;
-        for (Iterator<File> iter = pathComponents.iterator(); iter.hasNext(); ) {
+        for (File pathComponent : pathComponents) {
             if (!firstPass) {
                 sb.append(System.getProperty("path.separator"));
             } else {
                 firstPass = false;
             }
-            sb.append(iter.next().getAbsolutePath());
+            sb.append(pathComponent.getAbsolutePath());
         }
         return sb.toString();
     }
@@ -752,8 +752,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // find the class we want.
         InputStream stream = null;
 
-        for (Iterator<File> iter = pathComponents.iterator(); iter.hasNext() && stream == null; ) {
-            File pathComponent = iter.next();
+        for (File pathComponent : pathComponents) {
             stream = getResourceStream(pathComponent, name);
         }
         return stream;
@@ -922,11 +921,11 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     @CheckForNull
     protected URL getUrl(ArrayList<File> pathComponents, String name) {
         URL url = null;
-        for (Iterator<File> iter = pathComponents.iterator(); iter.hasNext() && url == null; ) {
-            File pathComponent = iter.next();
+        for (File pathComponent : pathComponents) {
             url = getResourceURL(pathComponent, name);
             if (url != null) {
                 log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
+                break;
             }
         }
         return url;
@@ -1376,8 +1375,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // we need to search the components of the path to see if
         // we can find the class we want.
         String classFilename = getClassFilename(name);
-        for (Iterator<File> iter = pathComponents.iterator(); iter.hasNext(); ) {
-            File pathComponent = iter.next();
+        for (File pathComponent : pathComponents) {
             try (final InputStream stream = getResourceStream(pathComponent, classFilename)) {
                 if (stream != null) {
                     log("Loaded from " + pathComponent + " "
