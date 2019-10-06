@@ -521,18 +521,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Exported
     public String getUrl() {
-        // first look for the manifest entry. This is new in maven-hpi-plugin 1.30
-        String url = manifest.getMainAttributes().getValue("Url");
-        if(url!=null)      return url;
-
-        // fallback to update center metadata
+        // first look in update center metadata
         UpdateSite.Plugin ui = getInfo();
-        if(ui!=null)    return ui.wiki;
+        if (ui != null && !StringUtils.isEmpty(ui.wiki)) {
+            return ui.wiki;
+        }
 
-        return null;
+        // as a fallback use the manifest entry. This is new in maven-hpi-plugin 1.30
+        return manifest.getMainAttributes().getValue("Url");
     }
-    
-    
 
     @Override
     public String toString() {

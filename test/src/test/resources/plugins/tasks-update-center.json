@@ -26,6 +26,7 @@ updateCenter.post(
             "developers": [],
             "excerpt": "…",
             "name": "dummy",
+            "wiki": "https://plugins.jenkins.io/dummy",
             "requiredCore": "1.100",
             "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
             "title": "Dummy",

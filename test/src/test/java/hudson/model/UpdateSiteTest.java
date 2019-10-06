@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import hudson.PluginWrapper;
+import hudson.PluginWrapper.Dependency;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
@@ -32,16 +34,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FileUtils;
@@ -107,11 +115,9 @@ public class UpdateSiteTest {
     }
     
     @Test public void relativeURLs() throws Exception {
-        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
-        sites.clear();
         URL url = new URL(baseUrl, "/plugins/tasks-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
+        overrideUpdateSite(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         Data data = site.getData();
         assertNotNull(data);
@@ -122,6 +128,13 @@ public class UpdateSiteTest {
 
         UpdateSite.Plugin tasksPlugin = data.plugins.get("tasks");
         assertEquals("Wrong name of plugin found", "Task Scanner Plug-in", tasksPlugin.getDisplayName());
+    }
+
+    @Test public void wikiURLs() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/tasks-update-center.json");
+        overrideUpdateSite(site);
+        PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
+        assertEquals("https://plugins.jenkins.io/dummy", wrapper.getUrl());
     }
 
     @Test public void updateDirectlyWithJson() throws Exception {
@@ -141,12 +154,8 @@ public class UpdateSiteTest {
     }
 
     @Test public void incompleteWarningsJson() throws Exception {
-        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
-        sites.clear();
-        URL url = new URL(baseUrl, "/plugins/warnings-update-center-malformed.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        UpdateSite site = getUpdateSite("/plugins/warnings-update-center-malformed.json");
+        overrideUpdateSite(site);
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
@@ -196,5 +205,30 @@ public class UpdateSiteTest {
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         return site;
+    }
+
+    private void overrideUpdateSite(UpdateSite site) {
+        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        sites.add(site);
+    }
+
+    private PluginWrapper buildPluginWrapper(String name, String wikiUrl) {
+        Manifest manifest = mock(Manifest.class);
+        Attributes attributes = new Attributes();
+        attributes.put(new Attributes.Name("Short-Name"), name);
+        attributes.put(new Attributes.Name("Plugin-Version"), "1.0.0");
+        attributes.put(new Attributes.Name("Url"), wikiUrl);
+        when(manifest.getMainAttributes()).thenReturn(attributes);
+        return new PluginWrapper(
+                Jenkins.get().getPluginManager(),
+                new File("/tmp/" + name + ".jpi"),
+                manifest,
+                null,
+                null,
+                new File("/tmp/" + name + ".jpi.disabled"),
+                null,
+                new ArrayList<Dependency>()
+        );
     }
 }
