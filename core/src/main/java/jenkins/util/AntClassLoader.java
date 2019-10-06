@@ -156,7 +156,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             URL url = null;
             while ((pathElementsIndex < pathComponents.size()) && (url == null)) {
                 try {
-                    File pathComponent = (File) pathComponents.get(pathElementsIndex);
+                    File pathComponent = pathComponents.get(pathElementsIndex);
                     url = getResourceURL(pathComponent, this.resourceName);
                     pathElementsIndex++;
                 } catch (BuildException e) {
@@ -182,7 +182,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * The components of the classpath that the classloader searches
      * for classes.
      */
-    private ArrayList<File> pathComponents = new ArrayList<File>();
+    private ArrayList<File> pathComponents = new ArrayList<>();
 
     /**
      * The project to which this class loader belongs.
