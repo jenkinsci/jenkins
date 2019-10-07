@@ -204,11 +204,9 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             try (ACLContext ignored = ACL.as(auth)) {
                 Stapler.getCurrent().invoke(req, rsp, requestRoot, requestUrlSuffix + restOfPath);
                 /*
-                TODO I am unsure what to do when this throws an exception.
-                Right now (below) we return 403/404 error pages. A more user-friendly approach is probably to
-                just redirect like we do for expired resource URLs, but the question is whether we'd end up in a
-                redirect loop if the exception is specific to this mode (and the "normal" URLs redirect to resource
-                URLs). That seems even worse.
+                While we could just redirect below to the real URL like we do for expired resource URLs, the question
+                is whether we'd end up in a redirect loop if the exception is specific to this mode (and the "normal"
+                URLs redirect to resource URLs). That seems even worse than an error here.
                  */
             } catch (AccessDeniedException ade) {
                 LOGGER.log(Level.INFO, "Failed permission check for resource URL access", ade);
