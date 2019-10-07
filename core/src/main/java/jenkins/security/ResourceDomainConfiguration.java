@@ -29,19 +29,31 @@ import hudson.Util;
 import hudson.util.FormValidation;
 import jenkins.diagnostics.RootUrlNotSetMonitor;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.UrlHelper;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.security.interfaces.RSAPublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
 /**
  * Configure the resource root URL, an alternative root URL to serve resources from
@@ -57,6 +69,8 @@ import java.net.URL;
 @Symbol("resourceRoot")
 public class ResourceDomainConfiguration extends GlobalConfiguration {
 
+    private static final Logger LOGGER = Logger.getLogger(ResourceDomainConfiguration.class.getName());
+
     private String url;
 
     public ResourceDomainConfiguration() {
@@ -70,7 +84,14 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         return true;
     }
 
+    @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
+        return checkUrl(resourceRootUrlString, true);
+    }
+
+    private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
         /*
         TODO Better handle difference between root URLs, host names, and origins.
          */
@@ -89,6 +110,10 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
             return FormValidation.warning(Messages.ResourceDomainConfiguration_Invalid());
         }
 
+        if (!resourceRootUrlString.endsWith("/")) {
+            resourceRootUrlString += '/';
+        }
+
         URL resourceRootUrl;
         try {
             resourceRootUrl = new URL(resourceRootUrlString);
@@ -103,9 +128,8 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsJenkinsRoot());
             }
         } catch (Exception ex) {
-            // TODO logging
-            // TODO more appropriate message
-            return FormValidation.warning(Messages.ResourceDomainConfiguration_NeedsRootURL());
+            LOGGER.log(Level.CONFIG, "Failed to create URL from the existing Jenkins root URL", ex);
+            return FormValidation.error(Messages.ResourceDomainConfiguration_InvalidRootURL(ex.getMessage()));
         }
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
@@ -118,7 +142,47 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         }
 
         // TODO perform more elaborate permission checks to prevent users from setting a subdomain?
-        return FormValidation.ok();
+
+        if (!allowOnlineIdentityCheck) {
+            return FormValidation.ok();
+        }
+
+        // Send a request to /instance-identity/ at the resource root URL and check whether it is this Jenkins
+        try {
+            URLConnection urlConnection = new URL(resourceRootUrlString + "instance-identity/").openConnection();
+            if (urlConnection instanceof HttpURLConnection) {
+                HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+                int responseCode = httpURLConnection.getResponseCode();
+
+                if (responseCode == 200) {
+                    String identityHeader = urlConnection.getHeaderField("X-Instance-Identity");
+                    if (identityHeader == null) {
+                        return FormValidation.warning(Messages.ResourceDomainConfiguration_NotJenkins());
+                    }
+                    // URL points to a Jenkins instance
+                    RSAPublicKey publicKey = InstanceIdentityProvider.RSA.getPublicKey();
+                    if (publicKey != null) {
+                        String identity = Base64.encodeBase64String(publicKey.getEncoded());
+                        if (identity.equals(identityHeader)) {
+                            return FormValidation.ok(Messages.ResourceDomainConfiguration_ThisJenkins());
+                        }
+                        return FormValidation.warning(Messages.ResourceDomainConfiguration_OtherJenkins());
+                    } // the current instance has no public key
+                    return FormValidation.warning(Messages.ResourceDomainConfiguration_SomeJenkins());
+                }
+                // response is error
+                String responseMessage = httpURLConnection.getResponseMessage();
+                if (responseCode == 404 && responseMessage.equals(ERROR_RESPONSE)) {
+                    return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
+                }
+                return FormValidation.error(Messages.ResourceDomainConfiguration_FailedIdentityCheck(responseCode, responseMessage));
+            }
+            return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid()); // unlikely to ever be hit
+        } catch (MalformedURLException ex) {
+            return FormValidation.error(Messages.ResourceDomainConfiguration_Exception(ex.getMessage()));
+        } catch (IOException ex) {
+            return FormValidation.error(Messages.ResourceDomainConfiguration_IOException(ex.getMessage()));
+        }
     }
 
     public String getUrl() {
@@ -126,7 +190,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
     }
 
     public void setUrl(String url) {
-        if (doCheckUrl(url).kind == FormValidation.Kind.OK) {
+        if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL
             this.url = Util.fixEmpty(url);
         }

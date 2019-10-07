@@ -50,6 +50,7 @@ public class ResourceDomainFilter implements Filter {
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
     private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/static-files", "/favicon.ico", "/robots.txt"));
+    public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
     @Initializer
     public static void init() throws ServletException {
@@ -66,7 +67,7 @@ public class ResourceDomainFilter implements Filter {
                 String path = httpServletRequest.getPathInfo();
                 if (!path.startsWith("/static-files/") && !ALLOWED_PATHS.contains(path)) {
                     LOGGER.log(Level.FINE, "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
-                    httpServletResponse.sendError(404, "Jenkins serves only static files on this domain.");
+                    httpServletResponse.sendError(404, ERROR_RESPONSE);
                     return;
                 }
                 LOGGER.log(Level.FINER, "Accepting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");

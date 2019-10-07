@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:d="jelly:define">
     <f:section title="${%Serve resource files from another domain}">
         <f:entry title="${%Resource root URL}" field="url">
-            <f:textbox />
+            <f:textbox checkMethod="post" />
         </f:entry>
     </f:section>
 </j:jelly>
