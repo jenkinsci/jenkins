@@ -23,6 +23,7 @@
 
 package hudson.org.apache.tools.tar;
 
+import hudson.RestrictedSince;
 import org.apache.tools.tar.TarBuffer;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
@@ -44,6 +45,7 @@ import java.nio.charset.StandardCharsets;
  */
 @Deprecated
 @Restricted(NoExternalUse.class)
+@RestrictedSince("2.200")
 public class TarOutputStream extends FilterOutputStream {
     /** Fail if a long file name is required in the archive. */
     public static final int LONGFILE_ERROR = 0;
