@@ -1721,8 +1721,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            // TODO: Why is #isOnline correct here, rather than #isAcceptingTasks?
-            if (lbl == null && h.canTake(p) == null && masterComputer.isOnline()) {
+            if (lbl == null && h.canTake(p) == null && masterComputer.isOnline() && masterComputer.isAcceptingTasks()) {
                 // The flyweight task is not tied to a specific label, so execute on master if possible.
                 // This will ensure that actual agent disconnects do not impact flyweight tasks randomly assigned to them.
                 return createFlyWeightTaskRunnable(p, masterComputer);
@@ -1740,7 +1739,7 @@ public class Queue extends ResourceController implements Saveable {
             String fullDisplayName = p.task.getFullDisplayName();
             for (Node n : hash.list(fullDisplayName)) {
                 final Computer c = n.toComputer();
-                if (c == null || c.isOffline()) { // TODO: why does this not care about #isAcceptingTasks?
+                if (c == null || c.isOffline()) {
                     continue;
                 }
                 if (lbl!=null && !lbl.contains(n)) {
