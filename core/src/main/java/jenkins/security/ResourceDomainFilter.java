@@ -32,6 +32,9 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +49,8 @@ public class ResourceDomainFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/static-files", "/favicon.ico", "/robots.txt"));
+
     @Initializer
     public static void init() throws ServletException {
         PluginServletFilter.addFilter(new ResourceDomainFilter());
@@ -57,13 +62,14 @@ public class ResourceDomainFilter implements Filter {
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse)servletResponse;
-            String path = httpServletRequest.getPathInfo();
-            if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)
-                    && !path.startsWith("/static-files/")
-                    && !path.equals("/static-files")) {
-                LOGGER.log(Level.FINE, "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
-                httpServletResponse.sendError(404, "Jenkins serves only static files on this domain.");
-                return;
+            if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
+                String path = httpServletRequest.getPathInfo();
+                if (!path.startsWith("/static-files/") && !ALLOWED_PATHS.contains(path)) {
+                    LOGGER.log(Level.FINE, "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
+                    httpServletResponse.sendError(404, "Jenkins serves only static files on this domain.");
+                    return;
+                }
+                LOGGER.log(Level.FINER, "Accepting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);
