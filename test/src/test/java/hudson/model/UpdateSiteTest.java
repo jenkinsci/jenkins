@@ -46,8 +46,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
@@ -214,12 +212,11 @@ public class UpdateSiteTest {
     }
 
     private PluginWrapper buildPluginWrapper(String name, String wikiUrl) {
-        Manifest manifest = mock(Manifest.class);
-        Attributes attributes = new Attributes();
+        Manifest manifest = new Manifest();
+        Attributes attributes = manifest.getMainAttributes();
         attributes.put(new Attributes.Name("Short-Name"), name);
         attributes.put(new Attributes.Name("Plugin-Version"), "1.0.0");
         attributes.put(new Attributes.Name("Url"), wikiUrl);
-        when(manifest.getMainAttributes()).thenReturn(attributes);
         return new PluginWrapper(
                 Jenkins.get().getPluginManager(),
                 new File("/tmp/" + name + ".jpi"),
