@@ -3,6 +3,7 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.Page;
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -118,7 +119,22 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void workspaceWithPermissions() throws Exception {
+    public void clearRootUrl() throws Exception {
+        JenkinsLocationConfiguration.get().setUrl(null);
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+
+        String resourceResponseUrl;
+        {
+            webClient.setRedirectEnabled(true);
+            Page page = webClient.goTo("userContent/readme.txt", "text/plain");
+            resourceResponseUrl = page.getUrl().toString();
+            Assert.assertEquals("resource response success", 200, page.getWebResponse().getStatusCode());
+            Assert.assertNotNull("CSP headers set", page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
+            Assert.assertFalse("Not served from resource domain", resourceResponseUrl.contains(RESOURCE_DOMAIN));
+            Assert.assertFalse("Not served from resource action", resourceResponseUrl.contains("static-files"));
+            Assert.assertTrue("Original URL", resourceResponseUrl.contains("userContent/readme.txt"));
+        }
 
     }
 

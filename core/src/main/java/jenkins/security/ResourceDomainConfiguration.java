@@ -164,7 +164,15 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      */
     public static boolean isResourceDomainConfigured() {
         String resourceRootUrl = get().getUrl();
-        return resourceRootUrl != null && !resourceRootUrl.isEmpty();
+        if (resourceRootUrl == null || resourceRootUrl.isEmpty()) {
+            return false;
+        }
+
+        // effectively not configured when the location configuration is empty
+        if (Util.nullify(JenkinsLocationConfiguration.get().getUrl()) == null) {
+            return false;
+        }
+        return true;
     }
 
     public static ResourceDomainConfiguration get() {
