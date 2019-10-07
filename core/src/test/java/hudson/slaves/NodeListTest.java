@@ -58,7 +58,6 @@ public class NodeListTest {
             x.write(nl);
 
             String xml = FileUtils.readFileToString(tmp, Charset.defaultCharset());
-            // System.out.println(xml); // just for debug
             // check that at least some content
             assertTrue(xml.split("\n").length > 6);
 
