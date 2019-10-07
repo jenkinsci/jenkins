@@ -758,16 +758,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     name = normalisePluginName(name);
 
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
-                    // plugins that was bundled "for fun".
+                    // plugins that was bundled as a dependency (or, before 2.199, to promote their use).
                     if (DetachedPluginsUtil.isDetachedPlugin(name)) {
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
-                        VersionNumber bundledVersion = getPluginVersion(dir, name);
+                        VersionNumber detachedVersion = null;
+                        for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : DetachedPluginsUtil.getDetachedPlugins()) {
+                            if (detachedPlugin.getShortName().equals(name)) {
+                                detachedVersion = detachedPlugin.getRequiredVersion();
+                            }
+                        }
                         // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
-                        if (installedVersion != null && bundledVersion != null) {
-                            // If the installed version is older than the bundled version, then it MUST be upgraded.
-                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                        if (installedVersion != null && detachedVersion != null) {
+                            // If the installed version is older than the minimum version, then it MUST be upgraded.
+                            // If the installed version is newer than the minimum version, then it MUST NOT be downgraded.
                             // If the versions are equal we just keep the installed version.
-                            return installedVersion.isOlderThan(bundledVersion);
+                            return installedVersion.isOlderThan(detachedVersion);
                         }
                     }
 
