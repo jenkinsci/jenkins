@@ -107,7 +107,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         }
 
         if (!UrlHelper.isValidRootUrl(resourceRootUrlString)) {
-            return FormValidation.warning(Messages.ResourceDomainConfiguration_Invalid());
+            return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 
         if (!resourceRootUrlString.endsWith("/")) {
@@ -118,7 +118,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         try {
             resourceRootUrl = new URL(resourceRootUrlString);
         } catch (MalformedURLException ex) {
-            return FormValidation.warning(Messages.ResourceDomainConfiguration_Invalid());
+            return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
@@ -137,7 +137,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
             String currentRequestHost = currentRequest.getHeader("Host");
 
             if (currentRequestHost.equals(resourceRootUrlHost)) {
-                return FormValidation.warning(Messages.ResourceDomainConfiguration_SameAsCurrent());
+                return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsCurrent());
             }
         }
 
@@ -179,9 +179,10 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
             }
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid()); // unlikely to ever be hit
         } catch (MalformedURLException ex) {
+            // Not expected to be hit
             return FormValidation.error(Messages.ResourceDomainConfiguration_Exception(ex.getMessage()));
         } catch (IOException ex) {
-            return FormValidation.error(Messages.ResourceDomainConfiguration_IOException(ex.getMessage()));
+            return FormValidation.warning(Messages.ResourceDomainConfiguration_IOException(ex.getMessage()));
         }
     }
 
