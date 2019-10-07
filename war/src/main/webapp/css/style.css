@@ -1900,6 +1900,16 @@ select.select-ajax-pending {
     color: #8a6d3b;
 }
 
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+.alert-danger p {
+    color: #a94442;
+}
+
 body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
