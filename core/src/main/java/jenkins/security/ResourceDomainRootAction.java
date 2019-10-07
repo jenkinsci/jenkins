@@ -229,7 +229,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private long timestamp;
         private Token (String path, @Nullable String username, long timestamp) {
             this.path = path;
-            this.username = username;
+            this.username = Util.fixNull(username);
             this.timestamp = timestamp;
         }
 
