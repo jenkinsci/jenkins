@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -66,11 +65,11 @@ public class ResourceDomainFilter implements Filter {
             if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
                 String path = httpServletRequest.getPathInfo();
                 if (!path.startsWith("/static-files/") && !ALLOWED_PATHS.contains(path)) {
-                    LOGGER.log(Level.FINE, "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
+                    LOGGER.fine(() -> "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
                     httpServletResponse.sendError(404, ERROR_RESPONSE);
                     return;
                 }
-                LOGGER.log(Level.FINER, "Accepting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
+                LOGGER.finer(() -> "Accepting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);
