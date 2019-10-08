@@ -35,6 +35,8 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -45,6 +47,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -235,14 +238,15 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         private String encode() {
             String value = username + ":" + timestamp + ":" + path;
-            String mac = KEY.mac(value);
-            return mac + Util.toHexString((value.getBytes(StandardCharsets.UTF_8)));
+            byte[] byteValue = ArrayUtils.addAll(Util.fromHexString(KEY.mac(value)), value.getBytes(StandardCharsets.UTF_8));
+            return Base64.encodeBase64URLSafeString(byteValue);
         }
 
         private static Token decode(String value) {
+            byte[] byteValue = Base64.decodeBase64(value);
             try {
-                String mac = value.substring(0, 64);
-                String rest = new String(Util.fromHexString(value.substring(64)), StandardCharsets.UTF_8);
+                String mac = Util.toHexString(Arrays.copyOf(byteValue, 32));
+                String rest = new String(Arrays.copyOfRange(byteValue, 32, byteValue.length), StandardCharsets.UTF_8);
                 if (!KEY.checkMac(rest, mac)) {
                     throw new IllegalArgumentException("Failed mac check for " + rest);
                 }
