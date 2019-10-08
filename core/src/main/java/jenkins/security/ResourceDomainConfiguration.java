@@ -200,6 +200,9 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
     /**
      * Returns true if and only if this is a request to URLs under the resource root URL.
      *
+     * For this to be the case, the requested host and port (from the Host HTTP request header) must match what is
+     * configured for the resource root URL.
+     *
      * @param req the request to check
      * @return whether the request is a resource URL request
      */
@@ -210,16 +213,28 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         String resourceRootUrl = get().getUrl();
         try {
             URL url = new URL(resourceRootUrl);
+
             String resourceRootHost = url.getHost();
-            if (url.getPort() != -1) {
-                resourceRootHost += ":" + url.getPort();
+            if (!resourceRootHost.equalsIgnoreCase(req.getServerName())) {
+                return false;
             }
-            // TODO this looks brittle, figure out a better way
-            return resourceRootHost.equals(req.getHeader("Host"));
+
+            int resourceRootPort = url.getPort();
+            if (resourceRootPort == -1) {
+                resourceRootPort = url.getDefaultPort();
+            }
+
+            // let's hope this gives the default port if the Host header exists but doesn't specify a port
+            int requestedPort = req.getServerPort();
+
+            if (requestedPort != resourceRootPort) {
+                return false;
+            }
         } catch (MalformedURLException ex) {
             // the URL here cannot be so broken that we cannot call `new URL(String)` on it...
             return false;
         }
+        return true;
     }
 
     /**
