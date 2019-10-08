@@ -92,7 +92,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         if (!ResourceDomainConfiguration.isResourceRequest(req)) {
             rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
         } else {
-            rsp.sendError(404, "Jenkins serves only static files on this domain.");
+            rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
         }
     }
 
@@ -104,7 +104,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         Token token = Token.decode(id);
         if (token == null) {
-            rsp.sendError(404, "Jenkins serves only static files on this domain.");
+            rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
             return null;
         }
 

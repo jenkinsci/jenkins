@@ -39,14 +39,16 @@ public class ResourceDomainTest {
     public void secondDomainBasics() throws Exception {
         JenkinsRule.WebClient webClient = j.createWebClient();
 
-        { // DBS on primary domain forwards to second domain when trying to access a file URL
+        { // DBS directory listing is shown as always
             Page page = webClient.goTo("userContent");
             Assert.assertEquals("successful request", 200, page.getWebResponse().getStatusCode());
+            Assert.assertTrue("still on the original URL", page.getUrl().toString().contains("/userContent"));
             Assert.assertTrue("web page", page.isHtmlPage());
+            Assert.assertTrue("complex web page", page.getWebResponse().getContentAsString().contains("javascript"));
         }
 
         String resourceResponseUrl;
-        {
+        { // DBS on primary domain forwards to second domain when trying to access a file URL
             webClient.setRedirectEnabled(true);
             Page page = webClient.goTo("userContent/readme.txt", "text/plain");
             resourceResponseUrl = page.getUrl().toString();
@@ -70,7 +72,9 @@ public class ResourceDomainTest {
             webClient.setThrowExceptionOnFailingStatusCode(false);
             Page page = webClient.getPage(resourceResponseUrl.replace("readme.txt", ""));
             Assert.assertEquals("directory listing response", 200, page.getWebResponse().getStatusCode());
-            Assert.assertTrue("directory listing shown", page.getWebResponse().getContentAsString().contains("readme.txt"));
+            String responseContent = page.getWebResponse().getContentAsString();
+            Assert.assertTrue("directory listing shown", responseContent.contains("readme.txt"));
+            Assert.assertTrue("is HTML", responseContent.contains("href="));
         }
 
         String resourceRootUrl = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class).getUrl();
@@ -86,11 +90,12 @@ public class ResourceDomainTest {
             Assert.assertEquals("resource action index page response is 404", 404, page.getWebResponse().getStatusCode());
         }
 
-        { // second domain non-existent DBS redirects to root page -- TODO also not sure how useful this behavior is, as nothing indicates "this is probably expired"
+        { // second domain invalid URL gets 404
             webClient.setThrowExceptionOnFailingStatusCode(false);
-            webClient.setRedirectEnabled(true);
-            Page page = webClient.getPage(resourceRootUrl + "static-files/" + UUID.randomUUID().toString());
+            String uuid = UUID.randomUUID().toString();
+            Page page = webClient.getPage(resourceRootUrl + "static-files/" + uuid);
             Assert.assertEquals("resource response is 404", 404, page.getWebResponse().getStatusCode());
+            Assert.assertTrue("response URL is still the same", page.getUrl().toString().contains(uuid));
         }
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -138,6 +143,45 @@ public class ResourceDomainTest {
 
     }
 
-    // TODO test handling of permissions issue and other exceptions (404 not found?) when trying to route the internal request
-    // TODO Test with DBS with and without directory index file
+    @Test
+    public void secondDomainCannotBeFaked() throws Exception {
+        JenkinsRule.WebClient webClient = j.createWebClient();
+
+        String resourceResponseUrl;
+        { // first, obtain a resource response URL
+            webClient.setRedirectEnabled(true);
+            webClient.setThrowExceptionOnFailingStatusCode(false);
+            Page page = webClient.goTo("userContent/readme.txt", "text/plain");
+            resourceResponseUrl = page.getUrl().toString();
+            Assert.assertEquals("resource response success", 200, page.getWebResponse().getStatusCode());
+            Assert.assertNull("no CSP headers", page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
+            Assert.assertTrue("Served from resource domain", resourceResponseUrl.contains(RESOURCE_DOMAIN));
+            Assert.assertTrue("Served from resource action", resourceResponseUrl.contains("static-files"));
+        }
+
+        {
+            // now, modify its prefix to have an invalid HMAC
+            String modifiedUrl = resourceResponseUrl.replaceAll("static[-]files[/]....", "static-files/aaaa");
+            Page page = webClient.getPage(modifiedUrl);
+            Assert.assertEquals("resource not found", 404, page.getWebResponse().getStatusCode());
+            Assert.assertEquals("resource not found", ResourceDomainFilter.ERROR_RESPONSE, page.getWebResponse().getStatusMessage());
+        }
+
+
+    }
+
+//    @Test
+    public void missingPermissionsCause403() throws Exception {
+        // TODO test handling of permissions issue when trying to route the internal request
+    }
+
+//    @Test
+    public void projectWasRenamedCauses404() throws Exception {
+        // TODO test handling of other exceptions (404 not found?) when trying to route the internal request
+    }
+
+//    @Test
+    public void indexFileIsUsedIfDefined() throws Exception {
+        // TODO Test with DBS with and without directory index file
+    }
 }
