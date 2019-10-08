@@ -71,7 +71,7 @@ ${h.initPageVariables(context)}
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
 
-<j:if test="${h.useUserTimeZone()}">
+<j:if test="${h.isUserTimeZoneOverride()}">
   <i:setTimeZone value="${h.getUserTimeZone()}" />
 </j:if>
 <j:if test="${attrs.type==null}">
