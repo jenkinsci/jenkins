@@ -198,7 +198,19 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             }
 
             try (ACLContext ignored = ACL.as(auth)) {
-                Stapler.getCurrent().invoke(req, rsp, requestRoot, requestUrlSuffix + restOfPath);
+                try {
+                    Stapler.getCurrent().invoke(req, rsp, requestRoot, requestUrlSuffix + restOfPath);
+                } catch (Exception ex) {
+                    // cf. UnwrapSecurityExceptionFilter
+                    Throwable cause = ex.getCause();
+                    while (cause != null) {
+                        if (cause instanceof AccessDeniedException) {
+                            throw (AccessDeniedException) cause;
+                        }
+                        cause = cause.getCause();
+                    }
+                    throw ex;
+                }
                 /*
                 While we could just redirect below to the real URL like we do for expired resource URLs, the question
                 is whether we'd end up in a redirect loop if the exception is specific to this mode (and the "normal"
@@ -209,7 +221,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 rsp.sendError(403, "Failed permission check: " + ade.getMessage());
             } catch (Exception e) {
                 LOGGER.log(Level.INFO, "Something else failed for resource URL access", e);
-                rsp.sendError(404, "Failed: " + e.getMessage());
+                rsp.sendError(404);
             }
         }
 

@@ -1,13 +1,17 @@
 package jenkins.security;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.CreateFileBuilder;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -170,18 +174,97 @@ public class ResourceDomainTest {
 
     }
 
-//    @Test
+    @Test
     public void missingPermissionsCause403() throws Exception {
-        // TODO test handling of permissions issue when trying to route the internal request
+        // setup: A job that creates a file in its workspace
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getBuildersList().add(new CreateFileBuilder("file.html", "<html><body>the content</body></html>"));
+        project.save();
+
+        // setup: Everyone has permission to Jenkins and the job
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ).everywhere().toEveryone();
+        a.grant(Item.READ, Item.WORKSPACE).onItems(project).toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
+
+        j.buildAndAssertSuccess(project);
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.setThrowExceptionOnFailingStatusCode(false);
+        webClient.setRedirectEnabled(true);
+
+        // basics work
+        HtmlPage page = webClient.getPage(project, "ws/file.html");
+        Assert.assertEquals("page is found", 200, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is as expected", page.getWebResponse().getContentAsString().contains("the content"));
+
+        URL anonUrl = page.getUrl();
+        Assert.assertTrue("page is served by resource domain", anonUrl.toString().contains("/static-files/"));
+
+        // now remove workspace permission from all users
+        a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ).everywhere().toEveryone();
+        a.grant(Item.READ).onItems(project).toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
+
+        // and we get a 403 response
+        page = webClient.getPage(anonUrl);
+        Assert.assertEquals("page is not found", 403, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("Response mentions workspace permission", page.getWebResponse().getStatusMessage().contains("Failed permission check: anonymous is missing the Job/Workspace permission"));
+
+        // now remove Job/Read permission from all users (but grant Discover)
+        a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ).everywhere().toEveryone();
+        a.grant(Item.DISCOVER).onItems(project).toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
+
+        // and we get a 403 response asking to log in (Job/Discover is basically meant to be granted to anonymous only)
+        page = webClient.getPage(anonUrl);
+        Assert.assertEquals("page is not found", 403, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("Response mentions workspace permission", page.getWebResponse().getStatusMessage().contains("Failed permission check: Please login to access job"));
     }
 
-//    @Test
+    @Test
     public void projectWasRenamedCauses404() throws Exception {
-        // TODO test handling of other exceptions (404 not found?) when trying to route the internal request
+        // setup: A job that creates a file in its workspace
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getBuildersList().add(new CreateFileBuilder("file.html", "<html><body>the content</body></html>"));
+        project.save();
+
+        // setup: Everyone has permission to Jenkins and the job
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ, Item.READ, Item.WORKSPACE).everywhere().toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
+
+        j.buildAndAssertSuccess(project);
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.setThrowExceptionOnFailingStatusCode(false);
+        webClient.setRedirectEnabled(true);
+
+        HtmlPage page = webClient.getPage(project, "ws/file.html");
+        Assert.assertEquals("page is found", 200, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is as expected", page.getWebResponse().getContentAsString().contains("the content"));
+
+        URL url = page.getUrl();
+        Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
+
+        project.renameTo("new-job-name"); // or delete, doesn't really matter
+
+        Page failedPage = webClient.getPage(url);
+        Assert.assertEquals("page is not found", 404, failedPage.getWebResponse().getStatusCode());
+        Assert.assertEquals("page is not found", "Not Found", failedPage.getWebResponse().getStatusMessage()); // TODO Is this not done through our exception handler?
     }
 
 //    @Test
     public void indexFileIsUsedIfDefined() throws Exception {
         // TODO Test with DBS with and without directory index file
+    }
+
+//    @Test
+    public void adminMonitorShowsUpWithOverriddenCSP() throws Exception {
+        // TODO test admin monitor
     }
 }
