@@ -65,12 +65,12 @@ public class ResourceDomainTest {
             Assert.assertTrue("Served from resource action", resourceResponseUrl.contains("static-files"));
         }
 
-        { // TODO This test might actually be an undesirable outcome for DBS that set an index file URL, TBD
+        { // show directory index
             webClient.setRedirectEnabled(false);
             webClient.setThrowExceptionOnFailingStatusCode(false);
             Page page = webClient.getPage(resourceResponseUrl.replace("readme.txt", ""));
-            Assert.assertEquals("resource directory response forwarded", 302, page.getWebResponse().getStatusCode());
-            Assert.assertTrue("resource directory response forwarded to userContent index", page.getWebResponse().getResponseHeaderValue("Location").contains("/userContent"));
+            Assert.assertEquals("directory listing response", 200, page.getWebResponse().getStatusCode());
+            Assert.assertTrue("directory listing shown", page.getWebResponse().getContentAsString().contains("readme.txt"));
         }
 
         String resourceRootUrl = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class).getUrl();

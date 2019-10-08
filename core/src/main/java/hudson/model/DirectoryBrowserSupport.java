@@ -302,7 +302,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 req.setAttribute("path", path);
                 req.setAttribute("pattern",rest);
                 req.setAttribute("dir", baseFile);
-                req.getView(this,"dir.jelly").forward(req, rsp);
+                if (ResourceDomainConfiguration.isResourceRequest(req)) {
+                    req.getView(this, "plaindir.jelly").forward(req, rsp);
+                } else {
+                    req.getView(this, "dir.jelly").forward(req, rsp);
+                }
                 return;
             }
 

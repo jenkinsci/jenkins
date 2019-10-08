@@ -184,13 +184,6 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
             String restOfPath = req.getRestOfPath();
 
-            if (restOfPath.isEmpty()) {
-                // Do not go through resource URLs for empty rest-of-path
-                String url = Jenkins.get().getRootUrl() + browserUrl;
-                rsp.sendRedirect(302, url);
-                return;
-            }
-
             AccessControlled requestRoot = Jenkins.get();
             String requestUrlSuffix = this.browserUrl;
 
