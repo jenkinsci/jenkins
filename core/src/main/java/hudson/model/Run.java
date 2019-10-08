@@ -954,13 +954,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */  
     public @Nonnull List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
         RunT r = getPreviousBuild();
-        return getBuildsOverThreshold(r, numberOfBuilds, threshold);
+        return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
 
     /**
      * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}.
      *
-     * @param r the run to search
      * @param numberOfBuilds the desired number of builds
      * @param threshold the build result threshold
      * @return a list with the builds (youngest build first).
@@ -968,9 +967,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *   if not enough builds satisfying the threshold have been found. Never null.
      * @since TODO
      */
-    protected @Nonnull List<RunT> getBuildsOverThreshold(@CheckForNull RunT r, int numberOfBuilds, @Nonnull Result threshold) {
+    protected @Nonnull List<RunT> getBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
         List<RunT> builds = new ArrayList<>(numberOfBuilds);
 
+        RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
             if (!r.isBuilding() &&
                  (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
