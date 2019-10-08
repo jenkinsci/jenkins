@@ -92,9 +92,6 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
     }
 
     private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
-        /*
-        TODO Better handle difference between root URLs, host names, and origins.
-         */
         if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated()) {
             // This is needed to round-trip expired resource URLs through regular URLs to refresh them,
             // so while it's not required in the strictest sense, it is required.
@@ -124,7 +121,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         String resourceRootUrlHost = resourceRootUrl.getHost();
         try {
             String jenkinsRootUrlHost = new URL(JenkinsLocationConfiguration.get().getUrl()).getHost();
-            if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
+            if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) { // TODO this only checks the host, do we care about port differences?
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsJenkinsRoot());
             }
         } catch (Exception ex) {
@@ -141,7 +138,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
             }
         }
 
-        // TODO perform more elaborate permission checks to prevent users from setting a subdomain?
+        // TODO We could perform more elaborate permission checks to prevent users from setting a subdomain (not great wrt cookies?)
 
         if (!allowOnlineIdentityCheck) {
             return FormValidation.ok();
