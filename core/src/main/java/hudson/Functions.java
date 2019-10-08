@@ -681,7 +681,7 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static String getUserTimeZonePostfix() {
-        if (!useUserTimeZone()) {
+        if (!isUserTimeZoneOverride()) {
             return "";
         }
 
