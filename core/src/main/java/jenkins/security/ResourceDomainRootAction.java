@@ -191,9 +191,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             AccessControlled requestRoot = Jenkins.get();
             String requestUrlSuffix = this.browserUrl;
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Performing a request as authentication: " + authenticationName + " to object: " + requestRoot + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
-            }
+            LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " to object: " + requestRoot + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
             Authentication auth = Jenkins.ANONYMOUS;
             if (authenticationName != null) {
