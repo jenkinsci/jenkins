@@ -668,15 +668,18 @@ public class Functions {
     	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
     }
 
-    public static boolean useUserTimeZone() {
+    @Restricted(NoExternalUse.class)
+    public static boolean isUserTimeZoneOverride() {
         return TimeZoneProperty.forCurrentUser() != null;
     }
 
     @Nullable
+    @Restricted(NoExternalUse.class)
     public static String getUserTimeZone() {
         return TimeZoneProperty.forCurrentUser();
     }
 
+    @Restricted(NoExternalUse.class)
     public static String getUserTimeZonePostfix() {
         if (!useUserTimeZone()) {
             return "";
