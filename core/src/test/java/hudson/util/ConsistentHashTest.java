@@ -66,7 +66,7 @@ public class ConsistentHashTest {
         assertEquals(z,x);
         all.add(itr.next());
         all.add(itr.next());
-        assertTrue(!itr.hasNext());
+        assertFalse(itr.hasNext());
         assertEquals(3,all.size());
     }
 

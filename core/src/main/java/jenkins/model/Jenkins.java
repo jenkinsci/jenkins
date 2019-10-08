@@ -2096,6 +2096,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
      * represents the master.
      */
+    @Nonnull
     public List<Node> getNodes() {
         return nodes.getNodes();
     }
