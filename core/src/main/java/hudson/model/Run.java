@@ -968,7 +968,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *   if not enough builds satisfying the threshold have been found. Never null.
      * @since TODO
      */
-    protected @Nonnull List<RunT> getBuildsOverThreshold(RunT r, int numberOfBuilds, @Nonnull Result threshold) {
+    protected @Nonnull List<RunT> getBuildsOverThreshold(@CheckForNull RunT r, int numberOfBuilds, @Nonnull Result threshold) {
         List<RunT> builds = new ArrayList<>(numberOfBuilds);
 
         while (r != null && builds.size() < numberOfBuilds) {
