@@ -44,10 +44,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.time.Instant.*;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * Root action serving {@link DirectoryBrowserSupport} instances
@@ -105,10 +108,9 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         String authenticationName = token.username;
         String browserUrl = token.path;
 
-        long creationDate = token.timestamp;
-        long age = new Date().getTime() - creationDate;
 
-        if (age >= 0 && age < TimeUnit.MINUTES.toMillis(VALID_FOR_MINUTES)) {
+        Instant creationDate = ofEpochMilli(token.timestamp);
+        if (creationDate.plus(VALID_FOR_MINUTES, MINUTES).isAfter(now()) && creationDate.isBefore(now())) {
             return new InternalResourceRequest(browserUrl, authenticationName);
         }
 
