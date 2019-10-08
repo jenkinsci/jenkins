@@ -212,8 +212,8 @@ public class ApiTokenProperty extends UserProperty {
         return checkPermission(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
     }
 
-    private static boolean checkPermission(boolean showLegacyTokenToAdmins, User user) {
-        if (showLegacyTokenToAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+    private static boolean checkPermission(boolean trustAdmins, User user) {
+        if (trustAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
 
