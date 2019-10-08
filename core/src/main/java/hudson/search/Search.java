@@ -29,8 +29,6 @@ import hudson.Util;
 import hudson.util.EditDistance;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,10 +66,6 @@ import org.kohsuke.stapler.export.Flavor;
  * @see SearchableModelObject
  */
 public class Search implements StaplerProxy {
-    @Restricted(NoExternalUse.class) // used from stapler views only
-    public static String encodeQuery(String query) throws UnsupportedEncodingException {
-        return URLEncoder.encode(query, "UTF-8");
-    }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
