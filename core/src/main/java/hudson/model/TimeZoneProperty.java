@@ -16,9 +16,8 @@ import java.util.logging.Level;
 
 /**
  * A UserProperty that allows a user to specify a time zone for displaying time.
- *
- * @author Nathan Grubb
  */
+@Restricted
 public class TimeZoneProperty extends UserProperty implements Saveable {
     /**
      * Time Zone ID defined by the user.
