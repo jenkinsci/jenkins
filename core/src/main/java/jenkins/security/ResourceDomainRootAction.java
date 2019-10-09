@@ -272,6 +272,6 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
     private static HMACConfidentialKey KEY = new HMACConfidentialKey(ResourceDomainRootAction.class, "key");
 
-    @Restricted(NoExternalUse.class)
+    // Not @Restricted because the entire class is
     public static /* not final for Groovy */ int VALID_FOR_MINUTES = SystemProperties.getInteger(ResourceDomainRootAction.class.getName() + ".validForMinutes", 30);
 }
