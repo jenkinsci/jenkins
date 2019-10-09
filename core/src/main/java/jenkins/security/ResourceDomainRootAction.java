@@ -35,6 +35,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -208,7 +209,14 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             if (authenticationName != null) {
                 User user = User.getById(authenticationName, false);
                 if (user != null) {
-                    auth = user.impersonate();
+                    try {
+                        auth = user.impersonate();
+                        LOGGER.fine(() -> "Successfully impersonated " + authenticationName);
+                    } catch (UsernameNotFoundException ex) {
+                        LOGGER.log(Level.FINE, "Failed to impersonate " + authenticationName, ex);
+                        rsp.sendError(403, "No such user: " + authenticationName);
+                        return;
+                    }
                 }
             }
 
@@ -232,10 +240,15 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 URLs redirect to resource URLs). That seems even worse than an error here.
                  */
             } catch (AccessDeniedException ade) {
-                LOGGER.log(Level.INFO, "Failed permission check for resource URL access", ade);
+                /* This is expected to be fairly common, as permission issues are thrown up as exceptions */
+                LOGGER.log(Level.FINE, "Failed permission check for resource URL access", ade);
                 rsp.sendError(403, "Failed permission check: " + ade.getMessage());
             } catch (Exception e) {
-                LOGGER.log(Level.INFO, "Something else failed for resource URL access", e);
+                /*
+                This should be fairly uncommon -- it's basically the 'rage' butler response. Notably, lack of access
+                to a job (permissions/deleted/renamed/...) would not throw an exception, but just sends a 404 response.
+                 */
+                LOGGER.log(Level.FINE, "Something else failed for resource URL access", e);
                 rsp.sendError(404);
             }
         }
