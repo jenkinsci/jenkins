@@ -33,7 +33,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.UrlHelper;
-import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -85,7 +84,8 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
     }
 
     private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
-        if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated()) {
+        String jenkinsRootUrlString = JenkinsLocationConfiguration.get().getUrl();
+        if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated() || jenkinsRootUrlString == null) {
             // This is needed to round-trip expired resource URLs through regular URLs to refresh them,
             // so while it's not required in the strictest sense, it is required.
             return FormValidation.warning(Messages.ResourceDomainConfiguration_NeedsRootURL());
@@ -113,8 +113,12 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
         try {
-            String jenkinsRootUrlHost = new URL(JenkinsLocationConfiguration.get().getUrl()).getHost();
-            if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) { // TODO this only checks the host, do we care about port differences?
+            String jenkinsRootUrlHost = new URL(jenkinsRootUrlString).getHost();
+            if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
+                // We do not allow the same host for Jenkins and resource root URLs even if there's some other difference.
+                // This is a conservative choice and prohibits same host/different proto/different port/different path:
+                // - Different path still counts as the same origin for same-origin policy
+                // - Cookies are shared across ports, and non-Secure cookies get sent to HTTPS sites
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsJenkinsRoot());
             }
         } catch (Exception ex) {
@@ -130,8 +134,6 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsCurrent());
             }
         }
-
-        // TODO We could perform more elaborate permission checks to prevent users from setting a subdomain (not great wrt cookies?)
 
         if (!allowOnlineIdentityCheck) {
             return FormValidation.ok();
@@ -246,10 +248,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         }
 
         // effectively not configured when the location configuration is empty
-        if (Util.nullify(JenkinsLocationConfiguration.get().getUrl()) == null) {
-            return false;
-        }
-        return true;
+        return Util.nullify(JenkinsLocationConfiguration.get().getUrl()) != null;
     }
 
     public static ResourceDomainConfiguration get() {

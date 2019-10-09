@@ -31,7 +31,6 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.AccessControlled;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
@@ -129,7 +128,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     private static class Redirection {
         private final String url;
 
-        public Redirection(String url) {
+        private Redirection(String url) {
             this.url = url;
         }
 
@@ -141,7 +140,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
     }
 
-    public String getRedirectUrl(Token token, String restOfPath) {
+    public String getRedirectUrl(@Nonnull Token token, @Nonnull String restOfPath) {
         String resourceRootUrl = getResourceRootUrl();
         if (!restOfPath.startsWith("/")) {
             // Unsure whether this can happen -- just be safe here
@@ -154,20 +153,34 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         return ResourceDomainConfiguration.get().getUrl();
     }
 
+    /**
+     * Called from {@link DirectoryBrowserSupport#generateResponse(StaplerRequest, StaplerResponse, Object)} to obtain
+     * a token to use when rendering a response.
+     *
+     * @param dbs the {@link DirectoryBrowserSupport} instance requesting the token
+     * @param req the current request
+     * @return a token that can be used to redirect users to the {@link ResourceDomainRootAction}.
+     */
     @CheckForNull
-    public Token getToken(DirectoryBrowserSupport dbs, StaplerRequest req) {
-        String dbsFile = req.getRestOfPath();
+    public Token getToken(@Nonnull DirectoryBrowserSupport dbs, @Nonnull StaplerRequest req) {
+        // This is the "restOfPath" of the DirectoryBrowserSupport, i.e. the directory/file/pattern "inside" the DBS.
+        final String dbsFile = req.getRestOfPath();
 
-        String completeUrl = req.getAncestors().get(0).getRestOfUrl();
-        completeUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
+        // Now get the 'restOfUrl' after the top-level ancestor (which is the Jenkins singleton).
+        // In other words, this is the complete URL after Jenkins handled the top-level request.
+        final String completeUrl = req.getAncestors().get(0).getRestOfUrl();
+
+        // And finally, remove the 'restOfPath' suffix from the complete URL, as that's the path from Jenkins to the DBS.
+        String dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
+        LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
         Authentication authentication = Jenkins.getAuthentication();
         String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();
 
         try {
-            return new Token(completeUrl, authenticationName, Instant.now());
+            return new Token(dbsUrl, authenticationName, Instant.now());
         } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + completeUrl + " user: " + authenticationName, ex);
+            LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + dbsUrl + " user: " + authenticationName, ex);
         }
         return null;
     }
@@ -187,10 +200,9 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
             String restOfPath = req.getRestOfPath();
 
-            AccessControlled requestRoot = Jenkins.get();
             String requestUrlSuffix = this.browserUrl;
 
-            LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " to object: " + requestRoot + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
+            LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
             Authentication auth = Jenkins.ANONYMOUS;
             if (authenticationName != null) {
@@ -202,7 +214,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             try (ACLContext ignored = ACL.as(auth)) {
                 try {
-                    Stapler.getCurrent().invoke(req, rsp, requestRoot, requestUrlSuffix + restOfPath);
+                    Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), requestUrlSuffix + restOfPath);
                 } catch (Exception ex) {
                     // cf. UnwrapSecurityExceptionFilter
                     Throwable cause = ex.getCause();

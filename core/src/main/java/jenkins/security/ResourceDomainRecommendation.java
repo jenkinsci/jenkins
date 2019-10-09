@@ -67,6 +67,9 @@ public class ResourceDomainRecommendation extends AdministrativeMonitor {
             disable(true);
             return HttpResponses.redirectViaContextPath("manage");
         }
-        return HttpResponses.redirectViaContextPath("configure");
+        if (redirect != null) {
+            return HttpResponses.redirectViaContextPath("configure");
+        }
+        return HttpResponses.forwardToPreviousPage();
     }
 }
