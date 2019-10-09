@@ -243,16 +243,17 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         private String encode() {
             String value = username + ":" + timestamp + ":" + path;
-            byte[] byteValue = ArrayUtils.addAll(Util.fromHexString(KEY.mac(value)), value.getBytes(StandardCharsets.UTF_8));
+            byte[] byteValue = ArrayUtils.addAll(KEY.mac(value.getBytes(StandardCharsets.UTF_8)), value.getBytes(StandardCharsets.UTF_8));
             return Base64.encodeBase64URLSafeString(byteValue);
         }
 
         private static Token decode(String value) {
             byte[] byteValue = Base64.decodeBase64(value);
             try {
-                String mac = Util.toHexString(Arrays.copyOf(byteValue, 32));
-                String rest = new String(Arrays.copyOfRange(byteValue, 32, byteValue.length), StandardCharsets.UTF_8);
-                if (!KEY.checkMac(rest, mac)) {
+                byte[] mac = Arrays.copyOf(byteValue, 32);
+                byte[] restBytes = Arrays.copyOfRange(byteValue, 32, byteValue.length);
+                String rest = new String(restBytes, StandardCharsets.UTF_8);
+                if (!KEY.checkMac(restBytes, mac)) {
                     throw new IllegalArgumentException("Failed mac check for " + rest);
                 }
 
