@@ -5256,12 +5256,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
+    /**
+     * Grants ability to configure any and all aspects of the Jenkins instance
+     */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     @Deprecated
+    /** @deprecated as of TODO use {@link Jenkins#ADMINISTER} */
     @Restricted(NoExternalUse.class)
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
+    /**
+     * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
+     * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission
+     */
     public static final Permission CONFIGURE_JENKINS = new Permission(PERMISSIONS, "ConfigureJenkins", Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
 
     /**
