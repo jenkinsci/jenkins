@@ -3,6 +3,7 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
+import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import jenkins.model.Jenkins;
@@ -263,8 +264,18 @@ public class ResourceDomainTest {
         // TODO Test with DBS with and without directory index file
     }
 
-//    @Test
+    @Test
     public void adminMonitorShowsUpWithOverriddenCSP() throws Exception {
-        // TODO test admin monitor
+        ResourceDomainRecommendation monitor = ExtensionList.lookupSingleton(ResourceDomainRecommendation.class);
+        Assert.assertFalse(monitor.isActivated());
+        System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", "");
+        try {
+            Assert.assertFalse(monitor.isActivated());
+            ResourceDomainConfiguration.get().setUrl(null);
+            Assert.assertTrue(monitor.isActivated());
+        } finally {
+            System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
+        }
+        Assert.assertFalse(monitor.isActivated());
     }
 }
