@@ -836,7 +836,7 @@ public class Executor extends Thread implements ModelObject {
     @RequirePOST
     @Deprecated
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        (req != null ? doStopBuild(req.getParameter("runExtId")) : doStop()).generateResponse(req,rsp,this);
+        doStop().generateResponse(req,rsp,this);
     }
 
     /**
