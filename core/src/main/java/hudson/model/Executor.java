@@ -859,7 +859,7 @@ public class Executor extends Thread implements ModelObject {
      * @param runExtId
      *      if not null, the externalizable id ({@link Run#getExternalizableId()})
      *      of the build the user expects to interrupt
-     * @since 2.???
+     * @since TODO
      */
     @RequirePOST
     public HttpResponse doStopBuild(@CheckForNull @QueryParameter(fixEmpty = true) String runExtId) {
