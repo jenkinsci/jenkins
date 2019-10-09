@@ -36,3 +36,8 @@ Behaviour.specify('.hidden-password', 'hidden-password-button', 0, function (e) 
         Event.fire(window, 'jenkins:bottom-sticker-adjust');
     };
 });
+
+Behaviour.specify('.hidden-for-noscript', 'hidden-for-noscript', 0, function (e) {
+    console.info('Element', e, 'set visible');
+    e.classList.remove('hidden-for-noscript');
+});
