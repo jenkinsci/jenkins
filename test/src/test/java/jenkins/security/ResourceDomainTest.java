@@ -34,6 +34,7 @@ public class ResourceDomainTest {
     public void prepare() throws Exception {
         String resourceRoot;
         URL root = j.getURL(); // which always will use "localhost", see JenkinsRule#getURL()
+        Assert.assertTrue(root.toString().contains("localhost")); // to be safe
 
         resourceRoot = root.toString().replace("localhost", RESOURCE_DOMAIN);
         ResourceDomainConfiguration configuration = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class);
@@ -82,7 +83,7 @@ public class ResourceDomainTest {
             Assert.assertTrue("is HTML", responseContent.contains("href="));
         }
 
-        String resourceRootUrl = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class).getUrl();
+        String resourceRootUrl = ResourceDomainConfiguration.get().getUrl();
         {
             webClient.setThrowExceptionOnFailingStatusCode(false);
             Page page = webClient.getPage(resourceRootUrl);

@@ -24,6 +24,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.UnprotectedRootAction;
@@ -35,7 +36,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,6 +70,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainRootAction.class.getName());
 
+    public static final String URL = "static-files";
+
     @CheckForNull
     @Override
     public String getIconFileName() {
@@ -85,14 +87,18 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     @CheckForNull
     @Override
     public String getUrlName() {
-        return "static-files";
+        return URL;
+    }
+
+    public static ResourceDomainRootAction get() {
+        return ExtensionList.lookupSingleton(ResourceDomainRootAction.class);
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (!ResourceDomainConfiguration.isResourceRequest(req)) {
-            rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
-        } else {
+        if (ResourceDomainConfiguration.isResourceRequest(req)) {
             rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
+        } else {
+            rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
         }
     }
 
@@ -112,8 +118,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         String browserUrl = token.path;
 
 
-        Instant creationDate = ofEpochMilli(token.timestamp);
-        if (creationDate.plus(VALID_FOR_MINUTES, MINUTES).isAfter(now()) && creationDate.isBefore(now())) {
+        if (token.timestamp.plus(VALID_FOR_MINUTES, MINUTES).isAfter(now()) && token.timestamp.isBefore(now())) {
             return new InternalResourceRequest(browserUrl, authenticationName);
         }
 
@@ -138,9 +143,6 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
     public String getRedirectUrl(Token token, String restOfPath) {
         String resourceRootUrl = getResourceRootUrl();
-        if (!resourceRootUrl.endsWith("/")) {
-            resourceRootUrl += "/";
-        }
         if (!restOfPath.startsWith("/")) {
             // Unsure whether this can happen -- just be safe here
             restOfPath = "/" + restOfPath;
@@ -152,6 +154,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         return ResourceDomainConfiguration.get().getUrl();
     }
 
+    @CheckForNull
     public Token getToken(DirectoryBrowserSupport dbs, StaplerRequest req) {
         String dbsFile = req.getRestOfPath();
 
@@ -162,7 +165,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();
 
         try {
-            return new Token(completeUrl, authenticationName, new Date().getTime());
+            return new Token(completeUrl, authenticationName, Instant.now());
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Failed to encode token for URL: " + completeUrl + " user: " + authenticationName, ex);
         }
@@ -234,21 +237,21 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     public static class Token {
         private String path;
         private String username;
-        private long timestamp;
-        private Token (String path, @Nullable String username, long timestamp) {
+        private Instant timestamp;
+        private Token (String path, @Nullable String username, Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;
         }
 
         private String encode() {
-            String value = username + ":" + timestamp + ":" + path;
+            String value = username + ":" + timestamp.toEpochMilli() + ":" + path;
             byte[] byteValue = ArrayUtils.addAll(KEY.mac(value.getBytes(StandardCharsets.UTF_8)), value.getBytes(StandardCharsets.UTF_8));
-            return Base64.encodeBase64URLSafeString(byteValue);
+            return Base64.getUrlEncoder().encodeToString(byteValue);
         }
 
         private static Token decode(String value) {
-            byte[] byteValue = Base64.decodeBase64(value);
+            byte[] byteValue = Base64.getUrlDecoder().decode(value);
             try {
                 byte[] mac = Arrays.copyOf(byteValue, 32);
                 byte[] restBytes = Arrays.copyOfRange(byteValue, 32, byteValue.length);
@@ -261,7 +264,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 String authenticationName = Util.fixEmpty(splits[0]);
                 String epoch = splits[1];
                 String browserUrl = splits[2];
-                return new Token(browserUrl, authenticationName, Long.parseLong(epoch));
+                return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
             } catch (Exception ex) {
                 // Choose log level that hides people messing with the URLs
                 LOGGER.log(Level.FINE, "Failure decoding", ex);

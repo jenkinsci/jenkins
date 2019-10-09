@@ -77,13 +77,6 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         load();
     }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        save();
-        return true;
-    }
-
     @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -177,8 +170,10 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid()); // unlikely to ever be hit
         } catch (MalformedURLException ex) {
             // Not expected to be hit
+            LOGGER.log(Level.FINE, "MalformedURLException occurred during instance identity check for " + resourceRootUrlString, ex);
             return FormValidation.error(Messages.ResourceDomainConfiguration_Exception(ex.getMessage()));
         } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "IOException occurred during instance identity check for " + resourceRootUrlString, ex);
             return FormValidation.warning(Messages.ResourceDomainConfiguration_IOException(ex.getMessage()));
         }
     }
@@ -189,8 +184,13 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
 
     public void setUrl(String url) {
         if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
-            // only accept valid configurations, both with and without URL
-            this.url = Util.fixEmpty(url);
+            // only accept valid configurations, both with and without URL, but allow for networking issues
+            url = Util.fixEmpty(url);
+            if (url != null && !url.endsWith("/")) {
+                url += "/";
+            }
+            this.url = url;
+            save();
         }
     }
 

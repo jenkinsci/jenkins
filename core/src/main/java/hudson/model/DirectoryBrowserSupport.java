@@ -91,6 +91,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private final boolean serveDirIndex;
     private String indexFileName = "index.html";
 
+    @Restricted(NoExternalUse.class)
+    public static final String CSP_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".CSP";
+
     /**
      * Keeps track of whether this has been registered from use via {@link ResourceDomainRootAction}.
      */
@@ -146,7 +149,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         if (!ResourceDomainConfiguration.isResourceRequest(req) && ResourceDomainConfiguration.isResourceDomainConfigured()) {
-            resourceToken = ExtensionList.lookupSingleton(ResourceDomainRootAction.class).getToken(this, req);
+            resourceToken = ResourceDomainRootAction.get().getToken(this, req);
         }
 
         try {
@@ -355,13 +358,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             // pseudo file name to let the Stapler set text/plain
             rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
         } else {
-            if (shouldRedirectToResourceDomain(req)) {
+            if (resourceToken != null) {
                 // redirect to second domain
-                rsp.sendRedirect(302, ExtensionList.lookupSingleton(ResourceDomainRootAction.class).getRedirectUrl(resourceToken, req.getRestOfPath()));
+                rsp.sendRedirect(302, ResourceDomainRootAction.get().getRedirectUrl(resourceToken, req.getRestOfPath()));
             } else {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
                     // if we're serving this from the main domain, set CSP headers
-                    String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DEFAULT_CSP_VALUE);
+                    String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
                     if (!csp.trim().equals("")) {
                         // allow users to prevent sending this header by setting empty system property
                         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
@@ -372,12 +375,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
             }
         }
-    }
-
-    private boolean shouldRedirectToResourceDomain(StaplerRequest req) {
-        boolean isResourceDomainRequest = ResourceDomainConfiguration.isResourceRequest(req);
-        boolean hasConfiguredResourceDomain = ResourceDomainConfiguration.isResourceDomainConfigured();
-        return resourceToken != null && !isResourceDomainRequest && hasConfiguredResourceDomain;
     }
 
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){

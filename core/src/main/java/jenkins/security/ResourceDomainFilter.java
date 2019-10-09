@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
 import org.kohsuke.accmod.Restricted;
@@ -48,10 +49,10 @@ public class ResourceDomainFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
-    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/static-files", "/favicon.ico", "/robots.txt"));
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/robots.txt"));
     public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
-    @Initializer
+    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
     public static void init() throws ServletException {
         PluginServletFilter.addFilter(new ResourceDomainFilter());
     }
@@ -64,7 +65,7 @@ public class ResourceDomainFilter implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse)servletResponse;
             if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
                 String path = httpServletRequest.getPathInfo();
-                if (!path.startsWith("/static-files/") && !ALLOWED_PATHS.contains(path)) {
+                if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path)) {
                     LOGGER.fine(() -> "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
                     httpServletResponse.sendError(404, ERROR_RESPONSE);
                     return;

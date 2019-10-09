@@ -38,7 +38,7 @@ import java.io.IOException;
 
 /**
  * Recommend use of {@link ResourceDomainConfiguration} to users with the system property
- * <code>hudson.model.DirectoryBrowserSupport.CSP</code> set to override
+ * {@code hudson.model.DirectoryBrowserSupport.CSP} set to override
  * {@link DirectoryBrowserSupport#DEFAULT_CSP_VALUE}.
  *
  * @see ResourceDomainConfiguration
@@ -57,7 +57,7 @@ public class ResourceDomainRecommendation extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         boolean isResourceRootUrlSet = ResourceDomainConfiguration.isResourceDomainConfigured();
-        boolean isOverriddenCSP = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP") != null;
+        boolean isOverriddenCSP = SystemProperties.getString(DirectoryBrowserSupport.CSP_PROPERTY_NAME) != null;
         return isOverriddenCSP && !isResourceRootUrlSet;
     }
 
