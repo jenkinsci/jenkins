@@ -3907,7 +3907,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block,
                                     @QueryParameter int timeout,
-                                    @QueryParameter @Nullable String reason) throws InterruptedException, IOException {
+                                    @QueryParameter @CheckForNull String reason) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(MANAGE);
             isQuietingDown = true;
