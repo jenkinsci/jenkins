@@ -457,7 +457,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static Jenkins theInstance;
 
     private transient volatile boolean isQuietingDown;
-    @Nullable
+    @CheckForNull
     private transient volatile String quietingReason;
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
