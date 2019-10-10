@@ -19,7 +19,8 @@ public class JenkinsJVMTest {
         JenkinsJVM.setJenkinsJVM(true);
         try {
             JenkinsJVM.checkNotJenkinsJVM();
-        } finally {
+        } 
+        finally {
             JenkinsJVM.setJenkinsJVM(false);
         }
     }
@@ -29,7 +30,8 @@ public class JenkinsJVMTest {
         JenkinsJVM.setJenkinsJVM(true);
         try {
             JenkinsJVM.checkJenkinsJVM();
-        } finally {
+        } 
+        finally {
             JenkinsJVM.setJenkinsJVM(false);
         }
     }
