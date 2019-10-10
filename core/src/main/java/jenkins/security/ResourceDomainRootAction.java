@@ -271,7 +271,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         private String encode() {
             String value = username + ":" + timestamp.toEpochMilli() + ":" + path;
-            byte[] byteValue = ArrayUtils.addAll(KEY.mac(value.getBytes(StandardCharsets.UTF_8)), value.getBytes(StandardCharsets.UTF_8));
+            byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
+            byte[] byteValue = ArrayUtils.addAll(KEY.mac(valueBytes), valueBytes);
             return Base64.getUrlEncoder().encodeToString(byteValue);
         }
 
