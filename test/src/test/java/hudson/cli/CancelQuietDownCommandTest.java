@@ -94,13 +94,13 @@ public class CancelQuietDownCommandTest {
         final String testReason = "reason";
         j.jenkins.getActiveInstance().doQuietDown(false, 0, testReason);
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
-        assertThat(j.jenkins.getQuietingReason(), equalTo(testReason));
+        assertThat(j.jenkins.getQuietDownReason(), equalTo(testReason));
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
         assertThat(result, succeededSilently());
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-        assertThat(j.jenkins.getQuietingReason(), nullValue());
+        assertThat(j.jenkins.getQuietDownReason(), nullValue());
     }
 
     //

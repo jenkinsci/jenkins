@@ -458,7 +458,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient volatile boolean isQuietingDown;
     @CheckForNull
-    private transient volatile String quietingReason;
+    private transient volatile String quietDownReason;
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
@@ -2810,10 +2810,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return isQuietingDown;
     }
 
+    /**
+     * Returns quiet down reason if it was indicated.
+     * @return
+     *      Reason if it was indicated. null otherwise
+     */
     @Exported
-    @Nullable
-    public String getQuietingReason() {
-        return quietingReason;
+    @CheckForNull
+    public String getQuietDownReason() {
+        return quietDownReason;
     }
 
     /**
@@ -3911,7 +3916,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         synchronized (this) {
             checkPermission(MANAGE);
             isQuietingDown = true;
-            quietingReason = reason;
+            quietDownReason = reason;
         }
         if (block) {
             long waitUntil = timeout;
@@ -3932,7 +3937,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(MANAGE);
         isQuietingDown = false;
-        quietingReason = null;
+        quietDownReason = null;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
     }
