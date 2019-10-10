@@ -65,7 +65,7 @@ public class NodeListTest {
 
             // there should only be the 'normal' node
             assertEquals(1,back.size());
-            assertEquals(dummyNode.getClass(),back.get(0).getClass());
+            assertEquals(dummyNode.getClass(), back.get(0).getClass());
         } finally {
             if (!tmp.delete()) {
                 System.out.println("unable to delete File: " + tmp.getName());
