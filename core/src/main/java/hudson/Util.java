@@ -905,10 +905,10 @@ public class Util {
                 }
 
                 byte[] bytes = new String(new int[] { codePoint }, 0, 1).getBytes(StandardCharsets.UTF_8);
-                for(int j=0;j<bytes.length;j++) {
+                for (byte aByte : bytes) {
                     out.append('%');
-                    out.append(toDigit((bytes[j] >> 4) & 0xF));
-                    out.append(toDigit(bytes[j] & 0xF));
+                    out.append(toDigit((aByte >> 4) & 0xF));
+                    out.append(toDigit(aByte & 0xF));
                 }
 
                 if(Character.charCount(codePoint) > 1) {

@@ -35,8 +35,8 @@ import org.junit.Test;
  */
 public class CopyOnWriteMapTest {
     public static final class HashData {
-        CopyOnWriteMap.Hash<String,String> map1 = new CopyOnWriteMap.Hash<String,String>();
-        HashMap<String,String> map2 = new HashMap<String,String>();
+        CopyOnWriteMap.Hash<String,String> map1 = new CopyOnWriteMap.Hash<>();
+        HashMap<String,String> map2 = new HashMap<>();
     }
 
     /**
@@ -71,12 +71,12 @@ public class CopyOnWriteMapTest {
         CopyOnWriteMap.Tree<String,String> map1;
         TreeMap<String,String> map2;
         TreeData() {
-            map1 = new CopyOnWriteMap.Tree<String,String>();
-            map2 = new TreeMap<String,String>();
+            map1 = new CopyOnWriteMap.Tree<>();
+            map2 = new TreeMap<>();
         }
         TreeData(Comparator<String> comparator) {
-            map1 = new CopyOnWriteMap.Tree<String,String>(comparator);
-            map2 = new TreeMap<String,String>(comparator);
+            map1 = new CopyOnWriteMap.Tree<>(comparator);
+            map2 = new TreeMap<>(comparator);
         }
     }
 
@@ -115,8 +115,8 @@ public class CopyOnWriteMapTest {
     }
 
     @Test public void equalsHashCodeToString() throws Exception {
-        Map<String,Integer> m1 = new TreeMap<String,Integer>();
-        Map<String,Integer> m2 = new CopyOnWriteMap.Tree<String,Integer>();
+        Map<String,Integer> m1 = new TreeMap<>();
+        Map<String,Integer> m2 = new CopyOnWriteMap.Tree<>();
         m1.put("foo", 5);
         m1.put("bar", 7);
         m2.put("foo", 5);

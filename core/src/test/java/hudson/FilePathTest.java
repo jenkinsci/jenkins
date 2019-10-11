@@ -132,7 +132,7 @@ public class FilePathTest {
     }
     
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
-        List<Callable<Integer>> r = new ArrayList<Callable<Integer>>();
+        List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
             r.add(new Callable<Integer>() {
                 public Integer call() throws Exception {
@@ -371,36 +371,36 @@ public class FilePathTest {
 
     @Test public void list() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
             expected.add(createFilePath(baseDir, "top", "db", "db.log"));
             expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
             final FilePath[] result = new FilePath(baseDir).list("**");
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             createFilePath(baseDir, "top", "sub", "trace.log");
             expected.add(createFilePath(baseDir, "top", "db", "db.log"));
             createFilePath(baseDir, "top", "db", "trace.log");
             final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithDefaultExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
             expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
             expected.add(createFilePath(baseDir, "top", ".git", "config"));
             // none of the files are included by default (default includes true)
             assertEquals(0, new FilePath(baseDir).list("**", "").length);
             final FilePath[] result = new FilePath(baseDir).list("**", "", false);
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Issue("JENKINS-11073")

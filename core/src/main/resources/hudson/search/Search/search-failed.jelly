@@ -43,13 +43,13 @@ THE SOFTWARE.
           <ol>
             <j:forEach var="i" items="${items}">
               <li id="item_${i.path}">
-                <a href="?q=${it.encodeQuery(i.path)}">${i.path}</a>
+                <a href="?q=${h.urlEncode(i.path)}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>
             <j:if test="${items.hasMoreResults()}">
                 <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):100}"/>
-                <em>result has been truncated, <a href="?q=${it.encodeQuery(q)}&amp;max=${max+100}">see 100 more</a></em>
+                <em>result has been truncated, <a href="?q=${h.urlEncode(q)}&amp;max=${max+100}">see 100 more</a></em>
             </j:if>
         </j:otherwise>
       </j:choose>

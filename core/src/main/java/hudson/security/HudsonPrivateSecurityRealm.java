@@ -552,7 +552,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * All users who can login to the system.
      */
     public List<User> getAllUsers() {
-        List<User> r = new ArrayList<User>();
+        List<User> r = new ArrayList<>();
         for (User u : User.getAll()) {
             if(u.getProperty(Details.class)!=null)
                 r.add(u);
@@ -587,7 +587,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Keys are field names (e.g. {@code password2}), values are the messages.
          */
         // TODO i18n?
-        public HashMap<String, String> errors = new HashMap<String, String>();
+        public HashMap<String, String> errors = new HashMap<>();
 
         public SignupInfo() {
         }
