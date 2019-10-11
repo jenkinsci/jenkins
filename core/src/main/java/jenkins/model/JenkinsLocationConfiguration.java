@@ -36,7 +36,8 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.494
  */
-@Extension @Symbol("location")
+@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL)
+@Symbol("location")
 public class JenkinsLocationConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     /**
@@ -50,6 +51,9 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     public static /* not final */ boolean DISABLE_URL_VALIDATION =
             SystemProperties.getBoolean(JenkinsLocationConfiguration.class.getName() + ".disableUrlValidation");
     
+    @Restricted(NoExternalUse.class)
+    public static final int ORDINAL = 200;
+
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
      */
