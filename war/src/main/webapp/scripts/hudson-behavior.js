@@ -495,7 +495,7 @@ function registerRegexpValidator(e,regexp,message) {
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "";
+            if (!set) this.targetElement.innerHTML = "<div/>";
         } else {
             this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
             set = true;
