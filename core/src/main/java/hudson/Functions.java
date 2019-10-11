@@ -99,6 +99,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -724,6 +726,20 @@ public class Functions {
 
     public static String encode(String s) {
         return Util.encode(s);
+    }
+
+    /**
+     * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
+     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
+     *
+     * @since TODO
+     */
+    public static String urlEncode(String s) {
+        try {
+            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e); // impossible
+        }
     }
 
     public static String escape(String s) {
