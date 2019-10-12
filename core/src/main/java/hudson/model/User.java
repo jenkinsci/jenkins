@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2018, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+ * Copyright (c) 2004-2019, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  * Tom Huybrechts, Vincent Latombe, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
