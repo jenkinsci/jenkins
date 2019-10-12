@@ -3905,6 +3905,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Quiet down Jenkins - preparation for a restart
+     * Presented for compatibility.
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     */
+    public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {
+        try {
+            return doQuietDown(block, timeout, null);
+        } catch (IOException | InterruptedException e) {
+            throw new AssertionError(); // impossible
+        }
+    }
+
+    /**
+     * Quiet down Jenkins - preparation for a restart
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
