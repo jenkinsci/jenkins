@@ -652,7 +652,7 @@ public class Functions {
         try {
             ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
         } catch (Exception e) {
-            LOGGER.log(Level.FINE, "Failed to record auto refresh status in telemetry", e);
+            LOGGER.log(Level.WARNING, "Failed to record auto refresh status in telemetry", e);
         }
     }
 
