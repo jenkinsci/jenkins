@@ -365,6 +365,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Is this plugin labeled deprecated?
      * @return {@code true} when plugin contains deprecated in categories, otherwise {@code false}.
+     * @since TODO
      */
     public boolean isDeprecated() {
         UpdateSite.Plugin info = getInfo();
