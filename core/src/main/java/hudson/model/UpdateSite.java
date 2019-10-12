@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,7 +65,6 @@ import javax.annotation.Nullable;
 
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
-import jenkins.model.DownloadSettings;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
@@ -75,14 +73,12 @@ import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -189,15 +185,6 @@ public class UpdateSite {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
-    /**
-     * This is the endpoint that receives the update center data file from the browser.
-     */
-    @RequirePOST
-    public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        DownloadSettings.checkPostBackAccess();
-        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
-    }
-
     private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
