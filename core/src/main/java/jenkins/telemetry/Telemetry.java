@@ -148,10 +148,11 @@ public abstract class Telemetry implements ExtensionPoint {
      * @since TODO
      */
     public boolean isActivePeriod() {
-        if (getStart().isAfter(LocalDate.now())) {
+        LocalDate now = LocalDate.now();
+        if (getStart().isAfter(now)) {
             return false;
         }
-        if (getEnd().isBefore(LocalDate.now())) {
+        if (getEnd().isBefore(now)) {
             return false;
         }
         return true;
