@@ -34,16 +34,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.Collections;
 
 @Extension
 @Restricted(NoExternalUse.class)
 public class AutoRefresh extends Telemetry {
 
-    private static final Map<Boolean, Set<String>> sessionsBySetting = new ConcurrentSkipListMap<>();
+    private static final Set<String> sessionsWithAutoRefresh = new HashSet<>();
+    private static final Set<String> sessionsWithoutAutoRefresh = new HashSet<>();
 
     @Nonnull
     @Override
@@ -60,30 +59,34 @@ public class AutoRefresh extends Telemetry {
     @Nonnull
     @Override
     public LocalDate getStart() {
-        return LocalDate.of(2019, 2, 10);
+        return LocalDate.of(2019, 10, 20);
     }
 
     @Nonnull
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2019, 5, 31);
+        return LocalDate.of(2019, 12, 31);
     }
 
     @Override
     public JSONObject createContent() {
-        if (sessionsBySetting.size() == 0) {
-            return null;
+        int sessionsWithAutoRefreshCount, sessionsWithoutAutoRefreshCount;
+        synchronized (sessionsWithAutoRefresh) {
+            sessionsWithAutoRefreshCount = sessionsWithAutoRefresh.size();
+            sessionsWithAutoRefresh.clear();
         }
-        Map<Boolean, Set<String>> currentSessions;
-        synchronized (sessionsBySetting) {
-            currentSessions = new TreeMap<>(sessionsBySetting);
-            sessionsBySetting.clear();
+        synchronized (sessionsWithoutAutoRefresh) {
+            sessionsWithoutAutoRefreshCount = sessionsWithoutAutoRefresh.size();
+            sessionsWithoutAutoRefresh.clear();
+        }
+
+        if (sessionsWithAutoRefreshCount == 0 && sessionsWithoutAutoRefreshCount == 0) {
+            return null;
         }
 
         JSONObject payload = new JSONObject();
-        for (Map.Entry<Boolean, Set<String>> entry : currentSessions.entrySet()) {
-            payload.put(entry.getKey().toString(), entry.getValue().size());
-        }
+        payload.put("enabled", sessionsWithAutoRefreshCount);
+        payload.put("disabled", sessionsWithoutAutoRefreshCount);
         return payload;
     }
 
@@ -97,9 +100,14 @@ public class AutoRefresh extends Telemetry {
         HttpSession session = request.getSession(false);
         if (session != null) {
             String sessionId = session.getId();
-            synchronized (sessionsBySetting) {
-                sessionsBySetting.putIfAbsent(enabled, new HashSet<>());
-                sessionsBySetting.get(enabled).add(sessionId);
+            if (enabled) {
+                synchronized (sessionsWithAutoRefresh) {
+                    sessionsWithAutoRefresh.add(sessionId);
+                }
+            } else {
+                synchronized (sessionsWithoutAutoRefresh) {
+                    sessionsWithoutAutoRefresh.add(sessionId);
+                }
             }
         }
     }
