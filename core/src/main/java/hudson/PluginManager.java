@@ -2238,7 +2238,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link AdministrativeMonitor} that checks if there are any plugins that is deprecated.
      */
-    @Extension @Symbol("pluginDeprecation")
+    @Restricted(NoExternalUse.class)
+    @Symbol("pluginDeprecation")
+    @Extension
     public static final class PluginDeprecationMonitor extends AdministrativeMonitor {
 
         @Override
