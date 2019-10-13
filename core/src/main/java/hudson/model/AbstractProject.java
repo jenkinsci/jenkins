@@ -520,9 +520,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return b;
             }
         }
-        R lb = getLastBuild();
-        if(lb!=null)    return lb;
-        return null;
+        return getLastBuild();
     }
 
     /**
