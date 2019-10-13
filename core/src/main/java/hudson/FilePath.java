@@ -2357,7 +2357,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param description a description of the fileset, for logging purposes
      * @param compression compression to use
      * @return the number of files copied
-     * @since TODO
+     * @since 2.196
      */
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description, @Nonnull TarCompression compression) throws IOException, InterruptedException {
         if(this.channel==target.channel) {

@@ -1671,7 +1671,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Display name used for the GUI.
-         * @since TODO
+         * @since 2.189
          */
         public String getDisplayName() {
             return getName();

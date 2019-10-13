@@ -44,7 +44,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * If disabled, the application will no longer check for URL validity in the configuration page.
      * This will lead to an instance vulnerable to SECURITY-1471.
      *
-     * @since TODO
+     * @since 2.176.4 / 2.197
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")

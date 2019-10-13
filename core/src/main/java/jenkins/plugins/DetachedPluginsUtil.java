@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * <p>
  * This code was originally moved from {@link ClassicPluginStrategy}.
  *
- * @since TODO
+ * @since 2.163
  */
 @Restricted(NoExternalUse.class)
 public class DetachedPluginsUtil {

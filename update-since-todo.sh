@@ -25,7 +25,7 @@ do
         echo -e "\tfirst tag was $firstTag"
         echo -e "\tUpdating file in place"
         sedExpr="${line}s/@since TODO/@since ${firstTag//jenkins-/}/"
-        sed -i $sedExpr $file
+        sed -i.bak $sedExpr $file
     else
         echo -e "\tNot updating file, no tag found. Normal if the associated PR/commit is not merged and released yet"
     fi

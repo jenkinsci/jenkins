@@ -277,7 +277,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #getDependents} but excluding optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public @Nonnull Set<String> getMandatoryDependents() {
         Set<String> s = new HashSet<>(dependents);
@@ -312,7 +312,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #hasDependents} but excluding optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public boolean hasMandatoryDependents() {
         if (isBundled) {
@@ -357,7 +357,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #hasDependencies} but omitting optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public boolean hasMandatoryDependencies() {
         return dependencies.stream().anyMatch(d -> !d.optional);
@@ -486,7 +486,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #getDependencies} but omits optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public List<Dependency> getMandatoryDependencies() {
         return dependencies.stream().filter(d -> !d.optional).collect(Collectors.toList());
@@ -600,7 +600,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *
      * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.
      *
-     * @since TODO
+     * @since 2.158
      */
     @Exported
     public @CheckForNull String getMinimumJavaVersion() {
@@ -1002,7 +1002,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Same as {@link DetachedPluginsUtil#isDetachedPlugin}.
-     * @since TODO
+     * @since 2.185
      */
     @Exported
     public boolean isDetached() {
