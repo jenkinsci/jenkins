@@ -262,7 +262,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
         /** known loggers (kept per agent), to avoid GC */
-        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
         private final String name;
         private final Level level;
         SetLevel(String name, Level level) {
@@ -427,8 +427,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * @since 1.519
      */
     public Map<Computer,List<LogRecord>> getSlaveLogRecords() {
-        Map<Computer,List<LogRecord>> result = new TreeMap<Computer,List<LogRecord>>(new Comparator<Computer>() {
+        Map<Computer,List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
             final Collator COLL = Collator.getInstance();
+
             public int compare(Computer c1, Computer c2) {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }
@@ -437,7 +438,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             if (c.getName().length() == 0) {
                 continue; // master
             }
-            List<LogRecord> recs = new ArrayList<LogRecord>();
+            List<LogRecord> recs = new ArrayList<>();
             try {
                 for (LogRecord rec : c.getLogRecords()) {
                     for (Target t : targets) {

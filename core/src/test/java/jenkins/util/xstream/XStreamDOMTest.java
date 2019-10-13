@@ -124,7 +124,7 @@ public class XStreamDOMTest {
     public static class Name_That_Gets_Escaped {}
 
     public static class DomInMap {
-        Map<String,XStreamDOM> values = new HashMap<String, XStreamDOM>();
+        Map<String,XStreamDOM> values = new HashMap<>();
     }
 
     @Test

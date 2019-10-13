@@ -981,7 +981,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
-    public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+    public static final Message<AbstractItem> PRONOUN = new Message<>();
 
     /**
      * Replaceable noun for describing the kind of task that this item represents. Defaults to "Build".
