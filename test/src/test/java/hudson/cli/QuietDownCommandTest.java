@@ -484,7 +484,7 @@ public class QuietDownCommandTest {
     public static final void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> j.jenkins.get().getQueue().isBlockedByShutdown(task));
+                .until(() -> j.jenkins.getQueue().isBlockedByShutdown(task));
     }
 
     /**
@@ -494,6 +494,6 @@ public class QuietDownCommandTest {
     public static final void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> !j.jenkins.get().getQueue().isBlockedByShutdown(task));
+                .until(() -> !j.jenkins.getQueue().isBlockedByShutdown(task));
     }
 }
