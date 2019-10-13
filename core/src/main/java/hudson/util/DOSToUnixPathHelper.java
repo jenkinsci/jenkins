@@ -2,11 +2,13 @@ package hudson.util;
 
 import hudson.EnvVars;
 import hudson.Util;
+import org.kohsuke.accmod.Restricted;
 
 import java.io.File;
 
 import static hudson.Util.fixEmpty;
 
+@Restricted(org.kohsuke.accmod.restrictions.NoExternalUse.class)
 class DOSToUnixPathHelper {
     interface Helper {
         void ok();
