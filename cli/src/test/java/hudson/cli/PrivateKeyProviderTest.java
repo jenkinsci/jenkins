@@ -27,7 +27,15 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyDSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa").getFile());
-        String password = null;
+        assertKeyPairNotNull(file, null);
+    }
+
+    /**
+     * Asserts the keyPair private and public are not null.
+     * @param file the file to load the key from
+     * @param password the password
+     */
+    private void assertKeyPairNotNull(File file, String password) throws IOException, GeneralSecurityException {
         KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
         assertNotNull(keyPair);
         assertNotNull(keyPair.getPrivate());
@@ -41,10 +49,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyDSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("dsa-password").getFile());
         String password = "password";
-        KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
-        assertNotNull(keyPair);
-        assertNotNull(keyPair.getPrivate());
-        assertNotNull(keyPair.getPublic());
+        assertKeyPairNotNull(file, password);
     }
     
     /**
@@ -53,11 +58,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyRSA() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa").getFile());
-        String password = null;
-        KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
-        assertNotNull(keyPair);
-        assertNotNull(keyPair.getPrivate());
-        assertNotNull(keyPair.getPublic());
+        assertKeyPairNotNull(file, null);
     }
 
     /**
@@ -67,10 +68,7 @@ public class PrivateKeyProviderTest {
     public void loadKeyRSAPassword() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("rsa-password").getFile());
         String password = "password";
-        KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
-        assertNotNull(keyPair);
-        assertNotNull(keyPair.getPrivate());
-        assertNotNull(keyPair.getPublic());
+        assertKeyPairNotNull(file, password);
     }
     
     /**
@@ -79,11 +77,7 @@ public class PrivateKeyProviderTest {
     @Test
     public void loadKeyOpenSSH() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh").getFile());
-        String password = null;
-        KeyPair keyPair = PrivateKeyProvider.loadKey(file, password);
-        assertNotNull(keyPair);
-        assertNotNull(keyPair.getPrivate());
-        assertNotNull(keyPair.getPublic());
+        assertKeyPairNotNull(file, null);
     }
     
     /**

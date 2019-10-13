@@ -138,6 +138,6 @@ public class EnvVarsTest {
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
         assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
-        assertEquals(Sets.newHashSet("E", "D"), new HashSet<String>(order.subList(3, order.size())));
+        assertEquals(Sets.newHashSet("E", "D"), new HashSet<>(order.subList(3, order.size())));
     }
 }

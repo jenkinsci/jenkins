@@ -1482,7 +1482,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Tests the internet connectivity.
      */
     public final class ConnectionCheckJob extends UpdateCenterJob {
-        private final Vector<String> statuses= new Vector<String>();
+        private final Vector<String> statuses= new Vector<>();
 
         final Map<String, ConnectionStatus> connectionStates = new ConcurrentHashMap<>();
 
@@ -2423,13 +2423,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             result = 31 * result + plugin.version.hashCode();
             return result;
         }
-    }
-
-    /**
-     * Adds the update center data retriever to HTML.
-     */
-    @Extension
-    public static class PageDecoratorImpl extends PageDecorator {
     }
 
     /**

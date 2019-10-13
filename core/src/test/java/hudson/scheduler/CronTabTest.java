@@ -272,7 +272,7 @@ public class CronTabTest {
 
     @Test public void repeatedHash() throws Exception {
         CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
-        List<Integer> times = new ArrayList<Integer>();
+        List<Integer> times = new ArrayList<>();
         for (int i = 0; i < 60; i++) {
             if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
                 times.add(i);
@@ -306,7 +306,7 @@ public class CronTabTest {
     @Issue("JENKINS-9283")
     @Test public void testTimezone() throws Exception {
         CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
-        List<Integer> times = new ArrayList<Integer>();
+        List<Integer> times = new ArrayList<>();
         for (int i = 0; i < 60; i++) {
             GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             calendar.set(2013, Calendar.APRIL, 3, 11, i, 0);

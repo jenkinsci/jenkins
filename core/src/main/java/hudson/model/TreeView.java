@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  *
@@ -108,7 +109,7 @@ public class TreeView extends View implements ViewGroup {
 //        return jobNames.contains(item.getName());
     }
 
-    @RequirePOST
+    @POST
     public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup) {

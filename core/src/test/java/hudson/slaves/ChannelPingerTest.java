@@ -27,7 +27,7 @@ public class ChannelPingerTest {
 
     @Mock private Channel mockChannel;
 
-    private Map<String, String> savedSystemProperties = new HashMap<String, String>();
+    private Map<String, String> savedSystemProperties = new HashMap<>();
 
     @Before
     public void setUp() throws Exception {

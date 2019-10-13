@@ -134,6 +134,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A particular execution of {@link Job}.
@@ -667,7 +668,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the length-limited description.
      * @return The length-limited description.
-     */   
+     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     */
+    @Deprecated
     public @Nonnull String getTruncatedDescription() {
         final int maxDescrLength = 100;
         if (description == null || description.length() < maxDescrLength) {
@@ -2441,7 +2444,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
-    @RequirePOST
+    @POST
     public @Nonnull HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
         try (BulkChange bc = new BulkChange(this)) {

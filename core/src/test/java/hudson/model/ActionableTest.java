@@ -54,7 +54,7 @@ public class ActionableTest {
     }
 
     static class ActionableOverride extends Actionable {
-        ArrayList<Action> specialActions = new ArrayList<Action>();
+        ArrayList<Action> specialActions = new ArrayList<>();
 
         @Override
         public String getDisplayName() {
