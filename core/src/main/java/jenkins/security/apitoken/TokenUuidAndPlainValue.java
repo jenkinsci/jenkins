@@ -23,6 +23,9 @@
  */
 package jenkins.security.apitoken;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -30,6 +33,7 @@ import javax.annotation.concurrent.Immutable;
  * It should not be stored as is, but just displayed once to the user and then forget about it.
  */
 @Immutable
+@Restricted(NoExternalUse.class)
 public class TokenUuidAndPlainValue {
     /**
      * The token identifier to allow manipulation of the token

@@ -115,8 +115,9 @@ public class SetupWizard extends PageDecorator {
      * - true
      *      A token is generated using random value at startup and the information is put 
      *      in the file "$JENKINS_HOME/secrets/initialAdminApiToken"
-     * @since TODO
+     * @since TODO (for the existence of the sysprop, not the availability to plugin)
      */
+    @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static /* not final */ String ADMIN_INITIAL_API_TOKEN =
             SystemProperties.getString(SetupWizard.class.getName() + ".adminInitialApiToken");
@@ -647,6 +648,7 @@ public class SetupWizard extends PageDecorator {
      * Gets the file used to store the initial admin API Token, in case the system property
      * {@link #ADMIN_INITIAL_API_TOKEN} is set to "true" (and only in this case).
      */
+    @Restricted(NoExternalUse.class)
     public FilePath getInitialAdminApiTokenFile() {
         return Jenkins.get().getRootPath().child("secrets/initialAdminApiToken");
     }
