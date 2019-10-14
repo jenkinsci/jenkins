@@ -552,7 +552,6 @@ public class ApiTokenProperty extends UserProperty {
         }
         
         @RequirePOST
-        @Restricted(NoExternalUse.class)
         public HttpResponse doRename(@AncestorInPath User u,
                                      @QueryParameter String tokenUuid, @QueryParameter String newName) throws IOException {
             // only current user + administrator can rename token
