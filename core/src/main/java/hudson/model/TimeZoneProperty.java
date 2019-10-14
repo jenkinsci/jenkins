@@ -4,20 +4,22 @@ import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 
 /**
  * A UserProperty that allows a user to specify a time zone for displaying time.
  */
-@Restricted
+@Restricted(NoExternalUse.class)
 public class TimeZoneProperty extends UserProperty implements Saveable {
     /**
      * Time Zone ID defined by the user.
