@@ -13,8 +13,6 @@ import static org.junit.Assert.assertNull;
 
 /**
  * Test cases for TimeZoneProperty
- *
- * @author Nathan Grubb
  */
 public class TimeZonePropertyTest {
     @Rule
