@@ -122,7 +122,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsJenkinsRoot());
             }
         } catch (Exception ex) {
-            LOGGER.log(Level.CONFIG, "Failed to create URL from the existing Jenkins root URL", ex);
+            LOGGER.log(Level.CONFIG, "Failed to create URL from the existing Jenkins URL", ex);
             return FormValidation.error(Messages.ResourceDomainConfiguration_InvalidRootURL(ex.getMessage()));
         }
 
