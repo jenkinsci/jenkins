@@ -45,12 +45,6 @@ public class AutoRefresh extends Telemetry {
 
     @Nonnull
     @Override
-    public String getId() {
-        return AutoRefresh.class.getName();
-    }
-
-    @Nonnull
-    @Override
     public String getDisplayName() {
         return Messages.AutoRefresh_DisplayName();
     }
