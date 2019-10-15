@@ -428,7 +428,7 @@ public class UpdateSite {
     
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
-     * in Javascript.
+     * in JavaScript.
      */
     @Exported
     public String getUrl() {
