@@ -1579,20 +1579,6 @@ TEXTAREA.rich-editor {
     color: #888a85;
 }
 
-#plugins .compatWarning {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: #FF0000;
-}
-
-#plugins .securityWarning {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: #FF0000;
-}
-
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
