@@ -123,7 +123,7 @@ THE SOFTWARE.
                           <j:set var="uninstallPossible" value="false"/>
                       </j:otherwise>
                   </j:choose>
-                  <td class="test center pane uninstall" data="${uninstallPossible}">
+                  <td class="center pane uninstall" data="${uninstallPossible}">
                     <j:choose>
                       <j:when test="${p.isDeleted()}">
                         <p>${%Uninstallation pending}</p>
