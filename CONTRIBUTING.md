@@ -13,7 +13,7 @@ This page provides information about contributing code to the Jenkins core codeb
     In Jenkins project we usually use [OpenJDK](http://openjdk.java.net/) or [AdoptOpenJDK](https://adoptopenjdk.net/), but you can use other JDKs as well.
     * For JDK 11 there might be some compatibility issues in developer tools,
       please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
-      If you hit a new issue, please report it with a `java11-devtools-compatibility` label.
+      If you hit a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
   * Maven 3.5.4 or above. You can [download maven].
   * Any IDE which supports importing Maven projects.
 4. Setup your development environment as described in [Preparing for Plugin Development]
