@@ -30,7 +30,7 @@ THE SOFTWARE.
         <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${it.fullName}
       </h1>
-      <t:editableDescription permission="${app.ADMINISTER}" />
+      <t:editableDescription permission="${app.CONFIGURE_JENKINS}" />
       <div>
         ${%Jenkins User ID}: ${it.id}
       </div>

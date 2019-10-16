@@ -83,7 +83,7 @@ public class InstallPluginCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins h = Jenkins.get();
-        h.checkPermission(Jenkins.ADMINISTER);
+        h.checkPermission(Jenkins.CONFIGURE_JENKINS);
         PluginManager pm = h.getPluginManager();
 
         if (name != null) {

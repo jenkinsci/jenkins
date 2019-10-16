@@ -95,7 +95,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
      * @throws ServletException
      */
     public boolean shouldDisplay() throws IOException, ServletException {
-        if (!Functions.hasPermission(Jenkins.ADMINISTER)) {
+        if (!Functions.hasPermission(Jenkins.CONFIGURE_JENKINS)) {
             return false;
         }
 

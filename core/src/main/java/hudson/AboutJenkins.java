@@ -1,11 +1,15 @@
 package hudson;
 
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+
 import java.net.URL;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import jenkins.model.Jenkins;
 
 /**
  * Show "About Jenkins" link.
@@ -36,6 +40,11 @@ public class AboutJenkins extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public URL getLicensesURL() {
         return AboutJenkins.class.getResource("/META-INF/licenses.xml");
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.CONFIGURE_JENKINS;
     }
 
 }
