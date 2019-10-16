@@ -5,7 +5,7 @@ import jenkins.model.Jenkins
 def l = namespace(lib.LayoutTagLib)
 def f = namespace(lib.FormTagLib)
 
-l.layout(permission: Jenkins.ADMINISTER) {
+l.layout(permission: Jenkins.CONFIGURE_JENKINS) {
     def title = _("title", my.shortName)
     l.header(title:title)
     l.main_panel {
