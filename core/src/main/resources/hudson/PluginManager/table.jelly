@@ -121,6 +121,7 @@ THE SOFTWARE.
                       </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="alert alert-danger">${%depCompatWarning}
+                          <br/>${%parentDepCompatWarning}
                           <ul>
                             <j:forEach var="d" items="${p.getDependenciesIncompatibleWithInstalledVersion(cache)}">
                                 <li><a href="${d.wiki}"><st:out value="${d.displayName} (${d.installed.version})"/></a></li>
