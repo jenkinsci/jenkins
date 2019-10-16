@@ -732,7 +732,7 @@ public class Functions {
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
      * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
      *
-     * @since TODO
+     * @since 2.200
      */
     public static String urlEncode(String s) {
         try {

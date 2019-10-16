@@ -954,7 +954,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Add a simple CollectionSearchIndex object to sib
      *
      * @param sib the SearchIndexBuilder
-     * @since TODO
+     * @since 2.200
      */
     protected void makeSearchIndex(SearchIndexBuilder sib) {
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
