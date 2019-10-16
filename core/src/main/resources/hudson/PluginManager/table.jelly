@@ -102,7 +102,16 @@ THE SOFTWARE.
                         <div class="excerpt"><j:out value="${p.excerpt}" /></div>
                       </j:if>
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
-                        <div class="compatWarning">${%compatWarning}</div>
+                        <div class="compatWarning">${%compatWarning}
+                          <j:if test="${p.hasIncompatibleParentPlugins()}">
+                            <br/>${%parentDepCompatWarning}
+                            <ul>
+                              <j:forEach var="i" items="${p.getIncompatibleParentPlugins()}">
+                                <li><a href="${i.wiki}"><st:out value="${i.displayName} (${i.installed.version})"/></a></li>
+                              </j:forEach>
+                            </ul>
+                          </j:if>
+                        </div>
                       </j:if>
                       <j:if test="${p.isForNewerHudson()}">
                         <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
@@ -111,7 +120,13 @@ THE SOFTWARE.
                         <div class="compatWarning">${%javaWarning(p.minimumJavaVersion)}</div>
                       </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
-                        <div class="compatWarning">${%depCompatWarning}</div>
+                        <div class="compatWarning">${%depCompatWarning}
+                          <ul>
+                            <j:forEach var="d" items="${p.getDependenciesIncompatibleWithInstalledVersion(cache)}">
+                                <li><a href="${d.wiki}"><st:out value="${d.displayName} (${d.installed.version})"/></a></li>
+                            </j:forEach>
+                          </ul>
+                        </div>
                       </j:if>
                       <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
                         <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>

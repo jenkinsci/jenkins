@@ -979,6 +979,11 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> optionalDependencies;
 
+        /**
+         * List of plugins, this plugin is a incompatible dependency to.
+         */
+        private List<Plugin> incompatibleParentPlugins;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1241,6 +1246,43 @@ public class UpdateSite {
                 }
                 return true;
             });
+        }
+
+        /**
+         * Get the list of incompatible dependencies (if there are any, as determined by isNeededDependenciesCompatibleWithInstalledVersion)
+         *
+         * @since TODO
+         */
+        public List<Plugin> getDependenciesIncompatibleWithInstalledVersion() {
+            return getDependenciesIncompatibleWithInstalledVersion(new PluginManager.MetadataCache());
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        @SuppressWarnings("unchecked")
+        public List<Plugin> getDependenciesIncompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
+            return cache.of("getDependenciesIncompatibleWithInstalledVersion:" + name, List.class, () -> {
+                List<Plugin> incompatiblePlugins = new ArrayList<>();
+                for (Plugin p : getNeededDependencies()) {
+                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                        incompatiblePlugins.add(p);
+                    }
+                }
+                return incompatiblePlugins;
+            });
+        }
+
+        public void setIncompatibleParentPlugins(List<Plugin> incompatibleParentPlugins) {
+            this.incompatibleParentPlugins = incompatibleParentPlugins;
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public List<Plugin> getIncompatibleParentPlugins() {
+            return this.incompatibleParentPlugins;
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean hasIncompatibleParentPlugins() {
+            return this.incompatibleParentPlugins != null && !this.incompatibleParentPlugins.isEmpty();
         }
 
         /**
