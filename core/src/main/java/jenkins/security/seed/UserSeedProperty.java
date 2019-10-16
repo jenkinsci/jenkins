@@ -123,7 +123,7 @@ public class UserSeedProperty extends UserProperty {
 
         @RequirePOST
         public synchronized HttpResponse doRenewSessionSeed(@AncestorInPath @Nonnull User u) throws IOException {
-            u.checkPermission(Jenkins.ADMINISTER);
+            u.checkPermission(Jenkins.CONFIGURE_JENKINS);
 
             if (DISABLE_USER_SEED) {
                 return HttpResponses.error(404, "User seed feature is disabled");

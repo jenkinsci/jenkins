@@ -120,17 +120,17 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Checks if the current user has permission to see this pointer.
          * @return {@code true} if the job exists and user has {@link Item#READ} permissions
-         *      or if the current user has {@link Jenkins#ADMINISTER} permissions. 
+         *      or if the current user has {@link Jenkins#CONFIGURE_JENKINS} permissions. 
          *      If the job exists, but the current user has no permission to discover it, 
          *      {@code false}  will be returned.
-         *      If the job has been deleted and the user has no {@link Jenkins#ADMINISTER} permissions,
+         *      If the job has been deleted and the user has no {@link Jenkins#CONFIGURE_JENKINS} permissions,
          *      it also returns {@code false}   in order to avoid the job existence fact exposure.
          */
         private boolean hasPermissionToDiscoverBuild() {
             // We expose the data to Jenkins administrators in order to
             // let them manage the data for deleted jobs (also works for SYSTEM)
             final Jenkins instance = Jenkins.get();
-            if (instance.hasPermission(Jenkins.ADMINISTER)) {
+            if (instance.hasPermission(Jenkins.CONFIGURE_JENKINS)) {
                 return true;
             }
             
@@ -996,7 +996,7 @@ public class Fingerprint implements ModelObject, Saveable {
         final Jenkins instance = Jenkins.get();
         for (Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
-            if (instance.hasPermission(Jenkins.ADMINISTER) || canDiscoverItem(itemName)) {
+            if (instance.hasPermission(Jenkins.CONFIGURE_JENKINS) || canDiscoverItem(itemName)) {
                 r.add(new RangeItem(itemName, e.getValue()));
             }
         }

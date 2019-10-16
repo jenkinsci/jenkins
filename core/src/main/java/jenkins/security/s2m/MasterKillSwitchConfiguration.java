@@ -48,7 +48,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.hasPermission(Jenkins.ADMINISTER) && jenkins.isUseSecurity();
+        return jenkins.hasPermission(Jenkins.CONFIGURE_JENKINS) && jenkins.isUseSecurity();
     }
 }
 

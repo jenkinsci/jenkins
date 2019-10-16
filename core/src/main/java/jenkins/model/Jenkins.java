@@ -2256,7 +2256,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex();
-        if (hasPermission(ADMINISTER)) {
+        if (hasPermission(CONFIGURE_JENKINS)) {
                 builder.add("configure", "config", "configure")
                     .add("manage")
                     .add("log");
@@ -2505,7 +2505,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Everything below here is admin-only, so do the check here.
      */
     public LogRecorderManager getLog() {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         return log;
     }
 
@@ -2929,7 +2929,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see User#getById(String, boolean)
      */
     public @CheckForNull User getUser(String name) {
-        return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
+        return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(CONFIGURE_JENKINS));
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
@@ -3781,7 +3781,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
-            checkPermission(ADMINISTER);
+            checkPermission(CONFIGURE_JENKINS);
 
             JSONObject json = req.getSubmittedForm();
 
@@ -3833,7 +3833,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @POST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
 
         BulkChange bc = new BulkChange(this);
         try {
@@ -3877,7 +3877,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
-            checkPermission(ADMINISTER);
+            checkPermission(CONFIGURE_JENKINS);
             isQuietingDown = true;
         }
         if (block) {
@@ -3897,7 +3897,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
@@ -3927,7 +3927,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
      */
     public Map<String,Map<String,String>> getAllThreadDumps() throws IOException, InterruptedException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
 
         // issue the requests all at once
         Map<String,Future<Map<String,String>>> future = new HashMap<>();
@@ -4104,7 +4104,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
@@ -4172,7 +4172,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DM_GC")
     @RequirePOST
     public void doGc(StaplerResponse rsp) throws IOException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(Jenkins.CONFIGURE_JENKINS);
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -4221,7 +4221,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @RequirePOST
     public void doSimulateOutOfMemory() throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
 
         System.out.println("Creating artificial OutOfMemoryError situation");
         List<Object> args = new ArrayList<>();
@@ -4244,7 +4244,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
@@ -4268,7 +4268,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="safe-restart")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
@@ -4386,7 +4386,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CLIMethod(name="shutdown")
     @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
@@ -4420,7 +4420,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CLIMethod(name="safe-shutdown")
     @RequirePOST
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         isQuietingDown = true;
         final String exitUser = getAuthentication().getName();
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
@@ -4483,7 +4483,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        acl.checkPermission(ADMINISTER);
+        acl.checkPermission(CONFIGURE_JENKINS);
 
         String text = req.getParameter("script");
         if (text != null) {
@@ -4513,7 +4513,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
         try {
             MetaClass mc = req.getWebApp().getMetaClass(getClass());
@@ -4552,7 +4552,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @RequirePOST
     public void doFingerprintCleanup(StaplerResponse rsp) throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         FingerprintCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -4561,7 +4561,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @RequirePOST
     public void doWorkspaceCleanup(StaplerResponse rsp) throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(CONFIGURE_JENKINS);
         WorkspaceCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -4980,8 +4980,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // this hides the "delete" link from the /computer/(master) page.
             if(permission==Computer.DELETE)
                 return false;
-            // Configuration of master node requires ADMINISTER permission
-            return super.hasPermission(permission==Computer.CONFIGURE ? Jenkins.ADMINISTER : permission);
+            // Configuration of master node requires CONFIGURE permission
+            return super.hasPermission(permission==Computer.CONFIGURE ? Jenkins.CONFIGURE_JENKINS : permission);
         }
 
         @Override
@@ -5260,14 +5260,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Grants ability to configure any and all aspects of the Jenkins instance
      */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
-
     /**
      * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
      * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission
      */
     public static final Permission CONFIGURE_JENKINS = new Permission(PERMISSIONS, "Configure", Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
-    
+
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),CONFIGURE_JENKINS,PermissionScope.JENKINS);
+
     @Deprecated
     /** @deprecated as of TODO use {@link Jenkins#ADMINISTER} */
     @Restricted(NoExternalUse.class)
