@@ -425,7 +425,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         @Restricted(NoExternalUse.class)
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
-                @QueryParameter("userName") String userName, @QueryParameter("password") Secret password,
+                @QueryParameter("userName") String userName, @QueryParameter("secretPassword") Secret password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
