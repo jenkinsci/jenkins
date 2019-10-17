@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Logger;
@@ -96,7 +97,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     private boolean loadMasterKillSwitchFile(@Nonnull File f) {
         try {
             if (!f.exists())    return true;
-            return Boolean.parseBoolean(FileUtils.readFileToString(f).trim());
+            return Boolean.parseBoolean(FileUtils.readFileToString(f, Charset.defaultCharset()).trim());
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to read "+f, e);
             return false;
@@ -213,7 +214,7 @@ public class AdminWhitelistRule implements StaplerProxy {
         try {
             jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
             File f = getMasterKillSwitchFile(jenkins);
-            FileUtils.writeStringToFile(f, Boolean.toString(state));
+            FileUtils.writeStringToFile(f, Boolean.toString(state), Charset.defaultCharset());
             // treat the file as the canonical source of information in case write fails
             masterKillSwitch = loadMasterKillSwitchFile(f);
         } catch (IOException e) {

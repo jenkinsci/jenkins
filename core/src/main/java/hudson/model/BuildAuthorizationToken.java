@@ -68,7 +68,7 @@ public final class BuildAuthorizationToken {
     }
 
     public static void checkPermission(Job<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (!Jenkins.getInstance().isUseSecurity())
+        if (!Jenkins.get().isUseSecurity())
             return;    // everyone is authorized
 
         if(token!=null && token.token != null) {

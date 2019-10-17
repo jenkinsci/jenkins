@@ -93,6 +93,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -262,13 +263,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return id;
     }
 
-    public @Nonnull
-    String getUrl() {
+    public @Nonnull String getUrl() {
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
-    public @Nonnull
-    String getSearchUrl() {
+    public @Nonnull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
@@ -276,8 +275,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The URL of the user page.
      */
     @Exported(visibility = 999)
-    public @Nonnull
-    String getAbsoluteUrl() {
+    public @Nonnull String getAbsoluteUrl() {
         return Jenkins.get().getRootUrl() + getUrl();
     }
 
@@ -286,8 +284,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is configurable by the user.
      */
     @Exported(visibility = 999)
-    public @Nonnull
-    String getFullName() {
+    public @Nonnull String getFullName() {
         return fullName;
     }
 
@@ -301,8 +298,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Exported
-    public @CheckForNull
-    String getDescription() {
+    public @CheckForNull String getDescription() {
         return description;
     }
 
@@ -370,8 +366,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public @Nonnull
-    Authentication impersonate() throws UsernameNotFoundException {
+    public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation());
     }
 
@@ -384,8 +379,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      */
-    public @Nonnull
-    UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+    public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
                 Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
         );
@@ -431,8 +425,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see #getUserDetailsForImpersonation()
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull
-    Authentication impersonate(@Nonnull UserDetails userDetails) {
+    public @Nonnull Authentication impersonate(@Nonnull UserDetails userDetails) {
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
@@ -470,8 +463,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
     @Deprecated
-    public static @Nullable
-    User get(String idOrFullName, boolean create) {
+    public static @Nullable User get(String idOrFullName, boolean create) {
         return get(idOrFullName, create, Collections.emptyMap());
     }
 
@@ -491,8 +483,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    public static @Nullable
-    User get(String idOrFullName, boolean create, @Nonnull Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
         if (idOrFullName == null) {
             return null;
         }
@@ -512,8 +503,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    private static @Nullable
-    User getOrCreateById(@Nonnull String id, @Nonnull String fullName, boolean create) {
+    private static @Nullable User getOrCreateById(@Nonnull String id, @Nonnull String fullName, boolean create) {
         User u = AllUsers.get(id);
         if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
             u = new User(id, fullName);
@@ -546,8 +536,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
     @Deprecated
-    public static @Nonnull
-    User get(String idOrFullName) {
+    public static @Nonnull User get(String idOrFullName) {
         return getOrCreateByIdOrFullName(idOrFullName);
     }
 
@@ -577,8 +566,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @since 1.172
      */
-    public static @CheckForNull
-    User current() {
+    public static @CheckForNull User current() {
         return get(Jenkins.getAuthentication());
     }
 
@@ -590,8 +578,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
      * @since 1.609
      */
-    public static @CheckForNull
-    User get(@CheckForNull Authentication a) {
+    public static @CheckForNull User get(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)
             return null;
 
@@ -610,16 +597,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * and the user does not exist.
      * @since 1.651.2 / 2.3
      */
-    public static @Nullable
-    User getById(String id, boolean create) {
+    public static @Nullable User getById(String id, boolean create) {
         return getOrCreateById(id, id, create);
     }
 
     /**
      * Gets all the users.
      */
-    public static @Nonnull
-    Collection<User> getAll() {
+    public static @Nonnull Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
         ArrayList<User> users = new ArrayList<>(AllUsers.values());
         users.sort((o1, o2) -> strategy.compare(o1.getId(), o2.getId()));
@@ -657,8 +642,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
-    public @Nonnull
-    String getDisplayName() {
+    public @Nonnull String getDisplayName() {
         return getFullName();
     }
 
@@ -686,8 +670,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
-    public @Nonnull
-    RunList getBuilds() {
+    public @Nonnull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
                 allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
     }
@@ -697,8 +680,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @since 1.191
      */
-    public @Nonnull
-    Set<AbstractProject<?, ?>> getProjects() {
+    public @Nonnull Set<AbstractProject<?, ?>> getProjects() {
         Set<AbstractProject<?, ?>> r = new HashSet<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class))
             if (p.hasParticipant(this))
@@ -706,8 +688,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return r;
     }
 
-    public @Override
-    String toString() {
+    public @Override String toString() {
         return fullName;
     }
 
@@ -836,7 +817,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
@@ -945,8 +926,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return a possibly empty list
      * @since 1.498
      */
-    public @Nonnull
-    List<String> getAuthorities() {
+    public @Nonnull List<String> getAuthorities() {
         if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return Collections.emptyList();
         }
@@ -1136,8 +1116,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @CheckForNull
-        String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
 
         /**
          * Gets priority of the resolver.

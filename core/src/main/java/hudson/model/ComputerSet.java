@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.verb.POST;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
 
@@ -103,7 +104,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     @Exported(name="computer",inline=true)
     public Computer[] get_all() {
-        return Jenkins.getInstance().getComputers();
+        return Jenkins.get().getComputers();
     }
 
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
@@ -142,7 +143,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public List<String> get_slaveNames() {
         return new AbstractList<String>() {
-            final List<Node> nodes = Jenkins.getInstance().getNodes();
+            final List<Node> nodes = Jenkins.get().getNodes();
 
             public String get(int index) {
                 return nodes.get(index).getNodeName();
@@ -198,12 +199,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     public Computer getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        return Jenkins.getInstance().getComputer(token);
+        return Jenkins.get().getComputer(token);
     }
 
     @RequirePOST
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         for(Computer c : get_all()) {
             if(c.isLaunchSupported())
@@ -219,7 +220,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
@@ -238,7 +239,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from ) throws IOException, ServletException {
-        final Jenkins app = Jenkins.getInstance();
+        final Jenkins app = Jenkins.get();
         app.checkPermission(Computer.CREATE);
 
         if(mode!=null && mode.equals("copy")) {
@@ -284,11 +285,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Really creates a new agent.
      */
-    @RequirePOST
+    @POST
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
-        final Jenkins app = Jenkins.getInstance();
+        final Jenkins app = Jenkins.get();
         app.checkPermission(Computer.CREATE);
         String fixedName = Util.fixEmptyAndTrim(name);
         checkName(fixedName);
@@ -315,7 +316,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         name = name.trim();
         Jenkins.checkGoodName(name);
 
-        if(Jenkins.getInstance().getNode(name)!=null)
+        if(Jenkins.get().getNode(name)!=null)
             throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
 
         // looks good
@@ -326,7 +327,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Makes sure that the given name is good as an agent name.
      */
     public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Computer.CREATE);
+        Jenkins.get().checkPermission(Computer.CREATE);
 
         if(Util.fixEmpty(value)==null)
             return FormValidation.ok();
@@ -342,11 +343,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
@@ -372,7 +373,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * {@link NodeMonitor}s are persisted in this file.
      */
     private static XmlFile getConfigFile() {
-        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),"nodeMonitors.xml"));
+        return new XmlFile(new File(Jenkins.get().getRootDir(),"nodeMonitors.xml"));
     }
 
     public Api getApi() {
@@ -380,7 +381,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     public Descriptor<ComputerSet> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(ComputerSet.class);
+        return Jenkins.get().getDescriptorOrDie(ComputerSet.class);
     }
 
     @Extension
@@ -391,7 +392,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
             final AutoCompletionCandidates r = new AutoCompletionCandidates();
 
-            for (Node n : Jenkins.getInstance().getNodes()) {
+            for (Node n : Jenkins.get().getNodes()) {
                 if (n.getNodeName().startsWith(value))
                     r.add(n.getNodeName());
             }
@@ -422,7 +423,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Nonnull
     public static List<String> getComputerNames() {
         final ArrayList<String> names = new ArrayList<>();
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             if (!c.getName().isEmpty()) {
                 names.add(c.getName());
             }

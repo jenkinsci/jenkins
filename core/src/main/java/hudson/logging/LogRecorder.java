@@ -58,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Records a selected set of logs so that the system administrator
@@ -261,7 +262,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
         /** known loggers (kept per agent), to avoid GC */
-        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
         private final String name;
         private final Level level;
         SetLevel(String name, Level level) {
@@ -275,7 +276,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return null;
         }
         void broadcast() {
-            for (Computer c : Jenkins.getInstance().getComputers()) {
+            for (Computer c : Jenkins.get().getComputers()) {
                 if (c.getName().length() > 0) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
@@ -292,7 +293,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.getInstance().getLog().logRecorders.values()) {
+            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders.values()) {
                 for (Target t : recorder.targets) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
@@ -320,13 +321,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public LogRecorderManager getParent() {
-        return Jenkins.getInstance().getLog();
+        return Jenkins.get().getLog();
     }
 
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject src = req.getSubmittedForm();
 
@@ -420,17 +421,18 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * @since 1.519
      */
     public Map<Computer,List<LogRecord>> getSlaveLogRecords() {
-        Map<Computer,List<LogRecord>> result = new TreeMap<Computer,List<LogRecord>>(new Comparator<Computer>() {
+        Map<Computer,List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
             final Collator COLL = Collator.getInstance();
+
             public int compare(Computer c1, Computer c2) {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }
         });
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             if (c.getName().length() == 0) {
                 continue; // master
             }
-            List<LogRecord> recs = new ArrayList<LogRecord>();
+            List<LogRecord> recs = new ArrayList<>();
             try {
                 for (LogRecord rec : c.getLogRecords()) {
                     for (Target t : targets) {

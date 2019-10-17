@@ -122,7 +122,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             // just by failing to login. See ApiTokenFilter that does the following, which seems better:
             /*
                 try {
-                    Jenkins.getInstance().getSecurityRealm().loadUserByUsername(username);
+                    Jenkins.get().getSecurityRealm().loadUserByUsername(username);
                 } catch (UserMayOrMayNotExistException x) {
                     // OK, give them the benefit of the doubt.
                 } catch (UsernameNotFoundException x) {

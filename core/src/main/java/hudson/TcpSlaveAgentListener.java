@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
@@ -43,24 +42,26 @@ import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Base64;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -133,6 +134,21 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
+     * Gets the host name that we advertise protocol clients to connect to.
+     * @since TODO
+     */
+    public String getAdvertisedHost() {
+        if (CLI_HOST_NAME != null) {
+          return CLI_HOST_NAME;
+        }
+        try {
+            return new URL(Jenkins.get().getRootUrl()).getHost();
+        } catch (MalformedURLException | NullPointerException e) {
+            throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
+        }
+    }
+
+    /**
      * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
      * @return the Base64 encoded public key
      * @since 2.16
@@ -140,7 +156,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+        return key == null ? null : Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     /**
@@ -151,7 +167,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 2.16
      */
     public String getAgentProtocolNames() {
-        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+        return StringUtils.join(Jenkins.get().getAgentProtocols(), ", ");
     }
 
     /**
@@ -267,7 +283,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
-                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
@@ -286,7 +302,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
+                if (e instanceof EOFException) {
+                    LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
+                } else {
+                    LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
+                }
                 try {
                     s.close();
                 } catch (IOException ex) {
@@ -484,7 +504,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     if (originThread.isAlive()) {
                         originThread.interrupt();
                     }
-                    int port = Jenkins.getInstance().getSlaveAgentPort();
+                    int port = Jenkins.get().getSlaveAgentPort();
                     if (port != -1) {
                         new TcpSlaveAgentListener(port).start();
                         LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");

@@ -153,7 +153,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
             baseDir = new File(baseEnv);
         } else {
             LOGGER.log(Level.WARNING, "Could not find environment variable 'BASE' for Jenkins base directory. Falling back to JENKINS_HOME");
-            baseDir = Jenkins.getInstance().getRootDir();
+            baseDir = Jenkins.get().getRootDir();
         }
         return baseDir;
     }

@@ -81,7 +81,7 @@ public class UpdateCenterPluginInstallTest {
         Assert.assertEquals("ok", json.get("status"));
         JSONObject status = installStatus.getJSONObject("data");
         JSONArray states = status.getJSONArray("jobs");
-        Assert.assertEquals(2, states.size());
+        Assert.assertEquals(states.toString(), 2, states.size());
 
         JSONObject pluginInstallState = states.getJSONObject(0);
         Assert.assertEquals("changelog-history", pluginInstallState.get("name"));

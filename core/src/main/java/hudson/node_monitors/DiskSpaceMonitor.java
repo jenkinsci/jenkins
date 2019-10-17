@@ -57,7 +57,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
     @Override
     public String getColumnCaption() {
         // Hide this column from non-admins
-        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
+        return Jenkins.get().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {

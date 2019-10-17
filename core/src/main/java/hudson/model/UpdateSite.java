@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,7 +65,6 @@ import javax.annotation.Nullable;
 
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
-import jenkins.model.DownloadSettings;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
@@ -75,14 +73,12 @@ import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -174,7 +170,7 @@ public class UpdateSite {
      */
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
+            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
                 @Override public FormValidation call() throws Exception {
                     return updateDirectlyNow(signatureCheck);
                 }
@@ -189,15 +185,6 @@ public class UpdateSite {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
-    /**
-     * This is the endpoint that receives the update center data file from the browser.
-     */
-    @RequirePOST
-    public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        DownloadSettings.checkPostBackAccess();
-        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
-    }
-
     private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
@@ -284,12 +271,12 @@ public class UpdateSite {
     /**
      * Returns true if it's time for us to check for new version.
      */
-    public boolean isDue() {
+    public synchronized boolean isDue() {
         if(neverUpdate)     return false;
         if(dataTimestamp == 0)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
-        
+
         retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
         
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
@@ -307,7 +294,7 @@ public class UpdateSite {
      */
     @RequirePOST
     public HttpResponse doInvalidateData() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         dataTimestamp = 0;
         data = null;
         return HttpResponses.ok();
@@ -397,7 +384,7 @@ public class UpdateSite {
      * This is where we store the update center data.
      */
     private TextFile getDataFile() {
-        return new TextFile(new File(Jenkins.getInstance().getRootDir(),
+        return new TextFile(new File(Jenkins.get().getRootDir(),
                                      "updates/" + getId()+".json"));
     }
     
@@ -413,7 +400,7 @@ public class UpdateSite {
         if(data==null)      return Collections.emptyList(); // fail to determine
         
         List<Plugin> r = new ArrayList<>();
-        for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
+        for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
         }
@@ -429,7 +416,7 @@ public class UpdateSite {
         Data data = getData();
         if(data==null)      return false;
         
-        for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
+        for (PluginWrapper pw : Jenkins.get().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
                 // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
@@ -894,7 +881,7 @@ public class UpdateSite {
                 case PLUGIN:
 
                     // check whether plugin is installed
-                    PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(this.component);
+                    PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(this.component);
                     if (plugin == null) {
                         return false;
                     }
@@ -1040,7 +1027,7 @@ public class UpdateSite {
          */
         @Exported
         public PluginWrapper getInstalled() {
-            PluginManager pm = Jenkins.getInstance().getPluginManager();
+            PluginManager pm = Jenkins.get().getPluginManager();
             return pm.getPlugin(name);
         }
 
@@ -1092,7 +1079,7 @@ public class UpdateSite {
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
+                Plugin depPlugin = Jenkins.get().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     LOGGER.log(warnedMissing.add(e.getKey()) ? Level.WARNING : Level.FINE, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
                     continue;
@@ -1117,7 +1104,7 @@ public class UpdateSite {
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
                 VersionNumber requiredVersion = e.getValue() != null ? new VersionNumber(e.getValue()) : null;
-                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
+                Plugin depPlugin = Jenkins.get().getUpdateCenter().getPlugin(e.getKey(), requiredVersion);
                 if (depPlugin == null) {
                     continue;
                 }
@@ -1319,7 +1306,7 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
-            return deploy(dynamicLoad, null);
+            return deploy(dynamicLoad, null, null);
         }
 
         /**
@@ -1334,18 +1321,19 @@ public class UpdateSite {
          *      the plugin will only take effect after the reboot.
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
+         * @param batch if defined, a list of plugins to add to, which will be started later
          */
         @Restricted(NoExternalUse.class)
-        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            UpdateCenter uc = Jenkins.get().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
                     LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
-                    dep.deploy(dynamicLoad);
+                    dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch);
                 } else {
-                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.FINE, "Dependent install of {0} for plugin {1} already added, skipping", new Object[] {dep.name, name});
                 }
             }
             PluginWrapper pw = getInstalled();
@@ -1362,6 +1350,7 @@ public class UpdateSite {
             }
             UpdateCenter.InstallationJob job = createInstallationJob(this, uc, dynamicLoad);
             job.setCorrelationId(correlationId);
+            job.setBatch(batch);
             return uc.addJob(job);
         }
 
@@ -1369,8 +1358,8 @@ public class UpdateSite {
          * Schedules the downgrade of this plugin.
          */
         public Future<UpdateCenterJob> deployBackup() {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            UpdateCenter uc = Jenkins.get().getUpdateCenter();
             return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
         }
         /**

@@ -1,8 +1,5 @@
 package hudson.model;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
 
 import hudson.EnvVars;
@@ -40,7 +37,7 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.oldExecNum = Jenkins.getInstance().getNumExecutors();
+        this.oldExecNum = Jenkins.get().getNumExecutors();
     }
 
     public void tearDown() throws Exception {
@@ -49,8 +46,8 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     }
 
     private void restoreOldNumExecutors() throws IOException {
-        Jenkins.getInstance().setNumExecutors(this.oldExecNum);
-        assertNotNull(Jenkins.getInstance().toComputer());
+        Jenkins.get().setNumExecutors(this.oldExecNum);
+        assertNotNull(Jenkins.get().toComputer());
     }
 
     private MavenModuleSet createSimpleMavenProject() throws Exception {
@@ -64,8 +61,8 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     }
 
     private void whenJenkinsMasterHasNoExecutors() throws IOException {
-        Jenkins.getInstance().setNumExecutors(0);
-        assertNull(Jenkins.getInstance().toComputer());
+        Jenkins.get().setNumExecutors(0);
+        assertNull(Jenkins.get().toComputer());
     }
 
     public void testMaven() throws Exception {

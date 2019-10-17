@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  *
@@ -93,7 +94,7 @@ public class TreeView extends View implements ViewGroup {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        return Jenkins.getInstance().getItems();
+        return Jenkins.get().getItems();
 //        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
 //        for (String name : jobNames) {
 //            TopLevelItem item = Hudson.getInstance().getItem(name);
@@ -108,7 +109,7 @@ public class TreeView extends View implements ViewGroup {
 //        return jobNames.contains(item.getName());
     }
 
-    @RequirePOST
+    @POST
     public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup) {
@@ -184,7 +185,7 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.getInstance().getViewsTabBar();
+        return Jenkins.get().getViewsTabBar();
     }
 
     public ItemGroup<? extends TopLevelItem> getItemGroup() {

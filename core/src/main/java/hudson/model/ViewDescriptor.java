@@ -91,7 +91,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
             DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
             Iterator<String> it = candidates.getValues().iterator();
             while (it.hasNext()) {
-                TopLevelItem item = Jenkins.getInstance().getItem(it.next(), container, TopLevelItem.class);
+                TopLevelItem item = Jenkins.get().getItem(it.next(), container, TopLevelItem.class);
                 if (item == null) {
                     continue; // ?
                 }

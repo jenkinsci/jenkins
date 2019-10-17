@@ -34,15 +34,19 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.stapler.DoActionFilter;
+import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.stapler.TypedFilter;
+import jenkins.telemetry.impl.java11.CatcherClassLoader;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -239,6 +243,7 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.InputSource;
 
 import javax.annotation.CheckForNull;
@@ -310,6 +315,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
     private transient final Queue queue;
+
+    // flag indicating if we have loaded the jenkins configuration or not yet.
+    private transient volatile boolean configLoaded = false;
 
     /**
      * Stores various objects scoped to {@link Jenkins}.
@@ -515,7 +523,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         protected void onModified() throws IOException {
             super.onModified();
-            Jenkins.getInstance().trimLabels();
+            Jenkins.get().trimLabels();
         }
     }
 
@@ -742,7 +750,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
     /**
-     * Hook for a test harness to intercept Jenkins.getInstance()
+     * Hook for a test harness to intercept Jenkins.get()
      *
      * Do not use in the production code as the signature may change.
      */
@@ -845,9 +853,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings({
+    @SuppressFBWarnings({
         "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
-        "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
+        "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", // Trigger.timer
+        "DM_EXIT" // Exit is wanted here
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         oldJenkinsJVM = JenkinsJVM.isJenkinsJVM(); // capture to restore in cleanUp()
@@ -870,6 +879,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             // doing this early allows InitStrategy to set environment upfront
+            //Telemetry: add interceptor classloader
+            //These lines allow the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
+            //allow us to detect failures in every plugin loading classes by this way.
+            if (MissingClassTelemetry.enabled() && !(Thread.currentThread().getContextClassLoader() instanceof CatcherClassLoader)) {
+                Thread.currentThread().setContextClassLoader(new CatcherClassLoader(Thread.currentThread().getContextClassLoader()));
+            }
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
@@ -910,8 +925,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
             WebApp webApp = WebApp.get(servletContext);
+
+            //Telemetry: add interceptor classloader
+            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
+            //allow us to detect failures in every plugin loading classes by this way.
             // JSON binding needs to be able to see all the classes from all the plugins
-            webApp.setClassLoader(pluginManager.uberClassLoader);
+
+            ClassLoader classLoaderToAssign;
+            if (MissingClassTelemetry.enabled() && !(pluginManager.uberClassLoader instanceof CatcherClassLoader)) {
+                classLoaderToAssign = new CatcherClassLoader(pluginManager.uberClassLoader);
+            } else {
+                classLoaderToAssign = pluginManager.uberClassLoader;
+            }
+            webApp.setClassLoader(classLoaderToAssign);
+
             webApp.setJsonInErrorMessageSanitizer(RedactSecretJsonInErrorMessageSanitizer.INSTANCE);
 
             TypedFilter typedFilter = new TypedFilter();
@@ -924,7 +951,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             webApp.setFilteredDoActionTriggerListener(actionListener);
             webApp.setFilteredFieldTriggerListener(actionListener);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
+            webApp.setDispatchValidator(new StaplerDispatchValidator());
+            webApp.setFilteredDispatchTriggerListener(actionListener);
+
+            //Telemetry: add interceptor classloader
+            //These lines allows the catcher to be present on Thread.currentThread().getContextClassLoader() in every plugin which
+            //allow us to detect failures in every plugin loading classes at this way.
+            adjuncts = new AdjunctManager(servletContext, classLoaderToAssign, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
 
@@ -1326,7 +1359,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public boolean isActivated() {
-            int slaveAgentPort = Jenkins.getInstance().slaveAgentPort;
+            int slaveAgentPort = Jenkins.get().slaveAgentPort;
             return SLAVE_AGENT_PORT_ENFORCE && slaveAgentPort != Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
     }
@@ -1728,7 +1761,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>
      * To register an {@link Action}, implement {@link RootAction} extension point, or write code like
-     * {@code Jenkins.getInstance().getActions().add(...)}.
+     * {@code Jenkins.get().getActions().add(...)}.
      *
      * @return
      *      Live list where the changes can be made. Can be empty but never null.
@@ -2084,6 +2117,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
      * represents the master.
      */
+    @Nonnull
     public List<Node> getNodes() {
         return nodes.getNodes();
     }
@@ -2172,7 +2206,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
+        return administrativeMonitors.stream().filter(m -> {
+            try {
+                return m.isEnabled() && m.isActivated();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return false;
+            }
+        }).collect(Collectors.toList());
     }
 
     public NodeDescriptor getDescriptor() {
@@ -2194,7 +2235,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
-            return Jenkins.getInstance().getDescriptor(token);
+            return Jenkins.get().getDescriptor(token);
         }
     }
 
@@ -2290,7 +2331,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         if (config == null) {
             // Try to get standard message if possible
-            final Jenkins j = Jenkins.getInstance();
+            final Jenkins j = Jenkins.get();
             throw new IllegalStateException("Jenkins instance " + j + " has been successfully initialized, but JenkinsLocationConfiguration is undefined.");
         }
         String url = config.getUrl();
@@ -2340,22 +2381,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         String scheme = getXForwardedHeader(req, "X-Forwarded-Proto", req.getScheme());
         buf.append(scheme).append("://");
         String host = getXForwardedHeader(req, "X-Forwarded-Host", req.getServerName());
-        int index = host.indexOf(':');
+        int index = host.lastIndexOf(':');
         int port = req.getServerPort();
         if (index == -1) {
             // Almost everyone else except Nginx put the host and port in separate headers
             buf.append(host);
         } else {
-            // Nginx uses the same spec as for the Host header, i.e. hostname:port
-            buf.append(host, 0, index);
-            if (index + 1 < host.length()) {
-                try {
-                    port = Integer.parseInt(host.substring(index + 1));
-                } catch (NumberFormatException e) {
-                    // ignore
+            if (host.startsWith("[") && host.endsWith("]")) {
+                // support IPv6 address
+                buf.append(host);
+            } else {
+                // Nginx uses the same spec as for the Host header, i.e. hostname:port
+                buf.append(host, 0, index);
+                if (index + 1 < host.length()) {
+                    try {
+                        port = Integer.parseInt(host.substring(index + 1));
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
                 }
+                // but if a user has configured Nginx with an X-Forwarded-Port, that will win out.
             }
-            // but if a user has configured Nginx with an X-Forwarded-Port, that will win out.
         }
         String forwardedPort = getXForwardedHeader(req, "X-Forwarded-Port", null);
         if (forwardedPort != null) {
@@ -2431,7 +2477,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
         return Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
+                "JENKINS_HOME", Jenkins.get().getRootDir().getPath(),
                 "ITEM_ROOTDIR", itemRootDir,
                 "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
                 "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
@@ -3059,14 +3105,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
-
+        configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
-
     }
 
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
@@ -3111,7 +3156,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // do essentially what expandVariablesForDirectory does, without an Item
         String replacedValue = expandVariablesForDirectory(newBuildsDirValue,
                                                            "doCheckRawBuildsDir-Marker:foo",
-                                                           Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
+                                                           Jenkins.get().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
 
         File replacedFile = new File(replacedValue);
         if (!replacedFile.isAbsolute()) {
@@ -3267,13 +3312,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        InitMilestone currentMilestone = initLevel;
 
-        if (initLevel == InitMilestone.COMPLETED) {
+        if (!configLoaded) {
+            // someone is trying to save the config before all extensions are loaded (and possibly after as the task
+            // may run in parallel with other tasks.  OMG...!!! this is generally very bad and can lead to dataloss
+            LOGGER.log(Level.SEVERE,
+                       "An attempt to save Jenkins'' global configuration before it has been loaded has been "
+                       + "made during milestone " + currentMilestone
+                       + ".  This is indicative of a bug in the caller and may lead to full or partial loss of "
+                       + "configuration.",
+                       new IllegalStateException("call trace"));
+            // at this point we may want to terminate but the save may be called from a different thread and we
+            // can not call System.halt() because we could be running in a container :(
+            // for now just deny the save (the data will be replaced when we do load anyway
+            throw new IllegalStateException("An attempt to save the global configuration was made before it was loaded");
+        }
+
+        if(BulkChange.contains(this)) {
+            return;
+        }
+        if (currentMilestone == InitMilestone.COMPLETED) {
             LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
             version = VERSION;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
         }
 
         getConfigFile().write(this);
@@ -3735,7 +3798,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
@@ -3789,7 +3852,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the node configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(ADMINISTER);
 
@@ -3818,10 +3881,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @RequirePOST
-    public synchronized HttpRedirect doQuietDown() throws IOException {
+    public synchronized HttpRedirect doQuietDown() {
         try {
             return doQuietDown(false,0);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new AssertionError(); // impossible
         }
     }
@@ -3940,7 +4003,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return (T)copy((TopLevelItem)src,name);
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req,rsp, this));
@@ -4317,7 +4380,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public void onRestart() {
-            Computer computer = Jenkins.getInstance().toComputer();
+            Computer computer = Jenkins.get().toComputer();
             if (computer == null) return;
             RestartCause cause = new RestartCause();
             for (ComputerListener listener: ComputerListener.all()) {
@@ -4355,6 +4418,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         new Thread("exit thread") {
             @Override
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
@@ -4383,6 +4447,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
             @Override
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     ACL.impersonate(ACL.SYSTEM);
@@ -4470,9 +4535,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(RUN_SCRIPTS);
-
+        req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
         try {
-            MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
+            MetaClass mc = req.getWebApp().getMetaClass(getClass());
             Script script = mc.classLoader.loadTearOff(JellyClassLoaderTearOff.class).createContext().compileScript(new InputSource(req.getReader()));
             new JellyRequestDispatcher(this,script).forward(req,rsp);
         } catch (JellyException e) {
@@ -4861,7 +4926,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public static class MasterComputer extends Computer {
         protected MasterComputer() {
-            super(Jenkins.getInstance());
+            super(Jenkins.get());
         }
 
         /**
@@ -4919,9 +4984,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-            Jenkins.getInstance().doConfigExecutorsSubmit(req, rsp);
+            Jenkins.get().doConfigExecutorsSubmit(req, rsp);
         }
 
         @WebMethod(name="config.xml")

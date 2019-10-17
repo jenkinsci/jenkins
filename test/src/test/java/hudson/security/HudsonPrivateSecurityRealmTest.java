@@ -24,7 +24,6 @@
 
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.Cookie;
@@ -48,7 +47,6 @@ import java.util.List;
 
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.seed.UserSeedProperty;
 import static org.hamcrest.Matchers.containsString;

@@ -23,40 +23,39 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-  <st:contentType value="application/atom+xml;charset=UTF-8" />
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:view contentType="application/atom+xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>${title}</title>
+      <link rel="alternate" type="text/html" href="${app.rootUrl}${url}"/>
 
-  <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
-  <feed xmlns="http://www.w3.org/2005/Atom">
-    <title>${title}</title>
-    <link rel="alternate" type="text/html" href="${rootURL}${url}"/>
+      <j:choose>
+        <j:when test="${empty(entries)}">
+          <updated>2001-01-01T00:00:00Z</updated>
+        </j:when>
+        <j:otherwise>
+          <updated>${h.xsDate(adapter.getEntryTimestamp(entries[0]))}</updated>
+        </j:otherwise>
+      </j:choose>
+      <author>
+        <name>Jenkins Server</name>
+      </author>
+      <id>urn:uuid:903deee0-7bfa-11db-9fe1-0800200c9a66</id>
 
-    <j:choose>
-      <j:when test="${empty(entries)}">
-        <updated>2001-01-01T00:00:00Z</updated>
-      </j:when>
-      <j:otherwise>
-        <updated>${h.xsDate(adapter.getEntryTimestamp(entries[0]))}</updated>
-      </j:otherwise>
-    </j:choose>
-    <author>
-      <name>Jenkins Server</name>
-    </author>
-    <id>urn:uuid:903deee0-7bfa-11db-9fe1-0800200c9a66</id>
-
-    <j:forEach var="e" items="${entries}" >
-      <entry>
-        <title>${adapter.getEntryTitle(e)}</title>
-        <link rel="alternate" type="text/html" href="${rootURL}${h.encode(adapter.getEntryUrl(e))}"/>
-        <id>${adapter.getEntryID(e)}</id>
-        <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
-        <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>
-        <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
-        <j:if test="${desc!=null}">
-          <content>${desc}</content>
-        </j:if>
-      </entry>
-    </j:forEach>
-  </feed>
+      <j:forEach var="e" items="${entries}" >
+        <entry>
+          <title>${adapter.getEntryTitle(e)}</title>
+          <link rel="alternate" type="text/html" href="${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}"/>
+          <id>${adapter.getEntryID(e)}</id>
+          <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
+          <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>
+          <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
+          <j:if test="${desc!=null}">
+            <content>${desc}</content>
+          </j:if>
+        </entry>
+      </j:forEach>
+    </feed>
+  </l:view>
 </j:jelly>

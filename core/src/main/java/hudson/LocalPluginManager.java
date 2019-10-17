@@ -24,11 +24,11 @@
 
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.util.Collection;
@@ -43,10 +43,10 @@ import java.util.logging.Logger;
 public class LocalPluginManager extends PluginManager {
     /**
      * Creates a new LocalPluginManager
-     * @param context Servlet context. Provided for compatibility as {@code Jenkins.getInstance().servletContext} should be used.
+     * @param context Servlet context. Provided for compatibility as {@code Jenkins.get().servletContext} should be used.
      * @param rootDir Jenkins home directory.
      */
-    public LocalPluginManager(@CheckForNull ServletContext context, @NonNull File rootDir) {
+    public LocalPluginManager(@CheckForNull ServletContext context, @Nonnull File rootDir) {
         super(context, new File(rootDir,"plugins"));
     }
 
@@ -54,7 +54,7 @@ public class LocalPluginManager extends PluginManager {
      * Creates a new LocalPluginManager
      * @param jenkins Jenkins instance that will use the plugin manager.
      */
-    public LocalPluginManager(@NonNull Jenkins jenkins) {
+    public LocalPluginManager(@Nonnull Jenkins jenkins) {
         this(jenkins.servletContext, jenkins.getRootDir());
     }
 
@@ -62,16 +62,10 @@ public class LocalPluginManager extends PluginManager {
      * Creates a new LocalPluginManager
      * @param rootDir Jenkins home directory.
      */
-    public LocalPluginManager(@NonNull File rootDir) {
+    public LocalPluginManager(@Nonnull File rootDir) {
         this(null, rootDir);
     }
 
-    /**
-     * If the war file has any "/WEB-INF/plugins/*.jpi", extract them into the plugin directory.
-     *
-     * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.jpi","subversion.jpi"}
-     */
     @Override
     protected Collection<String> loadBundledPlugins() {
         // this is used in tests, when we want to override the default bundled plugins with .jpl (or .hpl) versions

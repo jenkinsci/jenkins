@@ -26,12 +26,16 @@
 
 #tasks {
   margin-bottom: 20px;
+  display: inline-block;
 }
 
 #tasks .task {
   margin-bottom: 4px;
   font-size: 14px;
+  max-width: 325px;
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* buildQueue */
@@ -733,7 +737,7 @@ LABEL.attach-previous {
     padding-left: 20px;
     min-height: 16px;
     line-height: 16px;
-    background-image: url( "../images/16x16/warning.png" );
+    background-image: url("../images/16x16/warning.png");
     background-size: 16px 16px;
     background-position: left center;
     background-repeat: no-repeat;
@@ -749,7 +753,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
+    background-image: url("../images/16x16/go-next.png"); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -1876,10 +1880,34 @@ select.select-ajax-pending {
     border-radius: 4px;
 }
 
+.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.alert-info p {
+    color: #31708f;
+}
+
 .alert-warning {
     color: #8a6d3b;
     background-color: #fcf8e3;
     border-color: #faebcc;
+}
+
+.alert-warning p {
+    color: #8a6d3b;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+.alert-danger p {
+    color: #a94442;
 }
 
 body.no-decoration #main-panel {

@@ -68,10 +68,10 @@ public class HistoryPageFilterTest {
         List<ModelObject> itemList = new ArrayList<>();
 
         historyPageFilter.add(itemList);
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(false, historyPageFilter.hasDownPage);
-        Assert.assertEquals(true, historyPageFilter.queueItems.isEmpty());
-        Assert.assertEquals(true, historyPageFilter.runs.isEmpty());
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertFalse(historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.queueItems.isEmpty());
+        Assert.assertTrue(historyPageFilter.runs.isEmpty());
     }
 
     /**
@@ -85,8 +85,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(runs, queueItems);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(false, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertFalse(historyPageFilter.hasDownPage);
         Assert.assertEquals(2, historyPageFilter.queueItems.size());
         Assert.assertEquals(2, historyPageFilter.runs.size());
 
@@ -109,8 +109,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(runs, queueItems);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(2, historyPageFilter.queueItems.size());
         Assert.assertEquals(3, historyPageFilter.runs.size());
 
@@ -130,8 +130,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
@@ -149,8 +149,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(false, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertFalse(historyPageFilter.hasDownPage);
         Assert.assertEquals(0, historyPageFilter.runs.size());
     }
 
@@ -165,8 +165,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(false, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertFalse(historyPageFilter.hasDownPage);
 
         // Should only be 3 runs on the page (oldest 3)
         Assert.assertEquals(3, historyPageFilter.runs.size());
@@ -185,8 +185,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(7), historyPageFilter.newestOnPage);
@@ -203,8 +203,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(0, historyPageFilter.runs.size());
     }
 
@@ -219,8 +219,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(false, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertFalse(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(5), historyPageFilter.newestOnPage);
@@ -237,8 +237,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(8), historyPageFilter.newestOnPage);
@@ -257,8 +257,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
@@ -277,8 +277,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(runs, queueItems);
 
-        Assert.assertEquals(true, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertTrue(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(0, historyPageFilter.queueItems.size());
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
@@ -300,8 +300,8 @@ public class HistoryPageFilterTest {
 
         historyPageFilter.add(itemList);
 
-        Assert.assertEquals(false, historyPageFilter.hasUpPage);
-        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertFalse(historyPageFilter.hasUpPage);
+        Assert.assertTrue(historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
         Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
@@ -328,20 +328,20 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-42645")
     public void should_be_case_insensitive_by_default() throws IOException {
-        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 
     @Test
     public void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
-        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_variables() throws IOException {
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+        List<ModelObject> runs = ImmutableList.of(
                 new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
                 new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
@@ -359,7 +359,7 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+        List<ModelObject> runs = ImmutableList.of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
@@ -508,7 +508,7 @@ public class HistoryPageFilterTest {
         }
 
         MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
-            addAction(new ParametersAction(ImmutableList.<ParameterValue>of(createSensitiveStringParameterValue(paramName, paramValue)),
+            addAction(new ParametersAction(ImmutableList.of(createSensitiveStringParameterValue(paramName, paramValue)),
                     ImmutableList.of(paramName)));
             return this;
         }

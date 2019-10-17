@@ -44,7 +44,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -232,7 +232,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         }
         
         public DescriptorImpl getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(TestDescribable.DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(TestDescribable.DescriptorImpl.class);
         }
         
         @TestExtension({
@@ -249,9 +249,9 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         public TestDescribable testDescribable;
         
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
-            Jenkins.getInstance().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
+            Jenkins.get().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
         }
         
         @Override
@@ -275,7 +275,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         public TestDescribable testDescribable;
         
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
             req.bindJSON(TestDescribable.class, req.getSubmittedForm());
         }

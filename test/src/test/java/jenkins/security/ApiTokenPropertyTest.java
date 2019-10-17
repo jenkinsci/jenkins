@@ -97,7 +97,7 @@ public class ApiTokenPropertyTest {
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
-        String historicalInitialValue = Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + u.getId());
+        String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
 
         // we won't accept historically used initial value as it may be compromised
         ApiTokenProperty t = new ApiTokenProperty(historicalInitialValue);

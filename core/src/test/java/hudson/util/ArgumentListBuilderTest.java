@@ -200,9 +200,9 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void addKeyValuePairsFromPropertyString() throws IOException {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("PATH", "C:\\Windows");
-        final VariableResolver<String> resolver = new VariableResolver.ByMap<String>(map);
+        final VariableResolver<String> resolver = new VariableResolver.ByMap<>(map);
 
         final String properties = "my.path=$PATH";
 
@@ -217,7 +217,7 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void numberOfBackslashesInPropertiesShouldBePreservedAfterMacroExpansion() throws IOException {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("ONE", "one\\backslash");
         map.put("TWO", "two\\\\backslashes");
         map.put("FOUR", "four\\\\\\\\backslashes");
@@ -230,7 +230,7 @@ public class ArgumentListBuilderTest {
         ;
 
         final String args = new ArgumentListBuilder()
-                .addKeyValuePairsFromPropertyString("", properties, new VariableResolver.ByMap<String>(map))
+                .addKeyValuePairsFromPropertyString("", properties, new VariableResolver.ByMap<>(map))
                 .toString()
         ;
 

@@ -76,6 +76,7 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -122,6 +123,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
 /**
@@ -292,7 +294,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-    
+
+    @DataBoundSetter
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -344,7 +351,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public ViewDescriptor getDescriptor() {
-        return (ViewDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (ViewDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     public String getDisplayName() {
@@ -396,7 +403,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * For now, this just returns the widgets registered to Hudson.
      */
     public List<Widget> getWidgets() {
-        return Collections.unmodifiableList(Jenkins.getInstance().getWidgets());
+        return Collections.unmodifiableList(Jenkins.get().getWidgets());
     }
 
     /**
@@ -422,7 +429,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public List<Computer> getComputers() {
-        Computer[] computers = Jenkins.getInstance().getComputers();
+        Computer[] computers = Jenkins.get().getComputers();
 
         if (!isFilterExecutors()) {
             return Arrays.asList(computers);
@@ -501,7 +508,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public List<Queue.Item> getQueueItems() {
-        return filterQueue(Arrays.asList(Jenkins.getInstance().getQueue().getItems()));
+        return filterQueue(Arrays.asList(Jenkins.get().getQueue().getItems()));
     }
 
     /**
@@ -510,7 +517,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Deprecated
     public List<Queue.Item> getApproximateQueueItemsQuickly() {
-        return filterQueue(Jenkins.getInstance().getQueue().getApproximateItemsQuickly());
+        return filterQueue(Jenkins.get().getQueue().getApproximateItemsQuickly());
     }
 
     /**
@@ -578,7 +585,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
-        return Jenkins.getInstance().getRootUrl()+getUrl();
+        return Jenkins.get().getRootUrl()+getUrl();
     }
 
     public Api getApi() {
@@ -599,7 +606,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
@@ -942,19 +949,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        
     }
-    
+
+    /**
+     * Add a simple CollectionSearchIndex object to sib
+     *
+     * @param sib the SearchIndexBuilder
+     * @since TODO
+     */
+    protected void makeSearchIndex(SearchIndexBuilder sib) {
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            protected TopLevelItem get(String key) { return getItem(key); }
+            protected Collection<TopLevelItem> all() { return getItems(); }
+            @Override
+            protected String getName(TopLevelItem o) {
+                // return the name instead of the display for suggestion searching
+                return o.getName();
+            }
+        });
+    }
+
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
-        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
-                protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
-                @Override
-                protected String getName(TopLevelItem o) {
-                    // return the name instead of the display for suggestion searching
-                    return o.getName();
-                }
-            });
+        makeSearchIndex(sib);
         
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
@@ -979,7 +996,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
-    @RequirePOST
+    @POST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
@@ -1047,7 +1064,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.getInstance().getProjectNamingStrategy().checkName(value);
+            Jenkins.get().getProjectNamingStrategy().checkName(value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
@@ -1246,7 +1263,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(View.class);
+        return Jenkins.get().getDescriptorList(View.class);
     }
 
     /**
@@ -1349,7 +1366,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
         View v;
         String from = req.getParameter("from");
-        View src = src = owner.getView(from);
+        View src = owner.getView(from);
 
         if(src==null) {
             if(Util.fixEmpty(from)==null)

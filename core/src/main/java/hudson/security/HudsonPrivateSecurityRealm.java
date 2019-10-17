@@ -362,7 +362,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Try to make this user a super-user
      */
     private void tryToMakeAdmin(User u) {
-        AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy as = Jenkins.get().getAuthorizationStrategy();
         for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
             if (adder.add(as, u, Jenkins.ADMINISTER)) {
                 return;
@@ -471,7 +471,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if (isMailerPluginPresent()) {
             try {
                 // legacy hack. mail support has moved out to a separate plugin
-                Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+                Class<?> up = Jenkins.get().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
                 Constructor<?> c = up.getDeclaredConstructor(String.class);
                 user.addProperty((UserProperty) c.newInstance(si.email));
             } catch (ReflectiveOperationException e) {
@@ -494,7 +494,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public boolean isMailerPluginPresent() {
         try {
             // mail support has moved to a separate plugin
-            return null != Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+            return null != Jenkins.get().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
         } catch (ClassNotFoundException e) {
             LOGGER.finer("Mailer plugin not present");
         }
@@ -536,15 +536,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getACL();
+        return Jenkins.get().getACL();
     }
 
     public void checkPermission(Permission permission) {
-        Jenkins.getInstance().checkPermission(permission);
+        Jenkins.get().checkPermission(permission);
     }
 
     public boolean hasPermission(Permission permission) {
-        return Jenkins.getInstance().hasPermission(permission);
+        return Jenkins.get().hasPermission(permission);
     }
 
 
@@ -552,7 +552,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * All users who can login to the system.
      */
     public List<User> getAllUsers() {
-        List<User> r = new ArrayList<User>();
+        List<User> r = new ArrayList<>();
         for (User u : User.getAll()) {
             if(u.getProperty(Details.class)!=null)
                 r.add(u);
@@ -587,7 +587,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Keys are field names (e.g. {@code password2}), values are the messages.
          */
         // TODO i18n?
-        public HashMap<String, String> errors = new HashMap<String, String>();
+        public HashMap<String, String> errors = new HashMap<>();
 
         public SignupInfo() {
         }
@@ -737,7 +737,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override
             public boolean isEnabled() {
                 // this feature is only when HudsonPrivateSecurityRealm is enabled
-                return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                return Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
             public UserProperty newInstance(User user) {
@@ -753,7 +753,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
-            if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
+            if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
             else
                 return null;    // not applicable now
@@ -934,7 +934,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private boolean needsToCreateFirstUser() {
             return !hasSomeUser()
-                && Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {

@@ -115,6 +115,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
@@ -203,7 +204,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         File buildDir = getBuildDir();
         runIdMigrator = new RunIdMigrator();
-        runIdMigrator.migrate(buildDir, Jenkins.getInstance().getRootDir());
+        runIdMigrator.migrate(buildDir, Jenkins.get().getRootDir());
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
@@ -663,7 +664,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
-        Job newJob = (Job) newItem; // Missing covariant parameters type here.
         File oldBuildDir = getBuildDir();
         super.movedTo(destination, newItem, destDir);
         File newBuildDir = getBuildDir();
@@ -682,7 +682,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public static class SubItemBuildsLocationImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            final Jenkins jenkins = Jenkins.getInstance();
+            final Jenkins jenkins = Jenkins.get();
             if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
                 File newBuildDir = ((Job)item).getBuildDir();
                 try {
@@ -984,10 +984,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        RunT r = getLastBuild();
-        while (r != null && r.isBuilding())
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
     
     /**
@@ -1318,7 +1315,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit(StaplerRequest req,
             StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
@@ -1351,7 +1348,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             ItemListener.fireOnUpdated(this);
 
-            final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
+            final ProjectNamingStrategy namingStrategy = Jenkins.get().getProjectNamingStrategy();
                 if(namingStrategy.isForceExistingJobs()){
                     namingStrategy.checkName(name);
                 }
@@ -1603,7 +1600,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     public BuildTimelineWidget getTimeline() {

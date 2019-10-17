@@ -753,10 +753,12 @@ public class Util {
     /**
      * Get a human readable string representing strings like "xxx days ago",
      * which should be used to point to the occurrence of an event in the past.
+     * @deprecated Actually identical to {@link #getTimeSpanString}, does not add {@code ago}.
      */
+    @Deprecated
     @Nonnull
     public static String getPastTimeString(long duration) {
-        return Messages.Util_pastTime(getTimeSpanString(duration));
+        return getTimeSpanString(duration);
     }
 
 
@@ -866,29 +868,52 @@ public class Util {
         CharBuffer buf = null;
         char c;
         for (int i = 0, m = s.length(); i < m; i++) {
-            c = s.charAt(i);
-            if (c > 122 || uriMap[c]) {
+            int codePoint = Character.codePointAt(s, i);
+            if((codePoint&0xffffff80)==0) { // 1 byte
+                c = s.charAt(i);
+                if (c > 122 || uriMap[c]) {
+                    if (!escaped) {
+                        out = new StringBuilder(i + (m - i) * 3);
+                        out.append(s, 0, i);
+                        escaped = true;
+                    }
+                    if (enc == null || buf == null) {
+                        enc = StandardCharsets.UTF_8.newEncoder();
+                        buf = CharBuffer.allocate(1);
+                    }
+                    // 1 char -> UTF8
+                    buf.put(0, c);
+                    buf.rewind();
+                    try {
+                        ByteBuffer bytes = enc.encode(buf);
+                        while (bytes.hasRemaining()) {
+                            byte b = bytes.get();
+                            out.append('%');
+                            out.append(toDigit((b >> 4) & 0xF));
+                            out.append(toDigit(b & 0xF));
+                        }
+                    } catch (CharacterCodingException ex) {
+                    }
+                } else if (escaped) {
+                    out.append(c);
+                }
+            } else {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
                     out.append(s, 0, i);
-                    enc = StandardCharsets.UTF_8.newEncoder();
-                    buf = CharBuffer.allocate(1);
                     escaped = true;
                 }
-                // 1 char -> UTF8
-                buf.put(0,c);
-                buf.rewind();
-                try {
-                    ByteBuffer bytes = enc.encode(buf);
-                    while (bytes.hasRemaining()) {
-                        byte b = bytes.get();
-                        out.append('%');
-                        out.append(toDigit((b >> 4) & 0xF));
-                        out.append(toDigit(b & 0xF));
-                    }
-                } catch (CharacterCodingException ex) { }
-            } else if (escaped) {
-                out.append(c);
+
+                byte[] bytes = new String(new int[] { codePoint }, 0, 1).getBytes(StandardCharsets.UTF_8);
+                for (byte aByte : bytes) {
+                    out.append('%');
+                    out.append(toDigit((aByte >> 4) & 0xF));
+                    out.append(toDigit(aByte & 0xF));
+                }
+
+                if(Character.charCount(codePoint) > 1) {
+                    i++; // we processed two characters
+                }
             }
         }
         return escaped ? out.toString() : s;

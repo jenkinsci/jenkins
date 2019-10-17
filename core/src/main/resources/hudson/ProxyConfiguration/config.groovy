@@ -1,4 +1,4 @@
-package hudson.ProxyConfiguration;
+package hudson.ProxyConfiguration
 
 def f=namespace(lib.FormTagLib)
 

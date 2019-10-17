@@ -1,0 +1,2 @@
+jenkins.security.stapler.StaplerDispatchValidatorTest$Whitelist root !frag
+jenkins.security.stapler.StaplerDispatchValidatorTest$Extended whitelistedRoot

@@ -44,6 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -162,7 +163,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -199,9 +200,9 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        final Jenkins app = Jenkins.getInstance();
+        final Jenkins app = Jenkins.get();
 
         app.checkPermission(Jenkins.ADMINISTER);
 
@@ -221,7 +222,7 @@ public class LabelAtom extends Label implements Saveable {
     @RequirePOST
     @Restricted(DoNotUse.class)
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
@@ -232,12 +233,12 @@ public class LabelAtom extends Label implements Saveable {
      * @see Jenkins#getLabelAtom
      */
     public static @Nullable LabelAtom get(@CheckForNull String l) {
-        return Jenkins.getInstance().getLabelAtom(l);
+        return Jenkins.get().getLabelAtom(l);
     }
 
     public static LabelAtom findNearest(String name) {
         List<String> candidates = new ArrayList<>();
-        for (LabelAtom a : Jenkins.getInstance().getLabelAtoms()) {
+        for (LabelAtom a : Jenkins.get().getLabelAtoms()) {
             candidates.add(a.getName());
         }
         return get(EditDistance.findNearest(name, candidates));

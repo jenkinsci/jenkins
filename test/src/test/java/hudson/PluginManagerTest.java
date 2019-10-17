@@ -253,7 +253,7 @@ public class PluginManagerTest {
     // org.jenkinsci.plugins.dependencytest.depender:
     //   public class Depender {
     //     public static String getValue() {
-    //       if (Jenkins.getInstance().getPlugin("dependee") != null) {
+    //       if (Jenkins.get().getPlugin("dependee") != null) {
     //         return Dependee.getValue();
     //       }
     //       return "depender";

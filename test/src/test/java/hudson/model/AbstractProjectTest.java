@@ -34,13 +34,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
-import hudson.maven.MavenModuleSet;
+import hudson.matrix.MatrixProject;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -50,8 +48,6 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
-import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -60,11 +56,9 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -258,65 +252,6 @@ public class AbstractProjectTest {
         }
     }
 
-    @Test
-    @Issue("JENKINS-1986")
-    public void buildSymlinks() throws Exception {
-        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
-
-        FreeStyleProject job = j.createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-                lastStable = new File(job.getRootDir(), "lastStable");
-        // First build creates links
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        FreeStyleBuild build2 = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        // Another build updates links
-        assertSymlinkForBuild(lastSuccessful, 2);
-        assertSymlinkForBuild(lastStable, 2);
-        // Delete latest build should update links
-        build2.delete();
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        // Delete all builds should remove links
-        build.delete();
-        assertFalse("lastSuccessful link should be removed", lastSuccessful.exists());
-        assertFalse("lastStable link should be removed", lastStable.exists());
-    }
-
-    private static void assertSymlinkForBuild(File file, int buildNumber)
-            throws IOException, InterruptedException {
-        assert file.exists() : "should exist and point to something that exists";
-        assert Util.isSymlink(file) : "should be symlink";
-        String s = FileUtils.readFileToString(new File(file, "log"));
-        assert s.contains("Build #" + buildNumber + "\n") : "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
-    }
-
-    @Test
-    @Issue("JENKINS-2543")
-    public void symlinkForPostBuildFailure() throws Exception {
-        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
-
-        // Links should be updated after post-build actions when final build result is known
-        FreeStyleProject job = j.createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assert Result.SUCCESS == build.getResult();
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-                lastStable = new File(job.getRootDir(), "lastStable");
-        // First build creates links
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-        // Archive artifacts that don't exist to create failure in post-build action
-        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false, false));
-        build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assert Result.FAILURE == build.getResult();
-        // Links should not be updated since build failed
-        assertSymlinkForBuild(lastSuccessful, 1);
-        assertSymlinkForBuild(lastStable, 1);
-    }
-
     /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
     @Test
     @Issue("JENKINS-15156")
@@ -355,9 +290,9 @@ public class AbstractProjectTest {
         j.createFreeStyleProject("j1");
         assertEquals("", deleteRedirectTarget("job/j1"));
         j.createFreeStyleProject("j2");
-        Jenkins.getInstance().addView(new AllView("v1"));
+        Jenkins.get().addView(new AllView("v1"));
         assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
-        MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
+        MockFolder d = Jenkins.get().createProject(MockFolder.class, "d");
         d.addView(new AllView("v2"));
         for (String n : new String[] {"j3", "j4", "j5"}) {
             d.createProject(FreeStyleProject.class, n);
@@ -475,20 +410,24 @@ public class AbstractProjectTest {
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-        tpm.installDetachedPlugin("javadoc");
-        tpm.installDetachedPlugin("maven-plugin");
+        tpm.installDetachedPlugin("structs");
+        tpm.installDetachedPlugin("workflow-step-api");
+        tpm.installDetachedPlugin("scm-api");
+        tpm.installDetachedPlugin("workflow-api");
+        tpm.installDetachedPlugin("junit");
+        tpm.installDetachedPlugin("matrix-project");
 
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
 
-        HttpURLConnection con = postConfigDotXml(p, "<maven2-moduleset />");
+        HttpURLConnection con = postConfigDotXml(p, "<matrix-project />");
 
         // this should fail with a type mismatch error
         // the error message should report both what was submitted and what was expected
         assertEquals(500, con.getResponseCode());
         String msg = IOUtils.toString(con.getErrorStream());
         System.out.println(msg);
-        assertThat(msg, allOf(containsString(FreeStyleProject.class.getName()), containsString(MavenModuleSet.class.getName())));
+        assertThat(msg, allOf(containsString(FreeStyleProject.class.getName()), containsString(MatrixProject.class.getName())));
 
         // control. this should work
         con = postConfigDotXml(p, "<project />");

@@ -1,0 +1,60 @@
+# Configuration for Release Drafter: https://github.com/toolmantim/release-drafter
+name-template: $NEXT_PATCH_VERSION
+# Uses a more common 2-digit versioning in Jenkins weekly releases.
+version-template: $MAJOR.$MINOR
+tag-template: jenkins-$NEXT_MINOR_VERSION
+
+exclude-labels:
+  - reverted
+  - no-changelog
+  - skip-changelog
+  - invalid
+change-template: |-
+  - type: todo
+    message: |-
+      $TITLE
+    pull: $NUMBER
+    authors:
+      - $AUTHOR
+
+template: |
+  **Disclaimer**: This is an automatically generated changelog draft for Jenkins weekly releases. 
+  See https://jenkins.io/changelog/ for the official changelogs. 
+
+  ```yaml
+  $CHANGES
+  ```
+
+# Categories will be commented out, because we use YAML
+# Now we use categories only for sorting
+categories:
+  - title: Major BUGs and regressions
+    labels: 
+      - major-bug
+      - regression-fix
+  - title: Major RFE
+    label: major-rfe
+  - title: RFEs
+    label: rfe
+  - title: Bug fixes
+    label: bug
+  - title: Localization
+    label: localization
+  - title: Developer-facing changes (APIs, extensions, etc.)
+    label: developer
+  - title: Internal changes
+    label: internal
+
+replacers:
+  - search: '/\[*JENKINS-(\d+)\]*\s*-*\s*/g'
+    replace: |-
+      issue: $1
+        message: |-
+          
+  - search: |-
+      message: |-
+          issue:
+    replace: "issue:"
+
+  - search: "##"
+    replace: "#"

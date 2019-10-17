@@ -386,7 +386,7 @@ public class Queue extends ResourceController implements Saveable {
                 try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(queueFile), Charset.defaultCharset())) {
                     String line;
                     while ((line = in.readLine()) != null) {
-                        AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
+                        AbstractProject j = Jenkins.get().getItemByFullName(line, AbstractProject.class);
                         if (j != null)
                             j.scheduleBuild();
                     }
@@ -493,7 +493,7 @@ public class Queue extends ResourceController implements Saveable {
      * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
      */
     public void clear() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         lock.lock();
         try { try {
             for (WaitingItem i : new ArrayList<>(
@@ -1707,7 +1707,7 @@ public class Queue extends ResourceController implements Saveable {
     private Runnable makeFlyWeightTaskBuildable(final BuildableItem p){
         //we double check if this is a flyweight task
         if (p.task instanceof FlyweightTask) {
-            Jenkins h = Jenkins.getInstance();
+            Jenkins h = Jenkins.get();
 
             Label lbl = p.getAssignedLabel();
 
@@ -1788,7 +1788,7 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.598
      */
     public static boolean isBlockedByShutdown(Task task) {
-        return Jenkins.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
+        return Jenkins.get().isQuietingDown() && !(task instanceof NonBlockingTask);
     }
 
     public Api getApi() {
@@ -2287,7 +2287,7 @@ public class Queue extends ResourceController implements Saveable {
         @RequirePOST
         public HttpResponse doCancelQueue() throws IOException, ServletException {
             if(hasCancelPermission()){
-                Jenkins.getInstance().getQueue().cancel(this);
+                Jenkins.get().getQueue().cancel(this);
             }
             return HttpResponses.forwardToPreviousPage();
         }
@@ -2636,7 +2636,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public CauseOfBlockage getCauseOfBlockage() {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.get();
             if(isBlockedByShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
@@ -2805,7 +2805,7 @@ public class Queue extends ResourceController implements Saveable {
 
 			@Override
 			public Object fromString(String string) {
-                Object item = Jenkins.getInstance().getItemByFullName(string);
+                Object item = Jenkins.get().getItemByFullName(string);
                 if(item==null)  throw new NoSuchElementException("No such job exists: "+string);
                 return item;
 			}
@@ -2828,7 +2828,7 @@ public class Queue extends ResourceController implements Saveable {
 				String[] split = string.split("#");
 				String projectName = split[0];
 				int buildNumber = Integer.parseInt(split[1]);
-				Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItemByFullName(projectName);
+				Job<?,?> job = (Job<?,?>) Jenkins.get().getItemByFullName(projectName);
                 if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
 				Run<?,?> run = job.getBuildByNumber(buildNumber);
                 if(run==null)  throw new NoSuchElementException("No such build: "+string);
@@ -2853,7 +2853,7 @@ public class Queue extends ResourceController implements Saveable {
 
 			@Override
 			public Object fromString(String string) {
-                return Jenkins.getInstance().getQueue();
+                return Jenkins.get().getQueue();
 			}
 
 			@Override
@@ -2871,7 +2871,7 @@ public class Queue extends ResourceController implements Saveable {
         private final WeakReference<Queue> queue;
 
         MaintainTask(Queue queue) {
-            this.queue = new WeakReference<Queue>(queue);
+            this.queue = new WeakReference<>(queue);
         }
 
         private void periodic() {
@@ -2902,7 +2902,7 @@ public class Queue extends ResourceController implements Saveable {
     	}
 
     	public List<T> getAll(Task task) {
-    		List<T> result = new ArrayList<T>();
+    		List<T> result = new ArrayList<>();
     		for (T item: this) {
     			if (item.task.equals(task)) {
     				result.add(item);
@@ -2949,7 +2949,7 @@ public class Queue extends ResourceController implements Saveable {
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
                               + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
-            for (T t : new ArrayList<T>(this))
+            for (T t : new ArrayList<>(this))
                 t.cancel(Queue.this);
             clear();
         }
@@ -2963,10 +2963,10 @@ public class Queue extends ResourceController implements Saveable {
 
         public Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
                         List<BuildableItem> pendings) {
-            this.waitingList = new LinkedHashSet<WaitingItem>(waitingList);
-            this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
-            this.buildables = new ArrayList<BuildableItem>(buildables);
-            this.pendings = new ArrayList<BuildableItem>(pendings);
+            this.waitingList = new LinkedHashSet<>(waitingList);
+            this.blockedProjects = new ArrayList<>(blockedProjects);
+            this.buildables = new ArrayList<>(buildables);
+            this.pendings = new ArrayList<>(pendings);
         }
 
         @Override
@@ -3036,7 +3036,7 @@ public class Queue extends ResourceController implements Saveable {
 
     @CLIResolver
     public static Queue getInstance() {
-        return Jenkins.getInstance().getQueue();
+        return Jenkins.get().getQueue();
     }
 
     /**

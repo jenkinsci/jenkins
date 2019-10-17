@@ -5,9 +5,11 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.Base64;
 import static java.util.logging.Level.FINEST;
 import java.util.stream.Collectors;
 
+import hudson.model.User;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
 
@@ -19,7 +21,6 @@ import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.codec.binary.Base64;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -29,8 +30,11 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.kohsuke.stapler.Stapler;
 import org.springframework.dao.DataAccessException;
+import test.security.realm.InMemorySecurityRealm;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
@@ -289,6 +293,51 @@ public class TokenBasedRememberMeServices2Test {
         }
     }
 
+    @Test
+    @Issue("JENKINS-56243")
+    public void rememberMeToken_shouldLoadUserDetailsOnlyOnce() throws Exception {
+        j.jenkins.setDisableRememberMe(false);
+        LoadUserCountingSecurityRealm realm = new LoadUserCountingSecurityRealm();
+        realm.createAccount("alice");
+        j.jenkins.setSecurityRealm(realm);
+        User alice = User.getOrCreateByIdOrFullName("alice");
+        realm.verifyInvocations(1);
+
+        // first, start a session with a remember me token
+        Cookie cookie = getRememberMeCookie(j.createWebClient().login("alice", "alice", true));
+        // next, start a new session with that token
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getCookieManager().addCookie(cookie);
+        // trigger remember me
+        String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
+        realm.verifyInvocations(1);
+        String userSeed = alice.getProperty(UserSeedProperty.class).getSeed();
+
+        assertEquals(userSeed, sessionSeed);
+
+        // finally, ensure that loadUserByUsername is not being called anymore
+        wc.goTo("");
+        assertUserConnected(wc, "alice");
+        realm.verifyInvocations(0);
+    }
+
+    private static class LoadUserCountingSecurityRealm extends InMemorySecurityRealm {
+        // if this class wasn't serialized into config.xml, this could be replaced by @Spy from Mockito
+        @GuardedBy("this")
+        private int counter = 0;
+
+        @Override
+        public synchronized UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            ++counter;
+            return super.loadUserByUsername(username);
+        }
+
+        synchronized void verifyInvocations(int count) {
+            assertEquals(count, counter);
+            counter = 0;
+        }
+    }
+
     private Cookie createRememberMeCookie(TokenBasedRememberMeServices2 tokenService, long deltaDuration, hudson.model.User user) throws Exception {
         long tokenValiditySeconds = tokenService.getTokenValiditySeconds();
         long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(tokenValiditySeconds);
@@ -298,7 +347,7 @@ public class TokenBasedRememberMeServices2Test {
 
         String signatureValue = tokenService.makeTokenSignature(expiryTime, user.getProperty(HudsonPrivateSecurityRealm.Details.class));
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
-        String tokenValueBase64 = new String(Base64.encodeBase64(tokenValue.getBytes()));
+        String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);
     }
 

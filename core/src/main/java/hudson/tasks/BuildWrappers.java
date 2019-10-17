@@ -56,7 +56,7 @@ public class BuildWrappers {
      */
     public static List<Descriptor<BuildWrapper>> getFor(AbstractProject<?, ?> project) {
         List<Descriptor<BuildWrapper>> result = new ArrayList<>();
-        Descriptor pd = Jenkins.getInstance().getDescriptor((Class)project.getClass());
+        Descriptor pd = Jenkins.get().getDescriptor((Class)project.getClass());
 
         for (Descriptor<BuildWrapper> w : BuildWrapper.all()) {
             if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(w))

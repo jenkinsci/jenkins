@@ -147,7 +147,7 @@ public abstract class Launcher {
     @Deprecated
     @CheckForNull
     public Computer getComputer() {
-        for( Computer c : Jenkins.getInstance().getComputers() )
+        for( Computer c : Jenkins.get().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;
@@ -1327,11 +1327,7 @@ public abstract class Launcher {
                         Channel taskChannel = null;
                         try {
                             // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
-                            // TODOL Replace by Channel#currentOrFail() when Remoting version allows
-                            taskChannel = Channel.current();
-                            if (taskChannel == null) {
-                                throw new IOException("No Remoting channel associated with this thread");
-                            }
+                            taskChannel = Channel.currentOrFail();
                             taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc

@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.stapler.Function;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +93,64 @@ public class FileParameterValueTest {
         // overlong utf-8 encoding
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%af%c0%2e%c0%2e%c0%afroot-level.txt/uploaded-file.txt", uploadedContent);
     }
-    
+
+    @Test
+    @Issue("SECURITY-1424")
+    public void fileParameter_cannotCreateFile_outsideOfBuildFolder_SEC1424() throws Exception {
+        // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
+
+        FilePath root = j.jenkins.getRootPath();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+                new FileParameterDefinition("dir/../../../pwned", null)
+        )));
+
+        assertThat(root.child("pwned").exists(), equalTo(false));
+
+        String uploadedContent = "test-content";
+        File uploadedFile = tmp.newFile();
+        FileUtils.write(uploadedFile, uploadedContent);
+
+        FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new FileParameterValue("dir/../../../pwned", uploadedFile, "uploaded-file.txt")
+        )).get();
+
+        assertThat(build.getResult(), equalTo(Result.FAILURE));
+        assertThat(root.child("pwned").exists(), equalTo(false));
+
+        // ensure also the file is not reachable by request
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    }
+
+    @Test
+    public void fileParameter_cannotCreateFile_outsideOfBuildFolder_LeadingDoubleDot() throws Exception {
+        FilePath root = j.jenkins.getRootPath();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+                new FileParameterDefinition("../pwned", null)
+        )));
+
+        assertThat(root.child("pwned").exists(), equalTo(false));
+
+        String uploadedContent = "test-content";
+        File uploadedFile = tmp.newFile();
+        FileUtils.write(uploadedFile, uploadedContent);
+
+        FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new FileParameterValue("../pwned", uploadedFile, "uploaded-file.txt")
+        )).get();
+
+        assertThat(build.getResult(), equalTo(Result.FAILURE));
+        assertThat(root.child("pwned").exists(), equalTo(false));
+
+        // ensure also the file is not reachable by request
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    }
+
     private void checkUrlNot200AndNotContains(JenkinsRule.WebClient wc, String url, String contentNotPresent) throws Exception {
         Page pageForEncoded = wc.goTo(url, null);
         assertThat(pageForEncoded.getWebResponse().getStatusCode(), not(equalTo(200)));
@@ -104,7 +160,7 @@ public class FileParameterValueTest {
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashEdition() throws Exception {
-        Assume.assumeTrue("Backslash are only dangerous on Windows", Functions.isWindows());
+        Assume.assumeTrue("Backslashes are only dangerous on Windows", Functions.isWindows());
         
         // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
     
@@ -266,5 +322,61 @@ public class FileParameterValueTest {
         HtmlPage workspaceParentPage = wc.goTo(p.getUrl() + "ws" + "/parent");
         String workspaceParentContent = workspaceParentPage.getWebResponse().getContentAsString();
         assertThat(workspaceParentContent, containsString("child2.txt"));
+    }
+
+    @Test
+    public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+                new FileParameterDefinition("weird..name.txt", null)
+        )));
+
+        File uploadedFile = tmp.newFile();
+        FileUtils.write(uploadedFile, "test1");
+
+        FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new FileParameterValue("weird..name.txt", uploadedFile, "uploaded-file.txt")
+        )));
+
+        // files are correctly saved in the build "fileParameters" folder
+        File directChild = new File(build.getRootDir(), "fileParameters/weird..name.txt");
+        assertTrue(directChild.exists());
+
+        // both are correctly copied inside the workspace
+        assertTrue(build.getWorkspace().child("weird..name.txt").exists());
+
+        // and reachable using request
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
+        String workspaceContent = workspacePage.getWebResponse().getContentAsString();
+        assertThat(workspaceContent, containsString("weird..name.txt"));
+    }
+
+    @Test
+    public void fileParameter_canStillUse_TildeInFileName() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+                new FileParameterDefinition("~name", null)
+        )));
+
+        File uploadedFile = tmp.newFile();
+        FileUtils.write(uploadedFile, "test1");
+
+        FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new FileParameterValue("~name", uploadedFile, "uploaded-file.txt")
+        )));
+
+        // files are correctly saved in the build "fileParameters" folder
+        File directChild = new File(build.getRootDir(), "fileParameters/~name");
+        assertTrue(directChild.exists());
+
+        // both are correctly copied inside the workspace
+        assertTrue(build.getWorkspace().child("~name").exists());
+
+        // and reachable using request
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
+        String workspaceContent = workspacePage.getWebResponse().getContentAsString();
+        assertThat(workspaceContent, containsString("~name"));
     }
 }

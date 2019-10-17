@@ -132,7 +132,7 @@ public class FilePathTest {
     }
     
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
-        List<Callable<Integer>> r = new ArrayList<Callable<Integer>>();
+        List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
             r.add(new Callable<Integer>() {
                 public Integer call() throws Exception {
@@ -371,36 +371,36 @@ public class FilePathTest {
 
     @Test public void list() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
             expected.add(createFilePath(baseDir, "top", "db", "db.log"));
             expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
             final FilePath[] result = new FilePath(baseDir).list("**");
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             createFilePath(baseDir, "top", "sub", "trace.log");
             expected.add(createFilePath(baseDir, "top", "db", "db.log"));
             createFilePath(baseDir, "top", "db", "trace.log");
             final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithDefaultExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<FilePath>();
+            final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
             expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
             expected.add(createFilePath(baseDir, "top", ".git", "config"));
             // none of the files are included by default (default includes true)
             assertEquals(0, new FilePath(baseDir).list("**", "").length);
             final FilePath[] result = new FilePath(baseDir).list("**", "", false);
-            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Issue("JENKINS-11073")
@@ -540,8 +540,8 @@ public class FilePathTest {
                 d3.mkdirs();
                 d3.child("f.txt").touch(0);
             }
-            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt"));
-            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt", 10));
+            assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
+            assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
             try {
                 d.validateAntFileMask("**/*.js", 10);
@@ -560,11 +560,11 @@ public class FilePathTest {
             d.child("d1/d2/d3/f.txt").touch(0);
             d.child("d1/d2/d3/f.html").touch(0);
             d.child("d1/d2/f.txt").touch(0);
-            
-            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
-            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+
+            assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
             assertEquals(Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive("**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
-            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+            assertNull(d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
         } finally {
             Util.deleteRecursive(tmp);
         }
@@ -664,9 +664,8 @@ public class FilePathTest {
         when(con2.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(con2.getInputStream()).thenReturn(someZippedContent());
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertTrue(d.installIfNecessaryFrom(url, null, message));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {

@@ -36,7 +36,6 @@ import hudson.widgets.HistoryWidget;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -210,7 +209,7 @@ public class HistoryPageFilter<T> {
                     }
                 }
             }
-        } else if (olderThan != null) {
+        } else {
             Iterator<ItemT> iter = items.iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();

@@ -93,7 +93,7 @@ public class SearchTest {
 
         SuggestedItem suggestedHit = new SuggestedItem(searchItemHit);
         SuggestedItem suggestedNoHit = new SuggestedItem(searchItemNoHit);
-        ArrayList<SuggestedItem> list = new ArrayList<SuggestedItem>();
+        ArrayList<SuggestedItem> list = new ArrayList<>();
         list.add(suggestedNoHit);
         list.add(suggestedHit); // make sure the hit is the second item
 

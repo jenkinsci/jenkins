@@ -1,1 +1,1 @@
-jenkins.model.Jenkins.getInstance().getExtensionList($c) :: $c instanceof java.lang.Class => hudson.ExtensionList.lookup($c);;
+jenkins.model.Jenkins.get().getExtensionList($c) :: $c instanceof java.lang.Class => hudson.ExtensionList.lookup($c);;

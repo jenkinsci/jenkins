@@ -197,7 +197,7 @@ public class SecretRewriter {
     }
 
     private static boolean isBase64(char ch) {
-        return 0<=ch && ch<128 && IS_BASE64[ch];
+        return ch<128 && IS_BASE64[ch];
     }
 
     private static boolean isBase64(String s) {

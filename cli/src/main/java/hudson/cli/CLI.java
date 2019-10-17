@@ -264,7 +264,7 @@ public class CLI {
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
         } else if (auth != null) {
-            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1))).trim() : auth);
+            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1)), Charset.defaultCharset()).trim() : auth);
         }
 
         if (mode == Mode.HTTP) {
@@ -335,11 +335,11 @@ public class CLI {
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(10_000);
+                        Thread.sleep(PING_INTERVAL);
                         while (!connection.complete) {
                             LOGGER.fine("sending ping");
                             connection.sendEncoding(Charset.defaultCharset().name()); // no-op at this point
-                            Thread.sleep(10_000);
+                            Thread.sleep(PING_INTERVAL);
                         }
                     } catch (IOException | InterruptedException x) {
                         LOGGER.log(Level.WARNING, null, x);
@@ -406,4 +406,6 @@ public class CLI {
     }
 
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
+
+    private static final int PING_INTERVAL = Integer.getInteger(CLI.class.getName() + ".pingInterval", 3_000); // JENKINS-59267
 }

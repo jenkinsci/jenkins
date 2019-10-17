@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -141,7 +141,31 @@ public class JenkinsGetRootUrlTest {
         withHeader("X-Forwarded-Proto", "https");
         rootUrlFromRequestIs("https://ci/jenkins/");
     }
-    
+
+    @Issue("JENKINS-58041")
+    @Test
+    public void useForwardedProtoWithIPv6WhenPresent() {
+        configured("http://[::1]/jenkins/");
+
+        // Without a forwarded protocol, it should use the request protocol
+        accessing("http://[::1]/jenkins/");
+        rootUrlFromRequestIs("http://[::1]/jenkins/");
+        
+        accessing("http://[::1]:8080/jenkins/");
+        rootUrlFromRequestIs("http://[::1]:8080/jenkins/");
+
+        // With a forwarded protocol, it should use the forwarded protocol
+        accessing("http://[::1]/jenkins/");
+        withHeader("X-Forwarded-Host", "[::2]");
+        rootUrlFromRequestIs("http://[::2]/jenkins/");
+
+        accessing("http://[::1]:8080/jenkins/");
+        withHeader("X-Forwarded-Proto", "https");
+        withHeader("X-Forwarded-Host", "[::1]:8443");
+        rootUrlFromRequestIs("https://[::1]:8443/jenkins/");
+
+    }
+
     private void rootUrlFromRequestIs(final String expectedRootUrl) {
         
         assertThat(jenkins.getRootUrlFromRequest(), equalTo(expectedRootUrl));
