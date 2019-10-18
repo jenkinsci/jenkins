@@ -321,12 +321,24 @@ public class ResourceDomainTest {
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(true);
 
-        Page page = webClient.goTo("100%25%20evil/%20100%25%20evil%20content%20.html");
+        Page page = webClient.goTo("100%25%20evil/%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html");
         Assert.assertEquals("page is found", 200, page.getWebResponse().getStatusCode());
         Assert.assertTrue("page content is as expected", page.getWebResponse().getContentAsString().contains("this is the content"));
 
         URL url = page.getUrl();
         Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
+
+        URL dirUrl = new URL(url.toString().replace("%20100%25%20evil%20content%20.html", ""));
+        Page dirPage = webClient.getPage(dirUrl);
+        Assert.assertEquals("page is found", 200, dirPage.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is HTML", dirPage.getWebResponse().getContentAsString().contains("href"));
+        Assert.assertTrue("page content references file", dirPage.getWebResponse().getContentAsString().contains("evil content"));
+
+        URL topDirUrl = new URL(url.toString().replace("%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html", ""));
+        Page topDirPage = webClient.getPage(topDirUrl);
+        Assert.assertEquals("page is found", 200, topDirPage.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is HTML", topDirPage.getWebResponse().getContentAsString().contains("href"));
+        Assert.assertTrue("page content references directory", topDirPage.getWebResponse().getContentAsString().contains("evil dir name"));
     }
 
     @TestExtension
@@ -353,8 +365,8 @@ public class ResourceDomainTest {
         public HttpResponse doDynamic() throws Exception {
             Jenkins jenkins = Jenkins.get();
             FilePath tempDir = jenkins.getRootPath().createTempDir("root", "tmp");
-            tempDir.child(" 100% evil content .html").write("this is the content", "UTF-8");
-            return new DirectoryBrowserSupport(jenkins, tempDir, "title", "", false);
+            tempDir.child(" 100% evil dir name   ").child(" 100% evil content .html").write("this is the content", "UTF-8");
+            return new DirectoryBrowserSupport(jenkins, tempDir, "title", "", true);
         }
     }
 }
