@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -51,6 +52,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.time.Instant.*;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -147,7 +149,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             // Unsure whether this can happen -- just be safe here
             restOfPath = "/" + restOfPath;
         }
-        return resourceRootUrl + getUrlName() + "/" + token.encode() + restOfPath;
+        return resourceRootUrl + getUrlName() + "/" + token.encode() + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
     }
 
     private static String getResourceRootUrl() {
@@ -165,7 +167,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     @CheckForNull
     public Token getToken(@Nonnull DirectoryBrowserSupport dbs, @Nonnull StaplerRequest req) {
         // This is the "restOfPath" of the DirectoryBrowserSupport, i.e. the directory/file/pattern "inside" the DBS.
-        final String dbsFile = req.getRestOfPath();
+        final String dbsFile = req.getOriginalRestOfPath();
 
         // Now get the 'restOfUrl' after the top-level ancestor (which is the Jenkins singleton).
         // In other words, this is the complete URL after Jenkins handled the top-level request.
@@ -222,7 +224,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             try (ACLContext ignored = ACL.as(auth)) {
                 try {
-                    Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), requestUrlSuffix + restOfPath);
+                    String path = requestUrlSuffix + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
+                    Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), path);
                 } catch (Exception ex) {
                     // cf. UnwrapSecurityExceptionFilter
                     Throwable cause = ex.getCause();
@@ -263,7 +266,9 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private String path;
         private String username;
         private Instant timestamp;
-        private Token (String path, @Nullable String username, Instant timestamp) {
+
+        @VisibleForTesting
+        Token (String path, @Nullable String username, Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;
@@ -277,8 +282,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
 
         private static Token decode(String value) {
-            byte[] byteValue = Base64.getUrlDecoder().decode(value);
             try {
+                byte[] byteValue = Base64.getUrlDecoder().decode(value);
                 byte[] mac = Arrays.copyOf(byteValue, 32);
                 byte[] restBytes = Arrays.copyOfRange(byteValue, 32, byteValue.length);
                 String rest = new String(restBytes, StandardCharsets.UTF_8);

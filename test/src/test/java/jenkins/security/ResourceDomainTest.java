@@ -3,9 +3,11 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
+import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Assert;
@@ -17,8 +19,12 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.HttpResponse;
 
+import javax.annotation.CheckForNull;
 import java.net.URL;
+import java.time.Instant;
 import java.util.UUID;
 
 @Issue("JENKINS-41891")
@@ -278,5 +284,77 @@ public class ResourceDomainTest {
             System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
         }
         Assert.assertFalse(monitor.isActivated());
+    }
+
+    @Test
+    public void testRedirectUrls() throws Exception {
+        ResourceDomainRootAction rootAction = ResourceDomainRootAction.get();
+        String url = rootAction.getRedirectUrl(new ResourceDomainRootAction.Token("foo", "bar", Instant.now()), "foo bar baz");
+        Assert.assertFalse("urlencoded", url.contains(" "));
+    }
+
+    @Test
+    @Issue("JENKINS-59849")
+    public void testUrlEncoding() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getBuildersList().add(new CreateFileBuilder("This has spaces and is 100% evil.html", "<html><body>the content</body></html>"));
+        project.save();
+
+        j.buildAndAssertSuccess(project);
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.setThrowExceptionOnFailingStatusCode(false);
+        webClient.setRedirectEnabled(true);
+
+        HtmlPage page = webClient.getPage(project, "ws/This%20has%20spaces%20and%20is%20100%25%20evil.html");
+        Assert.assertEquals("page is found", 200, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is as expected", page.getWebResponse().getContentAsString().contains("the content"));
+
+        URL url = page.getUrl();
+        Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
+    }
+
+    @Test
+    @Issue("JENKINS-59849")
+    public void testMoreUrlEncoding() throws Exception {
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.setThrowExceptionOnFailingStatusCode(false);
+        webClient.setRedirectEnabled(true);
+
+        Page page = webClient.goTo("100%25%20evil/%20100%25%20evil%20content%20.html");
+        Assert.assertEquals("page is found", 200, page.getWebResponse().getStatusCode());
+        Assert.assertTrue("page content is as expected", page.getWebResponse().getContentAsString().contains("this is the content"));
+
+        URL url = page.getUrl();
+        Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
+    }
+
+    @TestExtension
+    public static class RootActionImpl implements UnprotectedRootAction {
+
+        @CheckForNull
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getUrlName() {
+            return "100% evil";
+        }
+
+        public HttpResponse doDynamic() throws Exception {
+            Jenkins jenkins = Jenkins.get();
+            FilePath tempDir = jenkins.getRootPath().createTempDir("root", "tmp");
+            tempDir.child(" 100% evil content .html").write("this is the content", "UTF-8");
+            return new DirectoryBrowserSupport(jenkins, tempDir, "title", "", false);
+        }
     }
 }
