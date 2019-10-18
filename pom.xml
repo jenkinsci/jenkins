@@ -91,6 +91,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
+    <hamcrest.version>2.1</hamcrest.version>
     <matrix-auth.version>2.3</matrix-auth.version>
     <matrix-project.version>1.14</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
