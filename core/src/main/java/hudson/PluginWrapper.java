@@ -231,7 +231,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link setDependents}.
+     * @deprecated Please use {@link #setDependents}.
      */
     @Deprecated
     public void setDependants(@Nonnull Set<String> dependents) {
@@ -247,7 +247,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link setOptionalDependents}.
+     * @deprecated Please use {@link #setOptionalDependents}.
      */
     @Deprecated
     public void setOptionalDependants(@Nonnull Set<String> optionalDependents) {
@@ -268,7 +268,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link getDependents}.
+     * @deprecated Please use {@link #getDependents}.
      */
     @Deprecated
     public @Nonnull Set<String> getDependants() {
@@ -293,7 +293,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link getOptionalDependents}.
+     * @deprecated Please use {@link #getOptionalDependents}.
      */
     @Deprecated
     public @Nonnull Set<String> getOptionalDependants() {
@@ -322,7 +322,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link hasDependents}.
+     * @deprecated Please use {@link #hasDependents}.
      */
     @Deprecated
     public boolean hasDependants() {
@@ -339,7 +339,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link hasOptionalDependents}.
+     * @deprecated Please use {@link #hasOptionalDependents}.
      */
     @Deprecated
     public boolean hasOptionalDependants() {

@@ -139,8 +139,6 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @param g
      *      The {@link ItemGroup} instance used as context to evaluate the relative name of this item
-     * @return
-     *      The name of the current item, relative to p. Nested {@link ItemGroup}s are separated by {@code /} character.
      * @since 1.419
      * @return
      *      String like "../foo/bar".
