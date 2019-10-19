@@ -275,7 +275,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
 
         private String encode() {
-            String value = username + ":" + timestamp.toEpochMilli() + ":" + path;
+            String value = timestamp.toEpochMilli() + ":" + username.length() + ":" + username + ":" + path;
             byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
             byte[] byteValue = ArrayUtils.addAll(KEY.mac(valueBytes), valueBytes);
             return Base64.getUrlEncoder().encodeToString(byteValue);
@@ -291,10 +291,12 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                     throw new IllegalArgumentException("Failed mac check for " + rest);
                 }
 
-                String[] splits = rest.split(":", 3);
-                String authenticationName = Util.fixEmpty(splits[0]);
-                String epoch = splits[1];
-                String browserUrl = splits[2];
+                String[] splits = rest.split("[:]", 3);
+                String epoch = splits[0];
+                int authenticationNameLength = Integer.parseInt(splits[1]);
+                String authenticationNameAndBrowserUrl = Util.fixEmpty(splits[2]);
+                String authenticationName = authenticationNameAndBrowserUrl.substring(0, authenticationNameLength);
+                String browserUrl = authenticationNameAndBrowserUrl.substring(authenticationNameLength + 1);
                 return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
             } catch (Exception ex) {
                 // Choose log level that hides people messing with the URLs
