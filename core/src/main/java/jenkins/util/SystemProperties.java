@@ -400,7 +400,7 @@ public class SystemProperties {
      * specified name, or a default value.
      *
      * This behaves just like {@code Long.getLong(String,Long)}, except that it
-     * also consults the {@code ServletContext}'s "init" parameters. If neither exist,
+     * also consults the {@link ServletContext}'s "init" parameters. If neither exist,
      * return the default value.
      *
      * @param   name property name.
@@ -417,8 +417,8 @@ public class SystemProperties {
       * Determines the integer value of the system property with the
       * specified name, or a default value.
       * 
-      * This behaves just like {@code Long.getLong(String,Long)}, except that it
-      * also consults the {@code ServletContext}'s "init" parameters. If neither exist,
+      * This behaves just like {@link Long#getLong(String, Long)}, except that it
+      * also consults the {@link ServletContext}'s "init" parameters. If neither exist,
       * return the default value. 
       * 
       * @param   name property name.

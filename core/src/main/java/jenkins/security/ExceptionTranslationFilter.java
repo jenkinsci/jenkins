@@ -39,6 +39,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -172,16 +173,16 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
 	/**
 	 * If {@code true}, indicates that {@code SecurityEnforcementFilter} is permitted to store the target
-	 * URL and exception information in the {@code HttpSession} (the default).
-     * In situations where you do not wish to unnecessarily create {@code HttpSession}s - because the user agent
+	 * URL and exception information in the {@link HttpSession} (the default).
+     * In situations where you do not wish to unnecessarily create {@link HttpSession}s - because the user agent
      * will know the failed URL, such as with BASIC or Digest authentication - you may wish to
 	 * set this property to {@code false}. Remember to also set the
 	 * {@link org.acegisecurity.context.HttpSessionContextIntegrationFilter#allowSessionCreation}
 	 * to {@code false} if you set this property to {@code false}.
 	 *
-	 * @return {@code true} if the {@code HttpSession} will be
+	 * @return {@code true} if the {@link HttpSession} will be
 	 * used to store information about the failed request, {@code false}
-	 * if the {@code HttpSession} will not be used
+	 * if the {@link HttpSession} will not be used
 	 */
 	public boolean isCreateSessionAllowed() {
 		return createSessionAllowed;

@@ -215,7 +215,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@code TaskListener} for this SlaveComputer. Never null
+     * Return the {@link TaskListener} for this SlaveComputer. Never null
      * @since 2.9
      */
     public TaskListener getListener() {
@@ -244,7 +244,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@code ComputerLauncher} for this SlaveComputer.
+     * Return the {@link ComputerLauncher} for this SlaveComputer.
      * @since 1.312
      */
     public ComputerLauncher getLauncher() {
@@ -252,8 +252,8 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@code ComputerLauncher} for this SlaveComputer, strips off
-     * any {@code DelegatingComputerLauncher}s or {@code ComputerLauncherFilter}s.
+     * Return the {@link ComputerLauncher} for this SlaveComputer, strips off
+     * any {@link DelegatingComputerLauncher}s or {@link ComputerLauncherFilter}s.
      * @since 2.83
      */
     public ComputerLauncher getDelegatedLauncher() {

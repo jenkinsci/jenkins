@@ -54,9 +54,9 @@ import javax.annotation.Nullable;
  * This pattern ensures that the underlying file handle is closed properly.
  * <p>
  * Like {@link java.nio.file.DirectoryStream}, {@code LinesStream} supports
- * creating at most one {@code Iterator}. Invoking {@link #iterator()} to
- * obtain a second or subsequent {@code Iterator} throws
- * {@code IllegalStateException}.
+ * creating at most one {@link Iterator}. Invoking {@link #iterator()} to
+ * obtain a second or subsequent {@link Iterator} throws
+ * {@link IllegalStateException}.
  *
  * @since 2.111
  */

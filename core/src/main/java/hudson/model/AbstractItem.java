@@ -90,6 +90,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -860,7 +861,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Updates an Item by its XML definition.
      * @param source source of the Item's new definition.
-     *               The source should be either a {@code StreamSource} or a {@code SAXSource}, other
+     *               The source should be either a {@link StreamSource} or a {@link SAXSource}, other
      *               sources may not be handled.
      * @since 1.473
      */
