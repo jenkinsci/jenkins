@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.security.ACLContext;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
@@ -126,6 +127,7 @@ public class WebAppMain implements ServletContextListener {
             }
 
             installLogger();
+            replaceSystemOutAndErr();
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
@@ -293,6 +295,78 @@ public class WebAppMain implements ServletContextListener {
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
+    }
+
+    private static class LoggingPrintStream extends PrintStream {
+        private final String name;
+
+        public LoggingPrintStream(String name, OutputStream out) {
+            super(out);
+            this.name = name;
+        }
+
+        private void log(final Object x) {
+            if (LOGGER.isLoggable(FINE)) {
+                LOGGER.log(FINE, "" + x, new Exception("The previous log message was sent to " + name + " in thread '" + Thread.currentThread().getName() + "' through the following stack trace. Plugins should never send log messages to " + name + "."));
+            } else {
+                LOGGER.info(() -> "'" + x + "' was sent to " + name + " in thread '" + Thread.currentThread().getName() + "'. Increase this logger's logging level to FINE to see the full stack trace.");
+            }
+        }
+
+        @Override
+        public void println(int x) {
+            log(x);
+        }
+
+        @Override
+        public void println(char x) {
+            log(x);
+        }
+
+        @Override
+        public void println(long x) {
+            log(x);
+        }
+
+        @Override
+        public void println(float x) {
+            log(x);
+        }
+
+        @Override
+        public void println(char[] x) {
+            log(x);
+        }
+
+        @Override
+        public void println(double x) {
+            log(x);
+        }
+
+        @Override
+        public void println(Object x) {
+            log(x);
+        }
+
+        @Override
+        public void println(String x) {
+            log(x);
+        }
+
+        @Override
+        public void println(boolean x) {
+            log(x);
+        }
+
+        @Override
+        public void println() {
+            log("");
+        }
+    }
+
+    private void replaceSystemOutAndErr() {
+        System.setOut(new LoggingPrintStream("System.out", System.out));
+        System.setErr(new LoggingPrintStream("System.err", System.err));
     }
 
     /** Add some metadata to a File, allowing to trace setup issues */
