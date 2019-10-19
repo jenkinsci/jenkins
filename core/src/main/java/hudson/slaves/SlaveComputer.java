@@ -169,9 +169,6 @@ public class SlaveComputer extends Computer {
         return os;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @OverridingMethodsMustInvokeSuper
     public boolean isAcceptingTasks() {
@@ -324,9 +321,6 @@ public class SlaveComputer extends Computer {
         });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
         super.taskAccepted(executor, task);
@@ -341,9 +335,6 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         super.taskCompleted(executor, task, durationMS);
@@ -356,9 +347,6 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
         super.taskCompletedWithProblems(executor, task, durationMS, problems);

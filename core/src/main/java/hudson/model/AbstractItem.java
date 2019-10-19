@@ -929,9 +929,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getSearchName() {
         // the search name of abstract items should be the name and not display name.

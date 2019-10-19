@@ -603,25 +603,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new BuildTimelineWidget(getBuilds());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
         // dummy implementation

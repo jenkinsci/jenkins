@@ -58,8 +58,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @return
      *      null to avoid setting an instance of {@link JobProperty} to the target project (or just use {@link OptionalJobProperty})
      */

@@ -129,9 +129,6 @@ public class CrumbFilter implements Filter {
         return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void destroy() {
     }

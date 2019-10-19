@@ -109,8 +109,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.
@@ -122,8 +120,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.

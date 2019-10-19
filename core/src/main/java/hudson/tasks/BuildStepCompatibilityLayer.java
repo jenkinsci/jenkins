@@ -65,7 +65,6 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     }
 
     /**
-     * {@inheritDoc}
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
     @Override

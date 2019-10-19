@@ -69,9 +69,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
@@ -96,9 +93,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         if (request instanceof HttpServletRequest) {

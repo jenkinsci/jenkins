@@ -123,7 +123,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
-     * {@inheritDoc}
      * @since 1.635.
      */
     @Override

@@ -528,9 +528,6 @@ public class Items {
             this.type = type;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public Iterator<T> iterator() {
             return new AllItemsIterator();
@@ -557,17 +554,11 @@ public class Items {
                 stack.push(root);
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public boolean hasNext() {
                 if (next != null) {
@@ -604,9 +595,6 @@ public class Items {
                 }
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public T next() {
                 if (!hasNext()) {
