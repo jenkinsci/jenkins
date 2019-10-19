@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.Computer;
@@ -46,6 +42,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
+/**
+ * @author pjanouse
+ */
 public class DisconnectNodeCommandTest {
 
     private CLICommandInvoker command;

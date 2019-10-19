@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +12,6 @@ import org.jvnet.hudson.test.Issue;
 
 /**
  * @author kingfai
- *
  */
 @SuppressWarnings("unchecked")
 public class AbstractItemTest {

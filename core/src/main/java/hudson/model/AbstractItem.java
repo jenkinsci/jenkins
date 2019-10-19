@@ -155,11 +155,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
     }
 
-    @Exported
     /**
      * @return The display name of this object, or if it is not set, the name
      * of the object.
      */
+    @Exported
     public String getDisplayName() {
         if(null!=displayName) {
             return displayName;
@@ -168,13 +168,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getName();
     }
     
-    @Exported
     /**
      * This is intended to be used by the Job configuration pages where
      * we want to return null if the display name is not set.
      * @return The display name of this object or null if the display name is not
      * set
      */
+    @Exported
     public String getDisplayNameOrNull() {
         return displayName;
     }
