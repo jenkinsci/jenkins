@@ -1206,7 +1206,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Updates the View with the new XML definition.
      * @param source source of the Item's new definition.
-     *               The source should be either a <code>StreamSource</code> or <code>SAXSource</code>, other sources
+     *               The source should be either a {@code StreamSource} or {@code SAXSource}, other sources
      *               may not be handled.
      */
     public void updateByXml(Source source) throws IOException {

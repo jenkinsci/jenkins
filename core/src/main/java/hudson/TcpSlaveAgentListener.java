@@ -455,7 +455,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
+     * Reschedules the {@code TcpSlaveAgentListener} on demand.  Disables itself after running.
      */
     @Extension
     @Restricted(NoExternalUse.class)

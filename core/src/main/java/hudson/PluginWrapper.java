@@ -595,7 +595,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns the minimum Java version of this plugin, as specified in the plugin metadata.
-     * Generally coming from the <code>java.level</code> extracted as MANIFEST's metadata with
+     * Generally coming from the {@code java.level} extracted as MANIFEST's metadata with
      * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
      *
      * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.

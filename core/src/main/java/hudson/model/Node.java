@@ -180,7 +180,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Returns the number of {@link Executor}s.
      *
-     * This may be different from <code>getExecutors().size()</code>
+     * This may be different from {@code getExecutors().size()}
      * because it takes time to adjust the number of executors.
      */
     @Exported

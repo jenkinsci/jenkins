@@ -185,11 +185,11 @@ public class Util {
     }
 
     /**
-     * Reads the entire contents of the text file at <code>logfile</code> into a
+     * Reads the entire contents of the text file at {@code logfile} into a
      * string using the {@link Charset#defaultCharset() default charset} for
      * decoding. If no such file exists, an empty string is returned.
      * @param logfile The text file to read in its entirety.
-     * @return The entire text content of <code>logfile</code>.
+     * @return The entire text content of {@code logfile}.
      * @throws IOException If an error occurs while reading the file.
      * @deprecated call {@link #loadFile(java.io.File, java.nio.charset.Charset)}
      * instead to specify the charset to use for decoding (preferably
@@ -202,12 +202,12 @@ public class Util {
     }
 
     /**
-     * Reads the entire contents of the text file at <code>logfile</code> into a
-     * string using <code>charset</code> for decoding. If no such file exists,
+     * Reads the entire contents of the text file at {@code logfile} into a
+     * string using {@code charset} for decoding. If no such file exists,
      * an empty string is returned.
      * @param logfile The text file to read in its entirety.
-     * @param charset The charset to use for decoding the bytes in <code>logfile</code>.
-     * @return The entire text content of <code>logfile</code>.
+     * @param charset The charset to use for decoding the bytes in {@code logfile}.
+     * @return The entire text content of {@code logfile}.
      * @throws IOException If an error occurs while reading the file.
      */
     @Nonnull
@@ -992,7 +992,7 @@ public class Util {
     /**
      * Creates an empty file if nonexistent or truncates the existing file.
      * Note: The behavior of this method in the case where the file already
-     * exists is unlike the POSIX <code>touch</code> utility which merely
+     * exists is unlike the POSIX {@code touch} utility which merely
      * updates the file's access and/or modification time.
      */
     public static void touch(@Nonnull File file) throws IOException {
@@ -1610,7 +1610,7 @@ public class Util {
     /**
      * If this flag is set to true then we will request a garbage collection
      * after a deletion failure before we next retry the delete.<br>
-     * It defaults to <code>false</code> and is ignored unless
+     * It defaults to {@code false} and is ignored unless
      * {@link #DELETION_MAX} is greater than 1.
      * <p>
      * Setting this flag to true <i>may</i> resolve some problems on Windows,

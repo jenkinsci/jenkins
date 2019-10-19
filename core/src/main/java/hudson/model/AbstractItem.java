@@ -860,7 +860,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Updates an Item by its XML definition.
      * @param source source of the Item's new definition.
-     *               The source should be either a <code>StreamSource</code> or a <code>SAXSource</code>, other
+     *               The source should be either a {@code StreamSource} or a {@code SAXSource}, other
      *               sources may not be handled.
      * @since 1.473
      */

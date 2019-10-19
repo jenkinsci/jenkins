@@ -643,7 +643,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * all the module roots that were checked out from SCM.
      *
      * <p>
-     * For normal SCMs, the array will be of length <code>1</code> and it's contents
+     * For normal SCMs, the array will be of length {@code 1} and it's contents
      * will be identical to calling {@link #getModuleRoot(FilePath, AbstractBuild)}.
      *
      * @param workspace The workspace root directory

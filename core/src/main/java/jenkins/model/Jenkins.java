@@ -462,9 +462,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * A file will be created at the very end of the Jenkins initialization process.
      * I.e. if the file is present, that means this is *NOT* a fresh startup.
      *
-     * <code>
+     * {@code
      *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
-     * </code>
+     * }
      */
     private transient static FileBoolean STARTUP_MARKER_FILE;
 
@@ -2726,7 +2726,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The strategy used to check the project names.
-     * @return never <code>null</code>
+     * @return never {@code null}
      */
     public ProjectNamingStrategy getProjectNamingStrategy() {
         return projectNamingStrategy == null ? ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY : projectNamingStrategy;

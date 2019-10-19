@@ -282,8 +282,8 @@ public class Items {
      * Computes the relative name of list of items after a rename or move occurred.
      * Used to manage job references as names in plugins to support {@link hudson.model.listeners.ItemListener#onLocationChanged}.
      * <p>
-     * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
-     * handle the relative path as "foo" is renamed to "zot" to compute <code>../zot/bar</code>
+     * In a hierarchical context, when a plugin has a reference to a job as {@code ../foo/bar} this method will
+     * handle the relative path as "foo" is renamed to "zot" to compute {@code ../zot/bar}
      *
      * @param oldFullName the old full name of the item
      * @param newFullName the new full name of the item

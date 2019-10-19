@@ -515,7 +515,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a new user account by registering a JBCrypt Hashed password with the user.
      *
      * @param userName The user's name
-     * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
+     * @param hashedPassword A hashed password, must begin with {@code #jbcrypt:}
      */
     public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
         if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
