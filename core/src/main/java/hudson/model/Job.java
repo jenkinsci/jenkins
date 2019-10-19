@@ -160,6 +160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */
+    @Deprecated
     private volatile BuildDiscarder logRotator;
 
     /**

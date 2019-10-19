@@ -97,6 +97,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Stores {@link AutoBrowserHolder}. Lazily created.
      * @deprecated Unused by default.
      */
+    @Deprecated
     private transient AutoBrowserHolder autoBrowserHolder;
 
     /**
