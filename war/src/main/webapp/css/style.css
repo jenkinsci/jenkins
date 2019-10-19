@@ -1579,6 +1579,24 @@ TEXTAREA.rich-editor {
     color: #888a85;
 }
 
+/*
+ * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299, 
+ *                  remove once there are no more dependencies
+ */
+#plugins .compatWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
+#plugins .securityWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
