@@ -94,7 +94,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.360
      * @deprecated as of 1.413
-     *      Use {@link #canTake(Queue.BuildableItem)}
+     *      Use {@link #canTake(BuildableItem)}
      */
     @Deprecated
     public CauseOfBlockage canTake(Task task) {
