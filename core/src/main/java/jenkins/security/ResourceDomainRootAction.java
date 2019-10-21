@@ -195,7 +195,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private final String authenticationName;
         private final String browserUrl;
 
-        InternalResourceRequest(@Nonnull String browserUrl, String authenticationName) {
+        InternalResourceRequest(@Nonnull String browserUrl, @Nonnull String authenticationName) {
             this.browserUrl = browserUrl;
             this.authenticationName = authenticationName;
         }
@@ -208,7 +208,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
             Authentication auth = Jenkins.ANONYMOUS;
-            if (authenticationName != null) {
+            if (Util.fixEmpty(authenticationName) != null) {
                 User user = User.getById(authenticationName, false);
                 if (user != null) {
                     try {
@@ -268,7 +268,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private Instant timestamp;
 
         @VisibleForTesting
-        Token (String path, @Nullable String username, Instant timestamp) {
+        Token (@Nonnull String path, @Nullable String username, @Nonnull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;
@@ -294,7 +294,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 String[] splits = rest.split("[:]", 3);
                 String epoch = splits[0];
                 int authenticationNameLength = Integer.parseInt(splits[1]);
-                String authenticationNameAndBrowserUrl = Util.fixEmpty(splits[2]);
+                String authenticationNameAndBrowserUrl = splits[2];
                 String authenticationName = authenticationNameAndBrowserUrl.substring(0, authenticationNameLength);
                 String browserUrl = authenticationNameAndBrowserUrl.substring(authenticationNameLength + 1);
                 return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
