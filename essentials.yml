@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "8155412b8412328abe620a399882f152265188b7"
-  athImage: "jenkins/ath@sha256:284c2fdfaf1a51e95783126367c0a88c07af83ff9234063d12ba3001959628e8"
+  athRevision: "e80a182071616ca358441912a3c40a9e06bb60e7"
+  athImage: "jenkins/ath@sha256:b79663975895b16467ef51998288cc70dca98b1c8a5ad1fa81235c5466fd4aa0"
   tests:
     - '*'
