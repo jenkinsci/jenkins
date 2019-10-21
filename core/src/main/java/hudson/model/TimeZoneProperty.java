@@ -88,7 +88,6 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
                     items.add(id);
                 }
             }
-            Messages.TimeZoneProperty_DisplayName();
             return items;
         }
     }
