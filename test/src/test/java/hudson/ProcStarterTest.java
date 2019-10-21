@@ -45,6 +45,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 
+
 /**
  * Contains tests for {@link ProcStarter} class.
  * @author Oleg Nenashev, Synopsys Inc.
@@ -83,6 +84,22 @@ public class ProcStarterTest {
         
         rule.assertBuildStatus(Result.FAILURE, run);
         rule.assertLogContains("java.io.IOException: Process working directory", run);
+    }
+
+    @Test
+    @Issue("JENKINS-59844")
+    public void testEmptyCommand() throws Exception {
+        //Force local executor, instead of remote
+        rule.jenkins.setNumExecutors(1);
+
+        FreeStyleProject project = rule.createFreeStyleProject();
+        project.getBuildersList().add(new CmdBuilder("    "));
+        FreeStyleBuild run = project.scheduleBuild2(0).get();
+
+        //The command is invalid, it should fail
+        rule.assertBuildStatus(Result.FAILURE, run);
+        //But the error shouldn't be this exception
+        rule.assertLogNotContains("ArrayIndexOutOfBoundsException", run);
     }
 
     /**
@@ -152,6 +169,33 @@ public class ProcStarterTest {
             String[] cmds = Functions.isWindows() ? new String[] { "cmd.exe", "/C", "echo", "Hello" } : new String[] { "echo", "Hello" };
             String path = Functions.isWindows() ? "C:\\this\\path\\doesn't\\exist" : "/this/path/doesnt/exist";
             Launcher.ProcStarter starter = launcher.launch().cmds(cmds).pwd(new File(path));
+            starter.start();
+            starter.join();
+            return true;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+                return true;
+            }
+        }
+    };
+
+    public static class CmdBuilder extends Builder {
+
+        private final String cmdSingleString;
+
+        public CmdBuilder(String cmdSingleString) {
+            this.cmdSingleString = cmdSingleString;
+        }
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            Launcher.ProcStarter starter = launcher
+                    .launch()
+                    .cmdAsSingleString(cmdSingleString);
             starter.start();
             starter.join();
             return true;
