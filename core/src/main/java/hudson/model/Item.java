@@ -141,8 +141,9 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *      The {@link ItemGroup} instance used as context to evaluate the relative name of this item
      * @since 1.419
      * @return
-     *      String like "../foo/bar".
-     *      {@code null} if one of item parents is not an {@link Item}.
+     *      The name of the current item, relative to {@code g}, or {@code null} if one of the
+     *      item's parents is not an {@link Item}. Nested {@link ItemGroup}s are separated by a
+     *      {@code /} character (e.g., {@code ../foo/bar}).
      */
     @Nullable
     default String getRelativeNameFrom(@CheckForNull ItemGroup g) {
