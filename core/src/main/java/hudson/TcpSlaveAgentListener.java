@@ -135,7 +135,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets the host name that we advertise protocol clients to connect to.
-     * @since TODO
+     * @since 2.198
      */
     public String getAdvertisedHost() {
         if (CLI_HOST_NAME != null) {

@@ -956,7 +956,7 @@ public class UpdateSite {
         /**
          * Version of Java this plugin requires to run.
          *
-         * @since TODO
+         * @since 2.158
          */
         @Exported
         public final String minimumJavaVersion;
@@ -1035,7 +1035,7 @@ public class UpdateSite {
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
          * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
          *
-         * @since TODO
+         * @since 2.175
          */
         @Restricted(NoExternalUse.class)
         public boolean isCompatible() {
@@ -1132,7 +1132,7 @@ public class UpdateSite {
 
         /**
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         * @since TODO
+         * @since 2.158
          */
         public boolean isForNewerJava() {
             try {
@@ -1161,7 +1161,7 @@ public class UpdateSite {
 
         /**
          * Returns the minimum Java version needed to use the plugin and all its dependencies.
-         * @since TODO
+         * @since 2.158
          * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
          */
         @CheckForNull
@@ -1208,7 +1208,7 @@ public class UpdateSite {
         /**
          * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
          *
-         * @since TODO
+         * @since 2.158
          */
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {

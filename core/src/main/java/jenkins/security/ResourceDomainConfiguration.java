@@ -61,7 +61,7 @@ import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
  * @see ResourceDomainFilter
  * @see ResourceDomainRootAction
  *
- * @since TODO
+ * @since 2.200
  */
 @Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
 @Restricted(NoExternalUse.class)
