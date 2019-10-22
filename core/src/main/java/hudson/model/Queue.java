@@ -276,7 +276,14 @@ public class Queue extends ResourceController implements Saveable {
                 return reason;
             }
             for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                reason = d.canTake(node, item);
+                try {
+                    reason = d.canTake(node, item);
+                } catch (Throwable t) {
+                    // We cannot guarantee the task can be taken by the node because something wrong happened
+                    LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanTakeLog(node.getNodeName(), item.task.getName()).toString());
+                    reason = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
+                }
+
                 if (reason != null) {
                     return reason;
                 }
@@ -1192,7 +1199,13 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-            causeOfBlockage = d.canRun(i);
+            try {
+                causeOfBlockage = d.canRun(i);
+            } catch (Throwable t) {
+                // We cannot guarantee the task can be run because something wrong happened
+                LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanRunLog(i.task.getName()).toString());
+                causeOfBlockage = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanRun());
+            }
             if (causeOfBlockage != null)
                 return causeOfBlockage;
         }
