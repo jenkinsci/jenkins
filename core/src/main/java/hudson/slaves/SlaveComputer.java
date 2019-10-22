@@ -45,6 +45,7 @@ import hudson.remoting.CommandTransport;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
 import hudson.util.NullStream;
@@ -61,8 +62,6 @@ import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -281,46 +280,42 @@ public class SlaveComputer extends Computer {
             logger.fine("Forcing a reconnect on "+getName());
 
         closeChannel();
-        return lastConnectActivity = Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Object>() {
-            public Object call() throws Exception {
-                // do this on another thread so that the lengthy launch operation
-                // (which is typical) won't block UI thread.
+        return lastConnectActivity = Computer.threadPoolForRemoting.submit(() -> {
+            // do this on another thread so that the lengthy launch operation
+            // (which is typical) won't block UI thread.
 
-                ACL.impersonate(ACL.SYSTEM);    // background activity should run like a super user
-
+            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {// background activity should run like a super user
+                log.rewind();
                 try {
-                    log.rewind();
-                    try {
-                        for (ComputerListener cl : ComputerListener.all())
-                            cl.preLaunch(SlaveComputer.this, taskListener);
-                        offlineCause = null;
-                        launcher.launch(SlaveComputer.this, taskListener);
-                    } catch (AbortException e) {
-                        taskListener.error(e.getMessage());
-                        throw e;
-                    } catch (IOException e) {
-                        Util.displayIOException(e,taskListener);
-                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
-                        throw e;
-                    } catch (InterruptedException e) {
-                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
-                        throw e;
-                    } catch (Exception e) {
-                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
-                        throw e;
-                    }
-                } finally {
-                    if (channel==null && offlineCause == null) {
-                        offlineCause = new OfflineCause.LaunchFailed();
-                        for (ComputerListener cl : ComputerListener.all())
-                            cl.onLaunchFailure(SlaveComputer.this, taskListener);
-                    }
+                    for (ComputerListener cl : ComputerListener.all())
+                        cl.preLaunch(SlaveComputer.this, taskListener);
+                    offlineCause = null;
+                    launcher.launch(SlaveComputer.this, taskListener);
+                } catch (AbortException e) {
+                    taskListener.error(e.getMessage());
+                    throw e;
+                } catch (IOException e) {
+                    Util.displayIOException(e,taskListener);
+                    Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                    throw e;
+                } catch (InterruptedException e) {
+                    Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
+                    throw e;
+                } catch (Exception e) {
+                    Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                    throw e;
                 }
-
-                if (channel==null)
-                    throw new IOException("Agent failed to connect, even though the launcher didn't report it. See the log output for details.");
-                return null;
+            } finally {
+                if (channel==null && offlineCause == null) {
+                    offlineCause = new OfflineCause.LaunchFailed();
+                    for (ComputerListener cl : ComputerListener.all())
+                        cl.onLaunchFailure(SlaveComputer.this, taskListener);
+                }
             }
+
+            if (channel==null)
+                throw new IOException("Agent failed to connect, even though the launcher didn't report it. See the log output for details.");
+            return null;
         });
     }
 
@@ -661,13 +656,10 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
-        SecurityContext old = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 cl.preOnline(this,channel,root,taskListener);
             }
-        } finally {
-            SecurityContextHolder.setContext(old);
         }
 
         offlineCause = null;
@@ -694,8 +686,7 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        old = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 try {
                     cl.onOnline(this,taskListener);
@@ -711,8 +702,6 @@ public class SlaveComputer extends Computer {
                     throw e;
                 }
             }
-        } finally {
-            SecurityContextHolder.setContext(old);
         }
         log.println("Agent successfully connected and online");
         Jenkins.get().getQueue().scheduleMaintenance();

@@ -338,9 +338,7 @@ public class Executor extends Thread implements ModelObject {
             lock.writeLock().unlock();
         }
 
-        ACL.impersonate(ACL.SYSTEM);
-
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
