@@ -51,8 +51,6 @@ public class MaintainCanTakeStrengthening {
 
         // Wait until the good ones are completed
         while (r.getInstance().getQueue().getLeftItems().size() < 2) {
-            Thread.sleep(200);
-
             // Forcing rescheduling
             r.getInstance().getQueue().maintain();
         }
