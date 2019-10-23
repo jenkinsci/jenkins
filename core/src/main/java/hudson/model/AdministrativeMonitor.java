@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -143,6 +144,13 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * so it should run efficiently.
      */
     public abstract boolean isActivated();
+
+    /**
+     * @return Level of permission required to show the monitor. By default only Jenkins.ADMINISTER can see it.
+     */
+    public Permission requiresPermission(){
+        return Jenkins.ADMINISTER;
+    }
 
     /**
      * URL binding to disable this monitor.
