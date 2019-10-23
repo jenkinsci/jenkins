@@ -332,7 +332,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(!Jenkins.get().hasPermission(Jenkins.CONFIGURE_JENKINS)) return ok();
+        if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)

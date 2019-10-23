@@ -5255,8 +5255,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission
      */
     public static final Permission CONFIGURE_JENKINS = new Permission(PERMISSIONS, "Configure", Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
-                                                                      Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
-
     public static final Permission READ = new Permission(PERMISSIONS,"Read",
                                                          Messages._Hudson_ReadPermission_Description(),CONFIGURE_JENKINS,
                                                          PermissionScope.JENKINS);
