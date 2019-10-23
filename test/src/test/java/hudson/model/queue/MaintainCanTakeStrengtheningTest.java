@@ -13,13 +13,14 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 
-public class MaintainCanTakeStrengthening {
+public class MaintainCanTakeStrengtheningTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
@@ -49,17 +50,13 @@ public class MaintainCanTakeStrengthening {
         taskFuture[1] = scheduleBuild("theFaultyOne", "faulty");
         taskFuture[2] = scheduleBuild("good2", "good");
 
-        // Wait until the good ones are completed
-        while (r.getInstance().getQueue().getLeftItems().size() < 2) {
-            // Forcing rescheduling
-            r.getInstance().getQueue().maintain();
-        }
+        // Wait for a while until the good ones start, no need to wait for their completion to guarantee
+        // the fix works
+        taskFuture[0].getStartCondition().get(15, TimeUnit.SECONDS);
+        taskFuture[2].getStartCondition().get(15, TimeUnit.SECONDS);
 
         // The faulty one is still in the queue
         assertThat(r.getInstance().getQueue().getBuildableItems().get(0).task.getName(), equalTo("theFaultyOne"));
-        // The good ones are completed
-        r.assertBuildStatusSuccess(taskFuture[0]);
-        r.assertBuildStatusSuccess(taskFuture[2]);
 
         // The new error is shown in the logs
         assertThat(logging.getMessages(), hasItem(Messages._Queue_ExceptionCanTakeLog(faultyAgent.getDisplayName(), "theFaultyOne").toString()));
