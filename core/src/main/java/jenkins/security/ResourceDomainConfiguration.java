@@ -78,7 +78,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
 
     @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
 
         return checkUrl(resourceRootUrlString, true);
     }
