@@ -55,7 +55,8 @@ public class MaintainCanTakeStrengtheningTest {
         taskFuture[0].getStartCondition().get(15, TimeUnit.SECONDS);
         taskFuture[2].getStartCondition().get(15, TimeUnit.SECONDS);
 
-        // The faulty one is still in the queue
+        // The faulty one is the only one in the queue
+        assertThat(r.getInstance().getQueue().getBuildableItems().size(), equalTo(1));
         assertThat(r.getInstance().getQueue().getBuildableItems().get(0).task.getName(), equalTo("theFaultyOne"));
 
         // The new error is shown in the logs
