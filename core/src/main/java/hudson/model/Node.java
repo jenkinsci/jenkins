@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -408,13 +409,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         for (NodeProperty prop: getNodeProperties()) {
             CauseOfBlockage c;
             // Commented out to see how the CI fails and it runs successfully when uncommented
-            //try {
+            try {
                 c = prop.canTake(item);
-//            } catch (Throwable t) {
-//                // We cannot guarantee the task can be taken by this node because something wrong happened
-//                LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanTakeLog(getNodeName(), item.task.getName()).toString());
-//                c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
-//            }
+            } catch (Throwable t) {
+                // We cannot guarantee the task can be taken by this node because something wrong happened
+                LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanTakeLog(getNodeName(), item.task.getName()).toString());
+                c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
+            }
             if (c!=null)    return c;
         }
 
