@@ -104,7 +104,7 @@ THE SOFTWARE.
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
                         <div class="alert alert-danger">${%compatWarning}
                           <j:if test="${p.hasIncompatibleParentPlugins()}">
-                            <br/>${%parentDepCompatWarning}
+                            <br/>${%parentCompatWarning}
                             <ul>
                               <j:forEach var="i" items="${p.getIncompatibleParentPlugins()}">
                                 <li><a href="${i.wiki}"><st:out value="${i.displayName} (${i.installed.version})"/></a></li>

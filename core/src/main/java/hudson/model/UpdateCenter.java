@@ -970,7 +970,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     public List<Plugin> getUpdates() {
         Map<String,Plugin> pluginMap = new LinkedHashMap<>();
-        Map<String, List<Plugin>> incompatiblePluginMap = new LinkedHashMap<>();
+        final Map<String, Set<Plugin>> incompatiblePluginMap = new LinkedHashMap<>();
+        final PluginManager.MetadataCache cache = new PluginManager.MetadataCache();
 
         for (UpdateSite site : sites) {
             for (Plugin plugin: site.getUpdates()) {
@@ -979,14 +980,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     pluginMap.put(plugin.name, plugin);
 
                     if (!plugin.isNeededDependenciesCompatibleWithInstalledVersion()) {
-                       for (Plugin incompatiblePlugin : plugin.getDependenciesIncompatibleWithInstalledVersion()) {
-                           if (!incompatiblePluginMap.containsKey(incompatiblePlugin.name)) {
-                               List<Plugin> l = new ArrayList<>();
-                               l.add(plugin);
-                               incompatiblePluginMap.put(incompatiblePlugin.name, l);
-                           } else {
-                               incompatiblePluginMap.get(incompatiblePlugin.name).add(plugin);
-                           }
+                       for (Plugin incompatiblePlugin : plugin.getDependenciesIncompatibleWithInstalledVersion(cache)) {
+                           incompatiblePluginMap.computeIfAbsent(incompatiblePlugin.name, _ignored -> new HashSet<>()).add(plugin);
                        }
                     }
                 } else if (!existing.version.equals(plugin.version)) {
@@ -1000,11 +995,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
-        for(String incompatiblePlugin : incompatiblePluginMap.keySet()) {
-            if(pluginMap.containsKey(incompatiblePlugin)) {
-                pluginMap.get(incompatiblePlugin).setIncompatibleParentPlugins(incompatiblePluginMap.get(incompatiblePlugin));
-            }
-        }
+        incompatiblePluginMap.forEach((key, incompatiblePlugins) -> pluginMap.computeIfPresent(key, (_ignored, plugin) -> {
+            plugin.setIncompatibleParentPlugins(incompatiblePlugins);
+            return plugin;
+        }));
 
         return new ArrayList<>(pluginMap.values());
     }
