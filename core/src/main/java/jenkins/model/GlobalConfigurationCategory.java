@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
+import hudson.security.Permission;
+
 import org.jenkinsci.Symbol;
 
 import javax.annotation.Nonnull;

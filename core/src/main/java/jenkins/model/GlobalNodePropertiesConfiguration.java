@@ -1,6 +1,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.security.AccessDeniedException2;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import net.sf.json.JSONObject;
@@ -18,15 +19,18 @@ import java.io.IOException;
 public class GlobalNodePropertiesConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        try {
-            Jenkins j = Jenkins.get();
-            JSONObject np = json.getJSONObject("globalNodeProperties");
-            if (!np.isNullObject()) {
-                j.getGlobalNodeProperties().rebuild(req, np, NodeProperty.for_(j));
+        if(Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            try {
+                Jenkins j = Jenkins.get();
+                JSONObject np = json.getJSONObject("globalNodeProperties");
+                if (!np.isNullObject()) {
+                    j.getGlobalNodeProperties().rebuild(req, np, NodeProperty.for_(j));
+                }
+                return true;
+            } catch (IOException e) {
+                throw new FormException(e,"globalNodeProperties");
             }
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"globalNodeProperties");
         }
+        return true;
     }
 }
