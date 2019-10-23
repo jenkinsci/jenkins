@@ -408,7 +408,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
             CauseOfBlockage c;
-            // Commented out to see how the CI fails and it runs successfully when uncommented
             try {
                 c = prop.canTake(item);
             } catch (Throwable t) {
