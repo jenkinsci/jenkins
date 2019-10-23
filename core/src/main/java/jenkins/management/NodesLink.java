@@ -57,8 +57,4 @@ public class NodesLink extends ManagementLink {
         return "computer";
     }
 
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.CONFIGURE_JENKINS;
-    }
 }
