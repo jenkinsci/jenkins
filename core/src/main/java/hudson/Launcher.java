@@ -450,6 +450,8 @@ public abstract class Launcher {
 
         /**
          * Starts the new process as configured.
+         *
+         * @throws RuntimeException can be thrown if {@link #cmds()} is empty
          */
         public Proc start() throws IOException {
             if(cmds().isEmpty()){
@@ -703,6 +705,8 @@ public abstract class Launcher {
 
     /**
      * Primarily invoked from {@link ProcStarter#start()} to start a process with a specific launcher.
+     *
+     * @throws RuntimeException can be thrown if {@link ProcStarter#cmds()} is empty
      */
     public abstract Proc launch(@Nonnull ProcStarter starter) throws IOException;
 
