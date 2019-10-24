@@ -98,7 +98,7 @@ and for joining teams like [Jenkins Security Team].
 
 ## Continuous Integration
 
-The Jenkins project has a Continuous Integration server... powered by Jenkins, of course.
+The Jenkins project has a Continuous Integration server powered by Jenkins.
 It is located at [ci.jenkins.io].
 
 The Jenkins project uses [Jenkins Pipeline] to run builds.
