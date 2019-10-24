@@ -1331,6 +1331,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Orderly terminates all the plugins.
      */
+    @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection is required to release files held by plugin classloaders")
     public void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
@@ -1340,6 +1341,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
+        // Java doesn't have any direct means to release unreferenced classloaders,
+        // so we force GC to do that so it becomes possible to delete plugin jar on Windows.
+        System.gc();
     }
 
     /**
