@@ -71,6 +71,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -234,7 +235,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Called during the initial setup to create an admin user
      */
-    @RequirePOST
+    @POST
     @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins j = Jenkins.get();
@@ -302,7 +303,7 @@ public class SetupWizard extends PageDecorator {
         }
     }    
     
-    @RequirePOST
+    @POST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -607,7 +608,7 @@ public class SetupWizard extends PageDecorator {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
-            if (request instanceof HttpServletRequest) {
+            if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 String requestURI = req.getRequestURI();
                 if (requestURI.equals(req.getContextPath()) && !requestURI.endsWith("/")) {

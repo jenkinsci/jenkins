@@ -115,6 +115,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
@@ -663,7 +664,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
-        Job newJob = (Job) newItem; // Missing covariant parameters type here.
         File oldBuildDir = getBuildDir();
         super.movedTo(destination, newItem, destDir);
         File newBuildDir = getBuildDir();
@@ -984,10 +984,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        RunT r = getLastBuild();
-        while (r != null && r.isBuilding())
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
     
     /**
@@ -997,19 +994,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *   if not enough builds satisfying the threshold have been found. Never null.
      */
     public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
-        
-        List<RunT> result = new ArrayList<>(numberOfBuilds);
-        
         RunT r = getLastBuild();
-        while (r != null && result.size() < numberOfBuilds) {
-            if (!r.isBuilding() && 
-                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
-                result.add(r);
-            }
-            r = r.getPreviousBuild();
-        }
-        
-        return result;
+        return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
     
     /**
@@ -1318,7 +1304,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit(StaplerRequest req,
             StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);

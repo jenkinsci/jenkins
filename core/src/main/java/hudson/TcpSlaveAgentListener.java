@@ -43,7 +43,9 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Base64;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
@@ -54,12 +56,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -132,6 +134,21 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
+     * Gets the host name that we advertise protocol clients to connect to.
+     * @since 2.198
+     */
+    public String getAdvertisedHost() {
+        if (CLI_HOST_NAME != null) {
+          return CLI_HOST_NAME;
+        }
+        try {
+            return new URL(Jenkins.get().getRootUrl()).getHost();
+        } catch (MalformedURLException | NullPointerException e) {
+            throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
+        }
+    }
+
+    /**
      * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
      * @return the Base64 encoded public key
      * @since 2.16
@@ -139,7 +156,7 @@ public final class TcpSlaveAgentListener extends Thread {
     @Nullable
     public String getIdentityPublicKey() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
-        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), StandardCharsets.UTF_8);
+        return key == null ? null : Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     /**

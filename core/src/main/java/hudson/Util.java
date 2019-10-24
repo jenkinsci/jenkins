@@ -753,10 +753,12 @@ public class Util {
     /**
      * Get a human readable string representing strings like "xxx days ago",
      * which should be used to point to the occurrence of an event in the past.
+     * @deprecated Actually identical to {@link #getTimeSpanString}, does not add {@code ago}.
      */
+    @Deprecated
     @Nonnull
     public static String getPastTimeString(long duration) {
-        return Messages.Util_pastTime(getTimeSpanString(duration));
+        return getTimeSpanString(duration);
     }
 
 
@@ -873,9 +875,11 @@ public class Util {
                     if (!escaped) {
                         out = new StringBuilder(i + (m - i) * 3);
                         out.append(s, 0, i);
+                        escaped = true;
+                    }
+                    if (enc == null || buf == null) {
                         enc = StandardCharsets.UTF_8.newEncoder();
                         buf = CharBuffer.allocate(1);
-                        escaped = true;
                     }
                     // 1 char -> UTF8
                     buf.put(0, c);
@@ -901,10 +905,10 @@ public class Util {
                 }
 
                 byte[] bytes = new String(new int[] { codePoint }, 0, 1).getBytes(StandardCharsets.UTF_8);
-                for(int j=0;j<bytes.length;j++) {
+                for (byte aByte : bytes) {
                     out.append('%');
-                    out.append(toDigit((bytes[j] >> 4) & 0xF));
-                    out.append(toDigit(bytes[j] & 0xF));
+                    out.append(toDigit((aByte >> 4) & 0xF));
+                    out.append(toDigit(aByte & 0xF));
                 }
 
                 if(Character.charCount(codePoint) > 1) {

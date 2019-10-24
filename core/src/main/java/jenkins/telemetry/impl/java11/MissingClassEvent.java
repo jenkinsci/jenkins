@@ -26,7 +26,6 @@ package jenkins.telemetry.impl.java11;
 
 import javax.annotation.Nonnull;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 
 /**

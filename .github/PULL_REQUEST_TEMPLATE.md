@@ -1,3 +1,8 @@
+<!-- Comment: 
+A great PR typically begins with the line below.
+Replace XXXXX with the numeric part of the issue's id you created on JIRA.
+Please note that if you want your changes backported into LTS, you will need to create a JIRA ticket for it. Read https://jenkins.io/download/lts/#backporting-process for more.
+-->
 See [JENKINS-XXXXX](https://issues.jenkins-ci.org/browse/JENKINS-XXXXX).
 
 <!-- Comment: 

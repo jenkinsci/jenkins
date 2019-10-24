@@ -39,10 +39,23 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.257.2</stapler.version>
+    <stapler.version>1.258</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
 
   <dependencies>
     <dependency>
@@ -53,7 +66,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
-      <!-- specified in the parent -->
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -258,9 +270,9 @@ THE SOFTWARE.
       <version>2.3.0</version>
     </dependency>
     <dependency>
-      <groupId>jfree</groupId>
+      <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.0.9</version>
+      <version>1.0.19</version>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -299,7 +311,7 @@ THE SOFTWARE.
     <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.10</version>
+        <version>1.19</version>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
@@ -769,7 +781,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>2.2.0</version>
+                  <version>2.3.0</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>

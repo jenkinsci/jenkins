@@ -23,9 +23,9 @@
  */
 package jenkins.security;
 
-import hudson.remoting.Base64;
 import java.security.Signature;
-import static org.junit.Assert.*;
+import java.util.Base64;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -46,7 +46,7 @@ public class RSADigitalSignatureConfidentialKeyTest {
         sig.initVerify(key.getPublicKey());
         sig.update(plainText.getBytes("UTF-8"));
 
-        assertTrue(sig.verify(Base64.decode(msg)));
+        assertTrue(sig.verify(Base64.getDecoder().decode(msg)));
     }
 
 }

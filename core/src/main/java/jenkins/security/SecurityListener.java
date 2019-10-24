@@ -69,7 +69,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void loggedIn(@Nonnull String username){}
 
     /**
-     * @since TODO
+     * @since 2.161
      *
      * Fired after a new user account has been created and saved to disk.
      *
@@ -106,7 +106,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since TODO */
+    /** @since 2.161 */
     public static void fireUserCreated(@Nonnull String username) {
         LOGGER.log(Level.FINE, "new user created: {0}", username);
         for (SecurityListener l : all()) {

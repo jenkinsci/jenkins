@@ -21,7 +21,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
     private byte[] decoded;
     private int pos;
     private final DataInputStream din;
-    private static final Base64.Decoder decoder = Base64.getMimeDecoder();
+    private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public UnbufferedBase64InputStream(InputStream in) {
         super(in);

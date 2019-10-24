@@ -28,6 +28,7 @@ import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -36,7 +37,6 @@ import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
@@ -246,7 +246,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
-        if (Jenkins.getInstanceOrNull() == null) { // TODO use !Functions.isExtensionsAvailable() once JENKINS-33377
+        if (!Functions.isExtensionsAvailable()) {
             return;
         }
         for (RunListener l : all()) {

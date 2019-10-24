@@ -62,6 +62,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
@@ -88,6 +89,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.GuardedBy;
@@ -300,8 +302,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
+        try {
+            IOUtils.mkdirs(dir);
+        } catch (IOException x) {
+            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
         }
         return dir;
     }
@@ -731,10 +735,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIcon() {
-        if(isOffline())
-            return "computer-x.png";
-        else
-            return "computer.png";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "computer-user-offline.png";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "computer-x.png";
+        return "computer.png";
     }
 
     /**
@@ -750,17 +755,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIconClassName() {
-        if(isOffline())
-            return "icon-computer-x";
-        else
-            return "icon-computer";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "icon-computer-user-offline";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "icon-computer-x";
+        return "icon-computer";
     }
 
     public String getIconAltText() {
-        if(isOffline())
-            return "[offline]";
-        else
-            return "[online]";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "[offline]";
+        return "[online]";
     }
 
     @Exported
@@ -1464,7 +1471,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
@@ -1775,4 +1782,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    static {
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-sm", "16x16/computer-user-offline.png", Icon.ICON_SMALL_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-md", "24x24/computer-user-offline.png", Icon.ICON_MEDIUM_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-lg", "32x32/computer-user-offline.png", Icon.ICON_LARGE_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-xlg", "48x48/computer-user-offline.png", Icon.ICON_XLARGE_STYLE));
+    }
 }

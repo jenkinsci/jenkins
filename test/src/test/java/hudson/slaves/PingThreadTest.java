@@ -36,7 +36,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
-import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertNotNull;

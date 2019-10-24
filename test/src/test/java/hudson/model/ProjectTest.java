@@ -33,12 +33,9 @@ import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
-import java.io.Closeable;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
-import hudson.util.Scrambler;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;

@@ -3,7 +3,6 @@ package hudson.util.io;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;

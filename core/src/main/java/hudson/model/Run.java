@@ -4,8 +4,8 @@
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
  * Darek Ostolski, CloudBees, Inc.
- *
  * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,8 +74,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.lang.UnsupportedOperationException;
+import java.lang.SecurityException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -131,6 +134,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A particular execution of {@link Job}.
@@ -664,7 +668,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the length-limited description.
      * @return The length-limited description.
-     */   
+     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     */
+    @Deprecated
     public @Nonnull String getTruncatedDescription() {
         final int maxDescrLength = 100;
         if (description == null || description.length() < maxDescrLength) {
@@ -718,7 +724,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public @Nonnull String getTimestampString() {
         long duration = new GregorianCalendar().getTimeInMillis()-timestamp;
-        return Util.getPastTimeString(duration);
+        return Util.getTimeSpanString(duration);
     }
 
     /**
@@ -947,17 +953,32 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.383
      */  
     public @Nonnull List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
-        List<RunT> builds = new ArrayList<>(numberOfBuilds);
-        
         RunT r = getPreviousBuild();
+        return r.getBuildsOverThreshold(numberOfBuilds, threshold);
+    }
+
+    /**
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}.
+     *
+     * @param numberOfBuilds the desired number of builds
+     * @param threshold the build result threshold
+     * @return a list with the builds (youngest build first).
+     *   May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     * @since TODO
+     */
+    protected @Nonnull List<RunT> getBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
+        List<RunT> builds = new ArrayList<>(numberOfBuilds);
+
+        RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
-            if (!r.isBuilding() && 
+            if (!r.isBuilding() &&
                  (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
                 builds.add(r);
             }
             r = r.getPreviousBuild();
         }
-        
+
         return builds;
     }
 
@@ -1566,34 +1587,51 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void delete() throws IOException {
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
-            throw new IOException(this + ": " + rootDir + " looks to have already been deleted; siblings: " + Arrays.toString(project.getBuildDir().list()));
+            //No root directory found to delete. Somebody seems to have nuked
+            //it externally. Logging a warning before dropping the build
+            LOGGER.warning(String.format(
+                    "%s: %s looks to have already been deleted, assuming build dir was already cleaned up",
+                    this, rootDir
+            ));
+            //Still firing the delete listeners; just no need to clean up rootDir
+            RunListener.fireDeleted(this);
+            synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+                removeRunFromParent();
+            }
+            return;
         }
         
+        //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
-
+        
         if (artifactManager != null) {
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
-
-        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
-        File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
-        if (tmp.exists()) {
+        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+            File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
+            
+            if (tmp.exists()) {
+                Util.deleteRecursive(tmp);
+            }
+            try {
+                Files.move(
+                        Util.fileToPath(rootDir),
+                        Util.fileToPath(tmp),
+                        StandardCopyOption.ATOMIC_MOVE
+                );
+            } catch (UnsupportedOperationException | SecurityException ex) {
+                throw new IOException(rootDir + " is in use");
+            }
+            
             Util.deleteRecursive(tmp);
-        }
-        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
-        boolean renamingSucceeded = rootDir.renameTo(tmp);
-        Util.deleteRecursive(tmp);
-        // some user reported that they see some left-over .xyz files in the workspace,
-        // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
-        if(tmp.exists())
-            tmp.deleteOnExit();
-
-        if(!renamingSucceeded)
-            throw new IOException(rootDir+" is in use");
-        LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
-
-        removeRunFromParent();
+            // some user reported that they see some left-over .xyz files in the workspace,
+            // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
+            if (tmp.exists()) {
+                tmp.deleteOnExit();
+            }
+            LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
+            removeRunFromParent();
         }
     }
 
@@ -2421,7 +2459,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
-    @RequirePOST
+    @POST
     public @Nonnull HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
         try (BulkChange bc = new BulkChange(this)) {

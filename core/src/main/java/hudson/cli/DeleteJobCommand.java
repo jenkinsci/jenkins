@@ -75,7 +75,7 @@ public class DeleteJobCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(job_s + ": " + e.getMessage());
+                final String errorMsg = job_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;

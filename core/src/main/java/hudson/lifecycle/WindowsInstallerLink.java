@@ -24,6 +24,7 @@
 package hudson.lifecycle;
 
 import com.sun.jna.Native;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.model.ManagementLink;
@@ -188,6 +189,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     Thread.sleep(1000);
