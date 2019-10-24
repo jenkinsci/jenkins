@@ -141,6 +141,17 @@ public abstract class Telemetry implements ExtensionPoint {
         return jenkins == null || !jenkins.isUsageStatisticsCollected();
     }
 
+    /**
+     * Returns true iff we're in the time period during which this is supposed to collect data.
+     * @return true iff we're in the time period during which this is supposed to collect data
+     *
+     * @since TODO
+     */
+    public boolean isActivePeriod() {
+        LocalDate now = LocalDate.now();
+        return now.isAfter(getStart()) && now.isBefore(getEnd());
+    }
+
     @Extension
     public static class TelemetryReporter extends AsyncPeriodicWork {
 

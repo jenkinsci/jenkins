@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+import jenkins.telemetry.impl.AutoRefresh;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -178,6 +179,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @SuppressWarnings("rawtypes")
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
+    private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     public Functions() {
     }
@@ -645,6 +647,12 @@ public class Functions {
         }
         if (refresh) {
             response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
+        }
+
+        try {
+            ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to record auto refresh status in telemetry", e);
         }
     }
 
