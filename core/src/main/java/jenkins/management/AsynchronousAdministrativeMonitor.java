@@ -6,6 +6,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import jenkins.security.RekeySecretAdminMonitor;
@@ -97,9 +98,8 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
 
         @Override
         public void run() {
-            ACL.impersonate(ACL.SYSTEM);
             StreamTaskListener listener = null;
-            try {
+            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                 listener = new StreamTaskListener(getLogFile());
                 try {
                     doRun(listener);

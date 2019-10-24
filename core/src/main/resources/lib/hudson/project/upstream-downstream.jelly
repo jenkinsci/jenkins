@@ -31,7 +31,7 @@ THE SOFTWARE.
     <d:tag name="relationship">
       <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
         <st:nbsp/>
-        <a href="${rootURL}/projectRelationship?lhs=${lhs.name}&amp;rhs=${rhs.name}">
+        <a href="${rootURL}/projectRelationship?lhs=${h.urlEncode(lhs.name)}&amp;rhs=${h.urlEncode(rhs.name)}">
           <l:icon class="icon-fingerprint icon-sm"/>
         </a>
       </j:if>

@@ -289,7 +289,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         if (atts != null) {
             String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
-            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+            if (Boolean.parseBoolean( usePluginFirstClassLoader )) {
                 PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );

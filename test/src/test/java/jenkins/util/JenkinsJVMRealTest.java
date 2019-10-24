@@ -4,7 +4,6 @@ import hudson.slaves.DumbSlave;
 import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 

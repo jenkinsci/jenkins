@@ -178,11 +178,11 @@ public class ListJobsCommandTest {
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                final HashSet<String> jobs = new HashSet<String>(
+                final HashSet<String> jobs = new HashSet<>(
                         Arrays.asList(item.toString().split(System.getProperty("line.separator")))
                 );
 
-                return new HashSet<String>(Arrays.asList(expected)).equals(jobs);
+                return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }
 
             @Override

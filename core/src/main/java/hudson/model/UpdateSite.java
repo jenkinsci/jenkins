@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,7 +65,6 @@ import javax.annotation.Nullable;
 
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
-import jenkins.model.DownloadSettings;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
@@ -75,14 +73,12 @@ import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -189,15 +185,6 @@ public class UpdateSite {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
-    /**
-     * This is the endpoint that receives the update center data file from the browser.
-     */
-    @RequirePOST
-    public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        DownloadSettings.checkPostBackAccess();
-        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
-    }
-
     private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
@@ -969,7 +956,7 @@ public class UpdateSite {
         /**
          * Version of Java this plugin requires to run.
          *
-         * @since TODO
+         * @since 2.158
          */
         @Exported
         public final String minimumJavaVersion;
@@ -1048,7 +1035,7 @@ public class UpdateSite {
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
          * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
          *
-         * @since TODO
+         * @since 2.175
          */
         @Restricted(NoExternalUse.class)
         public boolean isCompatible() {
@@ -1145,7 +1132,7 @@ public class UpdateSite {
 
         /**
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         * @since TODO
+         * @since 2.158
          */
         public boolean isForNewerJava() {
             try {
@@ -1174,7 +1161,7 @@ public class UpdateSite {
 
         /**
          * Returns the minimum Java version needed to use the plugin and all its dependencies.
-         * @since TODO
+         * @since 2.158
          * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
          */
         @CheckForNull
@@ -1221,7 +1208,7 @@ public class UpdateSite {
         /**
          * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
          *
-         * @since TODO
+         * @since 2.158
          */
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {

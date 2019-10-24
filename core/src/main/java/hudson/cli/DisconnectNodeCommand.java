@@ -87,7 +87,7 @@ public class DisconnectNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                stderr.println(String.format(node_s + ": " + e.getMessage()));
+                stderr.println(node_s + ": " + e.getMessage());
                 errorOccurred = true;
                 continue;
             }

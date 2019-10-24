@@ -124,6 +124,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
@@ -243,6 +244,7 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.InputSource;
 
 import javax.annotation.CheckForNull;
@@ -314,6 +316,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
     private transient final Queue queue;
+
+    // flag indicating if we have loaded the jenkins configuration or not yet.
+    private transient volatile boolean configLoaded = false;
 
     /**
      * Stores various objects scoped to {@link Jenkins}.
@@ -860,8 +865,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         long start = System.currentTimeMillis();
         STARTUP_MARKER_FILE = new FileBoolean(new File(root, ".lastStarted"));
         // As Jenkins is starting, grant this process full control
-        ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             this.root = root;
             this.servletContext = context;
             computeVersion(context);
@@ -1035,8 +1039,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         System.currentTimeMillis()-start));
 
             STARTUP_MARKER_FILE.on();
-        } finally {
-            SecurityContextHolder.clearContext();
         }
     }
 
@@ -1108,14 +1110,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             protected void runTask(Task task) throws Exception {
                 if (is!=null && is.skipInitTask(task))  return;
 
-                ACL.impersonate(ACL.SYSTEM); // full access in the initialization thread
                 String taskName = InitReactorRunner.getDisplayName(task);
 
                 Thread t = Thread.currentThread();
                 String name = t.getName();
                 if (taskName !=null)
                     t.setName(taskName);
-                try {
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) { // full access in the initialization thread
                     long start = System.currentTimeMillis();
                     super.runTask(task);
                     if(LOG_STARTUP_PERFORMANCE)
@@ -1129,7 +1130,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 } finally {
                     t.setName(name);
-                    SecurityContextHolder.clearContext();
                 }
             }
             private boolean containsLinkageError(Throwable x) {
@@ -2092,6 +2092,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
      * represents the master.
      */
+    @Nonnull
     public List<Node> getNodes() {
         return nodes.getNodes();
     }
@@ -3079,14 +3080,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // load from disk
             cfg.unmarshal(Jenkins.this);
         }
-
+        configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
-
     }
 
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
@@ -3287,13 +3287,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
+        InitMilestone currentMilestone = initLevel;
 
-        if (initLevel == InitMilestone.COMPLETED) {
+        if (!configLoaded) {
+            // someone is trying to save the config before all extensions are loaded (and possibly after as the task
+            // may run in parallel with other tasks.  OMG...!!! this is generally very bad and can lead to dataloss
+            LOGGER.log(Level.SEVERE,
+                       "An attempt to save Jenkins'' global configuration before it has been loaded has been "
+                       + "made during milestone " + currentMilestone
+                       + ".  This is indicative of a bug in the caller and may lead to full or partial loss of "
+                       + "configuration.",
+                       new IllegalStateException("call trace"));
+            // at this point we may want to terminate but the save may be called from a different thread and we
+            // can not call System.halt() because we could be running in a container :(
+            // for now just deny the save (the data will be replaced when we do load anyway
+            throw new IllegalStateException("An attempt to save the global configuration was made before it was loaded");
+        }
+
+        if(BulkChange.contains(this)) {
+            return;
+        }
+        if (currentMilestone == InitMilestone.COMPLETED) {
             LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
             version = VERSION;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
         }
 
         getConfigFile().write(this);
@@ -3755,7 +3773,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
@@ -3809,7 +3827,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the node configuration page.
      */
-    @RequirePOST
+    @POST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(ADMINISTER);
 
@@ -3960,7 +3978,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return (T)copy((TopLevelItem)src,name);
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req,rsp, this));
@@ -4091,8 +4109,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         new Thread("Jenkins config reload thread") {
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     reload();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
@@ -4277,9 +4294,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
-
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                     LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
@@ -4306,8 +4321,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
 
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
@@ -4377,8 +4391,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                             getAuthentication().getName(), req != null ? req.getRemoteAddr() : "???"));
 
@@ -4406,8 +4419,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
@@ -4941,7 +4953,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
             Jenkins.get().doConfigExecutorsSubmit(req, rsp);
         }

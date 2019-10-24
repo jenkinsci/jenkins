@@ -112,7 +112,7 @@ public class ParametersActionTest {
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         
-        LinkedList<BuildWrapper> wrappers = new LinkedList<BuildWrapper>();
+        LinkedList<BuildWrapper> wrappers = new LinkedList<>();
         parametersAction.createBuildWrappers(build, wrappers);
         assertEquals(0, wrappers.size());
         

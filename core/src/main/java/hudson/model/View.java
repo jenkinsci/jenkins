@@ -123,6 +123,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
 /**
@@ -948,19 +949,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        
     }
-    
+
+    /**
+     * Add a simple CollectionSearchIndex object to sib
+     *
+     * @param sib the SearchIndexBuilder
+     * @since 2.200
+     */
+    protected void makeSearchIndex(SearchIndexBuilder sib) {
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            protected TopLevelItem get(String key) { return getItem(key); }
+            protected Collection<TopLevelItem> all() { return getItems(); }
+            @Override
+            protected String getName(TopLevelItem o) {
+                // return the name instead of the display for suggestion searching
+                return o.getName();
+            }
+        });
+    }
+
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
-        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
-                protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
-                @Override
-                protected String getName(TopLevelItem o) {
-                    // return the name instead of the display for suggestion searching
-                    return o.getName();
-                }
-            });
+        makeSearchIndex(sib);
         
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
@@ -985,7 +996,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
-    @RequirePOST
+    @POST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 

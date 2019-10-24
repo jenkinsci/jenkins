@@ -31,7 +31,6 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.assertEquals;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;

@@ -9,11 +9,12 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the development tools. In order to develop Jenkins, you need the following tools:
-  * Java Development Kit (JDK) 8.
-     - In Jenkins project we usually use [OpenJDK],
-  but you can use other JDKs as well.
-     - Java 9+ is **not supported** in Jenkins.
-  * Maven 3.5.3 or above. You can [download maven].
+  * Java Development Kit (JDK) 8 or 11.
+    In Jenkins project we usually use [OpenJDK](http://openjdk.java.net/) or [AdoptOpenJDK](https://adoptopenjdk.net/), but you can use other JDKs as well.
+    * For JDK 11 there might be some compatibility issues in developer tools,
+      please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
+      If you hit a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
+  * Maven 3.5.4 or above. You can [download maven].
   * Any IDE which supports importing Maven projects.
 4. Setup your development environment as described in [Preparing for Plugin Development]
 
@@ -30,7 +31,7 @@ There is a description of the [building and debugging process].
 
 If you want simply to have the `jenkins.war` file as fast as possible without tests, run:
 
-    mvn clean package -pl war -am -DskipTests -Dfindbugs.skip
+    mvn clean package -pl war -am -DskipTests -Dspotbugs.skip
 
 The WAR file will be created in `war/target/jenkins.war`.
 After that you can start Jenkins using Java CLI ([guide]).
@@ -115,7 +116,6 @@ just submit a pull request.
 [download maven]: https://maven.apache.org/download.cgi
 [Preparing for Plugin Development]: https://jenkins.io/doc/developer/tutorial/prepare/
 [newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
-[OpenJDK]: http://openjdk.java.net/
 [Participate]: https://jenkins.io/participate/
 [building and debugging process]: https://jenkins.io/doc/developer/building/
 [guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins
