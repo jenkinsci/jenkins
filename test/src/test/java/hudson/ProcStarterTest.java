@@ -98,8 +98,6 @@ public class ProcStarterTest {
 
         //The command is invalid, it should fail
         rule.assertBuildStatus(Result.FAILURE, run);
-        //But the error shouldn't be this exception
-        rule.assertLogNotContains("ArrayIndexOutOfBoundsException", run);
     }
 
     /**

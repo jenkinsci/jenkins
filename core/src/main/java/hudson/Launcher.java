@@ -452,6 +452,10 @@ public abstract class Launcher {
          * Starts the new process as configured.
          */
         public Proc start() throws IOException {
+            if(cmds().isEmpty()){
+                LOGGER.log(Level.INFO, "Trying to start a process without setting a command. This might cause "
+                                       + "an unexpected exception");
+            }
             return launch(this);
         }
 
