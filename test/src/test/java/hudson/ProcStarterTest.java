@@ -45,7 +45,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 
-
 /**
  * Contains tests for {@link ProcStarter} class.
  * @author Oleg Nenashev, Synopsys Inc.

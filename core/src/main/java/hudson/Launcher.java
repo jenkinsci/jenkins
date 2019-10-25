@@ -454,7 +454,7 @@ public abstract class Launcher {
          * @throws RuntimeException can be thrown if {@link #cmds()} is empty
          */
         public Proc start() throws IOException {
-            if(cmds().isEmpty()){
+            if (cmds().isEmpty()) {
                 LOGGER.log(Level.INFO, "Trying to start a process without setting a command. This might cause "
                                        + "an unexpected exception");
             }
