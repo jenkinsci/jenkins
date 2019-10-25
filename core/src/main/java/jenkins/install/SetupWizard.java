@@ -240,7 +240,7 @@ public class SetupWizard extends PageDecorator {
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins j = Jenkins.get();
 
-        j.checkPermission(Jenkins.ADMINISTER);
+        j.checkPermission(Jenkins.CONFIGURE_JENKINS);
 
         // This will be set up by default. if not, something changed, ok to fail
         HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm) j.getSecurityRealm();
@@ -306,7 +306,7 @@ public class SetupWizard extends PageDecorator {
     @POST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         
         Map<String, String> errors = new HashMap<>();
         // pre-check data
@@ -437,7 +437,7 @@ public class SetupWizard extends PageDecorator {
      */
     @CheckForNull
     /*package*/ JSONArray getPlatformPluginList() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
             String updateCenterJsonUrl = updateSite.getUrl();
@@ -553,7 +553,7 @@ public class SetupWizard extends PageDecorator {
     }
     
     /*package*/ void completeSetup() throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         InstallUtil.saveLastExecVersion();
         setCurrentLevel(Jenkins.getVersion());
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_SETUP_COMPLETED);
@@ -615,7 +615,7 @@ public class SetupWizard extends PageDecorator {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + "/");
                     return;
                 } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
-                    Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+                    Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";

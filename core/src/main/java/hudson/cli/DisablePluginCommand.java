@@ -76,7 +76,7 @@ public class DisablePluginCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
+        jenkins.checkPermission(Jenkins.CONFIGURE_JENKINS);
 
         // get the strategy as an enum
         PluginWrapper.PluginDisableStrategy strategyToUse;

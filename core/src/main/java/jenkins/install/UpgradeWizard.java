@@ -110,7 +110,7 @@ public class UpgradeWizard extends InstallState {
             return false;
 
         // only admin users should see this
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
+        if (!Jenkins.get().hasPermission(Jenkins.CONFIGURE_JENKINS))
             return false;
 
         // only show when Jenkins is fully up & running
@@ -135,7 +135,7 @@ public class UpgradeWizard extends InstallState {
      * Call this to show the upgrade wizard
      */
     public HttpResponse doShowUpgradeWizard() throws Exception {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         HttpSession session = Stapler.getCurrentRequest().getSession(true);
         session.setAttribute(SHOW_UPGRADE_WIZARD_FLAG, true);
         return HttpResponses.redirectToContextRoot();
@@ -145,7 +145,7 @@ public class UpgradeWizard extends InstallState {
      * Call this to hide the upgrade wizard
      */
     public HttpResponse doHideUpgradeWizard() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         HttpSession session = Stapler.getCurrentRequest().getSession(false);
         if(session != null) {
             session.removeAttribute(SHOW_UPGRADE_WIZARD_FLAG);
@@ -158,7 +158,7 @@ public class UpgradeWizard extends InstallState {
      */
     @RequirePOST
     public HttpResponse doSnooze() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
         File f = SetupWizard.getUpdateStateFile();
         FileUtils.touch(f);
         f.setLastModified(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
