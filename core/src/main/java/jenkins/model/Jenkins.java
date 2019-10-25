@@ -5265,11 +5265,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Grants ability to configure any and all aspects of the Jenkins instance
      */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+
     /**
      * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
      * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission
      */
     public static final Permission CONFIGURE_JENKINS = new Permission(PERMISSIONS, "Configure", Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
+    
+    public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),CONFIGURE_JENKINS,PermissionScope.JENKINS);
+    @Deprecated
+    /** @deprecated as of TODO use {@link Jenkins#ADMINISTER} */
+    @Restricted(NoExternalUse.class)
+    public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
+
 
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),CONFIGURE_JENKINS,PermissionScope.JENKINS);
 
