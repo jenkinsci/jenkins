@@ -1,0 +1,18 @@
+# Automates creation of changelog drafts using Release Drafter
+# More Info: https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+name: Changelog Drafter
+
+on:
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - master
+
+jobs:
+  update_draft_release:
+    runs-on: ubuntu-latest
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: oleg-nenashev/jenkins-release-drafter@v5.2.0-jenkins-4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
