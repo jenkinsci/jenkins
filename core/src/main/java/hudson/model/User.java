@@ -819,7 +819,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        checkPermission(Jenkins.CONFIGURE_JENKINS);
+        checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
         String oldFullName = this.fullName;
