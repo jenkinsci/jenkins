@@ -13,8 +13,7 @@ def failFast = false
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
-// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-def buildTypes = ['Linux']
+def buildTypes = ['Linux', 'Windows']
 def jdks = [8, 11]
 
 def builds = [:]
@@ -75,9 +74,7 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
-// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 // TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
-/*
 builds.ath = {
     node("docker&&highmem") {
         // Just to be safe
@@ -99,7 +96,7 @@ builds.ath = {
             runATH jenkins: fileUri, metadataFile: metadataPath
         }
     }
-}*/
+}
 
 builds.failFast = failFast
 parallel builds
