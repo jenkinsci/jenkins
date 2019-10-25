@@ -5278,15 +5278,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
-
-    public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),CONFIGURE_JENKINS,PermissionScope.JENKINS);
-
-    @Deprecated
-    /** @deprecated as of TODO use {@link Jenkins#ADMINISTER} */
-    @Restricted(NoExternalUse.class)
-    public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
-
-
     /**
      * Urls that are always visible without READ permission.
      *
