@@ -33,6 +33,9 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return !rule.getMasterKillSwitch();
     }
 
+    /**
+     * Activates/deactivates the "slaveToAccessMasterControl"
+     */
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         if (isRelevant()) {
@@ -48,7 +51,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.hasPermission(Jenkins.CONFIGURE_JENKINS) && jenkins.isUseSecurity();
+        return jenkins.hasPermission(Jenkins.ADMINISTER) && jenkins.isUseSecurity();
     }
 }
 
