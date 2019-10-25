@@ -209,7 +209,7 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        if (SHOW_LEGACY_TOKEN_TO_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+        if (SHOW_LEGACY_TOKEN_TO_ADMINS && Jenkins.get().hasPermission(Jenkins.CONFIGURE_JENKINS)) {
             return true;
         }
         
@@ -316,7 +316,7 @@ public class ApiTokenProperty extends UserProperty {
     @Deprecated
     public void changeApiToken() throws IOException {
         // just to keep the same level of security
-        user.checkPermission(Jenkins.ADMINISTER);
+        user.checkPermission(Jenkins.CONFIGURE_JENKINS);
 
         LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
 
@@ -416,7 +416,7 @@ public class ApiTokenProperty extends UserProperty {
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
-            if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.CONFIGURE_JENKINS)) {
                 return true;
             }
 
@@ -441,7 +441,7 @@ public class ApiTokenProperty extends UserProperty {
         @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
             // you are the user or you have ADMINISTER permission
-            u.checkPermission(Jenkins.ADMINISTER);
+            u.checkPermission(Jenkins.CONFIGURE_JENKINS);
 
             LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
 
@@ -499,7 +499,7 @@ public class ApiTokenProperty extends UserProperty {
         public HttpResponse doRename(@AncestorInPath User u,
                                      @QueryParameter String tokenUuid, @QueryParameter String newName) throws IOException {
             // only current user + administrator can rename token
-            u.checkPermission(Jenkins.ADMINISTER);
+            u.checkPermission(Jenkins.CONFIGURE_JENKINS);
     
             if (StringUtils.isBlank(newName)) {
                 return HttpResponses.errorJSON("The name cannot be empty");
@@ -530,7 +530,7 @@ public class ApiTokenProperty extends UserProperty {
         public HttpResponse doRevoke(@AncestorInPath User u,
                                      @QueryParameter String tokenUuid) throws IOException {
             // only current user + administrator can revoke token
-            u.checkPermission(Jenkins.ADMINISTER);
+            u.checkPermission(Jenkins.CONFIGURE_JENKINS);
             
             if(StringUtils.isBlank(tokenUuid)){
                 // using the web UI this should not occur
