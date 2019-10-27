@@ -457,9 +457,10 @@ td.pane {
   vertical-align: middle;
 }
 
-table.stripped tr:nth-child(even) {
+table.stripped tr:nth-of-type(even) {
   background: #fbfbfb;
 }
+
 table.stripped-even tr:nth-child(even) {
   background: #fbfbfb;
 }
