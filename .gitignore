@@ -1,6 +1,8 @@
 target
 work
 
+.metadata
+
 # IntelliJ project files 
 *.iml
 *.iws
