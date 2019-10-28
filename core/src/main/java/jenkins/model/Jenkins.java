@@ -2195,7 +2195,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
             }).collect(Collectors.toList());
         } else {
-            return null;
+            return Collections.EMPTY_LIST;
         }
 
     }
