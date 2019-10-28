@@ -969,12 +969,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
 
         // recalculate dependencies of plugins optionally depending the newly deployed ones.
-        for (PluginWrapper depender : this.plugins) {
+        for (PluginWrapper depender: this.plugins) {
             if (plugins.contains(depender)) {
                 // skip itself.
                 continue;
             }
-            for (Dependency d : depender.getOptionalDependencies()) {
+            for (Dependency d: depender.getOptionalDependencies()) {
                 PluginWrapper dependee = pluginsByName.get(d.shortName);
                 if (dependee != null) {
                     // this plugin depends on the newly loaded one!
