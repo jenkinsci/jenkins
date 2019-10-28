@@ -948,52 +948,52 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
-        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
-            Jenkins.get().refreshExtensions();
-    
-            for (PluginWrapper p : plugins) {
-                p.getPlugin().postInitialize();
+      try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+        Jenkins.get().refreshExtensions();
+
+        for (PluginWrapper p : plugins) {
+            p.getPlugin().postInitialize();
+        }
+
+        // run initializers in the added plugins
+        Reactor r = new Reactor(InitMilestone.ordering());
+        Set<ClassLoader> loaders = plugins.stream().map(p -> p.classLoader).collect(Collectors.toSet());
+        r.addAll(new InitializerFinder(uberClassLoader) {
+            @Override
+            protected boolean filter(Method e) {
+                return !loaders.contains(e.getDeclaringClass().getClassLoader()) || super.filter(e);
             }
-    
-            // run initializers in the added plugins
-            Reactor r = new Reactor(InitMilestone.ordering());
-            Set<ClassLoader> loaders = plugins.stream().map(p -> p.classLoader).collect(Collectors.toSet());
-            r.addAll(new InitializerFinder(uberClassLoader) {
-                @Override
-                protected boolean filter(Method e) {
-                    return !loaders.contains(e.getDeclaringClass().getClassLoader()) || super.filter(e);
-                }
-            }.discoverTasks(r));
-            new InitReactorRunner().run(r);
-    
-            Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
-    
-            // recalculate dependencies of plugins optionally depending the newly deployed ones.
-            for (PluginWrapper depender: this.plugins) {
-                if (plugins.contains(depender)) {
-                    // skip itself.
-                    continue;
-                }
-                for (Dependency d: depender.getOptionalDependencies()) {
-                    PluginWrapper dependee = pluginsByName.get(d.shortName);
-                    if (dependee != null) {
-                        // this plugin depends on the newly loaded one!
-                        // recalculate dependencies!
-                        getPluginStrategy().updateDependency(depender, dependee);
-                        break;
-                    }
-                }
+        }.discoverTasks(r));
+        new InitReactorRunner().run(r);
+
+        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
+
+        // recalculate dependencies of plugins optionally depending the newly deployed ones.
+        for (PluginWrapper depender : this.plugins) {
+            if (plugins.contains(depender)) {
+                // skip itself.
+                continue;
             }
-    
-            // Redo who depends on who.
-            resolveDependentPlugins();
-    
-            try {
-                Jenkins.get().refreshExtensions();
-            } catch (ExtensionRefreshException e) {
-                throw new IOException("Failed to refresh extensions after installing some plugins", e);
+            for (Dependency d : depender.getOptionalDependencies()) {
+                PluginWrapper dependee = pluginsByName.get(d.shortName);
+                if (dependee != null) {
+                    // this plugin depends on the newly loaded one!
+                    // recalculate dependencies!
+                    getPluginStrategy().updateDependency(depender, dependee);
+                    break;
+                }
             }
         }
+
+        // Redo who depends on who.
+        resolveDependentPlugins();
+
+        try {
+            Jenkins.get().refreshExtensions();
+        } catch (ExtensionRefreshException e) {
+            throw new IOException("Failed to refresh extensions after installing some plugins", e);
+        }
+      }
     }
 
     @Restricted(NoExternalUse.class)
