@@ -33,6 +33,9 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return !rule.getMasterKillSwitch();
     }
 
+    /**
+     * Activates/deactivates the "slaveToAccessMasterControl"
+     */
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         if (isRelevant()) {
