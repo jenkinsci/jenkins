@@ -41,6 +41,7 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <jacocoSurefireArgs /><!-- empty by default -->
+    <logging.config.file>src/test/resources/logging.properties</logging.config.file>
   </properties>
 
   <dependencyManagement>
@@ -279,6 +280,7 @@ THE SOFTWARE.
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
+              <java.util.logging.config.file>${logging.config.file}</java.util.logging.config.file>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
@@ -397,6 +399,18 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+        <id>verbose-test-logging</id>
+        <properties>
+            <logging.config.file>src/test/resources/verbose-logging.properties</logging.config.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>very-verbose-test-logging</id>
+        <properties>
+            <logging.config.file>src/test/resources/very-verbose-logging.properties</logging.config.file>
+        </properties>
     </profile>
   </profiles>
 </project>

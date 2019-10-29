@@ -26,6 +26,7 @@ package hudson.tasks;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.INFO;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 
@@ -296,6 +298,16 @@ public class LogRotator extends BuildDiscarder {
     private String toString(Integer i) {
         if (i==null || i==-1)   return "";
         return String.valueOf(i);
+    }
+    
+    @Override
+    public String toString() {
+    	return Objects.toStringHelper( this )
+    	.add("daysToKeep", daysToKeep)
+    	.add("numToKeep", numToKeep)
+    	.add("artifactDaysToKeep", artifactDaysToKeep)
+    	.add("artifactNumToKeep", artifactNumToKeep)
+    	.toString();
     }
 
     @Extension @Symbol("logRotator")
