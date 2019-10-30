@@ -295,7 +295,7 @@ public class Hudson extends Jenkins {
      *      complex {@link hudson.security.ACL} and {@link hudson.security.Permission} based scheme.
      *
      *      <p>
-     *      For a quick migration, use {@code Hudson.getInstance().getACL().hasPermission(Jenkins.CONFIGURE_JENKINS)}
+     *      For a quick migration, use {@code Hudson.getInstance().getACL().hasPermission(Jenkins.ADMINISTER)}
      *      To check if the user has the 'administer' role in Hudson.
      *
      *      <p>
@@ -305,7 +305,7 @@ public class Hudson extends Jenkins {
      */
     @Deprecated
     public static boolean isAdmin() {
-        return Jenkins.get().getACL().hasPermission(CONFIGURE_JENKINS);
+        return Jenkins.get().getACL().hasPermission(ADMINISTER);
     }
 
     /**
