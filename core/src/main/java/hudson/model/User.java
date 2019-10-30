@@ -910,7 +910,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * With CONFIGURE_JENKINS permission, can delete users with persisted data but can't delete self.
+     * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
