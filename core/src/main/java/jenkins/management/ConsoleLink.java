@@ -55,8 +55,4 @@ public class ConsoleLink extends ManagementLink {
         return "script";
     }
 
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.RUN_SCRIPTS;
-    }
 }

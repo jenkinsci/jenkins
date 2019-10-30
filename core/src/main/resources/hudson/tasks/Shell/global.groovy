@@ -22,10 +22,13 @@
  * THE SOFTWARE.
  */
 package hudson.tasks.Shell
+import jenkins.model.Jenkins
 f=namespace(lib.FormTagLib)
 
-f.section(title:_("Shell")) {
-    f.entry(field: 'shell', title:_("Shell executable")) {
-        f.textbox()
+if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+    f.section(title:_("Shell")) {
+        f.entry(field: 'shell', title:_("Shell executable")) {
+            f.textbox()
+        }
     }
 }

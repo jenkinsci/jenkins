@@ -94,7 +94,7 @@ THE SOFTWARE.
       </tr>
 
     </table>
-    <j:if test="${app.hasPermission(app.ADMINISTER)}">
+    <j:if test="${app.hasPermission(app.CONFIGURE_JENKINS)}">
       <div align="right" style="margin-top:0.5em">
         <form method="post" action="updateNow">
           <s:submit value="${%Refresh status}"/>
