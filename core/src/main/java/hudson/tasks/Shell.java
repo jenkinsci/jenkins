@@ -33,6 +33,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import hudson.util.LineEndingConversion;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.SystemUtils;
@@ -175,8 +176,10 @@ public class Shell extends CommandInterpreter {
         }
 
         public void setShell(String shell) {
-            this.shell = Util.fixEmptyAndTrim(shell);
-            save();
+            if(Jenkins.get().hasPermission(Jenkins.ADMINISTER)){
+                this.shell = Util.fixEmptyAndTrim(shell);
+                save();
+            }
         }
 
         public String getDisplayName() {

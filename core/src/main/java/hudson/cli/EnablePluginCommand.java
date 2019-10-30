@@ -58,7 +58,7 @@ public class EnablePluginCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
+        jenkins.checkPermission(Jenkins.CONFIGURE_JENKINS);
         PluginManager manager = jenkins.getPluginManager();
         boolean enabledAnyPlugins = false;
         for (String pluginName : pluginNames) {

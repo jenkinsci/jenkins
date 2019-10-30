@@ -337,7 +337,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Exported(name = "property", inline = true)
     public List<UserProperty> getAllProperties() {
-        if (hasPermission(Jenkins.ADMINISTER)) {
+        if (hasPermission(Jenkins.CONFIGURE_JENKINS)) {
             return Collections.unmodifiableList(properties);
         }
 
@@ -434,7 +434,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @RequirePOST
     public void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(Jenkins.CONFIGURE_JENKINS);
 
         description = req.getParameter("description");
         save();
@@ -910,7 +910,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * With ADMINISTER permission, can delete users with persisted data but can't delete self.
+     * With CONFIGURE_JENKINS permission, can delete users with persisted data but can't delete self.
      */
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
@@ -920,14 +920,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Checks for authorities (groups) associated with this user.
-     * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
+     * If the caller lacks {@link Jenkins#CONFIGURE_JENKINS}, or any problems arise, returns an empty list.
      * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
      *
      * @return a possibly empty list
      * @since 1.498
      */
     public @Nonnull List<String> getAuthorities() {
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+        if (!Jenkins.get().hasPermission(Jenkins.CONFIGURE_JENKINS)) {
             return Collections.emptyList();
         }
         List<String> r = new ArrayList<>();
