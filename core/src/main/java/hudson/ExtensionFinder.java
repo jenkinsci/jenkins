@@ -600,7 +600,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     /**
      * Returns initial {@link Method} as well as all matching ones found in interfaces.
      * This allows to introspect metadata for a method which is both declared in parent class and in implemented
-     * interface(s). <code>interfaces</code> typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
+     * interface(s). {@code interfaces} typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
      */
     Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class> interfaces) {
         final List<Method> methods = new ArrayList<>();

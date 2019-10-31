@@ -140,7 +140,7 @@ public class JSONSignatureValidator {
 
 
     /**
-     * Computes the specified {@code digest} and {@code signature} for the provided {@code json} object and checks whether they match {@code digestEntry} and {@signatureEntry} in the provided {@code signatureJson} object.
+     * Computes the specified {@code digest} and {@code signature} for the provided {@code json} object and checks whether they match {@code digestEntry} and {@code signatureEntry} in the provided {@code signatureJson} object.
      *
      * @param json the full update-center.json content
      * @param signatureJson signature block from update-center.json

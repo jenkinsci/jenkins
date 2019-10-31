@@ -53,9 +53,6 @@ public class ComputerRetentionWork extends PeriodicWork {
         return MIN;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
     @Override
     protected void doRun() {

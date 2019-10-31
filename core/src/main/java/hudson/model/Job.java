@@ -160,6 +160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */
+    @Deprecated
     private volatile BuildDiscarder logRotator;
 
     /**
@@ -1556,9 +1557,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         doConfirmRename(newName).generateResponse(req, rsp, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void checkRename(String newName) throws Failure {
         if (isBuilding()) {

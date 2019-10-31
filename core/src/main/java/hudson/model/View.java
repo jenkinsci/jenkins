@@ -91,6 +91,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
@@ -1206,7 +1207,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Updates the View with the new XML definition.
      * @param source source of the Item's new definition.
-     *               The source should be either a <code>StreamSource</code> or <code>SAXSource</code>, other sources
+     *               The source should be either a {@link StreamSource} or {@link SAXSource}, other sources
      *               may not be handled.
      */
     public void updateByXml(Source source) throws IOException {

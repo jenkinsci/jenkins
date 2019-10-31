@@ -2842,8 +2842,8 @@ public class Queue extends ResourceController implements Saveable {
 			}
         });
 
-        /**
-         * Reconnect every reference to {@link Queue} by the singleton.
+        /*
+         * Reconnect every reference to Queue by the singleton.
          */
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 			@Override
@@ -3048,7 +3048,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Schedule {@code Queue.save()} call for near future once items change. Ignore all changes until the time the save
+     * Schedule {@link Queue#save()} call for near future once items change. Ignore all changes until the time the save
      * takes place.
      *
      * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not

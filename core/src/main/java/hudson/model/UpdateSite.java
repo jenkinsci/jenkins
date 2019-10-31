@@ -244,7 +244,7 @@ public class UpdateSite {
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
      * @return the signature validator.
-     * @deprecated use {@link #getJsonSignatureValidator(@CheckForNull String)} instead.
+     * @deprecated use {@link #getJsonSignatureValidator(String)} instead.
      */
     @Deprecated
     @Nonnull

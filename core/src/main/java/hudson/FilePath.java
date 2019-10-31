@@ -1718,7 +1718,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      if the parameter is -1, this method becomes no-op.
      *      <p>
      *      please note mask is expected to be an octal if you use <a href="http://en.wikipedia.org/wiki/Chmod">chmod command line values</a>,
-     *      so preceded by a '0' in java notation, ie <code>chmod(0644)</code>
+     *      so preceded by a '0' in java notation, ie {@code chmod(0644)}
      *      <p>
      *      Only supports setting read, write, or execute permissions for the
      *      owner, group, or others, so the largest permissible value is 0777.
