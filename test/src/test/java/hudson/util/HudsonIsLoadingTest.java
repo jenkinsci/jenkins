@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class HudsonIsLoading {
+public class HudsonIsLoadingTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 

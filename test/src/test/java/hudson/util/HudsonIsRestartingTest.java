@@ -11,7 +11,7 @@ import java.net.HttpURLConnection;
 
 import static org.junit.Assert.*;
 
-public class HudsonIsRestarting {
+public class HudsonIsRestartingTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
