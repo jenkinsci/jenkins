@@ -968,11 +968,20 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     public List<Plugin> getUpdates() {
         Map<String,Plugin> pluginMap = new LinkedHashMap<>();
+        final Map<String, Set<Plugin>> incompatiblePluginMap = new LinkedHashMap<>();
+        final PluginManager.MetadataCache cache = new PluginManager.MetadataCache();
+
         for (UpdateSite site : sites) {
             for (Plugin plugin: site.getUpdates()) {
                 final Plugin existing = pluginMap.get(plugin.name);
                 if (existing == null) {
                     pluginMap.put(plugin.name, plugin);
+
+                    if (!plugin.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                       for (Plugin incompatiblePlugin : plugin.getDependenciesIncompatibleWithInstalledVersion(cache)) {
+                           incompatiblePluginMap.computeIfAbsent(incompatiblePlugin.name, _ignored -> new HashSet<>()).add(plugin);
+                       }
+                    }
                 } else if (!existing.version.equals(plugin.version)) {
                     // allow secondary update centers to publish different versions
                     // TODO refactor to consolidate multiple versions of the same plugin within the one row
@@ -983,6 +992,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
         }
+
+        incompatiblePluginMap.forEach((key, incompatiblePlugins) -> pluginMap.computeIfPresent(key, (_ignored, plugin) -> {
+            plugin.setIncompatibleParentPlugins(incompatiblePlugins);
+            return plugin;
+        }));
 
         return new ArrayList<>(pluginMap.values());
     }
