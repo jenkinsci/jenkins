@@ -36,6 +36,7 @@ import jenkins.util.UrlHelper;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -62,9 +63,10 @@ import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
  * @see ResourceDomainFilter
  * @see ResourceDomainRootAction
  *
- * @since TODO
+ * @since 2.200, unrestricted since TODO
  */
 @Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
+@Restricted(Beta.class)
 @Symbol("resourceRoot")
 public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
