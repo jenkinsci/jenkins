@@ -51,6 +51,7 @@ import java.net.URLConnection;
 import java.security.interfaces.RSAPublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
@@ -61,21 +62,22 @@ import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
  * @see ResourceDomainFilter
  * @see ResourceDomainRootAction
  *
- * @since 2.200
+ * @since TODO
  */
 @Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
-@Restricted(NoExternalUse.class)
 @Symbol("resourceRoot")
-public class ResourceDomainConfiguration extends GlobalConfiguration {
+public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainConfiguration.class.getName());
 
     private String url;
 
+    @Restricted(NoExternalUse.class)
     public ResourceDomainConfiguration() {
         load();
     }
 
+    @Restricted(NoExternalUse.class)
     @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -180,11 +182,12 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         }
     }
 
+    @CheckForNull
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(@CheckForNull String url) {
         if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL, but allow for networking issues
             url = Util.fixEmpty(url);
@@ -205,6 +208,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      * @param req the request to check
      * @return whether the request is a resource URL request
      */
+    @Restricted(NoExternalUse.class)
     public static boolean isResourceRequest(HttpServletRequest req) {
         if (!isResourceDomainConfigured()) {
             return false;
@@ -241,6 +245,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      *
      * @return whether a domain has been configured
      */
+    @Restricted(NoExternalUse.class)
     public static boolean isResourceDomainConfigured() {
         String resourceRootUrl = get().getUrl();
         if (resourceRootUrl == null || resourceRootUrl.isEmpty()) {
