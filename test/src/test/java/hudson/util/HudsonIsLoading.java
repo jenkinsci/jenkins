@@ -7,6 +7,9 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.net.HttpURLConnection;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -18,12 +21,20 @@ public class HudsonIsLoading {
     @Issue("JENKINS-55062")
     public void withPrefix() throws Exception {
         j.jenkins.servletContext.setAttribute("app", new HudsonIsLoading());
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // this is a failure page already
-        wc.getOptions().setJavaScriptEnabled(false);
+        JenkinsRule.WebClient wc = j.createWebClient()
+                // this is a failure page already
+                .withThrowExceptionOnFailingStatusCode(false)
+                .withJavaScriptEnabled(false);
 
-        Page p = wc.goTo("", "text/html");
-        assertTrue( p.isHtmlPage() );
+        checkingPage(wc, "");
+        checkingPage(wc, "anyRandomString");
+        checkingPage(wc, "multiple/layer/ofRelative.xml");
+    }
+
+    private void checkingPage(JenkinsRule.WebClient wc, String relativePath) throws Exception {
+        Page p = wc.goTo(relativePath, "text/html");
+        assertTrue(p.isHtmlPage());
+        assertEquals(HttpURLConnection.HTTP_UNAVAILABLE, p.getWebResponse().getStatusCode());
         String body = p.getWebResponse().getContentAsString();
         assertThat(body, CoreMatchers.containsString("data-resurl=\""));
         assertThat(body, CoreMatchers.containsString("data-rooturl=\""));
