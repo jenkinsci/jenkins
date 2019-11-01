@@ -60,6 +60,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      *
      * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
+    @Deprecated
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
             // old client calling newer implementation. forward the call.

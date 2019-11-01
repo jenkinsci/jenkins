@@ -43,7 +43,7 @@ THE SOFTWARE.
   <licenses>
     <license>
       <name>The MIT license</name>
-      <url>https://www.opensource.org/licenses/mit</url>
+      <url>https://opensource.org/licenses/MIT</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -77,7 +77,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.196</revision>
+    <revision>2.203</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -91,7 +91,6 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <maven-plugin.version>2.14</maven-plugin.version>
     <matrix-auth.version>2.3</matrix-auth.version>
     <matrix-project.version>1.14</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
@@ -105,7 +104,7 @@ THE SOFTWARE.
     <!-- Bundled Remoting version -->
     <remoting.version>3.35</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
     <findbugs.effort>Max</findbugs.effort>

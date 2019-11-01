@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+import jenkins.telemetry.impl.AutoRefresh;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -52,6 +53,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Run;
+import hudson.model.TimeZoneProperty;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
@@ -99,6 +101,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,6 +118,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -176,6 +181,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @SuppressWarnings("rawtypes")
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
+    private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     public Functions() {
     }
@@ -644,6 +650,12 @@ public class Functions {
         if (refresh) {
             response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
         }
+
+        try {
+            ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to record auto refresh status in telemetry", e);
+        }
     }
 
     public static boolean isAutoRefresh(HttpServletRequest request) {
@@ -666,7 +678,28 @@ public class Functions {
     public static boolean isCollapsed(String paneId) {
     	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
     }
-    
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isUserTimeZoneOverride() {
+        return TimeZoneProperty.forCurrentUser() != null;
+    }
+
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public static String getUserTimeZone() {
+        return TimeZoneProperty.forCurrentUser();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getUserTimeZonePostfix() {
+        if (!isUserTimeZoneOverride()) {
+            return "";
+        }
+
+        TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
+        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+    }
+
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
@@ -724,6 +757,20 @@ public class Functions {
 
     public static String encode(String s) {
         return Util.encode(s);
+    }
+
+    /**
+     * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
+     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
+     *
+     * @since 2.200
+     */
+    public static String urlEncode(String s) {
+        try {
+            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e); // impossible
+        }
     }
 
     public static String escape(String s) {
@@ -951,7 +998,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
-        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        List<NodePropertyDescriptor> result = new ArrayList<>();
         Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
@@ -967,7 +1014,7 @@ public class Functions {
      * @since 1.520
      */
     public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
-        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        List<NodePropertyDescriptor> result = new ArrayList<>();
         Collection<NodePropertyDescriptor> list = (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicableAsGlobal()) {
@@ -996,7 +1043,7 @@ public class Functions {
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
-        List<Tag> r = new ArrayList<Tag>(exts.size());
+        List<Tag> r = new ArrayList<>(exts.size());
 
         for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
             Descriptor d = c.getInstance();
@@ -1008,7 +1055,7 @@ public class Functions {
         }
         Collections.sort(r);
 
-        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
+        List<Descriptor> answer = new ArrayList<>(r.size());
         for (Tag d : r) answer.add(d.d);
 
         return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
@@ -1059,8 +1106,8 @@ public class Functions {
         }
 
         public int compareTo(Tag that) {
-            int r = Double.compare(this.ordinal, that.ordinal);
-            if (r!=0)   return -r; // descending for ordinal
+            int r = Double.compare(that.ordinal, this.ordinal);
+            if (r!=0)   return r; // descending for ordinal by reversing the order for compare
             return this.hierarchy.compareTo(that.hierarchy);
         }
     }
@@ -1090,7 +1137,7 @@ public class Functions {
      * Computes the relative path from the current page to the given item.
      */
     public static String getRelativeLinkTo(Item p) {
-        Map<Object,String> ancestors = new HashMap<Object,String>();
+        Map<Object,String> ancestors = new HashMap<>();
         View view=null;
 
         StaplerRequest request = Stapler.getCurrentRequest();
@@ -1166,7 +1213,7 @@ public class Functions {
         String separationString = useDisplayName ? " » " : "/";
         
         // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
+        Map<ItemGroup,Integer> parents = new HashMap<>();
         int depth=0;
         while (g!=null) {
             parents.put(g, depth++);
@@ -1233,7 +1280,7 @@ public class Functions {
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
-        Map<Thread,StackTraceElement[]> sorted = new TreeMap<Thread,StackTraceElement[]>(new ThreadSorter());
+        Map<Thread,StackTraceElement[]> sorted = new TreeMap<>(new ThreadSorter());
         sorted.putAll(Thread.getAllStackTraces());
         return sorted;
     }
@@ -1251,7 +1298,7 @@ public class Functions {
 
     // Common code for sorting Threads/ThreadInfos by ThreadGroup
     private static class ThreadSorterBase {
-        protected Map<Long,String> map = new HashMap<Long,String>();
+        protected Map<Long,String> map = new HashMap<>();
 
         private ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
@@ -1475,7 +1522,7 @@ public class Functions {
             return Messages.Functions_NoExceptionDetails();
         }
         StringBuilder s = new StringBuilder();
-        doPrintStackTrace(s, t, null, "", new HashSet<Throwable>());
+        doPrintStackTrace(s, t, null, "", new HashSet<>());
         return s.toString();
     }
     private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
@@ -1840,7 +1887,7 @@ public class Functions {
     public List<String> getLoggerNames() {
         while (true) {
             try {
-                List<String> r = new ArrayList<String>();
+                List<String> r = new ArrayList<>();
                 Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
                 while (e.hasMoreElements())
                     r.add(e.nextElement());
@@ -1933,7 +1980,7 @@ public class Functions {
     }
 
     public static List<String> getRequestHeaders(String name) {
-        List<String> r = new ArrayList<String>();
+        List<String> r = new ArrayList<>();
         Enumeration e = Stapler.getCurrentRequest().getHeaders(name);
         while (e.hasMoreElements()) {
             r.add(e.nextElement().toString());
@@ -1949,7 +1996,7 @@ public class Functions {
     }
 
     public static ArrayList<CLICommand> getCLICommands() {
-        ArrayList<CLICommand> all = new ArrayList<CLICommand>(CLICommand.all());
+        ArrayList<CLICommand> all = new ArrayList<>(CLICommand.all());
         Collections.sort(all, new Comparator<CLICommand>() {
             public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
                 return cliCommand.getName().compareTo(cliCommand1.getName());

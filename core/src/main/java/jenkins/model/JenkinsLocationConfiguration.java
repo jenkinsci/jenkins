@@ -1,16 +1,21 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
+import jenkins.security.ApiTokenProperty;
+import jenkins.util.SystemProperties;
+import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
@@ -31,8 +36,24 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.494
  */
-@Extension @Symbol("location")
+@Extension(ordinal = JenkinsLocationConfiguration.ORDINAL)
+@Symbol("location")
 public class JenkinsLocationConfiguration extends GlobalConfiguration implements PersistentDescriptor {
+
+    /**
+     * If disabled, the application will no longer check for URL validity in the configuration page.
+     * This will lead to an instance vulnerable to SECURITY-1471.
+     *
+     * @since 2.176.4 / 2.197
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static /* not final */ boolean DISABLE_URL_VALIDATION =
+            SystemProperties.getBoolean(JenkinsLocationConfiguration.class.getName() + ".disableUrlValidation");
+    
+    @Restricted(NoExternalUse.class)
+    public static final int ORDINAL = 200;
+
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
      */
@@ -82,6 +103,10 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
             super.load();
         }
 
+        if (!DISABLE_URL_VALIDATION) {
+            preventRootUrlBeingInvalid();
+        }
+
         updateSecureSessionFlag();
     }
 
@@ -119,8 +144,24 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
         if(url!=null && !url.endsWith("/"))
             url += '/';
         this.jenkinsUrl = url;
+
+        if (!DISABLE_URL_VALIDATION) {
+            preventRootUrlBeingInvalid();
+        }
+
         save();
         updateSecureSessionFlag();
+    }
+
+    private void preventRootUrlBeingInvalid() {
+        if (this.jenkinsUrl != null && isInvalidRootUrl(this.jenkinsUrl)) {
+            LOGGER.log(Level.INFO, "Invalid URL received: {0}, considered as null", this.jenkinsUrl);
+            this.jenkinsUrl = null;
+        }
+    }
+
+    private boolean isInvalidRootUrl(@Nullable String value) {
+        return !UrlHelper.isValidRootUrl(value);
     }
 
     /**
@@ -162,6 +203,11 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     public FormValidation doCheckUrl(@QueryParameter String value) {
         if(value.startsWith("http://localhost"))
             return FormValidation.warning(Messages.Mailer_Localhost_Error());
+
+        if (!DISABLE_URL_VALIDATION && isInvalidRootUrl(value)) {
+            return FormValidation.error(Messages.Mailer_NotHttp_Error());
+        }
+
         return FormValidation.ok();
     }
 

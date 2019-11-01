@@ -33,7 +33,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *              May be null if provisioning for unlabeled builds.
      * @param numExecutors The number of executors needed.
      *
-     * @return <code>null</code> if provisioning can proceed, or a
+     * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
      */
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
@@ -58,7 +58,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     /**
      * Called when the {@link NodeProvisioner.PlannedNode#future} completes.
      *
-     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param plannedNode the plannedNode which resulted in the {@code node} being provisioned
      * @param node the node which has been provisioned by the cloud
      */
     public void onComplete(NodeProvisioner.PlannedNode plannedNode, Node node) {
@@ -66,9 +66,9 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
-     * Called when the <code>node</code>is fully connected in the Jenkins.
+     * Called when the {@code node}is fully connected in the Jenkins.
      *
-     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param plannedNode the plannedNode which resulted in the {@code node} being provisioned
      * @param node the node which has been provisioned by the cloud
      *
      * @since 2.37
@@ -90,7 +90,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     /**
      * Called when {@link Jenkins#addNode(Node)} throws an exception.
      *
-     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param plannedNode the plannedNode which resulted in the {@code node} being provisioned
      * @param node the node which has been provisioned by the cloud
      * @param t the exception
      *

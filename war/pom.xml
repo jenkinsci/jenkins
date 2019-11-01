@@ -295,36 +295,6 @@ THE SOFTWARE.
                     Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>maven-plugin</artifactId>
-                  <version>${maven-plugin.version}</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ssh-slaves</artifactId>
-                  <version>1.15</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>credentials</artifactId>
-                  <version>2.1.2</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ssh-credentials</artifactId>
-                  <version>1.10</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>subversion</artifactId>
-                  <version>1.54</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
                   <version>2.11</version>
@@ -333,19 +303,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.2</version>
+                  <version>1.8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
                   <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>translation</artifactId>
-                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -363,7 +327,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>pam-auth</artifactId>
-                  <version>1.1</version>
+                  <version>1.5.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -375,7 +339,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.20</version>
+                  <version>1.21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -405,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.56</version>
+                  <version>1.65</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

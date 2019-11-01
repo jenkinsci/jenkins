@@ -769,8 +769,8 @@ public abstract class Launcher {
      * recorded on the listener.
      *
      * @param cmd     The commands
-     * @param mask    An array of booleans which control whether a cmd element should be masked (<code>true</code>) or
-     *                remain unmasked (<code>false</code>).
+     * @param mask    An array of booleans which control whether a cmd element should be masked ({@code true}) or
+     *                remain unmasked ({@code false}).
      * @param workDir The work dir.
      */
     protected final void maskedPrintCommandLine(@Nonnull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
@@ -1251,9 +1251,9 @@ public abstract class Launcher {
     }
 
     public static class IOTriplet implements Serializable {
-        @Nonnull
+        @CheckForNull
         InputStream stdout,stderr;
-        @Nonnull
+        @CheckForNull
         OutputStream stdin;
         private static final long serialVersionUID = 1L;
     }
@@ -1327,11 +1327,7 @@ public abstract class Launcher {
                         Channel taskChannel = null;
                         try {
                             // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
-                            // TODOL Replace by Channel#currentOrFail() when Remoting version allows
-                            taskChannel = Channel.current();
-                            if (taskChannel == null) {
-                                throw new IOException("No Remoting channel associated with this thread");
-                            }
+                            taskChannel = Channel.currentOrFail();
                             taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc

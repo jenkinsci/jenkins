@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The MIT License
+Copyright 2019 CloudBees, Inc.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:view contentType="text/html">
+        <html>
+            <body>
+                <j:choose>
+                    <j:if test="${parentPath.size() ne 0}">
+                        <a href="..">..</a><br/>
+                    </j:if>
+                    <j:when test="${empty(files)}">
+                        <p>${%No files in directory}</p>
+                    </j:when>
+                    <j:otherwise>
+                        <j:forEach var="f" items="${files}">
+                            <j:set var="x" value="${f.get(f.size()-1)}"/>
+                            <j:forEach var="t" items="${f}" varStatus="st">
+
+                                <j:choose>
+                                    <j:when test="${x.readable}">
+                                        <a href="${t.href}">${t.title}</a>
+                                    </j:when>
+                                    <j:otherwise>
+                                        ${t.title}
+                                    </j:otherwise>
+                                </j:choose>
+
+                                <j:if test="${!st.last}">/</j:if>
+                            </j:forEach>
+                            <br/>
+                        </j:forEach>
+                    </j:otherwise>
+                </j:choose>
+            </body>
+        </html>
+    </l:view>
+</j:jelly>

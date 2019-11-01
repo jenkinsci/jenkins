@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2011 CloudBees, Inc.
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -16,6 +16,10 @@ import java.io.IOException;
 
 /**
  * Allows plugins to define exceptions to the CSRF protection filter.
+ *
+ * Please note that Jenkins 2.96 and newer accepts HTTP POST requests without CSRF crumb, if
+ * HTTP Basic authentication uses an API token instead of a password, so many use cases
+ * (simple API clients that support authentication but not obtaining a crumb) should be obsolete.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.446

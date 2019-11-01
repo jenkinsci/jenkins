@@ -15,11 +15,9 @@ import org.springframework.dao.DataAccessException;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -231,7 +231,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link setDependents}.
+     * @deprecated Please use {@link #setDependents}.
      */
     @Deprecated
     public void setDependants(@Nonnull Set<String> dependents) {
@@ -247,7 +247,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link setOptionalDependents}.
+     * @deprecated Please use {@link #setOptionalDependents}.
      */
     @Deprecated
     public void setOptionalDependants(@Nonnull Set<String> optionalDependents) {
@@ -268,7 +268,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link getDependents}.
+     * @deprecated Please use {@link #getDependents}.
      */
     @Deprecated
     public @Nonnull Set<String> getDependants() {
@@ -277,7 +277,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #getDependents} but excluding optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public @Nonnull Set<String> getMandatoryDependents() {
         Set<String> s = new HashSet<>(dependents);
@@ -293,7 +293,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link getOptionalDependents}.
+     * @deprecated Please use {@link #getOptionalDependents}.
      */
     @Deprecated
     public @Nonnull Set<String> getOptionalDependants() {
@@ -312,7 +312,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #hasDependents} but excluding optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public boolean hasMandatoryDependents() {
         if (isBundled) {
@@ -322,7 +322,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link hasDependents}.
+     * @deprecated Please use {@link #hasDependents}.
      */
     @Deprecated
     public boolean hasDependants() {
@@ -339,7 +339,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * @deprecated Please use {@link hasOptionalDependents}.
+     * @deprecated Please use {@link #hasOptionalDependents}.
      */
     @Deprecated
     public boolean hasOptionalDependants() {
@@ -357,7 +357,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #hasDependencies} but omitting optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public boolean hasMandatoryDependencies() {
         return dependencies.stream().anyMatch(d -> !d.optional);
@@ -486,7 +486,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Like {@link #getDependencies} but omits optional dependencies.
-     * @since TODO
+     * @since 2.181
      */
     public List<Dependency> getMandatoryDependencies() {
         return dependencies.stream().filter(d -> !d.optional).collect(Collectors.toList());
@@ -595,12 +595,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns the minimum Java version of this plugin, as specified in the plugin metadata.
-     * Generally coming from the <code>java.level</code> extracted as MANIFEST's metadata with
+     * Generally coming from the {@code java.level} extracted as MANIFEST's metadata with
      * <a href="https://github.com/jenkinsci/plugin-pom/pull/134">this addition on the plugins' parent pom</a>.
      *
      * @see <a href="https://github.com/jenkinsci/maven-hpi-plugin/pull/75">maven-hpi-plugin#PR-75</a>.
      *
-     * @since TODO
+     * @since 2.158
      */
     @Exported
     public @CheckForNull String getMinimumJavaVersion() {
@@ -1002,7 +1002,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Same as {@link DetachedPluginsUtil#isDetachedPlugin}.
-     * @since TODO
+     * @since 2.185
      */
     @Exported
     public boolean isDetached() {

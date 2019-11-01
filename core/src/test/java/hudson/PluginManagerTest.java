@@ -25,6 +25,7 @@
 package hudson;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
@@ -145,7 +146,7 @@ public class PluginManagerTest {
         File newFolder = tmp.newFolder("myJar");
         String manifestPath = "META-INF/MANIFEST.MF";
         new File("META-INF").mkdir();
-        FileUtils.write(new File(newFolder, manifestPath), SAMPLE_MANIFEST_FILE);
+        FileUtils.write(new File(newFolder, manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
         
         final File f = new File(tmp.getRoot(), "my.hpi");
         try(ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {

@@ -72,10 +72,10 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
     }
 
     /**
-     * This flag can be used to force existing jobs to be migrated to a new naming strategy - if this method returns true, the naming will be enforced at every config change. If <code>false</code> is
+     * This flag can be used to force existing jobs to be migrated to a new naming strategy - if this method returns true, the naming will be enforced at every config change. If {@code false} is
      * returned, only new jobs have to follow the strategy.
      * 
-     * @return <code>true</code> if existing jobs should be enforced to confirm to the naming standard.
+     * @return {@code true} if existing jobs should be enforced to confirm to the naming standard.
      */
     public boolean isForceExistingJobs() {
         return false;

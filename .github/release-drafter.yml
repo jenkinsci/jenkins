@@ -40,8 +40,9 @@ categories:
     label: bug
   - title: Localization
     label: localization
-  # TODO: consider merging category or changing emojis
-  - title: Internal/Developer changes
+  - title: Developer-facing changes (APIs, extensions, etc.)
+    label: developer
+  - title: Internal changes
     label: internal
 
 replacers:

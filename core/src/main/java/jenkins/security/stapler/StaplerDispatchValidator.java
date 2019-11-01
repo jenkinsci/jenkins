@@ -79,7 +79,7 @@ import java.util.logging.Logger;
  * {@code jenkins.security.stapler.StaplerDispatchValidator.disabled=true} or setting {@link #DISABLED} to
  * {@code true} in the script console.</p>
  *
- * @since TODO
+ * @since 2.176.2 / 2.186
  */
 @Restricted(NoExternalUse.class)
 public class StaplerDispatchValidator implements DispatchValidator {

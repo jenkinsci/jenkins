@@ -102,7 +102,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
 
         /**
          * The URL of the next resource to return in the enumeration. If this
-         * field is <code>null</code> then the enumeration has been completed,
+         * field is {@code null} then the enumeration has been completed,
          * i.e., there are no more elements to return.
          */
         private URL nextResource;
@@ -123,8 +123,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
          * Indicates whether there are more elements in the enumeration to
          * return.
          *
-         * @return <code>true</code> if there are more elements in the
-         *         enumeration; <code>false</code> otherwise.
+         * @return {@code true} if there are more elements in the
+         *         enumeration; {@code false} otherwise.
          */
         public boolean hasMoreElements() {
             return (this.nextResource != null);
@@ -146,9 +146,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
 
         /**
          * Locates the next resource of the correct name in the classpath and
-         * sets <code>nextResource</code> to the URL of that resource. If no
-         * more resources can be found, <code>nextResource</code> is set to
-         * <code>null</code>.
+         * sets {@code nextResource} to the URL of that resource. If no
+         * more resources can be found, {@code nextResource} is set to
+         * {@code null}.
          */
         private void findNextResource() {
             URL url = null;
@@ -266,11 +266,11 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Creates a classloader for the given project using the classpath given.
      *
      * @param project The project to which this classloader is to belong.
-     *                Must not be <code>null</code>.
+     *                Must not be {@code null}.
      * @param classpath The classpath to use to load the classes.  This
      *                is combined with the system classpath in a manner
      *                determined by the value of ${build.sysclasspath}.
-     *                May be <code>null</code>, in which case no path
+     *                May be {@code null}, in which case no path
      *                elements are set up to start with.
      */
     public AntClassLoader(Project project, Path classpath) {
@@ -283,15 +283,15 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Creates a classloader for the given project using the classpath given.
      *
      * @param parent The parent classloader to which unsatisfied loading
-     *               attempts are delegated. May be <code>null</code>,
+     *               attempts are delegated. May be {@code null},
      *               in which case the classloader which loaded this
      *               class is used as the parent.
      * @param project The project to which this classloader is to belong.
-     *                Must not be <code>null</code>.
+     *                Must not be {@code null}.
      * @param classpath the classpath to use to load the classes.
-     *                  May be <code>null</code>, in which case no path
+     *                  May be {@code null}, in which case no path
      *                  elements are set up to start with.
-     * @param parentFirst If <code>true</code>, indicates that the parent
+     * @param parentFirst If {@code true}, indicates that the parent
      *                    classloader should be consulted  before trying to
      *                    load the a class through this loader.
      */
@@ -309,11 +309,11 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Creates a classloader for the given project using the classpath given.
      *
      * @param project The project to which this classloader is to belong.
-     *                Must not be <code>null</code>.
+     *                Must not be {@code null}.
      * @param classpath The classpath to use to load the classes. May be
-     *                  <code>null</code>, in which case no path
+     *                  {@code null}, in which case no path
      *                  elements are set up to start with.
-     * @param parentFirst If <code>true</code>, indicates that the parent
+     * @param parentFirst If {@code true}, indicates that the parent
      *                    classloader should be consulted before trying to
      *                    load the a class through this loader.
      */
@@ -327,10 +327,10 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * classes.
      *
      * @param parent The parent classloader to which unsatisfied loading
-     *               attempts are delegated. May be <code>null</code>,
+     *               attempts are delegated. May be {@code null},
      *               in which case the classloader which loaded this
      *               class is used as the parent.
-     * @param parentFirst If <code>true</code>, indicates that the parent
+     * @param parentFirst If {@code true}, indicates that the parent
      *                    classloader should be consulted before trying to
      *                    load the a class through this loader.
      */
@@ -365,9 +365,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         if (classpath != null) {
             Path actualClasspath = classpath.concatSystemClasspath("ignore");
             String[] pathElements = actualClasspath.list();
-            for (int i = 0; i < pathElements.length; ++i) {
+            for (String pathElement : pathElements) {
                 try {
-                    addPathElement(pathElements[i]);
+                    addPathElement(pathElement);
                 } catch (BuildException e) {
                     // ignore path elements which are invalid
                     // relative to the project
@@ -402,7 +402,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Logs a message through the project object if one has been provided.
      *
      * @param message The message to log.
-     *                Should not be <code>null</code>.
+     *                Should not be {@code null}.
      *
      * @param priority The logging priority of the message.
      */
@@ -447,7 +447,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Adds an element to the classpath to be searched.
      *
      * @param pathElement The path element to add. Must not be
-     *                    <code>null</code>.
+     *                    {@code null}.
      *
      * @exception BuildException if the given path element cannot be resolved
      *                           against the project.
@@ -578,7 +578,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * way.
      *
      * @param theClass The class to initialize.
-     *                 Must not be <code>null</code>.
+     *                 Must not be {@code null}.
      *
      * @deprecated since 1.6.x.
      *             Use Class.forName with initialize=true instead.
@@ -624,7 +624,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * All subpackages are also included.
      *
      * @param packageRoot The root of all packages to be included.
-     *                    Should not be <code>null</code>.
+     *                    Should not be {@code null}.
      */
     public void addSystemPackageRoot(String packageRoot) {
         systemPackages.addElement(packageRoot + (packageRoot.endsWith(".") ? "" : "."));
@@ -637,7 +637,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * All subpackages are also included.
      *
      * @param packageRoot The root of all packages to be included.
-     *                    Should not be <code>null</code>.
+     *                    Should not be {@code null}.
      */
     public void addLoaderPackageRoot(String packageRoot) {
         loaderPackages.addElement(packageRoot + (packageRoot.endsWith(".") ? "" : "."));
@@ -651,7 +651,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * will use this classloader.
      *
      * @param classname The name of the class to be loaded.
-     *                  Must not be <code>null</code>.
+     *                  Must not be {@code null}.
      *
      * @return the required Class object
      *
@@ -678,7 +678,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * loader.
      *
      * @param classname The name of the class to be loaded.
-     *                  Must not be <code>null</code>.
+     *                  Must not be {@code null}.
      *
      * @return the required Class object
      *
@@ -700,9 +700,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Returns a stream to read the requested resource name.
      *
      * @param name The name of the resource for which a stream is required.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      *
-     * @return a stream to the required resource or <code>null</code> if the
+     * @return a stream to the required resource or {@code null} if the
      *         resource cannot be found on the loader's classpath.
      */
     public InputStream getResourceAsStream(String name) {
@@ -741,9 +741,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Returns a stream to read the requested resource name from this loader.
      *
      * @param name The name of the resource for which a stream is required.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      *
-     * @return a stream to the required resource or <code>null</code> if
+     * @return a stream to the required resource or {@code null} if
      *         the resource cannot be found on the loader's classpath.
      */
     private InputStream loadResource(String name) {
@@ -764,9 +764,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * classloader).
      *
      * @param name The name of the system resource to load.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      *
-     * @return a stream to the named resource, or <code>null</code> if
+     * @return a stream to the named resource, or {@code null} if
      *         the resource cannot be found.
      */
     private InputStream loadBaseResource(String name) {
@@ -778,11 +778,11 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * either be a directory or a zip file.
      *
      * @param file the file (directory or jar) in which to search for the
-     *             resource. Must not be <code>null</code>.
+     *             resource. Must not be {@code null}.
      * @param resourceName The name of the resource for which a stream is
-     *                     required. Must not be <code>null</code>.
+     *                     required. Must not be {@code null}.
      *
-     * @return a stream to the required resource or <code>null</code> if
+     * @return a stream to the required resource or {@code null} if
      *         the resource cannot be found in the given file.
      */
     private InputStream getResourceStream(File file, String resourceName) {
@@ -825,7 +825,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *
      * @param resourceName
      *            The name of the resource to check. Must not be
-     *            <code>null</code>.
+     *            {@code null}.
      *
      * @return whether or not the parent classloader should be checked for a
      *         resource before this one is.
@@ -875,9 +875,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * code in a way that is independent of the location of the code.
      *
      * @param name The name of the resource for which a stream is required.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      *
-     * @return a URL for reading the resource, or <code>null</code> if the
+     * @return a URL for reading the resource, or {@code null} if the
      *         resource could not be found or the caller doesn't have
      *         adequate privileges to get the resource.
      */
@@ -939,7 +939,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * given name by searching the class loader's classpath.
      *
      * @param name The resource name to search for.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      * @return an enumeration of URLs for the resources
      * @exception IOException if I/O errors occurs (can't happen)
      */
@@ -952,7 +952,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * given name by searching the class loader's classpath.
      *
      * @param name The resource name to search for.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      * @param parentHasBeenSearched whether ClassLoader.this.parent
      * has been searched - will be true if the method is (indirectly)
      * called from ClassLoader.getResources
@@ -992,11 +992,11 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * either be a directory or a zip file.
      *
      * @param file The file (directory or jar) in which to search for
-     *             the resource. Must not be <code>null</code>.
+     *             the resource. Must not be {@code null}.
      * @param resourceName The name of the resource for which a stream
-     *                     is required. Must not be <code>null</code>.
+     *                     is required. Must not be {@code null}.
      *
-     * @return a stream to the required resource or <code>null</code> if the
+     * @return a stream to the required resource or {@code null} if the
      *         resource cannot be found in the given file object.
      */
     protected URL getResourceURL(File file, String resourceName) {
@@ -1051,8 +1051,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * ClassNotFoundException.
      *
      * @param classname The name of the class to be loaded.
-     *                  Must not be <code>null</code>.
-     * @param resolve <code>true</code> if all classes upon which this class
+     *                  Must not be {@code null}.
+     * @param resolve {@code true} if all classes upon which this class
      *                depends are to be loaded.
      *
      * @return the required Class object
@@ -1113,7 +1113,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * searching purposes.
      *
      * @param classname The class name in dot format (eg java.lang.Integer).
-     *                  Must not be <code>null</code>.
+     *                  Must not be {@code null}.
      *
      * @return the classname in filesystem format (eg java/lang/Integer.class)
      */
@@ -1295,9 +1295,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Reads a class definition from a stream.
      *
      * @param stream The stream from which the class is to be read.
-     *               Must not be <code>null</code>.
+     *               Must not be {@code null}.
      * @param classname The name of the class in the stream.
-     *                  Must not be <code>null</code>.
+     *                  Must not be {@code null}.
      * @param container the file or directory containing the class.
      *
      * @return the Class object read from the stream.
@@ -1324,7 +1324,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Searches for and load a class on the classpath of this class loader.
      *
      * @param name The name of the class to be loaded. Must not be
-     *             <code>null</code>.
+     *             {@code null}.
      *
      * @return the required Class object
      *
@@ -1351,7 +1351,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Finds a class on the given classpath.
      *
      * @param name The name of the class to be loaded. Must not be
-     *             <code>null</code>.
+     *             {@code null}.
      *
      * @return the required Class object
      *
@@ -1391,7 +1391,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * no parent classloader has been specified.
      *
      * @param name The name of the class to be loaded.
-     *             Must not be <code>null</code>.
+     *             Must not be {@code null}.
      *
      * @return the required Class object
      *
@@ -1536,7 +1536,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     }
 
     /**
-     * Returns a <code>String</code> representing this loader.
+     * Returns a {@code String} representing this loader.
      * @return the path that this classloader has.
      */
     public String toString() {

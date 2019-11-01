@@ -17,25 +17,16 @@ import org.apache.commons.codec.Charsets;
  */
 @Extension
 public class IdentityRootAction implements UnprotectedRootAction {
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getIconFileName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getUrlName() {
         return InstanceIdentityProvider.RSA.getKeyPair() == null ? null : "instance-identity";

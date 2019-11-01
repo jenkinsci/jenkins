@@ -608,9 +608,6 @@ public class NodeProvisioner {
             }
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             String sb = "StrategyState{" + "label=" + label +
@@ -630,7 +627,6 @@ public class NodeProvisioner {
     @Extension @Symbol("standard")
     public static class StandardStrategyImpl extends Strategy {
 
-        /** {@inheritDoc} */
         @Nonnull
         @Override
         public StrategyDecision apply(@Nonnull StrategyState state) {

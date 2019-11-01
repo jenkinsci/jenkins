@@ -515,7 +515,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a new user account by registering a JBCrypt Hashed password with the user.
      *
      * @param userName The user's name
-     * @param hashedPassword A hashed password, must begin with <code>#jbcrypt:</code>
+     * @param hashedPassword A hashed password, must begin with {@code #jbcrypt:}
      */
     public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
         if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
@@ -552,7 +552,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * All users who can login to the system.
      */
     public List<User> getAllUsers() {
-        List<User> r = new ArrayList<User>();
+        List<User> r = new ArrayList<>();
         for (User u : User.getAll()) {
             if(u.getProperty(Details.class)!=null)
                 r.add(u);
@@ -587,7 +587,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Keys are field names (e.g. {@code password2}), values are the messages.
          */
         // TODO i18n?
-        public HashMap<String, String> errors = new HashMap<String, String>();
+        public HashMap<String, String> errors = new HashMap<>();
 
         public SignupInfo() {
         }

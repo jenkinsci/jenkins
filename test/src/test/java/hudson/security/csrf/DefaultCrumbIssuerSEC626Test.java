@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2008-2010 Yahoo! Inc.
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -22,11 +22,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- *
  * @author dty
  */
-//TODO merge back to DefaultCrumbIssuerTest
-public class DefaultCrumbIssuerSEC626Test {
+public class DefaultCrumbIssuerSEC626Test { //TODO merge back to DefaultCrumbIssuerTest
     
     @Rule public JenkinsRule r = new JenkinsRule();
 

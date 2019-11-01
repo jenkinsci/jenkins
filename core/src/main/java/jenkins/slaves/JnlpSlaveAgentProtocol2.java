@@ -42,9 +42,6 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
         return handler.isEnabled() ? handler.getName() : null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isOptIn() {
         return true;
@@ -55,9 +52,6 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return Messages.JnlpSlaveAgentProtocol2_displayName();
