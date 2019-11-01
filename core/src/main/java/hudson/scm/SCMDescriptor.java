@@ -23,10 +23,14 @@
  */
 package hudson.scm;
 
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Job;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +62,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
+    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
     public volatile AtomicInteger generation = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
