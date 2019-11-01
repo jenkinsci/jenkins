@@ -53,6 +53,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Run;
+import hudson.model.TimeZoneProperty;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
@@ -117,6 +118,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -676,7 +678,28 @@ public class Functions {
     public static boolean isCollapsed(String paneId) {
     	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
     }
-    
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isUserTimeZoneOverride() {
+        return TimeZoneProperty.forCurrentUser() != null;
+    }
+
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public static String getUserTimeZone() {
+        return TimeZoneProperty.forCurrentUser();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getUserTimeZonePostfix() {
+        if (!isUserTimeZoneOverride()) {
+            return "";
+        }
+
+        TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
+        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+    }
+
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,

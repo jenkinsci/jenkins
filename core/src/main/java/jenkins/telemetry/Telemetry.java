@@ -56,8 +56,8 @@ import java.util.logging.Logger;
 /**
  * Extension point for collecting JEP-214 telemetry.
  *
- * Implementations should provide a <code>description.jelly</code> file with additional details about their purpose and
- * behavior which will be included in <code>help-usageStatisticsCollected.jelly</code> for {@link UsageStatistics}.
+ * Implementations should provide a {@code description.jelly} file with additional details about their purpose and
+ * behavior which will be included in {@code help-usageStatisticsCollected.jelly} for {@link UsageStatistics}.
  *
  * @see <a href="https://jenkins.io/jep/214">JEP-214</a>
  *

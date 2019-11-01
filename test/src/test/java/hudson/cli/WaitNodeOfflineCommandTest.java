@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.slaves.DumbSlave;
@@ -48,6 +44,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
+/**
+ * @author pjanouse
+ */
 public class WaitNodeOfflineCommandTest {
 
     private CLICommandInvoker command;

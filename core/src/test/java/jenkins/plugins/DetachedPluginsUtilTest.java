@@ -44,7 +44,7 @@ public class DetachedPluginsUtilTest {
     }
 
     /**
-     * Checks the format of the <code>/jenkins/split-plugins.txt</code> file has maximum 4 columns.
+     * Checks the format of the {@code /jenkins/split-plugins.txt} file has maximum 4 columns.
      */
     @Test
     public void checkSplitPluginsFileFormat() throws IOException {

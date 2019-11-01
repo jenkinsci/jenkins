@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.FreeStyleBuild;
@@ -57,6 +53,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
 
+/**
+ * @author pjanouse
+ */
 public class QuietDownCommandTest {
 
     private CLICommandInvoker command;

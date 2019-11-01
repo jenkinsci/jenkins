@@ -152,6 +152,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * @deprecated as of 1.XXX
      *      Use {@link Jenkins#getDescriptor(Class)}
      */
+    @Deprecated
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
     /**
@@ -205,17 +206,11 @@ public class JNLPLauncher extends ComputerLauncher {
     @Extension
     public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
             return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
             return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;

@@ -124,7 +124,7 @@ just submit a pull request.
 [backporting process]: https://jenkins.io/download/lts/
 [proposed template]: .github/PULL_REQUEST_TEMPLATE.md
 [MIT license]: ./LICENSE.txt
-[contributor agreement]: https://wiki.jenkins.io/display/JENKINS/Copyright+on+source+code
+[contributor agreement]: https://jenkins.io/project/governance/#cla
 [Jenkins Security Team]: https://jenkins.io/security/#team
 [ci.jenkins.io]: https://ci.jenkins.io/
 [Jenkins Pipeline]: https://jenkins.io/doc/book/pipeline/

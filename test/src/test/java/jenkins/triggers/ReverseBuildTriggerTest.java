@@ -89,7 +89,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
-    /** @see BuildTriggerTest#testDownstreamProjectSecurity */
+    /** @see BuildTriggerTest#downstreamProjectSecurity */
     @Test public void upstreamProjectSecurity() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()

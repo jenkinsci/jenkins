@@ -103,7 +103,7 @@ public class IOUtils {
 
     /**
      * See {@link hudson.FilePath#isAbsolute(String)}.
-     * @param path String representing <code> Platform Specific </code> (unlike FilePath, which may get Platform agnostic paths), may not be null
+     * @param path String representing {@code Platform Specific } (unlike FilePath, which may get Platform agnostic paths), may not be null
      * @return true if String represents absolute path on this platform, false otherwise
      */
     public static boolean isAbsolute(String path) {

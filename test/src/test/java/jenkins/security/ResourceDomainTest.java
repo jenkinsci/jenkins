@@ -287,6 +287,25 @@ public class ResourceDomainTest {
     }
 
     @Test
+    public void testColonUserName() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ).everywhere().toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.setRedirectEnabled(true);
+        webClient.login("foo:bar");
+
+        Page page = webClient.goTo("userContent/readme.txt", "text/plain");
+        String resourceResponseUrl = page.getUrl().toString();
+        Assert.assertEquals("resource response success", 200, page.getWebResponse().getStatusCode());
+        Assert.assertNull("no CSP headers", page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
+        Assert.assertTrue("Served from resource domain", resourceResponseUrl.contains(RESOURCE_DOMAIN));
+        Assert.assertTrue("Served from resource action", resourceResponseUrl.contains("static-files"));
+    }
+
+    @Test
     public void testRedirectUrls() throws Exception {
         ResourceDomainRootAction rootAction = ResourceDomainRootAction.get();
         String url = rootAction.getRedirectUrl(new ResourceDomainRootAction.Token("foo", "bar", Instant.now()), "foo bar baz");

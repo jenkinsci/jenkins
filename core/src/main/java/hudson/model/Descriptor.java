@@ -1108,6 +1108,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Finds a descriptor from a collection by its class name or ID.
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
         T d = findByClassName(list, string);
         if (d != null) {
@@ -1119,6 +1120,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }

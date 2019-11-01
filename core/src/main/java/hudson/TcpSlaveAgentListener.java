@@ -390,9 +390,6 @@ public final class TcpSlaveAgentListener extends Thread {
             ping = "Ping\n".getBytes(StandardCharsets.UTF_8);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean isRequired() {
             return true;
@@ -403,9 +400,6 @@ public final class TcpSlaveAgentListener extends Thread {
             return "Ping";
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getDisplayName() {
             return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
@@ -455,7 +449,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
+     * Reschedules the {@code TcpSlaveAgentListener} on demand.  Disables itself after running.
      */
     @Extension
     @Restricted(NoExternalUse.class)

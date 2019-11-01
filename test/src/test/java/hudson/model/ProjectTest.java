@@ -702,7 +702,7 @@ public class ProjectTest {
      */
     @Test
     public void testJobSubmittedShouldSpawnCloud() throws Exception {
-        /**
+        /*
          * Setup a project with an SCM. Jenkins should have no executors in itself. 
          */
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
@@ -762,7 +762,7 @@ public class ProjectTest {
         
         t.new Runner().run();
         
-        /**
+        /*
          * Assert that the log contains the correct message.
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");

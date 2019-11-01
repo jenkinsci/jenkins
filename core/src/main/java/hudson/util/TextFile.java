@@ -98,7 +98,7 @@ public class TextFile {
      * Creates a new {@link jenkins.util.io.LinesStream} of the file.
      * <p>
      * Note: The caller is responsible for closing the returned
-     * <code>LinesStream</code>.
+     * {@code LinesStream}.
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
      * @since 2.111
