@@ -28,8 +28,8 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 
 /**
  * Model object used to display "Jenkins is loading data".
@@ -41,7 +41,7 @@ import java.net.HttpURLConnection;
  */
 public class HudsonIsLoading {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        rsp.setStatus(HttpURLConnection.HTTP_UNAVAILABLE);
+        rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this,"index.jelly").forward(req,rsp);
     }
 }
