@@ -160,7 +160,7 @@ public class LogRotatorConfiguration extends GlobalConfiguration {
         try {
             int interval = Integer.parseInt( updateIntervalHours );
             
-            if( interval <=0 ) {
+            if( interval <= 0 ) {
                 return FormValidation.error( Messages.LogRotatorConfiguration_pleaseEnterAPositiveInteger() );
             }
         } catch( NumberFormatException nfe ) {
