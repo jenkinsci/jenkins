@@ -128,11 +128,26 @@ public class UpdateSiteTest {
         assertEquals("Wrong name of plugin found", "Task Scanner Plug-in", tasksPlugin.getDisplayName());
     }
 
-    @Test public void wikiURLs() throws Exception {
+    @Test public void wikiUrlFromSingleSite() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/tasks-update-center.json");
         overrideUpdateSite(site);
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://plugins.jenkins.io/dummy", wrapper.getUrl());
+    }
+
+    @Test public void wikiUrlFromMoreSites() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/tasks-update-center.json");
+        UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
+        overrideUpdateSite(site, alternativeSite);
+        // sites use different Wiki URL for dummy -> use URL from manifest 
+        PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
+        assertEquals("https://wiki.jenkins.io/display/JENKINS/dummy", wrapper.getUrl());
+        // sites use the same Wiki URL for tasks -> use it
+        wrapper = buildPluginWrapper("tasks", "https://wiki.jenkins.io/display/JENKINS/tasks");
+        assertEquals("https://plugins.jenkins.io/tasks", wrapper.getUrl());
+        // only one site has it
+        wrapper = buildPluginWrapper("foo", "https://wiki.jenkins.io/display/JENKINS/foo");
+        assertEquals("https://plugins.jenkins.io/foo", wrapper.getUrl());
     }
 
     @Test public void updateDirectlyWithJson() throws Exception {
@@ -197,18 +212,21 @@ public class UpdateSiteTest {
         assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
     }
 
-
     private UpdateSite getUpdateSite(String path) throws Exception {
+        return getUpdateSite(path, UpdateCenter.ID_DEFAULT);
+    }
+
+    private UpdateSite getUpdateSite(String path, String id) throws Exception {
         URL url = new URL(baseUrl, path);
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        UpdateSite site = new UpdateSite(id, url.toString());
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         return site;
     }
 
-    private void overrideUpdateSite(UpdateSite site) {
+    private void overrideUpdateSite(UpdateSite... overrideSites) {
         PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
         sites.clear();
-        sites.add(site);
+        sites.addAll(Arrays.asList(overrideSites));
     }
 
     private PluginWrapper buildPluginWrapper(String name, String wikiUrl) {
