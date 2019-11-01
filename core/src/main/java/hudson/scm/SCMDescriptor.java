@@ -31,6 +31,8 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import static java.util.logging.Level.WARNING;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -56,7 +58,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    public volatile int generation = 1;
+    public volatile AtomicInteger generation = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
