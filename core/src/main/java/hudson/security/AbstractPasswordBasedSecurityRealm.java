@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import hudson.util.spring.BeanBuilder;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.auth.LoginThrottler;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -37,8 +38,16 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Jenkins.get().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
+
+        AuthenticationManager authManager = findBean(AuthenticationManager.class, context);
+        
+        AuthenticationManager wrapper = authentication -> {
+            LoginThrottler.get().beforeAuthentication(authentication.getName());
+            return authManager.authenticate(authentication);
+        };
+
         return new SecurityComponents(
-                findBean(AuthenticationManager.class, context),
+                wrapper,
                 new ImpersonatingUserDetailsService(this));
     }
 

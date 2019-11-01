@@ -15,6 +15,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import jenkins.security.auth.LoginThrottler;
 import jenkins.util.SystemProperties;
 import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
@@ -56,6 +57,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
             Authentication a = Jenkins.get().getSecurityRealm().getSecurityComponents().manager.authenticate(authRequest);
             // Authentication success
             LOGGER.log(FINER, "Authentication success: {0}", a);
+            LoginThrottler.get().afterSuccessfulAuthentication(authRequest.getName());
             return a;
         } catch (AuthenticationException failed) {
             // Authentication failed
