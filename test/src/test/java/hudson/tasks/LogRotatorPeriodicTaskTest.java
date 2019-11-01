@@ -132,9 +132,9 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs.
         // but since the policy is "do nothing," it should not be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -175,9 +175,9 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs.
         // but sinced the policy is "use the job's rotator," it should not be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -220,9 +220,9 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs.
         // since the policy is "use the global rotator," it should be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -263,9 +263,9 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs.
         // but since the policy is "do nothing," it should not be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -301,9 +301,9 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs.
         // since the policy is "use global rotators," it should be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -341,10 +341,10 @@ public class LogRotatorPeriodicTaskTest {
         
         // this global LogRotator should match all jobs
         // the specific rotator should match only project1
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
         		specificGlobalMapping,
                 catchallGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
@@ -385,9 +385,9 @@ public class LogRotatorPeriodicTaskTest {
         // this global LogRotator should match only some jobs.
         // but since the job in this test will not match the rule,
         // this rotator should not be used.
-        config.setGlobalLogRotators(Arrays.asList( new LogRotatorMapping[] {
+        config.setGlobalLogRotators(Arrays.asList(
                 specificGlobalMapping
-        }));
+        ));
         
         /*
          * Test Execution
