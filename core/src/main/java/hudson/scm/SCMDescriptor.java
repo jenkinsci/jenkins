@@ -63,7 +63,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     @Deprecated
     @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
-    public volatile AtomicInteger generation = new AtomicInteger(1);
+    public final AtomicInteger generation = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
