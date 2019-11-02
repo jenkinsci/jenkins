@@ -52,6 +52,8 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
+      <st:include page="_cloud-note.jelly"/>
+
       <f:bottomButtonBar>
         <f:submit value="${%Save}" />
         <f:apply />
