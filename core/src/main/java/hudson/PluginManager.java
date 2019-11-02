@@ -948,6 +948,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
+      try (ACLContext context = ACL.as(ACL.SYSTEM)) {
         Jenkins.get().refreshExtensions();
 
         for (PluginWrapper p : plugins) {
@@ -992,6 +993,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (ExtensionRefreshException e) {
             throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
+      }
     }
 
     @Restricted(NoExternalUse.class)
