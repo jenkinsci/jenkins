@@ -413,7 +413,7 @@ public class Executor extends Thread implements ModelObject {
 
                 setName(getName() + " : executing " + executable.toString());
                 Authentication auth = workUnit.context.item.authenticate();
-                LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
+                LOGGER.log(FINEST, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
                 if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM)) { // i.e., unspecified
                     if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
                         LOGGER.fine("no QueueItemAuthenticator implementations installed");

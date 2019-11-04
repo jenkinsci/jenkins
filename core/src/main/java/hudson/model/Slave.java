@@ -434,7 +434,7 @@ public abstract class Slave extends Node implements Serializable {
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
-                LOGGER.log(Level.FINE, "found {0}", res);
+                LOGGER.log(Level.FINEST, "found {0}", res);
             }
             return res;
         }

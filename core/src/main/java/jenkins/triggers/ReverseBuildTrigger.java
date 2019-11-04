@@ -256,7 +256,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                     }
                     List<Job> upstreams =
                             Items.fromNameList(downstream.getParent(), trigger.getUpstreamProjects(), Job.class);
-                    LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
+                    LOGGER.log(Level.FINER, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
                     for (Job upstream : upstreams) {
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
                             continue; // handled specially

@@ -236,7 +236,7 @@ public class CLI {
             mode = Mode.HTTP;
         }
 
-        LOGGER.log(FINE, "using connection mode {0}", mode);
+        LOGGER.log(FINEST, "using connection mode {0}", mode);
 
         if (user != null && auth != null) {
             LOGGER.warning("-user and -auth are mutually exclusive");

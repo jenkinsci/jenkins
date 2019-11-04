@@ -142,7 +142,7 @@ public class SystemProperties {
                 for (String key : ALLOW_ON_AGENT) {
                     snapshot.put(key, getString(key));
                 }
-                LOGGER.log(Level.FINE, "taking snapshot of {0}", snapshot);
+                LOGGER.log(Level.FINEST, "taking snapshot of {0}", snapshot);
             }
             @Override
             public Void call() throws RuntimeException {

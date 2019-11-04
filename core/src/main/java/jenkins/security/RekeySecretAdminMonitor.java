@@ -144,7 +144,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
             int count = rewriter.rewriteRecursive(Jenkins.get().getRootDir(), listener);
             log.printf("Completed re-keying %d files on %s\n",count,new Date());
             new RekeySecretAdminMonitor().done.on();
-            LOGGER.info("Secret re-keying completed");
+            LOGGER.finest("Secret re-keying completed");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
             Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));

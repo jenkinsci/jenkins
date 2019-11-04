@@ -1589,7 +1589,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (causeOfBlockage != null) {
                     p.leave(this);
                     new BlockedItem(p, causeOfBlockage).enter(this);
-                    LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                    LOGGER.log(Level.FINEST, "Catching that {0} is blocked in the last minute", p);
                     // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
                     // so that other buildables which might have been blocked by this can see the state change
                     updateSnapshot();

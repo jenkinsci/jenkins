@@ -98,7 +98,7 @@ public class CLIRegisterer extends ExtensionFinder {
     }
 
     private List<ExtensionComponent<CLICommand>> discover(@Nonnull final Jenkins jenkins) {
-        LOGGER.fine("Listing up @CLIMethod");
+        LOGGER.finest("Listing up @CLIMethod");
         List<ExtensionComponent<CLICommand>> r = new ArrayList<>();
 
         try {

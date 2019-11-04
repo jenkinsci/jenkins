@@ -206,9 +206,9 @@ public final class RunIdMigrator {
             }
             try {
                 if (Util.isSymlink(kid)) {
-                    LOGGER.log(FINE, "deleting build number symlink {0} → {1}", new Object[] {name, Util.resolveSymlink(kid)});
+                    LOGGER.log(FINEST, "deleting build number symlink {0} → {1}", new Object[] {name, Util.resolveSymlink(kid)});
                 } else if (kid.isDirectory()) {
-                    LOGGER.log(FINE, "ignoring build directory {0}", name);
+                    LOGGER.log(FINEST, "ignoring build directory {0}", name);
                     continue;
                 } else {
                     LOGGER.log(WARNING, "need to delete anomalous file entry {0}", name);
@@ -226,7 +226,7 @@ public final class RunIdMigrator {
                 String name = kid.getName();
                 try {
                     Integer.parseInt(name);
-                    LOGGER.log(FINE, "skipping new build dir {0}", name);
+                    LOGGER.log(FINEST, "skipping new build dir {0}", name);
                     continue;
                 } catch (NumberFormatException x) {
                     // OK, next…
@@ -261,7 +261,7 @@ public final class RunIdMigrator {
                 File newKid = new File(dir, Integer.toString(number));
                 move(kid, newKid);
                 FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, Charsets.UTF_8);
-                LOGGER.log(FINE, "fully processed {0} → {1}", new Object[] {name, number});
+                LOGGER.log(FINEST, "fully processed {0} → {1}", new Object[] {name, number});
                 idToNumber.put(name, number);
             } catch (Exception x) {
                 LOGGER.log(WARNING, "failed to process " + kid, x);

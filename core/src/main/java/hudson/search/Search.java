@@ -370,7 +370,7 @@ public class Search implements StaplerProxy {
 
         List<SearchItem> items = new ArrayList<>(); // items found in 1 step
 
-        LOGGER.log(Level.FINE, "tokens={0}", tokens);
+        LOGGER.log(Level.FINEST, "tokens={0}", tokens);
         
         // first token
         int w=1;    // width of token
@@ -379,7 +379,7 @@ public class Search implements StaplerProxy {
             m.find(index,token,items);
             for (SearchItem si : items) {
                 paths[w].add(SuggestedItem.build(searchContext ,si));
-                LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
+                LOGGER.log(Level.FINEST, "found search item: {0}", si.getSearchName());
             }
             w++;
         }

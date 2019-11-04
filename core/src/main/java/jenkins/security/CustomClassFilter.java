@@ -169,7 +169,7 @@ public interface CustomClassFilter extends ExtensionPoint {
                     }
                 }
             }
-            Logger.getLogger(Contributed.class.getName()).log(Level.FINE, "plugin-defined entries: {0}", overrides);
+            Logger.getLogger(Contributed.class.getName()).log(Level.FINER, "plugin-defined entries: {0}", overrides);
         }
 
     }

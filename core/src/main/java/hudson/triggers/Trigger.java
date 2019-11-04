@@ -270,7 +270,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             for (Trigger t : p.getTriggers().values()) {
                 if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t !=null && t.spec != null && t.tabs != null) {
-                        LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
+                        LOGGER.log(Level.FINEST, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
                         if (t.tabs.check(cal)) {
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
@@ -291,7 +291,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 LOGGER.log(Level.WARNING, t.getClass().getName() + ".run() failed for " + p, e);
                             }
                         } else {
-                            LOGGER.log(Level.FINER, "did not trigger {0}", p);
+                            LOGGER.log(Level.FINEST, "did not trigger {0}", p);
                         }
                     } else {
                         LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());

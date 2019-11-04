@@ -421,17 +421,17 @@ public final class TcpSlaveAgentListener extends Thread {
 
         public boolean connect(Socket socket) throws IOException {
             try {
-                LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                LOGGER.log(Level.FINEST, "Requesting ping from {0}", socket.getRemoteSocketAddress());
                 try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                     out.writeUTF("Protocol:Ping");
                     try (InputStream in = socket.getInputStream()) {
                         byte[] response = new byte[ping.length];
                         int responseLength = in.read(response);
                         if (responseLength == ping.length && Arrays.equals(response, ping)) {
-                            LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                            LOGGER.log(Level.FINEST, "Received ping response from {0}", socket.getRemoteSocketAddress());
                             return true;
                         } else {
-                            LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                            LOGGER.log(Level.FINEST, "Expected ping response from {0} of {1} got {2}", new Object[]{
                                     socket.getRemoteSocketAddress(),
                                     new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?

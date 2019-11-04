@@ -77,7 +77,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
-        LOGGER.log(Level.FINE, "tools saved: "+result);
+        LOGGER.log(Level.FINEST, "tools saved: "+result);
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 

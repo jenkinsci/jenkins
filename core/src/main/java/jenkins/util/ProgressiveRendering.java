@@ -178,7 +178,7 @@ public abstract class ProgressiveRendering {
             }
         }
         List/*<AncestorImpl>*/ ancestors = currentRequest.ancestors;
-        LOG.log(Level.FINER, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
+        LOG.log(Level.FINEST, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
         TokenList tokens = currentRequest.tokens;
         return new RequestImpl(Stapler.getCurrent(), (HttpServletRequest) Proxy.newProxyInstance(ProgressiveRendering.class.getClassLoader(), new Class<?>[] {HttpServletRequest.class}, new InvocationHandler() {
             @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

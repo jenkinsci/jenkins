@@ -117,7 +117,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		try {
 			chain.doFilter(request, response);
 
-			LOGGER.finer("Chain processed normally");
+			LOGGER.finest("Chain processed normally");
 		}
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);

@@ -175,7 +175,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         // And finally, remove the 'restOfPath' suffix from the complete URL, as that's the path from Jenkins to the DBS.
         String dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
-        LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
+        LOGGER.finest(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
         Authentication authentication = Jenkins.getAuthentication();
         String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();

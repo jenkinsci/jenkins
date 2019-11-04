@@ -52,7 +52,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
                 return;
             }
 
-            LOGGER.fine("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
+            LOGGER.finest("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
 
 
             // if it's more than 90% full and less than the minimum, activate

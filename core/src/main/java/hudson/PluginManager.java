@@ -610,11 +610,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
             return;
         }
-        LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
+        LOGGER.finer(() -> "considering loading a detached dependency " + shortName);
         for (String loadedFile : loadPluginsFromWar("/WEB-INF/detached-plugins", (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
             File arc = new File(rootDir, loaded + ".jpi");
-            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            LOGGER.finer(() -> "Loading a detached plugin as a dependency: " + arc);
             try {
                 plugins.add(strategy.createPluginWrapper(arc));
             } catch (IOException e) {
@@ -783,7 +783,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             });
 
-            LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
+            LOGGER.log(FINEST, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
 
             InstallUtil.saveLastExecVersion();
@@ -813,7 +813,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         return false;
                     }
                 });
-                LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
+                LOGGER.log(FINEST, "Upgraded detached plugins (and dependencies): {0}",
                         new Object[]{loadedDetached});
             }
         }
@@ -882,7 +882,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting, @CheckForNull List<PluginWrapper> batch) throws IOException, InterruptedException, RestartRequiredException {
         try (ACLContext context = ACL.as(ACL.SYSTEM)) {
-            LOGGER.log(FINE, "Attempting to dynamic load {0}", arc);
+            LOGGER.log(FINEST, "Attempting to dynamic load {0}", arc);
             PluginWrapper p = null;
             String sn;
             try {
@@ -1050,7 +1050,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @param fileName like {@code abc.jpi}
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
-        LOGGER.log(FINE, "Copying {0}", src);
+        LOGGER.log(FINER, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);

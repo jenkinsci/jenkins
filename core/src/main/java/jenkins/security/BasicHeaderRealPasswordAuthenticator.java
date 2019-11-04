@@ -55,7 +55,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
         try {
             Authentication a = Jenkins.get().getSecurityRealm().getSecurityComponents().manager.authenticate(authRequest);
             // Authentication success
-            LOGGER.log(FINER, "Authentication success: {0}", a);
+            LOGGER.log(FINEST, "Authentication success: {0}", a);
             return a;
         } catch (AuthenticationException failed) {
             // Authentication failed

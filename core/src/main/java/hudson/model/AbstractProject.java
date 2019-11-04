@@ -1380,7 +1380,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         } else {
             // polling without workspace
-            LOGGER.fine("Polling SCM changes of " + getName());
+            LOGGER.finest("Polling SCM changes of " + getName());
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(getLastBuild(),null,listener);
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);

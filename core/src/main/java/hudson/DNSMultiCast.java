@@ -158,7 +158,7 @@ public class DNSMultiCast implements Closeable {
 //                this.waitForCanceled(DNSConstants.CLOSE_TIMEOUT);
 
                 // Stop the canceler timer
-                logger.finer("Canceling the state timer");
+                logger.finest("Canceling the state timer");
                 this.cancelStateTimer();
 
                 // Stop the executor

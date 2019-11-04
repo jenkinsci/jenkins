@@ -3308,10 +3308,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
         if (currentMilestone == InitMilestone.COMPLETED) {
-            LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
+            LOGGER.log(FINEST, "setting version {0} to {1}", new Object[] {version, VERSION});
             version = VERSION;
         } else {
-            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
+            LOGGER.log(FINEST, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
         }
 
         getConfigFile().write(this);
