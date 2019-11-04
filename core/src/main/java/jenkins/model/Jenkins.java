@@ -4478,7 +4478,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        acl.checkPermission(CONFIGURE_JENKINS);
+        acl.checkPermission(ADMINISTER);
 
         String text = req.getParameter("script");
         if (text != null) {
