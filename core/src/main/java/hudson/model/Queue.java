@@ -493,7 +493,7 @@ public class Queue extends ResourceController implements Saveable {
      * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
      */
     public void clear() {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         lock.lock();
         try { try {
             for (WaitingItem i : new ArrayList<>(
