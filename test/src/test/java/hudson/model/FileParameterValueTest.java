@@ -327,7 +327,7 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("weird..name.txt", null)
         )));
 
@@ -355,7 +355,7 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_TildeInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("~name", null)
         )));
 

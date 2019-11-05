@@ -46,6 +46,7 @@ import org.jvnet.hudson.test.RestartableJenkinsRule;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.Matchers.containsString;
@@ -90,7 +91,7 @@ public class ApiTokenStatsRestartTest {
                    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
                    WebRequest request = new WebRequest(new URL(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken"), HttpMethod.POST);
-                   request.setRequestParameters(Arrays.asList(new NameValuePair("newTokenName", TOKEN_NAME)));
+                   request.setRequestParameters(Collections.singletonList(new NameValuePair("newTokenName", TOKEN_NAME)));
 
                    Page page = wc.getPage(request);
                    assertEquals(200, page.getWebResponse().getStatusCode());

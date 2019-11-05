@@ -120,7 +120,7 @@ public class EnvVarsTest {
 
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
-        assertEquals(Arrays.asList("PATH"), order);
+        assertEquals(Collections.singletonList("PATH"), order);
     }
 
     @Test

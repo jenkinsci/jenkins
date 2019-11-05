@@ -144,11 +144,11 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(true));
-        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertEquals(Collections.singletonList(a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(false));
-        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertEquals(Collections.singletonList(a2), thing.getActions());
         assertThat(thing.removeAction(null), is(false));
-        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertEquals(Collections.singletonList(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")
@@ -160,9 +160,9 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(true));
-        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertEquals(Collections.singletonList(a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(false));
-        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertEquals(Collections.singletonList(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")

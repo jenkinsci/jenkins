@@ -40,7 +40,7 @@ public class ListViewTest {
         when(owner.getItemGroup()).thenReturn(itemGroupOwner);
         ListView lv = new ListView("test", owner);
         ItemGroupOfNonTopLevelItem ig = Mockito.mock(ItemGroupOfNonTopLevelItem.class);
-        when(Items.getAllItems(eq(itemGroupOwner), eq(TopLevelItem.class))).thenReturn(Arrays.asList(ig));
+        when(Items.getAllItems(eq(itemGroupOwner), eq(TopLevelItem.class))).thenReturn(Collections.singletonList(ig));
         when(ig.getRelativeNameFrom(any(ItemGroup.class))).thenReturn("test-item");
         lv.setRecurse(true);
         lv.add(ig);
@@ -60,7 +60,7 @@ public class ListViewTest {
         ListView view = new ListView("test", owner);
         view.setIncludeRegex(".*");
         TopLevelItem it = Mockito.mock(TopLevelItem.class);
-        List<TopLevelItem> igContent = Arrays.asList(it);
+        List<TopLevelItem> igContent = Collections.singletonList(it);
         when(Items.getAllItems(eq(ig), eq(TopLevelItem.class))).thenReturn(igContent);
         when(ig.getItems()).thenReturn(igContent);
         when(it.getRelativeNameFrom(any(ItemGroup.class))).thenReturn("test-item");
