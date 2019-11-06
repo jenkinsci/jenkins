@@ -26,7 +26,6 @@ package hudson.tasks;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.FINEST;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -159,7 +158,7 @@ public class LogRotator extends BuildDiscarder {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
-                LOGGER.log(FINEST, "{0} is to be removed", r);
+                LOGGER.log(FINE, "{0} is to be removed", r);
                 try { r.delete(); }
                 catch (IOException ex) { exceptionMap.put(r, ex); }
             }
@@ -188,7 +187,7 @@ public class LogRotator extends BuildDiscarder {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
-                LOGGER.log(FINEST, "{0} is to be purged of artifacts", r);
+                LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
                 try { r.deleteArtifacts(); }
                 catch (IOException ex) { exceptionMap.put(r, ex); }
             }

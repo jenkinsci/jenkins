@@ -1630,7 +1630,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if (tmp.exists()) {
                 tmp.deleteOnExit();
             }
-            LOGGER.log(FINEST, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
+            LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
             removeRunFromParent();
         }
     }
@@ -1891,7 +1891,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
-                LOGGER.log(FINEST, "moving into POST_PRODUCTION on {0}", this);
+                LOGGER.log(FINER, "moving into POST_PRODUCTION on {0}", this);
                 state = State.POST_PRODUCTION;
 
                 if (listener != null) {

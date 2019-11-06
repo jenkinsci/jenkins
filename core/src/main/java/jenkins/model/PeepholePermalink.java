@@ -160,7 +160,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, "failed to read " + storage, x);
             }
-            LOGGER.finer(() -> "loading from " + storage + ": " + cache);
+            LOGGER.fine(() -> "loading from " + storage + ": " + cache);
         }
         return cache;
     }
@@ -178,7 +178,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         synchronized (cache) {
             cache.put(getId(), b == null ? RESOLVES_TO_NONE : b.getNumber());
             File storage = storageFor(buildDir);
-            LOGGER.finest(() -> "saving to " + storage + ": " + cache);
+            LOGGER.fine(() -> "saving to " + storage + ": " + cache);
             try {
                 AtomicFileWriter cw = new AtomicFileWriter(storage);
                 try {

@@ -96,7 +96,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
         if (status == null) {
             return null;
         }
-        LOGGER.finest(() -> "Request dispatch set status to " + status + " for URL " + req.getPathInfo());
+        LOGGER.fine(() -> "Request dispatch set status to " + status + " for URL " + req.getPathInfo());
         req.setAttribute(ATTRIBUTE_NAME, status);
         return status;
     }
@@ -127,7 +127,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
             return null;
         });
-        LOGGER.finest(() -> req.getRequestURI() + " -> " + status);
+        LOGGER.finer(() -> req.getRequestURI() + " -> " + status);
         return status;
     }
 
@@ -145,7 +145,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
             return cache.find(node.getClass()).isViewValid(viewName);
         });
-        LOGGER.finest(() -> "<" + req.getRequestURI() + ", " + viewName + ", " + node + "> -> " + status);
+        LOGGER.finer(() -> "<" + req.getRequestURI() + ", " + viewName + ", " + node + "> -> " + status);
         return status;
     }
 

@@ -1,6 +1,6 @@
 package jenkins.install;
 
-import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.FINE;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,7 +162,7 @@ public class UpgradeWizard extends InstallState {
         File f = SetupWizard.getUpdateStateFile();
         FileUtils.touch(f);
         f.setLastModified(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
-        LOGGER.log(FINEST, "Snoozed the upgrade wizard notice");
+        LOGGER.log(FINE, "Snoozed the upgrade wizard notice");
         return HttpResponses.redirectToContextRoot();
     }
     

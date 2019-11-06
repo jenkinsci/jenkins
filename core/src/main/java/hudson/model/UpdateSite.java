@@ -1361,7 +1361,7 @@ public class UpdateSite {
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
-                    LOGGER.log(Level.FINEST, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
                     dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch);
                 } else {
                     LOGGER.log(Level.FINE, "Dependent install of {0} for plugin {1} already added, skipping", new Object[] {dep.name, name});

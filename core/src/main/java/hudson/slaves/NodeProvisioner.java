@@ -190,7 +190,7 @@ public class NodeProvisioner {
                 }, delay, TimeUnit.MILLISECONDS);
             }
         } else {
-            LOGGER.finer(() -> "ignoring suggested review for " + label);
+            LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
     }
 
