@@ -93,10 +93,10 @@ public final class WebSocketEndpoint extends InvisibleAction implements Unprotec
         // TODO check rest of path against registered Service.name
         init();
         if (!((Boolean) webSocketServletFactoryClass.getMethod("isUpgradeRequest", HttpServletRequest.class, HttpServletResponse.class).invoke(factory, req, rsp))) {
-            throw HttpResponses.error(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
+            throw HttpResponses.errorWithoutStack(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
         }
         if (!((Boolean) webSocketServletFactoryClass.getMethod("acceptWebSocket", HttpServletRequest.class, HttpServletResponse.class).invoke(factory, req, rsp))) {
-            throw HttpResponses.error(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
+            throw HttpResponses.errorWithoutStack(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
         }
         // OK!
     }
