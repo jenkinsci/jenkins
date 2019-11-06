@@ -412,7 +412,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 c = prop.canTake(item);
             } catch (Throwable t) {
                 // We cannot guarantee the task can be taken by this node because something wrong happened
-                LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanTakeLog(getNodeName(), item.task.getName()).toString());
+                LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", getNodeName(), item.task.getName()));
                 c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
             }
             if (c!=null)    return c;

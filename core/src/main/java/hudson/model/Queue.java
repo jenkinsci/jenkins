@@ -280,7 +280,7 @@ public class Queue extends ResourceController implements Saveable {
                     reason = d.canTake(node, item);
                 } catch (Throwable t) {
                     // We cannot guarantee the task can be taken by the node because something wrong happened
-                    LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanTakeLog(node.getNodeName(), item.task.getName()).toString());
+                    LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", node.getNodeName(), item.task.getName()));
                     reason = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
                 }
 
@@ -1203,7 +1203,7 @@ public class Queue extends ResourceController implements Saveable {
                 causeOfBlockage = d.canRun(i);
             } catch (Throwable t) {
                 // We cannot guarantee the task can be run because something wrong happened
-                LOGGER.log(Level.WARNING, t, () -> Messages._Queue_ExceptionCanRunLog(i.task.getName()).toString());
+                LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the queue can run the task '%s'", i.task.getName()));
                 causeOfBlockage = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanRun());
             }
             if (causeOfBlockage != null)
