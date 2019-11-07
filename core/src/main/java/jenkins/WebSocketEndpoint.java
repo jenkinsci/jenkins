@@ -32,9 +32,12 @@ import hudson.model.UnprotectedRootAction;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.util.Timer;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -63,14 +66,15 @@ public final class WebSocketEndpoint extends InvisibleAction implements Unprotec
                 Object servletUpgradeRequest = args1[0];
                 String requestPath = (String) servletUpgradeRequest.getClass().getMethod("getRequestPath").invoke(servletUpgradeRequest);
                 assert requestPath.startsWith("/ws/");
-                Session session = ExtensionList.lookup(Service.class).stream().filter(s -> requestPath.substring(4).equals(s.name())).findFirst().get().start();
+                Service service = ExtensionList.lookup(Service.class).stream().filter(s -> requestPath.substring(4).equals(s.name())).findFirst().get();
+                Session session = service.start();
                 return Proxy.newProxyInstance(cl, new Class<?>[] {cl.loadClass("org.eclipse.jetty.websocket.api.WebSocketListener")}, (proxy2, method2, args2) -> {
                     switch (method2.getName()) {
                     case "onWebSocketConnect":
-                        session.remoteEndpoint = args2[0].getClass().getMethod("getRemote").invoke(args2[0]);
+                        session.started(args2[0].getClass().getMethod("getRemote").invoke(args2[0]), service.serverKeepAlive());
                         return null;
                     case "onWebSocketClose":
-                        session.closed((Integer) args2[0], (String) args2[1]);
+                        session._closed((Integer) args2[0], (String) args2[1]);
                         return null;
                     case "onWebSocketError":
                         session.error((Throwable) args2[0]);
@@ -104,10 +108,42 @@ public final class WebSocketEndpoint extends InvisibleAction implements Unprotec
     public interface Service extends ExtensionPoint {
         String name();
         Session start();
+        default boolean serverKeepAlive() {
+            return false;
+        }
     }
 
+    /**
+     * Number of seconds between server-sent pings, if enabled.
+     * <a href="http://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
+     * <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#support_for_websocket">GKE docs</a> says 30s
+     * but this is a total timeout, not inactivity, so you need to set {@code BackendConfigSpec.timeoutSec} anyway.
+     */
+    private static final long PING_INTERVAL_SECONDS = 30;
     public static abstract class Session {
-        Object remoteEndpoint;
+        private Object remoteEndpoint;
+        private ScheduledFuture<?> pings;
+        void started(Object remoteEndpoint, boolean keepAlive) {
+            this.remoteEndpoint = remoteEndpoint;
+            if (keepAlive) {
+                pings = Timer.get().scheduleAtFixedRate(() -> {
+                    try {
+                        remoteEndpoint.getClass().getMethod("sendPing", ByteBuffer.class).invoke(remoteEndpoint, ByteBuffer.wrap(new byte[0]));
+                        System.err.println("TODO sent ping");
+                    } catch (Exception x) {
+                        error(x);
+                        pings.cancel(true);
+                    }
+                }, PING_INTERVAL_SECONDS / 2, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            }
+        }
+        void _closed(int statusCode, String reason) {
+            if (pings != null) {
+                pings.cancel(true);
+                // alternately, check Session.isOpen each time
+            }
+            closed(statusCode, reason);
+        }
         protected void closed(int statusCode, String reason) {}
         protected void error(Throwable cause) {}
         protected void binary(byte[] payload, int offset, int len) {}
@@ -128,7 +164,6 @@ public final class WebSocketEndpoint extends InvisibleAction implements Unprotec
                 throw new RuntimeException(x);
             }
         }
-        // TODO ping/pong
     }
 
     @Extension
@@ -136,6 +171,10 @@ public final class WebSocketEndpoint extends InvisibleAction implements Unprotec
         @Override
         public String name() {
             return "example";
+        }
+        @Override
+        public boolean serverKeepAlive() {
+            return true;
         }
         @Override
         public Session start() {
