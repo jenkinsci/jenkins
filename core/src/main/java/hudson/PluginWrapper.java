@@ -438,7 +438,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);//TODO ADMINISTER ??
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -1204,14 +1204,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 //
     @RequirePOST
     public HttpResponse doMakeEnabled() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         enable();
         return HttpResponses.ok();
     }
 
     @RequirePOST
     public HttpResponse doMakeDisabled() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable();
         return HttpResponses.ok();
     }
@@ -1219,7 +1219,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     @Deprecated
     public HttpResponse doPin() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
@@ -1228,7 +1228,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     @Deprecated
     public HttpResponse doUnpin() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
@@ -1238,7 +1238,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public HttpResponse doDoUninstall() throws IOException {
         Jenkins jenkins = Jenkins.getActiveInstance();
         
-        jenkins.checkPermission(Jenkins.CONFIGURE_JENKINS);
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         archive.delete();
 
         // Redo who depends on who.

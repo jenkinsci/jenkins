@@ -371,7 +371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     public Api getApi() {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -1348,7 +1348,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doPlugins() {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray response = new JSONArray();
         Map<String,JSONObject> allPlugins = new HashMap<>();
         for (PluginWrapper plugin : plugins) {
@@ -1395,7 +1395,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @RequirePOST
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if (req.hasParameter("remove")) {
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
@@ -1421,7 +1421,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // WebOnly
     public void doInstallPluginsDone() {
         Jenkins j = Jenkins.get();
-        j.checkPermission(Jenkins.CONFIGURE_JENKINS);
+        j.checkPermission(Jenkins.ADMINISTER);
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
     }
 
@@ -1430,7 +1430,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @RequirePOST
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Set<String> plugins = new LinkedHashSet<>();
 
         Enumeration<String> en = req.getParameterNames();
@@ -1459,7 +1459,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);
         JSONArray pluginListJSON = request.getJSONArray("plugins");
@@ -1701,7 +1701,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         // We'll check the update servers with a try-retry mechanism. The retrier is built with a builder
         Retrier<FormValidation> updateServerRetrier = new Retrier.Builder<>(
@@ -1806,7 +1806,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * needs some plugins to be installed (or updated), those jobs
      * will be triggered.
      * Plugins are dynamically loaded whenever possible.
-     * Requires {@link Jenkins#CONFIGURE_JENKINS}.
+     * Requires {@link Jenkins#ADMINISTER}.
      * @param configXml configuration that might be uploaded
      * @return an empty list if all is well, else a list of submitted jobs which must be completed before this configuration can be fully read
      * @throws IOException if loading or parsing the configuration failed
@@ -1819,7 +1819,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @since 1.483
      */
     public List<Future<UpdateCenter.UpdateCenterJob>> prevalidateConfig(InputStream configXml) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<>();
         UpdateCenter uc = Jenkins.get().getUpdateCenter();
         // TODO call uc.updateAllSites() when available? perhaps not, since we should not block on network here
@@ -1869,7 +1869,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Like {@link #doInstallNecessaryPlugins(StaplerRequest)} but only checks if everything is installed
      * or if some plugins need updates or installation.
      *
-     * This method runs without side-effect. I'm still requiring the CONFIGURE_JENKINS permission since
+     * This method runs without side-effect. I'm still requiring the ADMINISTER permission since
      * XML file can contain various external references and we don't configure parsers properly against
      * that.
      *
@@ -1877,7 +1877,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @RequirePOST
     public JSONArray doPrevalidateConfig(StaplerRequest req) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         JSONArray response = new JSONArray();
 
@@ -2239,7 +2239,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         }
         return this;
     }
