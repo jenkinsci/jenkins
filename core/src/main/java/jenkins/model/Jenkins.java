@@ -2930,7 +2930,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see User#getById(String, boolean)
      */
     public @CheckForNull User getUser(String name) {
-        return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(CONFIGURE_JENKINS));
+        return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
@@ -3834,7 +3834,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @POST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        checkPermission(CONFIGURE_JENKINS);
+        checkPermission(ADMINISTER);
 
         BulkChange bc = new BulkChange(this);
         try {
@@ -3928,7 +3928,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
      */
     public Map<String,Map<String,String>> getAllThreadDumps() throws IOException, InterruptedException {
-        checkPermission(CONFIGURE_JENKINS);
+        checkPermission(ADMINISTER);
 
         // issue the requests all at once
         Map<String,Future<Map<String,String>>> future = new HashMap<>();
@@ -4172,7 +4172,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DM_GC")
     @RequirePOST
     public void doGc(StaplerResponse rsp) throws IOException {
-        checkPermission(Jenkins.CONFIGURE_JENKINS);
+        checkPermission(Jenkins.ADMINISTER);
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -4221,7 +4221,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @RequirePOST
     public void doSimulateOutOfMemory() throws IOException {
-        checkPermission(CONFIGURE_JENKINS);
+        checkPermission(ADMINISTER);
 
         System.out.println("Creating artificial OutOfMemoryError situation");
         List<Object> args = new ArrayList<>();
@@ -4508,7 +4508,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(CONFIGURE_JENKINS);
+        checkPermission(ADMINISTER);
         req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
         try {
             MetaClass mc = req.getWebApp().getMetaClass(getClass());
@@ -4976,7 +4976,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(permission==Computer.DELETE)
                 return false;
             // Configuration of master node requires CONFIGURE permission
-            return super.hasPermission(permission==Computer.CONFIGURE ? Jenkins.CONFIGURE_JENKINS : permission);
+            return super.hasPermission(permission==Computer.CONFIGURE ? Jenkins.ADMINISTER : permission);
         }
 
         @Override

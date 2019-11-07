@@ -120,7 +120,7 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Checks if the current user has permission to see this pointer.
          * @return {@code true} if the job exists and user has {@link Item#READ} permissions
-         *      or if the current user has {@link Jenkins#CONFIGURE_JENKINS} permissions. 
+         *      or if the current user has {@link Jenkins#ADMINISTER} permissions.
          *      If the job exists, but the current user has no permission to discover it, 
          *      {@code false}  will be returned.
          *      If the job has been deleted and the user has no {@link Jenkins#CONFIGURE_JENKINS} permissions,
@@ -130,7 +130,7 @@ public class Fingerprint implements ModelObject, Saveable {
             // We expose the data to Jenkins administrators in order to
             // let them manage the data for deleted jobs (also works for SYSTEM)
             final Jenkins instance = Jenkins.get();
-            if (instance.hasPermission(Jenkins.CONFIGURE_JENKINS)) {
+            if (instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
             }
             
