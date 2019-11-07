@@ -166,7 +166,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(this.requiresPermission());
         return this;
     }
 

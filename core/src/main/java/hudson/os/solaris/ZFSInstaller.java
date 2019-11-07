@@ -132,7 +132,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
      */
     @RequirePOST
     public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(req.hasParameter("n")) {
             // we'll shut up
@@ -234,7 +234,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     @RequirePOST
     public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
         Jenkins hudson = Jenkins.get();
-        hudson.checkPermission(Jenkins.CONFIGURE_JENKINS);
+        hudson.checkPermission(Jenkins.ADMINISTER);
 
         final String datasetName;
         ByteArrayOutputStream log = new ByteArrayOutputStream();
