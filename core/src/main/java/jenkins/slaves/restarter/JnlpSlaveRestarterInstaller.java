@@ -27,7 +27,7 @@ import jenkins.security.MasterToSlaveCallable;
  * <p>
  * Use {@link ComputerListener} to install {@link EngineListener}, which in turn gets executed when
  * the agent gets disconnected.
- *
+ * <p>Despite the name, this is not specific to “JNLP” (TCP) agents, just inbound ones.
  * @author Kohsuke Kawaguchi
  */
 @Extension
