@@ -112,7 +112,7 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @RequirePOST
     public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir!=null) {
             // installation already complete
@@ -174,7 +174,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
     @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir==null) {
             // if the user reloads the page after Hudson has restarted,

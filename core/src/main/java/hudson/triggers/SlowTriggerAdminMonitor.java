@@ -86,7 +86,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @RequirePOST
     @Nonnull
     public HttpResponse doClear() throws IOException {
-        Jenkins.getInstanceOrNull().checkPermission(Jenkins.CONFIGURE_JENKINS);
+        Jenkins.getInstanceOrNull().checkPermission(Jenkins.ADMINISTER);
         clear();
         return HttpResponses.redirectViaContextPath("/manage");
     }

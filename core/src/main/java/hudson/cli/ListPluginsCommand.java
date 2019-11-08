@@ -48,7 +48,7 @@ public class ListPluginsCommand extends CLICommand {
 
     protected int run() {
         Jenkins h = Jenkins.get();
-        h.checkPermission(Jenkins.CONFIGURE_JENKINS);
+        h.checkPermission(Jenkins.ADMINISTER);
         
         PluginManager pluginManager = h.getPluginManager();
 

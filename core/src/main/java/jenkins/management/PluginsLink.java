@@ -59,6 +59,6 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.CONFIGURE_JENKINS;
+        return Jenkins.ADMINISTER;
     }
 }
