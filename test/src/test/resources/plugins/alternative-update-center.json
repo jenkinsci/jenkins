@@ -6,7 +6,7 @@ updateCenter.post(
         "url": "jenkins.war",
         "version": "23"
     },
-    "id": "default",
+    "id": "alternative",
     "plugins": {
         "tasks": {
             "buildDate": "Dec 17, 2008",
@@ -27,12 +27,19 @@ updateCenter.post(
             "developers": [],
             "excerpt": "…",
             "name": "dummy",
-            "wiki": "https://plugins.jenkins.io/dummy",
+            "wiki": "https://plugins.example.com/dummy",
             "requiredCore": "1.100",
             "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
             "title": "Dummy",
             "url": "http://nowhere.net/dummy.hpi",
             "version": "1.0"
+        },
+        "foo": {
+            "dependencies": [],
+            "name": "foo",
+            "wiki": "https://plugins.jenkins.io/foo",
+            "version": "1.0",
+            "url": "http://nowhere.net/dummy.hpi",
         }
     },
     "updateCenterVersion": 1
