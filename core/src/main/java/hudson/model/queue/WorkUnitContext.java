@@ -111,29 +111,31 @@ public final class WorkUnitContext {
      */
     @Restricted(NoExternalUse.class)
     public void synchronizeStart() throws InterruptedException {
+        Throwable problemToSet = null;
         Executor e = Executor.currentExecutor();
-        if (e == null) {
-            throw new IllegalStateException("synchronizeStart shall only be called from an Executor");
-        }
-        WorkUnit wu = e.getCurrentWorkUnit();
-        if (wu == null) {
-            throw new IllegalStateException("synchronizeStart shall only be called after a WorkUnit has been assigned");
-        }
-        boolean mainWork = wu.isMainWork();
+        boolean mainWork = true; // by default we notify
         try {
+            if (e == null) {
+                throw new IllegalStateException("synchronizeStart shall only be called from an Executor");
+            }
+            WorkUnit wu = e.getCurrentWorkUnit();
+            if (wu == null) {
+                throw new IllegalStateException("synchronizeStart shall only be called after a WorkUnit has been assigned");
+            }
+
+            mainWork = wu.isMainWork(); // don't notify if it's not the main work
             startLatch.synchronize();
-            // the main thread will send a notification
-            if (mainWork) {
-                future.start.set(e.getCurrentExecutable());
-            }
-        } catch (Error | RuntimeException | InterruptedException problem) {
-            if (mainWork) {
-                future.start.set(problem);
-            }
-            throw problem;
+        } catch (Error | RuntimeException | InterruptedException exception) {
+            problemToSet = exception;
+            throw exception;
         } finally {
+            // the main thread will send a notification
             if (mainWork && !future.start.isDone()) {
-                future.start.set(e.getCurrentExecutable());
+                if (problemToSet == null) {
+                    future.start.set(e.getCurrentExecutable());
+                } else {
+                    future.start.set(problemToSet);
+                }
             }
         }
     }
@@ -152,31 +154,31 @@ public final class WorkUnitContext {
      */
     @Restricted(NoExternalUse.class)
     public void synchronizeEnd(Executor e, Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
-        WorkUnit wu = e.getCurrentWorkUnit();
-        if (wu == null) {
-            throw new IllegalStateException("synchronizeEnd shall only be called after a WorkUnit has been assigned");
-        }
-        boolean mainWork = wu.isMainWork();
+        boolean mainWork = true; // by default we notify
+        Throwable problemToSet = problems; // we can have a problem here
         try {
+            if (e == null) {
+                throw new IllegalStateException("synchronizeEnd shall only be called from an Executor");
+            }
+            WorkUnit wu = e.getCurrentWorkUnit();    
+            if (wu == null) {
+                throw new IllegalStateException("synchronizeEnd shall only be called after a WorkUnit has been assigned");
+            }
+            mainWork = wu.isMainWork(); // don't notify if it's not the main work
             endLatch.synchronize();
-            // the main thread will send a notification
-            if (mainWork) {
-                if (problems == null) {
+            
+        } catch (Error | RuntimeException | InterruptedException exception) {
+            problemToSet = exception;
+            throw exception;
+        } finally {
+            if (mainWork && !future.isDone()) {
+                if (problemToSet == null) {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);
                 } else {
-                    future.set(problems);
+                    future.set(problemToSet);
                     e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
                 }
-            }
-        } catch (Error | RuntimeException | InterruptedException problem) {
-            if (mainWork) {
-                future.set(problem);
-            }
-            throw problem;
-        } finally {
-            if (mainWork && !future.isDone()) {
-                future.set(executable);
             }
         }
     }
