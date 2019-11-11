@@ -33,6 +33,7 @@ import jenkins.ExtensionFilter;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.auth.LoginThrottler;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
@@ -82,6 +83,8 @@ public class BasicHeaderApiTokenAuthenticatorTest {
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                LoginThrottler.get().setActive(false);
+                
                 User user = User.getById("user1", false);
                 assertNotNull(user);
                 
@@ -177,7 +180,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
     public static class RemoveDefaultSecurityListener extends ExtensionFilter {
         @Override
         public <T> boolean allows(Class<T> type, ExtensionComponent<T> component) {
-            return !SecurityListener.class.isAssignableFrom(type);
+            return !SecurityListener.class.isAssignableFrom(type) || component.getInstance() instanceof LoginThrottler;
         }
     }
     

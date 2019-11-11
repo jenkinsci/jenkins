@@ -32,6 +32,7 @@ import org.acegisecurity.userdetails.UserDetails;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ public class LoginThrottler extends SecurityListener {
 
     private ReadWriteLock failuresLock = new ReentrantReadWriteLock();
     private Map<String, UserLoginFailuresInfo> failures = new HashMap<>();
+    private boolean active = true;
 
     private static class UserLoginFailuresInfo {
         private SortedSet<Date> failures;
@@ -98,7 +100,15 @@ public class LoginThrottler extends SecurityListener {
         return Jenkins.get().getExtensionList(SecurityListener.class).get(LoginThrottler.class);
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     public List<String> getUsersWithFailures() {
+        if (!this.active) {
+            return Collections.emptyList();
+        }
+
         failuresLock.readLock().lock();
         try {
             return new ArrayList<>(failures.keySet());
@@ -108,6 +118,10 @@ public class LoginThrottler extends SecurityListener {
     }
 
     public List<String> getUsersCurrentlyLocked() {
+        if (!this.active) {
+            return Collections.emptyList();
+        }
+
         failuresLock.readLock().lock();
         try {
             return failures.entrySet().stream()
@@ -120,11 +134,15 @@ public class LoginThrottler extends SecurityListener {
     }
 
     public void beforeAuthentication(String username) {
-        this.preventAuthenticationIfSevereFailure(username);
+        if (this.active) {
+            this.preventAuthenticationIfSevereFailure(username);
+        }
     }
-    
-    public void afterSuccessfulAuthentication(String username){
-        this.clearPreviousFailure(username);
+
+    public void afterSuccessfulAuthentication(String username) {
+        if (this.active) {
+            this.clearPreviousFailure(username);
+        }
     }
 
     @Override
@@ -134,6 +152,9 @@ public class LoginThrottler extends SecurityListener {
 
     @Override
     protected void failedToAuthenticate(@Nonnull String username) {
+        if (!this.active) {
+            return;
+        }
         failuresLock.writeLock().lock();
         try {
             UserLoginFailuresInfo failuresInfo = failures.get(username);
@@ -152,7 +173,9 @@ public class LoginThrottler extends SecurityListener {
 
     @Override
     protected void loggedIn(@Nonnull String username) {
-        this.clearPreviousFailure(username);
+        if (this.active) {
+            this.clearPreviousFailure(username);
+        }
     }
 
     private void preventAuthenticationIfSevereFailure(String username) {

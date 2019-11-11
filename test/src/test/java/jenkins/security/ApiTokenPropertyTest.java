@@ -32,6 +32,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.auth.LoginThrottler;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -207,6 +208,7 @@ public class ApiTokenPropertyTest {
     @LocalData
     @Issue("JENKINS-32776")
     public void migrationFromLegacyToken() throws Exception {
+        LoginThrottler.get().setActive(false);
         j.jenkins.setCrumbIssuer(null);
         
         // user is still able to connect with legacy token
