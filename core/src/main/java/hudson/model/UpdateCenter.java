@@ -1177,7 +1177,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
 
-                LOGGER.finest("Downloading "+job.getName());
+                LOGGER.info("Downloading "+job.getName());
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
