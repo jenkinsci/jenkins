@@ -497,15 +497,6 @@ THE SOFTWARE.
         </executions>
 
       </plugin>
-
-      <plugin>
-        <!--
-          Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
-          This enables us to report a better error message.
-        -->
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-jenkins-dev-plugin</artifactId>
-      </plugin>
     </plugins>
 
     <extensions>
