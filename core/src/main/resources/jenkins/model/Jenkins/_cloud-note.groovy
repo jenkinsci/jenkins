@@ -9,9 +9,11 @@ def f = namespace(lib.FormTagLib)
 def clouds = Cloud.all()
 
 if (!clouds.isEmpty()) {
-    f.block {
-        div(class: 'alert alert-info') {
-            raw(_("note", rootURL))
+    f.section(title: _("Cloud")) {
+        f.block {
+            div(class: 'alert alert-info') {
+                raw(_("note", rootURL))
+            }
         }
     }
 }
