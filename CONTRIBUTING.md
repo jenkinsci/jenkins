@@ -31,7 +31,9 @@ There is a description of the [building and debugging process].
 
 If you want simply to have the `jenkins.war` file as fast as possible without tests, run:
 
-    mvn clean package -pl war -am -DskipTests -Dspotbugs.skip
+```sh
+mvn -am -pl war,bom -DskipTests -Dspotbugs.skip clean install
+```
 
 The WAR file will be created in `war/target/jenkins.war`.
 After that you can start Jenkins using Java CLI ([guide]).
@@ -39,7 +41,7 @@ If you want to debug this WAR file without using Maven plugins,
 You can just start the executable with [Remote Debug Flags]
 and then attach IDE Debugger to it.
 
-To compile and launch a development instance, run:
+To launch a development instance, after the above command run:
 
 ```sh
 mvn -f war jetty:run
