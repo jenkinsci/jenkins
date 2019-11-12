@@ -45,6 +45,8 @@ To compile and launch a development instance, run:
 mvn -f war jetty:run
 ```
 
+(Beware that `maven-plugin` builds will not work in this mode due to class loading conflicts.)
+
 ## Testing changes
 
 Jenkins core includes unit and functional tests as a part of the repository.
