@@ -41,14 +41,9 @@ and then attach IDE Debugger to it.
 
 To compile and launch a development instance, run:
 
-    mvn hudson-dev:run
-
-<!--
-This should be `mvn hudson-dev:run` as long as JENKINS-23364 is not resolved.
-For jenkis-dev:run it is currently necessary to add `org.jenkins-ci.tools` as a plugin group
-to the maven settings.xml.
-See also https://github.com/jenkinsci/jenkins/pull/4331#discussion_r341041470
--->
+```sh
+mvn -f war jetty:run
+```
 
 ## Testing changes
 
