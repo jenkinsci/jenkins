@@ -111,31 +111,16 @@ public final class WorkUnitContext {
      */
     @Restricted(NoExternalUse.class)
     public void synchronizeStart() throws InterruptedException {
-        Throwable problemToSet = null;
-        Executor e = Executor.currentExecutor();
-        boolean mainWork = true; // by default we notify
+        // Let code waiting for the start (future.start.get()) finishes when there is a faulty SubTask by setting the
+        // future always.
         try {
-            if (e == null) {
-                throw new IllegalStateException("synchronizeStart shall only be called from an Executor");
-            }
-            WorkUnit wu = e.getCurrentWorkUnit();
-            if (wu == null) {
-                throw new IllegalStateException("synchronizeStart shall only be called after a WorkUnit has been assigned");
-            }
-
-            mainWork = wu.isMainWork(); // don't notify if it's not the main work
             startLatch.synchronize();
-        } catch (Error | RuntimeException | InterruptedException exception) {
-            problemToSet = exception;
-            throw exception;
         } finally {
             // the main thread will send a notification
-            if (mainWork && !future.start.isDone()) {
-                if (problemToSet == null) {
-                    future.start.set(e.getCurrentExecutable());
-                } else {
-                    future.start.set(problemToSet);
-                }
+            Executor e = Executor.currentExecutor();
+            WorkUnit wu = e.getCurrentWorkUnit();
+            if (wu.isMainWork()) {
+                future.start.set(e.getCurrentExecutable());
             }
         }
     }
@@ -154,29 +139,19 @@ public final class WorkUnitContext {
      */
     @Restricted(NoExternalUse.class)
     public void synchronizeEnd(Executor e, Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
-        boolean mainWork = true; // by default we notify
-        Throwable problemToSet = problems; // we can have a problem here
+        // Let code waiting for the build to finish (future.get()) finishes when there is a faulty SubTask by setting 
+        // the future always.
         try {
-            if (e == null) {
-                throw new IllegalStateException("synchronizeEnd shall only be called from an Executor");
-            }
-            WorkUnit wu = e.getCurrentWorkUnit();    
-            if (wu == null) {
-                throw new IllegalStateException("synchronizeEnd shall only be called after a WorkUnit has been assigned");
-            }
-            mainWork = wu.isMainWork(); // don't notify if it's not the main work
             endLatch.synchronize();
-            
-        } catch (Error | RuntimeException | InterruptedException exception) {
-            problemToSet = exception;
-            throw exception;
         } finally {
-            if (mainWork && !future.isDone()) {
-                if (problemToSet == null) {
+            // the main thread will send a notification
+            WorkUnit wu = e.getCurrentWorkUnit();
+            if (wu.isMainWork()) {
+                if (problems == null) {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);
                 } else {
-                    future.set(problemToSet);
+                    future.set(problems);
                     e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
                 }
             }
@@ -189,23 +164,15 @@ public final class WorkUnitContext {
     public synchronized void abort(Throwable cause) {
         if (cause==null)        throw new IllegalArgumentException();
         if (aborted!=null)      return; // already aborted    
-        try {
-            aborted = cause;
-            startLatch.abort(cause);
-            endLatch.abort(cause);
-            Thread c = Thread.currentThread();
-            for (WorkUnit wu : workUnits) {
-                Executor e = wu.getExecutor();
-                if (e != null && e != c)
-                    e.interrupt();
-            }
-        } finally {
-            if (!future.start.isDone()) {
-                future.start.set(cause);
-            }
-            if (!future.isDone()) {
-                future.set(cause);
-            }
+        aborted = cause;
+        startLatch.abort(cause);
+        endLatch.abort(cause);
+
+        Thread c = Thread.currentThread();
+        for (WorkUnit wu : workUnits) {
+            Executor e = wu.getExecutor();
+            if (e!=null && e!=c)
+                e.interrupt();
         }
     }
 }
