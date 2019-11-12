@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -405,7 +406,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
-            CauseOfBlockage c = prop.canTake(item);
+            CauseOfBlockage c;
+            try {
+                c = prop.canTake(item);
+            } catch (Throwable t) {
+                // We cannot guarantee the task can be taken by this node because something wrong happened
+                LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", getNodeName(), item.task.getName()));
+                c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
+            }
             if (c!=null)    return c;
         }
 
