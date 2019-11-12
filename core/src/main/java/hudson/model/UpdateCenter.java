@@ -640,8 +640,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         for (UpdateSite s : sites) {
             Plugin p = s.getPlugin(artifactId);
-            if (p!=null) {
-                if (minVersion.isNewerThan(new VersionNumber(p.version))) continue;
+            if (checkMinVersion(p, minVersion)) {
                 return p;
             }
         }
@@ -649,6 +648,28 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
+     * Gets plugin info from all available sites
+     * @return list of plugins
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull List<Plugin> getPluginFromAllSites(String artifactId,
+            @CheckForNull VersionNumber minVersion) {
+        ArrayList<Plugin> result = new ArrayList<>();
+        for (UpdateSite s : sites) {
+            Plugin p = s.getPlugin(artifactId);
+            if (checkMinVersion(p, minVersion)) {
+                result.add(p);
+            }
+        }
+        return result;
+    }
+
+    private boolean checkMinVersion(@CheckForNull Plugin p, @CheckForNull VersionNumber minVersion) {
+        return p != null
+                && (minVersion == null || !minVersion.isNewerThan(new VersionNumber(p.version)));
+	}
+
+	/**
      * Schedules a Jenkins upgrade.
      */
     @RequirePOST
