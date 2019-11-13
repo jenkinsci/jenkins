@@ -2615,6 +2615,9 @@ function buildFormTree(form) {
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
+                if (e.hasClassName("complex-password-field")) {
+                    addProperty(p, "$redact", shortenName(e.name));
+                }
                 break;
             }
         }
