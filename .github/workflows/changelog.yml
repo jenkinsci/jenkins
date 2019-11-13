@@ -20,4 +20,11 @@ jobs:
       - uses: oleg-nenashev/jenkins-changelog-generator@docker
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
+      - uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: changelog.yml
+          asset_name: changelog.yml
+          tag: untagged-${{ github.ref }}
+          overwrite: true
           
