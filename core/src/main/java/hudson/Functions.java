@@ -386,6 +386,11 @@ public class Functions {
         return null;
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean useHidingPasswordFields() {
+        return SystemProperties.getBoolean(Functions.class.getName() + ".hidingPasswordFields", true);
+    }
+
     /**
      * URL decomposed for easier computation of relevant URLs.
      *
