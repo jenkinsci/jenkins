@@ -206,6 +206,8 @@ public class JNLPLauncher extends ComputerLauncher {
     @Extension
     public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
 
+        // TODO allow it when WebSocket is available
+
         @Override
         public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
             return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
