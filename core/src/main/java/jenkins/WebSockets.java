@@ -128,6 +128,7 @@ public final class WebSockets {
                         }
                     }, PING_INTERVAL_SECONDS / 2, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
                 }
+                opened();
                 return null;
             case "onWebSocketClose":
                 if (pings != null) {
@@ -152,8 +153,11 @@ public final class WebSockets {
         protected boolean keepAlive() {
             return false;
         }
+        protected void opened() {}
         protected void closed(int statusCode, String reason) {}
-        protected void error(Throwable cause) {}
+        protected void error(Throwable cause) {
+            LOGGER.log(Level.WARNING, "unhandled WebSocket service error", cause);
+        }
         protected void binary(byte[] payload, int offset, int len) {}
         protected void text(String message) {}
         @SuppressWarnings("unchecked")
@@ -191,6 +195,18 @@ public final class WebSockets {
                 @Override
                 protected void text(String message) {
                     sendText("hello " + message);
+                }
+                @Override
+                protected void binary(byte[] payload, int offset, int len) {
+                    ByteBuffer data = ByteBuffer.allocate(len);
+                    for (int i = 0; i < len; i++) {
+                        byte b = payload[offset + i];
+                        if (b >= 'a' && b <= 'z') {
+                            b += 'A' - 'a';
+                        }
+                        data.put(i, b);
+                    }
+                    sendBinary(data);
                 }
             });
         }
