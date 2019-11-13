@@ -115,7 +115,15 @@ THE SOFTWARE.
                       </form>
                     </j:if>
                   </td>
-                  <td class="center pane uninstall">
+                  <j:choose>
+                      <j:when test="${p.hasMandatoryDependents() or p.hasMandatoryDependents()}">
+                            <j:set var="uninstallPossible" value="true"/>
+                      </j:when>
+                      <j:otherwise>
+                          <j:set var="uninstallPossible" value="false"/>
+                      </j:otherwise>
+                  </j:choose>
+                  <td class="center pane uninstall" data="${uninstallPossible}">
                     <j:choose>
                       <j:when test="${p.isDeleted()}">
                         <p>${%Uninstallation pending}</p>
