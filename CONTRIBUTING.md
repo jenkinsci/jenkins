@@ -44,7 +44,7 @@ and then attach IDE Debugger to it.
 To launch a development instance, after the above command run:
 
 ```sh
-mvn -f war jetty:run
+mvn -pl war jetty:run
 ```
 
 (Beware that `maven-plugin` builds will not work in this mode due to class loading conflicts.)
