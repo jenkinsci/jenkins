@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: oleg-nenashev/jenkins-release-drafter@v5.2.0-jenkins-4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Generates a YAML changelog file using https://github.com/daniel-beck/jenkins-changelog-generator
       - uses: oleg-nenashev/jenkins-changelog-generator@docker
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
