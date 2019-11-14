@@ -52,7 +52,7 @@ THE SOFTWARE.
       
       <div id="filter-container">
         ${%Filter}:
-        <input type="text" id="filter-box"/>
+        <input type="text" id="filter-box" disabled="disabled"/>
       </div>
 
       <form method="post" action="install">

@@ -52,7 +52,8 @@ var Sortable = (function() {
 
         var firstRow = this.getFirstRow();
         if (!firstRow) return;
-
+        // Unlock the filter
+        document.getElementById("filter-box").removeAttribute("disabled");
         // We have a first row: assume it's the header, and make its contents clickable links
         firstRow.each(function (cell){
             cell.innerHTML = '<a href="#" class="sortheader">'+this.getInnerText(cell)+'<span class="sortarrow"></span></a>';
