@@ -1,7 +1,7 @@
 # This is a Dockerfile definition for Experimental Docker builds.
 # DockerHub: https://hub.docker.com/r/jenkins/jenkins-experimental/
 # If you are looking for official images, see https://github.com/jenkinsci/docker
-FROM maven:3.5.4-jdk-8 as builder
+FROM maven:3.6.2-jdk-11 as builder
 
 COPY .mvn/ /jenkins/src/.mvn/
 COPY cli/ /jenkins/src/cli/
