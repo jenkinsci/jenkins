@@ -1065,7 +1065,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         agentProtocols = null;
         return this;
     }
-    
+
+    /**
+     * Retrieve the proxy configuration.
+     *
+     * @return the proxy configuration
+     * @since TODO
+     */
+    @CheckForNull
+    public ProxyConfiguration getProxy() {
+        return proxy;
+    }
+
+    /**
+     * Set the proxy configuration.
+     * 
+     * @param proxy the proxy to set
+     * @since TODO
+     */
+    public void setProxy(@CheckForNull ProxyConfiguration proxy) {
+        this.proxy = proxy;
+    }
+
     /**
      * Get the Jenkins {@link jenkins.install.InstallState install state}.
      * @return The Jenkins {@link jenkins.install.InstallState install state}.
