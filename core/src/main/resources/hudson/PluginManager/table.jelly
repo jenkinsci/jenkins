@@ -96,7 +96,7 @@ THE SOFTWARE.
                     </td>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
-                        <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
+                        <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
                       </div>
                       <j:if test="${p.excerpt!=null}">
                         <div class="excerpt"><j:out value="${p.excerpt}" /></div>
