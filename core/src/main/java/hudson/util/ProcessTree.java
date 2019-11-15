@@ -1087,44 +1087,44 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 super(pid);
 
                 try (RandomAccessFile pstatus = new RandomAccessFile(getFile("status"), "r")) {
-                    // typedef struct pstatus {
-                    //    uint32_t pr_flag;                /* process flags from proc struct p_flag */
-                    //    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
-                    //    uint32_t pr_flags;               /* /proc flags */
-                    //    uint32_t pr_nlwp;                /* number of threads in the process */
-                    //    char     pr_stat;                /* process state from proc p_stat */
-                    //    char     pr_dmodel;              /* data model for the process */
-                    //    char     pr__pad1[6];            /* reserved for future use */
-                    //    pr_sigset_t pr_sigpend;          /* set of process pending signals */
-                    //    prptr64_t pr_brkbase;            /* address of the process heap */
-                    //    uint64_t pr_brksize;             /* size of the process heap, in bytes */
-                    //    prptr64_t pr_stkbase;            /* address of the process stack */
-                    //    uint64_t pr_stksize;             /* size of the process stack, in bytes */
-                    //    uint64_t pr_pid;                 /* process id */
-                    //    uint64_t pr_ppid;                /* parent process id */
-                    //    uint64_t pr_pgid;                /* process group id */
-                    //    uint64_t pr_sid;                 /* session id */
-                    //    pr_timestruc64_t pr_utime;       /* process user cpu time */
-                    //    pr_timestruc64_t pr_stime;       /* process system cpu time */
-                    //    pr_timestruc64_t pr_cutime;      /* sum of children's user times */
-                    //    pr_timestruc64_t pr_cstime;      /* sum of children's system times */
-                    //    pr_sigset_t pr_sigtrace;         /* mask of traced signals */
-                    //    fltset_t pr_flttrace;            /* mask of traced hardware faults */
-                    //    uint32_t pr_sysentry_offset;     /* offset into pstatus file of sysset_t
-                    //                                      * identifying system calls traced on
-                    //                                      * entry.  If 0, then no entry syscalls
-                    //                                      * are being traced. */
-                    //    uint32_t pr_sysexit_offset;      /* offset into pstatus file of sysset_t
-                    //                                      * identifying system calls traced on
-                    //                                      * exit.  If 0, then no exit syscalls
-                    //                                      * are being traced. */
-                    //    uint64_t pr__pad[8];             /* reserved for future use */
-                    //    lwpstatus_t pr_lwp;              /* "representative" thread status */
-                    // } pstatus_t;
+					// typedef struct pstatus {
+					//    uint32_t pr_flag;                /* process flags from proc struct p_flag */
+					//    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
+					//    uint32_t pr_flags;               /* /proc flags */
+					//    uint32_t pr_nlwp;                /* number of threads in the process */
+					//    char     pr_stat;                /* process state from proc p_stat */
+					//    char     pr_dmodel;              /* data model for the process */
+					//    char     pr__pad1[6];            /* reserved for future use */
+					//    pr_sigset_t pr_sigpend;          /* set of process pending signals */
+					//    prptr64_t pr_brkbase;            /* address of the process heap */
+					//    uint64_t pr_brksize;             /* size of the process heap, in bytes */
+					//    prptr64_t pr_stkbase;            /* address of the process stack */
+					//    uint64_t pr_stksize;             /* size of the process stack, in bytes */
+					//    uint64_t pr_pid;                 /* process id */
+					//    uint64_t pr_ppid;                /* parent process id */
+					//    uint64_t pr_pgid;                /* process group id */
+					//    uint64_t pr_sid;                 /* session id */
+					//    pr_timestruc64_t pr_utime;       /* process user cpu time */
+					//    pr_timestruc64_t pr_stime;       /* process system cpu time */
+					//    pr_timestruc64_t pr_cutime;      /* sum of children's user times */
+					//    pr_timestruc64_t pr_cstime;      /* sum of children's system times */
+					//    pr_sigset_t pr_sigtrace;         /* mask of traced signals */
+					//    fltset_t pr_flttrace;            /* mask of traced hardware faults */
+					//    uint32_t pr_sysentry_offset;     /* offset into pstatus file of sysset_t
+					//                                      * identifying system calls traced on
+					//                                      * entry.  If 0, then no entry syscalls
+					//                                      * are being traced. */
+					//    uint32_t pr_sysexit_offset;      /* offset into pstatus file of sysset_t
+					//                                      * identifying system calls traced on
+					//                                      * exit.  If 0, then no exit syscalls
+					//                                      * are being traced. */
+					//    uint64_t pr__pad[8];             /* reserved for future use */
+					//    lwpstatus_t pr_lwp;              /* "representative" thread status */
+					// } pstatus_t;
 
                     pstatus.seek(17); // offset of pr_dmodel
 
-                    byte pr_dmodel = pstatus.readByte();
+					byte pr_dmodel = pstatus.readByte();
 
                     if (pr_dmodel == PR_MODEL_ILP32) {
                         b64 = false;
@@ -1136,11 +1136,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     pstatus.seek(88); // offset of pr_pid
 
-                    if (adjust((int) pstatus.readLong()) != pid)
+                    if (adjust((int)pstatus.readLong()) != pid)
                         throw new IOException("pstatus PID mismatch"); // sanity check
 
-                    ppid = adjust((int) pstatus.readLong()); // AIX pids are stored as a 64 bit integer, 
-                    // but the first 4 bytes are always 0
+                    ppid = adjust((int)pstatus.readLong()); // AIX pids are stored as a 64 bit integer, 
+                                                            // but the first 4 bytes are always 0
                 }
 
                 try (RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"), "r")) {
@@ -1178,10 +1178,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     psinfo.seek(48); // offset of pr_pid
 
-                    if (adjust((int) psinfo.readLong()) != pid)
+                    if (adjust((int)psinfo.readLong()) != pid)
                         throw new IOException("psinfo PID mismatch"); // sanity check
 
-                    if (adjust((int) psinfo.readLong()) != ppid)
+                    if (adjust((int)psinfo.readLong()) != ppid)
                         throw new IOException("psinfo PPID mismatch"); // sanity check
 
                     psinfo.seek(148); // offset of pr_argc
@@ -1452,7 +1452,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // for how to read this information
 
                     psinfo.seek(8);
-                    if (adjust(psinfo.readInt()) != pid)
+                    if(adjust(psinfo.readInt())!=pid)
                         throw new IOException("psinfo PID mismatch");   // sanity check
                     ppid = adjust(psinfo.readInt());
 
