@@ -54,16 +54,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
 
-    /**
-     * Incremented every time a new {@link SCM} instance is created from this descriptor. 
-     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
-     * this field doesn't really count the # of instances created to date,
-     * but it's good enough for the cache invalidation.
-     * @deprecated No longer used by default.
-     */
-    @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
-    public final AtomicInteger generation = new AtomicInteger(1);
+    private final AtomicInteger generation = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -79,6 +70,29 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     protected SCMDescriptor(Class<? extends RepositoryBrowser> repositoryBrowser) {
         this.repositoryBrowser = repositoryBrowser;
+    }
+
+    /**
+     * Incremented every time a new {@link SCM} instance is created from this descriptor.
+     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
+     * this field doesn't really count the # of instances created to date,
+     * but it's good enough for the cache invalidation.
+     * @deprecated No longer used by default.
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    public int getGeneration() {
+        return generation.get();
+    }
+
+    /**
+     * Increments the generation value {@Link SCMDescriptor#getGeneration} by one atomically.
+     * @deprecated No longer used by default.
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    public void incrementGeneration() {
+        generation.incrementAndGet();
     }
 
     // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
