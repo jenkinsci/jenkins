@@ -265,6 +265,16 @@ THE SOFTWARE.
         </div>
       </j:if>
       <div id="main-panel">
+         
+         <h1 class="job-index-headline page-headline">Some title here</h1>
+         ...
+         <div class="cbwf-stage-view">
+            <!-- NOTE: I;'ve just added style="overflow: scroll" part to make container scrollable.
+                       All the rest remailing as it is in the current version. Just made container scrollable.
+            -->
+            <div objecturl='...' cbwf-controller="pipeline-staged" style="overflow: scroll">...</div>
+         </div>
+
          <j:set var="mode" value="main-panel" />
          <d:invokeBody/>
       </div>
