@@ -504,7 +504,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                     return;
                 }
                 classpath = manifest.getMainAttributes()
-                        .getValue(Name.CLASS_PATH);
+                    .getValue(Name.CLASS_PATH);
             }
             if (classpath == null) {
                 classpath = "";

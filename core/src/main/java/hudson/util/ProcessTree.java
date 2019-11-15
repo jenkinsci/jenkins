@@ -958,9 +958,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                 try (BufferedReader r = new BufferedReader(new FileReader(getFile("status")))) {
                     String line;
-                    while ((line = r.readLine()) != null) {
-                        line = line.toLowerCase(Locale.ENGLISH);
-                        if (line.startsWith("ppid:")) {
+                    while((line=r.readLine())!=null) {
+                        line=line.toLowerCase(Locale.ENGLISH);
+                        if(line.startsWith("ppid:")) {
                             ppid = Integer.parseInt(line.substring(5).trim());
                             break;
                         }
