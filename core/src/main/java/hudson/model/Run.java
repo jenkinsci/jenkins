@@ -1852,7 +1852,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;

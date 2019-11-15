@@ -209,7 +209,7 @@ public class UpdateSite {
             }
         }
 
-        LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
+        LOGGER.finest("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
         data = new Data(o);
