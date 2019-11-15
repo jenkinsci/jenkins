@@ -88,7 +88,6 @@ public class ZipArchiverTest {
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
         }
-        // ignored
 
         assertEquals("foo/bar/baz/Test.txt", zipEntryName);
     }
@@ -141,7 +140,6 @@ public class ZipArchiverTest {
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
         }
-        // ignored
 
         assertEquals("huge64bitFileTest.txt", zipEntryName);
     }
