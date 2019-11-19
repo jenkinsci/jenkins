@@ -177,6 +177,6 @@ public class LogRotatorPeriodicTask extends AsyncPeriodicWork {
             }
         }
         
-        LOGGER.log( FINE, Messages.LogRotatorPeriodicTask_noGlobalMatch( job.getFullName() ) );
+        LOGGER.log( FINE, () -> Messages.LogRotatorPeriodicTask_noGlobalMatch( job.getFullName() ) );
     }
 }
