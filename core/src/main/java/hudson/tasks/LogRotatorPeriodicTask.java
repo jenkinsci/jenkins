@@ -117,7 +117,7 @@ public class LogRotatorPeriodicTask extends AsyncPeriodicWork {
                                         LOGGER.log( FINER, () -> Messages.LogRotatorPeriodicTask_noRotator_policyNONE( job.getFullName() ) );
                                         break;
                                     case GLOBAL:
-                                        LOGGER.log( FINER, Messages.LogRotatorPeriodicTask_noRotator_policyGLOBAL( job.getFullName() ) );
+                                        LOGGER.log( FINER, () -> Messages.LogRotatorPeriodicTask_noRotator_policyGLOBAL( job.getFullName() ) );
                                         applyGlobalLogRotators( job, config.getGlobalLogRotators() );
                                         break;
                                     default:
