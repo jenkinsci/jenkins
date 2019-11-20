@@ -24,12 +24,15 @@
 
 package hudson.cli;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import static org.junit.Assert.*;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class PlainCLIProtocolTest {
 

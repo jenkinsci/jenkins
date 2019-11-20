@@ -149,7 +149,7 @@ public class AtomicFileWriter extends Writer {
             integrityOnClose = false;
         }
 
-        core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE);
+        core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
     }
 
     @Override
