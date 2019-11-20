@@ -212,7 +212,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     public void setMasterKillSwitch(boolean state) {
         final Jenkins jenkins = Jenkins.get();
         try {
-            jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
+            jenkins.checkPermission(Jenkins.ADMINISTER);
             File f = getMasterKillSwitchFile(jenkins);
             FileUtils.writeStringToFile(f, Boolean.toString(state), Charset.defaultCharset());
             // treat the file as the canonical source of information in case write fails
@@ -227,7 +227,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     @Override
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return this;
     }
 
