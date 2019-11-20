@@ -48,16 +48,10 @@ public abstract class HttpSessionListener implements ExtensionPoint, javax.servl
         return ExtensionList.lookup(HttpSessionListener.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
     }

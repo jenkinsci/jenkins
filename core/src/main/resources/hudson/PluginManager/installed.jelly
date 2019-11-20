@@ -39,17 +39,17 @@ THE SOFTWARE.
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
-        
+
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <div class="pane-frame">
-        <div class="plugins i18n" 
-             data-cannot-enable="${%This plugin cannot be enabled}" 
-             data-cannot-disable="${%This plugin cannot be disabled}" 
-             data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
-             data-disabled-dependencies="${%It has one or more disabled dependencies}" 
-             data-enabled-dependents="${%It has one or more enabled dependents}" 
-             data-installed-dependents="${%It has one or more installed dependents}" 
+        <div class="plugins i18n"
+             data-cannot-enable="${%This plugin cannot be enabled}"
+             data-cannot-disable="${%This plugin cannot be disabled}"
+             data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+             data-disabled-dependencies="${%It has one or more disabled dependencies}"
+             data-enabled-dependents="${%It has one or more enabled dependents}"
+             data-installed-dependents="${%It has one or more installed dependents}"
              data-detached-disable="${%detached-disable}"
              data-detached-uninstall="${%detached-uninstall}"
              data-detached-possible-dependents="${%detached-possible-dependents}"
@@ -81,7 +81,7 @@ THE SOFTWARE.
                   </td>
                   <td class="pane details">
                     <div>
-                      <a href="${p.url}" class="display-name">
+                      <a href="${p.url}" target="_blank" class="display-name">
                         ${p.updateInfo.displayName?:p.displayName}
                       </a>
                     </div>
@@ -111,39 +111,47 @@ THE SOFTWARE.
                     </a>
                   </td>
                   <l:hasPermission permission="${app.ADMINISTER}">
-                    <td class="pane">
-                      <j:if test="${p.downgradable}">
-                        <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                          <s:submit value="${%downgradeTo(p.backupVersion)}"/>
-                        </form>
-                      </j:if>
-                    </td>
-                    <td class="center pane uninstall">
+                      <td class="pane">
+                        <j:if test="${p.downgradable}">
+                          <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                            <s:submit value="${%downgradeTo(p.backupVersion)}"/>
+                          </form>
+                        </j:if>
+                      </td>
                       <j:choose>
-                        <j:when test="${p.isDeleted()}">
-                          <p>${%Uninstallation pending}</p>
-                        </j:when>
-                        <j:otherwise>
-                            <j:if test="${p.hasMandatoryDependents()}">
-                              <div class="dependent-list">
-                                <j:forEach var="dependent" items="${p.mandatoryDependents}">
-                                  <span data-plugin-id="${dependent}"></span>
-                                </j:forEach>
-                              </div>
-                            </j:if>
-                            <j:if test="${p.hasMandatoryDependencies()}">
-                              <div class="dependency-list">
-                                <j:forEach var="dependency" items="${p.mandatoryDependencies}">
-                                  <span data-plugin-id="${dependency.shortName}"></span>
-                                </j:forEach>
-                              </div>
-                            </j:if>
-                            <form method="post" action="plugin/${p.shortName}/uninstall">
-                                <input class="uninstall" type="submit" value="${%Uninstall}"/>
-                            </form>
-                        </j:otherwise>
+                          <j:when test="${p.hasMandatoryDependents() or p.hasMandatoryDependents()}">
+                                <j:set var="uninstallPossible" value="true"/>
+                          </j:when>
+                          <j:otherwise>
+                              <j:set var="uninstallPossible" value="false"/>
+                          </j:otherwise>
                       </j:choose>
-                    </td>
+                      <td class="center pane uninstall" data="${uninstallPossible}">
+                        <j:choose>
+                          <j:when test="${p.isDeleted()}">
+                            <p>${%Uninstallation pending}</p>
+                          </j:when>
+                          <j:otherwise>
+                              <j:if test="${p.hasMandatoryDependents()}">
+                                <div class="dependent-list">
+                                  <j:forEach var="dependent" items="${p.mandatoryDependents}">
+                                    <span data-plugin-id="${dependent}"></span>
+                                  </j:forEach>
+                                </div>
+                              </j:if>
+                              <j:if test="${p.hasMandatoryDependencies()}">
+                                <div class="dependency-list">
+                                  <j:forEach var="dependency" items="${p.mandatoryDependencies}">
+                                    <span data-plugin-id="${dependency.shortName}"></span>
+                                  </j:forEach>
+                                </div>
+                              </j:if>
+                              <form method="post" action="plugin/${p.shortName}/uninstall">
+                                  <input class="uninstall" type="submit" value="${%Uninstall}"/>
+                              </form>
+                          </j:otherwise>
+                        </j:choose>
+                      </td>
                   </l:hasPermission>
                 </tr>
               </j:forEach>

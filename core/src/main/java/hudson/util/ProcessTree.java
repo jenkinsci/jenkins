@@ -956,8 +956,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             LinuxProcess(int pid) throws IOException {
                 super(pid);
 
-                BufferedReader r = new BufferedReader(new FileReader(getFile("status")));
-                try {
+                try (BufferedReader r = new BufferedReader(new FileReader(getFile("status")))) {
                     String line;
                     while((line=r.readLine())!=null) {
                         line=line.toLowerCase(Locale.ENGLISH);
@@ -966,8 +965,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             break;
                         }
                     }
-                } finally {
-                    r.close();
                 }
                 if(ppid==-1)
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
@@ -1025,11 +1022,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public byte[] readFileToByteArray(File file) throws IOException {
-            InputStream in = org.apache.commons.io.FileUtils.openInputStream(file);
-            try {
+            try (InputStream in = org.apache.commons.io.FileUtils.openInputStream(file)) {
                 return org.apache.commons.io.IOUtils.toByteArray(in);
-            } finally {
-                    in.close();
             }
         }
     }
@@ -1092,8 +1086,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             private AIXProcess(int pid) throws IOException {
                 super(pid);
 
-                RandomAccessFile pstatus = new RandomAccessFile(getFile("status"),"r");
-                try {
+                try (RandomAccessFile pstatus = new RandomAccessFile(getFile("status"), "r")) {
 					// typedef struct pstatus {
 					//    uint32_t pr_flag;                /* process flags from proc struct p_flag */
 					//    uint32_t pr_flag2;               /* process flags from proc struct p_flag2 */
@@ -1148,13 +1141,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     ppid = adjust((int)pstatus.readLong()); // AIX pids are stored as a 64 bit integer, 
                                                             // but the first 4 bytes are always 0
-
-                } finally {
-                    pstatus.close();
                 }
 
-                RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
-                try {
+                try (RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"), "r")) {
                     // typedef struct psinfo {
                     //   uint32_t pr_flag;                /* process flags from proc struct p_flag */
                     //   uint32_t pr_flag2;               /* process flags from proc struct p_flag2 *
@@ -1200,8 +1189,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     argc = adjust(psinfo.readInt());
                     pr_argp = adjustL(psinfo.readLong());
                     pr_envp = adjustL(psinfo.readLong());
-                } finally {
-                    psinfo.close();
                 }
             }
 
@@ -1426,8 +1413,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             private SolarisProcess(int pid) throws IOException {
                 super(pid);
 
-                RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
-                try {
+                try (RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"), "r")) {
                     // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/procfs.h
                     //typedef struct psinfo {
                     //	int	pr_flag;	/* process flags */
@@ -1487,8 +1473,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         envp = to64(adjust(psinfo.readInt()));
                         b64 = (psinfo.readByte() == PR_MODEL_LP64);
                     }
-                } finally {
-                    psinfo.close();
                 }
                 if(ppid==-1)
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");

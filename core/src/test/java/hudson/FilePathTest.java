@@ -208,13 +208,10 @@ public class FilePathTest {
             for (int i = 0; i < 10000; i++) {
                 // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
                 // Have not found a way to make the failure guaranteed.
-                OutputStream os = from.child("content" + i).write();
-                try {
+                try (OutputStream os = from.child("content" + i).write()) {
                     for (int j = 0; j < 1024; j++) {
                         os.write('.');
                     }
-                } finally {
-                    os.close();
                 }
             }
             FilePath toF = to.child("content0");
@@ -540,8 +537,8 @@ public class FilePathTest {
                 d3.mkdirs();
                 d3.child("f.txt").touch(0);
             }
-            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt"));
-            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt", 10));
+            assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
+            assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
             try {
                 d.validateAntFileMask("**/*.js", 10);
@@ -560,11 +557,11 @@ public class FilePathTest {
             d.child("d1/d2/d3/f.txt").touch(0);
             d.child("d1/d2/d3/f.html").touch(0);
             d.child("d1/d2/f.txt").touch(0);
-            
-            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
-            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+
+            assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
             assertEquals(Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive("**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
-            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+            assertNull(d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
         } finally {
             Util.deleteRecursive(tmp);
         }

@@ -510,6 +510,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return An AbstractBuild for deprecated methods to use.
      */
+    @CheckForNull
     private AbstractBuild getBuildForDeprecatedMethods() {
         Executor e = Executor.currentExecutor();
         if(e!=null) {
@@ -520,9 +521,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return b;
             }
         }
-        R lb = getLastBuild();
-        if(lb!=null)    return lb;
-        return null;
+        return getLastBuild();
     }
 
     /**

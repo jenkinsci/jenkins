@@ -276,7 +276,14 @@ public class Queue extends ResourceController implements Saveable {
                 return reason;
             }
             for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                reason = d.canTake(node, item);
+                try {
+                    reason = d.canTake(node, item);
+                } catch (Throwable t) {
+                    // We cannot guarantee the task can be taken by the node because something wrong happened
+                    LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", node.getNodeName(), item.task.getName()));
+                    reason = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
+                }
+
                 if (reason != null) {
                     return reason;
                 }
@@ -1192,7 +1199,13 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-            causeOfBlockage = d.canRun(i);
+            try {
+                causeOfBlockage = d.canRun(i);
+            } catch (Throwable t) {
+                // We cannot guarantee the task can be run because something wrong happened
+                LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the queue can run the task '%s'", i.task.getName()));
+                causeOfBlockage = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanRun());
+            }
             if (causeOfBlockage != null)
                 return causeOfBlockage;
         }
@@ -1711,18 +1724,23 @@ public class Queue extends ResourceController implements Saveable {
 
             Label lbl = p.getAssignedLabel();
 
+            Computer masterComputer = h.toComputer();
             if (lbl != null && lbl.equals(h.getSelfLabel())) {
+                // the flyweight task is bound to the master
                 if (h.canTake(p) == null) {
-                    return createFlyWeightTaskRunnable(p, h.toComputer());
+                    return createFlyWeightTaskRunnable(p, masterComputer);
                 } else {
                     return null;
                 }
             }
 
-            Map<Node, Integer> hashSource = new HashMap<>(h.getNodes().size());
+            if (lbl == null && h.canTake(p) == null && masterComputer.isOnline() && masterComputer.isAcceptingTasks()) {
+                // The flyweight task is not tied to a specific label, so execute on master if possible.
+                // This will ensure that actual agent disconnects do not impact flyweight tasks randomly assigned to them.
+                return createFlyWeightTaskRunnable(p, masterComputer);
+            }
 
-            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+            Map<Node, Integer> hashSource = new HashMap<>(h.getNodes().size());
 
             for (Node n : h.getNodes()) {
                 hashSource.put(n, n.getNumExecutors() * 100);
@@ -2842,8 +2860,8 @@ public class Queue extends ResourceController implements Saveable {
 			}
         });
 
-        /**
-         * Reconnect every reference to {@link Queue} by the singleton.
+        /*
+         * Reconnect every reference to Queue by the singleton.
          */
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 			@Override
@@ -3048,7 +3066,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Schedule {@code Queue.save()} call for near future once items change. Ignore all changes until the time the save
+     * Schedule {@link Queue#save()} call for near future once items change. Ignore all changes until the time the save
      * takes place.
      *
      * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not

@@ -159,7 +159,7 @@ import static java.util.logging.Level.*;
  *
  * <p>
  * <b>Setting default Plugin Managers</b>. The default plugin manager in {@code Jenkins} can be replaced by defining a
- * System Property (<code>hudson.PluginManager.className</code>). See {@link #createDefault(Jenkins)}.
+ * System Property ({@code hudson.PluginManager.className}). See {@link #createDefault(Jenkins)}.
  * This className should be available on early startup, so it cannot come only from a library
  * (e.g. Jenkins module or Extra library dependency in the WAR file project).
  * Plugins cannot be used for such purpose.
@@ -948,6 +948,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
+      try (ACLContext context = ACL.as(ACL.SYSTEM)) {
         Jenkins.get().refreshExtensions();
 
         for (PluginWrapper p : plugins) {
@@ -992,6 +993,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (ExtensionRefreshException e) {
             throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
+      }
     }
 
     @Restricted(NoExternalUse.class)

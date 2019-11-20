@@ -258,7 +258,7 @@ public class UrlValidator implements Serializable {
      * This allows the user to override the standard set of domains.
      * @param options Validation options. Set using the public constants of this class.
      * To set multiple options, simply add them together:
-     * <p><code>ALLOW_2_SLASHES + NO_FRAGMENTS</code></p>
+     * <p>{@code ALLOW_2_SLASHES + NO_FRAGMENTS}</p>
      * enables both of those options.
      */
     public UrlValidator(RegexValidator authorityValidator, long options) {
@@ -271,7 +271,7 @@ public class UrlValidator implements Serializable {
      * @param authorityValidator Regular expression validator used to validate the authority part
      * @param options Validation options. Set using the public constants of this class.
      * To set multiple options, simply add them together:
-     * <p><code>ALLOW_2_SLASHES + NO_FRAGMENTS</code></p>
+     * <p>{@code ALLOW_2_SLASHES + NO_FRAGMENTS}</p>
      * enables both of those options.
      */
     public UrlValidator(String[] schemes, RegexValidator authorityValidator, long options) {
@@ -298,7 +298,7 @@ public class UrlValidator implements Serializable {
      * Note that the method calls #isValidAuthority()
      * which checks that the domain is valid.
      *
-     * @param value The value validation is being performed on.  A <code>null</code>
+     * @param value The value validation is being performed on.  A {@code null}
      * value is considered invalid.
      * @return true if the url is valid.
      */
@@ -353,7 +353,7 @@ public class UrlValidator implements Serializable {
      * then only those schemes are allowed.
      * Otherwise the default schemes are "http", "https", "ftp".
      * Matching is case-blind.
-     * @param scheme The scheme to validate.  A <code>null</code> value is considered
+     * @param scheme The scheme to validate.  A {@code null} value is considered
      * invalid.
      * @return true if valid.
      */
@@ -376,7 +376,7 @@ public class UrlValidator implements Serializable {
     
     /**
      * Returns true if the authority is properly formatted.  An authority is the combination
-     * of hostname and port.  A <code>null</code> authority value is considered invalid.
+     * of hostname and port.  A {@code null} authority value is considered invalid.
      * Note: this implementation validates the domain unless a RegexValidator was provided.
      * If a RegexValidator was supplied and it matches, then the authority is regarded
      * as valid with no further checks, otherwise the method checks against the
@@ -443,7 +443,7 @@ public class UrlValidator implements Serializable {
     }
     
     /**
-     * Returns true if the path is valid.  A <code>null</code> value is considered invalid.
+     * Returns true if the path is valid.  A {@code null} value is considered invalid.
      * @param path Path value to validate.
      * @return true if path is valid.
      */

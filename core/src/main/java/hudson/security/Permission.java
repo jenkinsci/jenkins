@@ -54,9 +54,6 @@ public final class Permission {
      */
     public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
 
-        /**
-         * {@inheritDoc}
-         */
         // break eclipse compilation 
         //Override
         public int compare(@Nonnull Permission one, @Nonnull Permission two) {

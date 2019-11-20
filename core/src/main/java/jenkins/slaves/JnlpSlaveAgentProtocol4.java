@@ -158,33 +158,21 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
                 sslContext, false, true);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isOptIn() {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return Messages.JnlpSlaveAgentProtocol4_displayName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getName() {
         return handler.getName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         try {

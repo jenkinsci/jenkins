@@ -109,8 +109,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.
@@ -122,8 +120,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.
@@ -217,6 +213,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * Finds the descriptor that has the matching fully-qualified class name.
      * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @Deprecated
     @CheckForNull
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);

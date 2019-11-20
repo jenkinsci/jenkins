@@ -333,55 +333,34 @@ public abstract class FormValidation extends IOException implements HttpResponse
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
         if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return ok();
+        final FormValidation[] result = {null};
 
-        exe = fixEmpty(exe);
-        if(exe==null)
-            return ok();
-
-        if(exe.indexOf(File.separatorChar)>=0) {
-            // this is full path
-            File f = new File(exe);
-            if(f.exists())  return exeValidator.validate(f);
-
-            File fexe = new File(exe+".exe");
-            if(fexe.exists())   return exeValidator.validate(fexe);
-
-            return error("There's no such file: "+exe);
-        }
-
-        // look in PATH
-        String path = EnvVars.masterEnvVars.get("PATH");
-        String tokenizedPath;
-        String delimiter = null;
-        if(path!=null) {
-            StringBuilder tokenizedPathBuilder = new StringBuilder();
-            for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
-                if (delimiter == null) {
-                  delimiter = ", ";
-                }
-                else {
-                  tokenizedPathBuilder.append(delimiter);
+        try {
+            DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
+                @Override
+                public void ok() {
+                    result[0] = FormValidation.ok();
                 }
 
-                tokenizedPathBuilder.append(_dir.replace('\\', '/'));
+                @Override
+                public void checkExecutable(File fexe) {
+                    result[0] = exeValidator.validate(fexe);
+                }
 
-                File dir = new File(_dir);
+                @Override
+                public void error(String string) {
+                    result[0] = FormValidation.error(string);
+                }
 
-                File f = new File(dir,exe);
-                if(f.exists())  return exeValidator.validate(f);
-
-                File fexe = new File(dir,exe+".exe");
-                if(fexe.exists())   return exeValidator.validate(fexe);
-            }
-            tokenizedPathBuilder.append('.');
-
-            tokenizedPath = tokenizedPathBuilder.toString();
-        } else {
-            tokenizedPath = "unavailable.";
+                @Override
+                public void validate(File fexe) {
+                    result[0] = exeValidator.validate(fexe);
+                }
+            });
+            return result[0];
+        } catch (Exception e) {
+            return FormValidation.error(e, "Unexpected error");
         }
-
-        // didn't find it
-        return error("There's no such executable "+exe+" in PATH: "+tokenizedPath);
     }
 
     /**

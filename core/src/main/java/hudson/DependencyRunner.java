@@ -25,6 +25,7 @@
 package hudson;
 
 import hudson.model.AbstractProject;
+import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
 import hudson.security.ACL;
 
@@ -34,9 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
-
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Runs a job on all projects in the order of dependencies
@@ -54,8 +52,7 @@ public class DependencyRunner implements Runnable {
     }
 
     public void run() {
-        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             Set<AbstractProject> topLevelProjects = new HashSet<>();
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");
@@ -71,8 +68,6 @@ public class DependencyRunner implements Runnable {
                     LOGGER.fine("running project in correct dependency order: " + p.getName());
                 runnable.run(p);
             }
-        } finally {
-            SecurityContextHolder.setContext(oldContext);
         }
     }
 
