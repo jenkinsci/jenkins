@@ -1637,7 +1637,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
-            Jenkins.get().checkPermission(UPLOAD_PLUGINS);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
