@@ -24,12 +24,14 @@
 
 package jenkins.slaves;
 
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.FreeStyleProject;
 import hudson.remoting.Engine;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.util.logging.Level;
 import jenkins.security.SlaveToMasterCallable;
@@ -65,7 +67,7 @@ public class WebSocketAgentsTest {
         assertEquals("response", s.getChannel().call(new DummyTask()));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(s);
-        p.getBuildersList().add(new Shell("echo hello")); // TODO Windows equivalent
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
         r.buildAndAssertSuccess(p);
     }
 
