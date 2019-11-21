@@ -45,10 +45,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.WebSockets;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.engine.JnlpConnectionState;
+import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerResponse;
 
 @Extension
 public final class WebSocketAgents extends InvisibleAction implements UnprotectedRootAction {
+
+    private static final String CAPABILITY_KEY = /* Capability.class.getName() */"hudson.remoting.Capability";
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketAgents.class.getName());
 
@@ -57,70 +63,50 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         return "wsagents";
     }
 
-    public HttpResponse doIndex() {
-        LOGGER.fine("connecting");
+    public HttpResponse doIndex(
+            @Header(value = JnlpConnectionState.CLIENT_NAME_KEY, required = true) String agent,
+            @Header(value = JnlpConnectionState.SECRET_KEY, required = true) String secret,
+            @Header(value = CAPABILITY_KEY, required = true) String remoteCapabilityStr,
+            StaplerResponse rsp) throws IOException {
+        Computer c = Jenkins.get().getComputer(agent);
+        if (!(c instanceof SlaveComputer)) {
+            throw HttpResponses.notFound();
+        }
+        SlaveComputer sc = (SlaveComputer) c;
+        if (!(sc.getLauncher() instanceof JNLPLauncher)) {
+            throw HttpResponses.errorWithoutStack(400, "not an inbound agent");
+        }
+        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), sc.getJnlpMac().getBytes(StandardCharsets.US_ASCII))) { // TODO unless anonymous has CONNECT?
+            throw HttpResponses.forbidden();
+        }
+        LOGGER.fine(() -> "connecting " + agent);
+        Capability remoteCapability;
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(remoteCapabilityStr.getBytes(StandardCharsets.US_ASCII))) {
+            remoteCapability = Capability.read(bais);
+            LOGGER.fine(() -> "received " + remoteCapability);
+        }
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            new Capability().write(baos);
+            rsp.setHeader(CAPABILITY_KEY, baos.toString("US-ASCII"));
+        }
         return WebSockets.upgrade(new WebSockets.Session() {
-            String agent;
-            String secret;
-            Capability remoteCapability;
             AbstractByteArrayCommandTransport.ByteArrayReceiver receiver;
-            // Expect to receive agent, then secret, then remoteCapability; then will send a capability; then channel is started.
             @Override
-            protected void text(String message) {
-                if (agent == null) {
-                    agent = message;
-                } else if (secret == null) {
-                    secret = message;
-                } else {
-                    LOGGER.warning("unexpected text frame");
-                }
+            protected void opened() {
+                Computer.threadPoolForRemoting.submit(() -> {
+                    LOGGER.fine(() -> "setting up channel for " + agent);
+                    sc.setChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting).withHeaderStream(sc.openLogFile()), new Transport(), null);
+                    LOGGER.fine(() -> "set up channel for " + agent);
+                    return null;
+                });
             }
             @Override
             protected void binary(byte[] payload, int offset, int len) {
-                if (remoteCapability == null) {
-                    if (agent == null || secret == null) {
-                        LOGGER.warning("unexpected binary frame");
-                        return; // TODO close connection
-                    }
-                    try (ByteArrayInputStream bais = new ByteArrayInputStream(payload, offset, len)) {
-                        remoteCapability = Capability.read(bais);
-                        LOGGER.fine(() -> "received " + remoteCapability);
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, "could not read remote capability", x);
-                        return; // TODO close connection
-                    }
-                    Computer c = Jenkins.get().getComputer(agent);
-                    if (!(c instanceof SlaveComputer)) {
-                        LOGGER.warning("no such agent " + agent);
-                        return; // TODO close connection
-                    }
-                    SlaveComputer sc = (SlaveComputer) c;
-                    if (!(sc.getLauncher() instanceof JNLPLauncher)) {
-                        LOGGER.warning(agent + " is not inbound");
-                        return; // TODO close connection
-                    }
-                    if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), sc.getJnlpMac().getBytes(StandardCharsets.US_ASCII))) { // TODO unless anonymous has CONNECT?
-                        LOGGER.warning("incorrect secret");
-                        return; // TODO close connection
-                    }
-                    Computer.threadPoolForRemoting.submit(() -> {
-                        LOGGER.fine(() -> "sending capabilities for " + agent);
-                        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                            new Capability().write(baos);
-                            sendBinary(ByteBuffer.wrap(baos.toByteArray()));
-                        }
-                        LOGGER.fine(() -> "setting up channel for " + agent);
-                        sc.setChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting).withHeaderStream(sc.openLogFile()), new Transport(), null);
-                        LOGGER.fine(() -> "set up channel for " + agent);
-                        return null;
-                    });
+                LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
+                if (offset == 0 && len == payload.length) {
+                    receiver.handle(payload);
                 } else {
-                    LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
-                    if (offset == 0 && len == payload.length) {
-                        receiver.handle(payload);
-                    } else {
-                        receiver.handle(Arrays.copyOfRange(payload, offset, offset + len));
-                    }
+                    receiver.handle(Arrays.copyOfRange(payload, offset, offset + len));
                 }
             }
             @Override
