@@ -124,6 +124,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
@@ -462,9 +463,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * A file will be created at the very end of the Jenkins initialization process.
      * I.e. if the file is present, that means this is *NOT* a fresh startup.
      *
-     * <code>
+     * {@code
      *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
-     * </code>
+     * }
      */
     private transient static FileBoolean STARTUP_MARKER_FILE;
 
@@ -864,8 +865,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         long start = System.currentTimeMillis();
         STARTUP_MARKER_FILE = new FileBoolean(new File(root, ".lastStarted"));
         // As Jenkins is starting, grant this process full control
-        ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             this.root = root;
             this.servletContext = context;
             computeVersion(context);
@@ -1039,8 +1039,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         System.currentTimeMillis()-start));
 
             STARTUP_MARKER_FILE.on();
-        } finally {
-            SecurityContextHolder.clearContext();
         }
     }
 
@@ -1112,14 +1110,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             protected void runTask(Task task) throws Exception {
                 if (is!=null && is.skipInitTask(task))  return;
 
-                ACL.impersonate(ACL.SYSTEM); // full access in the initialization thread
                 String taskName = InitReactorRunner.getDisplayName(task);
 
                 Thread t = Thread.currentThread();
                 String name = t.getName();
                 if (taskName !=null)
                     t.setName(taskName);
-                try {
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) { // full access in the initialization thread
                     long start = System.currentTimeMillis();
                     super.runTask(task);
                     if(LOG_STARTUP_PERFORMANCE)
@@ -1133,7 +1130,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 } finally {
                     t.setName(name);
-                    SecurityContextHolder.clearContext();
                 }
             }
             private boolean containsLinkageError(Throwable x) {
@@ -2726,7 +2722,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The strategy used to check the project names.
-     * @return never <code>null</code>
+     * @return never {@code null}
      */
     public ProjectNamingStrategy getProjectNamingStrategy() {
         return projectNamingStrategy == null ? ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY : projectNamingStrategy;
@@ -4113,8 +4109,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         new Thread("Jenkins config reload thread") {
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     reload();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
@@ -4299,9 +4294,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
-
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                     LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
@@ -4328,8 +4321,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
 
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
@@ -4399,8 +4391,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                             getAuthentication().getName(), req != null ? req.getRemoteAddr() : "???"));
 
@@ -4428,8 +4419,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
-                try {
-                    ACL.impersonate(ACL.SYSTEM);
+                try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.

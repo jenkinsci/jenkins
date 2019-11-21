@@ -67,8 +67,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -150,15 +148,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
 
-        SecurityContext orig = ACL.impersonate(auth);
         Item authUpstream = null;
-        try {
+        try (ACLContext ctx = ACL.as(auth)) {
             authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } catch (AccessDeniedException ade) {
             // Fails because of missing Item.READ but downstream user has Item.DISCOVER
-        } finally {
-            SecurityContextHolder.setContext(orig);
         }
 
         if(authUpstream != upstream) {

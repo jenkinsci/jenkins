@@ -769,8 +769,8 @@ public abstract class Launcher {
      * recorded on the listener.
      *
      * @param cmd     The commands
-     * @param mask    An array of booleans which control whether a cmd element should be masked (<code>true</code>) or
-     *                remain unmasked (<code>false</code>).
+     * @param mask    An array of booleans which control whether a cmd element should be masked ({@code true}) or
+     *                remain unmasked ({@code false}).
      * @param workDir The work dir.
      */
     protected final void maskedPrintCommandLine(@Nonnull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
@@ -1251,9 +1251,9 @@ public abstract class Launcher {
     }
 
     public static class IOTriplet implements Serializable {
-        @Nonnull
+        @CheckForNull
         InputStream stdout,stderr;
-        @Nonnull
+        @CheckForNull
         OutputStream stdin;
         private static final long serialVersionUID = 1L;
     }

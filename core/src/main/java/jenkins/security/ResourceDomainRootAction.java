@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -51,6 +52,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.time.Instant.*;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -62,7 +64,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * @see ResourceDomainConfiguration
  * @see ResourceDomainFilter
  *
- * @since TODO
+ * @since 2.200
  */
 @Extension
 @Restricted(NoExternalUse.class)
@@ -147,7 +149,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             // Unsure whether this can happen -- just be safe here
             restOfPath = "/" + restOfPath;
         }
-        return resourceRootUrl + getUrlName() + "/" + token.encode() + restOfPath;
+        return resourceRootUrl + getUrlName() + "/" + token.encode() + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
     }
 
     private static String getResourceRootUrl() {
@@ -165,7 +167,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     @CheckForNull
     public Token getToken(@Nonnull DirectoryBrowserSupport dbs, @Nonnull StaplerRequest req) {
         // This is the "restOfPath" of the DirectoryBrowserSupport, i.e. the directory/file/pattern "inside" the DBS.
-        final String dbsFile = req.getRestOfPath();
+        final String dbsFile = req.getOriginalRestOfPath();
 
         // Now get the 'restOfUrl' after the top-level ancestor (which is the Jenkins singleton).
         // In other words, this is the complete URL after Jenkins handled the top-level request.
@@ -193,7 +195,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private final String authenticationName;
         private final String browserUrl;
 
-        InternalResourceRequest(@Nonnull String browserUrl, String authenticationName) {
+        InternalResourceRequest(@Nonnull String browserUrl, @Nonnull String authenticationName) {
             this.browserUrl = browserUrl;
             this.authenticationName = authenticationName;
         }
@@ -206,7 +208,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
             Authentication auth = Jenkins.ANONYMOUS;
-            if (authenticationName != null) {
+            if (Util.fixEmpty(authenticationName) != null) {
                 User user = User.getById(authenticationName, false);
                 if (user != null) {
                     try {
@@ -222,7 +224,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             try (ACLContext ignored = ACL.as(auth)) {
                 try {
-                    Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), requestUrlSuffix + restOfPath);
+                    String path = requestUrlSuffix + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
+                    Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), path);
                 } catch (Exception ex) {
                     // cf. UnwrapSecurityExceptionFilter
                     Throwable cause = ex.getCause();
@@ -263,22 +266,24 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private String path;
         private String username;
         private Instant timestamp;
-        private Token (String path, @Nullable String username, Instant timestamp) {
+
+        @VisibleForTesting
+        Token (@Nonnull String path, @Nullable String username, @Nonnull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;
         }
 
         private String encode() {
-            String value = username + ":" + timestamp.toEpochMilli() + ":" + path;
+            String value = timestamp.toEpochMilli() + ":" + username.length() + ":" + username + ":" + path;
             byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
             byte[] byteValue = ArrayUtils.addAll(KEY.mac(valueBytes), valueBytes);
             return Base64.getUrlEncoder().encodeToString(byteValue);
         }
 
         private static Token decode(String value) {
-            byte[] byteValue = Base64.getUrlDecoder().decode(value);
             try {
+                byte[] byteValue = Base64.getUrlDecoder().decode(value);
                 byte[] mac = Arrays.copyOf(byteValue, 32);
                 byte[] restBytes = Arrays.copyOfRange(byteValue, 32, byteValue.length);
                 String rest = new String(restBytes, StandardCharsets.UTF_8);
@@ -286,10 +291,12 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                     throw new IllegalArgumentException("Failed mac check for " + rest);
                 }
 
-                String[] splits = rest.split(":", 3);
-                String authenticationName = Util.fixEmpty(splits[0]);
-                String epoch = splits[1];
-                String browserUrl = splits[2];
+                String[] splits = rest.split("[:]", 3);
+                String epoch = splits[0];
+                int authenticationNameLength = Integer.parseInt(splits[1]);
+                String authenticationNameAndBrowserUrl = splits[2];
+                String authenticationName = authenticationNameAndBrowserUrl.substring(0, authenticationNameLength);
+                String browserUrl = authenticationNameAndBrowserUrl.substring(authenticationNameLength + 1);
                 return new Token(browserUrl, authenticationName, ofEpochMilli(Long.parseLong(epoch)));
             } catch (Exception ex) {
                 // Choose log level that hides people messing with the URLs

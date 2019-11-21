@@ -43,7 +43,7 @@ public interface HealthReportingAction extends Action {
      *
      * @return
      *     The health report for this instance of the Action or 
-     *     <code>null</code> if the Action does not want to 
+     *     {@code null} if the Action does not want to
      *     contribute a HealthReport.
      */
     HealthReport getBuildHealth();

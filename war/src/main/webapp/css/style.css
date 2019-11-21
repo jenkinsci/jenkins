@@ -1579,6 +1579,10 @@ TEXTAREA.rich-editor {
     color: #888a85;
 }
 
+/*
+ * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299, 
+ *                  remove once there are no more dependencies
+ */
 #plugins .compatWarning {
     white-space: normal;
     margin-top: 0.5em;
@@ -1880,10 +1884,34 @@ select.select-ajax-pending {
     border-radius: 4px;
 }
 
+.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.alert-info p {
+    color: #31708f;
+}
+
 .alert-warning {
     color: #8a6d3b;
     background-color: #fcf8e3;
     border-color: #faebcc;
+}
+
+.alert-warning p {
+    color: #8a6d3b;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+.alert-danger p {
+    color: #a94442;
 }
 
 body.no-decoration #main-panel {

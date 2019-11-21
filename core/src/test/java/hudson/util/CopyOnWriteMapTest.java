@@ -42,7 +42,7 @@ public class CopyOnWriteMapTest {
     /**
      * Verify that serialization form of CopyOnWriteMap.Hash and HashMap are the same.
      */
-    @Test public void hashSerialization() throws Exception {
+    @Test public void hashSerialization() {
         HashData td = new HashData();
         XStream2 xs = new XStream2();
 
@@ -84,7 +84,7 @@ public class CopyOnWriteMapTest {
      * Verify that an empty CopyOnWriteMap.Tree can be serialized,
      * and that serialization form is the same as a standard TreeMap.
      */
-    @Test public void treeSerialization() throws Exception {
+    @Test public void treeSerialization() {
         TreeData td = new TreeData();
         XStream2 xs = new XStream2();
 
@@ -114,7 +114,7 @@ public class CopyOnWriteMapTest {
         assertEquals("bar2", td2.map2.get("foo2"));
     }
 
-    @Test public void equalsHashCodeToString() throws Exception {
+    @Test public void equalsHashCodeToString() {
         Map<String,Integer> m1 = new TreeMap<>();
         Map<String,Integer> m2 = new CopyOnWriteMap.Tree<>();
         m1.put("foo", 5);
@@ -122,8 +122,8 @@ public class CopyOnWriteMapTest {
         m2.put("foo", 5);
         m2.put("bar", 7);
         assertEquals(m1.hashCode(), m2.hashCode());
-        assertTrue(m2.equals(m1));
-        assertTrue(m1.equals(m2));
+        assertEquals(m2, m1);
+        assertEquals(m1, m2);
         assertEquals(m1.toString(), m2.toString());
     }
 

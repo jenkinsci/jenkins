@@ -587,13 +587,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the {@link User} object by its <code>id</code>
+     * Gets the {@link User} object by its {@code id}
      *
      * @param id     the id of the user to retrieve and optionally create if it does not exist.
-     * @param create If <code>true</code>, this method will never return <code>null</code> for valid input (by creating a
-     *               new {@link User} object if none exists.) If <code>false</code>, this method will return
-     *               <code>null</code> if {@link User} object with the given id doesn't exist.
-     * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
+     * @param create If {@code true}, this method will never return {@code null} for valid input (by creating a
+     *               new {@link User} object if none exists.) If {@code false}, this method will return
+     *               {@code null} if {@link User} object with the given id doesn't exist.
+     * @return the a User whose id is {@code id}, or {@code null} if {@code create} is {@code false}
      * and the user does not exist.
      * @since 1.651.2 / 2.3
      */
@@ -1114,7 +1114,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         /**
          * extract user ID from idOrFullName with help from contextual infos.
-         * can return <code>null</code> if no user ID matched the input
+         * can return {@code null} if no user ID matched the input
          */
         public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
 

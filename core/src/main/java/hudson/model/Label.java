@@ -41,14 +41,13 @@ import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.model.labels.LabelVisitor;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -404,8 +403,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
-        SecurityContext context = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             int result = 0;
             // top level gives the map without checking security of items in the map
             // therefore best performance
@@ -439,8 +437,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                 }
             }
             return tiedJobsCount = result;
-        } finally {
-            SecurityContextHolder.setContext(context);
         }
     }
 

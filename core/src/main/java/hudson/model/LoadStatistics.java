@@ -527,7 +527,6 @@ public abstract class LoadStatistics {
             return queueLength;
         }
 
-        /** {@inheritDoc} */
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -564,7 +563,6 @@ public abstract class LoadStatistics {
             return true;
         }
 
-        /** {@inheritDoc} */
         @Override
         public int hashCode() {
             int result = definedExecutors;
@@ -577,7 +575,6 @@ public abstract class LoadStatistics {
             return result;
         }
 
-        /** {@inheritDoc} */
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("LoadStatisticsSnapshot{");

@@ -328,7 +328,7 @@ public class AbstractProjectTest {
     }
 
     /**
-     * Do the same as {@link #testQueueSuccessBehavior()} but over HTTP
+     * Do the same as {@link #queueSuccessBehavior()} but over HTTP
      */
     @Test
     @Issue("JENKINS-18407")

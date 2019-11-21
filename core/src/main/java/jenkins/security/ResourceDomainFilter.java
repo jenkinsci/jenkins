@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  * Prohibit requests to Jenkins coming through a resource domain URL configured with
  * {@link ResourceDomainConfiguration}, except anything going to {@link ResourceDomainRootAction}.
  *
- * @since TODO
+ * @since 2.200
  */
 @Restricted(NoExternalUse.class)
 public class ResourceDomainFilter implements Filter {
