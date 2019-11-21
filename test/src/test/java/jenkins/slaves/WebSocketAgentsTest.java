@@ -46,15 +46,20 @@ import org.jvnet.hudson.test.LoggerRule;
 
 public class WebSocketAgentsTest {
 
-    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-    @Rule public LoggerRule logging = new LoggerRule().record(SlaveComputer.class, Level.FINEST).record(WebSocketAgents.class, Level.FINEST).record(Engine.class, Level.FINEST);
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(SlaveComputer.class, Level.FINEST).record(WebSocketAgents.class, Level.FINEST).record(Engine.class, Level.FINEST);
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Test public void smokes() throws Exception {
+    @Test
+    public void smokes() throws Exception {
         DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), new JNLPLauncher(true));
         r.jenkins.addNode(s);
         String secret = ((SlaveComputer) r.jenkins.getComputer("remote")).getJnlpMac();
@@ -72,7 +77,8 @@ public class WebSocketAgentsTest {
     }
 
     private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {
-        @Override public String call() {
+        @Override
+        public String call() {
             return "response";
         }
     }

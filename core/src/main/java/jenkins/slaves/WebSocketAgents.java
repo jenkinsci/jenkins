@@ -43,15 +43,19 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.WebSockets;
 import jenkins.model.Jenkins;
+import jenkins.websocket.WebSocketSession;
+import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerResponse;
 
 @Extension
+@Restricted(DoNotUse.class)
 public final class WebSocketAgents extends InvisibleAction implements UnprotectedRootAction {
 
     private static final String CAPABILITY_KEY = /* Capability.class.getName() */"hudson.remoting.Capability";
@@ -89,70 +93,95 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             new Capability().write(baos);
             rsp.setHeader(CAPABILITY_KEY, baos.toString("US-ASCII"));
         }
-        return WebSockets.upgrade(new WebSockets.Session() {
-            AbstractByteArrayCommandTransport.ByteArrayReceiver receiver;
-            @Override
-            protected void opened() {
-                Computer.threadPoolForRemoting.submit(() -> {
-                    LOGGER.fine(() -> "setting up channel for " + agent);
-                    sc.setChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting).withHeaderStream(sc.openLogFile()), new Transport(), null);
-                    LOGGER.fine(() -> "set up channel for " + agent);
-                    return null;
-                });
+        return WebSockets.upgrade(new Session(agent, sc, remoteCapability));
+    }
+
+    private static class Session extends WebSocketSession {
+
+        private final String agent;
+        private final SlaveComputer sc;
+        private final Capability remoteCapability;
+        private AbstractByteArrayCommandTransport.ByteArrayReceiver receiver;
+
+        Session(String agent, SlaveComputer sc, Capability remoteCapability) {
+            this.agent = agent;
+            this.sc = sc;
+            this.remoteCapability = remoteCapability;
+        }
+
+        @Override
+        protected void opened() {
+            Computer.threadPoolForRemoting.submit(() -> {
+                LOGGER.fine(() -> "setting up channel for " + agent);
+                sc.setChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting).withHeaderStream(sc.openLogFile()), new Transport(), null);
+                LOGGER.fine(() -> "set up channel for " + agent);
+                return null;
+            });
+        }
+
+        @Override
+        protected void binary(byte[] payload, int offset, int len) {
+            LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
+            if (offset == 0 && len == payload.length) {
+                receiver.handle(payload);
+            } else {
+                receiver.handle(Arrays.copyOfRange(payload, offset, offset + len));
             }
+        }
+
+        @Override
+        protected void closed(int statusCode, String reason) {
+            LOGGER.finest(() -> "closed " + statusCode + " " + reason);
+            // TODO
+        }
+
+        @Override
+        protected void error(Throwable cause) {
+            LOGGER.log(Level.WARNING, null, cause);
+        }
+
+        @Override
+        protected boolean keepAlive() {
+            return true; // Remoting ping thread may be too slow
+        }
+
+        class Transport extends AbstractByteArrayCommandTransport {
+
             @Override
-            protected void binary(byte[] payload, int offset, int len) {
-                LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
-                if (offset == 0 && len == payload.length) {
-                    receiver.handle(payload);
-                } else {
-                    receiver.handle(Arrays.copyOfRange(payload, offset, offset + len));
+            public void setup(AbstractByteArrayCommandTransport.ByteArrayReceiver bar) {
+                receiver = bar;
+            }
+
+            @Override
+            public void writeBlock(Channel chnl, byte[] bytes) throws IOException {
+                LOGGER.finest(() -> "writing block of length " + bytes.length + " to " + agent);
+                try {
+                    sendBinary(ByteBuffer.wrap(bytes)).get();
+                } catch (Exception x) {
+                    x.printStackTrace();
+                    throw new IOException(x);
                 }
             }
+
             @Override
-            protected void closed(int statusCode, String reason) {
-                LOGGER.finest(() -> "closed " + statusCode + " " + reason);
+            public Capability getRemoteCapability() throws IOException {
+                return remoteCapability;
+            }
+
+            @Override
+            public void closeWrite() throws IOException {
+                LOGGER.finest(() -> "closeWrite");
                 // TODO
             }
+
             @Override
-            protected void error(Throwable cause) {
-                LOGGER.log(Level.WARNING, null, cause);
+            public void closeRead() throws IOException {
+                LOGGER.finest(() -> "closeRead");
+                // TODO
             }
-            @Override
-            protected boolean keepAlive() {
-                return true; // Remoting ping thread may be too slow
-            }
-            class Transport extends AbstractByteArrayCommandTransport {
-                @Override
-                public void setup(AbstractByteArrayCommandTransport.ByteArrayReceiver bar) {
-                    receiver = bar;
-                }
-                @Override
-                public void writeBlock(Channel chnl, byte[] bytes) throws IOException {
-                    LOGGER.finest(() -> "writing block of length " + bytes.length + " to " + agent);
-                    try {
-                        sendBinary(ByteBuffer.wrap(bytes)).get();
-                    } catch (Exception x) {
-                        x.printStackTrace();
-                        throw new IOException(x);
-                    }
-                }
-                @Override
-                public Capability getRemoteCapability() throws IOException {
-                    return remoteCapability;
-                }
-                @Override
-                public void closeWrite() throws IOException {
-                    LOGGER.finest(() -> "closeWrite");
-                    // TODO
-                }
-                @Override
-                public void closeRead() throws IOException {
-                    LOGGER.finest(() -> "closeRead");
-                    // TODO
-                }
-            }
-        });
+
+        }
+
     }
 
 }
