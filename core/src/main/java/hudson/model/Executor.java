@@ -864,7 +864,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                if (runExtId == null || runExtId.isEmpty()
+                if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
                         || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
                     getParentOf(executable).getOwnerTask().checkAbortPermission();
                     interrupt();
