@@ -43,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -111,7 +112,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
             if (start >= 0 && end > start) {
@@ -136,7 +137,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
             int end = jsonp.lastIndexOf("),'*');");

@@ -59,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -943,7 +944,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
-                    String literal = IOUtils.toString(in,"UTF-8");
+                    String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
                 }
                 return;
