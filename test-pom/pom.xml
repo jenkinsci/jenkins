@@ -71,7 +71,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.57-SNAPSHOT</version> <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/183 -->
+      <version>2.57-rc1258.021b941d1c70</version> <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/183 -->
       <scope>test</scope>
       <exclusions>
         <exclusion>
