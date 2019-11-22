@@ -645,7 +645,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (isApplicable(actualType, json)) {
                 LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
                 try {
-                    final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
+                    final Descriptor descriptor = Jenkins.get().getDescriptor(actualType);
                     if (descriptor != null) {
                         return descriptor.newInstance(Stapler.getCurrentRequest(), json);
                     } else {
@@ -671,7 +671,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
-                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                        return Jenkins.get().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
                     } catch (Exception x) {
                         LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
                     }

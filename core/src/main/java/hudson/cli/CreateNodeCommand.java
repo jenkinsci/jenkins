@@ -52,7 +52,7 @@ public class CreateNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Computer.CREATE);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);

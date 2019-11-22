@@ -5140,7 +5140,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
-        return toVersion(Jenkins.getActiveInstance().version);
+        return toVersion(Jenkins.get().version);
     }
 
     /**

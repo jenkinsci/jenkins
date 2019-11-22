@@ -1475,7 +1475,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         if ((!proposedName.equals(nodeName))
-                && Jenkins.getActiveInstance().getNode(proposedName) != null) {
+                && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
 
