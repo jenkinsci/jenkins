@@ -68,13 +68,21 @@ public class ReloadConfigurationCommandTest {
     }
 
     @Test
-    public void reloadConfigurationShouldFailWithoutAdministerPermission() throws Exception {
+    public void reloadConfigurationShouldFailWithoutAdministerOrConfigurePermission() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("user is missing the Overall/Configure permission"));
+    }
+
+    @Test
+    public void reloadConfigurationShouldWorkWithConfigurePermission() throws Exception {
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
+        //Any reload configuration should work with CONFIGURE_JENKINS as well
+        this.reloadMasterConfig();
     }
 
     @Test

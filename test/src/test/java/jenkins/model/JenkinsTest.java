@@ -41,6 +41,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.cli.CLICommandInvoker;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.InvisibleAction;
@@ -86,6 +87,8 @@ import java.util.Set;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import javax.annotation.CheckForNull;
+
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 
 /**
  * Tests of the {@link Jenkins} class instance logic.
@@ -286,7 +289,7 @@ public class JenkinsTest {
         wc.goTo("foobar/zot");
 
         // and make sure this fails
-        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
+        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_FORBIDDEN);
 
         assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
@@ -702,5 +705,21 @@ public class JenkinsTest {
     @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
     public void jobCreatedByInitializerIsRetained() {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    }
+
+    @Test
+    public void doExitSuccessWithConfigurePermission() {
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, "shutdown")
+                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .invoke();
+        assertThat(result, succeededSilently());
+    }
+
+    @Test
+    public void doSafeExitSuccessWithConfigurePermission() {
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, "safe-shutdown")
+                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .invoke();
+        assertThat(result, succeededSilently());
     }
 }

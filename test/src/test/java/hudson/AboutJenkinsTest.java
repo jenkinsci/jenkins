@@ -47,13 +47,15 @@ public class AboutJenkinsTest {
     
     @Test
     @Issue("SECURITY-771")
-    public void onlyAdminCanReadAbout() throws Exception {
+    public void onlyConfiguratorOrAdminCanReadAbout() throws Exception {
         final String ADMIN = "admin";
+        final String CONFIGURATOR = "configurator";
         final String USER = "user";
         
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+                .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().to(CONFIGURATOR)
                 .grant(Jenkins.READ).everywhere().to(USER)
         );
         
@@ -68,6 +70,13 @@ public class AboutJenkinsTest {
         
         { // admin can access it
             wc.login(ADMIN);
+            HtmlPage page = wc.goTo("about/");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+        }
+
+        { // configurator can access it
+            wc.login(CONFIGURATOR);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));

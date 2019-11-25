@@ -33,7 +33,7 @@ THE SOFTWARE.
       </h1>
 
       <j:if test="${it.atom}">
-        <t:editableDescription permission="${app.ADMINISTER}"/>
+        <t:editableDescription permission="${app.CONFIGURE}"/>
       </j:if>
 
       <j:forEach var="a" items="${it.allActions}">

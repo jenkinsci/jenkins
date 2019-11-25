@@ -23,14 +23,20 @@
  */
 package hudson.model.labels;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import jenkins.model.Jenkins;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -67,5 +73,54 @@ public class LabelAtomPropertyTest {
         j.submit(j.createWebClient().goTo("label/foo/configure").getFormByName("config"));
         assertEquals(1,foo.getProperties().size());
         j.assertEqualDataBoundBeans(old, foo.getProperties().get(LabelAtomPropertyImpl.class));
+    }
+
+    /**
+     * Tests the configuration persistence between disk, memory, and UI.
+     */
+    @Test
+    public void configAllowedWithConfigurePermission() throws Exception {
+        final String CONFIGURATOR = "configurator";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.READ, Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR));
+
+        LabelAtom label = j.jenkins.getLabelAtom("foo");
+
+        // it should survive the configuration roundtrip
+        HtmlForm labelConfigForm = j.createWebClient().login(CONFIGURATOR).goTo("label/foo/configure").getFormByName("config");
+        labelConfigForm.getTextAreaByName("description").setText("example description");
+        j.submit(labelConfigForm);
+
+        assertEquals("example description",label.getDescription());
+    }
+
+    /**
+     * Tests the configuration persistence between disk, memory, and UI.
+     */
+    @Test
+    public void configForbiddenWithoutConfigureOrAdminPermissions() throws Exception {
+        final String UNAUTHORIZED = "reader";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.READ).everywhere().to(UNAUTHORIZED));
+
+        j.jenkins.getLabelAtom("foo");
+
+        // Unauthorized user can't be able to access the configuration form
+        JenkinsRule.WebClient webClient = j.createWebClient().login(UNAUTHORIZED).withThrowExceptionOnFailingStatusCode(false);
+        webClient.assertFails("label/foo/configure", 403);
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.ADMINISTER).everywhere().to(UNAUTHORIZED));
+
+        // And can't submit the form neither
+        HtmlForm labelConfigForm = webClient.goTo("label/foo/configure").getFormByName("config");
+        labelConfigForm.getTextAreaByName("description").setText("example description");
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.READ).everywhere().to(UNAUTHORIZED));
+        HtmlPage submitted = j.submit(labelConfigForm);
+        assertEquals(403, submitted.getWebResponse().getStatusCode());
     }
 }

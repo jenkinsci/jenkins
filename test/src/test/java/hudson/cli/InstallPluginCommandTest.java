@@ -24,11 +24,21 @@
 
 package hudson.cli;
 
+import java.net.InetSocketAddress;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+
+import hudson.model.UpdateCenter;
+import jenkins.model.Jenkins;
+
+import static hudson.cli.CLICommandInvoker.Matcher.*;
 
 public class InstallPluginCommandTest {
 
@@ -42,8 +52,37 @@ public class InstallPluginCommandTest {
         assertThat(new CLICommandInvoker(r, "install-plugin").
                 withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
                 invokeWithArgs("-deploy", "="),
-            CLICommandInvoker.Matcher.succeeded());
+            succeeded());
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+    }
+
+    private void setupUpdateCenter() {
+        try {
+            r.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
+        } catch (Exception x) {
+            assumeNoException(x);
+        }
+        InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
+        assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
+    }
+
+    @Test
+    public void configuratorCanNotInstallPlugin() throws Exception {
+        //Setup update center and authorization
+        setupUpdateCenter();
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(
+                "admin").grant(Jenkins.CONFIGURE).everywhere().to("configurator"));
+
+        String plugin = "git";
+
+        assertThat("User with CONFIGURE permission shouldn't be able to install a plugin fro an UC",
+                   new CLICommandInvoker(r, "install-plugin").asUser("configurator").invokeWithArgs(plugin),
+                   failedWith(6));
+
+        assertThat("Admin should be able to install a plugin from an UC",
+                   new CLICommandInvoker(r, "install-plugin").asUser("admin").invokeWithArgs(plugin),
+                   succeeded());
     }
 
 }

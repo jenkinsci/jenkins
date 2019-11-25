@@ -77,7 +77,16 @@ public class QuietDownCommandTest {
                 .invoke();
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Configure permission"));
+    }
+
+    @Test
+    public void quietDownShouldSuccessWithConfigurePermission() throws Exception {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .invoke();
+        assertThat(result, succeededSilently());
+        assertJenkinsInQuietMode();
     }
 
     @Test

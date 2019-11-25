@@ -27,6 +27,8 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -42,6 +44,9 @@ import java.util.logging.Logger;
 public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)){
+            return true;
+        }
         JSONArray monitors = json.optJSONArray("administrativeMonitor");
         for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
             try {

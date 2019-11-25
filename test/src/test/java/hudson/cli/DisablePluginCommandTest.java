@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
 import java.io.IOException;
@@ -46,6 +47,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
+
+import jenkins.model.Jenkins;
 
 public class DisablePluginCommandTest {
 
@@ -324,6 +327,33 @@ public class DisablePluginCommandTest {
         assertPluginEnabled("mandatory-depender");
 
         assertTrue("Only error NOT_DISABLED_DEPENDANTS in quiet mode", checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS));
+    }
+
+    @Test
+    @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
+    public void configuratorCanNotDisablePlugin() {
+
+        //GIVEN a user with CONFIGURE_JENKINS permission
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.CONFIGURE).everywhere().to("configurator")
+        );
+
+        //WHEN trying to disable a plugin
+        assertThat(disablePluginsCLiCommandAs("configurator", "dependee"), failedWith(6));
+        //THEN it's refused and the plugin is not disabled.
+        assertPluginEnabled("dependee");
+    }
+
+
+    /**
+     * Disable a list of plugins using the CLI command.
+     * @param user Username
+     * @param args Arguments to pass to the command.
+     * @return Result of the command. 0 if succeed, 16 if some plugin couldn't be disabled due to dependent plugins.
+     */
+    private CLICommandInvoker.Result disablePluginsCLiCommandAs(String user, String... args) {
+        return new CLICommandInvoker(j, new DisablePluginCommand()).asUser(user).invokeWithArgs(args);
     }
 
     /**
