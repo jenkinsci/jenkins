@@ -48,14 +48,14 @@ import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerResponse;
 
 @Extension
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public final class WebSocketAgents extends InvisibleAction implements UnprotectedRootAction {
 
     private static final String CAPABILITY_KEY = /* Capability.class.getName() */"hudson.remoting.Capability";

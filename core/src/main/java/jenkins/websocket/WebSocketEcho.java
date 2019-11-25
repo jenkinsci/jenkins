@@ -29,11 +29,11 @@ import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
 import java.nio.ByteBuffer;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 
 @Extension
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public class WebSocketEcho  extends InvisibleAction implements UnprotectedRootAction {
 
         @Override
