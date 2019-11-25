@@ -31,6 +31,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.concurrent.Future;
@@ -88,6 +89,7 @@ public class CancelQuietDownCommandTest {
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void cancelQuietDownShouldSuccessWithConfigurePermission() throws Exception {
         //GIVEN a user with CONFIGURE_JENKINS permission

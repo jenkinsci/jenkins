@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
@@ -78,6 +79,7 @@ public class LabelAtomPropertyTest {
     /**
      * Tests the configuration persistence between disk, memory, and UI.
      */
+    @Issue("JENKINS-60266")
     @Test
     public void configAllowedWithConfigurePermission() throws Exception {
         final String CONFIGURATOR = "configurator";
@@ -98,6 +100,7 @@ public class LabelAtomPropertyTest {
     /**
      * Tests the configuration persistence between disk, memory, and UI.
      */
+    @Issue("JENKINS-60266")
     @Test
     public void configForbiddenWithoutConfigureOrAdminPermissions() throws Exception {
         final String UNAUTHORIZED = "reader";

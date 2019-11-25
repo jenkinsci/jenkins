@@ -329,6 +329,7 @@ public class DisablePluginCommandTest {
         assertTrue("Only error NOT_DISABLED_DEPENDANTS in quiet mode", checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
     public void configuratorCanNotDisablePlugin() {

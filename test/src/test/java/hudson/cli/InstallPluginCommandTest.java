@@ -66,6 +66,7 @@ public class InstallPluginCommandTest {
         assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void configuratorCanNotInstallPlugin() throws Exception {
         //Setup update center and authorization
