@@ -163,12 +163,14 @@ public abstract class ViewGroupMixIn {
     }
 
     /**
-     * Returns the primary {@link View} that renders the top-page of Hudson.
+     * Returns the primary {@link View} that renders the top-page of Hudson or
+     * {@code null} if there is no primary one defined.
      */
     @Exported
+    @CheckForNull
     public View getPrimaryView() {
         View v = getView(primaryView());
-        if(v==null) // fallback
+        if(v==null && !views().isEmpty()) // fallback
             v = views().get(0);
         return v;
     }

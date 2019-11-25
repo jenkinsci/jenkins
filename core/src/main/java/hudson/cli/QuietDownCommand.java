@@ -54,7 +54,7 @@ public class QuietDownCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.getActiveInstance().doQuietDown(block, timeout);
+        Jenkins.get().doQuietDown(block, timeout);
         return 0;
     }
 }
