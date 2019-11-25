@@ -101,7 +101,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.5-20191122.203955-1</version> <!-- TODO https://github.com/jenkinsci/winstone/pull/79 -->
+      <version>5.5-rc481.482ea78c534a</version> <!-- TODO https://github.com/jenkinsci/winstone/pull/79 -->
       <scope>test</scope>
     </dependency>
     <dependency>
