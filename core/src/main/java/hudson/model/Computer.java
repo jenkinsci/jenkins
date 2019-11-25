@@ -1411,7 +1411,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         // this is a debug probe and may expose sensitive information
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(Jenkins.CONFIGURE);
 
         rsp.setContentType("text/plain");
         try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {

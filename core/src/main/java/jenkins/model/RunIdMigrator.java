@@ -423,7 +423,7 @@ public final class RunIdMigrator {
 
         @Override
         public Object getTarget() {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.CONFIGURE);
             return this;
         }
 

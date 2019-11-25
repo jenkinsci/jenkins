@@ -52,4 +52,5 @@ public class PluginsLink extends ManagementLink {
     public String getUrlName() {
         return "pluginManager";
     }
+
 }

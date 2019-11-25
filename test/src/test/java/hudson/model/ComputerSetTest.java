@@ -23,7 +23,9 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import static org.hamcrest.Matchers.*;
@@ -33,6 +35,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import jenkins.model.Jenkins;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -79,5 +83,66 @@ public class ComputerSetTest {
         assertThat(ComputerSet.getComputerNames(), contains("aNode"));
         j.createSlave("anAnotherNode", "", null);
         assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
+    }
+
+    @Test
+    public void monitorDisplayedWithConfigurePermission() throws Exception {
+        //GIVEN a user with CONFIGURE permission
+        final String CONFIGURATOR = "configurator";
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().to(CONFIGURATOR));
+        //WHEN the user go to Monitors
+        WebClient client = j.createWebClient();
+        HtmlPage page = client.withBasicCredentials(CONFIGURATOR).goTo("computer");
+        //THEN the user can see monitor information
+        assertCanSeeMonitor(page, "Free Disk Space");
+        assertCanSeeMonitor(page, "Free Swap Space");
+        assertCanSeeMonitor(page, "Free Temp Space");
+    }
+
+    @Test
+    public void monitorNotDisplayedWithoutConfigurePermission() throws Exception {
+        //GIVEN a user with only READ permission
+        final String USER = "user";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to(USER));
+
+        {
+            //WHEN the user goes to monitor
+            WebClient client = j.createWebClient();
+            HtmlPage page = client.withBasicCredentials(USER).goTo("computer");
+            //THEN the user is not able to see information.
+            assertCanNotSeeMonitor(page, "Free Disk Space");
+            assertCanNotSeeMonitor(page, "Free Swap Space");
+            assertCanNotSeeMonitor(page, "Free Temp Space");
+        }
+    }
+
+    /**
+     * Tests that user with {@link Jenkins#CONFIGURE} can submit configuration form
+     */
+    @Test
+    public void configurationSuccessWithConfigurePermission() throws Exception {
+        final String CONFIGURATOR = "configurator";
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.READ, Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR));
+
+        WebClient client = j.createWebClient();
+        HtmlForm form = client.login(CONFIGURATOR).goTo("computer/configure").getFormByName("config");
+        j.submit(form);
+    }
+
+    private void assertCanSeeMonitor(HtmlPage page, String label) {
+        HtmlAnchor result = page.getFirstByXPath("//*[@id=\"computers\"]//*[contains(text(),'" + label + "')]");
+        assertNotNull("Monitor '"+label+"' should be displayed", result);
+    }
+
+    private void assertCanNotSeeMonitor(HtmlPage page, String label) {
+        HtmlAnchor result = page.getFirstByXPath("//*[@id=\"computers\"]//*[contains(text(),'" + label + "')]");
+        assertNull("Monitor '"+label+"' shouldn't be displayed", result);
     }
 }

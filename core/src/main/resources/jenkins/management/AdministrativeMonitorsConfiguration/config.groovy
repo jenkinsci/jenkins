@@ -25,28 +25,31 @@
 package jenkins.management.AdministrativeMonitorsConfiguration
 
 import hudson.model.AdministrativeMonitor
+import jenkins.model.Jenkins
 
 f = namespace(lib.FormTagLib)
 st = namespace("jelly:stapler")
 
-f.section(title: _("Administrative monitors configuration")) {
-    f.advanced(title: _("Administrative monitors")) {
-        f.entry(title: _("Enabled administrative monitors")) {
-            p(_("blurb"))
-            table(width: "100%") {
-                for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
-                    f.block() {
-                        f.checkbox(name: "administrativeMonitor",
-                                title: am.displayName,
-                                checked: am.enabled,
-                                json: am.id)
-                    }
-                    tr() {
-                        td(colspan: "2")
-                        td(class: "setting-description") {
-                            st.include(from: am, page: "description", optional: true)
+if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+    f.section(title: _("Administrative monitors configuration")) {
+        f.advanced(title: _("Administrative monitors")) {
+            f.entry(title: _("Enabled administrative monitors")) {
+                p(_("blurb"))
+                table(width: "100%") {
+                    for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
+                        f.block() {
+                            f.checkbox(name: "administrativeMonitor",
+                                    title: am.displayName,
+                                    checked: am.enabled,
+                                    json: am.id)
                         }
-                        td()
+                        tr() {
+                            td(colspan: "2")
+                            td(class: "setting-description") {
+                                st.include(from: am, page: "description", optional: true)
+                            }
+                            td()
+                        }
                     }
                 }
             }
