@@ -127,6 +127,7 @@ public class ComputerTest {
         assertEquals(2, c.getActions(A.class).size());
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void dumpExportTableAllowedWithAdminPermission() throws Exception {
         final String ADMIN = "admin";
@@ -137,6 +138,7 @@ public class ComputerTest {
         assertEquals(form.getWebResponse().getStatusCode(), 200);
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void dumpExportTableAllowedWithConfigurePermission() throws Exception {
         final String CONFIGURATOR = "configurator";
@@ -147,6 +149,7 @@ public class ComputerTest {
         assertEquals(form.getWebResponse().getStatusCode(), 200);
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void dumpExportTableForbiddenWithoutAdminOrConfigurePermission() throws Exception {
         final String READER = "reader";

@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
@@ -77,6 +78,7 @@ public class ReloadConfigurationCommandTest {
         assertThat(result.stderr(), containsString("user is missing the Overall/Configure permission"));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void reloadConfigurationShouldWorkWithConfigurePermission() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()

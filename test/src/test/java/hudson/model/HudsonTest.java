@@ -217,7 +217,7 @@ public class HudsonTest {
         assertNull("invalid primaryView", j.jenkins.getView(value));
     }
 
-
+    @Issue("JENKINS-60266")
     @Test
     public void globalConfigAllowedWithConfigurePermission() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -230,6 +230,7 @@ public class HudsonTest {
                      200, updated.getWebResponse().getStatusCode());
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigurationIsNotDisplayedWithConfigurePermission() throws Exception {
         //GIVEN a user with CONFIGURE permission
@@ -250,6 +251,7 @@ public class HudsonTest {
         assertThat("Shouldn't be able to configure Shell", formText, not(containsString("Shell")));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigCanNotBeModifiedWithConfigurePermission() throws Exception {
         //GIVEN the Global Configuration Form, with some changes unsaved

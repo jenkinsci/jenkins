@@ -85,6 +85,7 @@ public class ComputerSetTest {
         assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void monitorDisplayedWithConfigurePermission() throws Exception {
         //GIVEN a user with CONFIGURE permission
@@ -102,6 +103,7 @@ public class ComputerSetTest {
         assertCanSeeMonitor(page, "Free Temp Space");
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void monitorNotDisplayedWithoutConfigurePermission() throws Exception {
         //GIVEN a user with only READ permission
@@ -123,6 +125,7 @@ public class ComputerSetTest {
     /**
      * Tests that user with {@link Jenkins#CONFIGURE} can submit configuration form
      */
+    @Issue("JENKINS-60266")
     @Test
     public void configurationSuccessWithConfigurePermission() throws Exception {
         final String CONFIGURATOR = "configurator";

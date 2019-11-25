@@ -32,6 +32,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.concurrent.Callable;
@@ -80,6 +81,7 @@ public class QuietDownCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Configure permission"));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void quietDownShouldSuccessWithConfigurePermission() throws Exception {
         final CLICommandInvoker.Result result = command

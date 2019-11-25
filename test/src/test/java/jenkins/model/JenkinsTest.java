@@ -707,6 +707,7 @@ public class JenkinsTest {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void doExitSuccessWithConfigurePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "shutdown")
@@ -715,6 +716,7 @@ public class JenkinsTest {
         assertThat(result, succeededSilently());
     }
 
+    @Issue("JENKINS-60266")
     @Test
     public void doSafeExitSuccessWithConfigurePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "safe-shutdown")
