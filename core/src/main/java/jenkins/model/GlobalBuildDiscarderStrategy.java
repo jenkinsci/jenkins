@@ -26,6 +26,8 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.Job;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -34,6 +36,7 @@ import java.io.IOException;
 /**
  * Apply a user-specified build discarder periodically on all jobs.
  */
+@Restricted(NoExternalUse.class)
 public class GlobalBuildDiscarderStrategy extends BackgroundBuildDiscarderStrategy {
 
     private BuildDiscarder discarder;
