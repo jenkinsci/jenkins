@@ -455,7 +455,7 @@ public abstract class Launcher {
          */
         public Proc start() throws IOException {
             if (cmds().isEmpty()) {
-                LOGGER.log(Level.INFO, "Trying to start a process without setting a command. This might cause "
+                LOGGER.log(Level.WARNING, "Trying to start a process without setting a command. This might cause "
                                        + "an ArrayIndexOutOfBounds exception");
             }
             return launch(this);
