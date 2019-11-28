@@ -143,7 +143,7 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
+            canonical = dir.toPath().toRealPath().toString();
         } catch (IOException | InvalidPathException e) {
             canonical = dir.getAbsolutePath(); //
         }
