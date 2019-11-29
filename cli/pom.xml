@@ -65,7 +65,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>w
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
