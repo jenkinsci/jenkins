@@ -1,4 +1,5 @@
-var jQD = require('jquery-detached');
+import $ from 'jquery';
+
 var page = require('../../util/page.js');
 var jenkinsLocalStorage = require('../../util/jenkinsLocalStorage.js');
 var tableMetadata = require('./model/ConfigTableMetaData.js');
@@ -113,9 +114,9 @@ exports.addTabs = function(configTable, options) {
     });
     configTableMetadata.deactivator = noTabs;
 
-    // Always activate the first section by default. 
+    // Always activate the first section by default.
     configTableMetadata.activateFirstSection();
-    
+
     if (trackSectionVisibility === true) {
         configTableMetadata.trackSectionVisibility();
     }
