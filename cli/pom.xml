@@ -59,17 +59,13 @@
       <artifactId>annotation-indexer</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <scope>test</scope>w
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>

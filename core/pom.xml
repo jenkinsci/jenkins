@@ -66,11 +66,23 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>constant-pool-scanner</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.i2p.crypto</groupId>
+          <artifactId>eddsa</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -81,17 +93,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
       <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>jtidy</artifactId>
-      <version>4aug2000r7-dev-hudson-1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
