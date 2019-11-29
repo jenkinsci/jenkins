@@ -652,7 +652,7 @@ THE SOFTWARE.
                   <goal>gulp</goal>
                 </goals>
                 <configuration>
-                  <arguments>jshint bundle</arguments>
+                  <arguments>bundle</arguments>
                 </configuration>
               </execution>
 

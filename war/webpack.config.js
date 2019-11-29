@@ -3,8 +3,14 @@ const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries");
 
 module.exports = {
-  mode: 'development',
+  // mode: 'development',
   entry: {
+    // "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
+    "pluginSetupWizard": [
+      // path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
+      path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
+    ],
+    // "upgradeWizard": [path.join(__dirname, "src/main/js/upgradeWizard.js")],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.less"),
@@ -33,18 +39,30 @@ module.exports = {
         test: /\.(css|less)$/,
         loader: [MiniCSSExtractPlugin.loader, "css-loader", "less-loader"]
       },
+      {
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/'
+            }
+          }
+        ]
+      },
     ]
   },
   optimization: {
-    // splitChunks: {
-    //   chunks: 'async',
-    //   cacheGroups: {
-    //     commons: {
-    //       test: /[\\/]node_modules[\\/]/,
-    //       name: 'vendors',
-    //       chunks: 'all'
-    //     }
-    //   }
-    // }
+    splitChunks: {
+      // chunks: 'async',
+      // cacheGroups: {
+      //   commons: {
+      //     test: /[\\/]node_modules[\\/]/,
+      //     name: 'vendors',
+      //     chunks: 'all'
+      //   }
+      // }
+    }
   }
 }
