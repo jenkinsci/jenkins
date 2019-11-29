@@ -35,21 +35,21 @@ builder.bundle('src/main/js/upgradeWizard.js')
 // Bundle the Config Tab Bar.
 // See https://github.com/jenkinsci/js-builder#bundling
 //
-builder.bundle('src/main/js/config-tabbar.js')
-    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
-    .less('src/main/js/config-tabbar.less')
-    .inDir('src/main/webapp/jsbundles');
+// builder.bundle('src/main/js/config-tabbar.js')
+//     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+//     .less('src/main/js/config-tabbar.less')
+//     .inDir('src/main/webapp/jsbundles');
 
 //
 // Bundle the Config Scrollspy.
 // See https://github.com/jenkinsci/js-builder#bundling
 //
-builder.bundle('src/main/js/config-scrollspy.js')
-    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
-    .less('src/main/js/config-scrollspy.less')
-    .inDir('src/main/webapp/jsbundles');
+// builder.bundle('src/main/js/config-scrollspy.js')
+//     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+//     .less('src/main/js/config-scrollspy.less')
+//     .inDir('src/main/webapp/jsbundles');
 
-builder.bundle('src/main/js/add-item.js')
-    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
-    .less('src/main/js/add-item.less')
-    .inDir('src/main/webapp/jsbundles');
+// builder.bundle('src/main/js/add-item.js')
+//     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+//     .less('src/main/js/add-item.less')
+//     .inDir('src/main/webapp/jsbundles');

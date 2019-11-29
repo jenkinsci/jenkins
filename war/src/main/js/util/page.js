@@ -1,5 +1,6 @@
-var jQD = require('jquery-detached');
-var windowHandle = require('window-handle');
+import $ from 'jquery';
+import windowHandle from 'window-handle'
+
 var timestamp = (new Date().getTime());
 var loadedClass = 'jenkins-loaded-' + timestamp;
 
@@ -9,12 +10,10 @@ var loadedClass = 'jenkins-loaded-' + timestamp;
  * A jQuery based alternative to Behaviour.specify. Grrrr.
  * @param selector The jQuery selector.
  * @param callback The callback to call after finding new elements. This
- * callback must return a boolean value of true if scanning is to continue. 
+ * callback must return a boolean value of true if scanning is to continue.
  * @param contextEl The jQuery selector context (optional).
  */
-exports.onload = function(selector, callback, contextEl) {
-    var $ = jQD.getJQuery();
-
+export var onload =  function(selector, callback, contextEl) {
     function registerRescan() {
         setTimeout(scan, 50);
     }
@@ -32,33 +31,30 @@ exports.onload = function(selector, callback, contextEl) {
     scan();
 };
 
-exports.winScrollTop = function() {
-    var $ = jQD.getJQuery();
+export var winScrollTop = function() {
     var win = $(windowHandle.getWindow());
     return win.scrollTop();
 };
 
-exports.onWinScroll = function(callback) {
-    var $ = jQD.getJQuery();
+export var onWinScroll = function(callback) {
     $(windowHandle.getWindow()).on('scroll', callback);
 };
 
-exports.pageHeaderHeight = function() {
+export var pageHeaderHeight = function() {
     return elementHeight('#page-head');
 };
 
-exports.breadcrumbBarHeight = function() {
+export var breadcrumbBarHeight = function() {
     return elementHeight('#breadcrumbBar');
 };
 
-exports.fireBottomStickerAdjustEvent = function() {
+export var fireBottomStickerAdjustEvent = function() {
     Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
 };
 
 // YUI Drag widget does not like to work on elements with a relative position.
 // This tells the element to switch to static position at the start of the drag, so it can work.
-exports.fixDragEvent = function(handle) {
-    var $ = jQD.getJQuery();
+export var fixDragEvent = function(handle) {
     var isReady = false;
     var $handle = $(handle);
     var $chunk = $handle.closest('.repeated-chunk');
@@ -76,8 +72,7 @@ exports.fixDragEvent = function(handle) {
 	});
 };
 
-exports.removeTextHighlighting = function(selector) {
-    var $ = jQD.getJQuery();
+export var removeTextHighlighting = function(selector) {
     $('span.highlight-split', selector).each(function() {
         var highlightSplit = $(this);
         highlightSplit.before(highlightSplit.text());
@@ -86,6 +81,5 @@ exports.removeTextHighlighting = function(selector) {
 };
 
 function elementHeight(selector) {
-    var $ = jQD.getJQuery();
     return $(selector).height();
 }

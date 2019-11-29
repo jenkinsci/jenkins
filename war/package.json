@@ -9,19 +9,31 @@
     "url": "https://github.com/tfennelly"
   },
   "private": true,
+  "scripts": {
+    "dev": "webpack --config webpack.config.js"
+  },
   "devDependencies": {
+    "css-loader": "^3.2.0",
     "gulp": "^3.9.0",
+    "gulp-less": "^3.1.0",
     "handlebars": "^3.0.3",
     "hbsfy": "^2.4.1",
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-builder": "0.0.40",
     "jenkins-js-test": "^1.0.0",
-    "gulp-less": "^3.1.0"
+    "jshint": "^2.10.3",
+    "less-loader": "^5.0.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-fix-style-only-entries": "^0.4.0"
   },
   "dependencies": {
     "bootstrap-detached": "^3.3.5-v1",
     "jenkins-js-modules": "^1.5.0",
+    "jquery": "2.1.4",
     "jquery-detached": "^2.1.4-v2",
+    "less": "^3.10.3",
     "window-handle": "^1.0.0"
   }
 }
