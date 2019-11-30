@@ -84,11 +84,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -158,7 +154,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
-import java.io.PrintStream;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1326,7 +1322,9 @@ public class Functions {
         }
     }
 
-    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo> {
+    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo>, Serializable {
+
+        private static final long serialVersionUID = 7803975728695308444L;
 
         /**
          * @return ThreadGroup name or null if unknown
@@ -1343,7 +1341,9 @@ public class Functions {
         }
     }
 
-    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread> {
+    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread>, Serializable {
+
+        private static final long serialVersionUID = 5053631350439192685L;
 
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());

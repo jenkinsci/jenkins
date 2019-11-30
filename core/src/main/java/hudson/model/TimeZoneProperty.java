@@ -105,7 +105,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         }
 
         TimeZone tz = TimeZone.getTimeZone(tzp.timeZoneName);
-        if (tz.getID() != tzp.timeZoneName) {
+        if (!tz.getID().equals(tzp.timeZoneName)) {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.

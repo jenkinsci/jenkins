@@ -36,6 +36,7 @@ import hudson.model.Project;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -129,7 +130,9 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class)
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
-            implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
+            implements Comparator<ExtensionComponent<Descriptor<Publisher>>>, Serializable {
+        private static final long serialVersionUID = -5348997484846932619L;
+
         public DescriptorExtensionListImpl(Jenkins hudson) {
             super(hudson,Publisher.class);
         }
