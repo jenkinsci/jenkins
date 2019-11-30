@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import com.google.inject.internal.asm.$ByteVector;
 import hudson.model.Slave;
 import hudson.security.*;
 import jenkins.telemetry.impl.AutoRefresh;
@@ -1309,7 +1310,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        private ThreadSorterBase() {
+        public ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
