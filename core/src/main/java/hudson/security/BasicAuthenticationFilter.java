@@ -98,7 +98,7 @@ public class BasicAuthenticationFilter implements Filter {
     }
 
     @SuppressWarnings("ACL.impersonate")
-    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT")
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;

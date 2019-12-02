@@ -99,7 +99,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      * @throws KeyManagementException if things go wrong.
      * @throws IOException            if things go wrong.
      */
-    @SuppressFBWarnings("HARD_CODE_PASSWORD")
+    @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "Password doesn't need to be protected.")
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();

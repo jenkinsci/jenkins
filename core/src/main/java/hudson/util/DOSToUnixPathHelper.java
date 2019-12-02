@@ -17,7 +17,7 @@ class DOSToUnixPathHelper {
         void error(String string);
         void validate(File fexe);
     }
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Limited use for locating shell executable by administrator.")
     static private boolean checkPrefix(String prefix, Helper helper) {
         File f = new File(prefix);
         if(f.exists()) {
@@ -32,7 +32,7 @@ class DOSToUnixPathHelper {
         }
         return false;
     }
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Limited use for locating shell executable by administrator.")
     static void iteratePath(String exe, Helper helper) {
         exe = fixEmpty(exe);
         if(exe==null) {

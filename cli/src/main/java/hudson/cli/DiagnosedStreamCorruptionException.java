@@ -1,7 +1,5 @@
 package hudson.cli;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.io.PrintWriter;
 import java.io.StreamCorruptedException;
 import java.io.StringWriter;
@@ -13,7 +11,6 @@ import java.io.StringWriter;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE")
 class DiagnosedStreamCorruptionException extends StreamCorruptedException {
     private final Exception diagnoseFailure;
     private final byte[] readBack;

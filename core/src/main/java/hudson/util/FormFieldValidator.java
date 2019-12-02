@@ -320,7 +320,7 @@ public abstract class FormFieldValidator {
             super(request, response);
         }
 
-        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD")
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             if(value==null) {// nothing entered yet
