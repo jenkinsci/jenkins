@@ -25,7 +25,6 @@
  */
 package hudson;
 
-import com.google.inject.internal.asm.$ByteVector;
 import hudson.model.Slave;
 import hudson.security.*;
 import jenkins.telemetry.impl.AutoRefresh;
