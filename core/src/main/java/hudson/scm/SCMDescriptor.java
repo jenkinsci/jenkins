@@ -86,7 +86,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     }
 
     /**
-     * Increments the generation value {@Link SCMDescriptor#getGeneration} by one atomically.
+     * Increments the generation value {@link SCMDescriptor#getGeneration} by one atomically.
      * @deprecated No longer used by default.
      */
     @Deprecated
