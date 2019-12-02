@@ -23,6 +23,7 @@
  */
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Computer;
@@ -98,6 +99,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      * @throws KeyManagementException if things go wrong.
      * @throws IOException            if things go wrong.
      */
+    @SuppressFBWarnings("HARD_CODE_PASSWORD")
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();

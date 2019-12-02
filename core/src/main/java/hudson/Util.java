@@ -596,6 +596,8 @@ public class Util {
      * @see DigestUtils#md5Hex(InputStream)
      */
     @Nonnull
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification =
+            "This method should only be used for non-security applications where their weakness is not a problem.")
     public static String getDigestOf(@Nonnull InputStream source) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");

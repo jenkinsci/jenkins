@@ -25,6 +25,7 @@
  */
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import java.util.concurrent.TimeUnit;
@@ -116,6 +117,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION")
     private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
         try {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;

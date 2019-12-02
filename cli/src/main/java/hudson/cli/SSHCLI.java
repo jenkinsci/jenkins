@@ -61,7 +61,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 class SSHCLI {
 
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE", justification = "Due to whatever reason FindBugs reports it fot try-with-resources")
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Client-side code doesn't involve SSRF.")
     static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
         URL url = new URL(jenkinsUrl + "login");

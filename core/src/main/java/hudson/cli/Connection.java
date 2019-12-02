@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.remoting.SocketChannelStream;
@@ -113,6 +114,7 @@ public class Connection {
     /**
      * Receives an object sent by {@link #writeObject(Object)}
      */
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Not used. We should just remove it.")
     public <T> T readObject() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStreamEx(in,
                 getClass().getClassLoader(), ClassFilter.DEFAULT);
@@ -192,6 +194,7 @@ public class Connection {
      * @return
      *      A new {@link Connection} object that includes the transport encryption.
      */
+    @SuppressFBWarnings(value = "STATIC_IV", justification = "Not used. We should just remove it.")
     public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws IOException, GeneralSecurityException {
         Cipher cout = Cipher.getInstance(algorithm);
         cout.init(Cipher.ENCRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));

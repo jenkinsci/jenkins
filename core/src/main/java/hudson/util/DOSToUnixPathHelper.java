@@ -1,5 +1,6 @@
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
 import org.kohsuke.accmod.Restricted;
@@ -16,6 +17,7 @@ class DOSToUnixPathHelper {
         void error(String string);
         void validate(File fexe);
     }
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
     static private boolean checkPrefix(String prefix, Helper helper) {
         File f = new File(prefix);
         if(f.exists()) {
@@ -30,6 +32,7 @@ class DOSToUnixPathHelper {
         }
         return false;
     }
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
     static void iteratePath(String exe, Helper helper) {
         exe = fixEmpty(exe);
         if(exe==null) {

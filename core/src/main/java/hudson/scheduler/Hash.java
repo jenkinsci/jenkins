@@ -23,6 +23,8 @@
  */
 package hudson.scheduler;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -51,7 +53,8 @@ public abstract class Hash {
      * Produces an integer in [0,n)
      */
     public abstract int next(int n);
-    
+
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
     public static Hash from(String seed) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");

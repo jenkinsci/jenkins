@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Iterators.DuplicateFilterIterator;
 
 /**
@@ -60,6 +61,7 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  * @author Kohsuke Kawaguchi
  * @since 1.302
  */
+@SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
 public class ConsistentHash<T> {
     /**
      * All the items in the hash, to their replication factors.

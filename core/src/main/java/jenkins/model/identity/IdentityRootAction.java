@@ -1,5 +1,6 @@
 package jenkins.model.identity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.security.MessageDigest;
@@ -61,6 +62,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      *
      * @return the fingerprint of the public key.
      */
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security. ")
     public String getFingerprint() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {

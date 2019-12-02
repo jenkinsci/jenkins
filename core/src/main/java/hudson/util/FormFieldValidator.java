@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -145,6 +146,7 @@ public abstract class FormFieldValidator {
     /**
      * Gets the parameter as a file.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
     protected final File getFileParameter(String paramName) {
         return new File(Util.fixNull(request.getParameter(paramName)));
     }
@@ -318,6 +320,7 @@ public abstract class FormFieldValidator {
             super(request, response);
         }
 
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD")
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             if(value==null) {// nothing entered yet
@@ -513,6 +516,7 @@ public abstract class FormFieldValidator {
             super(request, response, true);
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;

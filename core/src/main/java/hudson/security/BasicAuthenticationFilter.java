@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
@@ -97,6 +98,7 @@ public class BasicAuthenticationFilter implements Filter {
     }
 
     @SuppressWarnings("ACL.impersonate")
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;

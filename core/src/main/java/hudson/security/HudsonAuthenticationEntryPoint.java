@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 
 import com.google.common.base.Strings;
@@ -60,6 +61,7 @@ import java.text.MessageFormat;
  */
 public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
     @Override
+    @SuppressFBWarnings(value = "XSS_SERVLET")
     public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;

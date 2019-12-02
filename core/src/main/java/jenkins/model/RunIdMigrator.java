@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -309,6 +310,7 @@ public final class RunIdMigrator {
      * Reverses the migration, in case you want to revert to the older format.
      * @param args one parameter, {@code $JENKINS_HOME}
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only used as an command-line process.")
     public static void main(String... args) throws Exception {
         if (args.length != 1) {
             throw new Exception("pass one parameter, $JENKINS_HOME");

@@ -78,6 +78,7 @@ import java.util.logging.Logger;
 
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Admistrator action installing a plugin, which could do far worse.")
 public class ClassicPluginStrategy implements PluginStrategy {
 
     private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());

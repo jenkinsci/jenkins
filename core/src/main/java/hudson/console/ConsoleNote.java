@@ -23,6 +23,7 @@
  */
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
@@ -232,6 +233,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      *
      * @return null if the encoded form is malformed.
      */
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION")
     public static ConsoleNote readFrom(DataInputStream in) throws IOException, ClassNotFoundException {
         try {
             byte[] preamble = new byte[PREAMBLE.length];

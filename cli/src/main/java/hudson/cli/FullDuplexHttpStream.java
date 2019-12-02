@@ -1,5 +1,7 @@
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,6 +46,7 @@ public class FullDuplexHttpStream {
      * @param authorization
      *      The value of the authorization header, if non-null.
      */
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Client-side code doesn't involve SSRF.")
     public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
         if (!base.toString().endsWith("/")) {
             throw new IllegalArgumentException(base.toString());
@@ -93,6 +96,7 @@ public class FullDuplexHttpStream {
     }
 
     // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Client-side code doesn't involve SSRF.")
     private URL tryToResolveRedirects(URL base, String authorization) {
         try {
             HttpURLConnection con = (HttpURLConnection) base.openConnection();
