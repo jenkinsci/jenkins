@@ -24,6 +24,9 @@
 package hudson.cli;
 
 import hudson.cli.client.Messages;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -39,13 +42,17 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.parse;
 
 /**
  * CLI entry point to Jenkins.

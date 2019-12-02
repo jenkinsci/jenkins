@@ -308,10 +308,8 @@ public class XStreamDOM {
                         count++;
                 boolean more = false;
                 for (int i=pos; !more && i<node.children.size(); i++)
-                    if (node.children.get(i).tagName.equals(child.tagName)) {
+                    if (node.children.get(i).tagName.equals(child.tagName))
                         more = true;
-                        break;
-                    }
 
                 if (count==0 && !more)  return child.tagName;   // sole child
                 return child.tagName+'['+count+']';

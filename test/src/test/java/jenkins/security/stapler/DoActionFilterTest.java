@@ -350,7 +350,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavascriptScriptMethod/"));
         settings.setAdditionalHeader("Content-Type", "application/x-stapler-method-invocation");
         settings.setHttpMethod(HttpMethod.POST);
-        settings.setRequestBody(JSONArray.fromObject(Collections.emptyList()).toString());
+        settings.setRequestBody("[]");
         assertReachableWithSettings(settings);
     }
     
