@@ -23,10 +23,14 @@
  */
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 import org.junit.Test;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.ElementSelectors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,9 +54,12 @@ public class CopyOnWriteListTest {
         TestData td = new TestData();
 
         String out = xs.toXML(td);
-        assertEquals("empty lists", "<hudson.util.CopyOnWriteListTest_-TestData>"
-                + "<list1/><list2/></hudson.util.CopyOnWriteListTest_-TestData>",
-                out.replaceAll("\\s+", ""));
+        String expected = "<hudson.util.CopyOnWriteListTest_-TestData>"
+                + "<list1/><list2/></hudson.util.CopyOnWriteListTest_-TestData>";
+        assertThat(out, isSimilarTo(expected).ignoreWhitespace()
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
+
+
         TestData td2 = (TestData)xs.fromXML(out);
         assertTrue(td2.list1.isEmpty());
         assertTrue(td2.list2.isEmpty());
@@ -60,10 +67,11 @@ public class CopyOnWriteListTest {
         td.list1.add("foobar1");
         td.list2.add("foobar2");
         out = xs.toXML(td);
-        assertEquals("lists", "<hudson.util.CopyOnWriteListTest_-TestData>"
+        expected = "<hudson.util.CopyOnWriteListTest_-TestData>"
                 + "<list1><string>foobar1</string></list1><list2><string>foobar2"
-                + "</string></list2></hudson.util.CopyOnWriteListTest_-TestData>",
-                out.replaceAll("\\s+", ""));
+                + "</string></list2></hudson.util.CopyOnWriteListTest_-TestData>";
+        assertThat(out, isSimilarTo(expected).ignoreWhitespace()
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
         td2 = (TestData)xs.fromXML(out);
         assertEquals("foobar1", td2.list1.getView().get(0));
         assertEquals("foobar2", td2.list2.get(0));
