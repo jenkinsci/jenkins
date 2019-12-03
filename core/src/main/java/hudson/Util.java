@@ -1579,10 +1579,10 @@ public class Util {
     public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 
     /**
-     * The number of times we will attempt to delete files/directory trees
+     * The number of additional times we will attempt to delete files/directory trees
      * before giving up and throwing an exception.<br/>
-     * Specifying a value less than 1 is invalid and will be treated as if
-     * a value of 1 (i.e. one attempt, no retries) was specified.
+     * Specifying a value less than 0 is invalid and will be treated as if
+     * a value of 0 (i.e. one attempt, no retries) was specified.
      * <p>
      * e.g. if some of the child directories are big, it might take long enough
      * to delete that it allows others to create new files in the directory we
@@ -1593,7 +1593,7 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3));
+    static int DELETION_MAX = Math.max(0, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 2));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
@@ -1632,7 +1632,7 @@ public class Util {
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
     private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
-        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
     /**
