@@ -216,5 +216,5 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = JnlpSlaveAgentProtocol2.class.getName()+".cookie";
+    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }
