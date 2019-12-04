@@ -1038,11 +1038,12 @@ public class UpdateSite {
 
         /**
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
-         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         * This is set to restricted for now, since it is only being used by Jenkins UI or Restful API at the moment.
          *
          * @since 2.175
          */
         @Restricted(NoExternalUse.class)
+        @Exported
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
@@ -1125,7 +1126,8 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
+        @Exported
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
@@ -1139,6 +1141,7 @@ public class UpdateSite {
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
          * @since 2.158
          */
+        @Exported
         public boolean isForNewerJava() {
             try {
                 final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
@@ -1199,6 +1202,7 @@ public class UpdateSite {
         }
 
         @Restricted(NoExternalUse.class) // table.jelly
+        @Exported
         public boolean isNeededDependenciesForNewerJenkins(PluginManager.MetadataCache cache) {
             return cache.of("isNeededDependenciesForNewerJenkins:" + name, Boolean.class, () -> {
                 for (Plugin p : getNeededDependencies()) {
@@ -1215,6 +1219,7 @@ public class UpdateSite {
          *
          * @since 2.158
          */
+        @Exported
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {
                 if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
@@ -1237,6 +1242,7 @@ public class UpdateSite {
         }
 
         @Restricted(NoExternalUse.class) // table.jelly
+        @Exported
         public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
             return getDependenciesIncompatibleWithInstalledVersion(cache).isEmpty();
         }
