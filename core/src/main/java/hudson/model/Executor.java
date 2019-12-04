@@ -860,6 +860,7 @@ public class Executor extends Thread implements ModelObject {
      * @since TODO
      */
     @RequirePOST
+    @Restricted(NoExternalUse.class)
     public HttpResponse doStopBuild(@CheckForNull @QueryParameter(fixEmpty = true) String runExtId) {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
