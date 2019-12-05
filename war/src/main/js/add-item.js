@@ -1,5 +1,5 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
-var $ = require('jquery-detached').getJQuery();
+import $ from 'jquery';
 
 var getItems = function() {
   var d = $.Deferred();
@@ -9,7 +9,7 @@ var getItems = function() {
     }
   );
   return d.promise();
-}; 
+};
 
 var jRoot = $('head').attr('data-rooturl');
 

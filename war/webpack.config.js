@@ -3,14 +3,14 @@ const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries");
 
 module.exports = {
-  // mode: 'development',
+  mode: 'development',
   entry: {
-    // "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
+    "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
     "pluginSetupWizard": [
-      // path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
+      path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
       path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
     ],
-    // "upgradeWizard": [path.join(__dirname, "src/main/js/upgradeWizard.js")],
+    "upgradeWizard": [path.join(__dirname, "src/main/js/upgradeWizard.js")],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.less"),
@@ -51,6 +51,31 @@ module.exports = {
           }
         ]
       },
+      {
+        test: /\.hbs$/,
+        loader: "handlebars-loader",
+        options: {
+          helperDirs: path.join(__dirname, 'src/main/js/handlebars-helpers'),
+          precompileOptions: {
+            knownHelpersOnly: false,
+            // Helpers registered with Handlebars.registerHelper must be listed so that
+            // handlebars-loader will expect them when compiling the templates
+            knownHelpers: [
+              'pluginCountForCategory',
+              'totalPluginCount',
+              'inSelectedPlugins',
+              'dependencyCount',
+              'eachDependency',
+              'ifVisibleDependency'
+            ]
+          },
+        },
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
     ]
   },
   optimization: {
@@ -64,5 +89,11 @@ module.exports = {
       //   }
       // }
     }
-  }
+  },
+  resolve: {
+    alias:{
+      // Needed to be able to register helpers at runtime
+      handlebars: 'handlebars/runtime',
+    },
+  },
 }

@@ -1,0 +1,11 @@
+{
+  "curly": true,
+  "eqeqeq": true,
+  "unused": true,
+  "undef": true,
+  "browser": true,
+  "browserify": true,
+  "jasmine": true,
+  "esversion": 6,
+  "predef": ["console", "Hash"]
+}

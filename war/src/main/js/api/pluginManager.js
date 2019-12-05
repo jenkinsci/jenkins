@@ -1,13 +1,14 @@
 /**
  * Provides a wrapper to interact with the plugin manager & update center
  */
-
-var jenkins = require('../util/jenkins');
+import jenkins from '../util/jenkins';
 
 //Get plugin info (plugins + recommended plugin list) from update centers.
 var plugins;
- 
-exports.initialPluginList = function(handler) {
+
+var pluginManager = {};
+
+pluginManager.initialPluginList = function(handler) {
  jenkins.get('/setupWizard/platformPluginList', function(response) {
    if(response.status !== 'ok') {
      handler.call({ isError: true, data: response.data });
@@ -22,10 +23,10 @@ exports.initialPluginList = function(handler) {
    }
  });
 };
- 
+
 // Call this to initialize the plugin list
-exports.init = function(handler) {
-	exports.initialPluginList(function(initialPluginCategories) {
+pluginManager.init = function(handler) {
+	pluginManager.initialPluginList(function(initialPluginCategories) {
 		plugins = {};
 		plugins.names = [];
 		plugins.recommendedPlugins = [];
@@ -52,7 +53,7 @@ exports.init = function(handler) {
 		}
 		handler();
 	});
-}; 
+};
 
 // default 10 seconds for AJAX responses to return before triggering an error condition
 var pluginManagerErrorTimeoutMillis = 10 * 1000;
@@ -61,7 +62,7 @@ var pluginManagerErrorTimeoutMillis = 10 * 1000;
  * Get the curated list of plugins to be offered in the wizard.
  * @returns The curated list of plugins to be offered in the wizard.
  */
-exports.plugins = function() {
+pluginManager.plugins = function() {
     return plugins.availablePlugins;
 };
 
@@ -69,7 +70,7 @@ exports.plugins = function() {
  * Get the curated list of plugins to be offered in the wizard by name only.
  * @returns The curated list of plugins to be offered in the wizard by name only.
  */
-exports.pluginNames = function() {
+pluginManager.pluginNames = function() {
     return plugins.names;
 };
 
@@ -79,7 +80,7 @@ exports.pluginNames = function() {
  * The user can easily change this selection.
  * @returns The subset of plugins (subset of the plugin list) that are recommended by default.
  */
-exports.recommendedPluginNames = function() {
+pluginManager.recommendedPluginNames = function() {
     return plugins.recommendedPlugins.slice(); // copy this
 };
 
@@ -89,7 +90,7 @@ exports.recommendedPluginNames = function() {
  * If handler is called with this.isError, there will be a corresponding this.errorMessage indicating
  * the failure reason
  */
-exports.installPlugins = function(plugins, handler) {
+pluginManager.installPlugins = function(plugins, handler) {
 	jenkins.post('/pluginManager/installPlugins', { dynamicLoad: true, plugins: plugins }, function(response) {
 		if(response.status !== 'ok') {
 			handler.call({ isError: true, errorMessage: response.message });
@@ -110,7 +111,7 @@ exports.installPlugins = function(plugins, handler) {
  * to the handler function. If argument 2 is non-null, it will be treated as a correlationId, which
  * must be retrieved from a prior installPlugins call.
  */
-exports.installStatus = function(handler, correlationId) {
+pluginManager.installStatus = function(handler, correlationId) {
 	var url = '/updateCenter/installStatus';
 	if(correlationId !== undefined) {
 		url += '?correlationId=' + correlationId;
@@ -137,7 +138,7 @@ exports.installStatus = function(handler, correlationId) {
  *  ...
  * ]
  */
-exports.availablePlugins = function(handler) {
+pluginManager.availablePlugins = function(handler) {
 	jenkins.get('/pluginManager/plugins', function(response) {
 		if(response.status !== 'ok') {
 			handler.call({ isError: true, errorMessage: response.message });
@@ -159,7 +160,7 @@ exports.availablePlugins = function(handler) {
  * to the handler function. If argument 2 is non-null, it will be treated as a correlationId, which
  * must be retrieved from a prior installPlugins call.
  */
-exports.incompleteInstallStatus = function(handler, correlationId) {
+pluginManager.incompleteInstallStatus = function(handler, correlationId) {
 	var url = '/updateCenter/incompleteInstallStatus';
 	if(correlationId !== undefined) {
 		url += '?correlationId=' + correlationId;
@@ -182,7 +183,7 @@ exports.incompleteInstallStatus = function(handler, correlationId) {
 /**
  * Call this to complete the installation without installing anything
  */
-exports.completeInstall = function(handler) {
+pluginManager.completeInstall = function(handler) {
 	jenkins.post('/setupWizard/completeInstall', {}, function() {
 		handler.call({ isError: false });
 	}, {
@@ -196,7 +197,7 @@ exports.completeInstall = function(handler) {
 /**
  * Indicates there is a restart required to complete plugin installations
  */
-exports.getRestartStatus = function(handler) {
+pluginManager.getRestartStatus = function(handler) {
 	jenkins.get('/setupWizard/restartStatus', function(response) {
 		handler.call({ isError: false }, response.data);
 	}, {
@@ -210,7 +211,7 @@ exports.getRestartStatus = function(handler) {
 /**
  * Skip failed plugins, continue
  */
-exports.installPluginsDone = function(handler) {
+pluginManager.installPluginsDone = function(handler) {
 	jenkins.post('/pluginManager/installPluginsDone', {}, function() {
 		handler();
 	}, {
@@ -224,7 +225,7 @@ exports.installPluginsDone = function(handler) {
 /**
  * Restart Jenkins
  */
-exports.restartJenkins = function(handler) {
+pluginManager.restartJenkins = function(handler) {
 	jenkins.post('/updateCenter/safeRestart', {}, function() {
 		handler.call({ isError: false });
 	}, {
@@ -234,3 +235,5 @@ exports.restartJenkins = function(handler) {
 		}
 	});
 };
+
+export default pluginManager;

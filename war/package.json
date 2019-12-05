@@ -10,18 +10,25 @@
   },
   "private": true,
   "scripts": {
-    "dev": "webpack --config webpack.config.js"
+    "dev": "webpack --config webpack.config.js",
+    "test": "babel ./node_modules/jasmine/bin/jasmine.js src/test/js/widgets/config/tabbar-spec.js"
   },
   "devDependencies": {
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
     "css-loader": "^3.2.0",
+    "file-loader": "^5.0.2",
     "gulp": "^3.9.0",
     "gulp-less": "^3.1.0",
     "handlebars": "^3.0.3",
+    "handlebars-loader": "^1.7.1",
     "hbsfy": "^2.4.1",
+    "jasmine": "^3.5.0",
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-builder": "0.0.40",
     "jenkins-js-test": "^1.0.0",
     "jshint": "^2.10.3",
+    "less": "^3.10.3",
     "less-loader": "^5.0.0",
     "mini-css-extract-plugin": "^0.8.0",
     "webpack": "^4.41.2",
@@ -29,12 +36,12 @@
     "webpack-fix-style-only-entries": "^0.4.0"
   },
   "dependencies": {
-    "bootstrap-detached": "^3.3.5-v1",
-    "file-loader": "^5.0.2",
+    "@babel/preset-env": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
     "jquery": "2.1.4",
     "jquery-detached": "^2.1.4-v2",
-    "less": "^3.10.3",
     "window-handle": "^1.0.0"
   }
 }

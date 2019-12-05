@@ -1,4 +1,5 @@
-var $ = require('jquery-detached').getJQuery();
+import $ from 'jquery';
+
 var page = require('./util/page.js');
 var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
 
@@ -27,6 +28,9 @@ $(function() {
             var tabBarLastSectionKey = 'config:' + tabBar.configForm.attr('name') + ':last-tab';
             var tabBarLastSection = jenkinsLocalStorage.getPageItem(tabBarLastSectionKey, tabBar.sections[0].id);
             tabBar.onShowSection(function() {
+
+                console.log('tabbar this!', this, this.id)
+
                 jenkinsLocalStorage.setPageItem(tabBarLastSectionKey, this.id);
             });
             tabBar.showSection(tabBarLastSection);
