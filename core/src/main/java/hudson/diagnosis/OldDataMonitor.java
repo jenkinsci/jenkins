@@ -465,4 +465,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
             return Jenkins.CONFIGURE;
         }
     }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.CONFIGURE;
+    }
 }
