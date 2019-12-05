@@ -82,7 +82,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
     @Restricted(NoExternalUse.class)
     @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         return checkUrl(resourceRootUrlString, true);
     }
