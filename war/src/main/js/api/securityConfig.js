@@ -1,13 +1,12 @@
 /**
  * Provides a wrapper to interact with the security configuration
  */
-
-var jenkins = require('../util/jenkins');
+import jenkins from '../util/jenkins';
 
 /**
  * Calls a stapler post method to save the first user settings
  */
-exports.saveFirstUser = function($form, success, error) {
+function saveFirstUser($form, success, error) {
 	jenkins.staplerPost(
 		'/setupWizard/createAdminUser',
 		$form,
@@ -22,7 +21,7 @@ exports.saveFirstUser = function($form, success, error) {
 		});
 };
 
-exports.saveConfigureInstance = function($form, success, error){
+function saveConfigureInstance($form, success, error){
 	jenkins.staplerPost(
 		'/setupWizard/configureInstance',
 		$form,
@@ -40,7 +39,7 @@ exports.saveConfigureInstance = function($form, success, error){
 /**
  * Calls a stapler post method to save the first user settings
  */
-exports.saveProxy = function($form, success, error) {
+function saveProxy($form, success, error) {
 	jenkins.staplerPost(
 		'/pluginManager/proxyConfigure',
 		$form,
@@ -49,3 +48,9 @@ exports.saveProxy = function($form, success, error) {
 			error: error
 		});
 };
+
+export default {
+	saveFirstUser: saveFirstUser,
+	saveConfigureInstance: saveConfigureInstance,
+	saveProxy: saveProxy
+}

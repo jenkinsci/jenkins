@@ -1,16 +1,17 @@
-var $ = require('jquery-detached').getJQuery();
+import $ from 'jquery';
+import windowHandle from 'window-handle';
+
 var page = require('./util/page.js');
-var windowHandle = require('window-handle');
 var isScrolling = false;
 var ignoreNextScrollEvent = false;
 var pageHeaderHeight = page.pageHeaderHeight();
 var breadcrumbBarHeight = page.breadcrumbBarHeight();
 
 // Some stuff useful for testing.
-exports.tabbars = [];
-exports.scrollspeed = 500;
+export var tabbars = [];
+export var scrollspeed = 500;
 var eventListeners = [];
-exports.on = function(listener) {
+export var on = function(listener) {
     eventListeners.push(listener);
 };
 function notify(event) {
@@ -23,7 +24,7 @@ $(function() {
     var tabBarWidget = require('./widgets/config/tabbar.js');
 
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
-        exports.tabbars.push(tabBar);
+        tabbars.push(tabBar);
 
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
@@ -50,7 +51,7 @@ function scrollTo(section, tabBar) {
     isScrolling = true;
     $('html,body').animate({
         scrollTop: scrollTop
-    }, exports.scrollspeed, function() {
+    }, scrollspeed, function() {
         if (isScrolling) {
             notify({
                 type: 'click_scrollto',
@@ -87,7 +88,7 @@ function autoActivateTabs(tabBar) {
         if (!section.isVisible()) {
             return;
         }
-        
+
         // each section enters the viewport at its distance down the page, less the height of
         // the toolbar, which hangs down the page. Or it is zero if the section doesn't
         // match or was removed...

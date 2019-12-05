@@ -2,7 +2,7 @@
  * Page initialisation tasks.
  */
 
-var $ = require('jquery-detached').getJQuery();
+var $ = require('jquery')
 var jsModules = require('jenkins-js-modules');
 
 $(function() {
