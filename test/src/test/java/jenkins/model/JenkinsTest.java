@@ -355,8 +355,8 @@ public class JenkinsTest {
 
         wc.withBasicApiToken(User.getById("charlie", true));
         page = eval(wc);
-        assertEquals("charlie has ADMINISTER but not RUN_SCRIPTS", 
-                HttpURLConnection.HTTP_FORBIDDEN,
+        assertEquals("charlie has ADMINISTER and READ",
+                HttpURLConnection.HTTP_OK,
                 page.getWebResponse().getStatusCode());
     }
     private Page eval(WebClient wc) throws Exception {
