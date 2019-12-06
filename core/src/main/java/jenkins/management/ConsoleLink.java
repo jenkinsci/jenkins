@@ -56,5 +56,4 @@ public class ConsoleLink extends ManagementLink {
     }
 
     @Override
-    }
 }
