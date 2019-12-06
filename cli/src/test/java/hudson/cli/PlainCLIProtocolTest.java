@@ -92,6 +92,13 @@ public class PlainCLIProtocolTest {
             }
             @Override
             protected void onStdin(byte[] chunk) throws IOException {
+                /* To inject a race condition:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException x) {
+                    throw new IOException(x);
+                }
+                */
                 stdin.write(chunk);
             }
             @Override
@@ -125,6 +132,9 @@ public class PlainCLIProtocolTest {
             while (client.code == -1) {
                 client.wait();
             }
+        }
+        while (server.stdin.size() == 0) {
+            Thread.sleep(100);
         }
         assertEquals("hello", server.stdin.toString());
         assertEquals("command", server.arg);

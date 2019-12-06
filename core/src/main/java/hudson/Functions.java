@@ -1480,12 +1480,10 @@ public class Functions {
         if(it instanceof Descriptor)
             clazz = ((Descriptor)it).clazz;
 
-        StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
-        buf.append(Jenkins.VIEW_RESOURCE_PATH).append('/');
-        buf.append(clazz.getName().replace('.','/').replace('$','/'));
-        buf.append('/').append(path);
-
-        return buf.toString();
+        String buf = Stapler.getCurrentRequest().getContextPath() + Jenkins.VIEW_RESOURCE_PATH + '/' +
+                clazz.getName().replace('.', '/').replace('$', '/') +
+                '/' + path;
+        return buf;
     }
 
     public static boolean hasView(Object it, String path) throws IOException {
