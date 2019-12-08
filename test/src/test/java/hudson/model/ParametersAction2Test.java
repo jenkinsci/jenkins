@@ -108,7 +108,7 @@ public class ParametersAction2Test {
                 new StringParameterValue("undef", "undef")
         )));
 
-        assertFalse("undef parameter is not listed in getParameters", 
+        assertFalse("undef parameter is not listed in getParameters",
                 hasParameterWithName(build.getAction(ParametersAction.class), "undef"));
 
         p.removeProperty(ParametersDefinitionProperty.class);
@@ -118,7 +118,7 @@ public class ParametersAction2Test {
                 new StringParameterDefinition("undef", "undef"))));
 
         // undef is still not listed even after being added to the job parameters definition
-        assertFalse("undef parameter is not listed in getParameters", 
+        assertFalse("undef parameter is not listed in getParameters",
                 hasParameterWithName(build.getAction(ParametersAction.class), "undef"));
 
         // remove bar and undef from parameters definition
