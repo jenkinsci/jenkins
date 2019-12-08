@@ -28,6 +28,6 @@ f = namespace(lib.FormTagLib)
 
 f.section(title: _("Periodically Run Build Discarders")) {
     f.block() {
-        f.repeatableHeteroProperty(field: "configuredBuildDiscarders", hasHeader: true)
+        f.repeatableHeteroProperty(field: "configuredBuildDiscarders", hasHeader: true, oneEach: true)
     }
 }

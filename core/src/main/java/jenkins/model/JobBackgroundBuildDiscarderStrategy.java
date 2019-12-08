@@ -37,10 +37,10 @@ import java.io.IOException;
  * Periodically call a job's configured build discarder in the background.
  */
 @Restricted(NoExternalUse.class)
-public class DefaultBackgroundBuildDiscarderStrategy extends BackgroundBuildDiscarderStrategy {
+public class JobBackgroundBuildDiscarderStrategy extends BackgroundBuildDiscarderStrategy {
 
     @DataBoundConstructor
-    public DefaultBackgroundBuildDiscarderStrategy() {
+    public JobBackgroundBuildDiscarderStrategy() {
         // required for data binding
     }
 
@@ -59,7 +59,7 @@ public class DefaultBackgroundBuildDiscarderStrategy extends BackgroundBuildDisc
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "Periodically run project-specific build discarder"; // TODO i18n
+            return Messages.DefaultBackgroundBuildDiscarderStrategy_displayName();
         }
     }
 }

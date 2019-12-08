@@ -31,7 +31,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,21 +52,25 @@ public class BackgroundBuildDiscarder extends AsyncPeriodicWork {
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
         for (Job job : Jenkins.get().allItems(Job.class)) {
-            listener.getLogger().println("Processing " + job.getFullName());
-            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().forEach(strategy -> {
-                String displayName = strategy.getDescriptor().getDisplayName();
-                listener.getLogger().println("Offering " + job.getFullName() + " to " + displayName);
-                if (strategy.isApplicable(job)) {
-                    listener.getLogger().println(job.getFullName() + " accepted by " + displayName);
-                    try {
-                        strategy.apply(job);
-                    } catch (Exception ex) {
-                        listener.error("An exception occurred when executing " + displayName + ": " + ex.getMessage());
-                        LOGGER.log(Level.WARNING, "An exception occurred when executing " + displayName, ex);
-                    }
-                }
-            });
+            processJob(listener, job);
         }
+    }
+
+    public static void processJob(TaskListener listener, Job job) {
+        listener.getLogger().println("Processing " + job.getFullName());
+        GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().forEach(strategy -> {
+            String displayName = strategy.getDescriptor().getDisplayName();
+            listener.getLogger().println("Offering " + job.getFullName() + " to " + displayName);
+            if (strategy.isApplicable(job)) {
+                listener.getLogger().println(job.getFullName() + " accepted by " + displayName);
+                try {
+                    strategy.apply(job);
+                } catch (Exception ex) {
+                    listener.error("An exception occurred when executing " + displayName + ": " + ex.getMessage());
+                    LOGGER.log(Level.WARNING, "An exception occurred when executing " + displayName, ex);
+                }
+            }
+        });
     }
 
     @Override

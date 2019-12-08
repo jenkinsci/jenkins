@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  *
  * @see BackgroundBuildDiscarder
  * @see GlobalBuildDiscarderConfiguration
- * @see DefaultBackgroundBuildDiscarderStrategy
+ * @see JobBackgroundBuildDiscarderStrategy
  */
 public abstract class BackgroundBuildDiscarderStrategy extends AbstractDescribableImpl<BackgroundBuildDiscarderStrategy> implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(BackgroundBuildDiscarderStrategy.class.getName());

@@ -68,7 +68,7 @@ public class GlobalBuildDiscarderStrategy extends BackgroundBuildDiscarderStrate
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "Periodically run custom build discarder"; // TODO i18n
+            return Messages.GlobalBuildDiscarderStrategy_displayName();
         }
     }
 }

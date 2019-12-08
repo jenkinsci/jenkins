@@ -42,14 +42,14 @@ import java.util.Collections;
  * @see BackgroundBuildDiscarder
  */
 @Restricted(NoExternalUse.class)
-@Extension @Symbol("globalBuildDiscarders")
+@Extension @Symbol("buildDiscarders")
 public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
     public static GlobalBuildDiscarderConfiguration get() {
         return ExtensionList.lookupSingleton(GlobalBuildDiscarderConfiguration.class);
     }
 
     private final DescribableList<BackgroundBuildDiscarderStrategy, BackgroundBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
-            new DescribableList<>(this, Collections.singletonList(new DefaultBackgroundBuildDiscarderStrategy()));
+            new DescribableList<>(this, Collections.singletonList(new JobBackgroundBuildDiscarderStrategy()));
 
     private Object readResolve() {
         configuredBuildDiscarders.setOwner(this);
