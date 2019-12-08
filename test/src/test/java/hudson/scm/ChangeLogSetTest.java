@@ -1,6 +1,7 @@
 package hudson.scm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import hudson.Extension;
 import hudson.MarkupText;
@@ -30,7 +31,7 @@ public class ChangeLogSetTest {
             notCaught = true;
         }
         assertEquals((new EntryImpl()).getMsg(), change.getMsg());
-        assertEquals(false, notCaught);
+        assertFalse(notCaught);
     }
 
     @Extension
