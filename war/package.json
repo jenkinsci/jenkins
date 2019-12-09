@@ -12,6 +12,9 @@
   "scripts": {
     "copy-fonts": "cp -rp src/main/fonts/* src/main/webapp/css",
     "dev": "webpack --config webpack.config.js",
+    "prod": "webpack --config webpack.config.js --mode=production",
+    "build": "yarn copy-fonts && yarn prod",
+    "start": "yarn copy-fonts && yarn dev --watch",
     "test": "babel ./node_modules/jasmine/bin/jasmine.js src/test/js/widgets/config/tabbar-spec.js"
   },
   "devDependencies": {
