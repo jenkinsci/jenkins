@@ -10,6 +10,7 @@
   },
   "private": true,
   "scripts": {
+    "copy-fonts": "cp -rp src/main/fonts/* src/main/webapp/css",
     "dev": "webpack --config webpack.config.js",
     "test": "babel ./node_modules/jasmine/bin/jasmine.js src/test/js/widgets/config/tabbar-spec.js"
   },
