@@ -645,28 +645,39 @@ THE SOFTWARE.
                 </configuration>
               </execution>
 
+<!--              <execution>-->
+<!--                <phase>generate-sources</phase>-->
+<!--                <id>gulp bundle</id>-->
+<!--                <goals>-->
+<!--                  <goal>gulp</goal>-->
+<!--                </goals>-->
+<!--                <configuration>-->
+<!--                  <arguments>bundle</arguments>-->
+<!--                </configuration>-->
+<!--              </execution>-->
+
               <execution>
                 <phase>generate-sources</phase>
-                <id>gulp bundle</id>
+                <id>yarn build</id>
                 <goals>
-                  <goal>gulp</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>bundle</arguments>
+                  <arguments>build</arguments>
                 </configuration>
               </execution>
 
-              <execution>
-                <phase>test</phase>
-                <id>gulp test</id>
-                <goals>
-                  <goal>gulp</goal>
-                </goals>
-                <configuration>
-                  <arguments>bundle test</arguments>
-                  <skip>${skipTests}</skip>
-                </configuration>
-              </execution>
+<!--              <execution>-->
+<!--                <phase>test</phase>-->
+<!--                <id>gulp test</id>-->
+<!--                <goals>-->
+<!--                  <goal>gulp</goal>-->
+<!--                </goals>-->
+<!--                <configuration>-->
+<!--                  <arguments>bundle test</arguments>-->
+<!--                  <skip>${skipTests}</skip>-->
+<!--                </configuration>-->
+<!--              </execution>-->
 
             </executions>
           </plugin>
