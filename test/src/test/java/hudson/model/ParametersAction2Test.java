@@ -257,9 +257,9 @@ public class ParametersAction2Test {
                 new StringParameterValue("bar", "bar")
         )));
 
-        assertFalse("foo parameter is not listed in getParameters", 
+        assertFalse("foo parameter is not listed in getParameters",
                 hasParameterWithName(build.getAction(ParametersAction.class), "foo"));
-        assertFalse("bar parameter is not listed in getParameters", 
+        assertFalse("bar parameter is not listed in getParameters",
                 hasParameterWithName(build.getAction(ParametersAction.class), "bar"));
     }
 
