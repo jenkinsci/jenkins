@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2019 CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package jenkins.security;
 
 import hudson.init.InitMilestone;
@@ -39,13 +62,13 @@ public class SuppressionFilter implements Filter {
         PluginServletFilter.addFilter(new SuppressionFilter());
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(FilterConfig filterConfig) {
         // no-op
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            chain.doFilter(request,response);
+            chain.doFilter(request, response);
         } catch (Exception e) {
             if (containsAccessDeniedException(e)) {
                 throw e;
@@ -61,7 +84,7 @@ public class SuppressionFilter implements Filter {
                 }
                 throwServletException(e);
             } else if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-                String errorId = logException((HttpServletRequest) request,e);
+                String errorId = logException((HttpServletRequest) request, e);
 
                 respondWithSimpleErrorPage((HttpServletResponse) response, errorId);
             }
@@ -72,15 +95,15 @@ public class SuppressionFilter implements Filter {
         try {
             response.setStatus(SC_INTERNAL_SERVER_ERROR);
             response.setContentType("text/html;charset=UTF-8");
-            response.setHeader("Cache-Control","no-cache,must-revalidate");
+            response.setHeader("Cache-Control", "no-cache,must-revalidate");
             PrintWriter w;
             try {
                 w = response.getWriter();
             } catch (IllegalStateException x) {
                 w = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
             }
-            w.println("<html><head><title>"+ Messages.SuppressionFilter_Title()+"</title><body>");
-            w.println("<p>"+Messages.SuppressionFilter_ContactAdmin(errorId)+"</p>");
+            w.println("<html><head><title>" + Messages.SuppressionFilter_Title() + "</title><body>");
+            w.println("<p>" + Messages.SuppressionFilter_ContactAdmin(errorId) + "</p>");
             w.println("</body></html>");
             w.close();
         } catch (Error error) {
