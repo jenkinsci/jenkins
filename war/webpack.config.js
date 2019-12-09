@@ -80,14 +80,14 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      // chunks: 'async',
-      // cacheGroups: {
-      //   commons: {
-      //     test: /[\\/]node_modules[\\/]/,
-      //     name: 'vendors',
-      //     chunks: 'all'
-      //   }
-      // }
+       chunks: 'async',
+       cacheGroups: {
+         commons: {
+           test: /[\\/]node_modules[\\/]/,
+           name: 'vendors',
+           chunks: 'all'
+         }
+       }
     }
   },
   resolve: {
