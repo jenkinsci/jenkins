@@ -38,6 +38,7 @@ import hudson.tasks.Shell;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.SlaveToMasterCallable;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
@@ -53,6 +54,8 @@ import org.jvnet.hudson.test.LoggerRule;
 
 @Issue("JEP-222")
 public class WebSocketAgentsTest {
+
+    private static final Logger LOGGER = Logger.getLogger(WebSocketAgentsTest.class.getName());
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
@@ -126,6 +129,10 @@ public class WebSocketAgentsTest {
         } finally {
             if (proc.get() != null) {
                 proc.get().kill();
+                while (r.jenkins.getComputer("remote").isOnline()) {
+                    LOGGER.info("waiting for computer to go offline");
+                    Thread.sleep(250);
+                }
             }
         }
     }

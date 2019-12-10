@@ -32,6 +32,7 @@ import hudson.remoting.AbstractByteArrayCommandTransport;
 import hudson.remoting.Capability;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChannelClosedException;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.IOException;
@@ -122,7 +123,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         @Override
         protected void closed(int statusCode, String reason) {
             LOGGER.finest(() -> "closed " + statusCode + " " + reason);
-            // TODO
+            receiver.terminate(new ChannelClosedException(sc.getChannel(), null));
         }
 
         @Override
@@ -161,13 +162,13 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             @Override
             public void closeWrite() throws IOException {
                 LOGGER.finest(() -> "closeWrite");
-                // TODO
+                close();
             }
 
             @Override
             public void closeRead() throws IOException {
                 LOGGER.finest(() -> "closeRead");
-                // TODO
+                close();
             }
 
         }

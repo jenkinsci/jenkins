@@ -52,6 +52,7 @@ public abstract class WebSocketSession {
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketSession.class.getName());
 
+    private Object session;
     private Object remoteEndpoint;
     private ScheduledFuture<?> pings;
 
@@ -60,7 +61,8 @@ public abstract class WebSocketSession {
     Object onWebSocketSomething(Object proxy, Method method, Object[] args) throws Exception {
         switch (method.getName()) {
         case "onWebSocketConnect":
-            this.remoteEndpoint = args[0].getClass().getMethod("getRemote").invoke(args[0]);
+            this.session = args[0];
+            this.remoteEndpoint = session.getClass().getMethod("getRemote").invoke(args[0]);
             if (keepAlive()) {
                 pings = Timer.get().scheduleAtFixedRate(() -> {
                     try {
@@ -127,6 +129,14 @@ public abstract class WebSocketSession {
     protected final Future<Void> sendText(String text) {
         try {
             return (Future<Void>) remoteEndpoint.getClass().getMethod("sendStringByFuture", String.class).invoke(remoteEndpoint, text);
+        } catch (Exception x) {
+            throw new RuntimeException(x);
+        }
+    }
+
+    protected final void close() {
+        try {
+            session.getClass().getMethod("close").invoke(session);
         } catch (Exception x) {
             throw new RuntimeException(x);
         }
