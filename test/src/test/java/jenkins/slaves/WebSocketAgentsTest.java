@@ -25,25 +25,33 @@
 package jenkins.slaves;
 
 import hudson.Functions;
+import hudson.Proc;
 import hudson.model.Computer;
 import hudson.model.FreeStyleProject;
+import hudson.model.Slave;
 import hudson.remoting.Engine;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import java.io.File;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import jenkins.security.SlaveToMasterCallable;
+import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
+@Issue("JEP-222")
 public class WebSocketAgentsTest {
 
     @ClassRule
@@ -53,27 +61,73 @@ public class WebSocketAgentsTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Rule
-    public LoggerRule logging = new LoggerRule().record(SlaveComputer.class, Level.FINEST).record(WebSocketAgents.class, Level.FINEST).record(Engine.class, Level.FINEST);
+    public LoggerRule logging = new LoggerRule().
+        record(Slave.class, Level.FINE).
+        record(SlaveComputer.class, Level.FINEST).
+        record(WebSocketAgents.class, Level.FINEST).
+        record(Engine.class, Level.FINEST);
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Test
-    public void smokes() throws Exception {
-        DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), new JNLPLauncher(true));
+    @FunctionalInterface
+    private interface TestLauncher {
+        void launch(String secret) throws Exception;
+   }
+    private void smokeTest(TestLauncher testLauncher) throws Exception {
+        JNLPLauncher launcher = new JNLPLauncher(true);
+        launcher.setWebSocket(true);
+        DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
         r.jenkins.addNode(s);
         String secret = ((SlaveComputer) r.jenkins.getComputer("remote")).getJnlpMac();
-        Computer.threadPoolForRemoting.submit(() -> {
-            // Not as realistic class loading as JNLPLauncherTest.testHeadlessLaunch, but faster to iterate since everything runs inside one JVM.
-            hudson.remoting.jnlp.Main._main(new String[] {"-headless", "-url", r.getURL().toString(), "-workDir", tmp.newFolder("work").getAbsolutePath(), secret, "remote"});
-            return null;
-        });
+        testLauncher.launch(secret);
         r.waitOnline(s);
         assertEquals("response", s.getChannel().call(new DummyTask()));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(s);
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
         r.buildAndAssertSuccess(p);
+    }
+
+    @Test
+    public void inJVM() throws Exception {
+        smokeTest(secret -> {
+            Computer.threadPoolForRemoting.submit(() -> {
+                hudson.remoting.jnlp.Main._main(new String[] {
+                    "-headless",
+                    "-url", r.getURL().toString(),
+                    "-webSocket",
+                    "-workDir", tmp.newFolder("work").getAbsolutePath(),
+                    secret, "remote"});
+                return null;
+            });
+        });
+    }
+
+    /**
+     * Slower to run that {@link #inJVM}, and requires {@code remoting} to have been {@code mvn install}ed, but more realistic.
+     * Unlike {@link hudson.slaves.JNLPLauncherTest} this does not use {@code javaws};
+     * closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}.
+     * @see hudson.remoting.Launcher
+     */
+    @Test
+    public void viaLauncher() throws Exception {
+        AtomicReference<Proc> proc = new AtomicReference<>();
+        try {
+            smokeTest(secret -> {
+                File slaveJar = tmp.newFile();
+                FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+                proc.set(r.createLocalLauncher().launch().cmds(
+                    JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
+                    "-jnlpUrl", r.getURL() + "computer/remote/slave-agent.jnlp",
+                    "-secret", secret
+                ).stdout(System.out).start());
+            });
+        } finally {
+            if (proc.get() != null) {
+                proc.get().kill();
+            }
+        }
     }
 
     private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {

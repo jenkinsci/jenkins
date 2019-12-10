@@ -34,8 +34,6 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +56,6 @@ import org.kohsuke.stapler.StaplerResponse;
 @Restricted(NoExternalUse.class)
 public final class WebSocketAgents extends InvisibleAction implements UnprotectedRootAction {
 
-    private static final String CAPABILITY_KEY = /* Capability.class.getName() */"hudson.remoting.Capability";
-
     private static final Logger LOGGER = Logger.getLogger(WebSocketAgents.class.getName());
 
     @Override
@@ -70,7 +66,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
     public HttpResponse doIndex(
             @Header(value = JnlpConnectionState.CLIENT_NAME_KEY, required = true) String agent,
             @Header(value = JnlpConnectionState.SECRET_KEY, required = true) String secret,
-            @Header(value = CAPABILITY_KEY, required = true) String remoteCapabilityStr,
+            @Header(value = Capability.KEY, required = true) String remoteCapabilityStr,
             StaplerResponse rsp) throws IOException {
         Computer c = Jenkins.get().getComputer(agent);
         if (!(c instanceof SlaveComputer)) {
@@ -84,15 +80,9 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             throw HttpResponses.forbidden();
         }
         LOGGER.fine(() -> "connecting " + agent);
-        Capability remoteCapability;
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(remoteCapabilityStr.getBytes(StandardCharsets.US_ASCII))) {
-            remoteCapability = Capability.read(bais);
-            LOGGER.fine(() -> "received " + remoteCapability);
-        }
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            new Capability().write(baos);
-            rsp.setHeader(CAPABILITY_KEY, baos.toString("US-ASCII"));
-        }
+        Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
+        LOGGER.fine(() -> "received " + remoteCapability);
+        rsp.setHeader(Capability.KEY, new Capability().toASCII());
         return WebSockets.upgrade(new Session(agent, sc, remoteCapability));
     }
 

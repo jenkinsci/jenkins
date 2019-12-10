@@ -72,6 +72,8 @@ public class JNLPLauncher extends ComputerLauncher {
     @Nonnull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
+    private boolean webSocket;
+
     /**
      * Constructor.
      * @param tunnel Tunnel settings
@@ -143,6 +145,15 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
+    public boolean isWebSocket() {
+        return webSocket;
+    }
+
+    @DataBoundSetter
+    public void setWebSocket(boolean webSocket) {
+        this.webSocket = webSocket;
+    }
+
     @Override
     public void launch(SlaveComputer computer, TaskListener listener) {
         // do nothing as we cannot self start
@@ -196,6 +207,9 @@ public class JNLPLauncher extends ComputerLauncher {
             // Causes JENKINS-45895 in the case of includes otherwise
             return DescriptorImpl.class.equals(getClass());
         }
+
+        // TODO form validation: webSocket and tunnel probably mutually exclusive
+
     }
 
     /**
