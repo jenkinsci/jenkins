@@ -61,7 +61,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
 
     @Override
     public String getUrlName() {
-        return "wsagents";
+        return WebSockets.isSupported() ? "wsagents" : null;
     }
 
     public HttpResponse doIndex(

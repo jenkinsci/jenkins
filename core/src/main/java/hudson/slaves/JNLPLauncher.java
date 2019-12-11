@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.java.JavaUtils;
+import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -217,8 +218,13 @@ public class JNLPLauncher extends ComputerLauncher {
         }
 
         public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
-            if (webSocket && tunnel != null) {
-                return FormValidation.error("-tunnel is not currently supported in -webSocket mode");
+            if (webSocket) {
+                if (!WebSockets.isSupported()) {
+                    return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
+                }
+                if (tunnel != null) {
+                    return FormValidation.error("Tunneling is not currently supported in WebSocket mode");
+                }
             }
             return FormValidation.ok();
         }

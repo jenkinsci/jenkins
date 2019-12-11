@@ -51,7 +51,6 @@ public class WebSockets {
 
     private static final String ATTR_SESSION = WebSockets.class.getName() + ".session";
 
-    // TODO method to see if WS are supported in this container
     // TODO ability to handle subprotocols?
 
     public static HttpResponse upgrade(WebSocketSession session) {
@@ -82,6 +81,16 @@ public class WebSockets {
         if (webSocketServletFactoryClass == null) {
             cl = ServletContext.class.getClassLoader();
             webSocketServletFactoryClass = cl.loadClass("org.eclipse.jetty.websocket.servlet.WebSocketServletFactory");
+        }
+    }
+
+    public static boolean isSupported() {
+        try {
+            staticInit();
+            return true;
+        } catch (Exception x) {
+            LOGGER.log(Level.FINE, null, x);
+            return false;
         }
     }
 
