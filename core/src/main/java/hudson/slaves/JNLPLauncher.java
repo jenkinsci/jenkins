@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import javax.annotation.CheckForNull;
@@ -225,31 +224,14 @@ public class JNLPLauncher extends ComputerLauncher {
                 if (tunnel != null) {
                     return FormValidation.error("Tunneling is not currently supported in WebSocket mode");
                 }
+            } else {
+                if (Jenkins.get().getTcpSlaveAgentListener() == null) {
+                    return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
+                }
             }
             return FormValidation.ok();
         }
 
-    }
-
-    /**
-     * Hides the JNLP launcher when the JNLP agent port is not enabled.
-     *
-     * @since 2.16
-     */
-    @Extension
-    public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
-
-        // TODO allow it when WebSocket is available
-
-        @Override
-        public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
-        }
-
-        @Override
-        public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
-        }
     }
 
     /**
