@@ -108,7 +108,9 @@ public class WebSocketAgentsTest {
     }
 
     /**
-     * Slower to run that {@link #inJVM}, and requires {@code remoting} to have been {@code mvn install}ed, but more realistic.
+     * More realistic version of {@link #inJVM}.
+     * On the other hand it is slower; requires {@code remoting} to have been {@code mvn install}ed;
+     * and does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
      * Unlike {@link hudson.slaves.JNLPLauncherTest} this does not use {@code javaws};
      * closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}.
      * @see hudson.remoting.Launcher
