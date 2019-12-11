@@ -84,6 +84,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
+        rsp.setHeader("X-Remoting-Minimum-Version", RemotingVersionInfo.getMinimumSupportedVersion().toString());
         return WebSockets.upgrade(new Session(agent, sc, remoteCapability));
     }
 
