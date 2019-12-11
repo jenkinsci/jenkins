@@ -29,6 +29,7 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -40,6 +41,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link ComputerLauncher} via inbound connections.
@@ -208,7 +210,12 @@ public class JNLPLauncher extends ComputerLauncher {
             return DescriptorImpl.class.equals(getClass());
         }
 
-        // TODO form validation: webSocket and tunnel probably mutually exclusive
+        public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
+            if (webSocket && tunnel != null) {
+                return FormValidation.error("-tunnel is not currently supported in -webSocket mode");
+            }
+            return FormValidation.ok();
+        }
 
     }
 
