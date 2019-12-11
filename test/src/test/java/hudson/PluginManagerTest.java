@@ -333,6 +333,11 @@ public class PluginManagerTest {
             fail();
         } catch( ClassNotFoundException ex ){
         }
+        // Extension extending a dependee class can't be loaded either
+        try {
+            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension");
+            fail();
+        } catch( NoClassDefFoundError ex ){}
         
         // Load dependee.
         {
@@ -342,10 +347,33 @@ public class PluginManagerTest {
         // (MUST) Not throws an exception
         // (SHOULD) depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
-        
-        // No extensions exist.
-        // extensions in depender are loaded.
-        assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+
+        // Extensions in depender are loaded.
+        assertEquals(1, r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension").size());
+    }
+
+    /**
+     * Load "optional-depender" and then load "dependee".
+     * Asserts that "depender" can access to "dependee".
+     *
+     * @throws Exception
+     */
+    @Issue("JENKINS-60449")
+    @WithPlugin("variant.hpi")
+    @Test public void installDependedOptionalPluginWithoutRestart() throws Exception {
+        // Load optional-depender.
+        {
+            dynamicLoad("optional-depender-0.0.2.hpi");
+        }
+        // Extension depending on dependee class isn't loaded
+        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.optionaldepender.OptionalDependerExtension").isEmpty());
+        // Load dependee.
+        {
+            dynamicLoad("dependee-0.0.2.hpi");
+        }
+
+        // Extensions in depender are loaded.
+        assertEquals(1, r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.optionaldepender.OptionalDependerExtension").size());
     }
 
     @Issue("JENKINS-21486")
