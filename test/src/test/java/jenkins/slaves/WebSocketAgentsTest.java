@@ -35,6 +35,7 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import hudson.triggers.SafeTimerTask;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -95,15 +96,14 @@ public class WebSocketAgentsTest {
     @Test
     public void inJVM() throws Exception {
         smokeTest(secret -> {
-            Computer.threadPoolForRemoting.submit(() -> {
+            Computer.threadPoolForRemoting.submit(SafeTimerTask.of(() -> {
                 hudson.remoting.jnlp.Main._main(new String[] {
                     "-headless",
                     "-url", r.getURL().toString(),
                     "-webSocket",
                     "-workDir", tmp.newFolder("work").getAbsolutePath(),
                     secret, "remote"});
-                return null;
-            });
+            }));
         });
     }
 
