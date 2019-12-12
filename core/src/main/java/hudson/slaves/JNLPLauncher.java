@@ -221,7 +221,7 @@ public class JNLPLauncher extends ComputerLauncher {
                 if (!WebSockets.isSupported()) {
                     return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
                 }
-                if (tunnel != null) {
+                if (Util.fixEmptyAndTrim(tunnel) != null) {
                     return FormValidation.error("Tunneling is not currently supported in WebSocket mode");
                 }
             } else {

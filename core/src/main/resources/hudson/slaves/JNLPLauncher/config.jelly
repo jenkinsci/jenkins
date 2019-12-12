@@ -28,7 +28,7 @@ THE SOFTWARE.
   <j:if test="${descriptor.workDirSupported}"> 
     <f:property title="${%Enable work directory}" field="workDirSettings" />
   </j:if>
-  <f:entry field="websocket">
+  <f:entry field="webSocket">
     <f:checkbox title="${%Use WebSocket}"/>
   </f:entry>
   <f:advanced>
