@@ -59,6 +59,6 @@ public class SystemLogLink extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.CONFIGURE;
+        return Jenkins.ADMINISTER;
     }
 }
