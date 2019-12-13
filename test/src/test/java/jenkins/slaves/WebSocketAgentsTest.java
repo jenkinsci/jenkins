@@ -83,7 +83,7 @@ public class WebSocketAgentsTest {
         launcher.setWebSocket(true);
         DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
         r.jenkins.addNode(s);
-        String secret = ((SlaveComputer) r.jenkins.getComputer("remote")).getJnlpMac();
+        String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
         testLauncher.launch(secret);
         r.waitOnline(s);
         assertEquals("response", s.getChannel().call(new DummyTask()));
@@ -91,6 +91,7 @@ public class WebSocketAgentsTest {
         p.setAssignedNode(s);
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
         r.buildAndAssertSuccess(p);
+        s.toComputer().getLogText().writeLogTo(0, System.out);
     }
 
     @Test
