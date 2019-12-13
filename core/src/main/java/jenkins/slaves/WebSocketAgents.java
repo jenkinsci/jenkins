@@ -24,7 +24,9 @@
 
 package jenkins.slaves;
 
+import com.google.common.collect.ImmutableMap;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Computer;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
@@ -32,25 +34,23 @@ import hudson.remoting.AbstractByteArrayCommandTransport;
 import hudson.remoting.Capability;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.remoting.ChannelClosedException;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.SlaveComputer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 @Extension
@@ -64,40 +64,50 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         return WebSockets.isSupported() ? "wsagents" : null;
     }
 
-    public HttpResponse doIndex(
-            @Header(value = JnlpConnectionState.CLIENT_NAME_KEY, required = true) String agent,
-            @Header(value = JnlpConnectionState.SECRET_KEY, required = true) String secret,
-            @Header(value = Capability.KEY, required = true) String remoteCapabilityStr,
-            StaplerResponse rsp) throws IOException {
-        Computer c = Jenkins.get().getComputer(agent);
-        if (!(c instanceof SlaveComputer)) {
-            throw HttpResponses.notFound();
+    public HttpResponse doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String agent = req.getHeader(JnlpConnectionState.CLIENT_NAME_KEY);
+        String secret = req.getHeader(JnlpConnectionState.SECRET_KEY);
+        String remoteCapabilityStr = req.getHeader(Capability.KEY);
+        if (agent == null || secret == null || remoteCapabilityStr == null) {
+            LOGGER.warning(() -> "incomplete headers: " + Collections.list(req.getHeaderNames()));
+            throw HttpResponses.errorWithoutStack(400, "This endpoint is only for use from agent.jar in WebSocket mode");
         }
-        SlaveComputer sc = (SlaveComputer) c;
-        if (!(sc.getLauncher() instanceof JNLPLauncher)) {
-            throw HttpResponses.errorWithoutStack(400, "not an inbound agent");
+        LOGGER.fine(() -> "receiving headers: " + Collections.list(req.getHeaderNames()));
+        if (!JnlpAgentReceiver.DATABASE.exists(agent)) {
+            LOGGER.warning(() -> "no such agent " + agent);
+            throw HttpResponses.errorWithoutStack(400, "no such agent");
         }
-        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), sc.getJnlpMac().getBytes(StandardCharsets.US_ASCII))) { // TODO unless anonymous has CONNECT?
+        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), JnlpAgentReceiver.DATABASE.getSecretOf(agent).getBytes(StandardCharsets.US_ASCII))) { // TODO unless anonymous has CONNECT?
+            LOGGER.warning(() -> "incorrect secret for " + agent);
             throw HttpResponses.forbidden();
         }
+        JnlpConnectionState state = new JnlpConnectionState(null, ExtensionList.lookup(JnlpAgentReceiver.class));
+        state.setRemoteEndpointDescription(req.getRemoteAddr());
+        state.fireBeforeProperties();
         LOGGER.fine(() -> "connecting " + agent);
+        state.fireAfterProperties(ImmutableMap.of(
+            // TODO or just pass all request headers?
+            JnlpConnectionState.CLIENT_NAME_KEY, agent,
+            JnlpConnectionState.SECRET_KEY, secret
+        ));
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
         rsp.setHeader("X-Remoting-Minimum-Version", RemotingVersionInfo.getMinimumSupportedVersion().toString());
-        return WebSockets.upgrade(new Session(agent, sc, remoteCapability));
+        rsp.setHeader(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()); // TODO figure out what this is for, if anything
+        return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
 
     private static class Session extends WebSocketSession {
 
+        private final JnlpConnectionState state;
         private final String agent;
-        private final SlaveComputer sc;
         private final Capability remoteCapability;
         private AbstractByteArrayCommandTransport.ByteArrayReceiver receiver;
 
-        Session(String agent, SlaveComputer sc, Capability remoteCapability) {
+        Session(JnlpConnectionState state, String agent, Capability remoteCapability) {
+            this.state = state;
             this.agent = agent;
-            this.sc = sc;
             this.remoteCapability = remoteCapability;
         }
 
@@ -105,7 +115,8 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         protected void opened() {
             Computer.threadPoolForRemoting.submit(() -> {
                 LOGGER.fine(() -> "setting up channel for " + agent);
-                sc.setChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting).withHeaderStream(sc.openLogFile()), new Transport(), null);
+                state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
+                state.fireAfterChannel(state.getChannelBuilder().build(new Transport()));
                 LOGGER.fine(() -> "set up channel for " + agent);
                 return null;
             });
@@ -124,7 +135,10 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         @Override
         protected void closed(int statusCode, String reason) {
             LOGGER.finest(() -> "closed " + statusCode + " " + reason);
-            receiver.terminate(new ChannelClosedException(sc.getChannel(), null));
+            IOException x = new ClosedChannelException();
+            receiver.terminate(x);
+            state.fireChannelClosed(x);
+            state.fireAfterDisconnect();
         }
 
         @Override
