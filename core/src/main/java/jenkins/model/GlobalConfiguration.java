@@ -4,6 +4,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.security.Permission;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -74,5 +75,14 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     public static @Nonnull ExtensionList<GlobalConfiguration> all() {
         return Jenkins.get().getDescriptorList(GlobalConfiguration.class);
         // pointless type parameters help work around bugs in javac in earlier versions http://codepad.org/m1bbFRrH
+    }
+
+    /**
+     * Assume by default that GlobalConfiguration items require Jenkins.ADMINISTER permission
+     * Ovveride to return something different if appropriate
+     * @return Permission
+     */
+    public Permission getPermission() {
+        return Jenkins.ADMINISTER;
     }
 }
