@@ -142,6 +142,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -1071,7 +1073,7 @@ public class Functions {
         List<Descriptor> answer = new ArrayList<>(r.size());
         for (Tag d : r) answer.add(d.d);
 
-        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
+        return GlobalConfigHiddenByPermissionFilter.apply(Jenkins.get(),answer);
     }
 
     /**
@@ -1307,6 +1309,24 @@ public class Functions {
         ThreadGroupMap sorter = new ThreadGroupMap();
         Arrays.sort(list, sorter);
         return sorter;
+    }
+
+    @Extension
+    public static class GlobalConfigHiddenByPermissionFilter extends DescriptorVisibilityFilter {
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean filter(Object context, Descriptor descriptor) {
+
+            try {
+                if (descriptor instanceof GlobalConfiguration) {
+                    Jenkins.get().checkPermission(((GlobalConfiguration) descriptor).getPermission());
+                }
+            } catch (AccessDeniedException e) {
+                return false;
+            }
+            return true;
+        }
     }
 
     // Common code for sorting Threads/ThreadInfos by ThreadGroup
