@@ -66,7 +66,7 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
             configuredBuildDiscarders.rebuildHetero(req, json, BackgroundBuildDiscarderStrategyDescriptor.all(), "configuredBuildDiscarders");
             return true;
         } catch (IOException x) {
-            throw new FormException(x, "artifactManagerFactories");
+            throw new FormException(x, "configuredBuildDiscarders");
         }
     }
 }
