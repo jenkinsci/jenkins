@@ -47,7 +47,7 @@ public class GlobalBuildDiscarderTest {
         }
 
         { // global build discarder
-            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new GlobalBuildDiscarderStrategy(new LogRotator(null, "2", null, null)));
+            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new SimpleBuildDiscarderStrategy(new LogRotator(null, "2", null, null)));
             ExtensionList.lookupSingleton(BackgroundBuildDiscarder.class).execute(TaskListener.NULL);
             Assert.assertArrayEquals("newest 2 builds", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{8, 7});
             j.buildAndAssertSuccess(p);
@@ -57,7 +57,7 @@ public class GlobalBuildDiscarderTest {
             Assert.assertArrayEquals("2 builds because of BackgroundBuildDiscarderListener", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{10, 9});
 
             GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().clear();
-            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new GlobalBuildDiscarderStrategy(new LogRotator(null, "1", null, null)));
+            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new SimpleBuildDiscarderStrategy(new LogRotator(null, "1", null, null)));
 
             // apply global config changes periodically
             ExtensionList.lookupSingleton(BackgroundBuildDiscarder.class).execute(TaskListener.NULL);
@@ -89,7 +89,7 @@ public class GlobalBuildDiscarderTest {
             Assert.assertArrayEquals("job with 3 builds", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{6,5,4,3,2,1});
             p2.setBuildDiscarder(new LogRotator(null, "3", null, null));
 
-            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new GlobalBuildDiscarderStrategy(new LogRotator(null, "4", null, null)));
+            GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new SimpleBuildDiscarderStrategy(new LogRotator(null, "4", null, null)));
             GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new JobBackgroundBuildDiscarderStrategy());
 
             { // job 1 with builds more aggressively deleted by global strategy
