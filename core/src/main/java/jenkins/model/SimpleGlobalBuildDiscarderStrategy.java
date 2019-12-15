@@ -68,7 +68,7 @@ public class SimpleGlobalBuildDiscarderStrategy extends GlobalBuildDiscarderStra
         @Nonnull
         @Override
         public String getDisplayName() {
-            return Messages.SimpleBuildDiscarderStrategy_displayName();
+            return Messages.SimpleGlobalBuildDiscarderStrategy_displayName();
         }
     }
 }
