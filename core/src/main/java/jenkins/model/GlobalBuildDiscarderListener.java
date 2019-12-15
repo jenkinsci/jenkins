@@ -16,13 +16,13 @@ import java.util.logging.Logger;
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class BackgroundBuildDiscarderListener extends RunListener<Run> {
+public class GlobalBuildDiscarderListener extends RunListener<Run> {
 
-    private static final Logger LOGGER = Logger.getLogger(BackgroundBuildDiscarderListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GlobalBuildDiscarderListener.class.getName());
 
     @Override
     public void onFinalized(Run run) {
         Job job = run.getParent();
-        BackgroundBuildDiscarder.processJob(new LogTaskListener(LOGGER, Level.FINE), job);
+        BackgroundGlobalBuildDiscarder.processJob(new LogTaskListener(LOGGER, Level.FINE), job);
     }
 }

@@ -37,10 +37,10 @@ import java.io.IOException;
  * Periodically call a job's configured build discarder in the background.
  */
 @Restricted(NoExternalUse.class)
-public class JobBackgroundBuildDiscarderStrategy extends BackgroundBuildDiscarderStrategy {
+public class JobGlobalBuildDiscarderStrategy extends GlobalBuildDiscarderStrategy {
 
     @DataBoundConstructor
-    public JobBackgroundBuildDiscarderStrategy() {
+    public JobGlobalBuildDiscarderStrategy() {
         // required for data binding
     }
 
@@ -55,11 +55,11 @@ public class JobBackgroundBuildDiscarderStrategy extends BackgroundBuildDiscarde
     }
 
     @Extension @Symbol("jobBuildDiscarder")
-    public static class DescriptorImpl extends BackgroundBuildDiscarderStrategyDescriptor {
+    public static class DescriptorImpl extends GlobalBuildDiscarderStrategyDescriptor {
         @Nonnull
         @Override
         public String getDisplayName() {
-            return Messages.DefaultBackgroundBuildDiscarderStrategy_displayName();
+            return Messages.JobGlobalBuildDiscarderStrategy_displayName();
         }
     }
 }

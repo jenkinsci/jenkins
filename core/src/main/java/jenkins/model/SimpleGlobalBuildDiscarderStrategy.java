@@ -37,12 +37,12 @@ import java.io.IOException;
  * Apply a user-specified build discarder periodically on all jobs.
  */
 @Restricted(NoExternalUse.class)
-public class SimpleBuildDiscarderStrategy extends BackgroundBuildDiscarderStrategy {
+public class SimpleGlobalBuildDiscarderStrategy extends GlobalBuildDiscarderStrategy {
 
     private BuildDiscarder discarder;
 
     @DataBoundConstructor
-    public SimpleBuildDiscarderStrategy(BuildDiscarder discarder) {
+    public SimpleGlobalBuildDiscarderStrategy(BuildDiscarder discarder) {
         this.discarder = discarder;
     }
 
@@ -64,7 +64,7 @@ public class SimpleBuildDiscarderStrategy extends BackgroundBuildDiscarderStrate
 
     @Extension
     @Symbol("simpleBuildDiscarder")
-    public static class DescriptorImpl extends BackgroundBuildDiscarderStrategyDescriptor {
+    public static class DescriptorImpl extends GlobalBuildDiscarderStrategyDescriptor {
         @Nonnull
         @Override
         public String getDisplayName() {

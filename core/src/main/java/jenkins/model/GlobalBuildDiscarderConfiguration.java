@@ -38,8 +38,8 @@ import java.util.Collections;
 /**
  * Global configuration UI for background build discarders
  *
- * @see BackgroundBuildDiscarderStrategy
- * @see BackgroundBuildDiscarder
+ * @see GlobalBuildDiscarderStrategy
+ * @see BackgroundGlobalBuildDiscarder
  */
 @Restricted(NoExternalUse.class)
 @Extension @Symbol("buildDiscarders")
@@ -48,22 +48,22 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
         return ExtensionList.lookupSingleton(GlobalBuildDiscarderConfiguration.class);
     }
 
-    private final DescribableList<BackgroundBuildDiscarderStrategy, BackgroundBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
-            new DescribableList<>(this, Collections.singletonList(new JobBackgroundBuildDiscarderStrategy()));
+    private final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
+            new DescribableList<>(this, Collections.singletonList(new JobGlobalBuildDiscarderStrategy()));
 
     private Object readResolve() {
         configuredBuildDiscarders.setOwner(this);
         return this;
     }
 
-    public DescribableList<BackgroundBuildDiscarderStrategy, BackgroundBuildDiscarderStrategyDescriptor> getConfiguredBuildDiscarders() {
+    public DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> getConfiguredBuildDiscarders() {
         return configuredBuildDiscarders;
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
-            configuredBuildDiscarders.rebuildHetero(req, json, BackgroundBuildDiscarderStrategyDescriptor.all(), "configuredBuildDiscarders");
+            configuredBuildDiscarders.rebuildHetero(req, json, GlobalBuildDiscarderStrategyDescriptor.all(), "configuredBuildDiscarders");
             return true;
         } catch (IOException x) {
             throw new FormException(x, "configuredBuildDiscarders");

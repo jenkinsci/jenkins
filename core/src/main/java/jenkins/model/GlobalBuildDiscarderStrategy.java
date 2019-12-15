@@ -35,12 +35,12 @@ import java.util.logging.Logger;
 /**
  * Extension point for global background build discarders.
  *
- * @see BackgroundBuildDiscarder
+ * @see BackgroundGlobalBuildDiscarder
  * @see GlobalBuildDiscarderConfiguration
- * @see JobBackgroundBuildDiscarderStrategy
+ * @see JobGlobalBuildDiscarderStrategy
  */
-public abstract class BackgroundBuildDiscarderStrategy extends AbstractDescribableImpl<BackgroundBuildDiscarderStrategy> implements ExtensionPoint {
-    private static final Logger LOGGER = Logger.getLogger(BackgroundBuildDiscarderStrategy.class.getName());
+public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableImpl<GlobalBuildDiscarderStrategy> implements ExtensionPoint {
+    private static final Logger LOGGER = Logger.getLogger(GlobalBuildDiscarderStrategy.class.getName());
 
     /**
      * Returns true if and only if this strategy applies to the given job.

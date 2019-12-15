@@ -38,14 +38,14 @@ import java.util.logging.Logger;
  * Background task actually running background build discarders.
  *
  * @see GlobalBuildDiscarderConfiguration
- * @see BackgroundBuildDiscarderStrategy
+ * @see GlobalBuildDiscarderStrategy
  */
 @Restricted(NoExternalUse.class)
 @Extension
-public class BackgroundBuildDiscarder extends AsyncPeriodicWork {
-    private static final Logger LOGGER = Logger.getLogger(BackgroundBuildDiscarder.class.getName());
+public class BackgroundGlobalBuildDiscarder extends AsyncPeriodicWork {
+    private static final Logger LOGGER = Logger.getLogger(BackgroundGlobalBuildDiscarder.class.getName());
 
-    public BackgroundBuildDiscarder() {
+    public BackgroundGlobalBuildDiscarder() {
         super("Periodic background build discarder"); // TODO i18n
     }
 

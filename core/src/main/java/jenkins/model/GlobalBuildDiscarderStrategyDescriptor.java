@@ -27,11 +27,11 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 
 /**
- * {@link Descriptor} for {@link BackgroundBuildDiscarder}.
+ * {@link Descriptor} for {@link BackgroundGlobalBuildDiscarder}.
  */
-public abstract class BackgroundBuildDiscarderStrategyDescriptor extends Descriptor<BackgroundBuildDiscarderStrategy> {
+public abstract class GlobalBuildDiscarderStrategyDescriptor extends Descriptor<GlobalBuildDiscarderStrategy> {
 
-    public static DescriptorExtensionList<BackgroundBuildDiscarderStrategy,BackgroundBuildDiscarderStrategyDescriptor> all() {
-        return Jenkins.get().getDescriptorList(BackgroundBuildDiscarderStrategy.class);
+    public static DescriptorExtensionList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> all() {
+        return Jenkins.get().getDescriptorList(GlobalBuildDiscarderStrategy.class);
     }
 }
