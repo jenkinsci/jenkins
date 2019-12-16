@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -44,12 +45,17 @@ import org.kohsuke.accmod.restrictions.Beta;
 public abstract class WebSocketSession {
 
     /**
-     * Number of seconds between server-sent pings, if enabled.
-     * <a href="http://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
+     * Number of seconds between server-sent pings.
+     * Zero to disable.
+     * <p><a href="http://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
      * <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#support_for_websocket">GKE docs</a> says 30s
      * but this is a total timeout, not inactivity, so you need to set {@code BackendConfigSpec.timeoutSec} anyway.
+     * <p>This is set for the whole Jenkins session rather than a particular service,
+     * since it has more to do with the environment than anything else.
+     * Certain services may have their own “keep alive” semantics,
+     * but for example {@link hudson.remoting.PingThread} may be too infrequent.
      */
-    private static final long PING_INTERVAL_SECONDS = 30;
+    private static long PING_INTERVAL_SECONDS = SystemProperties.getLong("jenkins.websocket.pingInterval", 30L);
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketSession.class.getName());
 
@@ -64,7 +70,7 @@ public abstract class WebSocketSession {
         case "onWebSocketConnect":
             this.session = args[0];
             this.remoteEndpoint = session.getClass().getMethod("getRemote").invoke(args[0]);
-            if (keepAlive()) {
+            if (PING_INTERVAL_SECONDS != 0) {
                 pings = Timer.get().scheduleAtFixedRate(() -> {
                     try {
                         remoteEndpoint.getClass().getMethod("sendPing", ByteBuffer.class).invoke(remoteEndpoint, ByteBuffer.wrap(new byte[0]));
@@ -95,10 +101,6 @@ public abstract class WebSocketSession {
         default:
             throw new AssertionError();
         }
-    }
-
-    protected boolean keepAlive() {
-        return false;
     }
 
     protected void opened() {

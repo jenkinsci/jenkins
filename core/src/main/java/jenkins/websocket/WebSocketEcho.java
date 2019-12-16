@@ -44,10 +44,6 @@ public class WebSocketEcho  extends InvisibleAction implements UnprotectedRootAc
         public HttpResponse doIndex() {
             return WebSockets.upgrade(new WebSocketSession() {
                 @Override
-                protected boolean keepAlive() {
-                    return true;
-                }
-                @Override
                 protected void text(String message) {
                     sendText("hello " + message);
                 }

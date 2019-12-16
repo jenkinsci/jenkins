@@ -146,11 +146,6 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             LOGGER.log(Level.WARNING, null, cause);
         }
 
-        @Override
-        protected boolean keepAlive() {
-            return true; // Remoting ping thread may be too slow
-        }
-
         class Transport extends AbstractByteArrayCommandTransport {
 
             @Override
