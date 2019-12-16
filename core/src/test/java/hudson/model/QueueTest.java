@@ -47,14 +47,14 @@ public class QueueTest {
 
     @Issue("JENKINS-21311")
     @Test
-    public void cancelItemOnANonExistingItemShouldReturnA422()  throws IOException, ServletException {
+    public void cancelItemOnANonExistingItemShouldReturnA404()  throws IOException, ServletException {
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
         queue.schedule(task, 6000);
 
         HttpResponse httpResponse = queue.doCancelItem(Queue.WaitingItem.getCurrentCounterValue() + 1);
         httpResponse.generateResponse(null, resp, null);
 
-        verify(resp).setStatus(422);
+        verify(resp).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Issue("JENKINS-21311")

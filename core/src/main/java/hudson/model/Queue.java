@@ -765,7 +765,7 @@ public class Queue extends ResourceController implements Saveable {
      * Called from {@code queue.jelly} and {@code queue-items.jelly}.
      */
     @RequirePOST
-    public HttpResponse doCancelItem(@QueryParameter long id) {
+    public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
             if(item.hasCancelPermission()){
@@ -776,7 +776,7 @@ public class Queue extends ResourceController implements Saveable {
             }
             return HttpResponses.error(422, "Item for id (" + id + ") is not cancellable");
         } // else too late, ignore (JENKINS-14813)
-        return HttpResponses.error(422, "Provided id (" + id + ") does not exist");
+        return HttpResponses.error(HttpServletResponse.SC_NOT_FOUND, "Provided id (" + id + ") not found");
     }
 
     public boolean isEmpty() {
