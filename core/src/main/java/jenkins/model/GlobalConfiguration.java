@@ -84,9 +84,10 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     }
 
     /**
-     * Assume by default that GlobalConfiguration items require Jenkins.ADMINISTER permission
+     * Returns the permission type needed in order to use/access this
+     * By default,  require Jenkins.ADMINISTER permission
      * Ovveride to return something different if appropriate
-     * @return Permission
+     * @return Permission requiered to use/access this
      */
     public Permission getPermission() {
         return Jenkins.ADMINISTER;
