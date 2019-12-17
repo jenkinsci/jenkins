@@ -25,6 +25,7 @@ package hudson.views;
 
 import hudson.Extension;
 import hudson.model.View;
+import hudson.security.Permission;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -57,6 +58,11 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
         }
         
         return true;
+    }
+
+    @Override
+    public Permission getPermission() {
+        return Jenkins.CONFIGURE;
     }
 }
 
