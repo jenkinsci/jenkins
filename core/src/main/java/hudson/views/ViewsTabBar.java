@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.ListView;
+import hudson.security.Permission;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -115,6 +116,11 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
             }
 
             return true;
+        }
+
+        @Override
+        public Permission getPermission() {
+            return Jenkins.CONFIGURE;
         }
     }
 }
