@@ -94,6 +94,12 @@
       <optional>true</optional> <!-- ditto -->
     </dependency>
     <dependency>
+      <groupId>org.glassfish.tyrus.bundles</groupId>
+      <artifactId>tyrus-standalone-client-jdk</artifactId>
+      <version>1.12</version>
+      <optional>true</optional> <!-- ditto -->
+    </dependency>
+    <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
       <optional>true</optional>

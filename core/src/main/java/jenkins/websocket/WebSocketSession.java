@@ -114,9 +114,11 @@ public abstract class WebSocketSession {
     }
 
     protected void binary(byte[] payload, int offset, int len) {
+        LOGGER.warning("unexpected binary frame");
     }
 
     protected void text(String message) {
+        LOGGER.warning("unexpected text frame");
     }
 
     @SuppressWarnings("unchecked")
