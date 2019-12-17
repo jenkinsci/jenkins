@@ -106,6 +106,11 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         req.getView(this, "command.jelly").forward(req, rsp);
     }
 
+    /** for Jelly */
+    public boolean isWebSocketSupported() {
+        return WebSockets.isSupported();
+    }
+
     /**
      * WebSocket endpoint.
      */
