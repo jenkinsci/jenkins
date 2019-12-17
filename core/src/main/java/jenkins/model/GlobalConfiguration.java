@@ -89,7 +89,7 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
      * Ovveride to return something different if appropriate
      * @return Permission requiered to use/access this
      */
-    public Permission getPermission() {
+    public @Nonnull Permission getPermission() {
         return Jenkins.ADMINISTER;
     }
 
@@ -102,20 +102,16 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
             boolean result = false;
             try {
                 if (descriptor instanceof GlobalConfiguration) {
-                    result = Functions.hasPermission(((GlobalConfiguration) descriptor).getPermission());
+                    return Functions.hasPermission(((GlobalConfiguration) descriptor).getPermission());
                 } else {
-                    result = true;
+                    return true;
                 }
             } catch (AccessDeniedException e) {
-                result =  false;
-            } catch (ServletException e) {
+                return false;
+            } catch (ServletException | IOException e) {
                 e.printStackTrace();
-                result = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-                result = true;
+                return true;
             }
-                return result;
         }
     }
 }
