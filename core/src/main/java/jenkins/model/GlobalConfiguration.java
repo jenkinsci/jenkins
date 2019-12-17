@@ -103,15 +103,19 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
             try {
                 if (descriptor instanceof GlobalConfiguration) {
                     result = Functions.hasPermission(((GlobalConfiguration) descriptor).getPermission());
+                } else {
+                    result = true;
                 }
             } catch (AccessDeniedException e) {
-                return false;
+                result =  false;
             } catch (ServletException e) {
                 e.printStackTrace();
+                result = true;
             } catch (IOException e) {
                 e.printStackTrace();
+                result = true;
             }
-            return result;
+                return result;
         }
     }
 }
