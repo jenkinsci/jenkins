@@ -24,6 +24,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.security.Permission;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -53,5 +54,10 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
         } catch (JSONException e) {
             throw new FormException(e.getMessage(), "quietPeriod");
         }
+    }
+
+    @Override
+    public Permission getPermission() {
+        return Jenkins.CONFIGURE;
     }
 }
