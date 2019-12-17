@@ -26,6 +26,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
+import hudson.security.Permission;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
