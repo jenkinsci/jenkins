@@ -24,6 +24,7 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
@@ -65,7 +66,7 @@ public class ManagementLinkTest {
 
     @Test @Issue("JENKINS-33683")
     public void invisibleLinks() throws Exception {
-        assertEquals(null, j.jenkins.getDynamic("and_fail_trying"));
+        assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 
     @TestExtension // Intentionally hooked in all tests

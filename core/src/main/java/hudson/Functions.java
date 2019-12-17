@@ -767,11 +767,15 @@ public class Functions {
 
     /**
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
-     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
+     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
+     * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
      *
      * @since 2.200
      */
     public static String urlEncode(String s) {
+        if (s == null) {
+            return "";
+        }
         try {
             return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {

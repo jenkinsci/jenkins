@@ -383,7 +383,7 @@ public class JenkinsTest {
         }
 
         public HttpResponse doDynamic() {
-            assertTrue(Jenkins.get().getAuthentication().getName().equals("anonymous"));
+            assertEquals("anonymous", Jenkins.get().getAuthentication().getName());
             count++;
             return HttpResponses.html("OK");
         }
@@ -411,7 +411,7 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
-        assertTrue(!Jenkins.get().hasPermission(Jenkins.ANONYMOUS, Jenkins.READ));
+        assertFalse(Jenkins.get().hasPermission(Jenkins.ANONYMOUS, Jenkins.READ));
 
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
