@@ -24,6 +24,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.security.Permission;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
 
@@ -58,5 +59,10 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
             j.setProjectNamingStrategy(DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
         return true;
+    }
+
+    @Override
+    public Permission getPermission() {
+        return Jenkins.CONFIGURE;
     }
 }
