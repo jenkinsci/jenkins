@@ -140,21 +140,15 @@ public class ComputerTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void dumpExportTableAllowedWithConfigurePermission() throws Exception {
+    public void dumpExportTableForbiddenWithoutAdminPermission() throws Exception {
+        final String READER = "reader";
         final String CONFIGURATOR = "configurator";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().to(CONFIGURATOR));
-        Page form = j.createWebClient().login(CONFIGURATOR).goTo("computer/(master)/dumpExportTable", "text/plain");
-        assertEquals(form.getWebResponse().getStatusCode(), 200);
-    }
-
-    @Issue("JENKINS-60266")
-    @Test
-    public void dumpExportTableForbiddenWithoutAdminOrConfigurePermission() throws Exception {
-        final String READER = "reader";
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to(READER));
+                                                   .grant(Jenkins.READ).everywhere().to(READER)
+                                                   .grant(Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR)
+        );
         j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", 403);
+        j.createWebClient().login(CONFIGURATOR).assertFails("computer/(master)/dumpExportTable", 403);
     }
 }
