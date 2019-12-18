@@ -1593,12 +1593,12 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(0, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 2));
+    static int DELETION_RETRIES = Math.max(0, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 2));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
      * delete files when retrying.<br>
-     * This has no effect unless {@link #DELETION_MAX} is non-zero.
+     * This has no effect unless {@link #DELETION_RETRIES} is non-zero.
      * <p>
      * If zero, we will not delay between attempts.<br>
      * If negative, we will wait an (linearly) increasing multiple of this value
@@ -1611,7 +1611,7 @@ public class Util {
      * If this flag is set to true then we will request a garbage collection
      * after a deletion failure before we next retry the delete.<br>
      * It defaults to {@code false} and is ignored unless
-     * {@link #DELETION_MAX} is greater than 1.
+     * {@link #DELETION_RETRIES} is non zero.
      * <p>
      * Setting this flag to true <i>may</i> resolve some problems on Windows,
      * and also for directory trees residing on an NFS share, <b>but</b> it can
@@ -1632,7 +1632,7 @@ public class Util {
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
     private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
-        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
     /**
