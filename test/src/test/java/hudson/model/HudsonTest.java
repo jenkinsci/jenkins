@@ -256,13 +256,9 @@ public class HudsonTest {
     public void someGlobalConfigCanNotBeModifiedWithConfigurePermission() throws Exception {
         //GIVEN the Global Configuration Form, with some changes unsaved
         int currentNumberExecutors = j.getInstance().getNumExecutors();
-        View primary = j.getInstance().getPrimaryView();
         String shell = getShell();
-        j.getInstance().addView(new ListView("otherView"));
-
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         form.getInputByName("_.numExecutors").setValueAttribute(""+(currentNumberExecutors+1));
-        form.getSelectByName("primaryView").setSelectedAttribute("otherView", true);
         form.getInputByName("_.shell").setValueAttribute("/fakeShell");
 
         // WHEN a user with CONFIGURE permission only try to save those changes
@@ -272,7 +268,6 @@ public class HudsonTest {
         j.submit(form);
         // THEN the changes on fields forbidden to a CONFIGURE_JENKINS permission are not saved
         assertEquals("shouldn't be allowed to change the number of executors", currentNumberExecutors, j.getInstance().getNumExecutors());
-        assertEquals("shouldn't be allowed to change the primary view", primary, j.getInstance().getPrimaryView());
         assertEquals("shouldn't be allowed to change the shell executable", shell, getShell());
     }
 
