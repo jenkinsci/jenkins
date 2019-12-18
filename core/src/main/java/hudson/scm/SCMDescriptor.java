@@ -54,7 +54,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
 
-    private final AtomicInteger generation = new AtomicInteger(1);
+    private transient final AtomicInteger generation = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
