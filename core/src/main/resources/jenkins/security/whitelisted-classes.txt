@@ -132,7 +132,6 @@ java.util.concurrent.CopyOnWriteArraySet
 java.util.concurrent.CountDownLatch
 java.util.concurrent.CountDownLatch$Sync
 java.util.concurrent.atomic.AtomicBoolean
-java.util.concurrent.atomic.AtomicInteger
 java.util.logging.Level
 java.util.logging.LogRecord
 java.util.regex.Pattern
