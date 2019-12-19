@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.PersistentDescriptor;
+import hudson.security.Permission;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import jenkins.util.SystemProperties;
@@ -139,6 +140,10 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     public void setUrl(@CheckForNull String jenkinsUrl) {
+        if(!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            return;
+        }
+
         String url = Util.nullify(jenkinsUrl);
         if(url!=null && !url.endsWith("/"))
             url += '/';
