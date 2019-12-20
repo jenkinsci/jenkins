@@ -99,7 +99,7 @@ public class ResourceDomainTest {
 
         {
             webClient.setThrowExceptionOnFailingStatusCode(false);
-            Page page = webClient.getPage(resourceRootUrl + "/static-files");
+            Page page = webClient.getPage(resourceRootUrl + "/static-files/");
             Assert.assertEquals("resource action index page response is 404", 404, page.getWebResponse().getStatusCode());
         }
 
