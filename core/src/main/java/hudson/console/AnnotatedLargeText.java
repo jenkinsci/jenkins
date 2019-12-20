@@ -117,7 +117,6 @@ public class AnnotatedLargeText<T> extends LargeText {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
-    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
     private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
         try {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
@@ -130,7 +129,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                     long timestamp = ois.readLong();
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack
-                        return (ConsoleAnnotator) ois.readObject();
+                        return getConsoleAnnotator(ois);
                 } catch (RuntimeException ex) {
                     throw new IOException("Could not decode input", ex);
                 }
@@ -140,6 +139,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         }
         // start from scratch
         return ConsoleAnnotator.initial(context);
+    }
+
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
+    private ConsoleAnnotator getConsoleAnnotator(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (ConsoleAnnotator) ois.readObject();
     }
 
     @CheckReturnValue

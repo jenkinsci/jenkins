@@ -54,10 +54,9 @@ public abstract class Hash {
      */
     public abstract int next(int n);
 
-    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
     public static Hash from(String seed) {
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = getMd5();
             md5.update(seed.getBytes(StandardCharsets.UTF_8));
             byte[] digest = md5.digest();
 
@@ -78,6 +77,12 @@ public abstract class Hash {
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);    // MD5 is a part of JRE
         }
+    }
+
+    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Should not be used for security.")
+    private static MessageDigest getMd5() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("MD5");
     }
 
     /**

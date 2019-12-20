@@ -78,7 +78,6 @@ import java.util.logging.Logger;
 
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
-@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Administrator action installing a plugin, which could do far worse.")
 public class ClassicPluginStrategy implements PluginStrategy {
 
     private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());
@@ -432,6 +431,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return null;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Administrator action installing a plugin, which could do far worse.")
     private static File resolve(File base, String relative) {
         File rel = new File(relative);
         if(rel.isAbsolute())

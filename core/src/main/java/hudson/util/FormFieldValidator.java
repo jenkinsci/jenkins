@@ -320,7 +320,6 @@ public abstract class FormFieldValidator {
             super(request, response);
         }
 
-        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             if(value==null) {// nothing entered yet
@@ -332,7 +331,7 @@ public abstract class FormFieldValidator {
 
             try {
                 URL url = new URL(value);
-                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                HttpURLConnection con = openConnection(url);
                 con.connect();
                 if(con.getResponseCode()!=200
                 || con.getHeaderField("X-Hudson")==null) {
@@ -344,6 +343,11 @@ public abstract class FormFieldValidator {
             } catch (IOException e) {
                 handleIOException(value,e);
             }
+        }
+
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
+        private HttpURLConnection openConnection(URL url) throws IOException {
+            return (HttpURLConnection)url.openConnection();
         }
     }
 
@@ -516,7 +520,6 @@ public abstract class FormFieldValidator {
             super(request, response, true);
         }
 
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;

@@ -310,18 +310,23 @@ public final class RunIdMigrator {
      * Reverses the migration, in case you want to revert to the older format.
      * @param args one parameter, {@code $JENKINS_HOME}
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only used as an command-line process.")
     public static void main(String... args) throws Exception {
         if (args.length != 1) {
             throw new Exception("pass one parameter, $JENKINS_HOME");
         }
-        File root = new File(args[0]);
+        File root = constructFile(args[0]);
         File jobs = new File(root, "jobs");
         if (!jobs.isDirectory()) {
             throw new FileNotFoundException("no such $JENKINS_HOME " + root);
         }
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only used as an command-line process.")
+    private static File constructFile(String arg) {
+        return new File(arg);
+    }
+
     private void unmigrateJobsDir(File jobs) throws Exception {
         File[] jobDirs = jobs.listFiles();
         if (jobDirs == null) {

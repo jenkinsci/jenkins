@@ -26,6 +26,7 @@ package hudson.util;
 import java.lang.RuntimeException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +62,6 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  * @author Kohsuke Kawaguchi
  * @since 1.302
  */
-@SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
 public class ConsistentHash<T> {
     /**
      * All the items in the hash, to their replication factors.
@@ -292,7 +292,7 @@ public class ConsistentHash<T> {
      */
     private int md5(String s) {
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = getMd5();
             md5.update(s.getBytes());
             byte[] digest = md5.digest();
 
@@ -303,6 +303,12 @@ public class ConsistentHash<T> {
         } catch (GeneralSecurityException e) {
             throw new RuntimeException("Could not generate MD5 hash", e);
         }
+    }
+
+    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
+    private MessageDigest getMd5() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("MD5");
     }
 
     /**

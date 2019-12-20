@@ -114,7 +114,8 @@ public class Connection {
     /**
      * Receives an object sent by {@link #writeObject(Object)}
      */
-    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Not used. We should just remove it.")
+    // TODO JENKINS-60562 remove this class
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Not used. We should just remove it. Class is deprecated.")
     public <T> T readObject() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStreamEx(in,
                 getClass().getClassLoader(), ClassFilter.DEFAULT);
@@ -194,17 +195,20 @@ public class Connection {
      * @return
      *      A new {@link Connection} object that includes the transport encryption.
      */
-    @SuppressFBWarnings(value = "STATIC_IV", justification = "Not used. We should just remove it.")
     public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws IOException, GeneralSecurityException {
         Cipher cout = Cipher.getInstance(algorithm);
-        cout.init(Cipher.ENCRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        cout.init(Cipher.ENCRYPT_MODE, sessionKey, createIv(sessionKey));
         CipherOutputStream o = new CipherOutputStream(out, cout);
 
         Cipher cin = Cipher.getInstance(algorithm);
-        cin.init(Cipher.DECRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        cin.init(Cipher.DECRYPT_MODE, sessionKey, createIv(sessionKey));
         CipherInputStream i = new CipherInputStream(in, cin);
 
         return new Connection(i,o);
+    }
+
+    private IvParameterSpec createIv(SecretKey sessionKey) {
+        return new IvParameterSpec(sessionKey.getEncoded());
     }
 
     /**

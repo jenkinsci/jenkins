@@ -233,7 +233,6 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      *
      * @return null if the encoded form is malformed.
      */
-    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
     public static ConsoleNote readFrom(DataInputStream in) throws IOException, ClassNotFoundException {
         try {
             byte[] preamble = new byte[PREAMBLE.length];
@@ -277,13 +276,18 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
                     jenkins != null ? jenkins.pluginManager.uberClassLoader : ConsoleNote.class.getClassLoader(),
                     ClassFilter.DEFAULT)) {
-                return (ConsoleNote) ois.readObject();
+                return getConsoleNote(ois);
             }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
             // package that up as IOException so that the caller won't fatally die.
             throw new IOException(e);
         }
+    }
+
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
+    private static ConsoleNote getConsoleNote(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (ConsoleNote) ois.readObject();
     }
 
     /**

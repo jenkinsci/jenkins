@@ -191,7 +191,7 @@ public class CLI {
             	continue;
             }
             if(head.equals("-i") && args.size()>=2) {
-                File f = new File(args.get(1));
+                File f = getFileFromArguments(args);
                 if (!f.exists()) {
                     printUsage(Messages.CLI_NoSuchFileExists(f));
                     return -1;
@@ -293,7 +293,7 @@ public class CLI {
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
         } else if (auth != null) {
-            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1)), Charset.defaultCharset()).trim() : auth);
+            factory = factory.basicAuth(auth.startsWith("@") ? readAuthFromFile(auth).trim() : auth);
         }
 
         if (mode == Mode.HTTP) {
@@ -305,6 +305,16 @@ public class CLI {
         }
 
         throw new AssertionError();
+    }
+
+    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    private static String readAuthFromFile(String auth) throws IOException {
+        return FileUtils.readFileToString(new File(auth.substring(1)), Charset.defaultCharset());
+    }
+
+    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    private static File getFileFromArguments(List<String> args) {
+        return new File(args.get(1));
     }
 
     private static int webSocketConnection(String url, List<String> args, CLIConnectionFactory factory) throws Exception {

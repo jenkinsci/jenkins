@@ -98,7 +98,6 @@ public class BasicAuthenticationFilter implements Filter {
     }
 
     @SuppressWarnings("ACL.impersonate")
-    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
@@ -164,13 +163,18 @@ public class BasicAuthenticationFilter implements Filter {
             path += '?'+q;
 
         // prepare a redirect
-        rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        rsp.setHeader("Location",path);
+        prepareRedirect(rsp, path);
 
         // ... but first let the container authenticate this request
         RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username="+
             URLEncoder.encode(username,"UTF-8")+"&j_password="+URLEncoder.encode(password,"UTF-8"));
         d.include(req,rsp);
+    }
+
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
+    private void prepareRedirect(HttpServletResponse rsp, String path) {
+        rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+        rsp.setHeader("Location",path);
     }
 
     //public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
