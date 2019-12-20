@@ -61,7 +61,7 @@ import java.text.MessageFormat;
  */
 public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
     @Override
-    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "Interemediate step for redirecting users to login page.")
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "Intermediate step for redirecting users to login page.")
     public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
