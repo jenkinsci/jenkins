@@ -996,7 +996,7 @@ public class Fingerprint implements ModelObject, Saveable {
         final Jenkins instance = Jenkins.get();
         for (Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
-            if (instance.hasPermission(Jenkins.CONFIGURE) || canDiscoverItem(itemName)) {
+            if (instance.hasPermission(Jenkins.ADMINISTER) || canDiscoverItem(itemName)) {
                 r.add(new RangeItem(itemName, e.getValue()));
             }
         }
