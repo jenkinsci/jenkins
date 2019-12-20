@@ -10,7 +10,7 @@ import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
 
 /**
- * Receives incoming agents connecting through {@link JnlpSlaveAgentProtocol2}, {@link JnlpSlaveAgentProtocol3}, {@link JnlpSlaveAgentProtocol4}.
+ * Receives incoming agents connecting through {@link JnlpSlaveAgentProtocol4}.
  *
  * <p>
  * This is useful to establish the communication with other JVMs and use them
