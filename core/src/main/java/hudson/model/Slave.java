@@ -407,23 +407,19 @@ public abstract class Slave extends Node implements Serializable {
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-            
+
+            Class<?> owner = null;
             if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
-                File cliJar = Which.jarFile(CLI.class);
-                if (cliJar.isFile()) {
-                    name = "jenkins-cli.jar";
-                } else {
-                    URL res = findExecutableJar(cliJar, CLI.class);
-                    if (res != null) {
-                        return res;
-                    }
-                }
+                owner = CLI.class;
             } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
-                File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
-                if (remotingJar.isFile()) {
-                    name = "lib/" + remotingJar.getName();
+                owner = hudson.remoting.Launcher.class;
+            }
+            if (owner != null) {
+                File jar = Which.jarFile(owner);
+                if (jar.isFile()) {
+                    name = "lib/" + jar.getName();
                 } else {
-                    URL res = findExecutableJar(remotingJar, hudson.remoting.Launcher.class);
+                    URL res = findExecutableJar(jar, owner);
                     if (res != null) {
                         return res;
                     }
