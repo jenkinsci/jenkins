@@ -980,8 +980,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         if (category==null)
             return Messages.UpdateCenter_PluginCategory_misc();
         try {
-            return (String)Messages.class.getMethod(
+            return (String) Messages.class.getMethod(
                     "UpdateCenter_PluginCategory_" + category.replace('-', '_')).invoke(null);
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
             return Messages.UpdateCenter_PluginCategory_unrecognized(category);
         }
