@@ -648,6 +648,7 @@ public class ViewTest {
     }
 
     @Test
+    @Issue("JENKINS-60579")
     public void invisiblePropertiesOnViewShoudBePersisted() throws Exception {
 
         //GIVEN a listView that have an invisible property
@@ -655,14 +656,14 @@ public class ViewTest {
         myListView.setRecurse(true);
         myListView.setIncludeRegex(".*");
 
-        InvisiblePropertyImpl invisibleProperty = new InvisiblePropertyImpl();
+        CustomInvisibleProperty invisibleProperty = new CustomInvisibleProperty();
         invisibleProperty.setSomeProperty("You cannot see me.");
         invisibleProperty.setView(myListView);
         myListView.getProperties().add(invisibleProperty);
 
         j.jenkins.addView(myListView);
 
-        assertEquals(j.jenkins.getView("Rock").getProperties().get(InvisiblePropertyImpl.class).getSomeProperty(),
+        assertEquals(j.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
                      "You cannot see me.");
 
         //WHEN the users goes with "Edit View" on the configure page
@@ -670,8 +671,8 @@ public class ViewTest {
         HtmlPage editViewPage = webClient.getPage(myListView,"configure");
 
         //THEN the invisible property is not displayed on page
-        assertFalse("InvisiblePropertyImpl should not be displayed on the View edition page UI.",
-                    editViewPage.asText().contains("InvisiblePropertyImpl"));
+        assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
+                    editViewPage.asText().contains("CustomInvisibleProperty"));
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
@@ -685,14 +686,14 @@ public class ViewTest {
 
 
         //AND THEN after View save, the invisible property is still persisted with the View.
-        assertNotNull("The InvisiblePropertyImpl should be persisted on the View.",
-                      j.jenkins.getView("Rock").getProperties().get(InvisiblePropertyImpl.class));
-        assertEquals(j.jenkins.getView("Rock").getProperties().get(InvisiblePropertyImpl.class).getSomeProperty(),
+        assertNotNull("The CustomInvisibleProperty should be persisted on the View.",
+                      j.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class));
+        assertEquals(j.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
                      "You cannot see me.");
 
     }
 
-    public static class InvisiblePropertyImpl extends ViewProperty {
+    private static class CustomInvisibleProperty extends ViewProperty {
 
         private String someProperty;
 
@@ -704,17 +705,17 @@ public class ViewTest {
             return this.someProperty;
         }
 
-        InvisiblePropertyImpl() {
+        CustomInvisibleProperty() {
             this.someProperty = "undefined";
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
             return this;
         }
 
-        @Extension
-        public static final class DescriptorImpl extends ViewPropertyDescriptor {
+        @TestExtension
+        public static final class CustomInvisibleDescriptorImpl extends ViewPropertyDescriptor {
 
             @Override
             public boolean isEnabledFor(View view) {
@@ -722,8 +723,8 @@ public class ViewTest {
             }
         }
 
-        @Extension
-        public static final class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
+        @TestExtension
+        public static final class CustomInvisibleDescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
 
             @Override
             public boolean filter(Object context, Descriptor descriptor) {
