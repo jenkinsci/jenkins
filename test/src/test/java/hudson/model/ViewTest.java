@@ -685,7 +685,7 @@ public class ViewTest {
 
 
         //AND THEN after View save, the invisible property is still persisted with the View.
-        assertNotNull("The InvisiblePropertyImpl should be present on the View.",
+        assertNotNull("The InvisiblePropertyImpl should be persisted on the View.",
                       j.jenkins.getView("Rock").getProperties().get(InvisiblePropertyImpl.class));
         assertEquals(j.jenkins.getView("Rock").getProperties().get(InvisiblePropertyImpl.class).getSomeProperty(),
                      "You cannot see me.");

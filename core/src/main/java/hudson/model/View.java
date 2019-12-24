@@ -322,8 +322,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Returns all the {@link LabelAtomPropertyDescriptor}s that can be potentially configured
-     * on this label.
+     * Returns all the {@link ViewPropertyDescriptor}s that can be potentially configured
+     * on this view. Returns both {@link ViewPropertyDescriptor}s visible and invisible for user, see
+     * {@link View#getVisiblePropertyDescriptors} to filter invisible one.
      */
     public List<ViewPropertyDescriptor> getApplicablePropertyDescriptors() {
         List<ViewPropertyDescriptor> r = new ArrayList<>();
@@ -332,6 +333,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 r.add(pd);
         }
         return r;
+    }
+
+    /**
+     * @return all the {@link ViewPropertyDescriptor}s that can be potentially configured on this View and are visible
+     * for the user. Use {@link DescriptorVisibilityFilter} to make a View property invisible for users.
+     */
+    public List<ViewPropertyDescriptor> getVisiblePropertyDescriptors() {
+        return DescriptorVisibilityFilter.apply(this, getApplicablePropertyDescriptors());
     }
 
     public void save() throws IOException {
