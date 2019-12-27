@@ -2492,13 +2492,7 @@ public class Queue extends ResourceController implements Saveable {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
 
-            if (this.getId() < that.getId()) {
-                return -1;
-            } else if (this.getId() == that.getId()) {
-                return 0;
-            } else {
-                return 1;
-            }
+            return Long.compare(this.getId(), that.getId());
         }
 
         public CauseOfBlockage getCauseOfBlockage() {

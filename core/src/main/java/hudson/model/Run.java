@@ -2496,9 +2496,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public int compare(@Nonnull Run lhs, @Nonnull Run rhs) {
             long lt = lhs.getTimeInMillis();
             long rt = rhs.getTimeInMillis();
-            if(lt>rt)   return -1;
-            if(lt<rt)   return 1;
-            return 0;
+            return Long.compare(rt, lt);
         }
     };
 
