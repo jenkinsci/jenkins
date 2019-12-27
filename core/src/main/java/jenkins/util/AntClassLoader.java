@@ -919,7 +919,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return Url to found object
      */
     @CheckForNull
-    protected URL getUrl(ArrayList<File> pathComponents, String name) {
+    protected URL getUrl(Iterable<File> pathComponents, String name) {
         URL url = null;
         for (File pathComponent : pathComponents) {
             url = getResourceURL(pathComponent, name);
