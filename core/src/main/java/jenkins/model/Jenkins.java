@@ -1911,7 +1911,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      }
 
     public void setPrimaryView(@Nonnull View v) {
-        checkPermission(ADMINISTER);
+        checkPermission(Permission.CONFIGURE);
         this.primaryView = v.getViewName();
     }
 
@@ -2527,7 +2527,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Everything below here is admin-only, so do the check here.
      */
     public LogRecorderManager getLog() {
-        checkPermission(CONFIGURE);
+        checkPermission(ADMINISTER);
         return log;
     }
 
