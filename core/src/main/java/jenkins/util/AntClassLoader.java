@@ -778,6 +778,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         T convert(@Nonnull JarFile jarFile, @Nonnull JarEntry entry) throws IOException;
     }
 
+    @CheckForNull
     private <T> T storeAndConvert(JarFile jarFile, File file, String resourceName, Converter<T> converter) throws IOException {
         if (jarFile == null) {
             if (file.exists()) {
