@@ -23,6 +23,9 @@
  */
 package hudson.security;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -30,9 +33,13 @@ import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.Sid;
 
 import javax.annotation.Nonnull;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
@@ -66,8 +73,15 @@ public abstract class SidACL extends ACL {
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
     protected Boolean _hasPermission(@Nonnull Authentication a, Permission permission) {
+        PrincipalSid principalSid;
+        try {
+            principalSid =  principalSidCache.get(a, () -> {return new PrincipalSid(a);});
+        } catch (ExecutionException e) {
+            LOGGER.log(WARNING, "Failed to populate Principal Sid Cache", e);
+            principalSid = new PrincipalSid(a);
+        }
         // ACL entries for this principal takes precedence
-        Boolean b = hasPermission(new PrincipalSid(a),permission);
+        Boolean b = hasPermission(principalSid, permission);
         if(LOGGER.isLoggable(FINER))
             LOGGER.finer("hasPermission(PrincipalSID:"+a.getPrincipal()+","+permission+")=>"+b);
         if(b!=null)
@@ -147,4 +161,9 @@ public abstract class SidACL extends ACL {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
+    private final Cache<Authentication, PrincipalSid> principalSidCache = CacheBuilder.newBuilder()
+            .softValues()
+            .maximumSize(200)
+            .expireAfterWrite(60, TimeUnit.MINUTES)
+            .build();
 }
