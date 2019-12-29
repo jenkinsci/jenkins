@@ -42,8 +42,7 @@ abstract class ConfigDirectory<T,COL extends Collection<T>> extends ConfigFile<T
 
                 for (String fragment : fragments) {
                     File f = new File(dir, fragment);
-                    try {
-                        BufferedReader reader = new BufferedReader(new FileReader(f));
+                    try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
                         String line;
                         while ((line=reader.readLine())!=null) {
                             if (line.startsWith("#")) continue;   // comment
