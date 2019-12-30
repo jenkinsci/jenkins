@@ -77,6 +77,7 @@ public class RunListTest {
     @Issue("JENKINS-21159")
 	@PrepareForTest({Run.class})
 	@Test
+	@SuppressWarnings("deprecation")
 	public void byTimestampFirstRun() {
 		setUpByTimestampRuns();
 		// Only r1
@@ -87,6 +88,7 @@ public class RunListTest {
 
 	@PrepareForTest({Run.class})
 	@Test
+	@SuppressWarnings("deprecation")
 	public void byTimestampLastRun() {
 		setUpByTimestampRuns();
 		// Only r2
