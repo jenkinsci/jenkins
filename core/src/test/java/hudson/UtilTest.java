@@ -351,6 +351,7 @@ public class UtilTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testIsAbsoluteUri() {
         assertTrue(Util.isAbsoluteUri("http://foobar/"));
         assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
