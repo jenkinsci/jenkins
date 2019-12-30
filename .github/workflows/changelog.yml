@@ -17,8 +17,8 @@ jobs:
         uses: release-drafter/release-drafter@v5.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Generates a YAML changelog file using https://github.com/daniel-beck/jenkins-changelog-generator
+      # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       - name: Generate YAML changelog draft
-        uses: jenkinsci/jenkins-changelog-generator@master
+        uses: jenkinsci/jenkins-core-changelog-generator@master
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
