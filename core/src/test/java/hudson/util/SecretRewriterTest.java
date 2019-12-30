@@ -59,6 +59,7 @@ public class SecretRewriterTest {
         return FileUtils.readFileToString(f, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
+    @SuppressWarnings("deprecation")
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());
