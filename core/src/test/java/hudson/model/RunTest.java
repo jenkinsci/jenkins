@@ -52,8 +52,9 @@ public class RunTest {
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-15816")
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test public void timezoneOfID() throws Exception {
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
+    @Test
+    public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();
         try {
             final Run r;
@@ -129,7 +130,7 @@ public class RunTest {
     }
 
     @Issue("JENKINS-26777")
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     @Test
     public void getDurationString() throws IOException {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
@@ -157,6 +158,7 @@ public class RunTest {
     }
 
     @Issue("JENKINS-27441")
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -172,6 +174,7 @@ public class RunTest {
         assertTrue(logLines.isEmpty());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnRightOrder() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -196,6 +199,7 @@ public class RunTest {
         assertEquals("[...truncated "+truncatedCount+" B...]", logLines.get(0));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAllLines() throws Exception {
         Job j = Mockito.mock(Job.class);
