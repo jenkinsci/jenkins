@@ -24,10 +24,10 @@
 package hudson.model;
 
 import hudson.util.ByteBuffer;
-import hudson.util.CharSpool;
-import hudson.util.LineEndNormalizingWriter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.CharSpool;
+import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 
@@ -81,6 +81,7 @@ public class LargeText {
         this.completed = completed;
     }
 
+    @SuppressWarnings("deprecation")
     public LargeText(final ByteBuffer memory, boolean completed) {
         this.source = new Source() {
             public Session open() throws IOException {
@@ -347,6 +348,7 @@ public class LargeText {
     private static final class BufferSession implements Session {
         private final InputStream in;
 
+        @SuppressWarnings("deprecation")
         public BufferSession(ByteBuffer buf) {
             this.in = buf.newInputStream();
         }
