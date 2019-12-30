@@ -959,7 +959,7 @@ public class Functions {
     }
 
     public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {
-        return SCM._for(project);
+        return SCM._for((Job)project);
     }
 
     /**
