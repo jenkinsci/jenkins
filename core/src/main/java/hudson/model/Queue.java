@@ -40,7 +40,6 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
@@ -1854,7 +1853,7 @@ public class Queue extends ResourceController implements Saveable {
      * transient Task, extend {@link TransientTask} marker interface.
      *
      * <p>
-     * Plugins are encouraged to extend from {@link AbstractQueueTask}
+     * Plugins are encouraged to extend from {@link Queue.Task}
      * instead of implementing this interface directly, to maintain
      * compatibility with future changes to this interface.
      *
