@@ -12,7 +12,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import hudson.model.Item;
-import hudson.model.SCMedItem;
 import hudson.model.TaskListener;
 import jenkins.scm.SCMDecisionHandler;
 
@@ -27,7 +26,7 @@ public class SCMTriggerItemTest {
         // given
         PowerMockito.mockStatic(SCMDecisionHandler.class);
         PowerMockito.when(SCMDecisionHandler.firstShouldPollVeto(any(Item.class))).thenReturn(null);
-        SCMedItem scMedItem = Mockito.mock(SCMedItem.class);
+        hudson.model.SCMedItem scMedItem = Mockito.mock(hudson.model.SCMedItem.class);
         TaskListener listener = Mockito.mock(TaskListener.class);
 
         // when
