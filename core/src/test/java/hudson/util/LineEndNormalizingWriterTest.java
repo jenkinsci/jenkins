@@ -37,6 +37,7 @@ import java.io.IOException;
 public class LineEndNormalizingWriterTest {
 
     @Test
+    @SuppressWarnings("deprecation")
     public void test1() throws IOException {
         StringWriter sw = new StringWriter();
         Writer w = new LineEndNormalizingWriter(sw);
@@ -48,6 +49,7 @@ public class LineEndNormalizingWriterTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void test2() throws IOException {
         StringWriter sw = new StringWriter();
         Writer w = new LineEndNormalizingWriter(sw);
@@ -59,6 +61,7 @@ public class LineEndNormalizingWriterTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void test3() throws IOException {
         StringWriter sw = new StringWriter();
         Writer w = new LineEndNormalizingWriter(sw);
