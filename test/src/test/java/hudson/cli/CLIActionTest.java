@@ -40,8 +40,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 public class CLIActionTest {
     @Rule
@@ -56,7 +54,8 @@ public class CLIActionTest {
     private ExecutorService pool;
 
     @Test
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @SuppressWarnings("deprecation")
+    @org.jvnet.hudson.test.recipes.PresetData(org.jvnet.hudson.test.recipes.PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
