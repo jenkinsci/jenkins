@@ -1202,7 +1202,6 @@ public class UpdateSite {
         }
 
         @Restricted(NoExternalUse.class) // table.jelly
-        @Exported
         public boolean isNeededDependenciesForNewerJenkins(PluginManager.MetadataCache cache) {
             return cache.of("isNeededDependenciesForNewerJenkins:" + name, Boolean.class, () -> {
                 for (Plugin p : getNeededDependencies()) {
@@ -1242,7 +1241,6 @@ public class UpdateSite {
         }
 
         @Restricted(NoExternalUse.class) // table.jelly
-        @Exported
         public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
             return getDependenciesIncompatibleWithInstalledVersion(cache).isEmpty();
         }
