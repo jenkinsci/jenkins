@@ -321,7 +321,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the string representation of the agent log.
      */
     public String getLog() throws IOException {
-        return Util.loadFile(getLogFile());
+        return Util.loadFile(getLogFile(), Charset.defaultCharset());
     }
 
     /**
