@@ -64,7 +64,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
+            assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
         }
     }
 
@@ -88,7 +88,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
+            assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
         }
     }
 
