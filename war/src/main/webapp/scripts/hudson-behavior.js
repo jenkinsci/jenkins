@@ -521,7 +521,7 @@ function registerRegexpValidator(e,regexp,message) {
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "";
+            if (!set) this.targetElement.innerHTML = "<div/>";
         } else {
             this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
             set = true;
@@ -1555,8 +1555,12 @@ function expandTextArea(button,id) {
         n = n.parentNode;
     }
 
-    n.parentNode.innerHTML = 
-        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    var parent = n.parentNode;
+    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    var textArea = parent.childNodes[0];
+    textArea.name = field.name;
+    textArea.innerText = value;
+
     layoutUpdateCallback.call();
 }
 
@@ -2661,6 +2665,9 @@ function buildFormTree(form) {
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
+                if (e.hasClassName("complex-password-field")) {
+                    addProperty(p, "$redact", shortenName(e.name));
+                }
                 break;
             }
         }

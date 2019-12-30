@@ -34,7 +34,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.maven.MavenModuleSet;
+import hudson.matrix.MatrixProject;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -328,7 +328,7 @@ public class AbstractProjectTest {
     }
 
     /**
-     * Do the same as {@link #testQueueSuccessBehavior()} but over HTTP
+     * Do the same as {@link #queueSuccessBehavior()} but over HTTP
      */
     @Test
     @Issue("JENKINS-18407")
@@ -410,20 +410,24 @@ public class AbstractProjectTest {
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
         TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-        tpm.installDetachedPlugin("javadoc");
-        tpm.installDetachedPlugin("maven-plugin");
+        tpm.installDetachedPlugin("structs");
+        tpm.installDetachedPlugin("workflow-step-api");
+        tpm.installDetachedPlugin("scm-api");
+        tpm.installDetachedPlugin("workflow-api");
+        tpm.installDetachedPlugin("junit");
+        tpm.installDetachedPlugin("matrix-project");
 
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
 
-        HttpURLConnection con = postConfigDotXml(p, "<maven2-moduleset />");
+        HttpURLConnection con = postConfigDotXml(p, "<matrix-project />");
 
         // this should fail with a type mismatch error
         // the error message should report both what was submitted and what was expected
         assertEquals(500, con.getResponseCode());
         String msg = IOUtils.toString(con.getErrorStream());
         System.out.println(msg);
-        assertThat(msg, allOf(containsString(FreeStyleProject.class.getName()), containsString(MavenModuleSet.class.getName())));
+        assertThat(msg, allOf(containsString(FreeStyleProject.class.getName()), containsString(MatrixProject.class.getName())));
 
         // control. this should work
         con = postConfigDotXml(p, "<project />");

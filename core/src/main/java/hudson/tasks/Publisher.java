@@ -26,7 +26,9 @@ package hudson.tasks;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionComponent;
+import hudson.Launcher;
 import hudson.model.Action;
+import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
@@ -36,7 +38,6 @@ import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 /**

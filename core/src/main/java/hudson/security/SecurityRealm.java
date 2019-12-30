@@ -325,14 +325,17 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * responsibility not to send them to us in the first place.
          */
         final String cookieName = "JSESSIONID.";
-        for (Cookie cookie : req.getCookies()) {
-            if (cookie.getName().startsWith(cookieName)) {
-                LOGGER.log(Level.FINE, "Removing cookie {0} during logout", cookie.getName());
-                // one reason users log out is to clear their session(s)
-                // so tell the browser to drop all old sessions
-                cookie.setMaxAge(0);
-                cookie.setValue("");
-                rsp.addCookie(cookie);
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().startsWith(cookieName)) {
+                    LOGGER.log(Level.FINE, "Removing cookie {0} during logout", cookie.getName());
+                    // one reason users log out is to clear their session(s)
+                    // so tell the browser to drop all old sessions
+                    cookie.setMaxAge(0);
+                    cookie.setValue("");
+                    rsp.addCookie(cookie);
+                }
             }
         }
     }

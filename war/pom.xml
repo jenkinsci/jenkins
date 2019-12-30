@@ -45,6 +45,18 @@ THE SOFTWARE.
     <yarn.version>0.24.5</yarn.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -89,7 +101,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.3</version>
+      <version>5.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -110,7 +122,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.11</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -283,36 +295,6 @@ THE SOFTWARE.
                     Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>maven-plugin</artifactId>
-                  <version>${maven-plugin.version}</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ssh-slaves</artifactId>
-                  <version>1.15</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>credentials</artifactId>
-                  <version>2.1.2</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ssh-credentials</artifactId>
-                  <version>1.10</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>subversion</artifactId>
-                  <version>1.54</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
                   <version>2.11</version>
@@ -321,19 +303,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.2</version>
+                  <version>1.8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
                   <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>translation</artifactId>
-                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -351,7 +327,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>pam-auth</artifactId>
-                  <version>1.1</version>
+                  <version>1.5.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -363,7 +339,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.20</version>
+                  <version>1.21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -393,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.56</version>
+                  <version>1.68</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -490,10 +466,9 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.22.v20191022</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -502,16 +477,6 @@ THE SOFTWARE.
           <httpConnector>
               <port>${port}</port>
           </httpConnector>
-          <additionalClassesDirectories>
-            <!-- load resources straight from source -->
-            <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
-
-            <!--
-              read directly from core module's output directory,
-              so that changes are picked up right away without running mvn.
-            -->
-            <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
-          </additionalClassesDirectories>
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
@@ -568,6 +533,8 @@ THE SOFTWARE.
             </systemProperty>
           </systemProperties>
           <webApp>
+            <!-- Allows resources to be reloaded. -->
+            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
             <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->

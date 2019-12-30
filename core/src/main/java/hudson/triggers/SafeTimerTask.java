@@ -34,11 +34,10 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Wrapper so that a fatal error in {@link TimerTask} will not terminate the timer.
@@ -67,13 +66,10 @@ public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);
-        } finally {
-            SecurityContextHolder.setContext(oldContext);
         }
     }
 

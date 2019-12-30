@@ -24,12 +24,15 @@
 
 package hudson.cli;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import static org.junit.Assert.*;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class PlainCLIProtocolTest {
 
@@ -89,6 +92,13 @@ public class PlainCLIProtocolTest {
             }
             @Override
             protected void onStdin(byte[] chunk) throws IOException {
+                /* To inject a race condition:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException x) {
+                    throw new IOException(x);
+                }
+                */
                 stdin.write(chunk);
             }
             @Override
@@ -122,6 +132,9 @@ public class PlainCLIProtocolTest {
             while (client.code == -1) {
                 client.wait();
             }
+        }
+        while (server.stdin.size() == 0) {
+            Thread.sleep(100);
         }
         assertEquals("hello", server.stdin.toString());
         assertEquals("command", server.arg);

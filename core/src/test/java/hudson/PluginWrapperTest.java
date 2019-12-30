@@ -17,7 +17,7 @@ import org.mockito.stubbing.Answer;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import org.jvnet.hudson.test.Issue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +34,7 @@ public class PluginWrapperTest {
         PluginWrapper.Dependency dependency = new PluginWrapper.Dependency(version);
         assertEquals("plugin", dependency.shortName);
         assertEquals("0.0.2", dependency.version);
-        assertEquals(false, dependency.optional);
+        assertFalse(dependency.optional);
     }
 
     @Test
@@ -43,7 +43,7 @@ public class PluginWrapperTest {
         PluginWrapper.Dependency dependency = new PluginWrapper.Dependency(version);
         assertEquals("plugin", dependency.shortName);
         assertEquals("0.0.2", dependency.version);
-        assertEquals(true, dependency.optional);
+        assertTrue(dependency.optional);
     }
 
     @Test
@@ -161,12 +161,11 @@ public class PluginWrapperTest {
         }
 
         private PluginWrapper build() {
-            Manifest manifest = mock(Manifest.class);
-            Attributes attributes = new Attributes();
+            Manifest manifest = new Manifest();
+            Attributes attributes = manifest.getMainAttributes();
             attributes.put(new Attributes.Name("Short-Name"), name);
             attributes.put(new Attributes.Name("Jenkins-Version"), requiredCoreVersion);
             attributes.put(new Attributes.Name("Plugin-Version"), version);
-            when(manifest.getMainAttributes()).thenReturn(attributes);
             return new PluginWrapper(
                     pm,
                     new File("/tmp/" + name + ".jpi"),

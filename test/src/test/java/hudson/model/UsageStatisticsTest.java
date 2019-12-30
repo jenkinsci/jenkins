@@ -72,7 +72,7 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
+        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
 
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
@@ -90,7 +90,7 @@ public class UsageStatisticsTest {
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
                 new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
-        Jenkins jenkins = Jenkins.getActiveInstance();
+        Jenkins jenkins = j.jenkins;
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
         // that would cause issues with parsing/analyzing uploaded usage statistics
         assertEquals(1, o.getInt("stat"));
@@ -116,7 +116,7 @@ public class UsageStatisticsTest {
             assertThat("No duplicates", reported.contains(name), is(false));
             reported.add(name);
         }
-        assertThat(reported, hasItem("credentials"));
+        assertThat(reported, hasItem("matrix-auth"));
 
         // Compare content to watch out for backwards compatibility
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));
@@ -136,13 +136,12 @@ public class UsageStatisticsTest {
      * @throws InterruptedException
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
-        Jenkins j = Jenkins.getActiveInstance();
-        ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
+        ArchitectureMonitor.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
         String value = null;
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {
-            final Computer master = j.getComputers()[0];
+            final Computer master = j.jenkins.getComputers()[0];
             value = descriptor.get(master);
             Thread.sleep(200);
         }

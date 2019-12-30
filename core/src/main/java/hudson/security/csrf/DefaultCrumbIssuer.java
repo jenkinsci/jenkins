@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2008-2010 Yahoo! Inc.
  * All rights reserved. 
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -18,10 +18,8 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import jenkins.security.HexStringConfidentialKey;
 
@@ -71,9 +69,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
@@ -98,9 +93,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         if (request instanceof HttpServletRequest) {

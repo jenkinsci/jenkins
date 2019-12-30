@@ -43,6 +43,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
 import jenkins.AgentProtocol;
@@ -55,6 +56,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
@@ -129,6 +131,21 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public int getAdvertisedPort() {
         return CLI_PORT != null ? CLI_PORT : getPort();
+    }
+
+    /**
+     * Gets the host name that we advertise protocol clients to connect to.
+     * @since 2.198
+     */
+    public String getAdvertisedHost() {
+        if (CLI_HOST_NAME != null) {
+          return CLI_HOST_NAME;
+        }
+        try {
+            return new URL(Jenkins.get().getRootUrl()).getHost();
+        } catch (MalformedURLException | NullPointerException e) {
+            throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
+        }
     }
 
     /**
@@ -373,9 +390,6 @@ public final class TcpSlaveAgentListener extends Thread {
             ping = "Ping\n".getBytes(StandardCharsets.UTF_8);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean isRequired() {
             return true;
@@ -386,9 +400,6 @@ public final class TcpSlaveAgentListener extends Thread {
             return "Ping";
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getDisplayName() {
             return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
@@ -438,7 +449,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
+     * Reschedules the {@code TcpSlaveAgentListener} on demand.  Disables itself after running.
      */
     @Extension
     @Restricted(NoExternalUse.class)

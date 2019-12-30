@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -123,7 +124,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
-     * {@inheritDoc}
      * @since 1.635.
      */
     @Override
@@ -180,7 +180,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Returns the number of {@link Executor}s.
      *
-     * This may be different from <code>getExecutors().size()</code>
+     * This may be different from {@code getExecutors().size()}
      * because it takes time to adjust the number of executors.
      */
     @Exported
@@ -282,7 +282,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
-        return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
+        return new TagCloud<>(getAssignedLabels(), new WeightFunction<LabelAtom>() {
             public float weight(LabelAtom item) {
                 return item.getTiedJobCount();
             }
@@ -313,7 +313,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @return HashSet<Label>.
      */
     private HashSet<LabelAtom> getDynamicLabels() {
-        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        HashSet<LabelAtom> result = new HashSet<>();
         for (LabelFinder labeler : LabelFinder.all()) {
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
@@ -390,6 +390,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // flyweight tasks need to get executed somewhere, if every node
             if (!(item.task instanceof Queue.FlyweightTask && (
                     this instanceof Jenkins
+                            // TODO Why is the next operator a '||' instead of a '&&'?
                             || Jenkins.get().getNumExecutors() < 1
                             || Jenkins.get().getMode() == Mode.EXCLUSIVE)
             )) {
@@ -406,7 +407,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
-            CauseOfBlockage c = prop.canTake(item);
+            CauseOfBlockage c;
+            try {
+                c = prop.canTake(item);
+            } catch (Throwable t) {
+                // We cannot guarantee the task can be taken by this node because something wrong happened
+                LOGGER.log(Level.WARNING, t, () -> String.format("Exception evaluating if the node '%s' can take the task '%s'", getNodeName(), item.task.getName()));
+                c = CauseOfBlockage.fromMessage(Messages._Queue_ExceptionCanTake());
+            }
             if (c!=null)    return c;
         }
 
@@ -526,7 +534,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                 }
 
                 try {
-                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
+                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
                 } catch (FormException e) {

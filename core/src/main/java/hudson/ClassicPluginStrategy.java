@@ -289,7 +289,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         if (atts != null) {
             String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
-            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+            if (Boolean.parseBoolean( usePluginFirstClassLoader )) {
                 PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
@@ -329,8 +329,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }
 
-        /**
-         * See {@link ExtensionFinder#scout(Class, Hudson)} for the dead lock issue and what this does.
+        /*
+         * See ExtensionFinder#scout(Class, Hudson) for the dead lock issue and what this does.
          */
         if (LOGGER.isLoggable(Level.FINER))
             LOGGER.log(Level.FINER, "Scout-loading ExtensionList: "+type, new Throwable());

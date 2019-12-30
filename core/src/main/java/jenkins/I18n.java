@@ -43,25 +43,16 @@ import java.util.Locale;
 @Restricted(NoExternalUse.class)
 public class I18n implements RootAction {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getIconFileName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getUrlName() {
         return "i18n";

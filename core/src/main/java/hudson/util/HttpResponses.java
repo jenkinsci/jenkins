@@ -203,9 +203,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
             return this;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             byte[] bytes = jsonObject.toString().getBytes(StandardCharsets.UTF_8);

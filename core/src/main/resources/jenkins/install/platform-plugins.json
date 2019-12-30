@@ -68,7 +68,6 @@
             { "name": "p4" },
             { "name": "repo" },
             { "name": "subversion", "suggested": true },
-            { "name": "teamconcert" },
             { "name": "tfs" }
         ]
     },

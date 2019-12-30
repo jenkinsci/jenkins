@@ -65,7 +65,7 @@ public @interface Initializer {
      *
      * <p>
      * This has the identical purpose as {@link #requires()}, but it's separated to allow better type-safety
-     * when using {@link InitMilestone} as a requirement (since enum member definitions need to be constant.)
+     * when using {@link InitMilestone} as a requirement (since enum member definitions need to be constant).
      */
     InitMilestone after() default STARTED;
 

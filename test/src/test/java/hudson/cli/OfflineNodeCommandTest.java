@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.Computer;
@@ -52,6 +48,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
+/**
+ * @author pjanouse
+ */
 public class OfflineNodeCommandTest {
 
     private CLICommandInvoker command;
@@ -454,7 +453,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = Jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -468,7 +467,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnMasterWithCause() throws Exception {
-        final Computer masterComputer = Jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)

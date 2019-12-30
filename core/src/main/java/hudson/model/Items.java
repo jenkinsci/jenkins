@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -192,6 +191,7 @@ public class Items {
     /**
      * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @Deprecated
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
         return Descriptor.find(all(), fqcn);
     }
@@ -282,8 +282,8 @@ public class Items {
      * Computes the relative name of list of items after a rename or move occurred.
      * Used to manage job references as names in plugins to support {@link hudson.model.listeners.ItemListener#onLocationChanged}.
      * <p>
-     * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
-     * handle the relative path as "foo" is renamed to "zot" to compute <code>../zot/bar</code>
+     * In a hierarchical context, when a plugin has a reference to a job as {@code ../foo/bar} this method will
+     * handle the relative path as "foo" is renamed to "zot" to compute {@code ../zot/bar}
      *
      * @param oldFullName the old full name of the item
      * @param newFullName the new full name of the item
@@ -528,9 +528,6 @@ public class Items {
             this.type = type;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public Iterator<T> iterator() {
             return new AllItemsIterator();
@@ -557,17 +554,11 @@ public class Items {
                 stack.push(root);
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public boolean hasNext() {
                 if (next != null) {
@@ -604,9 +595,6 @@ public class Items {
                 }
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public T next() {
                 if (!hasNext()) {

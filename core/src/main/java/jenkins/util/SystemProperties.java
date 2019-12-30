@@ -23,7 +23,6 @@
  */
 package jenkins.util;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -40,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -81,7 +81,8 @@ public class SystemProperties {
 
     @FunctionalInterface
     private interface Handler {
-        @CheckForNull String getString(String key);
+        @CheckForNull
+        String getString(String key);
     }
 
     private static final Handler NULL_HANDLER = key -> null;
@@ -199,7 +200,7 @@ public class SystemProperties {
         }
         
         if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
+            LOGGER.log(Level.CONFIG, "Property (not found): {0}", key);
         }
         return null;
     }
@@ -334,8 +335,8 @@ public class SystemProperties {
      * Determines the integer value of the system property with the
      * specified name, or a default value.
      *
-     * This behaves just like <code>Integer.getInteger(String,Integer)</code>, except that it
-     * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+     * This behaves just like {@code Integer.getInteger(String,Integer)}, except that it
+     * also consults the {@code ServletContext}'s "init" parameters. If neither exist,
      * return the default value.
      *
      * @param   name property name.
@@ -352,8 +353,8 @@ public class SystemProperties {
       * Determines the integer value of the system property with the
       * specified name, or a default value.
       * 
-      * This behaves just like <code>Integer.getInteger(String,Integer)</code>, except that it
-      * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+      * This behaves just like {@code Integer.getInteger(String,Integer)}, except that it
+      * also consults the {@code ServletContext}'s "init" parameters. If neither exist,
       * return the default value. 
       * 
       * @param   name property name.
@@ -398,8 +399,8 @@ public class SystemProperties {
      * Determines the integer value of the system property with the
      * specified name, or a default value.
      *
-     * This behaves just like <code>Long.getLong(String,Long)</code>, except that it
-     * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+     * This behaves just like {@code Long.getLong(String,Long)}, except that it
+     * also consults the {@link ServletContext}'s "init" parameters. If neither exist,
      * return the default value.
      *
      * @param   name property name.
@@ -416,8 +417,8 @@ public class SystemProperties {
       * Determines the integer value of the system property with the
       * specified name, or a default value.
       * 
-      * This behaves just like <code>Long.getLong(String,Long)</code>, except that it
-      * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+      * This behaves just like {@link Long#getLong(String, Long)}, except that it
+      * also consults the {@link ServletContext}'s "init" parameters. If neither exist,
       * return the default value. 
       * 
       * @param   name property name.

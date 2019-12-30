@@ -50,11 +50,11 @@ import java.util.Locale;
  *
  *   <ul>
  *     <li>{@link #isValidInfrastructureTld} - validates infrastructure TLDs
- *         (<code>.arpa</code>, etc.)</li>
+ *         ({@code .arpa}, etc.)</li>
  *     <li>{@link #isValidGenericTld} - validates generic TLDs
- *         (<code>.com, .org</code>, etc.)</li>
+ *         ({@code .com, .org}, etc.)</li>
  *     <li>{@link #isValidCountryCodeTld} - validates country code TLDs
- *         (<code>.us, .uk, .cn</code>, etc.)</li>
+ *         ({@code .us, .uk, .cn}, etc.)</li>
  *   </ul>
  *
  * <p>
@@ -149,7 +149,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> parses
+     * Returns true if the specified {@code String} parses
      * as a valid domain name with a recognized top-level domain.
      * The parsing is case-insensitive.
      * @param domain the parameter to check for domain name syntax
@@ -194,7 +194,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> matches any
+     * Returns true if the specified {@code String} matches any
      * IANA-defined top-level domain. Leading dots are ignored if present.
      * The search is case-insensitive.
      * @param tld the parameter to check for TLD status, not null
@@ -211,7 +211,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> matches any
+     * Returns true if the specified {@code String} matches any
      * IANA-defined infrastructure top-level domain. Leading dots are
      * ignored if present. The search is case-insensitive.
      * @param iTld the parameter to check for infrastructure TLD status, not null
@@ -223,7 +223,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> matches any
+     * Returns true if the specified {@code String} matches any
      * IANA-defined generic top-level domain. Leading dots are ignored
      * if present. The search is case-insensitive.
      * @param gTld the parameter to check for generic TLD status, not null
@@ -236,7 +236,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> matches any
+     * Returns true if the specified {@code String} matches any
      * IANA-defined country code top-level domain. Leading dots are
      * ignored if present. The search is case-insensitive.
      * @param ccTld the parameter to check for country code TLD status, not null
@@ -249,7 +249,7 @@ public class DomainValidator implements Serializable {
     }
     
     /**
-     * Returns true if the specified <code>String</code> matches any
+     * Returns true if the specified {@code String} matches any
      * widely used "local" domains (localhost or localdomain). Leading dots are
      * ignored if present. The search is case-insensitive.
      * @param lTld the parameter to check for local TLD status, not null

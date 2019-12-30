@@ -41,7 +41,7 @@ THE SOFTWARE.
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
         <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" />
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
         </a>
         <j:if test="${build.building}">
 	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
@@ -69,7 +69,7 @@ THE SOFTWARE.
       </div>
       <j:if test="${!empty build.description}">
         <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+          <j:out value="${app.markupFormatter.translate(build.description)}"/>
         </div>
       </j:if>
       <div class="left-bar" />

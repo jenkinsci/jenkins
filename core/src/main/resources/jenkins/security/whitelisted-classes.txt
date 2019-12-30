@@ -124,6 +124,7 @@ java.util.TreeSet
 java.util.UUID
 java.util.Vector
 java.util.concurrent.ConcurrentHashMap
+java.util.concurrent.ConcurrentLinkedDeque
 java.util.concurrent.ConcurrentLinkedQueue
 java.util.concurrent.ConcurrentSkipListMap
 java.util.concurrent.CopyOnWriteArrayList

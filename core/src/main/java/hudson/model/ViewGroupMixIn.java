@@ -29,7 +29,6 @@ import org.kohsuke.stapler.export.Exported;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -164,12 +163,14 @@ public abstract class ViewGroupMixIn {
     }
 
     /**
-     * Returns the primary {@link View} that renders the top-page of Hudson.
+     * Returns the primary {@link View} that renders the top-page of Hudson or
+     * {@code null} if there is no primary one defined.
      */
     @Exported
+    @CheckForNull
     public View getPrimaryView() {
         View v = getView(primaryView());
-        if(v==null) // fallback
+        if(v==null && !views().isEmpty()) // fallback
             v = views().get(0);
         return v;
     }
