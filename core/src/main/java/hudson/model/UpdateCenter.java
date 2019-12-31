@@ -1968,11 +1968,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha512(), job.getComputedSHA512(), file, "SHA-512");
+                break;
             case NOT_COMPUTED:
                 LOGGER.log(WARNING, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 failed since it could not be computed. Falling back to weaker algorithms. Update your JRE.");
                 break;
             case NOT_PROVIDED:
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + result512);
         }
 
         VerificationResult result256 = verifyChecksums(entry.getSha256(), job.getComputedSHA256(), false);
@@ -1981,9 +1984,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha256(), job.getComputedSHA256(), file, "SHA-256");
+                break;
             case NOT_COMPUTED:
             case NOT_PROVIDED:
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + result256);
         }
 
         if (result512 == VerificationResult.NOT_PROVIDED && result256 == VerificationResult.NOT_PROVIDED) {
@@ -1996,6 +2002,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha1(), job.getComputedSHA1(), file, "SHA-1");
+                break;
             case NOT_COMPUTED:
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:

@@ -220,15 +220,15 @@ public class DisablePluginCommand extends CLICommand {
                 break;
             case NO_SUCH_PLUGIN:
                 returnCode = RETURN_CODE_NO_SUCH_PLUGIN;
-        }
-
-        if (returnCode == 0) {
-            for (PluginWrapper.PluginDisableResult oneDependentResult : result.getDependentsDisableStatus()) {
-                returnCode = getResultCode(oneDependentResult);
-                if (returnCode != 0) {
-                    break;
+                break; 
+            default:
+                for (PluginWrapper.PluginDisableResult oneDependentResult : result.getDependentsDisableStatus()) {
+                    returnCode = getResultCode(oneDependentResult);
+                    if (returnCode != 0) {
+                        break;
+                    }
                 }
-            }
+                break;
         }
 
         return returnCode;
