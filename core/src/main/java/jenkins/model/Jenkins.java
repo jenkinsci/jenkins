@@ -1065,7 +1065,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         agentProtocols = null;
         return this;
     }
-    
+
+    /**
+     * Retrieve the proxy configuration.
+     *
+     * @return the proxy configuration
+     * @since TODO
+     */
+    @CheckForNull
+    public ProxyConfiguration getProxy() {
+        return proxy;
+    }
+
+    /**
+     * Set the proxy configuration.
+     * 
+     * @param proxy the proxy to set
+     * @since TODO
+     */
+    public void setProxy(@CheckForNull ProxyConfiguration proxy) {
+        this.proxy = proxy;
+    }
+
     /**
      * Get the Jenkins {@link jenkins.install.InstallState install state}.
      * @return The Jenkins {@link jenkins.install.InstallState install state}.
@@ -5103,7 +5124,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      */
     public @CheckForNull static VersionNumber getVersion() {
         return toVersion(VERSION);
@@ -5114,17 +5135,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #doConfigSubmit(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}.
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      * @since 2.0
      */
     @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
-        return toVersion(Jenkins.getActiveInstance().version);
+        return toVersion(Jenkins.get().version);
     }
 
     /**
      * Parses a version string into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      */
     private static @CheckForNull VersionNumber toVersion(@CheckForNull String versionString) {
         if (versionString == null) {

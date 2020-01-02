@@ -386,6 +386,11 @@ public class Functions {
         return null;
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean useHidingPasswordFields() {
+        return SystemProperties.getBoolean(Functions.class.getName() + ".hidingPasswordFields", true);
+    }
+
     /**
      * URL decomposed for easier computation of relevant URLs.
      *
@@ -645,6 +650,7 @@ public class Functions {
             // to avoid conflicts with any other web apps that might be on the same machine.
             c.setPath("/");
             c.setMaxAge(60*60*24*30); // persist it roughly for a month
+            c.setHttpOnly(true);
             response.addCookie(c);
         }
         if (refresh) {
@@ -761,11 +767,15 @@ public class Functions {
 
     /**
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
-     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
+     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
+     * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
      *
      * @since 2.200
      */
     public static String urlEncode(String s) {
+        if (s == null) {
+            return "";
+        }
         try {
             return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
@@ -1474,12 +1484,10 @@ public class Functions {
         if(it instanceof Descriptor)
             clazz = ((Descriptor)it).clazz;
 
-        StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
-        buf.append(Jenkins.VIEW_RESOURCE_PATH).append('/');
-        buf.append(clazz.getName().replace('.','/').replace('$','/'));
-        buf.append('/').append(path);
-
-        return buf.toString();
+        String buf = Stapler.getCurrentRequest().getContextPath() + Jenkins.VIEW_RESOURCE_PATH + '/' +
+                clazz.getName().replace('.', '/').replace('$', '/') +
+                '/' + path;
+        return buf;
     }
 
     public static boolean hasView(Object it, String path) throws IOException {

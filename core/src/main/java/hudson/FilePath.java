@@ -1520,7 +1520,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,
                             PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
                 } else {
-                    tempPath = Files.createTempDirectory(Util.fileToPath(dir), name, new FileAttribute<?>[] {});
+                    tempPath = Files.createTempDirectory(Util.fileToPath(dir), name);
                 }
 
                 if (tempPath.toFile() == null) {
@@ -2754,7 +2754,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                                     int idx = findSeparator(f);
                                     if(idx==-1)     break;
 
-                                    prefix.append(f.substring(0, idx)).append('/');
+                                    prefix.append(f, 0, idx).append('/');
                                     f=f.substring(idx+1);
                                     if(hasMatch(dir,prefix+fileMask,caseSensitive))
                                         return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask, prefix+fileMask);

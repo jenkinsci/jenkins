@@ -1852,7 +1852,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -2496,9 +2496,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public int compare(@Nonnull Run lhs, @Nonnull Run rhs) {
             long lt = lhs.getTimeInMillis();
             long rt = rhs.getTimeInMillis();
-            if(lt>rt)   return -1;
-            if(lt<rt)   return 1;
-            return 0;
+            return Long.compare(rt, lt);
         }
     };
 

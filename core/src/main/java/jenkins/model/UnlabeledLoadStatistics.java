@@ -102,7 +102,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
     private static class UnlabeledNodesIterator extends Iterators.FilterIterator<Node> {
 
         protected UnlabeledNodesIterator() {
-            super(Jenkins.getActiveInstance().getNodes().iterator());
+            super(Jenkins.get().getNodes().iterator());
         }
 
         @Override

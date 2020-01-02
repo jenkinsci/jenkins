@@ -385,6 +385,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 String osgiProperty = osgiProperties[i].trim();
                 if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
                     isOptional = true;
+                    break;
                 }
             }
             this.optional = isOptional;
@@ -521,20 +522,30 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Exported
     public String getUrl() {
-        // first look for the manifest entry. This is new in maven-hpi-plugin 1.30
+        // first look in update center metadata
+        List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
+        String firstSiteUrl = null;
+        if (!siteMetadataList.isEmpty()) {
+        	firstSiteUrl = siteMetadataList.get(0).wiki;
+            if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
+                return firstSiteUrl;
+            }
+        }
+
+        // if update sites give different / empty results,
+        // use manifest (since maven-hpi-plugin 1.30)
         String url = manifest.getMainAttributes().getValue("Url");
-        if(url!=null)      return url;
-
-        // fallback to update center metadata
-        UpdateSite.Plugin ui = getInfo();
-        if(ui!=null)    return ui.wiki;
-
-        return null;
+        if (url != null) {
+        	return url;
+        }
+        return firstSiteUrl;
     }
-    
-    
 
-    @Override
+    private boolean allUrlsMatch(String url, List<UpdateSite.Plugin> uiList) {
+        return uiList.stream().allMatch(k -> k.wiki != null && k.wiki.equals(url));
+    }
+
+	@Override
     public String toString() {
         return "Plugin:" + getShortName();
     }
@@ -972,6 +983,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return uc.getPlugin(getShortName());
     }
 
+    private List<UpdateSite.Plugin> getInfoFromAllSites() {
+        UpdateCenter uc = Jenkins.get().getUpdateCenter();
+        return uc.getPluginFromAllSites(getShortName(), getVersionNumber());
+    }
+
     /**
      * Returns true if this plugin has update in the update center.
      *
@@ -1236,7 +1252,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
-        Jenkins jenkins = Jenkins.getActiveInstance();
+        Jenkins jenkins = Jenkins.get();
         
         jenkins.checkPermission(Jenkins.ADMINISTER);
         archive.delete();

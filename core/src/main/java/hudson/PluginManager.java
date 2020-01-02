@@ -633,7 +633,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet();
 
-        ServletContext context = Jenkins.getActiveInstance().servletContext;
+        ServletContext context = Jenkins.get().servletContext;
         Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
@@ -697,7 +697,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
-            ServletContext context = Jenkins.getActiveInstance().servletContext;
+            ServletContext context = Jenkins.get().servletContext;
 
             for (String dependencyToken : dependencyTokens) {
                 if (dependencyToken.endsWith(";resolution:=optional")) {
@@ -709,7 +709,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 String artifactId = artifactIdVersionPair[0];
                 VersionNumber dependencyVersion = new VersionNumber(artifactIdVersionPair[1]);
 
-                PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
+                PluginManager manager = Jenkins.get().getPluginManager();
                 VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
                 if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
                     // Do not downgrade dependencies that are already installed.
@@ -1376,7 +1376,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
             response.add(pluginInfo);
         }
-        for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             for (UpdateSite.Plugin plugin: site.getAvailables()) {
                 JSONObject pluginInfo = allPlugins.get(plugin.name);
                 if(pluginInfo == null) {
@@ -1669,7 +1669,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             JSONArray dependencies = new JSONArray();
             try {
-                Manifest m = new JarFile(t).getManifest();
+                Manifest m;
+                try (JarFile jarFile = new JarFile(t)) {
+                    m = jarFile.getManifest();
+                }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
                 if (StringUtils.isNotBlank(deps)) {

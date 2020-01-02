@@ -240,9 +240,9 @@ public class CLITest {
         
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins"));
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-SSH-Endpoint"));
 
         for (String transport: Arrays.asList("-http", "-ssh")) {
 

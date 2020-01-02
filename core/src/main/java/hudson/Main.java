@@ -220,7 +220,7 @@ public class Main {
     public static boolean isUnitTest = false;
 
     /**
-     * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
+     * Set to true if we are running inside {@code mvn hpi:run} or {@code mvn jetty:run}.
      */
     public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 

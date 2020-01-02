@@ -161,12 +161,11 @@ public class PluginWrapperTest {
         }
 
         private PluginWrapper build() {
-            Manifest manifest = mock(Manifest.class);
-            Attributes attributes = new Attributes();
+            Manifest manifest = new Manifest();
+            Attributes attributes = manifest.getMainAttributes();
             attributes.put(new Attributes.Name("Short-Name"), name);
             attributes.put(new Attributes.Name("Jenkins-Version"), requiredCoreVersion);
             attributes.put(new Attributes.Name("Plugin-Version"), version);
-            when(manifest.getMainAttributes()).thenReturn(attributes);
             return new PluginWrapper(
                     pm,
                     new File("/tmp/" + name + ".jpi"),

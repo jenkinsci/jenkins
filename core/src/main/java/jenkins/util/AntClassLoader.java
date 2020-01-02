@@ -498,19 +498,13 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                 + pathComponent.lastModified() + "-" + pathComponent.length();
         String classpath = (String) pathMap.get(absPathPlusTimeAndLength);
         if (classpath == null) {
-            JarFile jarFile = null;
-            try {
-                jarFile = new JarFile(pathComponent);
+            try (JarFile jarFile = new JarFile(pathComponent)) {
                 Manifest manifest = jarFile.getManifest();
                 if (manifest == null) {
                     return;
                 }
                 classpath = manifest.getMainAttributes()
                     .getValue(Attributes.Name.CLASS_PATH);
-            } finally {
-                if (jarFile != null) {
-                    jarFile.close();
-                }
             }
             if (classpath == null) {
                 classpath = "";
