@@ -147,6 +147,7 @@ public class ComputerTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.READ).everywhere().to(READER)
                                                    .grant(Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR)
+                                                   .grant(Jenkins.READ).everywhere().to(CONFIGURATOR)
         );
         j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", 403);
         j.createWebClient().login(CONFIGURATOR).assertFails("computer/(master)/dumpExportTable", 403);
