@@ -362,7 +362,6 @@ typedef struct _SERVICE_TABLE_ENTRY {
     @Override
     protected List getFieldOrder() {
         return Collections.emptyList();
-        return Arrays.asList();
     }
   }
 
