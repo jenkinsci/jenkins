@@ -318,6 +318,7 @@ public class UpdateSite {
     /**
      * Whether {@link #getData} might be blocking.
      */
+    // Internal use only
     boolean hasUnparsedData() {
         return data == null && getDataFile().exists();
     }
