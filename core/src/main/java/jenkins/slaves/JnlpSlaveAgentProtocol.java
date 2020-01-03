@@ -1,18 +1,9 @@
 package jenkins.slaves;
 
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import jenkins.security.HMACConfidentialKey;
-import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpConnectionState;
-import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
 
 /**
  * {@link AgentProtocol} that accepts connection from agents.
