@@ -331,7 +331,7 @@ public class UpdateSite {
             long start = System.nanoTime();
             try {
                 JSONObject o = JSONObject.fromObject(df.read());
-                LOGGER.info(() -> String.format("Loaded and parsed %s in %.01fs", df, (System.nanoTime() - start) / 1_000_000_000.0));
+                LOGGER.fine(() -> String.format("Loaded and parsed %s in %.01fs", df, (System.nanoTime() - start) / 1_000_000_000.0));
                 return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
