@@ -42,56 +42,20 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
-@Extension
-@Symbol("jnlp")
 public class JnlpSlaveAgentProtocol extends AgentProtocol {
-    /**
-     * Our logger
-     */
-    private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol.class.getName());
     /**
      * This secret value is used as a seed for agents.
      */
     public static final HMACConfidentialKey SLAVE_SECRET =
             new HMACConfidentialKey(JnlpSlaveAgentProtocol.class, "secret");
 
-    private NioChannelSelector hub;
-
-    private JnlpProtocol1Handler handler;
-
-    @Inject
-    public void setHub(NioChannelSelector hub) {
-        this.hub = hub;
-        this.handler = new JnlpProtocol1Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting,
-                hub.getHub(), true);
-    }
-
-    @Override
-    public boolean isOptIn() {
-        return true;
-    }
-
-    @Override
-    public boolean isDeprecated() {
-        return true;
-    }
-
     @Override
     public String getName() {
-        return handler.isEnabled() ? handler.getName() : null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return Messages.JnlpSlaveAgentProtocol_displayName();
+        return null;
     }
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        handler.handle(socket,
-                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
-                ExtensionList.lookup(JnlpAgentReceiver.class));
+
     }
-
-
 }
