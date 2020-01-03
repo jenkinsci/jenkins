@@ -1,0 +1,24 @@
+# Automates creation of changelog drafts using Release Drafter
+# More Info: https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+name: Changelog Drafter
+
+on:
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - master
+
+jobs:
+  update_draft_release:
+    runs-on: ubuntu-latest
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - name: Generate GitHub Release Draft
+        uses: release-drafter/release-drafter@v5.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
+      - name: Generate YAML changelog draft
+        uses: jenkinsci/jenkins-core-changelog-generator@master
+        env:
+          GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}

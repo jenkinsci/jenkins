@@ -53,8 +53,8 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * that type. Otherwise this SCM will not have any repository browser.
      */
     public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
-
-    private final AtomicInteger generation = new AtomicInteger(1);
+    
+    private transient final AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -82,7 +82,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     @Deprecated
     @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
     public int getGeneration() {
-        return generation.get();
+        return atomicGeneration.get();
     }
 
     /**
@@ -92,7 +92,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     @Deprecated
     @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
     public void incrementGeneration() {
-        generation.incrementAndGet();
+        atomicGeneration.incrementAndGet();
     }
 
     // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
