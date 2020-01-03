@@ -6,6 +6,8 @@ import hudson.Util;
 import hudson.model.Slave;
 import java.security.SecureRandom;
 import javax.annotation.Nonnull;
+
+import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
 
@@ -28,6 +30,12 @@ import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
  * @since 1.561
  */
 public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener implements ExtensionPoint {
+
+    /**
+     * This secret value is used as a seed for agents.
+     */
+    public static final HMACConfidentialKey SLAVE_SECRET =
+            new HMACConfidentialKey(JnlpSlaveAgentProtocol.class, "secret");
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -62,7 +70,7 @@ public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener impl
 
         @Override
         public String getSecretOf(@Nonnull String clientName) {
-            return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(clientName);
+            return SLAVE_SECRET.mac(clientName);
         }
     }
 }

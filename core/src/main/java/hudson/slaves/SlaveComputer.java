@@ -58,7 +58,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.JnlpAgentReceiver;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
@@ -180,7 +180,7 @@ public class SlaveComputer extends Computer {
      * @since 1.498
      */
     public String getJnlpMac() {
-        return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
+        return JnlpAgentReceiver.SLAVE_SECRET.mac(getName());
     }
 
     /**
