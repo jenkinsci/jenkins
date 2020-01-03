@@ -36,6 +36,8 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
+import com.google.inject.TypeLiteral;
+import com.google.inject.internal.Errors;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import com.google.inject.spi.ProvisionListener;
@@ -484,24 +486,27 @@ public abstract class ExtensionFinder implements ExtensionPoint {
              */
             private void resolve(Class c) {
                 try {
-                    c.getGenericSuperclass();
-                    c.getGenericInterfaces();
                     ClassLoader ecl = c.getClassLoader();
-                    Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
-                    m.setAccessible(true);
-                    m.invoke(ecl, c);
-                    c.getConstructors();
-                    c.getMethods();
-                    for (Field f : c.getFields()) {
-                        if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
-                            resolve(f.getType());
+                    if (ecl != null) { // Not bootstrap classloader
+                        Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
+                        m.setAccessible(true);
+                        m.invoke(ecl, c);
+                    }
+                    for (Class cc = c; cc != Object.class; cc = cc.getSuperclass()) {
+                        /**
+                         * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
+                         */
+                        cc.getGenericSuperclass();
+                        cc.getGenericInterfaces();
+                        cc.getDeclaredConstructors();
+                        cc.getDeclaredMethods();
+                        for (Field f : cc.getDeclaredFields()) {
+                            if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
+                                resolve(f.getType());
+                            }
                         }
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
-                    while (c != Object.class) {
-                        c.getGenericSuperclass();
-                        c = c.getSuperclass();
-                    }
                 } catch (Exception x) {
                     throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
                 }
