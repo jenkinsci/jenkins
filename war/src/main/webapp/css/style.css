@@ -82,7 +82,7 @@ dt {
   font-weight: bold;
 }
 
-dt > .plain {
+dt > .plugin_version {
   font-weight: normal;
 }
 
