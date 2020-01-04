@@ -25,14 +25,21 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("instance",my)
             set("descriptor", my.descriptor)
 
-            f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
+            f.section(title:_("Authentication")) {
                 f.entry() {
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
-                f.entry(title:_("Access Control")) {
+                f.entry(title:_("Security Realm")) {
                     table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
+                    }
+                }
+            }
+
+            f.section(title:_("Authorization")) {
+                f.entry(title:_("Strategy")) {
+                    table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
                     }
                 }
