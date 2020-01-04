@@ -1,12 +1,13 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -52,6 +53,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
     @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
+        @Nonnull
         @Override
         public String getDisplayName() {
             return Messages.TimeZoneProperty_DisplayName();
@@ -105,7 +107,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         }
 
         TimeZone tz = TimeZone.getTimeZone(tzp.timeZoneName);
-        if (tz.getID() != tzp.timeZoneName) {
+        if (!Objects.equals(tz.getID(), tzp.timeZoneName)) {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.
