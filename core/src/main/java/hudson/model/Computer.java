@@ -1069,7 +1069,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns the {@link Node} description for this computer. Empty String in case of node null.
+     * Returns the {@link Node} description for this computer. Empty String if the {@link #node} is {@code null}.
      */
     @Restricted(DoNotUse.class)
     @Exported
