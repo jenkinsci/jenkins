@@ -128,4 +128,21 @@ public class ExtensionFinderTest {
             throw new Error();
         }
     }
+
+    @Test
+    public void injectMutualRecursion() {
+        A a = ExtensionList.lookupSingleton(A.class);
+        B b = ExtensionList.lookupSingleton(B.class);
+        assertEquals(b, a.b);
+        assertEquals(a, b.a);
+    }
+    @TestExtension("injectMutualRecursion")
+    public static final class A {
+        @Inject B b;
+    }
+    @TestExtension("injectMutualRecursion")
+    public static final class B {
+        @Inject A a;
+    }
+
 }
