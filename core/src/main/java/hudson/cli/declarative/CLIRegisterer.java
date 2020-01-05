@@ -29,7 +29,6 @@ import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.Util;
 import hudson.cli.CLICommand;
-import hudson.cli.CLIReportUnexpectedExceptionHelper;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
@@ -259,7 +258,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
                                 return 7;
                             } catch (Throwable e) {
-                                CLIReportUnexpectedExceptionHelper.report(getName(), LOGGER, stderr, e);
+                                CLICommand.reportException(getName(), LOGGER, stderr, e);
                                 return 1;
                             }
                         }
