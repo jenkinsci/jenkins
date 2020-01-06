@@ -26,7 +26,6 @@ package jenkins.slaves;
 
 import hudson.Functions;
 import hudson.Proc;
-import hudson.model.Computer;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.remoting.Engine;
@@ -35,7 +34,6 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import hudson.triggers.SafeTimerTask;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -74,61 +72,38 @@ public class WebSocketAgentsTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @FunctionalInterface
-    private interface TestLauncher {
-        void launch(String secret) throws Exception;
-   }
-    private void smokeTest(TestLauncher testLauncher) throws Exception {
-        JNLPLauncher launcher = new JNLPLauncher(true);
-        launcher.setWebSocket(true);
-        DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
-        r.jenkins.addNode(s);
-        String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
-        testLauncher.launch(secret);
-        r.waitOnline(s);
-        assertEquals("response", s.getChannel().call(new DummyTask()));
-        FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(s);
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
-        r.buildAndAssertSuccess(p);
-        s.toComputer().getLogText().writeLogTo(0, System.out);
-    }
-
-    @Test
-    public void inJVM() throws Exception {
-        smokeTest(secret -> {
-            Computer.threadPoolForRemoting.submit(SafeTimerTask.of(() -> {
-                hudson.remoting.jnlp.Main._main(new String[] {
-                    "-headless",
-                    "-url", r.getURL().toString(),
-                    "-webSocket",
-                    "-workDir", tmp.newFolder("work").getAbsolutePath(),
-                    secret, "remote"});
-            }));
-        });
-    }
-
     /**
-     * More realistic version of {@link #inJVM}.
-     * On the other hand it is slower; requires {@code remoting} to have been {@code mvn install}ed;
-     * and does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
+     * Verify basic functionality of an agent in {@code -webSocket} mode.
+     * Requires {@code remoting} to have been {@code mvn install}ed.
+     * Does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
      * Unlike {@link hudson.slaves.JNLPLauncherTest} this does not use {@code javaws};
      * closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}.
      * @see hudson.remoting.Launcher
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    public void viaLauncher() throws Exception {
+    public void smokes() throws Exception {
         AtomicReference<Proc> proc = new AtomicReference<>();
         try {
-            smokeTest(secret -> {
-                File slaveJar = tmp.newFile();
-                FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
-                proc.set(r.createLocalLauncher().launch().cmds(
-                    JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
-                    "-jnlpUrl", r.getURL() + "computer/remote/slave-agent.jnlp",
-                    "-secret", secret
-                ).stdout(System.out).start());
-            });
+            JNLPLauncher launcher = new JNLPLauncher(true);
+            launcher.setWebSocket(true);
+            DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
+            r.jenkins.addNode(s);
+            String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
+            File slaveJar = tmp.newFile();
+            FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+            proc.set(r.createLocalLauncher().launch().cmds(
+                JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
+                "-jnlpUrl", r.getURL() + "computer/remote/slave-agent.jnlp",
+                "-secret", secret
+            ).stdout(System.out).start());
+            r.waitOnline(s);
+            assertEquals("response", s.getChannel().call(new DummyTask()));
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.setAssignedNode(s);
+            p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
+            r.buildAndAssertSuccess(p);
+            s.toComputer().getLogText().writeLogTo(0, System.out);
         } finally {
             if (proc.get() != null) {
                 proc.get().kill();
