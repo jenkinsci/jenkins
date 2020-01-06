@@ -24,6 +24,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.security.Permission;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -56,5 +57,10 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");
         }
+    }
+
+    @Override
+    public Permission getPermission() {
+        return Jenkins.CONFIGURE;
     }
 }

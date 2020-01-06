@@ -26,6 +26,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
+import hudson.security.Permission;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
@@ -65,4 +66,8 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration implements
         }
     }
 
+    @Override
+    public Permission getPermission() {
+        return Jenkins.CONFIGURE;
+    }
 }
