@@ -34,6 +34,7 @@ import hudson.remoting.AbstractByteArrayCommandTransport;
 import hudson.remoting.Capability;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.Engine;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -93,7 +94,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
-        rsp.setHeader("X-Remoting-Minimum-Version", RemotingVersionInfo.getMinimumSupportedVersion().toString());
+        rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
         rsp.setHeader(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()); // TODO figure out what this is for, if anything
         return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
