@@ -222,7 +222,7 @@ public class JNLPLauncher extends ComputerLauncher {
                     return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
                 }
                 if (Util.fixEmptyAndTrim(tunnel) != null) {
-                    return FormValidation.error("Tunneling is not currently supported in WebSocket mode");
+                    return FormValidation.error("Tunneling is not supported in WebSocket mode");
                 }
             } else {
                 if (Jenkins.get().getTcpSlaveAgentListener() == null) {
