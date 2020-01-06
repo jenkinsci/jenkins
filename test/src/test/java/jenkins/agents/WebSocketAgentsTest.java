@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.slaves;
+package jenkins.agents;
 
 import hudson.Functions;
 import hudson.Proc;

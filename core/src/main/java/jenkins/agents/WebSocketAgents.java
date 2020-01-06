@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.slaves;
+package jenkins.agents;
 
 import com.google.common.collect.ImmutableMap;
 import hudson.Extension;
@@ -44,6 +44,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.slaves.JnlpAgentReceiver;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
