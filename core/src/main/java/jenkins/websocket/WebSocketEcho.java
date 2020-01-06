@@ -26,15 +26,16 @@ package jenkins.websocket;
 
 import hudson.Extension;
 import hudson.model.InvisibleAction;
-import hudson.model.UnprotectedRootAction;
+import hudson.model.RootAction;
 import java.nio.ByteBuffer;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-public class WebSocketEcho  extends InvisibleAction implements UnprotectedRootAction {
+public class WebSocketEcho  extends InvisibleAction implements RootAction {
 
         @Override
         public String getUrlName() {
@@ -42,6 +43,7 @@ public class WebSocketEcho  extends InvisibleAction implements UnprotectedRootAc
         }
 
         public HttpResponse doIndex() {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             return WebSockets.upgrade(new WebSocketSession() {
                 @Override
                 protected void text(String message) {
