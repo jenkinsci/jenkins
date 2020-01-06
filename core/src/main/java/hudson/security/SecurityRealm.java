@@ -659,7 +659,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             rms.setUserDetailsService(uds);
             /*
                 TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
-                and both needs to use the same key (this is a reflection of a poor design in AcgeiSecurity, if you ask me)
+                and both needs to use the same key (this is a reflection of a poor design in AcegiSecurity, if you ask me)
                 and various security plugins have its own groovy script that configures them.
 
                 So if we change this, it creates a painful situation for those plugins by forcing them to choose
