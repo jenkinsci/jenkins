@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
 import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
@@ -692,6 +693,7 @@ public class Util {
      *      number of milliseconds.
      */
     @Nonnull
+    @SuppressFBWarnings(value = "ICAST_IDIV_CAST_TO_DOUBLE", justification = "We want to truncate here.")
     public static String getTimeSpanString(long duration) {
         // Break the duration up in to units.
         long years = duration / ONE_YEAR_MS;
