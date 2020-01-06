@@ -78,7 +78,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             LOGGER.warning(() -> "no such agent " + agent);
             throw HttpResponses.errorWithoutStack(400, "no such agent");
         }
-        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), JnlpAgentReceiver.DATABASE.getSecretOf(agent).getBytes(StandardCharsets.US_ASCII))) { // TODO unless anonymous has CONNECT?
+        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), JnlpAgentReceiver.DATABASE.getSecretOf(agent).getBytes(StandardCharsets.US_ASCII))) {
             LOGGER.warning(() -> "incorrect secret for " + agent);
             throw HttpResponses.forbidden();
         }
