@@ -564,8 +564,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                 name);
         stderr.println();
-        stderr.println("ERROR: "+errorMsg);
-        logger.log(Level.WARNING,errorMsg,e);
-        Functions.printStackTrace(e,stderr);
+        stderr.println("ERROR: " + errorMsg);
+        logger.log(Level.WARNING, errorMsg, e);
+        Functions.printStackTrace(e, stderr);
     }
 }
