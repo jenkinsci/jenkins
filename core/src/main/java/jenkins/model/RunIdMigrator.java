@@ -322,7 +322,7 @@ public final class RunIdMigrator {
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
 
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only used as an command-line process.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only invoked from the command line as a standalone utility")
     private static File constructFile(String arg) {
         return new File(arg);
     }

@@ -623,6 +623,7 @@ public class Util {
     // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
     @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification =
             "This method should only be used for non-security applications where the MD5 weakness is not a problem.")
+    @Deprecated
     private static MessageDigest getMd5() throws NoSuchAlgorithmException {
         return MessageDigest.getInstance("MD5");
     }
