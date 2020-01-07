@@ -603,25 +603,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new BuildTimelineWidget(getBuilds());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
         // dummy implementation
@@ -884,7 +875,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Computer.constructor->Computer.setNode
      * Computer.kill is called after numExecutors set to zero(Computer.inflictMortalWound) so not need the Queue.lock
      *
-     * @param number of executors
+     * @param n number of executors
      */
     @GuardedBy("hudson.model.Queue.lock")
     private void setNumExecutors(int n) {
@@ -1097,6 +1088,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             public void run() {
                 synchronized (Computer.this) {
                     executors.remove(e);
+                    oneOffExecutors.remove(e);
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
@@ -1484,7 +1476,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         if ((!proposedName.equals(nodeName))
-                && Jenkins.getActiveInstance().getNode(proposedName) != null) {
+                && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
 

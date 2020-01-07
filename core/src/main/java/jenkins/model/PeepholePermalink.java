@@ -61,7 +61,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
 
     /**
      * JENKINS-22822: avoids rereading caches.
-     * Top map keys are {@link builds} directories.
+     * Top map keys are {@code builds} directories.
      * Inner maps are from permalink name to build number.
      * Synchronization is first on the outer map, then on the inner.
      */
@@ -179,8 +179,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             cache.put(getId(), b == null ? RESOLVES_TO_NONE : b.getNumber());
             File storage = storageFor(buildDir);
             LOGGER.fine(() -> "saving to " + storage + ": " + cache);
-            try {
-                AtomicFileWriter cw = new AtomicFileWriter(storage);
+            try (AtomicFileWriter cw = new AtomicFileWriter(storage)) {
                 try {
                     for (Map.Entry<String, Integer> entry : cache.entrySet()) {
                         cw.write(entry.getKey());

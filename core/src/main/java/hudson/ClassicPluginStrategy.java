@@ -329,8 +329,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }
 
-        /**
-         * See {@link ExtensionFinder#scout(Class, Hudson)} for the dead lock issue and what this does.
+        /*
+         * See ExtensionFinder#scout(Class, Hudson) for the dead lock issue and what this does.
          */
         if (LOGGER.isLoggable(Level.FINER))
             LOGGER.log(Level.FINER, "Scout-loading ExtensionList: "+type, new Throwable());

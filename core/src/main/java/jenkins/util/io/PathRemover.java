@@ -61,7 +61,7 @@ public class PathRemover {
     }
 
     public static PathRemover newFilteredRobustRemover(@Nonnull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathChecker);
+        return new PathRemover(new PausingGCRetryStrategy(Math.max(maxRetries, 0), gcAfterFailedRemove, waitBetweenRetries), pathChecker);
     }
 
     private final RetryStrategy retryStrategy;

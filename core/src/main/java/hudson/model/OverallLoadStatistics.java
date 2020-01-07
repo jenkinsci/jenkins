@@ -72,7 +72,7 @@ public class OverallLoadStatistics extends LoadStatistics {
 
     @Override
     protected Iterable<Node> getNodes() {
-        return Jenkins.getActiveInstance().getNodes();
+        return Jenkins.get().getNodes();
     }
 
     @Override

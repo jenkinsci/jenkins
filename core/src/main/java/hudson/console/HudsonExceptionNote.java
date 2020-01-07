@@ -42,7 +42,7 @@ import org.jenkinsci.Symbol;
  * @since 1.349 - produces search hyperlinks to the http://stacktrace.jenkins-ci.org service
  * @since 2.56 - does nothing due to JENKINS-42861
  * @deprecated This ConsoleNote used to provide hyperlinks to the
- *             <code>http://stacktrace.jenkins-ci.org/</code> service, which is dead now (JENKINS-42861).
+ *             {@code http://stacktrace.jenkins-ci.org/} service, which is dead now (JENKINS-42861).
  *             This console note does nothing right now.
  */
 @Deprecated

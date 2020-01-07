@@ -2615,6 +2615,9 @@ function buildFormTree(form) {
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
+                if (e.hasClassName("complex-password-field")) {
+                    addProperty(p, "$redact", shortenName(e.name));
+                }
                 break;
             }
         }
@@ -2775,7 +2778,7 @@ function applySafeRedirector(url) {
         new Ajax.Request(url, {
             method: "get",
             onFailure: function(rsp) {
-                if(rsp.status==503 && rsp.getHeader("X-Jenkins-Interactive")==null) {
+                if((rsp.status >= 502 && rsp.status <= 504) && rsp.getHeader("X-Jenkins-Interactive")==null) {
                   // redirect as long as we are still loading
                   window.setTimeout(statusChecker,5000);
                 } else {

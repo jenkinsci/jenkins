@@ -3,6 +3,7 @@ package hudson.util;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -40,7 +41,7 @@ public class FileChannelWriter extends Writer {
      * <p>Basically, {@link BufferedWriter#flush()} does nothing, so when existing code was rewired to use
      * {@link FileChannelWriter#flush()} behind {@link AtomicFileWriter} and that method actually ends up calling
      * {@link FileChannel#force(boolean)}, many things started timing out. The main reason is probably because XStream's
-     * {@link com.thoughtworks.xstream.core.util.QuickWriter} uses <code>flush()</code> a lot.
+     * {@link com.thoughtworks.xstream.core.util.QuickWriter} uses {@code flush()} a lot.
      * So we introduced this field to be able to still get a better integrity for the use case of {@link AtomicFileWriter}.
      * Because from there, we make sure to call {@link #close()} from {@link AtomicFileWriter#commit()} anyway.
      */

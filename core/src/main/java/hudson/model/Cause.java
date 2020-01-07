@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why
  * a given build was started. This object encapsulates the UI rendering of the cause,
- * as well as providing more useful information in respective subypes.
+ * as well as providing more useful information in respective subtypes.
  *
  * The Cause object is connected to a build via the {@link CauseAction} object.
  *
@@ -333,7 +333,6 @@ public abstract class Cause {
             public ConverterImpl(XStream2 xstream) { super(xstream); }
             @Override protected void callback(UpstreamCause uc, UnmarshallingContext context) {
                 if (uc.upstreamCause != null) {
-                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<>();
                     uc.upstreamCauses.add(uc.upstreamCause);
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");

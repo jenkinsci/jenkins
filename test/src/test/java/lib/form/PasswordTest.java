@@ -26,7 +26,7 @@ package lib.form;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
 import hudson.model.*;
@@ -186,8 +186,8 @@ public class PasswordTest {
     @Issue("SECURITY-616")
     public void testCheckMethod() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
-        p.addProperty(new VulnerableProperty(Secret.fromString("")));
-        HtmlPasswordInput field = j.createWebClient().getPage(p, "configure").getFormByName("config").getInputByName("_.secret");
+        p.addProperty(new VulnerableProperty(null));
+        HtmlTextInput field = j.createWebClient().getPage(p, "configure").getFormByName("config").getInputByName("_.secret");
         while (VulnerableProperty.DescriptorImpl.incomingURL == null) { // waitForBackgroundJavaScript does not work well
             Thread.sleep(100); // form validation of saved value
         }

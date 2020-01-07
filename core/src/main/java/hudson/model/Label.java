@@ -71,6 +71,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import javax.annotation.Nonnull;
 
 /**
  * Group of {@link Node}s.
@@ -84,16 +85,19 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Display name of this label.
      */
+    @Nonnull
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
+    @Nonnull
     public transient final LoadStatistics loadStatistics;
+    @Nonnull
     public transient final NodeProvisioner nodeProvisioner;
 
-    public Label(String name) {
+    public Label(@Nonnull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
@@ -137,6 +141,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
+    @Nonnull
     public String getDisplayName() {
         return name;
     }

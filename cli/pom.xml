@@ -16,6 +16,7 @@
   <properties>
     <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
     <findbugs.threshold>Medium</findbugs.threshold>
+    <junit.jupiter.version>5.5.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -32,6 +33,24 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
     </dependency>
@@ -40,17 +59,8 @@
       <artifactId>annotation-indexer</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remoting</artifactId>
-      <!-- specified in the parent -->
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -92,6 +102,10 @@
 
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <!-- version specified in grandparent pom -->

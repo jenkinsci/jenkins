@@ -66,9 +66,6 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 hub.getHub(), true);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isOptIn() {
         return true;
@@ -84,9 +81,6 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         return handler.isEnabled() ? handler.getName() : null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return Messages.JnlpSlaveAgentProtocol_displayName();

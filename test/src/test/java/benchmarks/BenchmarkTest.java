@@ -11,10 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
-import hudson.Functions;
-
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 public class BenchmarkTest {
     /**
@@ -28,8 +25,6 @@ public class BenchmarkTest {
      */
     @Test
     public void runSampleBenchmark() throws Exception {
-        assumeFalse(Functions.isWindows());
-        
         // run the minimum possible number of iterations
         ChainedOptionsBuilder options = new OptionsBuilder()
                                             .mode(Mode.AverageTime)

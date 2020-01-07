@@ -90,6 +90,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -155,11 +156,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
     }
 
-    @Exported
     /**
      * @return The display name of this object, or if it is not set, the name
      * of the object.
      */
+    @Exported
     public String getDisplayName() {
         if(null!=displayName) {
             return displayName;
@@ -168,13 +169,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getName();
     }
     
-    @Exported
     /**
      * This is intended to be used by the Job configuration pages where
      * we want to return null if the display name is not set.
      * @return The display name of this object or null if the display name is not
      * set
      */
+    @Exported
     public String getDisplayNameOrNull() {
         return displayName;
     }
@@ -729,18 +730,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                                 
                         if (subtask != null) {        
                             Item item = Tasks.getItemOf(subtask);
-                            if (item != null) {
-                                while (item != null) {
-                                    if (item == this) {
-                                        buildsInProgress.put(e, e.getCurrentExecutable());
-                                        e.interrupt(Result.ABORTED);
-                                        break;
-                                    }
-                                    if (item.getParent() instanceof Item) {
-                                        item = (Item) item.getParent();
-                                    } else {
-                                        break;
-                                    }
+                            while (item != null) {
+                                if (item == this) {
+                                    buildsInProgress.put(e, e.getCurrentExecutable());
+                                    e.interrupt(Result.ABORTED);
+                                    break;
+                                }
+                                if (item.getParent() instanceof Item) {
+                                    item = (Item) item.getParent();
+                                } else {
+                                    break;
                                 }
                             }
                         }
@@ -860,7 +859,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Updates an Item by its XML definition.
      * @param source source of the Item's new definition.
-     *               The source should be either a <code>StreamSource</code> or a <code>SAXSource</code>, other
+     *               The source should be either a {@link StreamSource} or a {@link SAXSource}, other
      *               sources may not be handled.
      * @since 1.473
      */
@@ -929,9 +928,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getSearchName() {
         // the search name of abstract items should be the name and not display name.

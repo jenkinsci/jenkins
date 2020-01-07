@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
 import jenkins.util.MemoryReductionUtil;
@@ -769,8 +768,8 @@ public abstract class Launcher {
      * recorded on the listener.
      *
      * @param cmd     The commands
-     * @param mask    An array of booleans which control whether a cmd element should be masked (<code>true</code>) or
-     *                remain unmasked (<code>false</code>).
+     * @param mask    An array of booleans which control whether a cmd element should be masked ({@code true}) or
+     *                remain unmasked ({@code false}).
      * @param workDir The work dir.
      */
     protected final void maskedPrintCommandLine(@Nonnull List<String> cmd, @CheckForNull boolean[] mask, @CheckForNull FilePath workDir) {
@@ -1038,8 +1037,6 @@ public abstract class Launcher {
 
         @Override
         @Nonnull
-        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", 
-                justification = "We always require nonnull channel when we initialize this launcher")
         public VirtualChannel getChannel() {
             VirtualChannel vc = super.getChannel();
             if (vc == null) {

@@ -60,7 +60,7 @@ public class SCMS {
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
         }
-        scm.getDescriptor().generation++;
+        scm.getDescriptor().incrementGeneration();
         return scm;
     }
 

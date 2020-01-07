@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.Computer;
@@ -44,6 +40,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
+/**
+ * @author pjanouse
+ */
 public class ConnectNodeCommandTest {
 
     private CLICommandInvoker command;
@@ -174,7 +173,7 @@ public class ConnectNodeCommandTest {
     }
 
     @Test public void connectNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)

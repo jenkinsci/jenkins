@@ -13,7 +13,8 @@ def failFast = true
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
-def buildTypes = ['Linux', 'Windows']
+// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
+def buildTypes = ['Linux']
 def jdks = [8, 11]
 
 def builds = [:]
@@ -72,6 +73,7 @@ for(j = 0; j < jdks.size(); j++) {
     }
 }}
 
+// TODO: Restore ATH once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 // TODO: ATH flow now supports Java 8 only, it needs to be reworked (INFRA-1690)
 builds.ath = {
     node("docker&&highmem") {
@@ -83,7 +85,7 @@ builds.ath = {
             checkout scm
             withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
                           "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
-                sh "mvn --batch-mode --show-version -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+                sh "mvn --batch-mode --show-version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
             }
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"

@@ -160,6 +160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */
+    @Deprecated
     private volatile BuildDiscarder logRotator;
 
     /**
@@ -547,7 +548,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public Map<JobPropertyDescriptor, JobProperty<? super JobT>> getProperties() {
         Map result = Descriptor.toMap((Iterable) properties);
         if (logRotator != null) {
-            result.put(Jenkins.getActiveInstance().getDescriptorByType(BuildDiscarderProperty.DescriptorImpl.class), new BuildDiscarderProperty(logRotator));
+            result.put(Jenkins.get().getDescriptorByType(BuildDiscarderProperty.DescriptorImpl.class), new BuildDiscarderProperty(logRotator));
         }
         return result;
     }
@@ -1556,9 +1557,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         doConfirmRename(newName).generateResponse(req, rsp, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void checkRename(String newName) throws Failure {
         if (isBuilding()) {
