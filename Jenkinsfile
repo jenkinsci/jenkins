@@ -13,8 +13,7 @@ def failFast = true
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
-// TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
-def buildTypes = ['Linux']
+def buildTypes = ['Linux', 'Windows']
 def jdks = [8, 11]
 
 def builds = [:]
