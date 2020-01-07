@@ -1376,13 +1376,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly());
     }
 
+    /**
+     * Retrieve the RSS feed for the last build executed in this computer
+     */
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
             if (p.getLastBuild() != null) {
-                lastBuilds.add(p.getLastBuild());
+                for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                    if (b.getBuiltOn() == getNode()) {
+                        lastBuilds.add(b);
+                        break;
+                    }
+                }
             }
-
         }
         RSS.rss(req, rsp, getDisplayName() + " last builds only", getUrl(), RunList.fromRuns(lastBuilds));
     }
