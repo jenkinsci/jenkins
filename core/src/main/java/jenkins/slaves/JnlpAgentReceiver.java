@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.model.Slave;
 import java.security.SecureRandom;
 import javax.annotation.Nonnull;
+import jenkins.agents.WebSocketAgents;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
 
