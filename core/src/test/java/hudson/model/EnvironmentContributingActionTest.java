@@ -39,13 +39,13 @@ public class EnvironmentContributingActionTest {
     }
 
     class OverrideBoth extends InvisibleAction implements EnvironmentContributingAction {
-        private boolean wasCalledAstractBuild = false;
+        private boolean wasCalledAbstractBuild = false;
         private boolean wasCalledRun = false;
 
         @SuppressWarnings("deprecation")
         @Override
         public void buildEnvVars(AbstractBuild<?, ?> abstractBuild, EnvVars envVars) {
-            wasCalledAstractBuild = true;
+            wasCalledAbstractBuild = true;
         }
 
         @Override
@@ -54,7 +54,7 @@ public class EnvironmentContributingActionTest {
         }
 
         boolean wasDeprecatedMethodCalled() {
-            return wasCalledAstractBuild;
+            return wasCalledAbstractBuild;
         }
 
         boolean wasRunCalled() {

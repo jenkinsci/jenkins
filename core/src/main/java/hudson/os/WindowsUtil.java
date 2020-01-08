@@ -48,7 +48,7 @@ public class WindowsUtil {
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
      *
      * @param argument argument to be quoted or escaped for windows shells.
-     * @return properly quoted and escaped windows arguemnts.
+     * @return properly quoted and escaped windows arguments.
      */
     public static @Nonnull String quoteArgument(@Nonnull String argument) {
         if (!NEEDS_QUOTING.matcher(argument).find()) return argument;

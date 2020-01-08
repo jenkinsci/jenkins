@@ -164,7 +164,7 @@ public class DisablePluginCommand extends CLICommand {
 
     /**
      * Restart if this particular result of the disablement of a plugin and its dependent plugins (depending on the
-     * strategy used) has a plugin disablexd.
+     * strategy used) has a plugin disabled.
      * @param oneResult the result of a plugin (and its dependents).
      * @return true if it end up in restarting jenkins.
      */

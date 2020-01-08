@@ -98,7 +98,7 @@ public class JNLPLauncherTest {
 
     /**
      * Tests the '-headless' option.
-     * (Although this test doesn't really assert that the agent really is running in a headless mdoe.)
+     * (Although this test doesn't really assert that the agent really is running in a headless mode.)
      */
     @Test
     public void testHeadlessLaunch() throws Exception {
