@@ -1377,7 +1377,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Retrieve the RSS feed for the last build executed in this computer
+     * Retrieve the RSS feed for the last build for each project executed in this computer
      */
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
