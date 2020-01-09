@@ -45,6 +45,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,10 +65,17 @@ public class SuppressionFilter implements Filter {
         PluginServletFilter.addFilter(new SuppressionFilter());
     }
 
+    @Override
     public void init(FilterConfig filterConfig) {
         // no-op
     }
 
+    @Override
+    public void destroy() {
+        // no-op
+    }
+
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
             chain.doFilter(request, response);
@@ -92,25 +102,29 @@ public class SuppressionFilter implements Filter {
     }
 
     private void respondWithSimpleErrorPage(HttpServletResponse response, String errorId) throws ServletException {
-        try {
-            response.setStatus(SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("text/html;charset=UTF-8");
-            response.setHeader("Cache-Control", "no-cache,must-revalidate");
-            PrintWriter w;
+        if (response.isCommitted()) {
+            LOGGER.finest("Response is already committed: " + response);
+        } else {
             try {
-                w = response.getWriter();
-            } catch (IllegalStateException x) {
-                w = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
+                response.setStatus(SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("text/html;charset=UTF-8");
+                response.setHeader("Cache-Control", "no-cache,must-revalidate");
+                PrintWriter w;
+                try {
+                    w = response.getWriter();
+                } catch (IllegalStateException x) {
+                    w = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
+                }
+                w.println("<html><head><title>" + Messages.SuppressionFilter_Title() + "</title><body>");
+                w.println("<p>" + Messages.SuppressionFilter_ContactAdmin(errorId) + "</p>");
+                w.println("</body></html>");
+                w.close();
+            } catch (Error error) {
+                throw error;
+            } catch (Throwable x) {
+                // if we fail to report this error, bail out
+                throw new ServletException(Messages.SuppressionFilter_ContactAdmin(errorId)); // not chaining x since it might contain something
             }
-            w.println("<html><head><title>" + Messages.SuppressionFilter_Title() + "</title><body>");
-            w.println("<p>" + Messages.SuppressionFilter_ContactAdmin(errorId) + "</p>");
-            w.println("</body></html>");
-            w.close();
-        } catch (Error error) {
-            throw error;
-        } catch (Throwable x) {
-            // if we fail to report this error, bail out
-            throw new ServletException(Messages.SuppressionFilter_ContactAdmin(errorId)); // not chaining x since it might contain something
         }
     }
 
@@ -142,18 +156,18 @@ public class SuppressionFilter implements Filter {
         return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
-    public void destroy() {
-        // no-op
-    }
-
     private boolean containsAccessDeniedException(Exception exception) {
+        // Guard against malicious overrides of Throwable.equals by
+        // using a Set with identity equality semantics.
+        Set<Throwable> dejaVu = Collections.newSetFromMap(new IdentityHashMap<>());
         Throwable currentException = exception;
         do {
+            dejaVu.add(currentException);
             if (currentException instanceof AccessDeniedException) {
                 return true;
             }
             currentException = currentException.getCause();
-        } while (currentException != null);
+        } while (currentException != null && !dejaVu.contains(currentException));
         return false;
     }
 
