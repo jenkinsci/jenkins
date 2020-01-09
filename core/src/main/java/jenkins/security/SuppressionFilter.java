@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 CloudBees, Inc.
+ * Copyright (c) 2019-2020 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,8 +80,9 @@ public class SuppressionFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } catch (Exception e) {
-            if (containsAccessDeniedException(e)) {
-                throw e;
+            AccessDeniedException accessDeniedException = containsAccessDeniedException(e);
+            if (accessDeniedException != null) {
+                throw accessDeniedException;
             }
             if (Stapler.isSocketException(e)) {
                 return;
@@ -156,7 +157,7 @@ public class SuppressionFilter implements Filter {
         return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
-    private boolean containsAccessDeniedException(Exception exception) {
+    private AccessDeniedException containsAccessDeniedException(Exception exception) {
         // Guard against malicious overrides of Throwable.equals by
         // using a Set with identity equality semantics.
         Set<Throwable> dejaVu = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -164,11 +165,11 @@ public class SuppressionFilter implements Filter {
         do {
             dejaVu.add(currentException);
             if (currentException instanceof AccessDeniedException) {
-                return true;
+                return (AccessDeniedException) currentException;
             }
             currentException = currentException.getCause();
         } while (currentException != null && !dejaVu.contains(currentException));
-        return false;
+        return null;
     }
 
 }
