@@ -338,6 +338,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * @return all the {@link ViewPropertyDescriptor}s that can be potentially configured on this View and are visible
      * for the user. Use {@link DescriptorVisibilityFilter} to make a View property invisible for users.
+     * @since 2.214
      */
     public List<ViewPropertyDescriptor> getVisiblePropertyDescriptors() {
         return DescriptorVisibilityFilter.apply(this, getApplicablePropertyDescriptors());
