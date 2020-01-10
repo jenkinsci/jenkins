@@ -47,3 +47,7 @@ Before the changes is marked as `ready-for-merge`:
 - [ ] Conversations in the pull request are over OR it is explicit that a reviewer does not block the change
 - [ ] Changelog entries in the PR title and/or `Proposed changelog entries` are correct
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically
+- [ ] If the change needs additional upgrade steps from users, `upgrade-guide-needed` label is set and there is a `Proposed upgrade guidelines` section in the PR title. ([example](https://github.com/jenkinsci/jenkins/pull/4387))
+- [ ] If it would make sense to backport the change to LTS, a JIRA issue should exist and labeled as `lts-candidate`
+
+
