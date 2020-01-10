@@ -21,11 +21,16 @@ If the issue is not fully described in the ticket, add more information here (ju
 <!-- Comment: 
 The changelogs will be integrated by the core maintainers after the merge.  See the changelog examples here: https://jenkins.io/changelog/ -->
 
+### Proposed upgrade guidelines
+
+N/A
+
 ### Submitter checklist
 
 - [ ] JIRA issue is well described
-- [ ] Changelog entry appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
-      * Use the `Internal: ` prefix if the change has no user-visible impact (API, test frameworks, etc.)
+- [ ] Changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
+  * Use the `Internal: ` prefix if the change has no user-visible impact (API, test frameworks, etc.)
+  * Fill-in the `Proposed changelog entries` section only if there are breaking changes or other changes which may require extra steps from users during the upgrade
 - [ ] Appropriate autotests or explanation to why this change has no tests
 - [ ] For dependency updates: links to external changelogs and, if possible, full diffs
 
