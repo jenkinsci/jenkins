@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import windowHandle from 'window-handle'
+import windowHandle from 'window-handle';
 
 var timestamp = (new Date().getTime());
 var loadedClass = 'jenkins-loaded-' + timestamp;

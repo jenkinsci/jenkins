@@ -5,9 +5,7 @@ import $ from 'jquery'
 import wh from 'window-handle'
 
 var debug = false;
-
-
-var jenkins = {}
+var jenkins = {};
 
 // gets the base Jenkins URL including context path
 jenkins.baseUrl = function() {

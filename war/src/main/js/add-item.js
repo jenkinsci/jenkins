@@ -1,4 +1,3 @@
-// Initialize all modules by requiring them. Also makes sure they get bundled (see webpack.config.js).
 import $ from 'jquery';
 
 var getItems = function() {

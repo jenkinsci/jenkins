@@ -25,7 +25,9 @@ import pluginSelectList from './templates/pluginSelectList.hbs';
 
 Handlebars.registerPartial('pluginSelectList', pluginSelectList);
 
-window.zq = $
+
+// TODO: see whether this is actually being used or if it can be removed
+window.zq = $;
 
 // Setup the dialog, exported
 var createPluginSetupWizard = function(appendTarget) {
@@ -120,7 +122,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	// wrap calls with this method to handle generic errors returned by the plugin manager
 	var handleGenericError = function(success) {
 		return function() {
-			// Workaround for webpack not passing context to anonymous functions
+			// Workaround for webpack passing null context to anonymous functions
 			var self = this || window;
 
 			if(self.isError) {
@@ -1264,7 +1266,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	}));
 };
 
-var exports = {}
+var exports = {};
 // export wizard creation method
 exports.init = createPluginSetupWizard;
-export default exports
+export default exports;

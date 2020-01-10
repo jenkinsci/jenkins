@@ -1,7 +1,6 @@
-// Initialize all modules by requiring them. Also makes sure they get bundled (see webpack.config.js).
-import $ from 'jquery'
+import $ from 'jquery';
 // This is the main module
-import pluginSetupWizard from './pluginSetupWizardGui'
+import pluginSetupWizard from './pluginSetupWizardGui';
 
 // This entry point for the bundle only bootstraps the main module in a browser
 $(function() {
