@@ -581,10 +581,10 @@ THE SOFTWARE.
     -->
 
     <profile>
-      <id>gulp-execution</id>
+      <id>yarn-execution</id>
       <activation>
         <file>
-          <exists>gulpfile.js</exists>
+          <exists>package.json</exists>
         </file>
       </activation>
       <build>
@@ -645,17 +645,6 @@ THE SOFTWARE.
                 </configuration>
               </execution>
 
-<!--              <execution>-->
-<!--                <phase>generate-sources</phase>-->
-<!--                <id>gulp bundle</id>-->
-<!--                <goals>-->
-<!--                  <goal>gulp</goal>-->
-<!--                </goals>-->
-<!--                <configuration>-->
-<!--                  <arguments>bundle</arguments>-->
-<!--                </configuration>-->
-<!--              </execution>-->
-
               <execution>
                 <phase>generate-sources</phase>
                 <id>yarn build</id>
@@ -666,18 +655,6 @@ THE SOFTWARE.
                   <arguments>build</arguments>
                 </configuration>
               </execution>
-
-<!--              <execution>-->
-<!--                <phase>test</phase>-->
-<!--                <id>gulp test</id>-->
-<!--                <goals>-->
-<!--                  <goal>gulp</goal>-->
-<!--                </goals>-->
-<!--                <configuration>-->
-<!--                  <arguments>bundle test</arguments>-->
-<!--                  <skip>${skipTests}</skip>-->
-<!--                </configuration>-->
-<!--              </execution>-->
 
             </executions>
           </plugin>

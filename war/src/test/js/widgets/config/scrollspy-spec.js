@@ -44,7 +44,7 @@ describe("scrollspy-spec tests", function () {
             // Lets mimic scrolling. This should trigger the
             // scrollspy into activating different sections
             // as the user scrolls down the page.
-            // See the test console output (gulp test) for a printout
+            // See the test console output (yarn test) for a printout
             // of the positions/offsets of each section.
             // i.e. ...
             //	    config_general: 100

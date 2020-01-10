@@ -834,25 +834,6 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-accord@^0.26.3:
-  version "0.26.4"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/accord/-/accord-0.26.4.tgz#fc4c8d3ebab406a07cb28819b859651c44a92e80"
-  dependencies:
-    convert-source-map "^1.2.0"
-    glob "^7.0.5"
-    indx "^0.2.3"
-    lodash.clone "^4.3.2"
-    lodash.defaults "^4.0.1"
-    lodash.flatten "^4.2.0"
-    lodash.merge "^4.4.0"
-    lodash.partialright "^4.1.4"
-    lodash.pick "^4.2.1"
-    lodash.uniq "^4.3.0"
-    resolve "^1.1.7"
-    semver "^5.3.0"
-    uglify-js "^2.7.0"
-    when "^3.7.7"
-
 acorn-globals@^1.0.4:
   version "1.0.9"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/acorn-globals/-/acorn-globals-1.0.9.tgz#55bb5e98691507b74579d0513413217c380c54cf"
@@ -1757,7 +1738,7 @@ convert-source-map@^0.4.0:
   version "0.4.1"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/convert-source-map/-/convert-source-map-0.4.1.tgz#f919a0099fe31f80fc5a1d0eb303161b394070c7"
 
-convert-source-map@^1.0.0, convert-source-map@^1.2.0:
+convert-source-map@^1.0.0:
   version "1.5.0"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/convert-source-map/-/convert-source-map-1.5.0.tgz#9acd70851c6d5dfdd93d9282e5edf94a03ff46b5"
 
@@ -2769,7 +2750,7 @@ glob@^7.0.0, glob@^7.1.3, glob@^7.1.4:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.5, glob@^7.0.6, glob@^7.1.1:
+glob@^7.0.6, glob@^7.1.1:
   version "7.1.1"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
   dependencies:
@@ -2910,18 +2891,7 @@ gulp-less@^1.3.6:
     through2 "^0.5.1"
     vinyl-sourcemaps-apply "^0.1.1"
 
-gulp-less@^3.1.0:
-  version "3.3.0"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/gulp-less/-/gulp-less-3.3.0.tgz#d085565da3c810307fde7c7874e86520dc503234"
-  dependencies:
-    accord "^0.26.3"
-    gulp-util "^3.0.7"
-    less "2.6.x || ^2.7.1"
-    object-assign "^4.0.1"
-    through2 "^2.0.0"
-    vinyl-sourcemaps-apply "^0.2.0"
-
-gulp-util@^3.0.0, gulp-util@^3.0.6, gulp-util@^3.0.7:
+gulp-util@^3.0.0, gulp-util@^3.0.6:
   version "3.0.8"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/gulp-util/-/gulp-util-3.0.8.tgz#0054e1e744502e27c04c187c3ecc505dd54bbb4f"
   dependencies:
@@ -3261,10 +3231,6 @@ indexes-of@^1.0.1:
 indexof@0.0.1:
   version "0.0.1"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/indexof/-/indexof-0.0.1.tgz#82dc336d232b9062179d05ab3293a66059fd435d"
-
-indx@^0.2.3:
-  version "0.2.3"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/indx/-/indx-0.2.3.tgz#15dcf56ee9cf65c0234c513c27fbd580e70fbc50"
 
 infer-owner@^1.0.3:
   version "1.0.4"
@@ -3614,13 +3580,6 @@ jasmine@^3.5.0:
     glob "^7.1.4"
     jasmine-core "~3.5.0"
 
-jenkins-handlebars-rt@^1.0.1:
-  version "1.0.1"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/jenkins-handlebars-rt/-/jenkins-handlebars-rt-1.0.1.tgz#fdc3bec0433dadcce90af7c2b8c74c6058fa7ba0"
-  dependencies:
-    handlebars "^3.0.3"
-    jenkins-js-modules "1.0.1"
-
 jenkins-js-builder@0.0.40:
   version "0.0.40"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/jenkins-js-builder/-/jenkins-js-builder-0.0.40.tgz#a5ee131ae30a6338e6cbe1e82ab281b9dea314d6"
@@ -3642,12 +3601,6 @@ jenkins-js-builder@0.0.40:
     vinyl-source-stream "^1.1.0"
     window-handle "0.0.6"
     xml2js "^0.4.9"
-
-jenkins-js-modules@1.0.1:
-  version "1.0.1"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/jenkins-js-modules/-/jenkins-js-modules-1.0.1.tgz#642b9fdcae436ee8dbf1902b3bc2cd764acf69fd"
-  dependencies:
-    window-handle "0.0.6"
 
 jenkins-js-modules@^1.4.0, jenkins-js-modules@^1.5.0:
   version "1.5.4"
@@ -3898,19 +3851,6 @@ less-loader@^5.0.0:
     loader-utils "^1.1.0"
     pify "^4.0.1"
 
-"less@2.6.x || ^2.7.1":
-  version "2.7.2"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/less/-/less-2.7.2.tgz#368d6cc73e1fb03981183280918743c5dcf9b3df"
-  optionalDependencies:
-    errno "^0.1.1"
-    graceful-fs "^4.1.2"
-    image-size "~0.5.0"
-    mime "^1.2.11"
-    mkdirp "^0.5.0"
-    promise "^7.1.1"
-    request "^2.72.0"
-    source-map "^0.5.3"
-
 less@^1.7.4:
   version "1.7.5"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/less/-/less-1.7.5.tgz#4f220cf7288a27eaca739df6e4808a2d4c0d5756"
@@ -4058,10 +3998,6 @@ lodash.bind@^4.0.0:
   version "4.2.1"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.bind/-/lodash.bind-4.2.1.tgz#7ae3017e939622ac31b7d7d7dcb1b34db1690d35"
 
-lodash.clone@^4.3.2:
-  version "4.5.0"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.clone/-/lodash.clone-4.5.0.tgz#195870450f5a13192478df4bc3d23d2dea1907b6"
-
 lodash.clonedeep@^4.3.2:
   version "4.5.0"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
@@ -4073,7 +4009,7 @@ lodash.defaults@^2.4.1:
     lodash._objecttypes "~2.4.1"
     lodash.keys "~2.4.1"
 
-lodash.defaults@^4.0.0, lodash.defaults@^4.0.1:
+lodash.defaults@^4.0.0:
   version "4.2.0"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.defaults/-/lodash.defaults-4.2.0.tgz#d09178716ffea4dde9e5fb7b37f6f0802274580c"
 
@@ -4082,10 +4018,6 @@ lodash.escape@^3.0.0:
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.escape/-/lodash.escape-3.2.0.tgz#995ee0dc18c1b48cc92effae71a10aab5b487698"
   dependencies:
     lodash._root "^3.0.0"
-
-lodash.flatten@^4.2.0:
-  version "4.4.0"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.flatten/-/lodash.flatten-4.4.0.tgz#f31c22225a9632d2bbf8e4addbef240aa765a61f"
 
 lodash.foreach@^4.0.0:
   version "4.5.0"
@@ -4141,14 +4073,6 @@ lodash.memoize@~3.0.3:
   version "3.0.4"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.memoize/-/lodash.memoize-3.0.4.tgz#2dcbd2c287cbc0a55cc42328bd0c736150d53e3f"
 
-lodash.merge@^4.4.0:
-  version "4.6.0"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.merge/-/lodash.merge-4.6.0.tgz#69884ba144ac33fe699737a6086deffadd0f89c5"
-
-lodash.partialright@^4.1.4:
-  version "4.2.1"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.partialright/-/lodash.partialright-4.2.1.tgz#0130d80e83363264d40074f329b8a3e7a8a1cc4b"
-
 lodash.pick@^4.2.1:
   version "4.4.0"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.pick/-/lodash.pick-4.4.0.tgz#52f05610fff9ded422611441ed1fc123a03001b3"
@@ -4177,10 +4101,6 @@ lodash.templatesettings@^3.0.0:
   dependencies:
     lodash._reinterpolate "^3.0.0"
     lodash.escape "^3.0.0"
-
-lodash.uniq@^4.3.0:
-  version "4.5.0"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
 lodash@3.7.x:
   version "3.7.0"
@@ -4354,10 +4274,6 @@ mime-types@~2.1.19:
   integrity sha512-5KhStqB5xpTAeGqKBAMgwaYMnQik7teQN4IAzC7npDv6kzeU6prfkR67bc87J1kWMPGkoaZSq1npmexMgkmEVg==
   dependencies:
     mime-db "1.42.0"
-
-mime@^1.2.11:
-  version "1.3.6"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/mime/-/mime-1.3.6.tgz#591d84d3653a6b0b4a3b9df8de5aa8108e72e5e0"
 
 mime@^1.4.1:
   version "1.6.0"
@@ -5452,7 +5368,7 @@ replace-ext@0.0.1:
   version "0.0.1"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/replace-ext/-/replace-ext-0.0.1.tgz#29bbd92078a739f0bcce2b4ee41e837953522924"
 
-request@^2.55.0, request@^2.72.0:
+request@^2.55.0:
   version "2.81.0"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/request/-/request-2.81.0.tgz#c6928946a0e06c5f8d6f8a9333469ffda46298a0"
   dependencies:
@@ -5862,7 +5778,7 @@ source-map@^0.5.0, source-map@^0.5.6:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha1-igOdLRAh0i0eoUyA2OpGi6LvP8w=
 
-source-map@^0.5.1, source-map@^0.5.3, source-map@~0.5.1, source-map@~0.5.3:
+source-map@^0.5.3, source-map@~0.5.1, source-map@~0.5.3:
   version "0.5.6"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/source-map/-/source-map-0.5.6.tgz#75ce38f52bf0733c5a7f0c118d81334a2bb5f412"
 
@@ -6307,7 +6223,7 @@ typedarray@^0.0.6, typedarray@~0.0.5:
   version "0.0.6"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^2.6.1, uglify-js@^2.7.0:
+uglify-js@^2.6.1:
   version "2.8.26"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/uglify-js/-/uglify-js-2.8.26.tgz#3a1db8ae0a0aba7f92e1ddadadbd0293d549f90e"
   dependencies:
@@ -6509,12 +6425,6 @@ vinyl-sourcemaps-apply@^0.1.1:
   dependencies:
     source-map "^0.1.39"
 
-vinyl-sourcemaps-apply@^0.2.0:
-  version "0.2.1"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/vinyl-sourcemaps-apply/-/vinyl-sourcemaps-apply-0.2.1.tgz#ab6549d61d172c2b1b87be5c508d239c8ef87705"
-  dependencies:
-    source-map "^0.5.1"
-
 vinyl@^0.4.0, vinyl@^0.4.3:
   version "0.4.6"
   resolved "https://repo.jenkins-ci.org/api/npm/npm/vinyl/-/vinyl-0.4.6.tgz#2f356c87a550a255461f36bbeb2a5ba8bf784847"
@@ -6608,10 +6518,6 @@ webpack@^4.41.2:
     terser-webpack-plugin "^1.4.1"
     watchpack "^1.6.0"
     webpack-sources "^1.4.1"
-
-when@^3.7.7:
-  version "3.7.8"
-  resolved "https://repo.jenkins-ci.org/api/npm/npm/when/-/when-3.7.8.tgz#c7130b6a7ea04693e842cdc9e7a1f2aa39a39f82"
 
 which-module@^2.0.0:
   version "2.0.0"

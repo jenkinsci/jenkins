@@ -1,10 +1,7 @@
-// Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
-// var $ = require('jquery-detached').getJQuery();
+// Initialize all modules by requiring them. Also makes sure they get bundled (see webpack.config.js).
 import $ from 'jquery'
-import pluginSetupWizard from './pluginSetupWizardGui'
-
 // This is the main module
-// var pluginSetupWizard = require('./pluginSetupWizardGui');
+import pluginSetupWizard from './pluginSetupWizardGui'
 
 // This entry point for the bundle only bootstraps the main module in a browser
 $(function() {
