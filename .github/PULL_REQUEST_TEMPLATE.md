@@ -45,13 +45,12 @@ If you need an accelerated review process by the community (e.g., for critical b
 
 ### Maintainer checklist
 
-Before the changes is marked as `ready-for-merge`: 
+Before the changes are marked as `ready-for-merge`: 
 
-- [ ] There is at least 2 approvals for the pull request and no outstanding requests for change
+- [ ] There are at least 2 approvals for the pull request and no outstanding requests for change
 - [ ] Conversations in the pull request are over OR it is explicit that a reviewer does not block the change
 - [ ] Changelog entries in the PR title and/or `Proposed changelog entries` are correct
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically
 - [ ] If the change needs additional upgrade steps from users, `upgrade-guide-needed` label is set and there is a `Proposed upgrade guidelines` section in the PR title. ([example](https://github.com/jenkinsci/jenkins/pull/4387))
-- [ ] If it would make sense to backport the change to LTS, a JIRA issue should exist and labeled as `lts-candidate`
-
+- [ ] If it would make sense to backport the change to LTS, a JIRA issue should exist and be labeled as `lts-candidate`
 
