@@ -55,11 +55,14 @@ module.exports = {
         test: /\.hbs$/,
         loader: "handlebars-loader",
         options: {
+          // The preferred option for adding handlebars helpers is putting them
+          // inside this helpers directory
           helperDirs: path.join(__dirname, 'src/main/js/handlebars-helpers'),
           precompileOptions: {
             knownHelpersOnly: false,
             // Helpers registered with Handlebars.registerHelper must be listed so that
-            // handlebars-loader will expect them when compiling the templates
+            // handlebars-loader will expect them when compiling the templates.
+            // This helpers cannot be moved to the helpers directory because they are closures
             knownHelpers: [
               'pluginCountForCategory',
               'totalPluginCount',

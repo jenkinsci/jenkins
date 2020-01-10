@@ -1,7 +1,6 @@
 /**
  * Jenkins first-run install wizard
  */
-// Require modules here, make sure they get browserify'd/bundled
 import $ from 'jquery';
 import Handlebars from 'handlebars';
 import jenkins from './util/jenkins';
@@ -117,8 +116,6 @@ var createPluginSetupWizard = function(appendTarget) {
 			return options.fn();
 		}
 	});
-
-
 
 	// wrap calls with this method to handle generic errors returned by the plugin manager
 	var handleGenericError = function(success) {

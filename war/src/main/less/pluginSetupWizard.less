@@ -52,14 +52,14 @@
         animation-iteration-count: infinite;
         animation-timing-function: linear;
     }
-
+    
     .no-spin() {
         -webkit-animation-name: none;
         -moz-animation-name: none;
         -ms-animation-name: none;
         animation-name: none;
     }
-
+    
     .modal {
         padding: 20px 0;
     }
@@ -80,7 +80,7 @@
         box-sizing: border-box;
         padding: 4.2em 0 4.8em 0;
     }
-
+    
     .jenkins-version {
         float: left;
         margin: .7em .5em;
@@ -90,7 +90,7 @@
     .container.error-container {
         padding: 4em 3em;
         max-width: 100%;
-
+        
         h1 {
         color: #a94442;
     }
@@ -351,7 +351,7 @@
 
 				.plugin {
 					position: relative;
-
+				
 					&.selected label {
 						background: #dff0d8;
 						margin: 4px -7px;
@@ -364,7 +364,7 @@
 							color: #777;
 						}
 					}
-
+	
                 label {
                     font-weight: normal;
                     padding: 7px 2px 7px 27px;
@@ -411,11 +411,11 @@
                         }
                     }
                 }
-
+	
 				@badge-color: #555;
 				@badge-background: #f8f8f8;
 				@link-color: #337ab7;
-
+	
 					.website-link {
 						position: relative;
 						height: 15px;
@@ -467,20 +467,20 @@
 						padding: 5px 13px;
 						margin: 0 0;
 						z-index: 100;
-
+						
 						.badge {
 							margin-left: 7px;
 							padding-left: 9px;
 							background: @badge-background;
 							color: @badge-color;
 							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
-
+						
 							&:after {
 								content: '\f0d9';
 								font: 15px FontAwesome;
 								display: inline-block;
-								width: 13px;
-								height: 13px;
+								width: 13px; 
+								height: 13px; 
 								margin: -4px -2px 0px 1px;
 								vertical-align: middle;
 							}
@@ -488,7 +488,7 @@
 						&:hover, &.active, &:focus {
 							text-decoration: none;
 							outline: none;
-
+							
 							.badge {
 								background: @badge-color;
 								color: #fff;
@@ -496,16 +496,16 @@
 							outline: none;
 						}
 					}
-
+					
 					&.selected .toggle-dependency-list {
 						top: -1px;
 						right: -1px;
 					}
-
+					
 					.dep-list {
 						padding: 10px 0 6px 0;
 						display: none;
-
+						
 						> h3 {
 							margin: 0 25px 4px 0;
 							color: #555555;
@@ -514,19 +514,19 @@
 							border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 							padding-bottom: 5px;
 						}
-
+						
 						.badge {
 							padding: 4px 8px;
 							margin: 5px 3px 0 0;
 							background: @badge-background;
 							color: @badge-color;
 							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
-
+							
 							&:after {
 								content: '\f14c';
 								font: 11px FontAwesome;
 							}
-
+							
 							&:hover, &:active, &:focus {
 								color: #fff;
 								background: @link-color;
@@ -534,12 +534,12 @@
 							}
 						}
 					}
-
+					
 					&.show-dependencies {
 						.toggle-dependency-list .badge:after {
 							content: '\f0d7';
 						}
-
+						
 						.dep-list {
 							display: block;
 						}
@@ -618,7 +618,7 @@
     z-index: 5;
     top: 33.3%;
     width: 25%;
-
+    
     .install-console-scroll {
         position: absolute;
         top: 6px;
@@ -628,7 +628,7 @@
         overflow:auto;
         font: 12px monospace;
     }
-
+    
      @media screen and (max-width: 992px) {
        width: 100%;
        position: relative;
@@ -657,7 +657,7 @@
                 content: ' ** ';
             }
         }
-
+        
         .dependency-legend {
             color: #777;
             position: absolute;
@@ -840,7 +840,7 @@
             }
         }
     }
-
+    
     .security-panel {
         &.security-panel, > iframe {
             position: absolute;
@@ -855,7 +855,7 @@
             margin: 0;
         }
     }
-
+    
     .alert {
         font-size: initial;
     }
