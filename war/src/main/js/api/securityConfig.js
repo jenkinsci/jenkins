@@ -53,4 +53,4 @@ export default {
 	saveFirstUser: saveFirstUser,
 	saveConfigureInstance: saveConfigureInstance,
 	saveProxy: saveProxy
-}
+};

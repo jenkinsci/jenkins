@@ -44,4 +44,3 @@ function initJQueryExt() {
     });
 }
 initJQueryExt();
-
