@@ -38,3 +38,12 @@ The changelogs will be integrated by the core maintainers after the merge.  See 
 <!-- Comment:
 If you need an accelerated review process by the community (e.g., for critical bugs), mention @jenkinsci/code-reviewers
 -->
+
+### Maintainer checklist
+
+Before the changes is marked as `ready-for-merge`: 
+
+- [ ] There is at least 2 approvals for the pull request and no outstanding requests for change
+- [ ] Conversations in the pull request are over OR it is explicit that a reviewer does not block the change
+- [ ] Changelog entries in the PR title and/or `Proposed changelog entries` are correct
+- [ ] Proper changelog labels are set so that the changelog can be generated automatically
