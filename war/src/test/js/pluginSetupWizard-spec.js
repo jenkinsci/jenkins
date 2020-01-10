@@ -1,5 +1,5 @@
-var jquery = require('jquery-detached');
 var jsTest = require("jenkins-js-test");
+var jquery = require('jquery-detached');
 
 var debug = false;
 
@@ -120,7 +120,7 @@ var ajaxMocks = function(responseMappings) {
         },
         {
          "category":"User Management and Security",
-         "plugins": [
+         "plugins": [            
              { "name": "matrix-auth" },
              { "name": "pam-auth" },
              { "name": "ldap" }
