@@ -508,7 +508,7 @@ public abstract class Slave extends Node implements Serializable {
             if (isUnix == null) {
                 // isUnix is always set when the channel is not null, so it should never happen
                 reportLauncherCreateError("The agent has not been fully initialized yet",
-                                         "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
+                                         "Cannot determine if the agent is a Unix one, the System status request has not completed yet. " +
                                          "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
                                          listener);
                 return new Launcher.DummyLauncher(listener);

@@ -65,7 +65,7 @@ public class BuildAuthorizationTokenTest {
             fail("should not reach here as anonymous does not have Item.BUILD and token is not set");
         }
         catch (FailingHttpStatusCodeException fex) {
-            assertThat("Should fail with access denined", fex.getStatusCode(), is(403));
+            assertThat("Should fail with access denied", fex.getStatusCode(), is(403));
         }
     }
 

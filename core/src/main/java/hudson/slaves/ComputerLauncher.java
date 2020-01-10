@@ -54,7 +54,7 @@ import org.apache.tools.ant.util.DeweyDecimal;
 public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
-     * programatic launch of the agent in the target {@link Computer}.
+     * programmatic launch of the agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
         return true;

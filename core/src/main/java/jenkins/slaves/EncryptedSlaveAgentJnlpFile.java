@@ -92,7 +92,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             if(it instanceof SlaveComputer) {
                 jnlpMac = Util.fromHexString(((SlaveComputer)it).getJnlpMac());
             } else {
-                jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName.getBytes(StandardCharsets.UTF_8));
+                jnlpMac = JnlpAgentReceiver.SLAVE_SECRET.mac(slaveName.getBytes(StandardCharsets.UTF_8));
             }
             SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
             byte[] encrypted;

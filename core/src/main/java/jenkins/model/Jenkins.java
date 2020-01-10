@@ -3693,7 +3693,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownThreadPoolForLoad(List<Throwable> errors) {
-        LOGGER.log(FINE, "Shuting down Jenkins load thread pool");
+        LOGGER.log(FINE, "Shutting down Jenkins load thread pool");
         try {
             threadPoolForLoad.shutdown();
         } catch (SecurityException e) {
