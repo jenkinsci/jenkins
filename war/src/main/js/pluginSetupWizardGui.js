@@ -596,7 +596,7 @@ var createPluginSetupWizard = function(appendTarget) {
 						}
 						$txt.append($div);
 
-						var $itemProgress = $('.selected-plugin[id="installing-' + jenkins.idIfy(j.name) + '"]');
+						var $itemProgress = $('.selected-plugin[id="installing-' + idIfy(j.name) + '"]');
 						if($itemProgress.length > 0 && !$itemProgress.is('.'+state)) {
 							$itemProgress.addClass(state);
 						}

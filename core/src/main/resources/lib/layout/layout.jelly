@@ -273,8 +273,6 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${layoutType!='full-screen'}">
-
-    <link rel="stylesheet" href="${resURL}/jsbundles/pluginSetupWizard.css" type="text/css" />
     <footer>
       <div class="container-fluid">
         <div class="row">
