@@ -14,11 +14,24 @@ jobs:
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
+        id: release-drafter
         uses: release-drafter/release-drafter@v5.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       - name: Generate YAML changelog draft
+        id: jenkins-core-changelog-generator
         uses: jenkinsci/jenkins-core-changelog-generator@master
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
+      # Upload YAML to the release draft assets
+      - name: Upload changelog.yaml to the Release Draft
+        id: upload-changelog.yaml
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release-drafter.outputs.upload_url }}
+          asset_path: ./changelog.yaml
+          asset_name: changelog.yaml
+          asset_content_type: text/yaml
