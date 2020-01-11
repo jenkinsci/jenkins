@@ -11,6 +11,8 @@ template: |
   See the attached `changelog.yaml` for a draft machine-readable changelog for jenkins.io
 
   $CHANGES
+  
+  All contributors: $CONTRIBUTORS
 
 # Categories will be commented out, because we use YAML
 # Now we use categories only for sorting
