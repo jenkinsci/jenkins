@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Implements the dual authentication mechanism.
@@ -163,7 +164,7 @@ public class BasicAuthenticationFilter implements Filter {
 
         // prepare a redirect
         rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        rsp.setHeader("Location",path);
+        rsp.setHeader("Location", URLEncoder.encode(path, StandardCharsets.UTF_8.displayName()));
 
         // ... but first let the container authenticate this request
         RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username="+
