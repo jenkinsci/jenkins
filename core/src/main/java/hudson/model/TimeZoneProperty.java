@@ -7,7 +7,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -107,7 +106,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         }
 
         TimeZone tz = TimeZone.getTimeZone(tzp.timeZoneName);
-        if (!Objects.equals(tz.getID(), tzp.timeZoneName)) {
+        if (!tz.getID().equals(tzp.timeZoneName)) {
             //TimeZone.getTimeZone returns GMT on invalid time zone so
             //warn the user if the time zone returned is different from
             //the one they specified.

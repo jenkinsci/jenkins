@@ -327,7 +327,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     /**
-     * Returns a subset of {@link TriggerDescriptor}s that applys to the given item.
+     * Returns a subset of {@link TriggerDescriptor}s that applies to the given item.
      */
     public static List<TriggerDescriptor> for_(Item i) {
         List<TriggerDescriptor> r = new ArrayList<>();

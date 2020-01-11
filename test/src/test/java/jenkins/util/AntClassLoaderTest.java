@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright 2020 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.util;
 
-import jenkins.model.RunAction2;
+import org.junit.ClassRule;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.jvnet.hudson.test.BuildWatcher;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
-/**
- * @deprecated Use {@link RunAction2} instead: {@link #onLoad} does not work well with lazy loading if you are trying to persist the owner; and {@link #onBuildComplete} was never called.
- */
-@Deprecated
-public interface RunAction extends Action {
-    /**
-     * Called after the build is loaded and the object is added to the build list.
-     * 
-     * Because {@link RunAction}s are persisted with {@link Run}, the implementation
-     * can keep a reference to {@link Run} in a field (which is set via {@link #onAttached(Run)})
-     */
-    void onLoad();
+public class AntClassLoaderTest {
 
-    /**
-     * Called when the action is added to the {@link Run} object.
-     * @since 1.376
-     */
-    void onAttached(Run r);
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-    /**
-     * Called after the build is finished.
-     */
-    void onBuildComplete();
+    @Issue("JENKINS-60644")
+    @WithPlugin("loads-resource.jpi")
+    @Test
+    public void loadsResource() throws Exception {
+        assertNotNull(r.jenkins.pluginManager.getPlugin("loads-resource").classLoader.getResourceAsStream("io/jenkins/plugins/loads_resource/stuff"));
+    }
+
 }

@@ -116,7 +116,7 @@ public class ExecutorTest {
         assertThat(log, containsString("Finished: FAILURE"));
         assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
         assertThat(log, containsString("Agent went offline during the build"));
-        assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your buil"));
+        assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your build"));
     }
 
     @Issue("SECURITY-611")

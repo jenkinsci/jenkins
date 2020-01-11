@@ -55,6 +55,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -203,7 +204,9 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
-    private static class NodeSorter implements Comparator<Node> {
+    private static class NodeSorter implements Comparator<Node>, Serializable {
+        private static final long serialVersionUID = -7368519598046684532L;
+
         @Override
         public int compare(Node o1, Node o2) {
             if (o1 == o2) {

@@ -744,12 +744,13 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     private InputStream loadResource(String name) {
         // we need to search the components of the path to see if we can
         // find the class we want.
-        InputStream stream = null;
-
         for (File pathComponent : pathComponents) {
-            stream = getResourceStream(pathComponent, name);
+            InputStream stream = getResourceStream(pathComponent, name);
+            if (stream != null) {
+                return stream;
+            }
         }
-        return stream;
+        return null;
     }
 
     /**
@@ -851,7 +852,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     }
 
     /**
-     * Used for isolated resource seaching.
+     * Used for isolated resource searching.
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {

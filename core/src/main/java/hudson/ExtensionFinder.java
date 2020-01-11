@@ -36,8 +36,6 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
-import com.google.inject.TypeLiteral;
-import com.google.inject.internal.Errors;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import com.google.inject.spi.ProvisionListener;
@@ -65,6 +63,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -484,7 +483,13 @@ public abstract class ExtensionFinder implements ExtensionPoint {
              * So this is an attempt to detect subset of problems eagerly, by invoking various reflection
              * operations and try to find non-existent classes early.
              */
-            private void resolve(Class c) {
+            private void resolve(Class<?> c) {
+                resolve(c, new HashSet<>());
+            }
+            private void resolve(Class<?> c, Set<Class<?>> encountered) {
+                if (!encountered.add(c)) {
+                    return;
+                }
                 try {
                     ClassLoader ecl = c.getClassLoader();
                     if (ecl != null) { // Not bootstrap classloader
@@ -502,7 +507,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         cc.getDeclaredMethods();
                         for (Field f : cc.getDeclaredFields()) {
                             if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
-                                resolve(f.getType());
+                                resolve(f.getType(), encountered);
                             }
                         }
                     }

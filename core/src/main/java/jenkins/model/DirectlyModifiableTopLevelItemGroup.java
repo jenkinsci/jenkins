@@ -49,7 +49,7 @@ public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelI
      * @param <I> the kind of item
      * @param item an item to add which is currently elsewhere
      * @param name the desired item name in this group (might simply be the original {@link Item#getName})
-     * @return normally the same {@code item}, but might be a new cppy if necessary
+     * @return normally the same {@code item}, but might be a new copy if necessary
      * @throws IOException if adding fails
      * @throws IllegalArgumentException if {@link #canAdd} is false, or an item with this name already exists, or this item is as yet unnamed
      */

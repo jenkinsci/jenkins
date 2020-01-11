@@ -403,7 +403,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Programatically updates the next build number.
+     * Programmatically updates the next build number.
      * 
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so

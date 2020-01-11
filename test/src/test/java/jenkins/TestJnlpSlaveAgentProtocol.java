@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright (c) 2020 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins;
 
-import jenkins.model.RunAction2;
+import hudson.Extension;
+import java.net.Socket;
+import org.jenkinsci.Symbol;
 
-/**
- * @deprecated Use {@link RunAction2} instead: {@link #onLoad} does not work well with lazy loading if you are trying to persist the owner; and {@link #onBuildComplete} was never called.
- */
-@Deprecated
-public interface RunAction extends Action {
-    /**
-     * Called after the build is loaded and the object is added to the build list.
-     * 
-     * Because {@link RunAction}s are persisted with {@link Run}, the implementation
-     * can keep a reference to {@link Run} in a field (which is set via {@link #onAttached(Run)})
-     */
-    void onLoad();
+@Extension
+@Symbol("jnlp")
+public class TestJnlpSlaveAgentProtocol extends AgentProtocol {
 
-    /**
-     * Called when the action is added to the {@link Run} object.
-     * @since 1.376
-     */
-    void onAttached(Run r);
+    @Override
+    public boolean isOptIn() {
+        return true;
+    }
 
-    /**
-     * Called after the build is finished.
-     */
-    void onBuildComplete();
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "JNLP-connect";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "JNLP-connect";
+    }
+
+    @Override
+    public void handle(Socket socket) {
+    }
+
 }
