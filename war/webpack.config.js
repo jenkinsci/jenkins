@@ -1,6 +1,8 @@
 const path = require('path');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
-const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries");
+const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
+const CopyPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -32,6 +34,18 @@ module.exports = {
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
+    new CopyPlugin([
+      // Copies fonts to the src/main/webapp/css for compat purposes
+      // Some plugins or parts of the UI try to load them from these paths
+      {
+        context: 'src/main/fonts',
+        from: "**/*",
+        to: path.join(__dirname, "src/main/webapp/css")
+      }
+    ]),
+    // Clean all assets within the specified output.
+    // It will not clean copied fonts
+    new CleanPlugin(),
   ],
   module: {
     rules: [
