@@ -26,6 +26,7 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.Page;
 import hudson.model.User;
 import jenkins.model.Jenkins;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +43,11 @@ public class SuppressionFilterTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Before
+    public void setup() {
+        SuppressionFilter.SHOW_STACK_TRACE = false;
+    }
+
     @Test
     public void authenticationException() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -56,23 +62,6 @@ public class SuppressionFilterTest {
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
         assertThat(content, not(containsString("Caused by")));
-    }
-
-    @Ignore("Doesn't work because the admin user gets to see everything currently")
-    @Test
-    public void authenticationExceptionShowsTrace() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice"));
-        User alice = User.get("alice");
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.login(alice.getId());
-
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("configureSecurity");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
-        assertThat(content, containsString("Caused by"));
     }
 
     @Test
@@ -137,10 +126,11 @@ public class SuppressionFilterTest {
         // This test probably doesn't belong here. It depends upon how we
         // end up implementing. Probably really belongs in Stapler.
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice"));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
         User alice = User.get("alice");
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login(alice.getId());
+        SuppressionFilter.SHOW_STACK_TRACE = true;
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
