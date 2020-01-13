@@ -43,5 +43,9 @@
     "jquery": "2.1.4",
     "jquery-detached": "^2.1.4-v2",
     "window-handle": "^1.0.0"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "IE 11"
+  ]
 }
