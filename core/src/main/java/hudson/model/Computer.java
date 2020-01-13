@@ -1368,10 +1368,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 // UI
 //
 //
+    @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds());
     }
 
+    @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly());
     }
@@ -1382,6 +1384,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * information about the node where the builds are executed for other sorts of projects such as Pipeline
      * @since TODO
      */
+    @Restricted(DoNotUse.class)
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
