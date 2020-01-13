@@ -1377,7 +1377,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Retrieve the RSS feed for the last build for each project executed in this computer
+     * Retrieve the RSS feed for the last build for each project executed in this computer.
+     * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
+     * information about the node where the builds are executed for other sorts of projects such as Pipeline
      * @since TODO
      */
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
