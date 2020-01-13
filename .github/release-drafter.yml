@@ -1,5 +1,5 @@
 # Configuration for Release Drafter: https://github.com/toolmantim/release-drafter
-extends: .github
+_extends: .github
 # We use the 2-digit versioning in Jenkins weekly releases.
 version-template: $MAJOR.$MINOR
 name-template: $NEXT_MINOR_VERSION
