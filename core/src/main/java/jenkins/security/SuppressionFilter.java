@@ -57,6 +57,8 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 @Restricted(NoExternalUse.class)
 public class SuppressionFilter implements Filter {
 
+    public static boolean SHOW_STACK_TRACE = Boolean.getBoolean(SuppressionFilter.class.getName() + ".SHOW_STACK_TRACE");
+
     private static final Logger LOGGER = Logger.getLogger(SuppressionFilter.class.getName());
 
     @Initializer(after = InitMilestone.STARTED)
@@ -154,7 +156,7 @@ public class SuppressionFilter implements Filter {
     }
 
     private static boolean showStackTrace() {
-        return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+        return SHOW_STACK_TRACE;
     }
 
     private AccessDeniedException containsAccessDeniedException(Exception exception) {
