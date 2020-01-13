@@ -27,7 +27,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -65,48 +64,8 @@ public class SuppressionFilterTest {
     }
 
     @Test
-    public void nonexistentPath() throws Exception {
-        // This test doesn't really belong here. It really belongs in Stapler.
-        // Probably ought to just not add it here.
-        Dispatcher.TRACE = false;
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
-        User alice = User.get("alice");
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.login(alice.getId());
-
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("nonexistentPath");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("Problem accessing /jenkins/nonexistentPath."));
-        assertThat(content, containsString("Not Found"));
-        assertThat(content, not(containsString("Caused by")));
-    }
-
-    @Test
-    public void nonexistentPathShowsTrace() throws Exception {
-        // This test doesn't really belong here. It really belongs in Stapler.
-        // Probably ought to just not add it here.
-        Dispatcher.TRACE = true;
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
-        User alice = User.get("alice");
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.login(alice.getId());
-
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("nonexistentPath");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("Stapler processed this HTTP request as follows, but couldn't find the resource to consume the request"));
-        assertThat(content, containsString("Not Found"));
-    }
-
-    @Test
     public void nonexistentAdjunct() throws Exception {
-        // This test probably doesn't belong here. It depends upon how we
-        // end up implementing. Probably really belongs in Stapler.
+        // This test probably doesn't belong here. Probably really belongs in Stapler.
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
         User alice = User.get("alice");
@@ -123,8 +82,7 @@ public class SuppressionFilterTest {
 
     @Test
     public void nonexistentAdjunctShowsTrace() throws Exception {
-        // This test probably doesn't belong here. It depends upon how we
-        // end up implementing. Probably really belongs in Stapler.
+        // This test probably doesn't belong here. Probably really belongs in Stapler.
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
         User alice = User.get("alice");
