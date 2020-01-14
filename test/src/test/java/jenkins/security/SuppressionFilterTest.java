@@ -24,6 +24,10 @@
 package jenkins.security;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleProject;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import org.junit.Before;
@@ -31,7 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.Dispatcher;
+
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
@@ -51,12 +56,12 @@ public class SuppressionFilterTest {
     public void authenticationException() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
-        User alice = User.get("alice");
+        User alice = User.getById("alice", true);
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login(alice.getId());
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("configureSecurity");
+        HtmlPage page = wc.goTo("configureSecurity");
 
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
@@ -66,14 +71,10 @@ public class SuppressionFilterTest {
     @Test
     public void nonexistentAdjunct() throws Exception {
         // This test probably doesn't belong here. Probably really belongs in Stapler.
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
-        User alice = User.get("alice");
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.login(alice.getId());
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js");
+        HtmlPage page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js");
 
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString("No such adjunct found"));
@@ -83,11 +84,7 @@ public class SuppressionFilterTest {
     @Test
     public void nonexistentAdjunctShowsTrace() throws Exception {
         // This test probably doesn't belong here. Probably really belongs in Stapler.
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
-        User alice = User.get("alice");
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.login(alice.getId());
         SuppressionFilter.SHOW_STACK_TRACE = true;
 
         wc.setThrowExceptionOnFailingStatusCode(false);
@@ -96,6 +93,48 @@ public class SuppressionFilterTest {
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString("No such adjunct found"));
         assertThat(content, containsString("AdjunctManager.doDynamic"));
+    }
+
+    @Test
+    public void exception() throws Exception {
+        FreeStyleProject projectError = createBrokenProject();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details."));
+        assertThat(content, not(containsString("Oops!")));
+    }
+
+    @Test
+    public void exceptionShowsTrace() throws Exception {
+        FreeStyleProject projectError = createBrokenProject();
+
+        SuppressionFilter.SHOW_STACK_TRACE = true;
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("Oops!"));
+        assertThat(content, not(containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details.")));
+    }
+
+    private FreeStyleProject createBrokenProject() throws IOException {
+        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
+            @Override
+            public FreeStyleProject newInstance(ItemGroup parent, String name) {
+                return new FreeStyleProject(parent, name) {
+                    @Override
+                    public void save() {
+                        //do not need save
+                    }
+                };
+            }
+        };
+        return (FreeStyleProject) j.jenkins.createProject(descriptor, "throw-error");
     }
 
 }
