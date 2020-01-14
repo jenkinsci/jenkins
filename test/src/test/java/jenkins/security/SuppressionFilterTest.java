@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 
 import java.io.IOException;
@@ -73,7 +72,7 @@ public class SuppressionFilterTest {
 
     @Test
     public void nonexistentAdjunct() throws Exception {
-        // This test probably doesn't belong here. Probably really belongs in Stapler.
+        // This test belongs in Stapler but it's easy to put it together here.
         JenkinsRule.WebClient wc = j.createWebClient();
 
         wc.setThrowExceptionOnFailingStatusCode(false);
@@ -86,7 +85,7 @@ public class SuppressionFilterTest {
 
     @Test
     public void nonexistentAdjunctShowsTrace() throws Exception {
-        // This test probably doesn't belong here. Probably really belongs in Stapler.
+        // This test belongs in Stapler but it's easy to put it together here.
         JenkinsRule.WebClient wc = j.createWebClient();
         HttpResponses.SHOW_STACK_TRACE = true;
 
