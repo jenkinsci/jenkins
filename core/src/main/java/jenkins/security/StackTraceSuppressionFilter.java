@@ -26,7 +26,6 @@ package jenkins.security;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
-import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,15 +53,15 @@ import java.util.logging.Logger;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 @Restricted(NoExternalUse.class)
-public class SuppressionFilter implements Filter {
+public class StackTraceSuppressionFilter implements Filter {
 
-    public static boolean SHOW_STACK_TRACE = Boolean.getBoolean(SuppressionFilter.class.getName() + ".SHOW_STACK_TRACE");
+    public static boolean SHOW_STACK_TRACE = Boolean.getBoolean(StackTraceSuppressionFilter.class.getName() + ".SHOW_STACK_TRACE");
 
-    private static final Logger LOGGER = Logger.getLogger(SuppressionFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StackTraceSuppressionFilter.class.getName());
 
     @Initializer(after = InitMilestone.STARTED)
     public static void init() throws ServletException {
-        PluginServletFilter.addFilter(new SuppressionFilter());
+        PluginServletFilter.addFilter(new StackTraceSuppressionFilter());
     }
 
     @Override
