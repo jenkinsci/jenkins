@@ -5099,6 +5099,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         VERSION = ver;
         context.setAttribute("version",ver);
 
+        CHANGELOG_URL = props.getProperty("changelog.url");
+
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
@@ -5121,6 +5123,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Version number of this Jenkins.
      */
     public static String VERSION = UNCOMPUTED_VERSION;
+
+    @Restricted(NoExternalUse.class)
+    public static String CHANGELOG_URL;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
