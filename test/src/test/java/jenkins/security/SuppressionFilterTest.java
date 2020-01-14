@@ -35,6 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 
 import java.io.IOException;
 
@@ -50,6 +52,7 @@ public class SuppressionFilterTest {
     @Before
     public void setup() {
         SuppressionFilter.SHOW_STACK_TRACE = false;
+        HttpResponses.SHOW_STACK_TRACE = false;
     }
 
     @Test
@@ -85,7 +88,7 @@ public class SuppressionFilterTest {
     public void nonexistentAdjunctShowsTrace() throws Exception {
         // This test probably doesn't belong here. Probably really belongs in Stapler.
         JenkinsRule.WebClient wc = j.createWebClient();
-        SuppressionFilter.SHOW_STACK_TRACE = true;
+        HttpResponses.SHOW_STACK_TRACE = true;
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
