@@ -65,6 +65,7 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -783,6 +784,24 @@ public class SlaveComputer extends Computer {
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
         return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+    }
+
+    class LowPermissionResponse {
+        @WebMethod(name="slave-agent.jnlp")
+        public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
+            return SlaveComputer.this.doSlaveAgentJnlp(req, res);
+        }
+    }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+                return new LowPermissionResponse();
+            }
+        }
+        return this;
     }
 
     @Override
