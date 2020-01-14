@@ -79,6 +79,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -150,7 +151,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -1570,6 +1571,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
         getLogText().doProgressText(req, rsp);
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.get().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.
