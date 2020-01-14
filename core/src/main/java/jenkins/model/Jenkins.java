@@ -2344,6 +2344,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /** Exported alias for {@link JenkinsLocationConfiguration#getUrl}. */
     @Exported(name="url")
     @Restricted(DoNotUse.class)
+    @CheckForNull
     public String getConfiguredRootUrl() {
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         return config != null ? config.getUrl() : null;
