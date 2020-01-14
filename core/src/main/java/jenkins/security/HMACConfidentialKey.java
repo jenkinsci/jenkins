@@ -8,7 +8,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
@@ -76,7 +78,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
      * Convenience method for verifying the MAC code.
      */
     public boolean checkMac(byte[] message, byte[] mac) {
-        return Arrays.equals(mac(message),mac);
+        return MessageDigest.isEqual(mac(message),mac);
     }
 
     /**
@@ -95,7 +97,7 @@ public class HMACConfidentialKey extends ConfidentialKey {
      * Verifies MAC constructed from {@link #mac(String)}
      */
     public boolean checkMac(String message, String mac) {
-        return mac(message).equals(mac);
+        return MessageDigest.isEqual(mac(message).getBytes(StandardCharsets.UTF_8), mac.getBytes(StandardCharsets.UTF_8));
     }
 
     private byte[] chop(byte[] mac) {
