@@ -43,14 +43,14 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class SuppressionFilterTest {
+public class StackTraceSuppressionFilterTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
     @Before
     public void setup() {
-        SuppressionFilter.SHOW_STACK_TRACE = false;
+        StackTraceSuppressionFilter.SHOW_STACK_TRACE = false;
         HttpResponses.SHOW_STACK_TRACE = false;
     }
 
@@ -114,7 +114,7 @@ public class SuppressionFilterTest {
     public void exceptionShowsTrace() throws Exception {
         FreeStyleProject projectError = createBrokenProject();
 
-        SuppressionFilter.SHOW_STACK_TRACE = true;
+        StackTraceSuppressionFilter.SHOW_STACK_TRACE = true;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
