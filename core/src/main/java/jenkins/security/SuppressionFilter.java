@@ -30,7 +30,6 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.Filter;
@@ -63,7 +62,6 @@ public class SuppressionFilter implements Filter {
 
     @Initializer(after = InitMilestone.STARTED)
     public static void init() throws ServletException {
-        HttpResponses.setErrorDetailsFilter((code, cause) -> showStackTrace());
         PluginServletFilter.addFilter(new SuppressionFilter());
     }
 
