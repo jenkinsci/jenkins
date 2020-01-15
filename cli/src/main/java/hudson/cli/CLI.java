@@ -229,7 +229,7 @@ public class CLI {
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
 
-        if (tryLoadPKey && !provider.hasKeys())
+        if (mode == Mode.SSH && tryLoadPKey && !provider.hasKeys())
             provider.readFromDefaultLocations();
 
         if (mode == null) {
