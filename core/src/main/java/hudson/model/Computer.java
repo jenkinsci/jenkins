@@ -1368,16 +1368,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 // UI
 //
 //
+    @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds());
+        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds());
     }
 
+    @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+        RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly());
     }
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
-                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
+
+    /**
+     * Retrieve the RSS feed for the last build for each project executed in this computer.
+     * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
+     * information about the node where the builds are executed for other sorts of projects such as Pipeline
+     * @since TODO
+     */
+    @Restricted(DoNotUse.class)
+    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        final List<Run> lastBuilds = new ArrayList<>();
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
+            if (p.getLastBuild() != null) {
+                for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                    if (b.getBuiltOn() == getNode()) {
+                        lastBuilds.add(b);
+                        break;
+                    }
+                }
+            }
+        }
+        RSS.rss(req, rsp, getDisplayName() + " last builds only", getUrl(), RunList.fromRuns(lastBuilds));
     }
 
     @RequirePOST

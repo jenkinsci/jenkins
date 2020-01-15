@@ -1144,11 +1144,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds());
+        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+        RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly().newBuilds());
     }
     
     public RunList getBuilds() {
@@ -1157,11 +1157,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
-    }
-
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1173,8 +1168,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if(lb!=null)    lastBuilds.add(lb);
             }
         }
-        RSS.forwardToRss(getDisplayName()+" last builds only", getUrl(),
-            lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
+        RSS.rss(req, rsp, getDisplayName() + " last builds only", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     /**
