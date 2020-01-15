@@ -378,7 +378,7 @@ function isTestEnv() {
         return true;
     } else if (window.navigator.userAgent === 'JenkinsTest') {
         return true;
-    } else if (window.navigator.userAgent.toLowerCase().indexOf("node.js") !== -1) {
+    } else if (window.navigator.userAgent.toLowerCase().indexOf("jsdom") !== -1) {
         return true;
     }
     

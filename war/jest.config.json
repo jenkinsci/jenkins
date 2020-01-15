@@ -1,0 +1,6 @@
+{
+  "transform": {
+      "\\.hbs$": "jest-handlebars",
+      "\\.js$": "babel-jest"
+  }
+}

@@ -1,16 +1,23 @@
-var jsTest = require("jenkins-js-test");
-var jquery = require('jquery-detached');
+import jsTest from '@jenkins-cd/js-test';
 
 var debug = false;
 
 var getJQuery = function() {
-    var $ = jquery.getJQuery();
+    var $ = require('jquery');
     $.fx.off = true;
     return $;
 };
 
+var getJenkins = function() {
+    return require('../../main/js/util/jenkins').default;
+}
+
+var getSetupWizardGui = function() {
+    return require('../../main/js/pluginSetupWizardGui').default;
+}
+
 /* globals defaultUpdateSiteId: true */
-defaultUpdateSiteId = 'default';
+global.defaultUpdateSiteId = 'default';
 
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
@@ -146,9 +153,9 @@ var ajaxMocks = function(responseMappings) {
             console.log('AJAX call: ' + call.url);
         }
 
-        var response = responseMappings[call.url];
+        var response = responseMappings[call.url] || responseMappings[`/jenkins${call.url}`];
         if (!response) {
-            response = defaultMappings[call.url];
+            response = defaultMappings[call.url] || defaultMappings[`/jenkins${call.url}`];
         }
         if (!response) {
             throw 'No data mapping provided for AJAX call: ' + call.url;
@@ -161,30 +168,25 @@ var ajaxMocks = function(responseMappings) {
 };
 
 // call this for each test, it will provide a new wizard, jquery to the caller
-var test = function(test, ajaxMappings) {
+var test = function(testCallback, { ajaxMappings, $, $body }) {
     jsTest.onPage(function() {
-        // deps
-        var $ = getJQuery();
-
         // Respond to status request
         $.ajax = ajaxMocks(ajaxMappings);
 
         // load the module
-        var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
+        var pluginSetupWizard = getSetupWizardGui();
 
         // exported init
-        pluginSetupWizard.init('body');
+        pluginSetupWizard.init($body);
 
-        test($, pluginSetupWizard);
+        testCallback($, pluginSetupWizard);
     });
 };
 
 // helper to validate the appropriate plugins were installed
 var validatePlugins = function(plugins, complete) {
-    var jenkins = jsTest.requireSrcModule('util/jenkins');
-    if(!jenkins.originalPost) {
-    jenkins.originalPost = jenkins.post;
-    }
+    var jenkins = getJenkins();
+
     jenkins.post = function(url, data, cb) {
         expect(url).toBe('/pluginManager/installPlugins');
         var allMatch = true;
@@ -206,22 +208,42 @@ var validatePlugins = function(plugins, complete) {
 };
 
 describe("pluginSetupWizard.js", function () {
+    let $;
+    let $body;
+
+    beforeEach(() => {
+        // Registers needed handlebars helpers that are loaded through webpack
+        const Handlebars = require('handlebars').default;
+        Handlebars.registerHelper('id', require('../../main/js/handlebars-helpers/id').default)
+
+        // Create a new <body> tag for every test
+        $ = getJQuery();
+        $body = $('<body>');
+    });
+
+    afterEach(() => {
+        $body = null;
+        $ = null;
+
+        // Reset changes made to modules, such as the 'util/jenkins' module.
+        jest.resetModules();
+    });
+
     it("wizard shows", function (done) {
         test(function($) {
             // Make sure the dialog was shown
-            var $wizard = $('.plugin-setup-wizard');
+            var $wizard = $body.find('.plugin-setup-wizard');
             expect($wizard.size()).toBe(1);
 
             done();
-        });
+        }, { $, $body });
     });
 
     it("offline shows", function (done) {
         jsTest.onPage(function() {
             // deps
-            var jenkins = jsTest.requireSrcModule('./util/jenkins');
+            const jenkins = getJenkins();
 
-            var $ = getJQuery();
             $.ajax = ajaxMocks();
 
             var get = jenkins.get;
@@ -247,16 +269,16 @@ describe("pluginSetupWizard.js", function () {
                 };
 
                 // load the module
-                var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
+                const pluginSetupWizard = getSetupWizardGui();
 
                 // exported init
-                pluginSetupWizard.init('body');
+                pluginSetupWizard.init($body);
 
-                expect($('.welcome-panel h1').text()).toBe('Offline');
+                expect($body.find('.welcome-panel h1').text()).toBe('Offline');
 
-            done();
+                done();
             } finally {
-            jenkins.get = get;
+                jenkins.get = get;
             }
         });
     });
@@ -264,10 +286,10 @@ describe("pluginSetupWizard.js", function () {
     it("install defaults", function (done) {
         test(function($) {
             // Make sure the dialog was shown
-            var wizard = $('.plugin-setup-wizard');
+            var wizard = $body.find('.plugin-setup-wizard');
             expect(wizard.size()).toBe(1);
 
-            var goButton = $('.install-recommended');
+            var goButton = $body.find('.install-recommended');
             expect(goButton.size()).toBe(1);
 
             // validate a call to installPlugins with our defaults
@@ -276,43 +298,45 @@ describe("pluginSetupWizard.js", function () {
             });
 
             goButton.click();
-        });
+        }, { $, $body });
     });
 
-    var doit = function($, sel, trigger) {
-    var $el = $(sel);
-    if($el.length !== 1) {
-        console.log('Not found! ' + sel);
-            console.log(new Error().stack);
-    }
-    if(trigger === 'check') {
-        $el.prop('checked', true);
-        trigger = 'change';
-    }
-    $el.trigger(trigger);
-    };
+
 
     it("install custom", function (done) {
+        function doit($body, selector, trigger) {
+            var $el = $body.find(selector);
+            if($el.length !== 1) {
+                console.log('Not found! ' + selector);
+                    console.log(new Error().stack);
+            }
+            if(trigger === 'check') {
+                $el.prop('checked', true);
+                trigger = 'change';
+            }
+            $el.trigger(trigger);
+        };
+
         test(function($) {
-            $('.install-custom').click();
+            $body.find('.install-custom').click();
 
             // validate a call to installPlugins with our defaults
             validatePlugins(['junit','mailer'], function() {
                 // install a specific, other 'set' of plugins
-                $('input[name=searchbox]').val('junit');
+                $body.find('input[name=searchbox]').val('junit');
 
                 done();
             });
 
-            doit($, 'input[name=searchbox]', 'blur');
+            doit($body, 'input[name=searchbox]', 'blur');
 
-            doit($, '.plugin-select-none', 'click');
+            doit($body, '.plugin-select-none', 'click');
 
-            doit($, 'input[name="junit"]', 'check');
-            doit($, 'input[name="mailer"]', 'check');
+            doit($body, 'input[name="junit"]', 'check');
+            doit($body, 'input[name="mailer"]', 'check');
 
-            doit($, '.install-selected', 'click');
-        });
+            doit($body, '.install-selected', 'click');
+        }, { $, $body });
     });
 
     it("restart required", function (done) {
@@ -332,11 +356,12 @@ describe("pluginSetupWizard.js", function () {
                 }
             },
         };
-        test(function($) {
-            expect($('.install-done').size()).toBe(0);
-            expect($('.install-done-restart').size()).toBe(1);
+
+        test(function() {
+            expect($body.find('.install-done').size()).toBe(0);
+            expect($body.find('.install-done-restart').size()).toBe(1);
             done();
-        }, ajaxMappings);
+        }, { ajaxMappings, $, $body });
     });
 
     it("restart required not supported", function (done) {
@@ -357,10 +382,10 @@ describe("pluginSetupWizard.js", function () {
             },
         };
         test(function($) {
-            expect($('.install-done').size()).toBe(0);
-            expect($('.install-done-restart').size()).toBe(0);
+            expect($body.find('.install-done').size()).toBe(0);
+            expect($body.find('.install-done-restart').size()).toBe(0);
             done();
-        }, ajaxMappings);
+        }, { ajaxMappings, $, $body });
     });
 
     it("restart not required", function (done) {
@@ -380,11 +405,11 @@ describe("pluginSetupWizard.js", function () {
                 }
             },
         };
-        test(function($) {
-            expect($('.install-done').size()).toBe(1);
-            expect($('.install-done-restart').size()).toBe(0);
+        test(function() {
+            expect($body.find('.install-done').size()).toBe(1);
+            expect($body.find('.install-done-restart').size()).toBe(0);
             done();
-        }, ajaxMappings);
+        }, { ajaxMappings, $, $body });
     });
 
     it("resume install", function (done) {
@@ -399,11 +424,11 @@ describe("pluginSetupWizard.js", function () {
                 }
             }
         };
-        test(function($) {
-        expect($('.modal-title').text()).toBe('Resume Installation');
-        expect($('*[data-name="junit"]').is('.success')).toBe(true);
-        done();
-        }, ajaxMappings);
+        test(function() {
+            expect($body.find('.modal-title').text()).toBe('Resume Installation');
+            expect($body.find('*[data-name="junit"]').is('.success')).toBe(true);
+            done();
+        }, { ajaxMappings, $, $body });
     });
 
     it("error conditions", function (done) {
@@ -418,18 +443,13 @@ describe("pluginSetupWizard.js", function () {
                 }
             }
         };
-        test(function($) {
-        expect($('.error-container h1').html()).toBe('Error');
-        done();
-        }, ajaxMappings);
+        test(function() {
+            expect($body.find('.error-container h1').html()).toBe('Error');
+            done();
+        }, { ajaxMappings, $, $body });
     });
 
     it("restart required", function (done) {
-        var jenkins = jsTest.requireSrcModule('util/jenkins');
-        if(jenkins.originalPost) {
-            jenkins.post = jenkins.originalPost;
-        }
-
         var ajaxMappings = {
             '/jenkins/updateCenter/installStatus': new LastResponse([{
                 status: 'ok',
@@ -461,21 +481,19 @@ describe("pluginSetupWizard.js", function () {
             }
             ])
         };
-        test(function($) {
-            var goButton = $('.install-recommended');
+        test(function() {
+            var goButton = $body.find('.install-recommended');
             expect(goButton.size()).toBe(1);
 
             // validate a call to installPlugins with our defaults
             setTimeout(function() {
-                expect($('.install-done').is(':visible')).toBe(false);
-
-                expect($('.installing-panel').is(':visible')).toBe(true);
+                expect($body.find('.install-done').length).toBe(0);
+                expect($body.find('.installing-panel').length).toBe(1)
 
                 done();
             }, 1);
 
             goButton.click();
-        }, ajaxMappings);
+        }, { ajaxMappings, $, $body });
     });
-
 });

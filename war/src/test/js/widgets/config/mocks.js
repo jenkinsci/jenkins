@@ -1,5 +1,5 @@
 // TODO: remove or do something about this when reenabling the unit tests
-var jsTest = require("jenkins-js-test");
+const jsTest = require("@jenkins-cd/js-test");
 
 // mock the behaviors stuff.
 var behaviorShim = require('../../../../main/js/util/behavior-shim');

@@ -1,31 +1,51 @@
-var jsTest = require("jenkins-js-test");
+import fs from 'fs';
+import path from 'path';
+import $ from 'jquery';
+import jsTest from '@jenkins-cd/js-test';
+import './mocks';
 
-require('./mocks');
+const htmlConfigTabbedContent = fs.readFileSync(
+    path.resolve(__dirname, './freestyle-config-tabbed.html'),
+    'utf8'
+);
+
+function getConfigTabbar() {
+    return require('../../../../main/js/config-tabbar');
+}
+
+function getConfigTabbarWidget() {
+    return require('../../../../main/js/widgets/config/tabbar');
+}
 
 describe("tabbar-spec tests", function () {
 
     it("- test section count", function (done) {
         jsTest.onPage(function() {
-            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var tabbars = getConfigTabbar();
             var firstTableMetadata = tabbars.tabs[0];
 
-            var jQD = require('jquery-detached');
-            var $ = jQD.getJQuery();
-
-            expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(4);
+            expect(firstTableMetadata.configTable.find('.section-header-row').length).toBe(4);
             expect(firstTableMetadata.sectionCount()).toBe(4);
             expect($('.tabBar .tab').size()).toBe(4);
 
-            expect(firstTableMetadata.sectionIds().toString())
-                .toBe('config_general,config__advanced_project_options,config__build_triggers,config__build');
+            expect(firstTableMetadata.sectionIds()).toEqual([
+                'config_general',
+                'config__advanced_project_options',
+                'config__build_triggers',
+                'config__build'
+            ])
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test section activation", function (done) {
         jsTest.onPage(function() {
-            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var tabbars = getConfigTabbar();
             var firstTableMetadata = tabbars.tabs[0];
 
             // The first section ("General") should be active by default
@@ -49,12 +69,14 @@ describe("tabbar-spec tests", function () {
             firstTableMetadata.activateSection('config__build');
             // above 'firstTableMetadata.onShowSection' handler should get called now
 
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test row-group modeling", function (done) {
         jsTest.onPage(function() {
-            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBar = getConfigTabbarWidget();
             var firstTableMetadata = configTabBar.addTabsOnFirst();
 
             var generalSection = firstTableMetadata.activeSection();
@@ -71,17 +93,15 @@ describe("tabbar-spec tests", function () {
             expect(generalSection.getRowGroupLabels().toString()).toBe('Discard Old Builds');
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test finder - via handler triggering", function (done) {
         jsTest.onPage(function() {
-            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
-            var jQD = require('jquery-detached');
-
-            var $ = jQD.getJQuery();
-
             var tabBar = $('.tabBar');
 
             // All tabs should be visible...
@@ -107,17 +127,15 @@ describe("tabbar-spec tests", function () {
 
                 done();
             }, 600);
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test finder - via showSections()", function (done) {
         jsTest.onPage(function() {
-            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
-            var jQD = require('jquery-detached');
-
-            var $ = jQD.getJQuery();
-
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('quiet period');
@@ -128,17 +146,15 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test finder - via showSections() - in inner row-group", function (done) {
         jsTest.onPage(function() {
-            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
-            var jQD = require('jquery-detached');
-
-            var $ = jQD.getJQuery();
-
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('Strategy');
@@ -149,17 +165,15 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test adopt sections ", function (done) {
         jsTest.onPage(function() {
-            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
-            var jQD = require('jquery-detached');
-
-            var $ = jQD.getJQuery();
-
             var tabBar = $('.tabBar');
 
             // Move the advanced stuff into the general section
@@ -182,12 +196,14 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     it("- test getSibling ", function (done) {
         jsTest.onPage(function() {
-            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            document.documentElement.innerHTML = htmlConfigTabbedContent;
+
+            var configTabBarWidget = getConfigTabbarWidget();
             var configTabBar = configTabBarWidget.addTabsOnFirst();
 
             // console.log('**** ' + configTabBar.sectionIds());
@@ -213,13 +229,10 @@ describe("tabbar-spec tests", function () {
             expect(config__advanced_project_options.getSibling(+3)).toBeUndefined();
 
             done();
-        }, 'widgets/config/freestyle-config-tabbed.html');
+        }, htmlConfigTabbedContent);
     });
 
     function keydowns(text, onInput) {
-        var jQD = require('jquery-detached');
-        var $ = jQD.getJQuery();
-
         // hmmm, for some reason, the key events do not result in the text being
         // set in the input, so setting it manually.
         onInput.val(text);

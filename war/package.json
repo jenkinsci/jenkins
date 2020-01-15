@@ -14,19 +14,20 @@
     "prod": "webpack --config webpack.config.js --mode=production",
     "build": "yarn prod",
     "start": "yarn copy-fonts && yarn dev --watch",
-    "test": "babel ./node_modules/jasmine/bin/jasmine.js src/test/js/widgets/config/tabbar-spec.js"
+    "test": "jest --config=jest.config.json"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.4",
     "@babel/core": "^7.7.4",
+    "@jenkins-cd/js-test": "^1.2.3",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.2.0",
     "file-loader": "^5.0.2",
     "handlebars": "^3.0.3",
     "handlebars-loader": "^1.7.1",
-    "jasmine": "^3.5.0",
-    "jenkins-js-test": "^1.0.0",
+    "jest": "^24.9.0",
+    "jest-handlebars": "^1.0.1",
     "jshint": "^2.10.3",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
@@ -41,7 +42,6 @@
     "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
     "jquery": "2.1.4",
-    "jquery-detached": "^2.1.4-v2",
     "window-handle": "^1.0.0"
   },
   "browserslist": [

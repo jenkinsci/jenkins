@@ -10,6 +10,10 @@ var breadcrumbBarHeight = page.breadcrumbBarHeight();
 // Some stuff useful for testing.
 export var tabbars = [];
 export var scrollspeed = 500;
+// Used to set scrollspeed from the the test suite
+export function setScrollspeed(newScrollspeed) {
+    scrollspeed = newScrollspeed;
+}
 var eventListeners = [];
 export var on = function(listener) {
     eventListeners.push(listener);
