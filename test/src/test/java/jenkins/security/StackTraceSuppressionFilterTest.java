@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.HttpResponses;
 
 import java.io.IOException;
 
@@ -51,7 +50,6 @@ public class StackTraceSuppressionFilterTest {
     @Before
     public void setup() {
         StackTraceSuppressionFilter.SHOW_STACK_TRACE = false;
-//        HttpResponses.SHOW_STACK_TRACE = false;
     }
 
     @Test
