@@ -70,7 +70,9 @@ public class StackTraceSuppressionFilterTest {
 
 //    @Test
 //    public void nonexistentAdjunct() throws Exception {
-//        // This test belongs in Stapler but it's easy to put it together here.
+//        /* This test belongs in Stapler but it's easy to put it together here.
+//           This test is based upon Stapler throwing an exception for this broken request.
+//           If Stapler is improved to better handle this error, this test may erroneously fail. */
 //        JenkinsRule.WebClient wc = j.createWebClient();
 //
 //        wc.setThrowExceptionOnFailingStatusCode(false);
@@ -83,7 +85,9 @@ public class StackTraceSuppressionFilterTest {
 //
 //    @Test
 //    public void nonexistentAdjunctShowsTrace() throws Exception {
-//        // This test belongs in Stapler but it's easy to put it together here.
+//        /* This test belongs in Stapler but it's easy to put it together here.
+//           This test is based upon Stapler throwing an exception for this broken request.
+//           If Stapler is improved to better handle this error, this test may erroneously fail. */
 //        JenkinsRule.WebClient wc = j.createWebClient();
 //        HttpResponses.SHOW_STACK_TRACE = true;
 //
@@ -97,6 +101,9 @@ public class StackTraceSuppressionFilterTest {
 
     @Test
     public void exception() throws Exception {
+        /* This test is based upon an incomplete / incorrect project implementation
+           throwing an uncaught exception.
+           If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -110,12 +117,42 @@ public class StackTraceSuppressionFilterTest {
 
     @Test
     public void exceptionShowsTrace() throws Exception {
+        /* This test is based upon an incomplete / incorrect project implementation
+           throwing an uncaught exception.
+           If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
         StackTraceSuppressionFilter.SHOW_STACK_TRACE = true;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("Oops!"));
+        assertThat(content, not(containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details.")));
+    }
+
+    @Test
+    public void exceptionEndpoint() throws Exception {
+        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
+           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("exception");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details."));
+        assertThat(content, not(containsString("Oops!")));
+    }
+
+    @Test
+    public void exceptionEndpointShowsTrace() throws Exception {
+        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
+           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
+        StackTraceSuppressionFilter.SHOW_STACK_TRACE = true;
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("exception");
 
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString("Oops!"));
