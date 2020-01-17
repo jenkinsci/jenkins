@@ -304,6 +304,7 @@ import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.WebMethod;
 
 /**
@@ -2338,6 +2339,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(req!=null)
             return getRootUrlFromRequest();
         return null;
+    }
+
+    /** Exported alias for {@link JenkinsLocationConfiguration#getUrl}. */
+    @Exported(name="url")
+    @Restricted(DoNotUse.class)
+    @CheckForNull
+    public String getConfiguredRootUrl() {
+        JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        return config != null ? config.getUrl() : null;
     }
 
     /**
