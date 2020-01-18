@@ -46,11 +46,6 @@ for(j = 0; j < jdks.size(); j++) {
                             def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
 
                             if(isUnix()) {
-                                sh """
-                                    mkdir -p ~/.m2
-                                    cp settings-azure.xml ~/.m2/settings.xml
-                                """
-
                                 sh mvnCmd
                                 sh 'git add . && git diff --exit-code HEAD'
                             } else {
@@ -119,7 +114,7 @@ void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
             body.call()
         }
     }
-
+    
     // The names here are currently hardcoded for my test environment. This needs
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the
