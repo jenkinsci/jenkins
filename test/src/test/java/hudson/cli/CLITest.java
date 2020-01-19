@@ -265,7 +265,7 @@ public class CLITest {
         home = tempHome();
         grabCliJar();
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr())
                     .launch()
                     .cmds("java",
