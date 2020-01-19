@@ -1,7 +1,5 @@
 package jenkins.util;
 
-import org.apache.tools.ant.Project;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;

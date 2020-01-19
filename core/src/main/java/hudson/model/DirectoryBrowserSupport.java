@@ -24,7 +24,6 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
 import java.io.IOException;
