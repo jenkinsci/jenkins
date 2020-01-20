@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -129,6 +130,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
+    @CheckForNull
     public StringParameterValue getDefaultParameterValue() {
         if (defaultValue == null) {
             if (choices.isEmpty()) {
