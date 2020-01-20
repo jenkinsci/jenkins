@@ -47,7 +47,7 @@ public class CancelQuietDownCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.getActiveInstance().doCancelQuietDown();
+        Jenkins.get().doCancelQuietDown();
         return 0;
     }
 }

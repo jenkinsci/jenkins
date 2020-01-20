@@ -54,7 +54,7 @@ public class FakeMapBuilder implements TestRule {
     }
 
     /**
-     * Adds a build record under the givn ID but make it unloadable,
+     * Adds a build record under the given ID but make it unloadable,
      * which will cause a failure when a load is attempted on this build ID.
      */
     public FakeMapBuilder addUnloadable(int n) throws IOException {

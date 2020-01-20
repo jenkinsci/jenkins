@@ -208,13 +208,10 @@ public class FilePathTest {
             for (int i = 0; i < 10000; i++) {
                 // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
                 // Have not found a way to make the failure guaranteed.
-                OutputStream os = from.child("content" + i).write();
-                try {
+                try (OutputStream os = from.child("content" + i).write()) {
                     for (int j = 0; j < 1024; j++) {
                         os.write('.');
                     }
-                } finally {
-                    os.close();
                 }
             }
             FilePath toF = to.child("content0");

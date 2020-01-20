@@ -640,7 +640,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoc.
+     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoch.
      */
     public final long getTimeInMillis() {
         return timestamp;
@@ -2496,9 +2496,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public int compare(@Nonnull Run lhs, @Nonnull Run rhs) {
             long lt = lhs.getTimeInMillis();
             long rt = rhs.getTimeInMillis();
-            if(lt>rt)   return -1;
-            if(lt<rt)   return 1;
-            return 0;
+            return Long.compare(rt, lt);
         }
     };
 
@@ -2612,7 +2610,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static class RedirectUp {
         public void doDynamic(StaplerResponse rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
-            // (want accurate 404 response).. send 404 with javscript to redirect browsers.
+            // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();

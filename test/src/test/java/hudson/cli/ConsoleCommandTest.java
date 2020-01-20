@@ -106,7 +106,7 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
 
-    @Test public void consoleShouldFailWhenLastBuildDoesNotdExist() throws Exception {
+    @Test public void consoleShouldFailWhenLastBuildDoesNotExist() throws Exception {
 
         j.createFreeStyleProject("aProject");
 

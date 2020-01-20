@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
     <!-- response contentType header -->
     <st:contentType value="text/html;charset=UTF-8"/>
-    <!-- get default/commong page variable -->
+    <!-- get default/common page variable -->
     ${h.initPageVariables(context)}
     <x:doctype name="html"/>
     <html lang="${request.getLocale().toLanguageTag()}">
