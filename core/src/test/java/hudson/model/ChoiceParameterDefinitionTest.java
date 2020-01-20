@@ -4,6 +4,8 @@ import hudson.util.FormValidation;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -30,7 +32,7 @@ public class ChoiceParameterDefinitionTest {
     @Test
     @Issue("JENKINS-60721")
     public void testNullDefaultParameter() {
-        ChoiceParameterDefinition param = new ChoiceParameterDefinition("name", "", null);
+        ChoiceParameterDefinition param = new ChoiceParameterDefinition("name", Collections.emptyList(), null, null);
         assertNull(param.getDefaultParameterValue());
     }
 }
