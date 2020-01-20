@@ -49,7 +49,7 @@ public class CreateViewCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(View.CREATE);
 
         View newView;

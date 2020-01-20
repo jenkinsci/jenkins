@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
 import jenkins.util.MemoryReductionUtil;
 import hudson.util.QuotedStringTokenizer;
@@ -692,6 +693,7 @@ public class Util {
      *      number of milliseconds.
      */
     @Nonnull
+    @SuppressFBWarnings(value = "ICAST_IDIV_CAST_TO_DOUBLE", justification = "We want to truncate here.")
     public static String getTimeSpanString(long duration) {
         // Break the duration up in to units.
         long years = duration / ONE_YEAR_MS;
@@ -1579,10 +1581,10 @@ public class Util {
     public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 
     /**
-     * The number of times we will attempt to delete files/directory trees
+     * The number of additional times we will attempt to delete files/directory trees
      * before giving up and throwing an exception.<br/>
-     * Specifying a value less than 1 is invalid and will be treated as if
-     * a value of 1 (i.e. one attempt, no retries) was specified.
+     * Specifying a value less than 0 is invalid and will be treated as if
+     * a value of 0 (i.e. one attempt, no retries) was specified.
      * <p>
      * e.g. if some of the child directories are big, it might take long enough
      * to delete that it allows others to create new files in the directory we
@@ -1593,12 +1595,12 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3));
+    static int DELETION_RETRIES = Math.max(0, SystemProperties.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 2));
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
      * delete files when retrying.<br>
-     * This has no effect unless {@link #DELETION_MAX} is non-zero.
+     * This has no effect unless {@link #DELETION_RETRIES} is non-zero.
      * <p>
      * If zero, we will not delay between attempts.<br>
      * If negative, we will wait an (linearly) increasing multiple of this value
@@ -1611,7 +1613,7 @@ public class Util {
      * If this flag is set to true then we will request a garbage collection
      * after a deletion failure before we next retry the delete.<br>
      * It defaults to {@code false} and is ignored unless
-     * {@link #DELETION_MAX} is greater than 1.
+     * {@link #DELETION_RETRIES} is non zero.
      * <p>
      * Setting this flag to true <i>may</i> resolve some problems on Windows,
      * and also for directory trees residing on an NFS share, <b>but</b> it can
@@ -1632,7 +1634,7 @@ public class Util {
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
     private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
-        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_MAX - 1, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
     /**

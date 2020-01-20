@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -583,15 +585,6 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
 
         /**
-         * This special instance is not configurable explicitly,
-         * so it doesn't have a descriptor.
-         */
-        @Override
-        public Descriptor<SecurityRealm> getDescriptor() {
-            return null;
-        }
-
-        /**
          * There's no group.
          */
         @Override
@@ -612,6 +605,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          */
         private Object readResolve() {
             return NO_AUTHENTICATION;
+        }
+        
+        @Extension(ordinal=-100)
+        @Symbol("none")
+        public static class DescriptorImpl extends Descriptor<SecurityRealm> {
+
+            @Override
+            public String getDisplayName() {
+                return Messages.NoneSecurityRealm_DisplayName();
+            }
+            
+            @Override
+            public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
+                return NO_AUTHENTICATION;
+            }    
         }
     }
 
@@ -659,7 +667,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             rms.setUserDetailsService(uds);
             /*
                 TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
-                and both needs to use the same key (this is a reflection of a poor design in AcgeiSecurity, if you ask me)
+                and both needs to use the same key (this is a reflection of a poor design in AcegiSecurity, if you ask me)
                 and various security plugins have its own groovy script that configures them.
 
                 So if we change this, it creates a painful situation for those plugins by forcing them to choose

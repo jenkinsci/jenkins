@@ -47,7 +47,7 @@ THE SOFTWARE.
              data-cannot-enable="${%This plugin cannot be enabled}" 
              data-cannot-disable="${%This plugin cannot be disabled}" 
              data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
-             data-disabled-dependencies="${%It has one or more disabled dependencies}" 
+             data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
              data-enabled-dependents="${%It has one or more enabled dependents}" 
              data-installed-dependents="${%It has one or more installed dependents}" 
              data-detached-disable="${%detached-disable}"
@@ -79,7 +79,7 @@ THE SOFTWARE.
                   </td>
                   <td class="pane details">
                     <div>
-                      <a href="${p.url}" class="display-name">
+                      <a href="${p.url}" target="_blank" class="display-name">
                         ${p.updateInfo.displayName?:p.displayName}
                       </a>
                     </div>

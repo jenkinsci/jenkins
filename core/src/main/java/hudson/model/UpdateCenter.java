@@ -117,6 +117,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import jenkins.util.Timer;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -206,6 +207,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private UpdateCenterConfiguration config;
 
     private boolean requiresRestart;
+
+    /** @see #isSiteDataReady */
+    private transient volatile boolean siteDataLoading;
 
     static {
         Logger logger = Logger.getLogger(UpdateCenter.class.getName());
@@ -537,6 +541,27 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @StaplerDispatchable // referenced by _api.jelly
     public PersistedList<UpdateSite> getSites() {
         return sites;
+    }
+
+    /**
+     * Whether it is <em>probably</em> safe to call all {@link UpdateSite#getData} without blocking.
+     * @return true if all data is <em>currently</em> ready (or absent);
+     *         false if some is not ready now (but it will be loaded in the background)
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isSiteDataReady() {
+        if (sites.stream().anyMatch(UpdateSite::hasUnparsedData)) {
+            if (!siteDataLoading) {
+                siteDataLoading = true;
+                Timer.get().submit(() -> {
+                    sites.forEach(UpdateSite::getData);
+                    siteDataLoading = false;
+                });
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -927,6 +952,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 sites.add(createDefaultUpdateSite());
             }
         }
+        siteDataLoading = false;
     }
 
     protected UpdateSite createDefaultUpdateSite() {
@@ -980,8 +1006,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         if (category==null)
             return Messages.UpdateCenter_PluginCategory_misc();
         try {
-            return (String)Messages.class.getMethod(
+            return (String) Messages.class.getMethod(
                     "UpdateCenter_PluginCategory_" + category.replace('-', '_')).invoke(null);
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
             return Messages.UpdateCenter_PluginCategory_unrecognized(category);
         }
@@ -1059,7 +1087,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return Messages.UpdateCenter_CoreUpdateMonitor_DisplayName();
         }
 
+        @Override
         public boolean isActivated() {
+            if (!Jenkins.get().getUpdateCenter().isSiteDataReady()) {
+                // Do not display monitor during this page load, but possibly later.
+                return false;
+            }
             Data data = getData();
             return data!=null && data.hasCoreUpdates();
         }
@@ -1966,11 +1999,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha512(), job.getComputedSHA512(), file, "SHA-512");
+                break;
             case NOT_COMPUTED:
                 LOGGER.log(WARNING, "Attempt to verify a downloaded file (" + file.getName() + ") using SHA-512 failed since it could not be computed. Falling back to weaker algorithms. Update your JRE.");
                 break;
             case NOT_PROVIDED:
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + result512);
         }
 
         VerificationResult result256 = verifyChecksums(entry.getSha256(), job.getComputedSHA256(), false);
@@ -1979,9 +2015,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha256(), job.getComputedSHA256(), file, "SHA-256");
+                break;
             case NOT_COMPUTED:
             case NOT_PROVIDED:
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + result256);
         }
 
         if (result512 == VerificationResult.NOT_PROVIDED && result256 == VerificationResult.NOT_PROVIDED) {
@@ -1994,6 +2033,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             case FAIL:
                 throwVerificationFailure(entry.getSha1(), job.getComputedSHA1(), file, "SHA-1");
+                break;
             case NOT_COMPUTED:
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             case NOT_PROVIDED:

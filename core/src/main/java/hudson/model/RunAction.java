@@ -39,7 +39,7 @@ public interface RunAction extends Action {
     void onLoad();
 
     /**
-     * Called when the action is aded to the {@link Run} object.
+     * Called when the action is added to the {@link Run} object.
      * @since 1.376
      */
     void onAttached(Run r);

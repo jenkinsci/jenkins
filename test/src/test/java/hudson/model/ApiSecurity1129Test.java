@@ -43,7 +43,7 @@ public class ApiSecurity1129Test {
     }
 
     /**
-     * Test thw erapper parameter with a good name, to ensure the security fix doesn't break anything.
+     * Test the wrapper parameter with a good name, to ensure the security fix doesn't break anything.
      * @throws Exception See {@link #checkWrapperParam(String, Integer, String)}
      */
     @Issue("SECURITY-1129")
@@ -55,9 +55,9 @@ public class ApiSecurity1129Test {
     }
 
     /**
-     * Check the response for a XML api with the wrapper param specified. At least the statuCode or the responseMessage
+     * Check the response for a XML api with the wrapper param specified. At least the statusCode or the responseMessage
      * should be indicated.
-     * @param wrapper the wrapper param passed in theurl.
+     * @param wrapper the wrapper param passed in the url.
      * @param statusCode the status code expected in the response. If it's null, it's not checked.
      * @param responseMessage the message expected in the response. If it's null, it's not checked.
      * @throws IOException See {@link org.jvnet.hudson.test.JenkinsRule.WebClient#goTo(String, String)}
