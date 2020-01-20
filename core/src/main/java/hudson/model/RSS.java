@@ -43,25 +43,6 @@ import java.util.Collection;
 public final class RSS {
 
     /**
-     * Parses trackback ping.
-     */
-    public static void doTrackback( Object it, StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-
-        String url = req.getParameter("url");
-
-        rsp.setStatus(HttpServletResponse.SC_OK);
-        rsp.setContentType("application/xml; charset=UTF-8");
-        try (PrintWriter pw = rsp.getWriter()) {
-            pw.println("<response>");
-            pw.println("<error>" + (url != null ? 0 : 1) + "</error>");
-            if (url == null) {
-                pw.println("<message>url must be specified</message>");
-            }
-            pw.println("</response>");
-        }
-    }
-
-    /**
      * Sends the RSS feed to the client.
      *
      * @param title
@@ -75,7 +56,14 @@ public final class RSS {
      */
     public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
         req.setAttribute("adapter",adapter);
-        req.setAttribute("title",title);
+        String fixedTitle = title;
+        String brokenFragment = "All all ";
+        if (title.startsWith(brokenFragment)) {
+            StringBuilder fixing = new StringBuilder("All ");
+            fixing.append(title.substring(brokenFragment.length()));
+            fixedTitle = fixing.toString();
+        }
+        req.setAttribute("title",fixedTitle);
         req.setAttribute("url",url);
         req.setAttribute("entries",entries);
 
