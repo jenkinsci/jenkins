@@ -41,7 +41,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class StackTraceSuppressionFilterTest {
+public class StackTraceSuppressionTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
