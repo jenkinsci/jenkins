@@ -225,6 +225,7 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.HttpRedirect;
@@ -5132,6 +5133,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    @Restricted(Beta.class)
+    public boolean shouldShowStackTrace() {
+        // Used by oops.jelly
+        return SHOW_STACK_TRACE;
+    }
+
     /**
      * Hash of {@link #VERSION}.
      */
@@ -5217,6 +5224,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawWorkspaceDir()
      */
     static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".workspacesDir";
+
+
+    @Restricted(Beta.class)
+    public static boolean SHOW_STACK_TRACE = Boolean.getBoolean(Jenkins.class.getName() + ".SHOW_STACK_TRACE");
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
