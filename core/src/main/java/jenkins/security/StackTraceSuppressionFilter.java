@@ -59,10 +59,10 @@ public class StackTraceSuppressionFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(StackTraceSuppressionFilter.class.getName());
 
-    @Initializer(after = InitMilestone.STARTED)
-    public static void init() throws ServletException {
-        PluginServletFilter.addFilter(new StackTraceSuppressionFilter());
-    }
+//    @Initializer(after = InitMilestone.STARTED)
+//    public static void init() throws ServletException {
+//        PluginServletFilter.addFilter(new StackTraceSuppressionFilter());
+//    }
 
     @Override
     public void init(FilterConfig filterConfig) {
