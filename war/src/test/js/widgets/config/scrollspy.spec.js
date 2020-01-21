@@ -17,7 +17,7 @@ describe("scrollspy-spec tests", function () {
     const mockOnWinScroll = jest.fn();
 
     // Need to mock the .isVisible() function of the ConfigSection model because
-    // it needs to return true for these tests and it's current implementation
+    // it needs to return true for these tests and its current implementation
     // would return false
     const mockConfigSection = jest.requireActual(
         '../../../../main/js/widgets/config/model/ConfigSection'
