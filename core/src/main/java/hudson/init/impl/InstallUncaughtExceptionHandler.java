@@ -10,6 +10,7 @@ import org.kohsuke.stapler.compression.CompressionFilter;
 import javax.servlet.ServletException;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +28,9 @@ public class InstallUncaughtExceptionHandler {
                     LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
                     return;
                 }
+                String id = UUID.randomUUID().toString();
+                LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
+                req.setAttribute("jenkins.exception.id", id);
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
                     // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
