@@ -105,7 +105,7 @@ public class MissingClassTelemetry extends Telemetry {
             //hundreds when a job is created
             {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
             {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"},
-            {"net.bull.javamelody.FilterContext", "isMojarraAvailable"}
+            {"net.bull.javamelody.FilterContext", "isMojarraAvailable"} // JENKINS-60725
             
     };
 
