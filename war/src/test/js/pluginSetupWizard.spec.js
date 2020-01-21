@@ -16,7 +16,7 @@ var getSetupWizardGui = function() {
     return require('../../main/js/pluginSetupWizardGui').default;
 }
 
-/* globals defaultUpdateSiteId: true */
+/* eslint-disable-next-line */
 global.defaultUpdateSiteId = 'default';
 
 // Iterates through all responses until the end and returns the last response repeatedly
@@ -230,7 +230,7 @@ describe("pluginSetupWizard.js", function () {
     });
 
     it("wizard shows", function (done) {
-        test(function($) {
+        test(function() {
             // Make sure the dialog was shown
             var $wizard = $body.find('.plugin-setup-wizard');
             expect($wizard.size()).toBe(1);
@@ -284,7 +284,7 @@ describe("pluginSetupWizard.js", function () {
     });
 
     it("install defaults", function (done) {
-        test(function($) {
+        test(function() {
             // Make sure the dialog was shown
             var wizard = $body.find('.plugin-setup-wizard');
             expect(wizard.size()).toBe(1);
@@ -315,9 +315,9 @@ describe("pluginSetupWizard.js", function () {
                 trigger = 'change';
             }
             $el.trigger(trigger);
-        };
+        }
 
-        test(function($) {
+        test(function() {
             $body.find('.install-custom').click();
 
             // validate a call to installPlugins with our defaults
@@ -381,7 +381,7 @@ describe("pluginSetupWizard.js", function () {
                 }
             },
         };
-        test(function($) {
+        test(function() {
             expect($body.find('.install-done').size()).toBe(0);
             expect($body.find('.install-done-restart').size()).toBe(0);
             done();

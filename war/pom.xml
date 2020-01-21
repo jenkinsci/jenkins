@@ -667,6 +667,18 @@ THE SOFTWARE.
                   <skip>${skipTests}</skip>
                 </configuration>
               </execution>
+
+              <execution>
+                <phase>test</phase>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <configuration>
+                  <arguments>lint</arguments>
+                  <skip>${skipTests}</skip>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>
