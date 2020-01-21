@@ -23,7 +23,6 @@
  */
 package jenkins.security;
 
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -49,7 +48,7 @@ public class StackTraceSuppressionFilterTest {
 
     @Before
     public void setup() {
-        StackTraceSuppressionFilter.SHOW_STACK_TRACE = false;
+        Jenkins.SHOW_STACK_TRACE = false;
     }
 
     @Test
@@ -61,7 +60,7 @@ public class StackTraceSuppressionFilterTest {
         wc.login(alice.getId());
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("configureSecurity");
+        HtmlPage page = wc.goTo("manage");
 
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
@@ -111,8 +110,10 @@ public class StackTraceSuppressionFilterTest {
         HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
 
         String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details."));
-        assertThat(content, not(containsString("Oops!")));
+        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("Logging ID="));
+        assertThat(content, containsString("Oops!"));
+        assertThat(content, not(containsString("JellyTagException")));
     }
 
     @Test
@@ -122,14 +123,17 @@ public class StackTraceSuppressionFilterTest {
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
-        StackTraceSuppressionFilter.SHOW_STACK_TRACE = true;
+        Jenkins.SHOW_STACK_TRACE = true;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
 
         String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("Logging ID="));
         assertThat(content, containsString("Oops!"));
-        assertThat(content, not(containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details.")));
+        assertThat(content, containsString("Stack trace"));
+        assertThat(content, containsString("JellyTagException"));
     }
 
     @Test
@@ -141,22 +145,27 @@ public class StackTraceSuppressionFilterTest {
         HtmlPage page = wc.goTo("exception");
 
         String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details."));
-        assertThat(content, not(containsString("Oops!")));
+        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("Logging ID="));
+        assertThat(content, containsString("Oops!"));
+        assertThat(content, not(containsString("Jenkins.doException")));
     }
 
     @Test
     public void exceptionEndpointShowsTrace() throws Exception {
         /* This test is based upon a testing endpoint that really shouldn't exist in production code.
            If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
-        StackTraceSuppressionFilter.SHOW_STACK_TRACE = true;
+        Jenkins.SHOW_STACK_TRACE = true;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("exception");
 
         String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("Logging ID="));
         assertThat(content, containsString("Oops!"));
-        assertThat(content, not(containsString("An error occurred processing your request. Ask your Jenkins administrator to look up details.")));
+        assertThat(content, containsString("Stack trace"));
+        assertThat(content, containsString("Jenkins.doException"));
     }
 
     private FreeStyleProject createBrokenProject() throws IOException {
