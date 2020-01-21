@@ -13,7 +13,7 @@
     "dev": "webpack --config webpack.config.js",
     "prod": "webpack --config webpack.config.js --mode=production",
     "build": "yarn prod",
-    "start": "yarn copy-fonts && yarn dev --watch",
+    "start": "yarn dev --watch",
     "test": "jest --config=jest.config.json",
     "lint:js": "eslint src/main/js src/test/js",
     "lint:css": "stylelint src/main/less --syntax less",

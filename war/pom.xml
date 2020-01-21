@@ -41,7 +41,7 @@ THE SOFTWARE.
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>12.14.0</node.version>
+    <node.version>12.14.1</node.version>
     <yarn.version>1.21.1</yarn.version>
   </properties>
 
