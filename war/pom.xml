@@ -91,9 +91,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
-      <classifier>jar-with-dependencies</classifier>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <!--
@@ -101,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.4</version>
+      <version>5.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -262,13 +260,6 @@ THE SOFTWARE.
             <configuration>
               <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>cli</artifactId>
-                  <classifier>jar-with-dependencies</classifier>
-                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
-                  <destFileName>jenkins-cli.jar</destFileName>
-                </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>

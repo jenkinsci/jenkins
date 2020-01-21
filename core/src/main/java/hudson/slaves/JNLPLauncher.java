@@ -27,19 +27,21 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.java.JavaUtils;
+import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link ComputerLauncher} via inbound connections.
@@ -71,6 +73,8 @@ public class JNLPLauncher extends ComputerLauncher {
 
     @Nonnull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
+
+    private boolean webSocket;
 
     /**
      * Constructor.
@@ -143,6 +147,21 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
+    /**
+     * @since TODO
+     */
+    public boolean isWebSocket() {
+        return webSocket;
+    }
+
+    /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setWebSocket(boolean webSocket) {
+        this.webSocket = webSocket;
+    }
+
     @Override
     public void launch(SlaveComputer computer, TaskListener listener) {
         // do nothing as we cannot self start
@@ -196,25 +215,23 @@ public class JNLPLauncher extends ComputerLauncher {
             // Causes JENKINS-45895 in the case of includes otherwise
             return DescriptorImpl.class.equals(getClass());
         }
-    }
 
-    /**
-     * Hides the JNLP launcher when the JNLP agent port is not enabled.
-     *
-     * @since 2.16
-     */
-    @Extension
-    public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
-
-        @Override
-        public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
+        public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
+            if (webSocket) {
+                if (!WebSockets.isSupported()) {
+                    return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
+                }
+                if (Util.fixEmptyAndTrim(tunnel) != null) {
+                    return FormValidation.error("Tunneling is not supported in WebSocket mode");
+                }
+            } else {
+                if (Jenkins.get().getTcpSlaveAgentListener() == null) {
+                    return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
+                }
+            }
+            return FormValidation.ok();
         }
 
-        @Override
-        public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
-            return descriptor.clazz != JNLPLauncher.class || Jenkins.get().getTcpSlaveAgentListener() != null;
-        }
     }
 
     /**
