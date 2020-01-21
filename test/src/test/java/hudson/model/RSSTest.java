@@ -34,7 +34,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -118,7 +123,7 @@ public class RSSTest {
         Node firstBuild = items.item(0);
         assertThat(firstBuild.getChildNodes().getLength(), is(5));
         assertThat(getSingleNode(firstBuild, "title").getTextContent(), is("test0 #1 (stable)"));
-        assertNotNull(getSingleNode(firstBuild, "pubDate").getTextContent());
+        checkRssTimeNode(firstBuild, "pubDate");
         assertNotNull(getSingleNode(firstBuild, "author").getTextContent());
         Node guidNode = getSingleNode(firstBuild, "guid");
         assertThat(guidNode.getAttributes().getNamedItem("isPermaLink").getTextContent(), is("false"));
@@ -140,8 +145,8 @@ public class RSSTest {
         Node firstBuild = entries.item(0);
         assertThat(firstBuild.getChildNodes().getLength(), is(5));
         assertThat(getSingleNode(firstBuild, "title").getTextContent(), is("test0 #1 (stable)"));
-        assertNotNull(getSingleNode(firstBuild, "published").getTextContent());
-        assertNotNull(getSingleNode(firstBuild, "updated").getTextContent());
+        checkAtomTimeNode(firstBuild, "published");
+        checkAtomTimeNode(firstBuild, "updated");
         assertNotNull(getSingleNode(firstBuild, "id").getTextContent());
         Node linkNode = getSingleNode(firstBuild, "link");
         assertThat(linkNode.getAttributes().getNamedItem("rel").getTextContent(), is("alternate"));
@@ -233,6 +238,22 @@ public class RSSTest {
             }
         }
         return childNode;
+    }
+
+    private void checkRssTimeNode(Node firstBuild, String nodeName) throws ParseException {
+        String pubDate = getSingleNode(firstBuild, nodeName).getTextContent();
+        assertNotNull(pubDate);
+        DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        Date date = formatter.parse("Sat, 24 Apr 2010 14:01:00 GMT");
+        assertNotNull(date);
+    }
+
+    private void checkAtomTimeNode(Node firstBuild, String nodeName) {
+        String publishedString = getSingleNode(firstBuild, nodeName).getTextContent();
+        assertNotNull(publishedString);
+        assertThat(publishedString, is(not(emptyString())));
+        OffsetDateTime dateTime = OffsetDateTime.parse(publishedString);
+        assertNotNull(dateTime);
     }
 
     private XmlPage getRssAllPage() throws Exception {
