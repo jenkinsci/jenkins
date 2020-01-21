@@ -1,4 +1,5 @@
 /* Copyright 2004, 2005, 2006 Acegi Technology Pty Limited
+ * Copyright (c) 2020 CloudBees, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +42,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,9 +126,9 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
 		} catch (ServletException ex) {
-			if (ex.getRootCause() instanceof AuthenticationException
-					|| ex.getRootCause() instanceof AccessDeniedException) {
-				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());
+			AcegiSecurityException securityException = containsAccessException(ex);
+			if (securityException != null) {
+				handleException(request, response, chain, (AcegiSecurityException) securityException);
 			}
 			else {
 				throw ex;
@@ -235,4 +239,20 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
     public void destroy() {
     }
+
+	private AcegiSecurityException containsAccessException(Exception exception) {
+		// Guard against malicious overrides of Throwable.equals by
+		// using a Set with identity equality semantics.
+		Set<Throwable> dejaVu = Collections.newSetFromMap(new IdentityHashMap<>());
+		Throwable currentException = exception;
+		do {
+			dejaVu.add(currentException);
+			if (currentException instanceof AcegiSecurityException) {
+				return (AcegiSecurityException)currentException;
+			}
+			currentException = currentException.getCause();
+		} while (currentException != null && !dejaVu.contains(currentException));
+		return null;
+	}
+
 }

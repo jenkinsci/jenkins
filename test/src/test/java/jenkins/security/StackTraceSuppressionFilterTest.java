@@ -52,7 +52,7 @@ public class StackTraceSuppressionFilterTest {
     }
 
     @Test
-    public void authenticationException() throws Exception {
+    public void authenticationManageException() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
         User alice = User.getById("alice", true);
@@ -61,6 +61,22 @@ public class StackTraceSuppressionFilterTest {
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("manage");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
+        assertThat(content, not(containsString("Caused by")));
+    }
+
+    @Test
+    public void authenticationConfigureSecurityException() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
+        User alice = User.getById("alice", true);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(alice.getId());
+
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("configureSecurity");
 
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
