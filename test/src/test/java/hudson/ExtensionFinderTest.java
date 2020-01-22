@@ -24,14 +24,17 @@
 package hudson;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.ImplementedBy;
 import hudson.model.PageDecorator;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
@@ -144,5 +147,19 @@ public class ExtensionFinderTest {
     public static final class B {
         @Inject A a;
     }
+
+    @Issue("JENKINS-60816")
+    @Test
+    public void injectInterface() {
+        assertThat(ExtensionList.lookupSingleton(X.class).xface, instanceOf(Impl.class));
+    }
+    @TestExtension("injectInterface")
+    public static final class X {
+        @Inject
+        XFace xface;
+    }
+    @ImplementedBy(Impl.class)
+    public interface XFace {}
+    public static final class Impl implements XFace {}
 
 }
