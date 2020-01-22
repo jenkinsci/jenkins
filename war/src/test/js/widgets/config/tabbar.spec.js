@@ -68,7 +68,7 @@ describe("tabbar-spec tests", function () {
         }, htmlConfigTabbedContent);
     });
 
-    // This test may be deterministic, as it breaks if jest.resetModules is called on afterEach
+    // This test may not be deterministic, as it breaks if jest.resetModules is called on afterEach
     it("- test section activation", function (done) {
         jsTest.onPage(function() {
             document.documentElement.innerHTML = htmlConfigTabbedContent;
