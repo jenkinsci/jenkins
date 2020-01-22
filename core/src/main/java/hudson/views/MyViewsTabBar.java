@@ -119,7 +119,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
 
         @Override
         public Permission getPermission() {
-            return Jenkins.CONFIGURE;
+            return Jenkins.MANAGE;
         }
     }
 }

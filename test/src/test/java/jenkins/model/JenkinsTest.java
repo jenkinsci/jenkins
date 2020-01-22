@@ -711,7 +711,7 @@ public class JenkinsTest {
     @Test
     public void doExitSuccessWithConfigurePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "shutdown")
-                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
         assertThat(result, succeededSilently());
     }
@@ -720,7 +720,7 @@ public class JenkinsTest {
     @Test
     public void doSafeExitSuccessWithConfigurePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "safe-shutdown")
-                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
         assertThat(result, succeededSilently());
     }
