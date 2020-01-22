@@ -21,6 +21,9 @@ for(i = 0; i < buildTypes.size(); i++) {
 for(j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
+    if (buildType == 'Windows' && jdk == 11) {
+        continue // unnecessary use of hardware
+    }
     builds["${buildType}-jdk${jdk}"] = {
         // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
         node(buildType == 'Linux' ? (jdk == 8 ? 'maven' : 'maven-11') : buildType.toLowerCase()) {
