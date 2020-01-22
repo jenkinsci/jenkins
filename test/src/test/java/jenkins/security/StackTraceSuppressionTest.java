@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -34,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.kohsuke.stapler.HttpResponses;
 
 import java.io.IOException;
 
@@ -49,6 +51,7 @@ public class StackTraceSuppressionTest {
     @Before
     public void setup() {
         Jenkins.SHOW_STACK_TRACE = false;
+        HttpResponses.SHOW_STACK_TRACE = false;
     }
 
     @Test
@@ -83,36 +86,36 @@ public class StackTraceSuppressionTest {
         assertThat(content, not(containsString("Caused by")));
     }
 
-//    @Test
-//    public void nonexistentAdjunct() throws Exception {
-//        /* This test belongs in Stapler but it's easy to put it together here.
-//           This test is based upon Stapler throwing an exception for this broken request.
-//           If Stapler is improved to better handle this error, this test may erroneously fail. */
-//        JenkinsRule.WebClient wc = j.createWebClient();
-//
-//        wc.setThrowExceptionOnFailingStatusCode(false);
-//        HtmlPage page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js");
-//
-//        String content = page.getWebResponse().getContentAsString();
-//        assertThat(content, containsString("No such adjunct found"));
-//        assertThat(content, not(containsString("AdjunctManager.doDynamic")));
-//    }
-//
-//    @Test
-//    public void nonexistentAdjunctShowsTrace() throws Exception {
-//        /* This test belongs in Stapler but it's easy to put it together here.
-//           This test is based upon Stapler throwing an exception for this broken request.
-//           If Stapler is improved to better handle this error, this test may erroneously fail. */
-//        JenkinsRule.WebClient wc = j.createWebClient();
-//        HttpResponses.SHOW_STACK_TRACE = true;
-//
-//        wc.setThrowExceptionOnFailingStatusCode(false);
-//        Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
-//
-//        String content = page.getWebResponse().getContentAsString();
-//        assertThat(content, containsString("No such adjunct found"));
-//        assertThat(content, containsString("AdjunctManager.doDynamic"));
-//    }
+    @Test
+    public void nonexistentAdjunct() throws Exception {
+        /* This test belongs in Stapler but it's easy to put it together here.
+           This test is based upon Stapler throwing an exception for this broken request.
+           If Stapler is improved to better handle this error, this test may erroneously fail. */
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("No such adjunct found"));
+        assertThat(content, not(containsString("AdjunctManager.doDynamic")));
+    }
+
+    @Test
+    public void nonexistentAdjunctShowsTrace() throws Exception {
+        /* This test belongs in Stapler but it's easy to put it together here.
+           This test is based upon Stapler throwing an exception for this broken request.
+           If Stapler is improved to better handle this error, this test may erroneously fail. */
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HttpResponses.SHOW_STACK_TRACE = true;
+
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
+
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, containsString("No such adjunct found"));
+        assertThat(content, containsString("AdjunctManager.doDynamic"));
+    }
 
     @Test
     public void exception() throws Exception {
