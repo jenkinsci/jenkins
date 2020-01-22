@@ -85,7 +85,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithConfigurePermission() throws Exception {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();

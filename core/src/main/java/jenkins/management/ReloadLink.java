@@ -68,6 +68,6 @@ public class ReloadLink extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.CONFIGURE;
+        return Jenkins.MANAGE;
     }
 }

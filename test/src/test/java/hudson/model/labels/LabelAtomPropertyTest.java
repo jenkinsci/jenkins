@@ -85,7 +85,7 @@ public class LabelAtomPropertyTest {
         final String CONFIGURATOR = "configurator";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.READ, Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR));
+                                                   .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to(CONFIGURATOR));
 
         LabelAtom label = j.jenkins.getLabelAtom("foo");
 

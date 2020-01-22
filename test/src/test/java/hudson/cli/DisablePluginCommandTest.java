@@ -337,7 +337,7 @@ public class DisablePluginCommandTest {
         //GIVEN a user with CONFIGURE_JENKINS permission
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE).everywhere().to("configurator")
+                                                   .grant(Jenkins.MANAGE).everywhere().to("configurator")
         );
 
         //WHEN trying to disable a plugin

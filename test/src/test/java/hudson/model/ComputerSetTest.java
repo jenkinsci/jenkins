@@ -93,7 +93,7 @@ public class ComputerSetTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().to(CONFIGURATOR));
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(CONFIGURATOR));
         //WHEN the user go to Monitors
         WebClient client = j.createWebClient();
         HtmlPage page = client.withBasicCredentials(CONFIGURATOR).goTo("computer");
@@ -123,7 +123,7 @@ public class ComputerSetTest {
     }
 
     /**
-     * Tests that user with {@link Jenkins#CONFIGURE} can submit configuration form
+     * Tests that user with {@link Jenkins#MANAGE} can submit configuration form
      */
     @Issue("JENKINS-60266")
     @Test
@@ -132,7 +132,7 @@ public class ComputerSetTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.READ, Jenkins.CONFIGURE).everywhere().to(CONFIGURATOR));
+                                                   .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to(CONFIGURATOR));
 
         WebClient client = j.createWebClient();
         HtmlForm form = client.login(CONFIGURATOR).goTo("computer/configure").getFormByName("config");
