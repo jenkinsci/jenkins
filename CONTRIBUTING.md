@@ -65,7 +65,6 @@ On another terminal, move to the war folder and start a [webpack](https://webpac
 cd war; yarn start
 ```
 
-
 ## Testing changes
 
 Jenkins core includes unit and functional tests as a part of the repository.
