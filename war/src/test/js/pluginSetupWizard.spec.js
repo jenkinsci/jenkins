@@ -505,4 +505,40 @@ describe("pluginSetupWizard.js", function () {
             goButton.click();
         }, { ajaxMappings, $, $body });
     });
+
+    describe('running extension callbacks', function () {
+        beforeEach(() => {
+            global.setupWizardExtensions = [];
+            global.onSetupWizardInitialized = function(extension) {
+                setupWizardExtensions.push(extension);
+            };
+
+        });
+
+        afterEach(() => {
+            delete global.setupWizardExtensions;
+            delete global.onSetupWizardInitialized;
+        });
+
+        it ('yields a jenkins object with the initHandlebars method', function(done) {
+            jsTest.onPage(function() {
+
+                $.ajax = ajaxMocks();
+
+                onSetupWizardInitialized(wizard => {
+                    const { jenkins } = wizard;
+                    expect(jenkins).toBe(getJenkins());
+
+                    // Test that the initHandlebars method returns a Handlebars instance
+                    const handlebars = jenkins.initHandlebars();
+                    expect(handlebars.registerHelper).toBeInstanceOf(Function)
+
+                    done();
+                })
+
+                const pluginSetupWizard = getSetupWizardGui();
+                pluginSetupWizard.init($body);
+            });
+        });
+    });
 });

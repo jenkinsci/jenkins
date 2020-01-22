@@ -1,8 +1,9 @@
 /**
  * Jenkins JS Modules common utility functions
  */
-import $ from 'jquery'
-import wh from 'window-handle'
+import $ from 'jquery';
+import wh from 'window-handle';
+import Handlebars from 'handlebars';
 
 var debug = false;
 var jenkins = {};
@@ -129,6 +130,13 @@ jenkins.post = function(url, data, success, options) {
 	}
 	$.ajax(args);
 };
+
+/**
+ *  handlebars setup, done for backwards compatibility because some plugins depend on it
+ */
+jenkins.initHandlebars = function() {
+	return Handlebars;
+}
 
 /**
  * Load translations for the given bundle ID, provide the message object to the handler.
