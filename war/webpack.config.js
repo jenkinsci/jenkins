@@ -1,3 +1,5 @@
+/* eslint no-undef: 0 */
+
 const path = require('path');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');

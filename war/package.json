@@ -15,7 +15,7 @@
     "build": "yarn prod",
     "start": "yarn dev --watch",
     "test": "jest --config=jest.config.json",
-    "lint:js": "eslint src/main/js src/test/js",
+    "lint:js": "eslint . --ext js",
     "lint:css": "stylelint src/main/less --syntax less",
     "lint": "yarn lint:js && yarn lint:css"
   },
