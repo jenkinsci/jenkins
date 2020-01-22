@@ -242,7 +242,7 @@ public class RSSTest {
 
     private void checkRssTimeNode(Node firstBuild, String nodeName) throws ParseException {
         String pubDate = getSingleNode(firstBuild, nodeName).getTextContent();
-        assertNotNull(pubDate);
+        assertThat(pubDate, not(emptyString()));
         DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         Date date = formatter.parse(pubDate);
         assertNotNull(date);
