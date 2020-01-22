@@ -7,8 +7,6 @@
 
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
-// TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
-def runTests = true
 def failFast = true
 
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')), durabilityHint('PERFORMANCE_OPTIMIZED')])
@@ -45,14 +43,16 @@ for(j = 0; j < jdks.size(); j++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install -Dmaven.test.failure.ignore -V -B -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
 
-                            if(isUnix()) {
-                                sh "$mvnCmd -ntp"
-                                sh 'git add . && git diff --exit-code HEAD'
-                            } else {
-                                // TODO tool 'mvn' is still an old version without -ntp
-                                bat "$mvnCmd -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                                if (isUnix()) {
+                                    sh "$mvnCmd -ntp"
+                                    sh 'git add . && git diff --exit-code HEAD'
+                                } else {
+                                    // TODO tool 'mvn' is still an old version without -ntp
+                                    bat "$mvnCmd -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                                }
                             }
                         }
                     }
@@ -60,10 +60,7 @@ for(j = 0; j < jdks.size(); j++) {
 
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
-                    if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
-                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-                    }
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     if (buildType == 'Linux' && jdk == jdks[0]) {
                         def changelist = readFile(changelistF)
                         dir(m2repo) {
