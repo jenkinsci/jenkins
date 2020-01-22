@@ -1,10 +1,11 @@
-/*
- * Internal support module for config tables.
- */
 import { getJQuery } from '../../../util/jquery-ext';
 import page from '../../../util/page';
 import ConfigSection from './ConfigSection';
 import { toId } from './util';
+
+/*
+ * Internal support module for config tables.
+ */
 
 function markConfigTableParentForm(configTable) {
     var form = configTable.closest('form');

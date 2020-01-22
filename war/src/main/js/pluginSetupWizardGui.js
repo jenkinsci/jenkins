@@ -1,6 +1,3 @@
-/**
- * Jenkins first-run install wizard
- */
 import $ from 'jquery';
 import Handlebars from 'handlebars';
 import jenkins from './util/jenkins';
@@ -23,8 +20,11 @@ import pluginSetupWizard from './templates/pluginSetupWizard.hbs';
 import incompleteInstallationPanel from './templates/incompleteInstallationPanel.hbs';
 import pluginSelectList from './templates/pluginSelectList.hbs';
 
-Handlebars.registerPartial('pluginSelectList', pluginSelectList);
+/**
+ * Jenkins first-run install wizard
+ */
 
+Handlebars.registerPartial('pluginSelectList', pluginSelectList);
 
 // TODO: see whether this is actually being used or if it can be removed
 window.zq = $;

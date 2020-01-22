@@ -1,10 +1,11 @@
-/**
- * Provides a wrapper to interact with the security configuration
- */
 import jenkins from '../util/jenkins';
 import { getWindow } from 'window-handle';
 
 /**
+ * Provides a wrapper to interact with the security configuration
+ */
+
+ /*
  * Calls a stapler post method to save the first user settings
  */
 function saveFirstUser($form, success, error) {
