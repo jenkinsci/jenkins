@@ -49,7 +49,7 @@ for(j = 0; j < jdks.size(); j++) {
                                 sh mvnCmd
                                 sh 'git add . && git diff --exit-code HEAD'
                             } else {
-                                bat mvnCmd
+                                bat "${mvnCmd} -Dconcurrency=1"
                             }
                         }
                     }
