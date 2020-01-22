@@ -35,6 +35,7 @@ $.when(getItems()).done(function(data) {
       if (desc.indexOf('&lt;a href="') === -1) {
         return desc;
       }
+      // eslint-disable-next-line
       var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
       return newDesc;
     }

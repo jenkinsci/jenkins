@@ -2,17 +2,28 @@ import jsTest from '@jenkins-cd/js-test';
 
 var debug = false;
 
+// Registers needed handlebars helpers that are loaded through webpack
+function registerHandlebars() {
+    // eslint-disable-next-line no-undef
+    const Handlebars = require('handlebars').default;
+    // eslint-disable-next-line no-undef
+    Handlebars.registerHelper('id', require('../../main/js/handlebars-helpers/id').default)
+}
+
 var getJQuery = function() {
+    // eslint-disable-next-line no-undef
     var $ = require('jquery');
     $.fx.off = true;
     return $;
 };
 
 var getJenkins = function() {
+    // eslint-disable-next-line no-undef
     return require('../../main/js/util/jenkins').default;
 }
 
 var getSetupWizardGui = function() {
+    // eslint-disable-next-line no-undef
     return require('../../main/js/pluginSetupWizardGui').default;
 }
 
@@ -212,9 +223,7 @@ describe("pluginSetupWizard.js", function () {
     let $body;
 
     beforeEach(() => {
-        // Registers needed handlebars helpers that are loaded through webpack
-        const Handlebars = require('handlebars').default;
-        Handlebars.registerHelper('id', require('../../main/js/handlebars-helpers/id').default)
+        registerHandlebars();
 
         // Create a new <body> tag for every test
         $ = getJQuery();

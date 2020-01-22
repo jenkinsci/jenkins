@@ -1,29 +1,28 @@
 /*
  * Internal support module for config tables.
  */
+import { getJQuery } from '../../../util/jquery-ext';
+import page from '../../../util/page';
+import ConfigSection from './ConfigSection';
+import { toId } from './util';
 
-var jQD = require('../../../util/jquery-ext.js');
-var ConfigSection = require('./ConfigSection.js');
-var page = require('../../../util/page.js');
-var util = require('./util.js');
-
-exports.markConfigTableParentForm = function(configTable) {
+function markConfigTableParentForm(configTable) {
     var form = configTable.closest('form');
     form.addClass('jenkins-config');
     return form;
-};
+}
 
-exports.findConfigTables = function() {
-    var $ = jQD.getJQuery();
+function findConfigTables() {
+    var $ = getJQuery();
     // The config tables are the immediate child <table> elements of <form> elements
     // with a name of "config"?
     return $('form[name="config"] > table');
-};
+}
 
-exports.fromConfigTable = function(configTable) {
-    var $ = jQD.getJQuery();
+function fromConfigTable(configTable) {
+    var $ = getJQuery();
     var sectionHeaders = $('.section-header', configTable);
-    var configForm = exports.markConfigTableParentForm(configTable);
+    var configForm = markConfigTableParentForm(configTable);
 
     // Mark the ancestor <tr>s of the section headers and add a title
     sectionHeaders.each(function () {
@@ -75,10 +74,10 @@ exports.fromConfigTable = function(configTable) {
 
     var buttonsRow = $('#bottom-sticker', configTable).closest('tr');
     buttonsRow.removeClass(curSection.id);
-    buttonsRow.addClass(util.toId('buttons'));
+    buttonsRow.addClass(toId('buttons'));
 
     return configTableMetadata;
-};
+}
 
 /*
  * =======================================================================================
@@ -86,7 +85,7 @@ exports.fromConfigTable = function(configTable) {
  * =======================================================================================
  */
 function ConfigTableMetaData(configForm, configTable) {
-    this.$ = jQD.getJQuery();
+    this.$ = getJQuery();
     this.configForm = configForm;
     this.configTable = configTable;
     this.configTableBody = this.$('> tbody', configTable);
@@ -110,13 +109,13 @@ ConfigTableMetaData.prototype.getFirstRow = function() {
 };
 
 ConfigTableMetaData.prototype.addWidgetsContainer = function() {
-    var $ = jQD.getJQuery();
+    var $ = getJQuery();
     this.configWidgets = $('<div class="jenkins-config-widgets"></div>');
     this.configWidgets.insertBefore(this.configForm);
 };
 
 ConfigTableMetaData.prototype.addFindWidget = function() {
-    var $ = jQD.getJQuery();
+    var $ = getJQuery();
     var thisTMD = this;
     var findWidget = $('<div class="find-container"><div class="find"><span title="Clear" class="clear">x</span><input placeholder="find"/></div></div>');
 
@@ -268,7 +267,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
 ConfigTableMetaData.prototype.hideSection = function() {
     var topRows = this.getTopRows();
-    var $ = jQD.getJQuery();
+    var $ = getJQuery();
 
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     topRows.filter('.active').removeClass('active');
@@ -384,3 +383,9 @@ function isTestEnv() {
     
     return false;
 }
+
+export default {
+    markConfigTableParentForm,
+    findConfigTables,
+    fromConfigTable
+};

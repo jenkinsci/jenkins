@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import jsTest from '@jenkins-cd/js-test';
-import './mocks';
+import { mockBehaviorShim } from './mocks';
 
 const debug = false;
 
@@ -24,13 +24,20 @@ describe("scrollspy-spec tests", function () {
     );
 
     beforeEach(() => {
+        mockBehaviorShim();
+
         jest.mock('../../../../main/js/util/page', () => ({
+            __esModule: true,
             ...mockPageUtils,
-            winScrollTop: mockWinScrollTop,
-            onWinScroll: mockOnWinScroll,
+            default: {
+                ...mockPageUtils.default,
+                fireBottomStickerAdjustEvent: jest.fn(),
+                winScrollTop: mockWinScrollTop,
+                onWinScroll: mockOnWinScroll,
+            }
         }));
 
-        mockConfigSection.prototype.isVisible = jest.fn();
+        mockConfigSection.default.prototype.isVisible = jest.fn();
         jest.mock(
             '../../../../main/js/widgets/config/model/ConfigSection',
             () => mockConfigSection
@@ -65,12 +72,13 @@ describe("scrollspy-spec tests", function () {
 
     it("- test scrolling", function (done) {
         // Needs to return true for the tests
-        mockConfigSection.prototype.isVisible.mockReturnValue(true);
+        mockConfigSection.default.prototype.isVisible.mockReturnValue(true);
 
         jsTest.onPage(function () {
             document.documentElement.innerHTML = htmlContent;
 
             var manualScroller = newManualScroller();
+            // eslint-disable-next-line no-undef
             var tabbars = require('../../../../main/js/config-scrollspy');
             tabbars.setScrollspeed(1); // speed up the scroll speed for testing
 

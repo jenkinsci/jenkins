@@ -1,9 +1,9 @@
 import $ from 'jquery';
-
-var page = require('../../util/page.js');
-var jenkinsLocalStorage = require('../../util/jenkinsLocalStorage.js');
-var tableMetadata = require('./model/ConfigTableMetaData.js');
-var behaviorShim = require('../../util/behavior-shim');
+import { getWindow } from 'window-handle';
+import page from '../../util/page';
+import tableMetadata from './model/ConfigTableMetaData';
+import behaviorShim from '../../util/behavior-shim';
+import jenkinsLocalStorage from '../../util/jenkinsLocalStorage';
 
 export var tabBarShowPreferenceKey = 'config:usetabs';
 
@@ -32,7 +32,7 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
 
                         tabBar.deactivator.click(function() {
                             jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "no");
-                            require('window-handle').getWindow().location.reload();
+                            getWindow().location.reload();
                         });
                     });
                 } else {
@@ -42,7 +42,7 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
                         tableMetadata.markConfigTableParentForm(configTable);
                         activator.click(function() {
                             jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "yes");
-                            require('window-handle').getWindow().location.reload();
+                            getWindow().location.reload();
                         });
                     });
                 }

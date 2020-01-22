@@ -575,11 +575,9 @@ THE SOFTWARE.
 
 
     <!--
-        The following profiles are required to integration the node/gulp build into this maven build.
+        The following profiles are required to integration the node/yarn build into this maven build.
         Hopefully we can push these profiles down into a parent pom.
-        See https://github.com/tfennelly/jenkins-js-builder#maven-integration
     -->
-
     <profile>
       <id>yarn-execution</id>
       <activation>

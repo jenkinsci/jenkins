@@ -2,9 +2,8 @@
  * Page initialisation tasks.
  */
 import $ from 'jquery';
-
 // Require this one to ensure jenkins-js-modules works all the time
-var jsModules = require('jenkins-js-modules');
+import jsModules from 'jenkins-js-modules';
 
 $(function() {
     loadScripts();

@@ -1266,7 +1266,5 @@ var createPluginSetupWizard = function(appendTarget) {
 	}));
 };
 
-var exports = {};
 // export wizard creation method
-exports.init = createPluginSetupWizard;
-export default exports;
+export default { init: createPluginSetupWizard };

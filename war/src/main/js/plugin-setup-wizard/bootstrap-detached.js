@@ -33,4 +33,4 @@ export function enhanceJQueryWithBootstrap($) {
       window.$ = _$;
       window.jQuery = _jQuery;
   }
-};
+}

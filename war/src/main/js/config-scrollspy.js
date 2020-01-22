@@ -1,7 +1,8 @@
 import $ from 'jquery';
 import windowHandle from 'window-handle';
+import page from './util/page';
+import * as tabBarWidget from './widgets/config/tabbar';
 
-var page = require('./util/page.js');
 var isScrolling = false;
 var ignoreNextScrollEvent = false;
 var pageHeaderHeight = page.pageHeaderHeight();
@@ -25,8 +26,6 @@ function notify(event) {
 }
 
 $(function() {
-    var tabBarWidget = require('./widgets/config/tabbar.js');
-
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
         tabbars.push(tabBar);
 

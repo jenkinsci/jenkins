@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import $ from 'jquery';
 import jsTest from '@jenkins-cd/js-test';
-import './mocks';
+import { mockBehaviorShim } from './mocks';
 
 const htmlConfigTabbedContent = fs.readFileSync(
     path.resolve(__dirname, './freestyle-config-tabbed.html'),
@@ -10,14 +10,41 @@ const htmlConfigTabbedContent = fs.readFileSync(
 );
 
 function getConfigTabbar() {
+    // eslint-disable-next-line no-undef
     return require('../../../../main/js/config-tabbar');
 }
 
 function getConfigTabbarWidget() {
+    // eslint-disable-next-line no-undef
     return require('../../../../main/js/widgets/config/tabbar');
 }
 
 describe("tabbar-spec tests", function () {
+    // Need to mock the utils/page module because we will hijack the scroll events
+    const mockPageUtils = jest.requireActual('../../../../main/js/util/page');
+
+    beforeEach(() => {
+        mockBehaviorShim();
+
+        jest.mock('../../../../main/js/util/page', () => ({
+            __esModule: true,
+            ...mockPageUtils,
+            default: {
+                ...mockPageUtils.default,
+                fireBottomStickerAdjustEvent: jest.fn(),
+            }
+        }));
+    });
+
+    afterEach(() => {
+        jest.resetAllMocks()
+    });
+
+    afterAll(() => {
+        // Should call resetModules on afterAll because the test "test section activation"
+        // will break if resetModules is called on afterEach.
+        jest.resetModules();
+    });
 
     it("- test section count", function (done) {
         jsTest.onPage(function() {
@@ -41,6 +68,7 @@ describe("tabbar-spec tests", function () {
         }, htmlConfigTabbedContent);
     });
 
+    // This test may be deterministic, as it breaks if jest.resetModules is called on afterEach
     it("- test section activation", function (done) {
         jsTest.onPage(function() {
             document.documentElement.innerHTML = htmlConfigTabbedContent;
