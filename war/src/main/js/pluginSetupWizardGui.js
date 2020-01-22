@@ -940,7 +940,19 @@ var createPluginSetupWizard = function(appendTarget) {
 	var skipFirstUser = function() {
 		$('button').prop({disabled:true});
 		firstUserSkipped = true;
-		showConfigureInstance();
+                jenkins.get('/api/json?tree=url', function(data) {
+                    if (data.url) {
+                        // as in InstallState.ConfigureInstance.initializeState
+                        showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
+                    } else {
+                        showConfigureInstance();
+                    }
+                }, {
+                    error: function() {
+                        // give up
+                        showConfigureInstance();
+                    }
+                });
 	};
 	
 	var handleConfigureInstanceResponseSuccess = function (data) {

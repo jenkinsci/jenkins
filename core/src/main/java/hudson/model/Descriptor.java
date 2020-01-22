@@ -691,7 +691,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private T verifyNewInstance(T t) {
         if (t!=null && t.getDescriptor()!=this) {
             // TODO: should this be a fatal error?
-            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably misplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
         }
         return t;
     }

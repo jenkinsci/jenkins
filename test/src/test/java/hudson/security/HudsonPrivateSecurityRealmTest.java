@@ -144,7 +144,7 @@ public class HudsonPrivateSecurityRealmTest {
         // throws FailingHttpStatusCodeException on login failure
         wc2.login("user2", "password2");
 
-        // belt and braces incase the failed login no longer throws exceptions.
+        // belt and braces in case the failed login no longer throws exceptions.
         w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
         

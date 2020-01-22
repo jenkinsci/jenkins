@@ -30,6 +30,10 @@ THE SOFTWARE.
         <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${%title(it)}
       </h1>
+      <p>
+        <em>${%disclaimer}</em>
+      </p>
+
       <!-- TODO consider adding a BuildTimelineWidget (cf. Job, View, Computer) -->
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

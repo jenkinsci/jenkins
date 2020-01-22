@@ -230,8 +230,12 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
                     var depPluginTR = getPluginTR(pluginId);
-                    var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
-                    if (depPluginMetadata.enableInput.checked) {
+                    var enabled = false;
+                    if (depPluginTR) {
+                        var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                        enabled = depPluginMetadata.enableInput.checked;
+                    }
+                    if (enabled) {
                         // It's enabled ... hide the span
                         dependencySpan.setStyle({display: 'none'});
                     } else {
@@ -354,12 +358,13 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
             
             // Setup event handlers...
-            
-            // Toggling of the enable/disable checkbox requires a check and possible
-            // change of visibility on the same checkbox on other plugins.
-            Element.observe(enableInput, 'click', function() {
-                setEnableWidgetStates();
-            });
+            if (enableInput) {
+                // Toggling of the enable/disable checkbox requires a check and possible
+                // change of visibility on the same checkbox on other plugins.
+                Element.observe(enableInput, 'click', function() {
+                    setEnableWidgetStates();
+                });
+            }
             
             // 
             var infoTR = document.createElement("tr");
@@ -382,34 +387,38 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
             
             // Handle mouse in/out of the enable/disable cell (left most cell).
-            Element.observe(enableTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateEnableDisableInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(enableTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            if (enableTD) {
+                Element.observe(enableTD, 'mouseenter', function() {
+                    showInfoTimeout = setTimeout(function() {
+                        showInfoTimeout = undefined;
+                        infoDiv.update('');
+                        if (populateEnableDisableInfo(pluginTR, infoDiv)) {
+                            addDependencyInfoRow(pluginTR, infoTR);
+                        }
+                    }, 1000);
+                });
+                Element.observe(enableTD, 'mouseleave', function() {
+                    clearShowInfoTimeout();
+                    removeDependencyInfoRow(pluginTR);
+                });
+            }
 
             // Handle mouse in/out of the uninstall cell (right most cell).
-            Element.observe(uninstallTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateUninstallInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(uninstallTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            if (uninstallTD) {
+                Element.observe(uninstallTD, 'mouseenter', function() {
+                    showInfoTimeout = setTimeout(function() {
+                        showInfoTimeout = undefined;
+                        infoDiv.update('');
+                        if (populateUninstallInfo(pluginTR, infoDiv)) {
+                            addDependencyInfoRow(pluginTR, infoTR);
+                        }
+                    }, 1000);
+                });
+                Element.observe(uninstallTD, 'mouseleave', function() {
+                    clearShowInfoTimeout();
+                    removeDependencyInfoRow(pluginTR);
+                });
+            }
         }
 
         for (var i = 0; i < pluginTRs.length; i++) {

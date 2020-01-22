@@ -1,7 +1,6 @@
 package hudson.model.queue;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.labels.LabelExpression;

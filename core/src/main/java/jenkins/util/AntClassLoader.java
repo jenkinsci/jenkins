@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -852,7 +851,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     }
 
     /**
-     * Used for isolated resource seaching.
+     * Used for isolated resource searching.
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {

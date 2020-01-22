@@ -31,6 +31,9 @@ THE SOFTWARE.
         <l:icon class="icon-notepad icon-xlg"/>
         ${%title(it.displayName)}
       </h1>
+      <p>
+        <em>${%disclaimer}</em>
+      </p>
 
       <st:include page="control.jelly" it="${it.timeline}" />
       <div style="height:2em"/><!-- spacer -->

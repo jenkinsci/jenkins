@@ -49,7 +49,7 @@ public class InstallStateTest {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
-    public void shouldPefromCorrectConversionForAllNames() {
+    public void shouldPerformCorrectConversionForAllNames() {
         ExtensionList<InstallState> states = InstallState.all();
         for (InstallState state : states) {
             InstallState afterRoundtrip = forName(state.name());
