@@ -33,7 +33,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <j:if test="${h.hasPermission(app.CONFIGURE)}">
+      <j:if test="${h.hasPermission(app.MANAGE)}">
         <h1>${%Thread Dump}</h1>
         <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
           <h2>${t.key}</h2>
