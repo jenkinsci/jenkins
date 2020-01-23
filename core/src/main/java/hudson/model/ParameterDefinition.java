@@ -145,7 +145,7 @@ public abstract class ParameterDefinition implements
      * return parameter description, applying the configured MarkupFormatter for jenkins instance.
      * @since 1.521
      */
-    @Nonnull
+    @CheckForNull
     public String getFormattedDescription() {
         try {
             return Jenkins.get().getMarkupFormatter().translate(description);
