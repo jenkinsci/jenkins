@@ -1,8 +1,8 @@
-var windowHandle = require('window-handle');
-var win = windowHandle.getWindow();
-var storage = win.localStorage;
+import { getWindow } from 'window-handle';
 
-exports.setMock = function() {
+let storage = getWindow().localStorage;
+
+function setMock() {
     storage = {
         storage: {},
         setItem: function (name, value) {
@@ -15,26 +15,33 @@ exports.setMock = function() {
             delete this.storage[name];
         }
     };
-};
+}
 
-exports.setItem = function(name, value) {
+function setItem(name, value) {
     storage.setItem(name, value);
-};
+}
 
-exports.getItem = function(name, defaultVal) {
+function getItem(name, defaultVal) {
     var value = storage.getItem(name);
     if (!value) {
         value = defaultVal;
     }
     return  value;
-};
+}
 
-exports.removeItem = function(name) {
+function removeItem(name) {
     return storage.removeItem(name);
-};
+}
 
 if (typeof storage === "undefined") {
     console.warn('HTML5 localStorage not supported by this browser.');
     // mock it...
-    exports.setMock();
+    setMock();
 }
+
+export default {
+    setMock,
+    setItem,
+    getItem,
+    removeItem,
+};
