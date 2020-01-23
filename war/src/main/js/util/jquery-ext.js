@@ -1,11 +1,17 @@
 /*
  * Some internal jQuery extensions.
+ *
+ * After migrating to webpack it modifies the provided version of jquery
  */
+import $ from 'jquery';
+import windowHandle from 'window-handle';
 
-var jQD = require('jquery-detached');
+/**
+ * TODO: look into other way of doing this
+ */
 var $ext;
 
-exports.getJQuery = function() {
+export var getJQuery = function() {
     if (!$ext) {
         initJQueryExt();
     }
@@ -15,15 +21,15 @@ exports.getJQuery = function() {
 /*
  * Clear the $ext instance if the window changes. Primarily for unit testing.
  */
-var windowHandle = require('window-handle');
 windowHandle.getWindow(function() {
     $ext = undefined;
 });
 
+/**
+ * Adds the :containsci selector to jQuery
+ */
 function initJQueryExt() {
-    // We are going to be adding "stuff" to jQuery. We create a totally new jQuery instance
-    // because we do NOT want to run the risk of polluting the shared instance.
-    $ext = jQD.newJQuery();
+    $ext = $;
 
     /**
      * A pseudo selector that performs a case insensitive text contains search i.e. the same

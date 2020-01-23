@@ -151,7 +151,7 @@
                                   <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
                               </manifestEntries>
                           </transformer>
-                          <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                          <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                       </transformers>
                   </configuration>
               </execution>
