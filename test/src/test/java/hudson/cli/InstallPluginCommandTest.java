@@ -73,7 +73,7 @@ public class InstallPluginCommandTest {
         setupUpdateCenter();
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(
-                "admin").grant(Jenkins.CONFIGURE).everywhere().to("configurator"));
+                "admin").grant(Jenkins.MANAGE).everywhere().to("configurator"));
 
         String plugin = "git";
 

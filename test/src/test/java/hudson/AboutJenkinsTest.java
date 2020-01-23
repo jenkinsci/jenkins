@@ -55,7 +55,7 @@ public class AboutJenkinsTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
-                .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().to(CONFIGURATOR)
+                .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(CONFIGURATOR)
                 .grant(Jenkins.READ).everywhere().to(USER)
         );
         

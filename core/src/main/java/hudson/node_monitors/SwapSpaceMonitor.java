@@ -78,7 +78,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     @Override
     public String getColumnCaption() {
         // Hide this column from non-admins
-        return Jenkins.get().hasPermission(Jenkins.CONFIGURE) ? super.getColumnCaption() : null;
+        return Jenkins.get().hasPermission(Jenkins.MANAGE) ? super.getColumnCaption() : null;
     }
 
     /**

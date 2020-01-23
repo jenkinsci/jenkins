@@ -222,7 +222,7 @@ public class HudsonTest {
     public void globalConfigAllowedWithConfigurePermission() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().toEveryone());
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
 
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         HtmlPage updated = j.submit(form);
@@ -236,7 +236,7 @@ public class HudsonTest {
         //GIVEN a user with CONFIGURE permission
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().toEveryone());
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
 
         //WHEN the user goes to /configure page
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
@@ -264,7 +264,7 @@ public class HudsonTest {
         // WHEN a user with CONFIGURE permission only try to save those changes
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.CONFIGURE, Jenkins.READ).everywhere().toEveryone());
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
         j.submit(form);
         // THEN the changes on fields forbidden to a CONFIGURE_JENKINS permission are not saved
         assertEquals("shouldn't be allowed to change the number of executors", currentNumberExecutors, j.getInstance().getNumExecutors());

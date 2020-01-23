@@ -95,7 +95,7 @@ public class CancelQuietDownCommandTest {
         //GIVEN a user with CONFIGURE_JENKINS permission
         //WHEN cancel quiet down is called
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.CONFIGURE)
+                .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
         //THEN cancel quietDown worked
         assertThat(result, succeededSilently());

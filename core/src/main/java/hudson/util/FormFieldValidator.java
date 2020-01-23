@@ -61,7 +61,7 @@ import static hudson.Util.fixEmpty;
  */
 @Deprecated
 public abstract class FormFieldValidator {
-    public static final Permission CHECK = Jenkins.CONFIGURE;
+    public static final Permission CHECK = Jenkins.MANAGE;
 
     protected final StaplerRequest request;
     protected final StaplerResponse response;
@@ -133,7 +133,7 @@ public abstract class FormFieldValidator {
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wide admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
-                if(!Jenkins.get().hasPermission(Jenkins.CONFIGURE))
+                if(!Jenkins.get().hasPermission(Jenkins.MANAGE))
                     throw e;
             }
 

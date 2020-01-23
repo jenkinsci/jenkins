@@ -204,7 +204,7 @@ public class LabelAtom extends Label implements Saveable {
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.get();
 
-        app.checkPermission(Jenkins.CONFIGURE);
+        app.checkPermission(Jenkins.MANAGE);
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
 
@@ -222,7 +222,7 @@ public class LabelAtom extends Label implements Saveable {
     @RequirePOST
     @Restricted(DoNotUse.class)
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.CONFIGURE);
+        Jenkins.get().checkPermission(Jenkins.MANAGE);
 
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page

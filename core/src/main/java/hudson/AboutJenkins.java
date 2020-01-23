@@ -44,7 +44,7 @@ public class AboutJenkins extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.CONFIGURE;
+        return Jenkins.MANAGE;
     }
 
 }

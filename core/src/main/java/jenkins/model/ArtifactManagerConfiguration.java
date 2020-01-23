@@ -68,6 +68,6 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration implements
 
     @Override
     public Permission getPermission() {
-        return Jenkins.CONFIGURE;
+        return Jenkins.MANAGE;
     }
 }
