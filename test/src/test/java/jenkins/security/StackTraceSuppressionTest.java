@@ -50,8 +50,8 @@ public class StackTraceSuppressionTest {
 
     @Before
     public void setup() {
-        Jenkins.SHOW_STACK_TRACE = false;
-        HttpResponses.SHOW_STACK_TRACE = false;
+        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "false");
+        System.setProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE", "false");
     }
 
     @Test
@@ -107,7 +107,7 @@ public class StackTraceSuppressionTest {
            This test is based upon Stapler throwing an exception for this broken request.
            If Stapler is improved to better handle this error, this test may erroneously fail. */
         JenkinsRule.WebClient wc = j.createWebClient();
-        HttpResponses.SHOW_STACK_TRACE = true;
+        System.setProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE", "true");
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
@@ -142,7 +142,7 @@ public class StackTraceSuppressionTest {
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
-        Jenkins.SHOW_STACK_TRACE = true;
+        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "true");
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
@@ -174,7 +174,7 @@ public class StackTraceSuppressionTest {
     public void exceptionEndpointShowsTrace() throws Exception {
         /* This test is based upon a testing endpoint that really shouldn't exist in production code.
            If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
-        Jenkins.SHOW_STACK_TRACE = true;
+        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "true");
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("exception");
