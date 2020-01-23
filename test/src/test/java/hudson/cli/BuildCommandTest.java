@@ -101,6 +101,7 @@ public class BuildCommandTest {
         started.block();
         assertTrue(p.getBuildByNumber(1).isBuilding());
         completed.signal();
+        j.waitUntilNoActivity();
     }
 
     /**
