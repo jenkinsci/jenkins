@@ -403,9 +403,9 @@ public class RSSTest {
 
     private void checkRssTimeNode(Node firstBuild, String nodeName) throws ParseException {
         String pubDate = getSingleNode(firstBuild, nodeName).getTextContent();
-        assertNotNull(pubDate);
+        assertThat(pubDate, not(emptyString()));
         DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-        Date date = formatter.parse("Sat, 24 Apr 2010 14:01:00 GMT");
+        Date date = formatter.parse(pubDate);
         assertNotNull(date);
     }
 
