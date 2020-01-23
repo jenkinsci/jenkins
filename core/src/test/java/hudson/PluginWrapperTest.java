@@ -9,10 +9,8 @@ import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import hudson.util.ProcessTree;
 import jenkins.model.Jenkins;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
