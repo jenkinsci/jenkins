@@ -32,7 +32,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 
 /**
@@ -56,14 +55,7 @@ public final class RSS {
      */
     public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
         req.setAttribute("adapter",adapter);
-        String fixedTitle = title;
-        String brokenFragment = "All all ";
-        if (title.startsWith(brokenFragment)) {
-            StringBuilder fixing = new StringBuilder("All ");
-            fixing.append(title.substring(brokenFragment.length()));
-            fixedTitle = fixing.toString();
-        }
-        req.setAttribute("title",fixedTitle);
+        req.setAttribute("title",title);
         req.setAttribute("url",url);
         req.setAttribute("entries",entries);
 
