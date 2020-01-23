@@ -105,7 +105,6 @@ public class CLI {
     }
 
     private enum Mode {HTTP, SSH, WEB_SOCKET}
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
     public static int _main(String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
         PrivateKeyProvider provider = new PrivateKeyProvider();
