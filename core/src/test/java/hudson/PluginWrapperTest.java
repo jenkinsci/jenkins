@@ -5,10 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import hudson.util.ProcessTree;
 import jenkins.model.Jenkins;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -23,11 +27,20 @@ import static org.mockito.Mockito.when;
 
 public class PluginWrapperTest {
 
+    private Locale loc;
+    
     @Before
     public void before() throws Exception {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
+        loc = Locale.getDefault();
+        Locale.setDefault(new Locale("en", "GB"));
     }
 
+    @After
+    public void after() {
+        Locale.setDefault(loc);
+    }
+    
     @Test
     public void dependencyTest() {
         String version = "plugin:0.0.2";
@@ -48,6 +61,7 @@ public class PluginWrapperTest {
 
     @Test
     public void jenkinsCoreTooOld() throws Exception {
+
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
         try {
             pw.resolvePluginDependencies();
@@ -55,6 +69,7 @@ public class PluginWrapperTest {
         } catch (IOException ex) {
             assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
         }
+        Locale.setDefault(loc);
     }
 
     @Test
