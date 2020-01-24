@@ -21,7 +21,7 @@ public class PackedMapTest {
 
     @Test
     public void basic() {
-        Map<String,String> o = new TreeMap<String, String>();
+        Map<String,String> o = new TreeMap<>();
         o.put("a","b");
         o.put("c","d");
 

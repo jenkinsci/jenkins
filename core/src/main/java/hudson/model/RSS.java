@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FeedAdapter;
+import hudson.util.RunList;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -77,12 +78,50 @@ public final class RSS {
         req.setAttribute("title",title);
         req.setAttribute("url",url);
         req.setAttribute("entries",entries);
-        req.setAttribute("rootURL", Jenkins.get().getRootUrl());
 
         String flavor = req.getParameter("flavor");
         if(flavor==null)    flavor="atom";
         flavor = flavor.replace('/', '_'); // Don't allow path to any jelly
 
+        if (flavor.equals("atom")) {
+            rsp.setContentType("application/atom+xml; charset=UTF-8");
+        } else {
+            rsp.setContentType("text/xml; charset=UTF-8");
+        }
+
         req.getView(Jenkins.get(),"/hudson/"+flavor+".jelly").forward(req,rsp);
+    }
+
+    /**
+     * Sends the RSS feed to the client using a default feed adapter.
+     *
+     * @param title
+     *      Title of the feed.
+     * @param url
+     *      URL of the model object that owns this feed. Relative to the context root.
+     * @param runList
+     *      Entries to be listed in the RSS feed.
+     * @since TODO
+     */
+    public static void rss(StaplerRequest req, StaplerResponse rsp, String title, String url, RunList runList) throws IOException, ServletException {
+        rss(req, rsp, title, url, runList, null);
+    }
+
+    /**
+     * Sends the RSS feed to the client using a specific feed adapter.
+     *
+     * @param title
+     *      Title of the feed.
+     * @param url
+     *      URL of the model object that owns this feed. Relative to the context root.
+     * @param runList
+     *      Entries to be listed in the RSS feed.
+     * @param feedAdapter
+     *      Controls how to render entries to RSS.
+     * @since TODO
+     */
+    public static void rss(StaplerRequest req, StaplerResponse rsp, String title, String url, RunList runList, FeedAdapter<Run> feedAdapter) throws IOException, ServletException {
+        final FeedAdapter<Run> feedAdapter_ = feedAdapter == null ? Run.FEED_ADAPTER : feedAdapter;
+        forwardToRss(title, url, runList, feedAdapter_, req, rsp);
     }
 }

@@ -30,11 +30,17 @@ THE SOFTWARE.
 
     Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
 
-      	<f:entry title="">
+      	<f:block>
           <div align="right">
             <f:repeatableDeleteButton />
           </div>
-        </f:entry>
+        </f:block>
+
+    Due to a bug in Stapler data binding the model elements are only set if they consist of one or more values.
+    If all values have been removed in the user interface (i.e. the associated form is empty), then the setter is not
+    invoked anymore. As a workaround, you need to override the corresponding configure method and clear the model
+    property manually before invoking the data binding. See warnings-ng-plugin PR#266.
+
     ]]>
 
     <st:attribute name="field">

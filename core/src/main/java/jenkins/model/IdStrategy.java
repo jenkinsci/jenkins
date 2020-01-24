@@ -35,6 +35,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.function.Function;
@@ -132,9 +133,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     @Override
     public abstract int compare(@Nonnull String id1, @Nonnull String id2);
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @SuppressWarnings("unchecked")
     public IdStrategyDescriptor getDescriptor() {
@@ -152,17 +150,11 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         return this == obj || (obj != null && getClass().equals(obj.getClass()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int hashCode() {
         return getClass().hashCode();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return getClass().getName();
@@ -197,7 +189,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive {@link IdStrategy}
      */
-    public static class CaseInsensitive extends IdStrategy {
+    public static class CaseInsensitive extends IdStrategy implements Serializable {
+
+        private static final long serialVersionUID = -7244768200684861085L;
 
         @DataBoundConstructor
         public CaseInsensitive() {}
@@ -208,18 +202,12 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return id.toLowerCase(Locale.ENGLISH);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             return id.toLowerCase(Locale.ENGLISH);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int compare(@Nonnull String id1, @Nonnull String id2) {
             return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
@@ -228,9 +216,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension @Symbol("caseInsensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
-            /**
-             * {@inheritDoc}
-             */
             @Nonnull
             @Override
             public String getDisplayName() {
@@ -242,7 +227,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * A case sensitive {@link IdStrategy}
      */
-    public static class CaseSensitive extends IdStrategy {
+    public static class CaseSensitive extends IdStrategy implements Serializable {
+
+        private static final long serialVersionUID = 8339425353883308324L;
 
         @DataBoundConstructor
         public CaseSensitive() {}
@@ -257,17 +244,11 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return encoded.toUpperCase().charAt(1);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean equals(@Nonnull String id1, @Nonnull String id2) {
             return StringUtils.equals(id1, id2);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int compare(@Nonnull String id1, @Nonnull String id2) {
             return id1.compareTo(id2);
@@ -276,9 +257,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension @Symbol("caseSensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitive_DisplayName();
@@ -295,22 +273,18 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
      */
-    public static class CaseSensitiveEmailAddress extends CaseSensitive {
+    public static class CaseSensitiveEmailAddress extends CaseSensitive implements Serializable {
+
+        private static final long serialVersionUID = -5713655323057260180L;
 
         @DataBoundConstructor
         public CaseSensitiveEmailAddress() {}
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean equals(@Nonnull String id1, @Nonnull String id2) {
             return StringUtils.equals(keyFor(id1), keyFor(id2));
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
@@ -319,9 +293,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return index == -1 ? id : id.substring(0, index) + (id.substring(index).toLowerCase(Locale.ENGLISH));
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int compare(@Nonnull String id1, @Nonnull String id2) {
             return keyFor(id1).compareTo(keyFor(id2));
@@ -330,9 +301,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitiveEmailAddress_DisplayName();

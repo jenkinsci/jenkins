@@ -131,13 +131,13 @@ public final class BuildReference<R> {
      * Default factory if none other are installed.
      * Its behavior can be controlled via the system property {@link DefaultHolderFactory#MODE_PROPERTY}:
      * <dl>
-     * <dt><code>soft</code> (default)
+     * <dt>{@code soft} (default)
      * <dd>Use {@link SoftReference}s. Builds will be kept around so long as memory pressure is not too high.
-     * <dt><code>weak</code>
+     * <dt>{@code weak}
      * <dd>Use {@link WeakReference}s. Builds will be kept only until the next full garbage collection cycle.
-     * <dt><code>strong</code>
+     * <dt>{@code strong}
      * <dd>Use strong references. Builds will still be loaded lazily, but once loaded, will not be released.
-     * <dt><code>none</code>
+     * <dt>{@code none}
      * <dd>Do not hold onto builds at all. Mainly offered as an option for the purpose of reproducing lazy-loading bugs.
      * </dl>
      */

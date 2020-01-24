@@ -179,7 +179,7 @@ public interface PermalinkProjectAction extends Action {
                 return !run.isBuilding() && run.getResult()!=Result.SUCCESS;
             }
         };
-        public static final Permalink LAST_COMPLETED_BUILD = new Permalink() {
+        public static final Permalink LAST_COMPLETED_BUILD = new PeepholePermalink() {
             public String getDisplayName() {
                 return Messages.Permalink_LastCompletedBuild();
             }
@@ -188,8 +188,9 @@ public interface PermalinkProjectAction extends Action {
                 return "lastCompletedBuild";
             }
 
-            public Run<?,?> resolve(Job<?,?> job) {
-                return job.getLastCompletedBuild();
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding();
             }
         };
 

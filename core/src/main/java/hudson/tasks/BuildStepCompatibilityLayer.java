@@ -65,7 +65,6 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     }
 
     /**
-     * {@inheritDoc}
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
     @Override
@@ -121,7 +120,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     @Deprecated
     public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {       
-        if (build instanceof AbstractBuild && Util.isOverridden(BuildStepCompatibilityLayer.class, this.getClass(),
+        if (build != null && Util.isOverridden(BuildStepCompatibilityLayer.class, this.getClass(),
                 "perform", AbstractBuild.class, Launcher.class, BuildListener.class)) {
             return perform((AbstractBuild<?, ?>) build, launcher, listener);
         }

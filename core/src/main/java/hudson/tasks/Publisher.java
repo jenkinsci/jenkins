@@ -23,10 +23,13 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionComponent;
+import hudson.Launcher;
 import hudson.model.Action;
+import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
@@ -36,7 +39,6 @@ import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 /**
@@ -127,8 +129,11 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      *
      * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class)
      */
+    @SuppressFBWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE", justification = "Since the publisher is not Serializable, " +
+            "no need for the Comparator")
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
             implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
+
         public DescriptorExtensionListImpl(Jenkins hudson) {
             super(hudson,Publisher.class);
         }

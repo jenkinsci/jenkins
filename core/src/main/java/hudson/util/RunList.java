@@ -97,9 +97,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
             public int compare(R o1, R o2) {
                 long lhs = o1.getTimeInMillis();
                 long rhs = o2.getTimeInMillis();
-                if (lhs > rhs) return -1;
-                if (lhs < rhs) return 1;
-                return 0;
+                return Long.compare(rhs, lhs);
             }
         });
     }

@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +24,32 @@
  */
 package hudson.tasks;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.logging.Logger;
+
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderDescriptor;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
+import jenkins.util.io.CompositeIOException;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -51,7 +61,29 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class LogRotator extends BuildDiscarder {
+    
+    /** @deprecated Replaced by more generic {@link CompositeIOException}. */
+    @Deprecated
+    public class CollatedLogRotatorException extends IOException {
+        private static final long serialVersionUID = 5944233808072651101L;
+        
+        public final Collection<Exception> collated;
+        
+        public CollatedLogRotatorException(String msg, Exception... collated) {
+            super(msg);
+            if (collated == null || collated.length == 0) {
+                this.collated = Collections.emptyList();
+            } else {
+                this.collated = Arrays.asList(collated);
+            }
+        }
 
+        public CollatedLogRotatorException(String msg, Collection<Exception> values) {
+            super(msg);
+            this.collated = (values != null) ? values : Collections.emptyList();
+        }
+    }
+    
     /**
      * If not -1, history is only kept up to this days.
      */
@@ -99,7 +131,7 @@ public class LogRotator extends BuildDiscarder {
     public LogRotator(int daysToKeep, int numToKeep) {
         this(daysToKeep, numToKeep, -1, -1);
     }
-    
+
     public LogRotator(int daysToKeep, int numToKeep, int artifactDaysToKeep, int artifactNumToKeep) {
         this.daysToKeep = daysToKeep;
         this.numToKeep = numToKeep;
@@ -107,9 +139,12 @@ public class LogRotator extends BuildDiscarder {
         this.artifactNumToKeep = artifactNumToKeep;
         
     }
-
+    
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
+        //Exceptions thrown by the deletion submethods are collated and reported
+        HashMultimap<Run<?,?>, IOException> exceptionMap = HashMultimap.create();
+        
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
         // always keep the last successful and the last stable builds
@@ -128,7 +163,8 @@ public class LogRotator extends BuildDiscarder {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
-                r.delete();
+                try { r.delete(); }
+                catch (IOException ex) { exceptionMap.put(r, ex); }
             }
         }
 
@@ -142,7 +178,8 @@ public class LogRotator extends BuildDiscarder {
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be removed", r);
-                    r.delete();
+                    try { r.delete(); }
+                    catch (IOException ex) { exceptionMap.put(r, ex); }
                 }
                 r = r.getNextBuild();
             }
@@ -155,7 +192,8 @@ public class LogRotator extends BuildDiscarder {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                r.deleteArtifacts();
+                try { r.deleteArtifacts(); }
+                catch (IOException ex) { exceptionMap.put(r, ex); }
             }
         }
 
@@ -169,10 +207,20 @@ public class LogRotator extends BuildDiscarder {
                 }
                 if (!shouldKeepRun(r, lsb, lstb)) {
                     LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                    r.deleteArtifacts();
+                    try { r.deleteArtifacts(); }
+                    catch (IOException ex) { exceptionMap.put(r, ex); }
                 }
                 r = r.getNextBuild();
             }
+        }
+        
+        if (!exceptionMap.isEmpty()) {
+            //Collate all encountered exceptions into a single exception and throw that
+            String msg = String.format(
+                    "Failed to rotate logs for [%s]",
+                    Joiner.on(", ").join(exceptionMap.keySet())
+            );
+            throw new CompositeIOException(msg, new ArrayList<>(exceptionMap.values()));
         }
     }
 

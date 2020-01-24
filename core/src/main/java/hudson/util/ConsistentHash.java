@@ -83,9 +83,7 @@ public class ConsistentHash<T> {
         }
 
         public int compareTo(Point that) {
-            if(this.hash<that.hash) return -1;
-            if(this.hash==that.hash) return 0;
-            return 1;
+            return Integer.compare(this.hash, that.hash);
         }
     }
 

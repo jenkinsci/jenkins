@@ -31,7 +31,6 @@ import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
@@ -93,6 +92,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -586,13 +586,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the {@link User} object by its <code>id</code>
+     * Gets the {@link User} object by its {@code id}
      *
      * @param id     the id of the user to retrieve and optionally create if it does not exist.
-     * @param create If <code>true</code>, this method will never return <code>null</code> for valid input (by creating a
-     *               new {@link User} object if none exists.) If <code>false</code>, this method will return
-     *               <code>null</code> if {@link User} object with the given id doesn't exist.
-     * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
+     * @param create If {@code true}, this method will never return {@code null} for valid input (by creating a
+     *               new {@link User} object if none exists.) If {@code false}, this method will return
+     *               {@code null} if {@link User} object with the given id doesn't exist.
+     * @return the a User whose id is {@code id}, or {@code null} if {@code create} is {@code false}
      * and the user does not exist.
      * @since 1.651.2 / 2.3
      */
@@ -816,7 +816,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts submission from the configuration page.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
@@ -871,11 +871,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds(), Run.FEED_ADAPTER);
+        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", getBuilds().regressionOnly(), Run.FEED_ADAPTER);
+        RSS.rss(req, rsp, getDisplayName() + " regression builds", getUrl(), getBuilds().regressionOnly());
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -891,12 +891,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // historically these have been reported sorted by project name, we switched to the lazy iteration
         // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
         lastBuilds.sort((o1, o2) -> Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent()));
-        rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
-    }
-
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
-            throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
+        RSS.rss(req, rsp, getDisplayName() + " latest build", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     @Override
@@ -1113,7 +1108,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         /**
          * extract user ID from idOrFullName with help from contextual infos.
-         * can return <code>null</code> if no user ID matched the input
+         * can return {@code null} if no user ID matched the input
          */
         public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
 

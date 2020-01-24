@@ -54,7 +54,7 @@ public class DeleteNodeCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
 
         final HashSet<String> hs = new HashSet<>(nodes);
 
@@ -74,7 +74,7 @@ public class DeleteNodeCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(node_s + ": " + e.getMessage());
+                final String errorMsg = node_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;

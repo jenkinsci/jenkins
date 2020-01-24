@@ -84,7 +84,6 @@ public class ViewOptionHandlerTest {
 
         PowerMockito.mockStatic(Jenkins.class);
         PowerMockito.when(Jenkins.get()).thenReturn(jenkins);
-        PowerMockito.when(Jenkins.getActiveInstance()).thenReturn(jenkins);
         when(jenkins.getView("outer")).thenReturn(outer);
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
         when(jenkins.getACL()).thenReturn(new ACL() {

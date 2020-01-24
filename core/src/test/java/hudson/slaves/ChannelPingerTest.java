@@ -1,6 +1,6 @@
 package hudson.slaves;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
@@ -27,7 +27,7 @@ public class ChannelPingerTest {
 
     @Mock private Channel mockChannel;
 
-    private Map<String, String> savedSystemProperties = new HashMap<String, String>();
+    private Map<String, String> savedSystemProperties = new HashMap<>();
 
     @Before
     public void setUp() throws Exception {

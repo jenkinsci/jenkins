@@ -90,6 +90,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
      * @deprecated as of 1.643
      *      Inject descriptor via {@link Inject}.
      */
+    @Deprecated
     @Restricted(NoExternalUse.class)
     public static Descriptor<AuthorizationStrategy> DESCRIPTOR;
 

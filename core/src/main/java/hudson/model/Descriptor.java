@@ -59,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -644,7 +645,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (isApplicable(actualType, json)) {
                 LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
                 try {
-                    final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
+                    final Descriptor descriptor = Jenkins.get().getDescriptor(actualType);
                     if (descriptor != null) {
                         return descriptor.newInstance(Stapler.getCurrentRequest(), json);
                     } else {
@@ -670,7 +671,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
-                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                        return Jenkins.get().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
                     } catch (Exception x) {
                         LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
                     }
@@ -690,7 +691,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private T verifyNewInstance(T t) {
         if (t!=null && t.getDescriptor()!=this) {
             // TODO: should this be a fatal error?
-            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably misplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
         }
         return t;
     }
@@ -943,7 +944,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
-                    String literal = IOUtils.toString(in,"UTF-8");
+                    String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
                 }
                 return;
@@ -1108,6 +1109,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Finds a descriptor from a collection by its class name or ID.
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
         T d = findByClassName(list, string);
         if (d != null) {
@@ -1119,6 +1121,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }

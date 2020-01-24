@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * Adapted from:
  * https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
  *
- * @since TODO
+ * @since 2.183
  */
 public class WindowsUtil {
     private static final Pattern NEEDS_QUOTING = Pattern.compile("[\\s\"]");
@@ -48,7 +48,7 @@ public class WindowsUtil {
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
      *
      * @param argument argument to be quoted or escaped for windows shells.
-     * @return properly quoted and escaped windows arguemnts.
+     * @return properly quoted and escaped windows arguments.
      */
     public static @Nonnull String quoteArgument(@Nonnull String argument) {
         if (!NEEDS_QUOTING.matcher(argument).find()) return argument;

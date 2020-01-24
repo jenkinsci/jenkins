@@ -1,6 +1,5 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
@@ -82,7 +81,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterProperties(@NonNull JnlpConnectionState event) {
+    public void afterProperties(@Nonnull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
@@ -114,7 +113,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                                     + "Set system property "
                                     + "jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true to allow"
                                     + "connections until the plugin has been fixed.",
-                            new Object[]{clientName, event.getSocket().getRemoteSocketAddress(), computer.getLauncher().getClass()});
+                            new Object[]{clientName, event.getRemoteEndpointDescription(), computer.getLauncher().getClass()});
                     event.reject(new ConnectionRefusalException(String.format("%s is not an inbound agent", clientName)));
                     return;
                 }
@@ -144,13 +143,13 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void beforeChannel(@NonNull JnlpConnectionState event) {
+    public void beforeChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
         PrintWriter logw = new PrintWriter(log, true);
-        logw.println("Inbound agent connected from " + event.getSocket().getInetAddress());
+        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
@@ -162,7 +161,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterChannel(@NonNull JnlpConnectionState event) {
+    public void afterChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         try {
@@ -179,7 +178,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void channelClosed(@NonNull JnlpConnectionState event) {
+    public void channelClosed(@Nonnull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
         if (cause instanceof ClosedChannelException) {
@@ -217,5 +216,5 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = JnlpSlaveAgentProtocol2.class.getName()+".cookie";
+    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }

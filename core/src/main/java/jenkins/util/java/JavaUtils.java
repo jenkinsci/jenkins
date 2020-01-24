@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class JavaUtils {
 
     private JavaUtils() {
-        // Cannnot construct
+        // Cannot construct
     }
 
     /**
@@ -68,7 +68,7 @@ public class JavaUtils {
      * Returns the JVM's current version as a {@link String}.
      * See https://openjdk.java.net/jeps/223 for the expected format.
      * <ul>
-     *     <li>Until Java 8 included, the expected format should be starting with <code>1.x</code></li>
+     *     <li>Until Java 8 included, the expected format should be starting with {@code 1.x}</li>
      *     <li>Starting with Java 9, cf. JEP-223 linked above, the version got simplified in 9.x, 10.x, etc.</li>
      * </ul>
      *

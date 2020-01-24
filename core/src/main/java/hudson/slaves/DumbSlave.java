@@ -45,7 +45,7 @@ import javax.annotation.Nonnull;
 public final class DumbSlave extends Slave {
     /**
      * @deprecated as of 1.286.
-     *      Use {@link #DumbSlave(String, String, String, String, Node.Mode, String, ComputerLauncher, RetentionStrategy, List)}
+     *      Use {@link #DumbSlave(String, String, String, String, Mode, String, ComputerLauncher, RetentionStrategy, List)}
      */
     @Deprecated
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {

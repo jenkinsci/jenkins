@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +12,6 @@ import org.jvnet.hudson.test.Issue;
 
 /**
  * @author kingfai
- *
  */
 @SuppressWarnings("unchecked")
 public class AbstractItemTest {
@@ -34,7 +30,7 @@ public class AbstractItemTest {
         }
         
         /**
-         * Override save so that nothig happens when setDisplayName() is called
+         * Override save so that nothing happens when setDisplayName() is called
          */
         @Override
         public void save() {

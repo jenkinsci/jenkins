@@ -29,8 +29,6 @@ import hudson.Util;
 import hudson.util.EditDistance;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,10 +66,6 @@ import org.kohsuke.stapler.export.Flavor;
  * @see SearchableModelObject
  */
 public class Search implements StaplerProxy {
-    @Restricted(NoExternalUse.class) // used from stapler views only
-    public static String encodeQuery(String query) throws UnsupportedEncodingException {
-        return URLEncoder.encode(query, "UTF-8");
-    }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
@@ -194,7 +188,7 @@ public class Search implements StaplerProxy {
     @ExportedBean
     public static class Result {
         @Exported
-        public List<Item> suggestions = new ArrayList<Item>();
+        public List<Item> suggestions = new ArrayList<>();
     }
 
     @ExportedBean(defaultVisibility=999)
@@ -310,7 +304,7 @@ public class Search implements StaplerProxy {
             }
         }
 
-        List<Tag> buf = new ArrayList<Tag>();
+        List<Tag> buf = new ArrayList<>();
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
@@ -372,9 +366,9 @@ public class Search implements StaplerProxy {
 
         List<SuggestedItem>[] paths = new List[tokens.length()+1]; // we won't use [0].
         for(int i=1;i<=tokens.length();i++)
-            paths[i] = new ArrayList<SuggestedItem>();
+            paths[i] = new ArrayList<>();
 
-        List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
+        List<SearchItem> items = new ArrayList<>(); // items found in 1 step
 
         LOGGER.log(Level.FINE, "tokens={0}", tokens);
         

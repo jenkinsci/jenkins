@@ -1,6 +1,7 @@
 package hudson.scm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import hudson.Extension;
 import hudson.MarkupText;
@@ -23,14 +24,12 @@ public class ChangeLogSetTest {
     public void catchingExceptionDuringAnnotation() {
         EntryImpl change = new EntryImpl();
         change.setParent(ChangeLogSet.createEmpty(null)); // otherwise test would actually test only NPE thrown when accessing parent.build
-        boolean notCaught = false;
         try {
             change.getMsgAnnotated();
         } catch (Throwable t) {
-            notCaught = true;
+            fail(t.getMessage());
         }
         assertEquals((new EntryImpl()).getMsg(), change.getMsg());
-        assertEquals(false, notCaught);
     }
 
     @Extension

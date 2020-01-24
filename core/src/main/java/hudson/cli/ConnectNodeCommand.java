@@ -26,9 +26,6 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
-import hudson.model.ComputerSet;
-import hudson.util.EditDistance;
-import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -61,35 +58,18 @@ public class ConnectNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
-
         final HashSet<String> hs = new HashSet<>(nodes);
 
-        List<String> names = null;
-
         for (String node_s : hs) {
-            Computer computer;
-
             try {
-                computer = jenkins.getComputer(node_s);
-
-                if(computer == null) {
-                    if(names == null) {
-                        names = ComputerSet.getComputerNames();
-                    }
-                    String adv = EditDistance.findNearest(node_s, names);
-                    throw new IllegalArgumentException(adv == null ?
-                            hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(node_s) :
-                            hudson.model.Messages.Computer_NoSuchSlaveExists(node_s, adv));
-                }
-
+                Computer computer = Computer.resolveForCLI(node_s);
                 computer.cliConnect(force);
             } catch (Exception e) {
                 if (hs.size() == 1) {
                     throw e;
                 }
 
-                final String errorMsg = String.format(node_s + ": " + e.getMessage());
+                final String errorMsg = node_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;

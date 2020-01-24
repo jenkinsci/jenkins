@@ -43,7 +43,7 @@ public class UrlHelper {
      * Lenient version of: <ol>
      * <li> <a href="https://tools.ietf.org/html/rfc952">RFC-952</a> GRAMMATICAL HOST TABLE SPECIFICATION</li>
      * <li> <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> 3.5</li>
-     * <li> <a href="https://www.ietf.org/rfc/rfc1738.txt ">RFC-1738</a>3.1, host</li>
+     * <li> <a href="https://www.ietf.org/rfc/rfc1738.txt">RFC-1738</a>3.1, host</li>
      * <li> <a href="https://tools.ietf.org/html/rfc1123">RFC-1123</a> 2.1</li>
      * </ol>
      * <p>

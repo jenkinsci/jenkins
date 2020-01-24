@@ -33,7 +33,7 @@ import hudson.model.Descriptor;
  * Put {@link Extension} on your descriptor implementation to have it auto-registered.
  * 
  * <p>
- * When extending this class, override <code>Descriptor.getDisplayName()</code>. In the
+ * When extending this class, override {@link Descriptor#getDisplayName()}. In the
  * context of LabelAtomPropertyDescriptor, this function is used to determine the label of
  * the checkbox shown in the label's configuration page to activate the extension.
  *

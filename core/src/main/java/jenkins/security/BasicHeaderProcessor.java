@@ -1,11 +1,11 @@
 package jenkins.security;
 
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
@@ -119,7 +119,7 @@ public class BasicHeaderProcessor implements Filter {
         }
 
         // Handle unusual condition where an AnonymousAuthenticationToken is already present
-        // This shouldn't happen very often, as BasicProcessingFitler is meant to be earlier in the filter
+        // This shouldn't happen very often, as BasicProcessingFilter is meant to be earlier in the filter
         // chain than AnonymousProcessingFilter. Nevertheless, presence of both an AnonymousAuthenticationToken
         // together with a BASIC authentication request header should indicate reauthentication using the
         // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
@@ -135,11 +135,8 @@ public class BasicHeaderProcessor implements Filter {
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {
         rememberMeServices.loginSuccess(req, rsp, auth);
 
-        SecurityContext old = ACL.impersonate(auth);
-        try {
+        try (ACLContext ctx = ACL.as(auth)){
             chain.doFilter(req,rsp);
-        } finally {
-            SecurityContextHolder.setContext(old);
         }
     }
 

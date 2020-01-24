@@ -162,9 +162,6 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
         return ExtensionList.lookup(Queue.QueueDecisionHandler.class).get(ItemDeletion.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
         Item item = Tasks.getItemOf(p);

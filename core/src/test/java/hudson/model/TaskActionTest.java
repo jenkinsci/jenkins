@@ -1,6 +1,5 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -8,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
-import org.acegisecurity.Authentication;
 import org.junit.Test;
 
 /**
