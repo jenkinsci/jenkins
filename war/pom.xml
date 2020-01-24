@@ -99,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.8-rc518.e237e80782ab</version> <!-- TODO https://github.com/jenkinsci/winstone/pull/91 -->
+      <version>5.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
