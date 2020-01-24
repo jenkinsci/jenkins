@@ -101,7 +101,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.3</version>
+      <version>5.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
