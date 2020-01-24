@@ -1,14 +1,86 @@
-var jsTest = require("jenkins-js-test");
+import fs from 'fs';
+import path from 'path';
+import jsTest from '@jenkins-cd/js-test';
+import { mockBehaviorShim } from './mocks';
 
-require('./mocks');
+const debug = false;
+
+const htmlContent = fs.readFileSync(
+    path.resolve(__dirname, './freestyle-config-scrollspy.html'),
+    'utf8'
+);
 
 describe("scrollspy-spec tests", function () {
+    // Need to mock the utils/page module because we will hijack the scroll events
+    const mockPageUtils = jest.requireActual('../../../../main/js/util/page');
+    const mockWinScrollTop = jest.fn();
+    const mockOnWinScroll = jest.fn();
+
+    // Need to mock the .isVisible() function of the ConfigSection model because
+    // it needs to return true for these tests and its current implementation
+    // would return false
+    const mockConfigSection = jest.requireActual(
+        '../../../../main/js/widgets/config/model/ConfigSection'
+    );
+
+    beforeEach(() => {
+        mockBehaviorShim();
+
+        jest.mock('../../../../main/js/util/page', () => ({
+            __esModule: true,
+            ...mockPageUtils,
+            default: {
+                ...mockPageUtils.default,
+                fireBottomStickerAdjustEvent: jest.fn(),
+                winScrollTop: mockWinScrollTop,
+                onWinScroll: mockOnWinScroll,
+            }
+        }));
+
+        mockConfigSection.default.prototype.isVisible = jest.fn();
+        jest.mock(
+            '../../../../main/js/widgets/config/model/ConfigSection',
+            () => mockConfigSection
+        );
+    });
+
+    afterEach(() => {
+        // Mock cleanup so that it will not affect other tests
+        jest.resetAllMocks();
+        jest.resetModules();
+    });
+
+    // Declared here to take advantage of the mockPageUtils in the closure scope
+    function newManualScroller() {
+        var scrollListeners = [];
+        var curScrollToTop = 0;
+
+        mockWinScrollTop.mockImplementation(() => curScrollToTop);
+        mockOnWinScroll.mockImplementation((listener) => {
+            scrollListeners.push(listener);
+        })
+
+        return {
+            scrollTo: function(position) {
+                curScrollToTop = position;
+                for (var i = 0; i < scrollListeners.length; i++) {
+                    scrollListeners[i]();
+                }
+            }
+        };
+    }
 
     it("- test scrolling", function (done) {
+        // Needs to return true for the tests
+        mockConfigSection.default.prototype.isVisible.mockReturnValue(true);
+
         jsTest.onPage(function () {
+            document.documentElement.innerHTML = htmlContent;
+
             var manualScroller = newManualScroller();
-            var tabbars = jsTest.requireSrcModule('config-scrollspy.js');
-            tabbars.scrollspeed = 1; // speed up the scroll speed for testing
+            // eslint-disable-next-line no-undef
+            var tabbars = require('../../../../main/js/config-scrollspy');
+            tabbars.setScrollspeed(1); // speed up the scroll speed for testing
 
             var tabbar = tabbars.tabbars[0];
 
@@ -44,7 +116,7 @@ describe("scrollspy-spec tests", function () {
             // Lets mimic scrolling. This should trigger the
             // scrollspy into activating different sections
             // as the user scrolls down the page.
-            // See the test console output (gulp test) for a printout
+            // See the test console output (yarn test) for a printout
             // of the positions/offsets of each section.
             // i.e. ...
             //	    config_general: 100
@@ -73,7 +145,10 @@ describe("scrollspy-spec tests", function () {
             // which is not what happens if you try scrolling to this last section
             // (see above).
             tabbar.getSection('config__build').activate();
-        }, 'widgets/config/freestyle-config-scrollspy.html');
+
+        // Need to pass the HTML string because jsTest will not load the content
+        // if it only receives a filename
+        }, htmlContent);
     });
 });
 
@@ -86,32 +161,15 @@ function doSectionFunctionMocking(tabbar) {
 
     var mainOffset = 100;
     var height = 40;
-    console.log('*** Mocking the position/offset of the form sections:');
+    if (debug) {
+        console.log('*** Mocking the position/offset of the form sections:');
+    }
     for (var i = 0; i < tabbar.sections.length; i++) {
         var section = tabbar.sections[i];
         var offset = (mainOffset + (height * i));
-        console.log('\t' + section.id + ': ' + offset);
+        if (debug) {
+            console.log('\t' + section.id + ': ' + offset);
+        }
         doMocks(section, offset);
     }
-}
-
-function newManualScroller() {
-    var page = jsTest.requireSrcModule('util/page.js');
-    var scrollListeners = [];
-    var curScrollToTop = 0;
-
-    page.winScrollTop = function() {
-        return curScrollToTop;
-    };
-    page.onWinScroll = function(listener) {
-        scrollListeners.push(listener);
-    };
-    return {
-        scrollTo: function(position) {
-            curScrollToTop = position;
-            for (var i = 0; i < scrollListeners.length; i++) {
-                scrollListeners[i]();
-            }
-        }
-    };
 }

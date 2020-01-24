@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.216</revision>
+    <revision>2.218</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -111,8 +111,8 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.14</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.14</access-modifier-checker.version>
+    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.16</access-modifier-checker.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
