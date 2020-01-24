@@ -88,7 +88,7 @@ public enum InitMilestone implements Milestone {
     EXTENSIONS_AUGMENTED("Augmented all extensions"),
 
     /**
-     * By this milestone, all the configurations are loaded from file system
+     * By this milestone, all the system configurations are loaded from file system
      */
     SYSTEM_CONFIG_LOADED("System config loaded"),
 
