@@ -3306,7 +3306,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 for (Action a : getExtensionList(RootAction.class))
                     if (!actions.contains(a)) actions.add(a);
 
-                setupWizard = new SetupWizard();
+                setupWizard = ExtensionList.lookupSingleton(SetupWizard.class);
                 getInstallState().initializeState();
             }
         });
