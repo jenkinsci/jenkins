@@ -522,6 +522,10 @@ table.bigtable.pane > tbody > tr > td:last-child {
   white-space: nowrap;
 }
 
+.bigtable th.minimum-width {
+  width: 1px;
+}
+
 .bigtable td {
   vertical-align: middle;
   padding: 3px 4px 3px 4px;
