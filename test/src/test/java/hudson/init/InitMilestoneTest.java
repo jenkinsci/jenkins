@@ -1,75 +1,68 @@
 package hudson.init;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class InitMilestoneTest {
-
-    private static int order = 0;
-    private static InitMilestone[] attained = new InitMilestone[InitMilestone.values().length];
 
     @Rule
     public JenkinsRule r  = new JenkinsRule();
 
     @Test
     public void testInitMilestones() {
-        assertEquals(attained[0], InitMilestone.STARTED);
-        assertEquals(attained[1], InitMilestone.PLUGINS_LISTED);
-        assertEquals(attained[2], InitMilestone.PLUGINS_PREPARED);
-        assertEquals(attained[3], InitMilestone.PLUGINS_STARTED);
-        assertEquals(attained[4], InitMilestone.EXTENSIONS_AUGMENTED);
-        assertEquals(attained[5], InitMilestone.SYSTEM_CONFIG_LOADED);
-        assertEquals(attained[6], InitMilestone.SYSTEM_CONFIG_ADAPTED);
-        assertEquals(attained[7], InitMilestone.JOB_LOADED);
-        assertEquals(attained[8], InitMilestone.JOB_CONFIG_ADAPTED);
+
+        List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
+
+        assertEquals(attained.get(0), InitMilestone.EXTENSIONS_AUGMENTED);
+        assertEquals(attained.get(1), InitMilestone.SYSTEM_CONFIG_LOADED);
+        assertEquals(attained.get(2), InitMilestone.SYSTEM_CONFIG_ADAPTED);
+        assertEquals(attained.get(3), InitMilestone.JOB_LOADED);
+        assertEquals(attained.get(4), InitMilestone.JOB_CONFIG_ADAPTED);
     }
 
-    @Initializer(after = InitMilestone.STARTED)
-    public static void started() {
-        attained[order++] = InitMilestone.STARTED;
-    }
+    // Using @Initializer in static methods to check all the InitMilestones are loaded in all tests instances and make them fail,
+    // so using a TestExtension and checking only the InitMilestone after EXTENSION_AUGMENTED 
+    @TestExtension("testInitMilestones")
+    public static class Initializers {
+        private int order = 0;
+        private List<InitMilestone> attained = new ArrayList<>();
 
-    @Initializer(after = InitMilestone.PLUGINS_LISTED)
-    public static void pluginsListed() {
-        attained[order++] = InitMilestone.PLUGINS_LISTED;
-    }
+        @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
+        public void extensionsAugmented() {
+            attained.add(order++,InitMilestone.EXTENSIONS_AUGMENTED);
+        }
 
-    @Initializer(after = InitMilestone.PLUGINS_PREPARED)
-    public static void pluginsPrepared() {
-        attained[order++] = InitMilestone.PLUGINS_PREPARED;
-    }
+        @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED)
+        public void pluginsSystemConfigLoaded() {
+            attained.add(order++,InitMilestone.SYSTEM_CONFIG_LOADED);
+        }
 
-    @Initializer(after = InitMilestone.PLUGINS_STARTED)
-    public static void pluginsStarted() {
-        attained[order++] = InitMilestone.PLUGINS_STARTED;;
-    }
+        @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED)
+        public void pluginsSystemConfigAdapted() {
+            attained.add(order++,InitMilestone.SYSTEM_CONFIG_ADAPTED);
+        }
 
-    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
-    public static void extensionsAugmented() {
-        attained[order++] = InitMilestone.EXTENSIONS_AUGMENTED;;
-    }
+        @Initializer(after = InitMilestone.JOB_LOADED)
+        public void jobLoaded() {
+            attained.add(order++,InitMilestone.JOB_LOADED);
+        }
 
-    @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED)
-    public static void pluginsSystemConfigLoaded() {
-        attained[order++] = InitMilestone.SYSTEM_CONFIG_LOADED;;
-    }
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
+        public void jobConfigAdapted() {
+            attained.add(order++,InitMilestone.JOB_CONFIG_ADAPTED);
+        }
 
-    @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED)
-    public static void pluginsSystemConfigAdapted() {
-        attained[order++] = InitMilestone.SYSTEM_CONFIG_ADAPTED;;
-    }
-
-    @Initializer(after = InitMilestone.JOB_LOADED)
-    public static void jobLoaded() {
-        attained[order++] = InitMilestone.JOB_LOADED;;
-    }
-
-    @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
-    public static void jobConfigAdapted() {
-        attained[order++] = InitMilestone.JOB_CONFIG_ADAPTED;;
+        public List<InitMilestone> getAttained() {
+            return attained;
+        }
     }
 
 }
