@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.216</revision>
+    <revision>2.219</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.40</remoting.version>
+    <remoting.version>4.0</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -111,8 +111,8 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.14</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.14</access-modifier-checker.version>
+    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.16</access-modifier-checker.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted

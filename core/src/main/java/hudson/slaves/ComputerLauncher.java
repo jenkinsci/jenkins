@@ -180,7 +180,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                                     final BufferedReader r)
             throws IOException {
         String line;
-        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\"");
+        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\".*");
         while (null != (line = r.readLine())) {
             Matcher m = p.matcher(line);
             if (m.matches()) {

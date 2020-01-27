@@ -31,7 +31,6 @@ import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;

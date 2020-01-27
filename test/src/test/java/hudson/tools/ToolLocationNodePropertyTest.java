@@ -42,8 +42,6 @@ import java.io.IOException;
 
 import jenkins.model.Jenkins;
 
-import jenkins.mvn.GlobalSettingsProvider;
-import jenkins.mvn.SettingsProvider;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
