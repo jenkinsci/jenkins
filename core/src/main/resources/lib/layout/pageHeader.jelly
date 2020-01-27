@@ -42,8 +42,6 @@ THE SOFTWARE.
             </a>
         </div>
 
-        <div id="visible-am-insertion" class="main-header__am-wrapper" />
-
         <div class="searchbox hidden-xs">
             <!-- search box -->
             <j:set var="searchURL" value="${h.searchURL}"/>
@@ -73,6 +71,8 @@ THE SOFTWARE.
         </div>
 
         <div class="login main-header__hyperlinks">
+            <div id="visible-am-insertion" class="main-header__am-wrapper" />
+
             <!-- login field -->
             <j:if test="${app.useSecurity}">
                 <j:choose>

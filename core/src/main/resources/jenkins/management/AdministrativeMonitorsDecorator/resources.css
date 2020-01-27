@@ -1,24 +1,9 @@
 #visible-am-container {
     height: 100%;
 }
+
 #visible-am-button {
     position: relative;
-    transition: all .1s;
-
-    display: inline-block;
-    display: inline-flex;
-    align-items: center;
-    height: 100%;
-
-    padding: 8px;
-    border-radius: 6px;
-    background-color: #fff;
-    color: #0587D4;
-
-    text-decoration: none;
-}
-#visible-am-button:hover, #visible-am-button:focus, #visible-am-button:active {
-    /* background: #e23635; */
 }
 
 #visible-am-button .am-monitor__count {
@@ -26,33 +11,18 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    height: 24px;
-    width: 24px;
+    height: 20px;
+    min-width: 20px;
 
-    background-color:#F94B4E;
-    color: #fff;
+    color:#F94B4E;
+    background-color: #fff;
     font-weight: bold;
 
     border-radius: 4px;
 }
-
-#visible-am-button:hover .am-monitor__count,
-#visible-am-button:focus .am-monitor__count,
-#visible-am-button:active .am-monitor__count {
-
-}
-
-#visible-am-button .am-monitor__icon {
-    margin-right: 8px;
-}
-
-
-#visible-am-container.visible #visible-am-button {
-    box-shadow: inset 0px 1px 14px rgba(0,0,0,.5);
-}
 #visible-am-container div#visible-am-list {
     position: absolute;
-    top: 44px;
+    top: 48px;
     right: 2%;
     height: auto;
     z-index: 0;
@@ -61,7 +31,11 @@
     display: block;
     background-color: #fff;
     border-radius: 5px;
-    box-shadow: 0 7px 20px rgba(0,0,0,.1);
+
+    /* Darken the box shadow to make the popup visible over the search box  */
+    -webkit-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
+
     transition: all .15s cubic-bezier(.84,.03,.21,.96);
     opacity: 0;
     transform: scale(0);
@@ -75,7 +49,7 @@
     content: '';
     display: inline-block;
     position: absolute;
-    bottom: -5px;
+    bottom: 0;
     left: 32%;
     width: 0;
     height: 0;
@@ -84,10 +58,10 @@
     border-bottom: 7px solid #fff;
     opacity: 0;
     transition: all .05s;
+    z-index: 1001;
 }
 #visible-am-container.visible #visible-am-button:after {
     opacity: 1;
-    bottom: 4px;
     transition: all .25s;
 }
 #visible-am-container .am-message {
@@ -113,4 +87,24 @@
 
 #visible-am-container .am-message dl dt::after {
     content: ": ";
+}
+
+/* Restore hyperlink style overriden by the page header */
+#visible-am-container #visible-am-list a:link {
+    display: inline-block;
+    color: #204A87;
+    text-decoration: underline;
+    padding: 0;
+    font-weight: normal;
+}
+#visible-am-container #visible-am-list a:visited {
+    color: #5c3566;
+}
+#visible-am-container #visible-am-list a:hover,
+#visible-am-container #visible-am-list a:focus,
+#visible-am-container #visible-am-list a:active {
+    color: #5c3566;
+    text-decoration-color: #5c3566;
+    background-color: transparent;
+    text-decoration: underline;
 }
