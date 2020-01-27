@@ -126,9 +126,8 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
 		} catch (ServletException ex) {
-			AcegiSecurityException securityException = containsAccessException(ex);
-			if (securityException != null) {
-				handleException(request, response, chain, (AcegiSecurityException) securityException);
+			if (ex.getRootCause() instanceof AuthenticationException || ex.getRootCause() instanceof AccessDeniedException) {
+				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());
 			}
 			else {
 				throw ex;
