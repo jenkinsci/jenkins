@@ -30,6 +30,7 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import jenkins.model.Jenkins;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,8 +51,17 @@ public class StackTraceSuppressionTest {
 
     @Before
     public void setup() {
-        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "false");
-        System.setProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE", "false");
+        clearProperties();
+    }
+
+    @After
+    public void teardown() {
+        clearProperties();
+    }
+
+    private void clearProperties() {
+        System.clearProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE");
+        System.clearProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE");
     }
 
     @Test
