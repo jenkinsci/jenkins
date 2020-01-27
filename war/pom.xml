@@ -41,8 +41,8 @@ THE SOFTWARE.
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>6.10.2</node.version>
-    <yarn.version>0.24.5</yarn.version>
+    <node.version>12.14.1</node.version>
+    <yarn.version>1.21.1</yarn.version>
   </properties>
 
   <dependencyManagement>
@@ -91,9 +91,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
-      <classifier>jar-with-dependencies</classifier>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <!--
@@ -101,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.4</version>
+      <version>5.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -262,13 +260,6 @@ THE SOFTWARE.
             <configuration>
               <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>cli</artifactId>
-                  <classifier>jar-with-dependencies</classifier>
-                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
-                  <destFileName>jenkins-cli.jar</destFileName>
-                </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>
@@ -575,16 +566,14 @@ THE SOFTWARE.
 
 
     <!--
-        The following profiles are required to integration the node/gulp build into this maven build.
+        The following profiles are required to integration the node/yarn build into this maven build.
         Hopefully we can push these profiles down into a parent pom.
-        See https://github.com/tfennelly/jenkins-js-builder#maven-integration
     -->
-
     <profile>
-      <id>gulp-execution</id>
+      <id>yarn-execution</id>
       <activation>
         <file>
-          <exists>gulpfile.js</exists>
+          <exists>package.json</exists>
         </file>
       </activation>
       <build>
@@ -647,27 +636,38 @@ THE SOFTWARE.
 
               <execution>
                 <phase>generate-sources</phase>
-                <id>gulp bundle</id>
+                <id>yarn build</id>
                 <goals>
-                  <goal>gulp</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>jshint bundle</arguments>
+                  <arguments>build</arguments>
                 </configuration>
               </execution>
 
               <execution>
                 <phase>test</phase>
-                <id>gulp test</id>
+                <id>yarn test</id>
                 <goals>
-                  <goal>gulp</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>bundle test</arguments>
+                  <arguments>test</arguments>
                   <skip>${skipTests}</skip>
                 </configuration>
               </execution>
 
+              <execution>
+                <phase>test</phase>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <configuration>
+                  <arguments>lint</arguments>
+                  <skip>${skipTests}</skip>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>

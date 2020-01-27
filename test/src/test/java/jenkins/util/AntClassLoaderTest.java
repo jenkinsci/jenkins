@@ -23,14 +23,13 @@
  */
 package jenkins.util;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Rule;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
+
+import static org.junit.Assert.assertNotNull;
 
 public class AntClassLoaderTest {
 

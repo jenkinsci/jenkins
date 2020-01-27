@@ -16,6 +16,8 @@ This page provides information about contributing code to the Jenkins core codeb
       If you hit a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
   * Maven 3.5.4 or above. You can [download maven].
   * Any IDE which supports importing Maven projects.
+  * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found on the `war` module.
+    * Frontend tasks are ran using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
 4. Setup your development environment as described in [Preparing for Plugin Development]
 
 If you want to contribute to Jenkins or just learn about the project,
@@ -49,6 +51,20 @@ mvn -pl war jetty:run
 
 (Beware that `maven-plugin` builds will not work in this mode due to class loading conflicts.)
 
+### Building frontend assets
+
+To work on the `war` module frontend assets two processes are needed at the same time:
+
+On one terminal, start a development server that will not process frontend assets:
+```sh
+mvn -pl war jetty:run -Dskip.yarn
+```
+
+On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:
+```sh
+cd war; yarn start
+```
+
 ## Testing changes
 
 Jenkins core includes unit and functional tests as a part of the repository.
@@ -66,6 +82,13 @@ There are 3 profiles for tests:
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)] repository.
 If you propose complex UI changes, you should create new ATH tests for them.
+
+### JavaScript unit tests
+
+In case there's only need to run the JS tests:
+```sh
+cd war; yarn test
+```
 
 ## Proposing Changes
 
