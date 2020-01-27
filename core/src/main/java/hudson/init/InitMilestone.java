@@ -104,7 +104,7 @@ public enum InitMilestone implements Milestone {
     JOB_LOADED("Loaded all jobs"),
 
     /**
-     * By this milestone, any job configuration is adapted or updated just in case any plugin is updated
+     * By this milestone, any job configuration is adapted or updated just in case any plugin needs to update former/old configurations or init scripts
      */
     JOB_CONFIG_ADAPTED("Configuration for all jobs updated"),
 
