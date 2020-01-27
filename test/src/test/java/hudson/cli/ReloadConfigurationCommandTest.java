@@ -75,7 +75,7 @@ public class ReloadConfigurationCommandTest {
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Overall/Configure permission"));
+        assertThat(result.stderr(), containsString("user is missing the Overall/Manage permission"));
     }
 
     @Issue("JENKINS-60266")
