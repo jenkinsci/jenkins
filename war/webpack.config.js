@@ -29,7 +29,9 @@ module.exports = {
     ],
 
     // New UI CSS files
+    "new-base-styles": [path.join(__dirname, "src/main/less/new-base-styles.less")],
     "main-header": [path.join(__dirname, "src/main/less/main-header.less")],
+    "new-ui-overrides": [path.join(__dirname, "src/main/less/new-ui-overrides.less")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
@@ -56,7 +58,24 @@ module.exports = {
     rules: [
       {
         test: /\.(css|less)$/,
-        loader: [MiniCSSExtractPlugin.loader, "css-loader", "less-loader"]
+        loader: [
+          MiniCSSExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              url: (url, resourcePath) => {
+                // ignore the URLS on the base styles as they are picked
+                // from the src/main/webapp/images dir
+                if (resourcePath.includes('new-base-styles.less')) {
+                  return false;
+                }
+
+                return true;
+              }
+            }
+          },
+          'less-loader'
+        ]
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,

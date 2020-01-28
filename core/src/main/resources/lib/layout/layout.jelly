@@ -102,8 +102,9 @@ THE SOFTWARE.
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
 
-    <link rel="stylesheet" href="${resURL}/css/layout-common.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/new-base-styles.css" type="text/css" />
+<!--    <link rel="stylesheet" href="${resURL}/css/layout-common.css" type="text/css" />-->
+<!--    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />-->
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
