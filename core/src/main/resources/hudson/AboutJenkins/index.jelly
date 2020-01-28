@@ -52,12 +52,11 @@ THE SOFTWARE.
             <li><a href="http://fontawesome.io">Font Awesome</a>, created by <a href="https://twitter.com/davegandy">Dave Gandy</a>. <a href="http://scripts.sil.org/OFL">SIL OFL 1.1 License</a> and <a href="http://opensource.org/licenses/mit-license.html">MIT License</a></li>
             <li><a href="https://www.google.com/fonts/specimen/Roboto">Google Fonts: Roboto</a>, created by <a href="https://plus.google.com/110879635926653430880/about">Christian Robertson</a>. <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License, version 2.0</a></li>
           </ul>
-          <j:if test="${h.hasPermission(app.ADMINISTER)}">
             <h2>${%plugin.dependencies}</h2>
             <ul>
               <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
               <li>
-                <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
+                <a href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                   <j:choose>
                     <j:when test="${p.active}">
                       ${p.displayName}
@@ -70,7 +69,6 @@ THE SOFTWARE.
               </li>
               </j:forEach>
             </ul>
-          </j:if>
         </div>
       </div>
     </div>
