@@ -23,7 +23,6 @@
  */
 package jenkins.security;
 
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -36,7 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.HttpResponses;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 
@@ -61,7 +60,6 @@ public class StackTraceSuppressionTest {
 
     private void clearProperties() {
         System.clearProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE");
-        System.clearProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE");
     }
 
     @Test
@@ -85,14 +83,10 @@ public class StackTraceSuppressionTest {
         /* This test belongs in Stapler but it's easy to put it together here.
            This test is based upon Stapler throwing an exception for this broken request.
            If Stapler is improved to better handle this error, this test may erroneously fail. */
-        JenkinsRule.WebClient wc = j.createWebClient();
 
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("No such adjunct found"));
-        assertThat(content, not(containsString("AdjunctManager.doDynamic")));
+        String relativePath = "adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js";
+        String detailString = "AdjunctManager.doDynamic";
+        checkSuppressedStack(relativePath, detailString);
     }
 
     @Test
@@ -100,15 +94,9 @@ public class StackTraceSuppressionTest {
         /* This test belongs in Stapler but it's easy to put it together here.
            This test is based upon Stapler throwing an exception for this broken request.
            If Stapler is improved to better handle this error, this test may erroneously fail. */
-        JenkinsRule.WebClient wc = j.createWebClient();
-        System.setProperty("org.kohsuke.stapler.HttpResponses.SHOW_STACK_TRACE", "true");
-
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js", "text/plain");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("No such adjunct found"));
-        assertThat(content, containsString("AdjunctManager.doDynamic"));
+        String relativePath = "adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js";
+        String detailString = "AdjunctManager.doDynamic";
+        checkDisplayedStackTrace(relativePath, detailString);
     }
 
     @Test
@@ -118,15 +106,9 @@ public class StackTraceSuppressionTest {
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("A problem occurred while processing the request."));
-        assertThat(content, containsString("Logging ID="));
-        assertThat(content, containsString("Oops!"));
-        assertThat(content, not(containsString("JellyTagException")));
+        String relativePath = "job/" + projectError.getName() + "/configure";
+        String detailString = "JellyTagException";
+        checkSuppressedStack(relativePath, detailString);
     }
 
     @Test
@@ -136,49 +118,27 @@ public class StackTraceSuppressionTest {
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
         FreeStyleProject projectError = createBrokenProject();
 
-        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "true");
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("job/" + projectError.getName() + "/configure");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("A problem occurred while processing the request."));
-        assertThat(content, containsString("Logging ID="));
-        assertThat(content, containsString("Oops!"));
-        assertThat(content, containsString("Stack trace"));
-        assertThat(content, containsString("JellyTagException"));
+        String relativePath = "job/" + projectError.getName() + "/configure";
+        String detailString = "JellyTagException";
+        checkDisplayedStackTrace(relativePath, detailString);
     }
 
     @Test
     public void exceptionEndpoint() throws Exception {
         /* This test is based upon a testing endpoint that really shouldn't exist in production code.
            If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("exception");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("A problem occurred while processing the request."));
-        assertThat(content, containsString("Logging ID="));
-        assertThat(content, containsString("Oops!"));
-        assertThat(content, not(containsString("Jenkins.doException")));
+        String relativePath = "exception";
+        String detailString = "Jenkins.doException";
+        checkSuppressedStack(relativePath, detailString);
     }
 
     @Test
     public void exceptionEndpointShowsTrace() throws Exception {
         /* This test is based upon a testing endpoint that really shouldn't exist in production code.
            If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
-        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "true");
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("exception");
-
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString("A problem occurred while processing the request."));
-        assertThat(content, containsString("Logging ID="));
-        assertThat(content, containsString("Oops!"));
-        assertThat(content, containsString("Stack trace"));
-        assertThat(content, containsString("Jenkins.doException"));
+        String relativePath = "exception";
+        String detailString = "Jenkins.doException";
+        checkDisplayedStackTrace(relativePath, detailString);
     }
 
     private FreeStyleProject createBrokenProject() throws IOException {
@@ -194,6 +154,34 @@ public class StackTraceSuppressionTest {
             }
         };
         return (FreeStyleProject) j.jenkins.createProject(descriptor, "throw-error");
+    }
+
+    private void checBaseResponseContent(String content) {
+        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("Logging ID="));
+        assertThat(content, containsString("Oops!"));
+    }
+
+    private void checkSuppressedStack(String relativePath, String detailString) throws IOException, SAXException {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo(relativePath);
+
+        String content = page.getWebResponse().getContentAsString();
+        checBaseResponseContent(content);
+        assertThat(content, not(containsString(detailString)));
+    }
+
+    private void checkDisplayedStackTrace(String relativePath, String detailString) throws IOException, SAXException {
+        System.setProperty("jenkins.model.Jenkins.SHOW_STACK_TRACE", "true");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo(relativePath);
+
+        String content = page.getWebResponse().getContentAsString();
+        checBaseResponseContent(content);
+        assertThat(content, containsString("Stack trace"));
+        assertThat(content, containsString(detailString));
     }
 
 }
