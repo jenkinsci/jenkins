@@ -439,7 +439,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return null;
         return new Api(this);
     }
 
