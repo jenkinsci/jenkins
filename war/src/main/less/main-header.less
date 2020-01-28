@@ -1,0 +1,242 @@
+@header-bg: #0587d4;
+@logo-bg: white;
+
+@brand-link-color: #4d545d;
+@brand-link-color-active: #4d545d;
+@header-link-color: white;
+@header-link-color-active: #f5f5f5;
+
+@search-input-color: @brand-link-color;
+@search-background: white;
+
+.main-header {
+    display: block;
+    display: flex;
+    align-items: center;
+    height: 56px;
+
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+
+    background: @header-bg;
+}
+
+.main-header > * {
+    margin-right: 12px;
+}
+
+.main-header__brand {
+    display: inline-block;
+    height: 100%;
+    position: relative;
+    flex: 1; // push controls to the end of the block
+}
+
+// Need to use the element selector to increase weight otherwise it will be overriden by the
+// a:visited selector if it is declared later
+a.main-header__brand-link {
+    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 16px 24px;
+
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.5;
+
+    background: @logo-bg;
+    // TODO: comment on browser support for clip-path
+    clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
+
+    &:link,
+    &:visited {
+        color: @brand-link-color;
+        text-decoration: none;
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: @brand-link-color-active;
+        text-decoration: underline;
+        text-decoration-color: @brand-link-color-active;
+    }
+
+    &:link:focus {
+        outline: none;
+
+        .main-header__brand-name {
+            outline: auto;
+        }
+    }
+}
+
+.main-header__brand-name {
+    color: inherit;
+}
+
+.main-header__brand-image {
+    background: white;
+    height: 100%;
+    margin-right: 12px;
+}
+
+.main-header__am-wrapper {
+    height: 100%;
+    padding: 8px 0;
+}
+
+.main-header__hyperlinks {
+    display: flex;
+    align-items: center;
+}
+
+.main-header__hyperlinks a {
+    display: inline-block;
+    display: inline-flex;
+    // need to override an existing rule
+    padding-right: 8;
+    padding: 8px;
+    margin-right: 4px;
+    font-weight: bold;
+
+    outline-color: @header-link-color-active;
+
+    &:link,
+    &:visited {
+        color: @header-link-color;
+        text-decoration: none;
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: @header-link-color-active;
+        text-decoration: underline;
+        text-decoration-color: @header-link-color-active;
+    }
+}
+
+.main-header__hyperlinks a span {
+    font-weight: bold;
+
+    &:not(:first-child) {
+        margin-left: 4px;
+    }
+}
+
+
+/* Search box */
+
+// Style it through the id selector to override the YUI selectors set by
+// the YUI Autocomplete module
+#searchform {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+}
+
+// Need to add the id selector to override the ".yui-skin-sam .yui-ac-input" set by
+// the YUI Autocomplete module
+#search-box.main-search__input {
+    position: static;
+    padding: 8px 40px;
+    margin: 0;
+
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: bold;
+    color: @search-input-color;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+
+    border-radius: 4px;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+        font-weight: normal;
+    }
+}
+
+.main-search__icon-leading,
+.main-search__icon-trailing {
+    position: absolute;
+    display: inline-block;
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+}
+
+.main-search__icon-leading {
+    left: 0;
+    pointer-events: none;
+}
+
+.main-search__icon-trailing {
+    right: 0;
+}
+
+.main-search__icon-leading svg,
+.main-search__icon-trailing svg {
+    fill: @search-input-color;
+}
+
+#search-box-completion {
+    text-align: left;
+    width: 25em;
+    position: absolute;
+    z-index: 1000;
+}
+
+#search-box-completion .yui-ac-content {
+    width: 30em;
+    background-color: @search-background;
+    overflow: hidden;
+
+    // TODO:  chose a better box shadow
+    -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,.2);
+
+    border: none;
+    border-radius: 4px;
+}
+
+#search-box-completion UL {
+    padding: 12px 0;
+    width: 100%;
+    margin: 0 0;
+    list-style: none;
+}
+
+#search-box-completion LI {
+    white-space:nowrap;
+
+    padding: 4px 20px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+#search-box-completion LI.yui-ac-highlight {
+    background: @header-bg;
+    font-weight: bold;
+}
+
+#search-box-minWidth {
+    position:absolute;
+    visibility: hidden;
+    width:15rem;
+}
+
+#search-box-sizer {
+    position:absolute;
+    visibility: hidden;
+}
+

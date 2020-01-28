@@ -27,6 +27,9 @@ module.exports = {
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+
+    // New UI CSS files
+    "main-header": [path.join(__dirname, "src/main/less/main-header.less")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
