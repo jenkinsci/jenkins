@@ -1,18 +1,17 @@
-@header-bg: #0587d4;
+@header-bg-old: #000;
 @logo-bg: white;
 
 @brand-link-color: #4d545d;
-@brand-link-color-hover: #0B6AA2;
-@brand-link-color-active: #095683;
 @header-link-color: white;
 @header-link-color-active: #f5f5f5;
-@header-link-bg-hover: #0B6AA2;
-@header-link-bg-active: #095683;
+@header-link-bg-hover: lighten(@header-bg-old, 25%);
+@header-link-bg-active: lighten(@header-bg-old, 20%);
 @header-link-outline: #3FB3F7;
 
 @search-input-color: @brand-link-color;
 @search-background: white;
 @search-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
+@search-box-completion-bg: #0587d4;
 
 @header-item-border-radius: 4px;
 
@@ -26,7 +25,7 @@
     font-size: 16px;
     line-height: 1.5;
 
-    background: @header-bg;
+    background-color: @header-bg-old;
 }
 
 .main-header > * {
@@ -43,8 +42,9 @@
 // Need to use the element selector to increase weight otherwise it will be overriden by the
 // a:visited selector if it is declared later
 a.main-header__brand-link {
-    display: inline-block;
-    display: inline-flex;
+    // TODO:
+    display: none;
+
     align-items: center;
     height: 100%;
     padding: 16px 24px;
@@ -66,14 +66,7 @@ a.main-header__brand-link {
     &:hover,
     &:focus,
     &:active {
-        color: @brand-link-color-hover;
         text-decoration: underline;
-        text-decoration-color: @brand-link-color-hover;
-    }
-
-    &:active {
-        color: @brand-link-color-active;
-        text-decoration-color: @brand-link-color-active;
     }
 
     &:link:focus {
@@ -265,7 +258,7 @@ a.main-header__brand-link {
 }
 
 #search-box-completion LI.yui-ac-highlight {
-    background: @header-bg;
+    background: @search-box-completion-bg;
     font-weight: bold;
 }
 

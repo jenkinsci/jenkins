@@ -33,9 +33,15 @@ THE SOFTWARE.
 
     <header id="header" class="main-header">
         <div class="main-header__brand">
-            <a id="jenkins-home-link" class="main-header__brand-link" href="${rootURL}/">
-                <img id="jenkins-head-icon"
-                     src="${imagesURL}/jenkins-header-logo-new.svg"
+            <div class="logo">
+                <a id="jenkins-home-link" href="${rootURL}/">
+                    <img id="jenkins-head-icon" src="${imagesURL}/jenkins-header-logo-new.svg" alt="[${%jenkinshead.alt}]" />
+                    <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${%title}" width="139" height="34" />
+                </a>
+            </div>
+
+            <a class="main-header__brand-link" href="${rootURL}/">
+                <img src="${imagesURL}/jenkins-header-logo-new.svg"
                      alt="[${%jenkinshead.alt}]"
                      class="main-header__brand-image" />
                 <span class="main-header__brand-name">Jenkins</span>

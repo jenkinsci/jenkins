@@ -1,0 +1,46 @@
+@header-bg: #0587d4;
+@brand-link-color-hover: #0B6AA2;
+@brand-link-color-active: #095683;
+@header-link-bg-hover: #0B6AA2;
+@header-link-bg-active: #095683;
+
+.new-ui {
+  .main-header {
+    background-color: @header-bg;
+  }
+
+  #header .logo {
+    display: none;
+  }
+
+  A.main-header__brand-link {
+    display: inline-block;
+    display: inline-flex;
+
+    &:hover,
+    &:focus {
+      color: @brand-link-color-hover;
+      text-decoration-color: @brand-link-color-hover;
+    }
+
+    &:active {
+      color: @brand-link-color-active;
+      text-decoration-color: @brand-link-color-active;
+    }
+  }
+
+  .main-header__hyperlinks A {
+    &:hover,
+    &:focus {
+      background-color: @header-link-bg-hover;
+    }
+
+    &:active {
+      background-color: @header-link-bg-active;
+    }
+  }
+
+  #visible-am-container.visible #visible-am-button {
+    background-color: @header-link-bg-hover;
+  }
+}

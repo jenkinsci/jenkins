@@ -92,7 +92,7 @@ THE SOFTWARE.
   </j:if>
 </j:if>
 <x:doctype name="html" />
-<html>
+<html class="${h.getSystemProperty('ui.enableNewUi') ? 'new-ui' : ''}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 
@@ -160,6 +160,7 @@ THE SOFTWARE.
 
     <link rel="stylesheet" href="${resURL}/jsbundles/main-header.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/new-ui-overrides.css" type="text/css" />
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
