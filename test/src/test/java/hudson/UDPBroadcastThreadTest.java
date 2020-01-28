@@ -71,8 +71,7 @@ public class UDPBroadcastThreadTest {
     /**
      * Multicast based clients should be able to receive multiple replies.
      */
-    // @Test
-    // excluded to get the release going
+    // @Test : keeps failing - excluding for now
     public void multicast() throws Exception {
         UDPBroadcastThread second = new UDPBroadcastThread(j.jenkins);
         second.start();
