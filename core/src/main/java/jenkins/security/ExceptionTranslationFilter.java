@@ -239,19 +239,4 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
     public void destroy() {
     }
 
-	private AcegiSecurityException containsAccessException(Exception exception) {
-		// Guard against malicious overrides of Throwable.equals by
-		// using a Set with identity equality semantics.
-		Set<Throwable> dejaVu = Collections.newSetFromMap(new IdentityHashMap<>());
-		Throwable currentException = exception;
-		do {
-			dejaVu.add(currentException);
-			if (currentException instanceof AcegiSecurityException) {
-				return (AcegiSecurityException)currentException;
-			}
-			currentException = currentException.getCause();
-		} while (currentException != null && !dejaVu.contains(currentException));
-		return null;
-	}
-
 }
