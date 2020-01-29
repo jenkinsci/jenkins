@@ -82,6 +82,10 @@ dt {
   font-weight: bold;
 }
 
+dt > .plugin_version {
+  font-weight: normal;
+}
+
 .fixed-width {
   font-family: monospace;
 }

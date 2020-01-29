@@ -30,7 +30,7 @@ public class AbstractItemTest {
         }
         
         /**
-         * Override save so that nothig happens when setDisplayName() is called
+         * Override save so that nothing happens when setDisplayName() is called
          */
         @Override
         public void save() {

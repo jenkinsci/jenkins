@@ -119,7 +119,7 @@ public class BasicHeaderProcessor implements Filter {
         }
 
         // Handle unusual condition where an AnonymousAuthenticationToken is already present
-        // This shouldn't happen very often, as BasicProcessingFitler is meant to be earlier in the filter
+        // This shouldn't happen very often, as BasicProcessingFilter is meant to be earlier in the filter
         // chain than AnonymousProcessingFilter. Nevertheless, presence of both an AnonymousAuthenticationToken
         // together with a BASIC authentication request header should indicate reauthentication using the
         // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,

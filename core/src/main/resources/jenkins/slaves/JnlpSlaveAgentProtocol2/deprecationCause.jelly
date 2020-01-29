@@ -1,5 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  ${%message}
-  <a href="https://jenkins.io/redirect/project/remoting/protocols/jnlp2-errata">${%TCP Agent Protocol 2 Errata}</a>
-</j:jelly>

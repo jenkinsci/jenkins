@@ -6,8 +6,6 @@
       <!-- Various debug probes have non final static fields -->
       <!-- TODO: Replace by in-code annotations -->
       <Bug pattern="MS_SHOULD_BE_FINAL"/>
-      <!-- Groovy generates this -->
-      <Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS"/>
       <!-- TODO: It's a real issue, but the code is flooded by it right now-->
       <Bug pattern="DM_DEFAULT_ENCODING"/>
       <!-- TODO: Remove once we migrate to SpotBugs with full Java support (JENKINS-53720)-->

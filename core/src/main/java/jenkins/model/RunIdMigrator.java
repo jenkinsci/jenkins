@@ -117,8 +117,7 @@ public final class RunIdMigrator {
 
     private void save(File dir) {
         File f = new File(dir, MAP_FILE);
-        try {
-            AtomicFileWriter w = new AtomicFileWriter(f);
+        try (AtomicFileWriter w = new AtomicFileWriter(f)) {
             try {
                 for (Map.Entry<String,Integer> entry : idToNumber.entrySet()) {
                     w.write(entry.getKey() + ' ' + entry.getValue() + '\n');
