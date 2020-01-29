@@ -109,6 +109,9 @@ public abstract class ParameterDefinition implements
     }
 
     public ParameterDefinition(@Nonnull String name, String description) {
+        if (name == null) {
+            throw new IllegalArgumentException("Parameter name must be non-null");
+        }
         this.name = name;
         this.description = description;
     }
