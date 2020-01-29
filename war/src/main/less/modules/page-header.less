@@ -1,21 +1,6 @@
-@header-bg-old: #000;
-@logo-bg: white;
+@import "../abstracts/colors.less";
 
-@brand-link-color: #4d545d;
-@header-link-color: white;
-@header-link-color-active: #f5f5f5;
-@header-link-bg-hover: lighten(@header-bg-old, 25%);
-@header-link-bg-active: lighten(@header-bg-old, 20%);
-@header-link-outline: #3FB3F7;
-
-@search-input-color: @brand-link-color;
-@search-background: white;
-@search-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
-@search-box-completion-bg: #0587d4;
-
-@header-item-border-radius: 4px;
-
-.main-header {
+.page-header {
     display: block;
     display: flex;
     align-items: center;
@@ -25,14 +10,14 @@
     font-size: 16px;
     line-height: 1.5;
 
-    background-color: @header-bg-old;
+    background-color: @header-bg-classic;
 }
 
-.main-header > * {
+.page-header > * {
     margin-right: 12px;
 }
 
-.main-header__brand {
+.page-header__brand {
     display: inline-block;
     height: 100%;
     position: relative;
@@ -41,64 +26,32 @@
 
 // Need to use the element selector to increase weight otherwise it will be overriden by the
 // a:visited selector if it is declared later
-a.main-header__brand-link {
-    // TODO:
+// Only styled by the overrides with the new UI enabled
+a.page-header__brand-link {
     display: none;
-
-    align-items: center;
-    height: 100%;
-    padding: 16px 24px;
-
-    font-size: 16px;
-    font-weight: bold;
-    line-height: 1.5;
-
-    background: @logo-bg;
-    // TODO: comment on browser support for clip-path
-    clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
-
-    &:link,
-    &:visited {
-        color: @brand-link-color;
-        text-decoration: none;
-    }
-
-    &:hover,
-    &:focus,
-    &:active {
-        text-decoration: underline;
-    }
-
-    &:link:focus {
-        outline: none;
-
-        .main-header__brand-name {
-            outline: auto;
-        }
-    }
 }
 
-.main-header__brand-name {
+.page-header__brand-name {
     color: inherit;
 }
 
-.main-header__brand-image {
+.page-header__brand-image {
     background: white;
     height: 100%;
     margin-right: 12px;
 }
 
-.main-header__am-wrapper {
+.page-header__am-wrapper {
     height: 100%;
     padding: 8px 0;
 }
 
-.main-header__hyperlinks {
+.page-header__hyperlinks {
     display: flex;
     align-items: center;
 }
 
-.main-header__hyperlinks A {
+.page-header__hyperlinks A {
     display: inline-block;
     display: inline-flex;
     align-items: center;
@@ -121,24 +74,24 @@ a.main-header__brand-link {
     &:hover,
     &:focus {
         color: @header-link-color-active;
-        background-color: @header-link-bg-hover;
+        background-color: @header-link-bg-classic-hover;
         text-decoration: underline;
         text-decoration-color: @header-link-color-active;
     }
 
     &:active {
-        background-color: @header-link-bg-active;
+        background-color: @header-link-bg-classic-active;
     }
 }
 
 // This could probably be colocated with the rest of the AM CSS,
 // But we put it here to take advantage of the variables
 #visible-am-container.visible #visible-am-button {
-    background-color: @header-link-bg-hover;
+    background-color: @header-link-bg-classic-active;
     text-decoration: none;
 }
 
-.main-header__hyperlinks a span {
+.page-header__hyperlinks a span {
     font-weight: bold;
 
     &:not(:first-child) {
@@ -214,11 +167,11 @@ a.main-header__brand-link {
 
     &:hover,
     &:focus {
-        color: @header-link-bg-hover;
+        color: @header-link-bg-classic-hover;
     }
 
     &:active {
-        fill: @header-link-bg-active;
+        fill: @header-link-bg-classic-active;
     }
 }
 

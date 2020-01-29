@@ -30,7 +30,6 @@ module.exports = {
 
     // New UI CSS files
     "new-base-styles": [path.join(__dirname, "src/main/less/new-base-styles.less")],
-    "main-header": [path.join(__dirname, "src/main/less/main-header.less")],
     "new-ui-overrides": [path.join(__dirname, "src/main/less/new-ui-overrides.less")],
   },
   output: {

@@ -158,7 +158,6 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="stylesheet" href="${resURL}/jsbundles/main-header.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/jsbundles/new-ui-overrides.css" type="text/css" />
 
