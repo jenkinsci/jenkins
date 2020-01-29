@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
@@ -77,8 +77,8 @@ public abstract class SidACL extends ACL {
         try {
             principalSid =  principalSidCache.get(a, () -> {return new PrincipalSid(a);});
         } catch (ExecutionException e) {
-            LOGGER.log(WARNING, "Failed to populate Principal Sid Cache", e);
-            principalSid = new PrincipalSid(a);
+            LOGGER.log(SEVERE, "Failed to populate PrincipalSid Cache", e);
+            return false;
         }
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(principalSid, permission);
@@ -162,7 +162,6 @@ public abstract class SidACL extends ACL {
 
     private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
     private final Cache<Authentication, PrincipalSid> principalSidCache = CacheBuilder.newBuilder()
-            .softValues()
             .maximumSize(200)
             .expireAfterWrite(60, TimeUnit.MINUTES)
             .build();
