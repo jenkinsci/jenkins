@@ -77,10 +77,10 @@ public class InstallUncaughtExceptionHandler {
     public static class ErrorCustomizer implements HttpResponses.ErrorCustomizer {
         @CheckForNull
         @Override
-        public HttpResponses.HttpResponseException handleError(int i, Throwable throwable) {
-            return new HttpResponses.HttpResponseException(throwable) {
+        public HttpResponses.HttpResponseException handleError(int code, Throwable cause) {
+            return new HttpResponses.HttpResponseException(cause) {
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-                    handleException(Jenkins.get(), throwable, req, rsp);
+                    handleException(Jenkins.get(), cause, req, rsp);
                 }
             };
         }
