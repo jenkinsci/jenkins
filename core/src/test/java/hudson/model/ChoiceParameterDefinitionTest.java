@@ -30,7 +30,7 @@ public class ChoiceParameterDefinitionTest {
     @Test
     @Issue("JENKINS-60721")
     public void testNullDefaultParameter() {
-        ChoiceParameterDefinition param = new ChoiceParameterDefinition("name", "", null);
+        ChoiceParameterDefinition param = new ChoiceParameterDefinition("name", new String[0], null);
         assertNull(param.getDefaultParameterValue());
     }
 }
