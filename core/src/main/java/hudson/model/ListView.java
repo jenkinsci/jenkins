@@ -271,15 +271,17 @@ public class ListView extends View implements DirectlyModifiableView {
     }
     
     private void includeItems(ItemGroup<? extends TopLevelItem> root, Collection<? extends Item> parentItems, SortedSet<String> names) {
-        for (Item item : parentItems) {
-            if (recurse && item instanceof ItemGroup) {
-                ItemGroup<?> ig = (ItemGroup<?>) item;
-                includeItems(root, ig.getItems(), names);
-            }
-            if (item instanceof TopLevelItem) {
-                String itemName = item.getRelativeNameFrom(root);
-                if (includePattern.matcher(itemName).matches()) {
-                    names.add(itemName);
+        if (includePattern != null) {
+            for (Item item : parentItems) {
+                if (recurse && item instanceof ItemGroup) {
+                    ItemGroup<?> ig = (ItemGroup<?>) item;
+                    includeItems(root, ig.getItems(), names);
+                }
+                if (item instanceof TopLevelItem) {
+                    String itemName = item.getRelativeNameFrom(root);
+                    if (includePattern.matcher(itemName).matches()) {
+                        names.add(itemName);
+                    }
                 }
             }
         }
