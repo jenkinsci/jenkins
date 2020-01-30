@@ -211,18 +211,15 @@ public class ListView extends View implements DirectlyModifiableView {
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
-        List<TopLevelItem> parentItems = null;
-        if (includePattern != null) {
-            parentItems = new ArrayList<>(parent.getItems());
-            includeItems(parent, parentItems, names);
-        }
+        List<TopLevelItem> parentItems = new ArrayList<>(parent.getItems());
+        includeItems(parent, parentItems, names);
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         Iterable<? extends TopLevelItem> candidates;
         if (recurse) {
             candidates = parent.getAllItems(TopLevelItem.class);
         } else {
-            candidates = parentItems != null ? parentItems : parent.getItems();
+            candidates = parentItems;
         }
         for (TopLevelItem item : candidates) {
             if (!names.contains(item.getRelativeNameFrom(getOwner().getItemGroup()))) continue;
