@@ -23,6 +23,7 @@
  */
 package hudson.views;
 
+import java.util.Iterator;
 import hudson.Extension;
 import hudson.model.View;
 import hudson.security.Permission;
@@ -52,8 +53,9 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
             j.setPrimaryView(newPrimaryView);
         } else {
             // Fallback if the view is not specified
-            if(j.getViews().iterator().hasNext()) {
-                j.setPrimaryView(j.getViews().iterator().next());
+            Iterator<View> iter = j.getViews().iterator();
+            if(iter.hasNext()) {
+                j.setPrimaryView(iter.next());
             }
         }
         
