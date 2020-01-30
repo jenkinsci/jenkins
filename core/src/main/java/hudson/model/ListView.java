@@ -211,15 +211,18 @@ public class ListView extends View implements DirectlyModifiableView {
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
-        List<TopLevelItem> parentItems = new ArrayList<>(parent.getItems());
-        includeItems(parent, parentItems, names);
+        List<TopLevelItem> parentItems = null;
+        if (includePattern != null) {
+            parentItems = new ArrayList<>(parent.getItems());
+            includeItems(parent, parentItems, names);
+        }
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         Iterable<? extends TopLevelItem> candidates;
         if (recurse) {
             candidates = parent.getAllItems(TopLevelItem.class);
         } else {
-            candidates = parent.getItems();
+            candidates = parentItems != null ? parentItems : parent.getItems();
         }
         for (TopLevelItem item : candidates) {
             if (!names.contains(item.getRelativeNameFrom(getOwner().getItemGroup()))) continue;
@@ -268,17 +271,15 @@ public class ListView extends View implements DirectlyModifiableView {
     }
     
     private void includeItems(ItemGroup<? extends TopLevelItem> root, Collection<? extends Item> parentItems, SortedSet<String> names) {
-        if (includePattern != null) {
-            for (Item item : parentItems) {
-                if (recurse && item instanceof ItemGroup) {
-                    ItemGroup<?> ig = (ItemGroup<?>) item;
-                    includeItems(root, ig.getItems(), names);
-                }
-                if (item instanceof TopLevelItem) {
-                    String itemName = item.getRelativeNameFrom(root);
-                    if (includePattern.matcher(itemName).matches()) {
-                        names.add(itemName);
-                    }
+        for (Item item : parentItems) {
+            if (recurse && item instanceof ItemGroup) {
+                ItemGroup<?> ig = (ItemGroup<?>) item;
+                includeItems(root, ig.getItems(), names);
+            }
+            if (item instanceof TopLevelItem) {
+                String itemName = item.getRelativeNameFrom(root);
+                if (includePattern.matcher(itemName).matches()) {
+                    names.add(itemName);
                 }
             }
         }
