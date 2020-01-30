@@ -59,7 +59,6 @@ public class PluginWrapperTest {
 
     @Test
     public void jenkinsCoreTooOld() throws Exception {
-
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
         try {
             pw.resolvePluginDependencies();
@@ -67,7 +66,6 @@ public class PluginWrapperTest {
         } catch (IOException ex) {
             assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
         }
-        Locale.setDefault(loc);
     }
 
     @Test
