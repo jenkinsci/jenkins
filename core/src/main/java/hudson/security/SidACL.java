@@ -23,9 +23,6 @@
  */
 package hudson.security;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -34,12 +31,10 @@ import org.acegisecurity.acls.sid.Sid;
 
 import javax.annotation.Nonnull;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.SEVERE;
 
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
@@ -73,13 +68,12 @@ public abstract class SidACL extends ACL {
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
     protected Boolean _hasPermission(@Nonnull Authentication a, Permission permission) {
-        PrincipalSid principalSid;
-        try {
-            principalSid =  principalSidCache.get(a, () -> {return new PrincipalSid(a);});
-        } catch (ExecutionException e) {
-            LOGGER.log(SEVERE, "Failed to populate PrincipalSid Cache", e);
-            return false;
+        PrincipalSid principalSid = principalSidCache.get(a);
+        if (principalSid == null) {
+            principalSid = new PrincipalSid(a);
+            principalSidCache.put(a, principalSid);
         }
+
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(principalSid, permission);
         if(LOGGER.isLoggable(FINER))
@@ -161,8 +155,5 @@ public abstract class SidACL extends ACL {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
-    private final Cache<Authentication, PrincipalSid> principalSidCache = CacheBuilder.newBuilder()
-            .maximumSize(200)
-            .expireAfterWrite(60, TimeUnit.MINUTES)
-            .build();
+    private final ConcurrentHashMap<Authentication, PrincipalSid> principalSidCache = new ConcurrentHashMap<>();
 }
