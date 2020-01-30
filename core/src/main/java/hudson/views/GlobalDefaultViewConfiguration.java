@@ -52,9 +52,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
             j.setPrimaryView(newPrimaryView);
         } else {
             // Fallback if the view is not specified
-            if(j.getViews().iterator().hasNext()) {
-                j.setPrimaryView(j.getViews().iterator().next());
-            }
+            j.setPrimaryView(j.getViews().iterator().next());
         }
         
         return true;
