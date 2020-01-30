@@ -190,7 +190,11 @@ THE SOFTWARE.
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
     <div id="page-head">
-      <l:pageHeader />
+      <l:pageHeader title="${%title}"
+                    logoAlt="${%jenkinshead.alt}"
+                    searchPlaceholder="${%search}"
+                    searchHelpUrl="${%searchBox.url}"
+                    logout="${%logout}"/>
 
       <div id="breadcrumbBar">
         <l:breadcrumbBar>

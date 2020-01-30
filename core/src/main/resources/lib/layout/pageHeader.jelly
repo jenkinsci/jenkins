@@ -29,20 +29,40 @@ THE SOFTWARE.
         Generates the page header, along with its associated dynamic behaviours.
         This tag is used by l:layout and not expected to be used by anyone else,
         but it's written as separate tag for better readability of code.
+
+        <st:attribute name="title" required="true">
+            Page title and title attribute for the logo
+        </st:attribute>
+
+        <st:attribute name="logoAlt" required="true">
+            Alt text for the logo
+        </st:attribute>
+
+        <st:attribute name="searchPlaceholder" required="true">
+            Placeholder text for the search input
+        </st:attribute>
+
+        <st:attribute name="searchHelpUrl" required="true">
+            Link value for the help icon on the search box
+        </st:attribute>
+
+        <st:attribute name="logout" required="true">
+            Text for the logout link
+        </st:attribute>
     </st:documentation>
 
     <header id="header" class="page-header">
         <div class="page-header__brand">
             <div class="logo">
                 <a id="jenkins-home-link" href="${rootURL}/">
-                    <img id="jenkins-head-icon" src="${imagesURL}/jenkins-header-logo-new.svg" alt="[${%jenkinshead.alt}]" />
-                    <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${%title}" width="139" height="34" />
+                    <img id="jenkins-head-icon" src="${imagesURL}/jenkins-header-logo-new.svg" alt="[${logoAlt}]" />
+                    <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${title}" width="139" height="34" />
                 </a>
             </div>
 
             <a class="page-header__brand-link" href="${rootURL}/">
                 <img src="${imagesURL}/jenkins-header-logo-new.svg"
-                     alt="[${%jenkinshead.alt}]"
+                     alt="[${logoAlt}]"
                      class="page-header__brand-image" />
                 <span class="page-header__brand-name">Jenkins</span>
             </a>
@@ -57,14 +77,14 @@ THE SOFTWARE.
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                    <input name="q" placeholder="${%search}" id="search-box" class="main-search__input has-default-text" value="${request.getParameter('q')}" role="searchbox" />
+                    <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input has-default-text" value="${request.getParameter('q')}" role="searchbox" />
 
                     <span class="main-search__icon-leading">
                         <svg class="svg-icon" viewBox="0 0 24 24" >
                             <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px"></use>
                         </svg>
                     </span>
-                    <a href="${%searchBox.url}" class="main-search__icon-trailing">
+                    <a href="${searchHelpUrl}" class="main-search__icon-trailing">
                         <svg class="svg-icon" viewBox="0 0 24 24" >
                             <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_outline_24px"></use>
                         </svg>
@@ -103,7 +123,7 @@ THE SOFTWARE.
                                 <svg class="svg-icon am-monitor__icon" viewBox="0 0 24 24" >
                                     <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_input_24px"></use>
                                 </svg>
-                                <span class="hidden-xs hidden-sm">${%logout}</span>
+                                <span class="hidden-xs hidden-sm">${logout}</span>
                             </a>
                         </j:if>
                     </j:when>
