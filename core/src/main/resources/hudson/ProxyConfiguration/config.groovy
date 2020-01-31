@@ -3,6 +3,10 @@ package hudson.ProxyConfiguration
 def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 
+if (!h.hasPermission(app.ADMINISTER)) {
+    set("displayOnly", "true")
+}
+
 f.entry(title:_("Server"),field:"name") {
     f.textbox()
 }
