@@ -82,12 +82,29 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
-  <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
-         name="${name}"
-         value="${value}"
-         type="text"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+  
+  <j:choose>
+    <j:when test="${displayOnlyMode}">
+      <span style="font-weight: bold">
+        <j:choose>
+          <j:when test="${empty(value)}">
+            <span style="font-style: italic; color: darkgrey">N/A</span>
+          </j:when>
+          <j:otherwise>
+            ${value}
+          </j:otherwise>
+        </j:choose>
+      </span>
+    </j:when>
+    <j:otherwise>
+      <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+               class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+               name="${name}"
+               value="${value}"
+               type="text"
+               ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+    </j:otherwise>
+  </j:choose>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

@@ -33,6 +33,17 @@ THE SOFTWARE.
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
+      <j:choose>
+<!--    TODO    to be replaced by MANAGE when released-->
+        <j:when test="${app.hasPermission(app.ADMINISTER)}">
+          <j:set var="displayOnlyMode" value="false" />
+        </j:when>
+        <j:otherwise>
+          <j:set var="displayOnlyMode" value="true" />
+        </j:otherwise>
+      </j:choose>
+<!--      displayOnlyMode = ${displayOnlyMode}<br />-->
+      
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
