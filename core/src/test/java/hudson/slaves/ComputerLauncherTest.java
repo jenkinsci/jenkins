@@ -32,6 +32,8 @@ import java.io.StringReader;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+
 import static org.junit.Assert.*;
 
 public class ComputerLauncherTest {
@@ -68,6 +70,34 @@ public class ComputerLauncherTest {
         assertChecked("java version \"1.10.0_02\"\nJava(TM) SE Runtime Environment (build 1.10.0_02-b01)\nJava HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n", "1.10.0");
     }
 
+    @Issue("JENKINS-60678")
+    @Test public void adoptOpenJDK11() throws IOException {
+        assertChecked("openjdk version \"11.0.5\" 2019-10-15\n" +
+                "OpenJDK Runtime Environment AdoptOpenJDK (build 11.0.5+10)\n" +
+                "OpenJDK 64-Bit Server VM AdoptOpenJDK (build 11.0.5+10, mixed mode)", "11.0.5");
+    }
+
+    @Issue("JENKINS-60678")
+    @Test public void amazonCorrettoJDK11() throws IOException {
+        assertChecked("openjdk version \"11.0.6\" 2020-01-14 LTS\n" +
+                "OpenJDK Runtime Environment Corretto-11.0.6.10.1 (build 11.0.6+10-LTS)\n" +
+                "OpenJDK 64-Bit Server VM Corretto-11.0.6.10.1 (build 11.0.6+10-LTS, mixed mode)", "11.0.6");
+    }
+
+    @Issue("JENKINS-60678")
+    @Test public void openJDK1106() throws IOException {
+        assertChecked("openjdk version \"11.0.6\" 2020-01-14\n" +
+                "OpenJDK Runtime Environment 18.9 (build 11.0.6+10)\n" +
+                "OpenJDK 64-Bit Server VM 18.9 (build 11.0.6+10, mixed mode)", "11.0.6");
+    }
+
+    @Issue("JENKINS-60678")
+    @Test public void azulZuluOpenJDK11() throws IOException {
+        assertChecked("openjdk version \"11.0.5\" 2019-10-15 LTS\n" +
+                "OpenJDK Runtime Environment Zulu11.35+15-CA (build 11.0.5+10-LTS)\n" +
+                "OpenJDK 64-Bit Server VM Zulu11.35+15-CA (build 11.0.5+10-LTS, mixed mode)", "11.0.5");
+    }
+    
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ComputerLauncher.checkJavaVersion(new PrintStream(os), "bin/java", new BufferedReader(new StringReader(text)));

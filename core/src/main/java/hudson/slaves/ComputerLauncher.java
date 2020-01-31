@@ -54,7 +54,7 @@ import org.apache.tools.ant.util.DeweyDecimal;
 public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
-     * programatic launch of the agent in the target {@link Computer}.
+     * programmatic launch of the agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
         return true;
@@ -180,7 +180,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                                     final BufferedReader r)
             throws IOException {
         String line;
-        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\"");
+        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\".*");
         while (null != (line = r.readLine())) {
             Matcher m = p.matcher(line);
             if (m.matches()) {

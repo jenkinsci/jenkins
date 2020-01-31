@@ -60,7 +60,7 @@ final class AutoBrowserHolder {
             cacheGeneration = -1;
             return cache;
         }
-        int g = d.generation;
+        int g = d.getGeneration();
         if(g!=cacheGeneration) {
             cacheGeneration = g;
             cache = infer();

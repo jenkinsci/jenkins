@@ -43,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -111,7 +112,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
             if (start >= 0 && end > start) {
@@ -136,7 +137,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
             int end = jsonp.lastIndexOf("),'*');");
@@ -256,7 +257,7 @@ public class DownloadService {
          */
         public List<String> getUrls() {
             List<String> updateSites = new ArrayList<>();
-            for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");
                 if (baseUrlEnd != -1) {
@@ -326,7 +327,7 @@ public class DownloadService {
         public FormValidation updateNow() throws IOException {
             List<JSONObject> jsonList = new ArrayList<>();
             boolean toolInstallerMetadataExists = false;
-            for (UpdateSite updatesite : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite updatesite : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String site = updatesite.getMetadataUrlForDownloadable(url);
                 if (site == null) {
                     return FormValidation.warning("The update site " + updatesite.getId() + " does not look like an update center");

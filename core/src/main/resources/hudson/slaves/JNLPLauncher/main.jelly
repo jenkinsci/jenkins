@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
-    <j:when test="${app.slaveAgentPort==-1}">
+    <j:when test="${!it.launcher.webSocket and app.slaveAgentPort == -1}">
       <div class="error">
         ${%slaveAgentPort.disabled}
         <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>

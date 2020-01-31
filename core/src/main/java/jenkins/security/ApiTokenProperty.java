@@ -154,7 +154,6 @@ public class ApiTokenProperty extends UserProperty {
      * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
         LOGGER.log(Level.FINE, "Deprecated usage of getApiToken");
         if(LOGGER.isLoggable(Level.FINER)){

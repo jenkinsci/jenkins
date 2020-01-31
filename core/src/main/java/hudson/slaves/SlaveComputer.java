@@ -58,7 +58,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.JnlpAgentReceiver;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
@@ -75,6 +75,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.io.File;
@@ -180,7 +181,7 @@ public class SlaveComputer extends Computer {
      * @since 1.498
      */
     public String getJnlpMac() {
-        return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
+        return JnlpAgentReceiver.SLAVE_SECRET.mac(getName());
     }
 
     /**
@@ -453,18 +454,27 @@ public class SlaveComputer extends Computer {
 
     /**
      * Shows {@link Channel#classLoadingCount}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public int getClassLoadingCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingCount(false));
     }
 
     /**
      * Shows {@link Channel#classLoadingPrefetchCacheCount}.
-     * @return -1 in case that capability is not supported
+     * @return Requested value or {@code -1} in case that capability is not supported or if the agent is offline.
      * @since 1.519
      */
+    @CheckReturnValue
     public int getClassLoadingPrefetchCacheCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         if (!channel.remoteCapability.supportsPrefetch()) {
             return -1;
         }
@@ -473,25 +483,40 @@ public class SlaveComputer extends Computer {
 
     /**
      * Shows {@link Channel#resourceLoadingCount}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public int getResourceLoadingCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingCount(true));
     }
 
     /**
      * Shows {@link Channel#classLoadingTime}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public long getClassLoadingTime() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingTime(false));
     }
 
     /**
      * Shows {@link Channel#resourceLoadingTime}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public long getResourceLoadingTime() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingTime(true));
     }
 
@@ -740,7 +765,7 @@ public class SlaveComputer extends Computer {
     @Override
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(CONNECT);
-            
+
         if(channel!=null) {
             try {
                 req.getView(this, "already-launched.jelly").forward(req, rsp);
@@ -871,27 +896,36 @@ public class SlaveComputer extends Computer {
     /**
      * Get the agent version
      */
+    @CheckReturnValue
     public String getSlaveVersion() throws IOException, InterruptedException {
+        if (channel == null) {
+            return "Unknown (agent is offline)";
+        }
         return channel.call(new SlaveVersion());
     }
 
     /**
      * Get the OS description.
      */
+    @CheckReturnValue
     public String getOSDescription() throws IOException, InterruptedException {
+        if (channel == null) {
+            return "Unknown (agent is offline)";
+        }
         return channel.call(new DetectOS()) ? "Unix" : "Windows";
     }
 
     /**
      * Expose real full env vars map from agent for UI presentation
      */
+    @CheckReturnValue
     public Map<String,String> getEnvVarsFull() throws IOException, InterruptedException {
-        if(getChannel() == null) {
+        if (channel == null) {
             Map<String, String> env = new TreeMap<> ();
             env.put("N/A","N/A");
             return env;
         } else {
-            return getChannel().call(new ListFullEnvironment());
+            return channel.call(new ListFullEnvironment());
         }
     }
 

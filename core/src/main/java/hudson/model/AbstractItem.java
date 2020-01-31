@@ -730,18 +730,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                                 
                         if (subtask != null) {        
                             Item item = Tasks.getItemOf(subtask);
-                            if (item != null) {
-                                while (item != null) {
-                                    if (item == this) {
-                                        buildsInProgress.put(e, e.getCurrentExecutable());
-                                        e.interrupt(Result.ABORTED);
-                                        break;
-                                    }
-                                    if (item.getParent() instanceof Item) {
-                                        item = (Item) item.getParent();
-                                    } else {
-                                        break;
-                                    }
+                            while (item != null) {
+                                if (item == this) {
+                                    buildsInProgress.put(e, e.getCurrentExecutable());
+                                    e.interrupt(Result.ABORTED);
+                                    break;
+                                }
+                                if (item.getParent() instanceof Item) {
+                                    item = (Item) item.getParent();
+                                } else {
+                                    break;
                                 }
                             }
                         }
