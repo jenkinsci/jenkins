@@ -29,13 +29,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout norefresh="true" permission="${it.SYSTEM_READ}" title="${%Configure System}">
   <st:include page="sidepanel.jelly" />
-  <j:if test="${!h.hasPermission(it.ADMINISTER)}">
-    <j:set var="displayOnly" value="true"/>
-  </j:if>
   <f:breadcrumb-config-outline />
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
+      <j:if test="${!h.hasPermission(it.ADMINISTER)}">
+          <j:set var="displayOnlyMode" value="true"/>
+      </j:if>
+
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 

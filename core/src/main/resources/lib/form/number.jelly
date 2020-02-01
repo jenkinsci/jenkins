@@ -76,15 +76,25 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
-  <j:if test="${displayOnly != true}">
+
+  <j:choose>
+    <j:when test="${displayOnlyMode}">
+      <j:choose>
+        <j:when test="${empty(value)}">
+          <span style="font-style: italic; color: darkgrey">N/A</span>
+        </j:when>
+        <j:otherwise>${value}</j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
     <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
            class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
            name="${name}"
            value="${value}"
            type="number"
            ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
-  </j:if>
-  <j:if test="${displayOnly == true}">${value}</j:if>
+    </j:otherwise>
+  </j:choose>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

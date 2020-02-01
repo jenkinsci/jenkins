@@ -30,7 +30,7 @@ THE SOFTWARE.
 <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}" norefresh="true">
   <st:include page="sidepanel.jelly"/>
   <j:if test="${!h.hasPermission(it.ADMINISTER)}">
-    <j:set var="displayOnly" value="true"/>
+    <j:set var="displayOnlyMode" value="true"/>
   </j:if>
   <l:main-panel>
     <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
