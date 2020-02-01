@@ -131,7 +131,8 @@ public class UDPBroadcastThread extends Thread {
         interrupt();
     }
 
-    public static final int PORT = SystemProperties.getInteger("hudson.udp",33848);
+    // The previous default port was 33848, before the "disabled by default" change
+    public static final int PORT = SystemProperties.getInteger("hudson.udp", -1);
 
     private static final Logger LOGGER = Logger.getLogger(UDPBroadcastThread.class.getName());
 
