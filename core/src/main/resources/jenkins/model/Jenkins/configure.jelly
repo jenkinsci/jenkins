@@ -33,9 +33,14 @@ THE SOFTWARE.
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
-      <j:if test="${!h.hasPermission(it.ADMINISTER)}">
-          <j:set var="displayOnlyMode" value="true"/>
-      </j:if>
+      <j:choose>
+        <j:when test="${app.hasPermission(app.ADMINISTER)}">
+          <j:set var="displayOnlyMode" value="false" />
+        </j:when>
+        <j:otherwise>
+          <j:set var="displayOnlyMode" value="true" />
+        </j:otherwise>
+      </j:choose>
 
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
