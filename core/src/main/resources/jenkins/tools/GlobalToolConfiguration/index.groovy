@@ -8,6 +8,10 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
+    if (!h.hasPermission(app.ADMINISTER)) {
+        set("displayOnlyMode", "true")
+    }
+
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
