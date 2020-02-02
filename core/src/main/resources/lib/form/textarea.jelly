@@ -86,12 +86,11 @@ THE SOFTWARE.
         org.kohsuke.stapler.codemirror.theme.default"/>
   </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
-
   <j:choose>
     <j:when test="${displayOnlyMode}">
       <j:choose>
         <j:when test="${empty(value)}">
-          <span style="font-style: italic; color: darkgrey">N/A</span>
+          <span class="not-applicable">N/A</span>
         </j:when>
         <j:otherwise>${value}</j:otherwise>
       </j:choose>

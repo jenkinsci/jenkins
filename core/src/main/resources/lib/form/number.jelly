@@ -81,7 +81,7 @@ THE SOFTWARE.
     <j:when test="${displayOnlyMode}">
       <j:choose>
         <j:when test="${empty(value)}">
-          <span style="font-style: italic; color: darkgrey">N/A</span>
+          <span class="not-applicable">N/A</span>
         </j:when>
         <j:otherwise>${value}</j:otherwise>
       </j:choose>
