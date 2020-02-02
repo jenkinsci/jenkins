@@ -1127,7 +1127,6 @@ public class UpdateSite {
             return deps;
         }
 
-        @Exported
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
@@ -1141,7 +1140,6 @@ public class UpdateSite {
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
          * @since 2.158
          */
-        @Exported
         public boolean isForNewerJava() {
             try {
                 final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
@@ -1218,7 +1216,6 @@ public class UpdateSite {
          *
          * @since 2.158
          */
-        @Exported
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {
                 if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
