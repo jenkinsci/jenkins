@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.io.File;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.AccessDeniedException;
 
@@ -97,6 +98,14 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      */
     default <T extends Item> List<T> getAllItems(Class<T> type) {
         return Items.getAllItems(this, type);
+    }
+
+    /**
+     * Similar to {@link #getAllItems(Class)} with additional predicate filtering
+     * @since TODO
+     */
+    default <T extends Item> List<T> getAllItems(Class<T> type, Predicate<T> pred) {
+        return Items.getAllItems(this, type, pred);
     }
 
     /**

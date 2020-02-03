@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.function.Predicate;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
@@ -393,26 +394,44 @@ public class Items {
      * <p>
      * If you do not need to iterate all items, or if the order of the items is not required, consider using
      * {@link #allItems(ItemGroup, Class)} instead.
+     *
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @return List of items matching given criteria
      * 
      * @since 1.512
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
+        return getAllItems(root ,type, t -> true);
+    }
+
+    /**
+     * Similar to {@link #getAllItems(ItemGroup, Class)} but with a predicate to pre-filter items to
+     * avoid checking ACLs unnecessarily and returning items not required by the caller
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @param pred Predicate condition to filter items
+     * @return List of items matching given criteria
+     *
+     * @since TODO
+     */
+    public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type, Predicate<T> pred) {
         List<T> r = new ArrayList<>();
-        getAllItems(root, type, r);
+        getAllItems(root, type, r, pred);
         return r;
     }
-    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
+    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r, Predicate<T> pred) {
         List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
         // because we add items depth first, we can use the quicker BY_NAME comparison
         items.sort(BY_NAME);
         for (Item i : items) {
-            if (type.isInstance(i)) {
+            if (type.isInstance(i) && pred.test(type.cast(i))) {
                 if (i.hasPermission(Item.READ)) {
                     r.add(type.cast(i));
                 }
             }
             if (i instanceof ItemGroup) {
-                getAllItems((ItemGroup) i, type, r);
+                getAllItems((ItemGroup) i, type, r, pred);
             }
         }
     }
