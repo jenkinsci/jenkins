@@ -956,7 +956,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         RunT r = getPreviousBuild();
         if( r!=null ) {
             return r.getBuildsOverThreshold(numberOfBuilds, threshold);
-            
         }
         return new ArrayList<>(numberOfBuilds);
     }
