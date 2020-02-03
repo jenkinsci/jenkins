@@ -33,7 +33,7 @@
 
 #breadcrumbs {
     list-style-type: none;
-    margin: 0 1.5rem 0 0;
+    margin: 0;
     padding: 0;
     min-height: 2.5rem;
     display: block;
@@ -49,7 +49,7 @@
     min-height: 2.5rem;
 }
 
-.breadcrumbs__link,
+#breadcrumbs LI A,
 .breadcrumbs__auto-refresh {
     display: inline-block;
     display: inline-flex;
@@ -63,7 +63,7 @@
 }
 
 
-.breadcrumbs__link, .breadcrumbs__link:link, .breadcrumbs__link:visited,
+#breadcrumbs LI A, #breadcrumbs LI A:link, #breadcrumbs LI A:visited,
 .breadcrumbs__auto-refresh:link, .breadcrumbs__auto-refresh:visited {
     /* is this still needed? */
     max-width: 1330px;
@@ -79,7 +79,7 @@
     color: #4d545d;
 }
 
-.breadcrumbs__link:hover, .breadcrumbs__link:focus,
+#breadcrumbs LI A:hover, #breadcrumbs LI A:focus,
 .breadcrumbs__auto-refresh:hover, .breadcrumbs__auto-refresh:focus {
   /* TODO: change hover state
      add it in the LI element so that it applies to the menuSeparator */
@@ -87,17 +87,18 @@
   outline-color: #3FB3F7;
 }
 
-.breadcrumbs__link:active, .breadcrumbs__auto-refresh:active {
+#breadcrumbs LI A:active, .breadcrumbs__auto-refresh:active {
   background-color: #C8CEC2;
 }
 
-.breadcrumbs__link {
+#breadcrumbs LI A {
   text-transform: capitalize;
   cursor: pointer;
 }
 
 .breadcrumbs__auto-refresh {
   text-transform: lowercase;
+  margin-left: 1.5rem;
 }
 
 #breadcrumbs LI.children, #breadcrumbs LI.separator {/* '>' separator between two items */
@@ -143,4 +144,3 @@
 A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
   padding-right: 16px;
 }
-
