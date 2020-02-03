@@ -15,11 +15,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 40px;
-  font-size: 16px;
-  font-family: Roboto, Helvetica, Arial, sans-serif;
+  min-height: 2.5rem;
+  font-size: 1rem;
   line-height: 1.5;
-  padding: 0 20px;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  padding: 0 1.25rem;
   background-color: #F8F8F8;
 }
 
@@ -33,9 +33,9 @@
 
 #breadcrumbs {
     list-style-type: none;
-    margin: 0 24px 0 0;
+    margin: 0 1.5rem 0 0;
     padding: 0;
-    min-height: 40px;
+    min-height: 2.5rem;
     display: block;
     display: flex;
     align-items: center;
@@ -46,7 +46,7 @@
 
 #breadcrumbs LI {
     display:inline-block;
-    min-height: 40px;
+    min-height: 2.5rem;
 }
 
 .breadcrumbs__link,
@@ -54,8 +54,8 @@
     display: inline-block;
     display: inline-flex;
     align-items: center;
-    height: 40px;
-    padding: 0 8px;
+    height: 2.5rem;
+    padding: 0 0.5rem;
 }
 
 #breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
@@ -101,7 +101,7 @@
 }
 
 #breadcrumbs LI.children, #breadcrumbs LI.separator {/* '>' separator between two items */
-    width: 20px;
+    width: 1.25rem;
     height: 100%;
     display: inline-block;
     display: inline-flex;
