@@ -1,6 +1,6 @@
 = Documentation for core maintainers
 
-Jenkins core is a central component of the project which serves millions of users, and ot is critical to maintain the it in a good shape.
+Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain the it in a good shape.
 We want to ensure quality of the integrated changes and continuity of the project,
 and hence the Jenkins core pull request review and merge process is more sophisticated than for the majority of plugins.
 
@@ -11,7 +11,7 @@ This document applies to the following components:
 * Jenkins core
 * Jenkins modules
 * Libraries included into the Jenkins core
-* Core components like Winstone, Extras Executable WAR, etc.
+* Core components like Winstone, Executable WAR, etc.
 
 Jenkins Remoting library is not in the scope for this document,
 because it is handled as a sub-project with independent maintainer team.
@@ -36,8 +36,8 @@ Remoting updates in the core are subject to the process though.
 There is no special preconditions to do so, anyone is welcome to contribute.
 
 **Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
-They get [Triage permissions](TODO) so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
-GitHub team: link:TODO[@jenkinsci/core-pr-reviewers].
+They get [Triage permissions](https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization) so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
+GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
 <!--TODO: consider switching to Admin-->
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
@@ -96,11 +96,11 @@ At the same time, we are interested to make the review process as simple as poss
    and different files have different designs
 ** Main goal is 
 * Make contributors to fix unrelated issues
-** Create follow-up issues instead, it is fine to referene them in comments so that the contributor might want to pick them up
+** Create follow-up issues instead, it is fine to reference them in comments so that the contributor might want to pick them up
 * Breakdown the commit history or squashing PRs
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
 ** Core maintainers can squash PRs during the merge.
-   If you feel this is important, use the `squash-me-please` label
+   If you feel this is important, use the `squash-merge-me` label
 ** We want to keep pull requests atomic when possible (one feature / fix - separate commit),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
@@ -110,12 +110,12 @@ At the same time, we are interested to make the review process as simple as poss
 
 **Step 1: Maintainer checklist**. Merge process can be initiated once a pull request matches the requirements:
 
-* Pull request is compliant wuth requirements to submitters (see the link:/.github/PULL_REQUEST_TEMPLATE.md[pull request template])
+* Pull request is compliant with requirements to submitters (see the link:/.github/PULL_REQUEST_TEMPLATE.md[pull request template])
 * There are at least 2 approvals for the pull request and no outstanding requests for change
-* Conversations in the pull request are over OR it is explicit that a reviewer does not block the change
-* Changelog entries in the PR title and/or `Proposed changelog entries` are correct
+* Conversations in the pull request are over OR it is explicit that a reviewer does not block the change (often indicated by line comments attached to an approving PR review, or by using the term "nit", from "nit-picking")
+* Changelog entries in the PR title and/or `Proposed changelog entries` are correct and reflect the current, final state of the PR
 * Proper changelog labels are set so that the changelog can be generated automatically
-* If the change needs additional upgrade steps from users, `upgrade-guide-needed` label is set
+* If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present. This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out), or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
   and there is a `Proposed upgrade guidelines` section in the PR title.
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example])
 * It would make sense to backport the change to LTS, a Jira issue should exist and be labeled as `lts-candidate`
@@ -125,7 +125,7 @@ a Core PR Reviewer or a Maintainer can mark the pull request for merge.
 
 * `ready-for-merge` label is set
 * An explicit comment is added to the pull request so that other repository watchers are notified.
-  Example: `Thanks to all contributors! We consider this change as read to be merged towards the next weekly release. It may be merged after a 24hours if there is no negative feedback`
+  Example: `Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback`
 
 **Step 3: Merge!**.
 A Core Maintainer merges the change after a timeout (if needed).
@@ -143,6 +143,7 @@ LTS Backporting, if needed, will be handled separately by the release team.
 //TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
 ** trivial changes like typo fixes or minor Javadoc improvements
 ** changes which do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
+** broken master build
 
 === Squashing pull requests OR not?
 
@@ -156,7 +157,7 @@ Right now we do not have a strict policy about it.
 
 == Feedback
 
-The process documented in this document is not slate in stone.
+The process documented in this document is not set in stone.
 If you see any issues or want to suggest improvements,
 just submit a pull request or contact us in the communication channels referenced above.
 Any feedback will be appreciated!
