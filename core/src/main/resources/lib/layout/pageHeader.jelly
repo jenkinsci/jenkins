@@ -111,8 +111,7 @@ THE SOFTWARE.
                         <a href="${rootURL}/${user.url}" class="model-link inside inverse">
                             <l:svgIcon
                                        class="am-monitor-icon" >
-
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>
                             </l:svgIcon>
                             <span class="hidden-xs hidden-sm">${userName}</span>
                         </a>
