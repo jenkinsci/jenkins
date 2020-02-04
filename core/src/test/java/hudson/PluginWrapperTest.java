@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import jenkins.model.Jenkins;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -23,11 +25,20 @@ import static org.mockito.Mockito.when;
 
 public class PluginWrapperTest {
 
+    private Locale loc;
+    
     @Before
     public void before() throws Exception {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
+        loc = Locale.getDefault();
+        Locale.setDefault(new Locale("en", "GB"));
     }
 
+    @After
+    public void after() {
+        Locale.setDefault(loc);
+    }
+    
     @Test
     public void dependencyTest() {
         String version = "plugin:0.0.2";
