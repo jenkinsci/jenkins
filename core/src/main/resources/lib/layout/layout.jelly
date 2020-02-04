@@ -92,7 +92,7 @@ THE SOFTWARE.
   </j:if>
 </j:if>
 <x:doctype name="html" />
-<html class="${h.getSystemProperty('jenkins.ui.refresh') ? 'new-ui' : ''}">
+<html class="${h.getSystemProperty('jenkins.ui.refresh') ? 'ui-refresh' : ''}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 
@@ -102,7 +102,7 @@ THE SOFTWARE.
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
 
-    <link rel="stylesheet" href="${resURL}/jsbundles/new-base-styles.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/base-styles-v2.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
@@ -157,7 +157,7 @@ THE SOFTWARE.
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
     <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/jsbundles/new-ui-overrides.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/ui-refresh-overrides.css" type="text/css" />
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />

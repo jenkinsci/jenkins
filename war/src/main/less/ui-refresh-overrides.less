@@ -1,8 +1,8 @@
 @import "./abstracts/colors.less";
 
-.new-ui {
+.ui-refresh {
     .page-header {
-        background-color: @header-bg-new-ui;
+        background-color: @header-bg-v2;
     }
 
     #header .logo {
@@ -33,14 +33,14 @@
         &:hover,
         &:focus {
             text-decoration: underline;
-            color: @brand-link-color-new-ui-hover;
-            text-decoration-color: @brand-link-color-new-ui-hover;
+            color: @brand-link-color-hover-v2;
+            text-decoration-color: @brand-link-color-hover-v2;
         }
 
         &:link:focus {
             outline: none;
-            color: @brand-link-color-new-ui-active;
-            text-decoration-color: @brand-link-color-new-ui-active;
+            color: @brand-link-color-active-v2;
+            text-decoration-color: @brand-link-color-active-v2;
 
             .page-header__brand-name {
                 outline: auto;
@@ -51,34 +51,34 @@
     .page-header__hyperlinks A {
         &:hover,
         &:focus {
-            background-color: @header-link-bg-new-ui-hover;
+            background-color: @header-link-bg-hover-v2;
         }
 
         &:active {
-            background-color: @header-link-bg-new-ui-active;
+            background-color: @header-link-bg-active-v2;
         }
     }
 
     .main-search__input:hover ~ .main-search__icon-leading {
-        color: @header-link-bg-new-ui-hover;
+        color: @header-link-bg-hover-v2;
     }
 
     .main-search__input:focus ~ .main-search__icon-leading {
-        color: @header-link-bg-new-ui-active;
+        color: @header-link-bg-active-v2;
     }
 
     .main-search__icon-trailing {
         &:hover,
         &:focus {
-            color: @header-link-bg-new-ui-hover;
+            color: @header-link-bg-hover-v2;
         }
 
         &:active {
-            fill: @header-link-bg-new-ui-active;
+            fill: @header-link-bg-active-v2;
         }
     }
 
     #visible-am-container.visible #visible-am-button {
-        background-color: @header-link-bg-new-ui-active;
+        background-color: @header-link-bg-active-v2;
     }
 }

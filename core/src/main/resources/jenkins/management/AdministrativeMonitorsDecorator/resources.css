@@ -33,7 +33,6 @@
     border-radius: 5px;
 
     /* Darken the box shadow to make the popup visible over the search box  */
-    -webkit-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
     box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
 
     transition: all .15s cubic-bezier(.84,.03,.21,.96);

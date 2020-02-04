@@ -29,8 +29,8 @@ module.exports = {
     ],
 
     // New UI CSS files
-    "new-base-styles": [path.join(__dirname, "src/main/less/new-base-styles.less")],
-    "new-ui-overrides": [path.join(__dirname, "src/main/less/new-ui-overrides.less")],
+    "base-styles-v2": [path.join(__dirname, "src/main/less/base-styles-v2.less")],
+    "ui-refresh-overrides": [path.join(__dirname, "src/main/less/ui-refresh-overrides.less")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
@@ -65,7 +65,7 @@ module.exports = {
               url: (url, resourcePath) => {
                 // ignore the URLS on the base styles as they are picked
                 // from the src/main/webapp/images dir
-                if (resourcePath.includes('new-base-styles.less')) {
+                if (resourcePath.includes('base-styles-v2.less')) {
                   return false;
                 }
 
