@@ -27,9 +27,7 @@ THE SOFTWARE.
         <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
         <div id="visible-am-container">
             <a id="visible-am-button" href="#" onclick="toggleVisibleAmList(event)" title="${%tooltip(it.activeAdministrativeMonitorsCount)}">
-                <svg class="svg-icon" viewBox="0 0 24 24" >
-                    <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px"></use>
-                </svg>
+                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px" />
                 <span class="hidden-xs hidden-sm">${%monitors(it.activeAdministrativeMonitorsCount)}</span>
                 <span class="am-monitor__count">
                     ${it.activeAdministrativeMonitorsCount}

@@ -80,14 +80,10 @@ THE SOFTWARE.
                     <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input has-default-text" value="${request.getParameter('q')}" role="searchbox" />
 
                     <span class="main-search__icon-leading">
-                        <svg class="svg-icon" viewBox="0 0 24 24" >
-                            <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px"></use>
-                        </svg>
+                        <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
                     </span>
                     <a href="${searchHelpUrl}" class="main-search__icon-trailing">
-                        <svg class="svg-icon" viewBox="0 0 24 24" >
-                            <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_outline_24px"></use>
-                        </svg>
+                        <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_outline_24px" />
                     </a>
 
                     <div id="search-box-completion" />
@@ -113,16 +109,16 @@ THE SOFTWARE.
                             </j:otherwise>
                         </j:choose>
                         <a href="${rootURL}/${user.url}" class="model-link inside inverse">
-                            <svg class="svg-icon am-monitor__icon" viewBox="0 0 24 24" >
-                                <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>
-                            </svg>
+                            <l:svgIcon
+                                       class="am-monitor-icon" >
+
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                            </l:svgIcon>
                             <span class="hidden-xs hidden-sm">${userName}</span>
                         </a>
                         <j:if test="${app.securityRealm.canLogOut()}">
                             <a href="${rootURL}/logout">
-                                <svg class="svg-icon am-monitor__icon" viewBox="0 0 24 24" >
-                                    <use href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_input_24px"></use>
-                                </svg>
+                                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_input_24px" />
                                 <span class="hidden-xs hidden-sm">${logout}</span>
                             </a>
                         </j:if>
