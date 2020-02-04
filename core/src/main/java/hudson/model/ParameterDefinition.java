@@ -109,6 +109,7 @@ public abstract class ParameterDefinition implements
     }
 
     public ParameterDefinition(@Nonnull String name, String description) {
+        //Checking as pipeline does not enforce annotations
         if (name == null) {
             throw new IllegalArgumentException("Parameter name must be non-null");
         }
