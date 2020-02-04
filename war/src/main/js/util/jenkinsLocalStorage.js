@@ -1,39 +1,32 @@
-import { getWindow } from 'window-handle';
-import storage from './localStorage'
+var windowHandle = require('window-handle');
+var storage = require('./localStorage.js');
 
 /** 
  * Store a Jenkins globally scoped value.
  */
-function setGlobalItem(name, value) {
+exports.setGlobalItem = function(name, value) {
     storage.setItem('jenkins:' + name, value);
-}
+};
 
 /** 
  * Get a Jenkins globally scoped value.
  */
-function getGlobalItem(name, defaultVal) {
+exports.getGlobalItem = function(name, defaultVal) {
     return storage.getItem('jenkins:' + name, defaultVal);
-}
+};
 
 /** 
  * Store a Jenkins page scoped value.
  */
-function setPageItem(name, value) {
-    name = 'jenkins:' + name + ':' + getWindow().location.href;
+exports.setPageItem = function(name, value) {
+    name = 'jenkins:' + name + ':' + windowHandle.getWindow().location.href;
     storage.setItem(name, value);
-}
+};
 
 /** 
  * Get a Jenkins page scoped value.
  */
-function getPageItem(name, defaultVal) {
-    name = 'jenkins:' + name + ':' + getWindow().location.href;
+exports.getPageItem = function(name, defaultVal) {
+    name = 'jenkins:' + name + ':' + windowHandle.getWindow().location.href;
     return storage.getItem(name, defaultVal);
-}
-
-export default {
-    setGlobalItem,
-    getGlobalItem,
-    setPageItem,
-    getPageItem
 };

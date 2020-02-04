@@ -1,9 +1,6 @@
 package hudson.model.queue;
 
-import hudson.RestrictedSince;
 import hudson.model.Queue.BuildableItem;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.Comparator;
 import java.util.List;
@@ -31,28 +28,24 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      * The default implementation does FIFO.
      */
     public int compare(BuildableItem lhs, BuildableItem rhs) {
-        return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
+        return compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
     }
 
     /**
-     * @deprecated Use Long.compare instead.
      * sign(a-b).
      */
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     protected static int compare(long a, long b) {
-        return Long.compare(a, b);
+        if (a>b)    return 1;
+        if (a<b)    return -1;
+        return 0;
     }
 
     /**
-     * @deprecated Use Integer.compare instead.
      * sign(a-b).
      */
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
     protected static int compare(int a, int b) {
-        return Integer.compare(a, b);
+        if (a>b)    return 1;
+        if (a<b)    return -1;
+        return 0;
     }
 }

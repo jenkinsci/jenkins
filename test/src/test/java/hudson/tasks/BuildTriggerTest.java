@@ -71,7 +71,6 @@ import org.dom4j.io.SAXReader;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -186,13 +185,11 @@ public class BuildTriggerTest {
     }
 
     @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
     public void mavenBuildTrigger() throws Exception {
         doMavenTriggerTest(false);
     }
 
     @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
     public void mavenTriggerEvenWhenUnstable() throws Exception {
         doMavenTriggerTest(true);
     }

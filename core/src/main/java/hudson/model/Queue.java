@@ -132,8 +132,6 @@ import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
-import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
 import org.kohsuke.stapler.QueryParameter;
@@ -762,21 +760,17 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Called from {@code queue.jelly} and {@code queue-items.jelly}.
+     * Called from {@code queue.jelly} and {@code entries.jelly}.
      */
     @RequirePOST
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
             if(item.hasCancelPermission()){
-                if(cancel(item)) {
-                    return HttpResponses.status(HttpServletResponse.SC_NO_CONTENT);
-                }
-                return HttpResponses.error(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not cancel run for id " + id);
+                cancel(item);
             }
-            return HttpResponses.error(422, "Item for id (" + id + ") is not cancellable");
         } // else too late, ignore (JENKINS-14813)
-        return HttpResponses.error(HttpServletResponse.SC_NOT_FOUND, "Provided id (" + id + ") not found");
+        return HttpResponses.forwardToPreviousPage();
     }
 
     public boolean isEmpty() {
@@ -2309,11 +2303,11 @@ public class Queue extends ResourceController implements Saveable {
         /** @deprecated Use {@link #doCancelItem} instead. */
         @Deprecated
         @RequirePOST
-        public HttpResponse doCancelQueue() {
+        public HttpResponse doCancelQueue() throws IOException, ServletException {
             if(hasCancelPermission()){
                 Jenkins.get().getQueue().cancel(this);
             }
-            return HttpResponses.status(HttpServletResponse.SC_NO_CONTENT);
+            return HttpResponses.forwardToPreviousPage();
         }
 
         /**
@@ -2417,7 +2411,6 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Restricted(NoExternalUse.class)
     @ExportedBean(defaultVisibility = 999)
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "it is exported, so it might be used")
     public class StubItem {
 
         @Exported public StubTask task;
@@ -2499,7 +2492,13 @@ public class Queue extends ResourceController implements Saveable {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
 
-            return Long.compare(this.getId(), that.getId());
+            if (this.getId() < that.getId()) {
+                return -1;
+            } else if (this.getId() == that.getId()) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
 
         public CauseOfBlockage getCauseOfBlockage() {

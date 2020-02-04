@@ -949,6 +949,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
       try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+        Jenkins.get().refreshExtensions();
+
+        for (PluginWrapper p : plugins) {
+            p.getPlugin().postInitialize();
+        }
+
+        // run initializers in the added plugins
+        Reactor r = new Reactor(InitMilestone.ordering());
+        Set<ClassLoader> loaders = plugins.stream().map(p -> p.classLoader).collect(Collectors.toSet());
+        r.addAll(new InitializerFinder(uberClassLoader) {
+            @Override
+            protected boolean filter(Method e) {
+                return !loaders.contains(e.getDeclaringClass().getClassLoader()) || super.filter(e);
+            }
+        }.discoverTasks(r));
+        new InitReactorRunner().run(r);
+
         Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
 
         // recalculate dependencies of plugins optionally depending the newly deployed ones.
@@ -976,20 +993,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (ExtensionRefreshException e) {
             throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
-        for (PluginWrapper p : plugins) {
-          p.getPlugin().postInitialize();
-        }
-
-        // run initializers in the added plugins
-        Reactor r = new Reactor(InitMilestone.ordering());
-        Set<ClassLoader> loaders = plugins.stream().map(p -> p.classLoader).collect(Collectors.toSet());
-        r.addAll(new InitializerFinder(uberClassLoader) {
-          @Override
-          protected boolean filter(Method e) {
-            return !loaders.contains(e.getDeclaringClass().getClassLoader()) || super.filter(e);
-          }
-        }.discoverTasks(r));
-        new InitReactorRunner().run(r);
       }
     }
 
@@ -1666,10 +1669,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             JSONArray dependencies = new JSONArray();
             try {
-                Manifest m;
-                try (JarFile jarFile = new JarFile(t)) {
-                    m = jarFile.getManifest();
-                }
+                Manifest m = new JarFile(t).getManifest();
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
                 if (StringUtils.isNotBlank(deps)) {

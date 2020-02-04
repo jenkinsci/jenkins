@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
 import jenkins.util.MemoryReductionUtil;
@@ -1037,6 +1038,8 @@ public abstract class Launcher {
 
         @Override
         @Nonnull
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", 
+                justification = "We always require nonnull channel when we initialize this launcher")
         public VirtualChannel getChannel() {
             VirtualChannel vc = super.getChannel();
             if (vc == null) {

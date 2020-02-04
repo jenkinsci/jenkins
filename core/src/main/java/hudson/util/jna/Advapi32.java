@@ -352,7 +352,7 @@ typedef struct _SERVICE_TABLE_ENTRY {
 
     @Override
     protected List getFieldOrder() {
-        return Arrays.asList("lpServiceName", "lpServiceProc");
+        return Arrays.asList(new String[] {"lpServiceName", "lpServiceProc"});
     }
   }
 
@@ -360,7 +360,7 @@ typedef struct _SERVICE_TABLE_ENTRY {
 
     @Override
     protected List getFieldOrder() {
-        return Arrays.asList();
+        return Arrays.asList(new String[] {});
     }
   }
 

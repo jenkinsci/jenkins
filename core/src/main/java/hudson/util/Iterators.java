@@ -50,7 +50,7 @@ public class Iterators {
      * Returns the empty iterator.
      */
     public static <T> Iterator<T> empty() {
-        return Collections.emptyIterator();
+        return Collections.<T>emptyList().iterator();
     }
 
     /**
@@ -62,7 +62,7 @@ public class Iterators {
 
         protected FlattenIterator(Iterator<? extends T> core) {
             this.core = core;
-            cur = Collections.emptyIterator();
+            cur = Collections.<U>emptyList().iterator();
         }
 
         protected FlattenIterator(Iterable<? extends T> core) {

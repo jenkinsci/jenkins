@@ -1,13 +1,14 @@
-import $ from 'jquery';
-import { getWindow } from 'window-handle';
-import page from '../../util/page';
-import tableMetadata from './model/ConfigTableMetaData';
-import behaviorShim from '../../util/behavior-shim';
-import jenkinsLocalStorage from '../../util/jenkinsLocalStorage';
+var jQD = require('jquery-detached');
+var page = require('../../util/page.js');
+var jenkinsLocalStorage = require('../../util/jenkinsLocalStorage.js');
+var tableMetadata = require('./model/ConfigTableMetaData.js');
+var behaviorShim = require('../../util/behavior-shim');
 
-export var tabBarShowPreferenceKey = 'config:usetabs';
+exports.tabBarShowPreferenceKey = 'config:usetabs';
 
-export var addPageTabs = function(configSelector, onEachConfigTable, options) {
+exports.addPageTabs = function(configSelector, onEachConfigTable, options) {
+    var $ = jQD.getJQuery();
+
     $(function() {
         behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function(el) {
             page.fixDragEvent(el);
@@ -19,30 +20,30 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
             // Only do job configs for now.
             var configTables = $(configSelector);
             if (configTables.size() > 0) {
-                var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
+                var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(exports.tabBarShowPreferenceKey, "yes");
 
                 page.fixDragEvent(configTables);
 
                 if (tabBarShowPreference === "yes") {
                     configTables.each(function() {
                         var configTable = $(this);
-                        var tabBar = addTabs(configTable, options);
+                        var tabBar = exports.addTabs(configTable, options);
 
                         onEachConfigTable.call(configTable, tabBar);
 
                         tabBar.deactivator.click(function() {
-                            jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "no");
-                            getWindow().location.reload();
+                            jenkinsLocalStorage.setGlobalItem(exports.tabBarShowPreferenceKey, "no");
+                            require('window-handle').getWindow().location.reload();
                         });
                     });
                 } else {
                     configTables.each(function() {
                         var configTable = $(this);
-                        var activator = addTabsActivator(configTable);
+                        var activator = exports.addTabsActivator(configTable);
                         tableMetadata.markConfigTableParentForm(configTable);
                         activator.click(function() {
-                            jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "yes");
-                            getWindow().location.reload();
+                            jenkinsLocalStorage.setGlobalItem(exports.tabBarShowPreferenceKey, "yes");
+                            require('window-handle').getWindow().location.reload();
                         });
                     });
                 }
@@ -51,11 +52,12 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
     });
 };
 
-export var addTabsOnFirst = function() {
-    return addTabs(tableMetadata.findConfigTables().first());
+exports.addTabsOnFirst = function() {
+    return exports.addTabs(tableMetadata.findConfigTables().first());
 };
 
-export var addTabs = function(configTable, options) {
+exports.addTabs = function(configTable, options) {
+    var $ = jQD.getJQuery();
     var configTableMetadata;
     var tabOptions = (options || {});
     var trackSectionVisibility = (tabOptions.trackSectionVisibility || false);
@@ -111,9 +113,9 @@ export var addTabs = function(configTable, options) {
     });
     configTableMetadata.deactivator = noTabs;
 
-    // Always activate the first section by default.
+    // Always activate the first section by default. 
     configTableMetadata.activateFirstSection();
-
+    
     if (trackSectionVisibility === true) {
         configTableMetadata.trackSectionVisibility();
     }
@@ -121,14 +123,16 @@ export var addTabs = function(configTable, options) {
     return configTableMetadata;
 };
 
-export var addTabsActivator = function(configTable) {
+exports.addTabsActivator = function(configTable) {
+    var $ = jQD.getJQuery();
     var configWidgets = $('<div class="jenkins-config-widgets"><div class="showTabs" title="Add configuration section tabs">Add tabs</div></div>');
     configWidgets.insertBefore(configTable.parent());
     return configWidgets;
 };
 
 
-export var addFinderToggle = function(configTableMetadata) {
+exports.addFinderToggle = function(configTableMetadata) {
+    var $ = jQD.getJQuery();
     var findToggle = $('<div class="find-toggle" title="Find"></div>');
     var finderShowPreferenceKey = 'config:showfinder';
 

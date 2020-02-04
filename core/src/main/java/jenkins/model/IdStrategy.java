@@ -35,7 +35,6 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.function.Function;
@@ -189,9 +188,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive {@link IdStrategy}
      */
-    public static class CaseInsensitive extends IdStrategy implements Serializable {
-
-        private static final long serialVersionUID = -7244768200684861085L;
+    public static class CaseInsensitive extends IdStrategy {
 
         @DataBoundConstructor
         public CaseInsensitive() {}
@@ -227,9 +224,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * A case sensitive {@link IdStrategy}
      */
-    public static class CaseSensitive extends IdStrategy implements Serializable {
-
-        private static final long serialVersionUID = 8339425353883308324L;
+    public static class CaseSensitive extends IdStrategy {
 
         @DataBoundConstructor
         public CaseSensitive() {}
@@ -273,9 +268,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
      */
-    public static class CaseSensitiveEmailAddress extends CaseSensitive implements Serializable {
-
-        private static final long serialVersionUID = -5713655323057260180L;
+    public static class CaseSensitiveEmailAddress extends CaseSensitive {
 
         @DataBoundConstructor
         public CaseSensitiveEmailAddress() {}

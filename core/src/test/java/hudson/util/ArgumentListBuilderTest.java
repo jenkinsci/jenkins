@@ -222,9 +222,11 @@ public class ArgumentListBuilderTest {
         map.put("TWO", "two\\\\backslashes");
         map.put("FOUR", "four\\\\\\\\backslashes");
 
-        final String properties = "one=$ONE\n" +
-                "two=$TWO\n" +
-                "four=$FOUR\n"
+        final String properties = new StringBuilder()
+                .append("one=$ONE\n")
+                .append("two=$TWO\n")
+                .append("four=$FOUR\n")
+                .toString()
         ;
 
         final String args = new ArgumentListBuilder()

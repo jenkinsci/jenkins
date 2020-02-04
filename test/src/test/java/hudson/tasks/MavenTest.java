@@ -360,7 +360,7 @@ public class MavenTest {
         MavenInstallation maven = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureMaven3();
         assertEquals(maven.hashCode(), maven2.hashCode());
-        assertEquals(maven, maven2);
+        assertTrue(maven.equals(maven2));
     }
 
     @Issue("JENKINS-34138")
@@ -368,6 +368,6 @@ public class MavenTest {
         MavenInstallation maven3 = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
         assertNotEquals(maven3.hashCode(), maven2.hashCode());
-        assertNotEquals(maven3, maven2);
+        assertFalse(maven3.equals(maven2));
     }
 }

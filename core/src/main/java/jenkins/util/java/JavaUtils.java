@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class JavaUtils {
 
     private JavaUtils() {
-        // Cannot construct
+        // Cannnot construct
     }
 
     /**

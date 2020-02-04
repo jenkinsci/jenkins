@@ -1203,7 +1203,9 @@ public class Fingerprint implements ModelObject, Saveable {
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();
                 long b = o2.getTimestamp();
-                return Long.compare(a, b);
+                if (a < b) return -1;
+                if (a == b) return 0;
+                return 1;
             }
         });
         return r;

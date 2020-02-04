@@ -56,11 +56,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.awt.*;
-import java.util.logging.Level;
 import static org.hamcrest.Matchers.instanceOf;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -71,9 +69,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class JNLPLauncherTest {
     @Rule public JenkinsRule j = new JenkinsRule();
     
-    @Rule public TemporaryFolder tmpDir = new TemporaryFolder();
-
-    @Rule public LoggerRule logging = new LoggerRule().record(Slave.class, Level.FINE);
+    @Rule public TemporaryFolder tmpDir = new TemporaryFolder(); 
 
     /**
      * Starts a JNLP agent and makes sure it successfully connects to Jenkins. 
@@ -102,7 +98,7 @@ public class JNLPLauncherTest {
 
     /**
      * Tests the '-headless' option.
-     * (Although this test doesn't really assert that the agent really is running in a headless mode.)
+     * (Although this test doesn't really assert that the agent really is running in a headless mdoe.)
      */
     @Test
     public void testHeadlessLaunch() throws Exception {

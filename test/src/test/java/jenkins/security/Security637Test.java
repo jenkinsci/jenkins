@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLStreamHandler;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,7 +51,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import org.junit.Ignore;
 
 public class Security637Test {
     
@@ -90,8 +88,7 @@ public class Security637Test {
             return handler.getClass().getName();
         }
     }
-
-    @Ignore("TODO these map to different IPs now")
+    
     @Test
     @Issue("SECURITY-637")
     public void urlDnsEquivalence() {
@@ -107,7 +104,6 @@ public class Security637Test {
         });
     }
     
-    @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() {
@@ -140,7 +136,6 @@ public class Security637Test {
         }
     }
     
-    @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() {
@@ -225,9 +220,11 @@ public class Security637Test {
         
         private Set<URL> urlSet;
         
-        public URLJobProperty(URL... urls) {
+        public URLJobProperty(URL... urls) throws Exception {
             this.urlSet = new HashSet<>();
-            Collections.addAll(urlSet, urls);
+            for (URL url : urls) {
+                urlSet.add(url);
+            }
         }
         
         @Override

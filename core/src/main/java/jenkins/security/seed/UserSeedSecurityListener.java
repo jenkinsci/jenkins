@@ -44,15 +44,15 @@ import javax.servlet.http.HttpSession;
 public class UserSeedSecurityListener extends SecurityListener {
     @Override 
     protected void loggedIn(@Nonnull String username) {
-        putUserSeedInSession(username, true);
+        putUserSeedInSession(username);
     }
     
     @Override 
     protected void authenticated(@Nonnull UserDetails details) {
-        putUserSeedInSession(details.getUsername(), false);
+        putUserSeedInSession(details.getUsername());
     }
 
-    private static void putUserSeedInSession(String username, boolean overwriteSessionSeed) {
+    private void putUserSeedInSession(String username) {
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req == null) {
             // expected case: CLI
@@ -67,10 +67,6 @@ public class UserSeedSecurityListener extends SecurityListener {
         }
 
         if (!UserSeedProperty.DISABLE_USER_SEED) {
-            if (!overwriteSessionSeed && session.getAttribute(UserSeedProperty.USER_SESSION_SEED) != null) {
-                return;
-            }
-
             User user = User.getById(username, true);
 
             UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);

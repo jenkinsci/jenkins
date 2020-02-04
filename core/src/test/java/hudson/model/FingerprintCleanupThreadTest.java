@@ -65,7 +65,7 @@ public class FingerprintCleanupThreadTest {
     }
 
     @Test
-    public void testGetRecurrencePeriod() throws IOException {
+    public void testGetRecurencePeriod() throws IOException {
         FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint());
         assertEquals("Wrong recurrence period.", PeriodicWork.DAY, cleanupThread.getRecurrencePeriod());
     }

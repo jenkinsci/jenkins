@@ -225,7 +225,10 @@ public class Items {
         final Jenkins jenkins = Jenkins.get();
         
         List<T> r = new ArrayList<>();
-
+        if (jenkins == null) {
+            return r;
+        }
+        
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();

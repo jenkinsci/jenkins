@@ -1,7 +1,0 @@
-{
-  "transform": {
-      "\\.hbs$": "jest-handlebars",
-      "\\.js$": "babel-jest"
-  },
-  "reporters": ["jest-standard-reporter"]
-}

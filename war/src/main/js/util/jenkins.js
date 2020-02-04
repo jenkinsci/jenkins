@@ -1,15 +1,17 @@
 /**
  * Jenkins JS Modules common utility functions
  */
-import $ from 'jquery';
-import wh from 'window-handle';
-import Handlebars from 'handlebars';
+
+// Get the modules
+
+var jquery = require('jquery-detached');
+var wh = require('window-handle');
 
 var debug = false;
-var jenkins = {};
 
 // gets the base Jenkins URL including context path
-jenkins.baseUrl = function() {
+exports.baseUrl = function() {
+	var $ = jquery.getJQuery();
 	var u = $('head').attr('data-rooturl');
 	if(!u) {
 		u = '';
@@ -18,7 +20,7 @@ jenkins.baseUrl = function() {
 };
 
 // awful hack to get around JSONifying things with Prototype taking over wrong. ugh. Prototype is the worst.
-jenkins.stringify = function(o) {
+exports.stringify = function(o) {
 	if(Array.prototype.toJSON) { // Prototype f's this up something bad
 		var protoJSON = {
 			a: Array.prototype.toJSON,
@@ -55,22 +57,30 @@ jenkins.stringify = function(o) {
 };
 
 /**
+ * Take a string and replace non-id characters to make it a friendly-ish XML id
+ */
+exports.idIfy = function(str) {
+	return (''+str).replace(/\W+/g, '_');
+};
+
+/**
  * redirect
  */
-jenkins.goTo = function(url) {
-	wh.getWindow().location.replace(jenkins.baseUrl() + url);
+exports.goTo = function(url) {
+	wh.getWindow().location.replace(exports.baseUrl() + url);
 };
 
 /**
  * Jenkins AJAX GET callback.
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
-jenkins.get = function(url, success, options) {
+exports.get = function(url, success, options) {
 	if(debug) {
 		console.log('get: ' + url);
 	}
+	var $ = jquery.getJQuery();
 	var args = {
-		url: jenkins.baseUrl() + url,
+		url: exports.baseUrl() + url,
 		type: 'GET',
 		cache: false,
 		dataType: 'json',
@@ -86,11 +96,13 @@ jenkins.get = function(url, success, options) {
  * Jenkins AJAX POST callback, formats data as a JSON object post (note: works around prototype.js ugliness using stringify() above)
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
-jenkins.post = function(url, data, success, options) {
+exports.post = function(url, data, success, options) {
 	if(debug) {
 		console.log('post: ' + url);
 	}
-
+	
+	var $ = jquery.getJQuery();
+	
 	// handle crumbs
 	var headers = {};
 	var wnd = wh.getWindow();
@@ -112,11 +124,11 @@ jenkins.post = function(url, data, success, options) {
 			formBody = $.extend({}, formBody);
 			formBody[crumb.fieldName] = crumb.value;
 		}
-		formBody = jenkins.stringify(formBody);
+		formBody = exports.stringify(formBody);
 	}
 	
 	var args = {
-		url: jenkins.baseUrl() + url,
+		url: exports.baseUrl() + url,
 		type: 'POST',
 		cache: false,
 		dataType: 'json',
@@ -132,18 +144,49 @@ jenkins.post = function(url, data, success, options) {
 };
 
 /**
- *  handlebars setup, done for backwards compatibility because some plugins depend on it
+ *  handlebars setup, this does not seem to actually work or get called by the require() of this file, so have to explicitly call it
  */
-jenkins.initHandlebars = function() {
+exports.initHandlebars = function() {
+	var Handlebars = require('handlebars');
+
+	Handlebars.registerHelper('ifeq', function(o1, o2, options) {
+		if(o1 === o2) {
+			return options.fn();
+		}
+	});
+
+	Handlebars.registerHelper('ifneq', function(o1, o2, options) {
+		if(o1 !== o2) {
+			return options.fn();
+		}
+	});
+
+	Handlebars.registerHelper('in-array', function(arr, val, options) {
+		if(arr.indexOf(val) >= 0) {
+			return options.fn();
+		}
+	});
+
+	Handlebars.registerHelper('id', exports.idIfy);
+
+	Handlebars.registerHelper('replace', function() {
+		var val = arguments[0];
+		// second, through second to last - options is last
+		for (var i = 1; i < arguments.length - 1; i++) {
+			val = val.replace('{' + (i-1) + '}', arguments[i]);
+		}
+		return val;
+	});
+
 	return Handlebars;
-}
+};
 
 /**
  * Load translations for the given bundle ID, provide the message object to the handler.
  * Optional error handler as the last argument.
  */
-jenkins.loadTranslations = function(bundleName, handler, onError) {
-	jenkins.get('/i18n/resourceBundle?baseName='  +bundleName, function(res) {
+exports.loadTranslations = function(bundleName, handler, onError) {
+	exports.get('/i18n/resourceBundle?baseName='  +bundleName, function(res) {
 		if(res.status !== 'ok') {
 			if(onError) {
 				onError(res.message);
@@ -175,10 +218,10 @@ jenkins.loadTranslations = function(bundleName, handler, onError) {
 /**
  * Runs a connectivity test, calls handler with a boolean whether there is sufficient connectivity to the internet
  */
-jenkins.testConnectivity = function(siteId, handler) {
+exports.testConnectivity = function(siteId, handler) {
 	// check the connectivity api
 	var testConnectivity = function() {
-		jenkins.get('/updateCenter/connectionStatus?siteId=' + siteId, function(response) {
+		exports.get('/updateCenter/connectionStatus?siteId=' + siteId, function(response) {
 			if(response.status !== 'ok') {
 				handler(false, true, response.message);
 			}
@@ -192,7 +235,7 @@ jenkins.testConnectivity = function(siteId, handler) {
 			else {
 				// Update site should be always reachable, but we do not require the internet connection
 				// if it's explicitly skipped by the update center
-				if(response.status !== 'ok' || response.data.updatesite !== 'OK' ||
+				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || 
 							(response.data.internet !== 'OK' && response.data.internet !== 'SKIPPED')) {
 					// no connectivity, but not fatal
 					handler(false, false);
@@ -203,7 +246,7 @@ jenkins.testConnectivity = function(siteId, handler) {
 			}
 		}, { error: function(xhr, textStatus, errorThrown) {
                  if (xhr.status === 403) {
-                     jenkins.goTo('/login');
+                     exports.goTo('/login');
                  } else {
                      handler.call({ isError: true, errorMessage: errorThrown });
                  }
@@ -216,7 +259,8 @@ jenkins.testConnectivity = function(siteId, handler) {
 /**
  * gets the window containing a form, taking in to account top-level iframes
  */
-jenkins.getWindow = function($form) {
+exports.getWindow = function($form) {
+	var $ = jquery.getJQuery();
 	$form = $($form);
 	var wnd = wh.getWindow();
 	$(top.document).find('iframe').each(function() {
@@ -234,12 +278,13 @@ jenkins.getWindow = function($form) {
 /**
  * Builds a stapler form post
  */
-jenkins.buildFormPost = function($form) {
+exports.buildFormPost = function($form) {
+	var $ = jquery.getJQuery();
 	$form = $($form);
-	var wnd = jenkins.getWindow($form);
+	var wnd = exports.getWindow($form);
 	var form = $form[0];
 	if(wnd.buildFormTree(form)) {
-		return $form.serialize() + "&" + $.param({
+		return $form.serialize() + "&" + jquery.param({
 			'core:apply': '',
 			'Submit': 'Save',
 			'json': $form.find('input[name=json]').val()
@@ -251,9 +296,10 @@ jenkins.buildFormPost = function($form) {
 /**
  * Gets the crumb, if crumbs are enabled
  */
-jenkins.getFormCrumb = function($form) {
+exports.getFormCrumb = function($form) {
+	var $ = jquery.getJQuery();
 	$form = $($form);
-	var wnd = jenkins.getWindow($form);
+	var wnd = exports.getWindow($form);
 	return wnd.crumb;
 };
 
@@ -261,11 +307,12 @@ jenkins.getFormCrumb = function($form) {
  * Jenkins Stapler JSON POST callback
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
-jenkins.staplerPost = function(url, $form, success, options) {
+exports.staplerPost = function(url, $form, success, options) {
+	var $ = jquery.getJQuery();
 	$form = $($form);
-	var postBody = jenkins.buildFormPost($form);
-	var crumb = jenkins.getFormCrumb($form);
-	jenkins.post(
+	var postBody = exports.buildFormPost($form);
+	var crumb = exports.getFormCrumb($form);
+	exports.post(
 		url,
 		postBody,
 		success, $.extend({
@@ -274,5 +321,3 @@ jenkins.staplerPost = function(url, $form, success, options) {
 			crumb: crumb
 		}, options));
 };
-
-export default jenkins;

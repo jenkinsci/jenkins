@@ -195,10 +195,9 @@ public final class Result implements Serializable, CustomExportedBean {
         public int parseArguments(Parameters params) throws CmdLineException {
             String param = params.getParameter(0);
             Result v = fromString(param.replace('-', '_'));
-            if (v== FAILURE) {
+            if (v==null)
                 throw new CmdLineException(owner,"No such status '"+param+"'. Did you mean "+
                         EditDistance.findNearest(param.replace('-', '_').toUpperCase(), getNames()));
-            }
             setter.addValue(v);
             return 1;
         }

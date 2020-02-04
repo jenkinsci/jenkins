@@ -113,13 +113,12 @@ public class TextFile {
      */
     public void write(String text) throws IOException {
         file.getParentFile().mkdirs();
-        try (AtomicFileWriter w = new AtomicFileWriter(file)) {
-            try {
-                w.write(text);
-                w.commit();
-            } finally {
-                w.abort();
-            }
+        AtomicFileWriter w = new AtomicFileWriter(file);
+        try {
+            w.write(text);
+            w.commit();
+        } finally {
+            w.abort();
         }
     }
 

@@ -31,10 +31,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -47,7 +43,7 @@ public class RSSTest {
     @Test
     @Issue("JENKINS-59167")
     public void absoluteURLsPresentInRSS_evenWithoutRootUrlSetup() throws Exception {
-        XmlPage page = getRssAllPage();
+        XmlPage page = getRssPage();
         NodeList allLinks = page.getXmlDocument().getElementsByTagName("link");
 
         assertEquals(1, allLinks.getLength());
@@ -56,14 +52,14 @@ public class RSSTest {
         FreeStyleProject p = j.createFreeStyleProject();
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        page = getRssAllPage();
+        page = getRssPage();
         allLinks = page.getXmlDocument().getElementsByTagName("link");
 
         assertEquals(2, allLinks.getLength());
         assertAllRSSLinksContainRootUrl(allLinks);
     }
 
-    private XmlPage getRssAllPage() throws Exception {
+    private XmlPage getRssPage() throws Exception {
         return (XmlPage) j.createWebClient().goTo("rssAll?flavor=rss20", "text/xml");
     }
 
@@ -78,7 +74,7 @@ public class RSSTest {
     @Test
     @Issue("JENKINS-59167")
     public void absoluteURLsPresentInAtom_evenWithoutRootUrlSetup() throws Exception {
-        XmlPage page = getRssAllAtomPage();
+        XmlPage page = getAtomPage();
         NodeList allLinks = page.getXmlDocument().getElementsByTagName("link");
 
         assertEquals(1, allLinks.getLength());
@@ -87,14 +83,14 @@ public class RSSTest {
         FreeStyleProject p = j.createFreeStyleProject();
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        page = getRssAllAtomPage();
+        page = getAtomPage();
         allLinks = page.getXmlDocument().getElementsByTagName("link");
 
         assertEquals(2, allLinks.getLength());
         assertAllAtomLinksContainRootUrl(allLinks);
     }
 
-    private XmlPage getRssAllAtomPage() throws Exception {
+    private XmlPage getAtomPage() throws Exception {
         return (XmlPage) j.createWebClient().goTo("rssAll", "application/atom+xml");
     }
 
@@ -105,52 +101,5 @@ public class RSSTest {
             String url = hrefAttr.getNodeValue();
             assertThat(url, containsString(j.getURL().toString()));
         }
-    }
-
-    @Issue("JENKINS-60577")
-    @Test
-    public void latestBuilds() throws Exception {
-        XmlPage page = getRssLatestPage();
-        NodeList allLinks = page.getXmlDocument().getElementsByTagName("link");
-
-        assertEquals(1, allLinks.getLength());
-
-        FreeStyleProject p = j.createFreeStyleProject("test1");
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-
-        p = j.createFreeStyleProject("test2");
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-
-        page = getRssLatestPage();
-        allLinks = page.getXmlDocument().getElementsByTagName("link");
-
-        assertEquals(3, allLinks.getLength());
-        assertLatestRSSLinks(allLinks);
-
-        page = getRssAllPage();
-        allLinks = page.getXmlDocument().getElementsByTagName("link");
-        assertEquals(6, allLinks.getLength());
-    }
-
-    private XmlPage getRssLatestPage() throws Exception {
-        return (XmlPage) j.createWebClient().goTo("rssLatest?flavor=rss20", "text/xml");
-    }
-
-    private void assertLatestRSSLinks(NodeList allLinks) throws Exception {
-        List<String> urls = new ArrayList<>(allLinks.getLength());
-        for (int i = 0; i < allLinks.getLength(); i++) {
-            Node item = allLinks.item(i);
-            String url = item.getTextContent();
-            urls.add(url);
-        }
-
-        assertThat(urls, containsInAnyOrder(
-                j.getURL().toString(),
-                j.getURL().toString() + "job/test1/2/",
-                j.getURL().toString() + "job/test2/3/"
-        ));
     }
 }

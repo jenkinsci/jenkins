@@ -30,9 +30,6 @@ import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -83,7 +80,7 @@ import jenkins.model.GlobalConfiguration;
  * @author Kohsuke Kawaguchi
  * @since 1.42
  */
-public abstract class Plugin implements Saveable, StaplerProxy {
+public abstract class Plugin implements Saveable {
 
     private static final Logger LOGGER = Logger.getLogger(Plugin.class.getName());
 
@@ -296,20 +293,6 @@ public abstract class Plugin implements Saveable, StaplerProxy {
                 new File(Jenkins.get().getRootDir(),wrapper.getShortName()+".xml"));
     }
 
-    @Override
-    @Restricted(NoExternalUse.class)
-    public Object getTarget() {
-        if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.READ);
-        }
-        return this;
-    }
-
-    /**
-     * Escape hatch for StaplerProxy-based access control
-     */
-    @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**
      * Dummy instance of {@link Plugin} to be used when a plugin didn't

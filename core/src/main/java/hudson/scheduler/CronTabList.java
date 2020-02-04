@@ -106,12 +106,11 @@ public final class CronTabList {
             line = line.trim();
             
             if(lineNumber == 1 && line.startsWith("TZ=")) {
-                final String timezoneString = line.replace("TZ=", "");
-                timezone = getValidTimezone(timezoneString);
+                timezone = getValidTimezone(line.replace("TZ=",""));
                 if(timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
+                    throw new ANTLRException("Invalid or unsupported timezone '" + timezone + "'");
                 }
                 continue;
             }

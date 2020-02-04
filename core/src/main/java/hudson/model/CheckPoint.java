@@ -101,7 +101,7 @@ public final class CheckPoint {
     }
 
     /**
-     * Records that the execution of the build has reached to a check point, identified
+     * Records that the execution of the build has reached to a check point, idenified
      * by the given identifier.
      *
      * <p>

@@ -55,7 +55,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +71,6 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import javax.annotation.Nonnull;
 
 /**
  * Group of {@link Node}s.
@@ -86,19 +84,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Display name of this label.
      */
-    @Nonnull
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
-    @Nonnull
     public transient final LoadStatistics loadStatistics;
-    @Nonnull
     public transient final NodeProvisioner nodeProvisioner;
 
-    public Label(@Nonnull String name) {
+    public Label(String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
@@ -142,7 +137,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
-    @Nonnull
     public String getDisplayName() {
         return name;
     }
@@ -204,9 +198,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
-    private static class NodeSorter implements Comparator<Node>, Serializable {
-        private static final long serialVersionUID = -7368519598046684532L;
-
+    private static class NodeSorter implements Comparator<Node> {
         @Override
         public int compare(Node o1, Node o2) {
             if (o1 == o2) {

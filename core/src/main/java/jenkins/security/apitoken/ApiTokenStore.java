@@ -190,6 +190,7 @@ public class ApiTokenStore {
         return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
     
+    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     private @Nonnull String plainSecretToHashInHex(@Nonnull String secretValueInPlainText) {
         byte[] hashBytes = plainSecretToHashBytes(secretValueInPlainText);
         return Util.toHexString(hashBytes);

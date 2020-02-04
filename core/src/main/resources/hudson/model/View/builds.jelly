@@ -32,9 +32,6 @@ THE SOFTWARE.
         <l:icon class="icon-notepad icon-xlg"/>
         ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
       </h1>
-      <p>
-        <em>${%disclaimer}</em>
-      </p>
 
       <j:if test="${!request.getParameter('suppressTimelineControl')}"> <!-- cf. BuildListTableTest; breaks HtmlUnit -->
         <st:include page="control.jelly" it="${it.timeline}"/>

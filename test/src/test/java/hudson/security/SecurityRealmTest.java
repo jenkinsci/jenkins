@@ -106,6 +106,7 @@ public class SecurityRealmTest {
         calendar.add(Calendar.DAY_OF_YEAR, 1);
         Date tomorrow = calendar.getTime();
         Collections.nCopies(8, 1)
+                .stream()
                 .forEach(i -> addSessionCookie(manager, LOCALHOST, "/jenkins", tomorrow));
         addSessionCookie(manager, LOCALHOST, WILL_NOT_BE_SENT, tomorrow);
 

@@ -1,22 +1,16 @@
-import $ from 'jquery';
-import windowHandle from 'window-handle';
-import page from './util/page';
-import * as tabBarWidget from './widgets/config/tabbar';
-
+var $ = require('jquery-detached').getJQuery();
+var page = require('./util/page.js');
+var windowHandle = require('window-handle');
 var isScrolling = false;
 var ignoreNextScrollEvent = false;
 var pageHeaderHeight = page.pageHeaderHeight();
 var breadcrumbBarHeight = page.breadcrumbBarHeight();
 
 // Some stuff useful for testing.
-export var tabbars = [];
-export var scrollspeed = 500;
-// Used to set scrollspeed from the the test suite
-export function setScrollspeed(newScrollspeed) {
-    scrollspeed = newScrollspeed;
-}
+exports.tabbars = [];
+exports.scrollspeed = 500;
 var eventListeners = [];
-export var on = function(listener) {
+exports.on = function(listener) {
     eventListeners.push(listener);
 };
 function notify(event) {
@@ -26,8 +20,10 @@ function notify(event) {
 }
 
 $(function() {
+    var tabBarWidget = require('./widgets/config/tabbar.js');
+
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
-        tabbars.push(tabBar);
+        exports.tabbars.push(tabBar);
 
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
@@ -54,7 +50,7 @@ function scrollTo(section, tabBar) {
     isScrolling = true;
     $('html,body').animate({
         scrollTop: scrollTop
-    }, scrollspeed, function() {
+    }, exports.scrollspeed, function() {
         if (isScrolling) {
             notify({
                 type: 'click_scrollto',

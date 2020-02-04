@@ -316,24 +316,13 @@ public class UpdateSite {
     }
 
     /**
-     * Whether {@link #getData} might be blocking.
-     */
-    // Internal use only
-    boolean hasUnparsedData() {
-        return data == null && getDataFile().exists();
-    }
-
-    /**
      * Gets the raw update center JSON data.
      */
     public JSONObject getJSONObject() {
         TextFile df = getDataFile();
         if(df.exists()) {
-            long start = System.nanoTime();
             try {
-                JSONObject o = JSONObject.fromObject(df.read());
-                LOGGER.fine(() -> String.format("Loaded and parsed %s in %.01fs", df, (System.nanoTime() - start) / 1_000_000_000.0));
-                return o;
+                return JSONObject.fromObject(df.read());
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures

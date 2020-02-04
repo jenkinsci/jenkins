@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Wraps commons file-upload and handles a "multipart/form-data" form submission
+ * Wraps commons file-upload and handles a "multipart/form-data" form submisison
  * (that often includes file upload.)
  *
  * @author Kohsuke Kawaguchi

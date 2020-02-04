@@ -6,8 +6,7 @@ import hudson.util.Secret;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
-
-import jenkins.slaves.JnlpAgentReceiver;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 
 /**
  * Confidential information that gets stored as a singleton in Jenkins, mostly some random token value.
@@ -26,7 +25,7 @@ import jenkins.slaves.JnlpAgentReceiver;
  * for the secret to leak.
  *
  * <p>
- * The {@link ConfidentialKey} subtypes are expected to be used as a singleton, like {@link JnlpAgentReceiver#SLAVE_SECRET}.
+ * The {@link ConfidentialKey} subtypes are expected to be used as a singleton, like {@link JnlpSlaveAgentProtocol#SLAVE_SECRET}.
  * For code that relies on XStream for persistence (such as {@link Builder}s, {@link SCM}s, and other fragment objects
  * around builds and jobs), {@link Secret} provides more convenient way of storing secrets.
  *

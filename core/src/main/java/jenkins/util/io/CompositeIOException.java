@@ -29,6 +29,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +42,6 @@ public class CompositeIOException extends IOException {
     public CompositeIOException(String message, @Nonnull List<IOException> exceptions) {
         super(message);
         this.exceptions = exceptions;
-        exceptions.forEach(this::addSuppressed);
     }
 
     public CompositeIOException(String message, IOException... exceptions) {
@@ -49,6 +50,22 @@ public class CompositeIOException extends IOException {
 
     public List<IOException> getExceptions() {
         return exceptions;
+    }
+
+    @Override
+    public void printStackTrace(PrintStream s) {
+        super.printStackTrace(s);
+        for (IOException exception : exceptions) {
+            exception.printStackTrace(s);
+        }
+    }
+
+    @Override
+    public void printStackTrace(PrintWriter s) {
+        super.printStackTrace(s);
+        for (IOException exception : exceptions) {
+            exception.printStackTrace(s);
+        }
     }
 
     public UncheckedIOException asUncheckedIOException() {

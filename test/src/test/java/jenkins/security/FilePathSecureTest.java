@@ -63,8 +63,11 @@ public class FilePathSecureTest {
         dir.mkdirs();
         dir.child("stuff").write("hello", null);
         FilePath tar = root.child("dir.tar");
-        try (OutputStream os = tar.write()) {
+        OutputStream os = tar.write();
+        try {
             dir.tar(os, new DirScanner.Full());
+        } finally {
+            os.close();
         }
         tar.untar(remote, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
@@ -85,8 +88,11 @@ public class FilePathSecureTest {
         dir.mkdirs();
         dir.child("stuff").write("hello", null);
         FilePath tar = root.child("dir.tar");
-        try (OutputStream os = tar.write()) {
+        OutputStream os = tar.write();
+        try {
             dir.tar(os, new DirScanner.Full());
+        } finally {
+            os.close();
         }
         tar.untar(root, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());

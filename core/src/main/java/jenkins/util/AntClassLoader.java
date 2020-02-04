@@ -29,10 +29,10 @@ import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
 import org.apache.tools.ant.util.ReflectUtil;
+import org.apache.tools.ant.util.VectorSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,6 @@ import java.nio.file.Files;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -155,7 +154,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             URL url = null;
             while ((pathElementsIndex < pathComponents.size()) && (url == null)) {
                 try {
-                    File pathComponent = pathComponents.get(pathElementsIndex);
+                    File pathComponent = (File) pathComponents.elementAt(pathElementsIndex);
                     url = getResourceURL(pathComponent, this.resourceName);
                     pathElementsIndex++;
                 } catch (BuildException e) {
@@ -181,7 +180,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * The components of the classpath that the classloader searches
      * for classes.
      */
-    private ArrayList<File> pathComponents = new ArrayList<>();
+    private Vector pathComponents  = new VectorSet();
 
     /**
      * The project to which this class loader belongs.
@@ -362,7 +361,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *        jar/zip files.
      */
     public void setClassPath(Path classpath) {
-        pathComponents.clear();
+        pathComponents.removeAllElements();
         if (classpath != null) {
             Path actualClasspath = classpath.concatSystemClasspath("ignore");
             String[] pathElements = actualClasspath.list();
@@ -474,7 +473,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         if (pathComponents.contains(file)) {
             return;
         }
-        pathComponents.add(file);
+        pathComponents.addElement(file);
     }
 
     /**
@@ -489,7 +488,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      */
     protected void addPathFile(File pathComponent) throws IOException {
         if (!pathComponents.contains(pathComponent)) {
-            pathComponents.add(pathComponent);
+            pathComponents.addElement(pathComponent);
         }
         if (pathComponent.isDirectory()) {
             return;
@@ -543,13 +542,14 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     public String getClasspath() {
         StringBuilder sb = new StringBuilder();
         boolean firstPass = true;
-        for (File pathComponent : pathComponents) {
+        Enumeration componentEnum = pathComponents.elements();
+        while (componentEnum.hasMoreElements()) {
             if (!firstPass) {
                 sb.append(System.getProperty("path.separator"));
             } else {
                 firstPass = false;
             }
-            sb.append(pathComponent.getAbsolutePath());
+            sb.append(((File) componentEnum.nextElement()).getAbsolutePath());
         }
         return sb.toString();
     }
@@ -743,13 +743,14 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     private InputStream loadResource(String name) {
         // we need to search the components of the path to see if we can
         // find the class we want.
-        for (File pathComponent : pathComponents) {
-            InputStream stream = getResourceStream(pathComponent, name);
-            if (stream != null) {
-                return stream;
-            }
+        InputStream stream = null;
+
+        Enumeration e = pathComponents.elements();
+        while (e.hasMoreElements() && stream == null) {
+            File pathComponent = (File) e.nextElement();
+            stream = getResourceStream(pathComponent, name);
         }
-        return null;
+        return stream;
     }
 
     /**
@@ -851,7 +852,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     }
 
     /**
-     * Used for isolated resource searching.
+     * Used for isolated resource seaching.
      * @return the root classloader of AntClassLoader.
      */
     private ClassLoader getRootLoader() {
@@ -886,7 +887,14 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         } else {
             // try and load from this loader if the parent either didn't find
             // it or wasn't consulted.
-            url = getUrl(pathComponents, name);
+            Enumeration e = pathComponents.elements();
+            while (e.hasMoreElements() && url == null) {
+                File pathComponent = (File) e.nextElement();
+                url = getResourceURL(pathComponent, name);
+                if (url != null) {
+                    log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
+                }
+            }
         }
         if (url == null && !isParentFirst(name)) {
             // this loader was first but it didn't find it - try the parent
@@ -901,26 +909,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         }
         if (url == null) {
             log("Couldn't load Resource " + name, Project.MSG_DEBUG);
-        }
-        return url;
-    }
-
-    /**
-     * Finds a matching file by iterating pathComponents.
-     *
-     * @param pathComponents Path to a folder, split into the individual folder names
-     * @param name File to find
-     * @return Url to found object
-     */
-    @CheckForNull
-    protected URL getUrl(Iterable<File> pathComponents, String name) {
-        URL url = null;
-        for (File pathComponent : pathComponents) {
-            url = getResourceURL(pathComponent, name);
-            if (url != null) {
-                log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
-                break;
-            }
         }
         return url;
     }
@@ -1369,7 +1357,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // we need to search the components of the path to see if
         // we can find the class we want.
         String classFilename = getClassFilename(name);
-        for (File pathComponent : pathComponents) {
+        Enumeration e = pathComponents.elements();
+        while (e.hasMoreElements()) {
+            File pathComponent = (File) e.nextElement();
             try (final InputStream stream = getResourceStream(pathComponent, classFilename)) {
                 if (stream != null) {
                     log("Loaded from " + pathComponent + " "

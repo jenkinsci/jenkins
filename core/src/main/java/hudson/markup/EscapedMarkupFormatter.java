@@ -47,9 +47,7 @@ public class EscapedMarkupFormatter extends MarkupFormatter {
 
     @Override
     public void translate(String markup, Writer output) throws IOException {
-        if (markup != null) {
-            output.write(Util.escape(markup));
-        }
+        output.write(Util.escape(markup));
     }
 
     @Extension @Symbol("plainText")

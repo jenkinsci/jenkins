@@ -304,7 +304,6 @@ import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.WebMethod;
 
 /**
@@ -2346,15 +2345,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
-    /** Exported alias for {@link JenkinsLocationConfiguration#getUrl}. */
-    @Exported(name="url")
-    @Restricted(DoNotUse.class)
-    @CheckForNull
-    public String getConfiguredRootUrl() {
-        JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
-        return config != null ? config.getUrl() : null;
-    }
-
     /**
      * Is Jenkins running in HTTPS?
      *
@@ -3708,7 +3698,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownThreadPoolForLoad(List<Throwable> errors) {
-        LOGGER.log(FINE, "Shutting down Jenkins load thread pool");
+        LOGGER.log(FINE, "Shuting down Jenkins load thread pool");
         try {
             threadPoolForLoad.shutdown();
         } catch (SecurityException e) {
@@ -5114,8 +5104,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         VERSION = ver;
         context.setAttribute("version",ver);
 
-        CHANGELOG_URL = props.getProperty("changelog.url");
-
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
@@ -5138,9 +5126,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Version number of this Jenkins.
      */
     public static String VERSION = UNCOMPUTED_VERSION;
-
-    @Restricted(NoExternalUse.class)
-    public static String CHANGELOG_URL;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number

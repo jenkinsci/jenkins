@@ -28,7 +28,6 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -49,7 +48,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderDescriptor;
-import jenkins.util.io.CompositeIOException;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -62,8 +60,6 @@ import jenkins.util.io.CompositeIOException;
  */
 public class LogRotator extends BuildDiscarder {
     
-    /** @deprecated Replaced by more generic {@link CompositeIOException}. */
-    @Deprecated
     public class CollatedLogRotatorException extends IOException {
         private static final long serialVersionUID = 5944233808072651101L;
         
@@ -143,7 +139,7 @@ public class LogRotator extends BuildDiscarder {
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported
-        HashMultimap<Run<?,?>, IOException> exceptionMap = HashMultimap.create();
+        HashMultimap<Run<?,?>, Exception> exceptionMap = HashMultimap.create();
         
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
@@ -220,7 +216,8 @@ public class LogRotator extends BuildDiscarder {
                     "Failed to rotate logs for [%s]",
                     Joiner.on(", ").join(exceptionMap.keySet())
             );
-            throw new CompositeIOException(msg, new ArrayList<>(exceptionMap.values()));
+            LOGGER.severe(msg);
+            throw new CollatedLogRotatorException(msg, exceptionMap.values());
         }
     }
 

@@ -47,8 +47,11 @@ public class BuildExecutionTest {
         FreeStyleBuild b = r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
         r.assertLogContains(Messages.Build_post_build_steps_failed(), b);
         FilePath ws = r.jenkins.getWorkspaceFor(p);
-        try (WorkspaceList.Lease lease = r.jenkins.toComputer().getWorkspaceList().allocate(ws)) {
+        WorkspaceList.Lease lease = r.jenkins.toComputer().getWorkspaceList().allocate(ws);
+        try {
             assertEquals(ws, lease.path);
+        } finally {
+            lease.close();
         }
     }
 

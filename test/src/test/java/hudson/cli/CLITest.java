@@ -157,7 +157,6 @@ public class CLITest {
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
         doInterrupt(p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
         doInterrupt(p, "-http", "-auth", "admin:admin");
-        doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }
     private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -192,7 +191,6 @@ public class CLITest {
             assertThat(baos.toString(), containsString("There's no Jenkins running at"));
             assertNotEquals(0, ret);
         }
-        // TODO -webSocket currently produces a stack trace
     }
     @TestExtension("reportNotJenkins")
     public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
@@ -242,11 +240,11 @@ public class CLITest {
         
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
-        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
-        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
-        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-SSH-Endpoint"));
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins"));
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
 
-        for (String transport: Arrays.asList("-http", "-ssh", "-webSocket")) {
+        for (String transport: Arrays.asList("-http", "-ssh")) {
 
             String url = r.getURL().toString() + "cli-proxy/";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -267,7 +265,7 @@ public class CLITest {
         home = tempHome();
         grabCliJar();
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
             int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr())
                     .launch()
                     .cmds("java",

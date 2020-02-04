@@ -1,6 +1,6 @@
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.Node.Mode;
 
@@ -17,8 +17,8 @@ public class MasterBuildConfigurationTest {
     @Issue("JENKINS-23966")
     public void retainMasterLabelWhenNoSlaveDefined() throws Exception {
         Jenkins jenkins = j.getInstance();
-
-        assertEquals("Test is for master with no slave", 1, jenkins.getComputers().length);
+        
+        assertTrue("Test is for master with no slave", jenkins.getComputers().length == 1);
         
         // set our own label & mode
         final String myTestLabel = "TestLabelx0123";
@@ -29,7 +29,7 @@ public class MasterBuildConfigurationTest {
         j.configRoundtrip();
         
         // make sure settings were not lost
-        assertEquals("Master's label is lost", myTestLabel, jenkins.getLabelString());
-        assertEquals("Master's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
+        assertTrue("Master's label is lost", myTestLabel.equals(jenkins.getLabelString()));
+        assertTrue("Master's mode is lost", Mode.EXCLUSIVE.equals(jenkins.getMode()));
     }
 }

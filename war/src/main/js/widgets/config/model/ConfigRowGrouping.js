@@ -1,9 +1,11 @@
-import { getJQuery } from '../../../util/jquery-ext';
+var jQD = require('../../../util/jquery-ext.js');
+
+module.exports = ConfigRowGrouping;
 
 /*
  * =======================================================================================
  * Configuration table row grouping i.e. row-set-*, optional-block-*, radio-block-* etc
- *
+ * 
  * A ConfigSection maintains a list of ConfigRowGrouping and then ConfigRowGrouping
  * itself maintains a list i.e. it's hierarchical. See ConfigSection.gatherRowGroups().
  * =======================================================================================
@@ -63,7 +65,7 @@ ConfigRowGrouping.prototype.updateVisibility = function() {
  * the row-set rows should be made visible or not.
  */
 ConfigRowGrouping.prototype.findToggleWidget = function(row) {
-    var $ = getJQuery();
+    var $ = jQD.getJQuery();
     var input = $(':input.block-control', row);
     if (input.size() === 1) {
         this.toggleWidget = input;
@@ -71,5 +73,3 @@ ConfigRowGrouping.prototype.findToggleWidget = function(row) {
         input.addClass('disable-behavior');
     }
 };
-
-export default ConfigRowGrouping;
