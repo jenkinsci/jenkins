@@ -27,7 +27,7 @@ N/A
 
 ### Submitter checklist
 
-- [ ] JIRA issue is well described
+- [ ] Jira issue is well described (not mandatory)
 - [ ] Changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
   * Fill-in the `Proposed changelog entries` section only if there are breaking changes or other changes which may require extra steps from users during the upgrade
 - [ ] Appropriate autotests or explanation to why this change has no tests
@@ -52,5 +52,5 @@ Before the changes are marked as `ready-for-merge`:
 - [ ] Changelog entries in the PR title and/or `Proposed changelog entries` are correct
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically
 - [ ] If the change needs additional upgrade steps from users, `upgrade-guide-needed` label is set and there is a `Proposed upgrade guidelines` section in the PR title. ([example](https://github.com/jenkinsci/jenkins/pull/4387))
-- [ ] If it would make sense to backport the change to LTS, a JIRA issue should exist and be labeled as `lts-candidate`
+- [ ] If it would make sense to backport the change to LTS, a Jira issue should exist and be labeled as `lts-candidate`
 
