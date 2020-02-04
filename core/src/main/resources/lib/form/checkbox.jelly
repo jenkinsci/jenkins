@@ -62,13 +62,27 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
-  <input type="checkbox"
-         name="${name}"
-         value="${attrs.value}"
-         title="${attrs.tooltip}"
-         onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
-         checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
-         checked="${value ? 'true' : null}"/>
+  <j:choose>
+    <j:when test="${displayOnlyMode}">
+      <j:choose>
+        <j:when test="${value}">
+          <input name="${name}" type="checkbox" checked="checked" readonly="readonly" disabled="disabled" />
+        </j:when>
+        <j:otherwise>
+          <input name="${name}" type="checkbox" readonly="readonly" disabled="disabled" />
+        </j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
+      <input type="checkbox"
+             name="${name}"
+             value="${attrs.value}"
+             title="${attrs.tooltip}"
+             onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+             checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
+             checked="${value ? 'true' : null}"/>
+    </j:otherwise>
+  </j:choose>
   <j:if test="${attrs.title!=null}">
     <label class="attach-previous"
            title="${attrs.tooltip}">${attrs.title}</label>

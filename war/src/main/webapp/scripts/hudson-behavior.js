@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -350,7 +350,7 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ 
+    return directionF(src,function(e){
         if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
             var r = 0;
             while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
@@ -590,7 +590,7 @@ function renderOnDemand(e,callback,noBehaviour) {
 }
 
 /**
- * Finds all the script tags 
+ * Finds all the script tags
  */
 function evalInnerHtmlScripts(text,callback) {
     var q = [];
@@ -718,7 +718,7 @@ var jenkinsRules = {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     },
 
-    "INPUT.auto-complete": function(e) {// form field with auto-completion support 
+    "INPUT.auto-complete": function(e) {// form field with auto-completion support
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -730,7 +730,7 @@ var jenkinsRules = {
             resultsList: "suggestions",
             fields: ["name"]
         };
-        
+
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
         ac.generateRequest = function(query) {
@@ -787,7 +787,7 @@ var jenkinsRules = {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
-            
+
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
               lineNumbers: true,
@@ -812,7 +812,7 @@ var jenkinsRules = {
                 function getParentForm(element) {
                     if (element == null) throw 'not found a parent form';
                     if (element instanceof HTMLFormElement) return element;
-                    
+
                     return getParentForm(element.parentNode);
                 }
                 function saveAndSubmit() {
@@ -820,7 +820,7 @@ var jenkinsRules = {
                     getParentForm(e).submit();
                     event.stop();
                 }
-                
+
                 // Mac (Command + Enter)
                 if (navigator.userAgent.indexOf('Mac') > -1) {
                     if (event.type == 'keydown' && isCommandKey()) {
@@ -833,7 +833,7 @@ var jenkinsRules = {
                         saveAndSubmit();
                         return true;
                     }
-                  
+
                 // Windows, Linux (Ctrl + Enter)
                 } else {
                     if (event.ctrlKey && isReturnKeyDown()) {
@@ -1382,7 +1382,7 @@ function updateOptionalBlock(c,scroll) {
     while (!vg.hasClassName("rowvg-start"))
         vg = vg.next();
 
-    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
+    var checked = xor(c.checked,Element.hasClassName(c,"negative")) || Element.hasClassName(c, "display-only-checked");
 
     vg.rowVisibilityGroup.makeInnerVisible(checked);
 
@@ -1498,8 +1498,8 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    
-    var n = button; 
+
+    var n = button;
     while (n.tagName != "TABLE")
     {
         n = n.parentNode;
@@ -1626,13 +1626,13 @@ function fireBuildHistoryChanged() {
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     var bh = $('buildHistory');
-    
+
     // If the build history pane is collapsed, just return immediately and don't set up
     // the build history refresh.
     if (bh.hasClassName('collapsed')) {
         return;
     }
-    
+
     var buildHistoryPage = $('buildHistoryPage');
 
     bh.headers = ["n",nBuild];
@@ -2418,7 +2418,7 @@ function createSearchBox(searchURL) {
         sizer.innerHTML = box.value.escapeHTML();
         var w = max(sizer.offsetWidth,minW.offsetWidth);
         box.style.width =
-        comp.style.width = 
+        comp.style.width =
         comp.firstChild.style.width = (w+60)+"px";
 
         var pos = YAHOO.util.Dom.getXY(box);
@@ -2545,7 +2545,7 @@ function buildFormTree(form) {
                 addProperty(findParent(e),e.name,values);
                 continue;
             }
-                
+
             var p;
             var r;
             var type = e.getAttribute("type");
@@ -2684,7 +2684,7 @@ var hoverNotification = (function() {
         document.body.appendChild(div);
         div.innerHTML = "<div id=hoverNotification><div class=bd></div></div>";
         body = $('hoverNotification');
-        
+
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
           width:"10em",
@@ -2806,7 +2806,7 @@ function safeValidateButton(yuiButton) {
 
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
-    
+
     validateButton(checkUrl, paramList, yuiButton);
 }
 
