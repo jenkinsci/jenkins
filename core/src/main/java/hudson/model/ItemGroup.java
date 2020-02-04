@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.model.listeners.ItemListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
 import java.util.List;
@@ -55,6 +56,21 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Gets all the items in this collection in a read-only view.
      */
     Collection<T> getItems();
+
+    /**
+     * Gets all the items in this collection in a read-only view
+     * that matches supplied Predicate
+     * @since TODO
+     */
+     default Collection<T> getItems(Predicate<T> pred) {
+         List<T> filteredItems = new ArrayList<>();
+         for (T item : getItems()) {
+             if (pred.test(item)) {
+                 filteredItems.add(item);
+             }
+         }
+         return filteredItems;
+     }
 
     /**
      * Returns the path relative to the context root,
@@ -115,6 +131,15 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      */
     default <T extends Item> Iterable<T> allItems(Class<T> type) {
         return Items.allItems(this, type);
+    }
+
+    /**
+     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
+     * and filter them by the given type and given predicate
+     * @since TODO
+     */
+    default <T extends Item> Iterable<T> allItems(Class<T> type, Predicate<T> pred) {
+        return Items.allItems(this, type, pred);
     }
 
     /**

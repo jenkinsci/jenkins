@@ -134,6 +134,27 @@ public class ItemsTest {
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 
+    @Test public void allItemsPredicate() throws Exception {
+        MockFolder d = r.createFolder("d");
+        MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
+        MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
+        MockFolder sub2c = sub2.createProject(MockFolder.class, "c");
+        MockFolder sub2b = sub2.createProject(MockFolder.class, "b");
+        MockFolder sub1 = d.createProject(MockFolder.class, "sub1");
+        FreeStyleProject root = r.createFreeStyleProject("root");
+        FreeStyleProject dp = d.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub1q = sub1.createProject(FreeStyleProject.class, "q");
+        FreeStyleProject sub1p = sub1.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2ap = sub2a.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2bp = sub2b.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2cp = sub2c.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
+        FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
+        FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
+        assertThat(d.allItems(FreeStyleProject.class, t -> t.getName().equals("p")), containsInAnyOrder(dp, sub1p, sub2ap, sub2bp, sub2cp));
+        assertThat(sub2.allItems(Item.class, t -> t.getName().startsWith("a")), containsInAnyOrder(sub2a, sub2alpha));
+    }
+
     @Issue("JENKINS-24825")
     @Test public void moveItem() throws Exception {
         File tmp = tmpRule.getRoot();
