@@ -219,19 +219,12 @@ public class ListView extends View implements DirectlyModifiableView {
             allItems = parent.getAllItems(TopLevelItem.class);
             for (TopLevelItem item : allItems) {
                 String itemName = item.getRelativeNameFrom(parent);
-                for (String name : names) {
-                    if (itemName.equals(name)) {
-                        if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                                || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
-                            items.add(item);
-                        continue;
-                    }
+                if (names.contains(itemName)) {
+                    checkAddItem(statusFilter, items, item);
                 }
                 if (includePattern != null) {
                     if (includePattern.matcher(itemName).matches()) {
-                        if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                                || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
-                            items.add(item);
+                        checkAddItem(statusFilter, items, item);
                     }
                 }
             }
@@ -241,9 +234,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 try {
                     TopLevelItem i = parent.getItem(name);
                     if (i != null) {
-                        if(statusFilter == null || !(i instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                                || ((ParameterizedJobMixIn.ParameterizedJob)i).isDisabled() ^ statusFilter)
-                            items.add(i);
+                        checkAddItem(statusFilter, items, i);
                     }
                 } catch (AccessDeniedException e) {
                     //Ignore
@@ -253,9 +244,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 for (TopLevelItem item : allItems) {
                     String itemName = item.getRelativeNameFrom(parent);
                     if (includePattern.matcher(itemName).matches()) {
-                        if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                                || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
-                            items.add(item);
+                        checkAddItem(statusFilter, items, item);
                     }
                 }
             }
@@ -270,6 +259,13 @@ public class ListView extends View implements DirectlyModifiableView {
         items = new ArrayList<>(new LinkedHashSet<>(items));
         
         return items;
+    }
+
+    // Used by getItems
+    private static void checkAddItem(Boolean statusFilter, List<TopLevelItem> items, TopLevelItem item) {
+        if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
+                || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
+            items.add(item);
     }
 
     @Override
