@@ -18,14 +18,14 @@ import static hudson.init.InitMilestone.COMPLETED;
 @Deprecated
 @Restricted(NoExternalUse.class)
 public class DNSMultiCast {
-    private static final Logger logger = Logger.getLogger(DNSMultiCast.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
     public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled", true);
 
     @Initializer(before=COMPLETED)
-    public void warn() {
+    public static void warn() {
         if (!disabled) {
-            logger.warning("DNS multicast capability has been removed from Jenkins.");
+            LOGGER.warning("DNS multicast capability has been removed from Jenkins.");
         }
     }
 
