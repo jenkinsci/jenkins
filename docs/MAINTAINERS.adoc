@@ -1,6 +1,6 @@
 = Documentation for core maintainers
 
-Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain the it in a good shape.
+Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain it in a good shape.
 We want to ensure quality of the integrated changes and continuity of the project,
 and hence the Jenkins core pull request review and merge process is more sophisticated than for the majority of plugins.
 
@@ -39,7 +39,6 @@ There is no special preconditions to do so, anyone is welcome to contribute.
 They get [Triage permissions](https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization) so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
-<!--TODO: consider switching to Admin-->
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
 Their responsibility is to perform reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
 They are also responsible to monitor the weekly release status and to perform triage of critical issues.
@@ -54,7 +53,7 @@ Team members get `Admin` permissions in the Jenkins core repository, and they al
 * Anyone can participate as a **committer** or as a **reviewer**.
   There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
 * **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
-Self-nomination are fine.
+Self-nomination is fine.
 Decision is made by a consensus in the mailing list or via voting at the link:https://jenkins.io/project/governance-meeting/[governance meeting].
 * **Core Maintainers** - same process as for Core PR reviewers.
   All nominees must also sign an link:https://github.com/jenkinsci/infra-cla/[Individual Contributor License Agreement] before getting the permission in GitHub repositories.
@@ -70,7 +69,7 @@ At the same time, we are interested to make the review process as simple as poss
 === Code review goals
 
 * Ensure that the pull request is feasible.
-** Not every change needs to be merged into the core, many features would be rather introduced as plugins.
+** Not every change needs to be merged into the core; many features would be better introduced as plugins.
    Separate release cycles for plugins also help to deliver changes faster.
 ** We want to extend the Jenkins core and incorporate widely used functionality there,
    but we try to keep the core as minimal as possible in terms of dependencies.
@@ -84,7 +83,7 @@ At the same time, we are interested to make the review process as simple as poss
 ** If there is no consensus about the feasibility and implementation,
    code reviewers are expected to suggest proper channels to maintainers
 * Ensure that the pull request matches the code quality practices: test automation, Javadoc for newly introduced APIs, etc.
-** There is no goal to make the code perfect tho
+** There is no goal to make the code perfect though.
 * Ensure that the pull requests contain user-friendly changelogs and, if needed, upgrade guidelines
 * Last but not least,
   guide newcomer contributors who are not familiar with the project processes.
@@ -128,8 +127,8 @@ a Core PR Reviewer or a Maintainer can mark the pull request for merge.
   Example: `Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback`
 
 **Step 3: Merge!**.
-A Core Maintainer merges the change after a timeout (if needed).
-After that the change will be landed in the next weekly release unless it gets reverted later.
+A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
+After that the change will be landed in the next weekly release.
 LTS Backporting, if needed, will be handled separately by the release team.
 
 === Exceptions
