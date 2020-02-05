@@ -226,14 +226,14 @@ public class HudsonTest {
 
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         HtmlPage updated = j.submit(form);
-        assertEquals("User with CONFIGURE_JENKINS permission should be able to update global configuration",
+        assertEquals("User with Jenkins.MANAGE permission should be able to update global configuration",
                      200, updated.getWebResponse().getStatusCode());
     }
 
     @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigurationIsNotDisplayedWithConfigurePermission() throws Exception {
-        //GIVEN a user with CONFIGURE permission
+        //GIVEN a user with Jenkins.MANAGE permission
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
@@ -261,12 +261,12 @@ public class HudsonTest {
         form.getInputByName("_.numExecutors").setValueAttribute(""+(currentNumberExecutors+1));
         form.getInputByName("_.shell").setValueAttribute("/fakeShell");
 
-        // WHEN a user with CONFIGURE permission only try to save those changes
+        // WHEN a user with Jenkins.MANAGE permission only try to save those changes
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
         j.submit(form);
-        // THEN the changes on fields forbidden to a CONFIGURE_JENKINS permission are not saved
+        // THEN the changes on fields forbidden to a Jenkins.MANAGE permission are not saved
         assertEquals("shouldn't be allowed to change the number of executors", currentNumberExecutors, j.getInstance().getNumExecutors());
         assertEquals("shouldn't be allowed to change the shell executable", shell, getShell());
     }

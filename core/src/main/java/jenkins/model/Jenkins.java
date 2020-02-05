@@ -1898,7 +1898,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      }
 
     public void setPrimaryView(@Nonnull View v) {
-        checkPermission(Permission.CONFIGURE);
+        checkPermission(Jenkins.ADMINISTER);
         this.primaryView = v.getViewName();
     }
 
