@@ -40,7 +40,7 @@ import static hudson.init.InitMilestone.COMPLETED;
  * Useful for auto-discovery of Hudson in the network.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated
+ * @deprecated No longer does anything.
  */
 @Deprecated
 @Restricted(NoExternalUse.class)

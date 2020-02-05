@@ -5,8 +5,6 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import static hudson.init.InitMilestone.COMPLETED;
@@ -15,7 +13,7 @@ import static hudson.init.InitMilestone.COMPLETED;
  * Registers a DNS multi-cast service-discovery support.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated
+ * @deprecated No longer does anything.
  */
 @Deprecated
 @Restricted(NoExternalUse.class)
