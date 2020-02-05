@@ -19,7 +19,7 @@ import static hudson.init.InitMilestone.COMPLETED;
  */
 @Deprecated
 @Restricted(NoExternalUse.class)
-public class DNSMultiCast implements Closeable {
+public class DNSMultiCast {
     private static final Logger logger = Logger.getLogger(DNSMultiCast.class.getName());
 
     public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled", true);
@@ -31,7 +31,4 @@ public class DNSMultiCast implements Closeable {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-    }
 }
