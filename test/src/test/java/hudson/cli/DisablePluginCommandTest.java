@@ -334,7 +334,7 @@ public class DisablePluginCommandTest {
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
     public void configuratorCanNotDisablePlugin() {
 
-        //GIVEN a user with CONFIGURE_JENKINS permission
+        //GIVEN a user with Jenkins.MANAGE permission
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.MANAGE).everywhere().to("configurator")

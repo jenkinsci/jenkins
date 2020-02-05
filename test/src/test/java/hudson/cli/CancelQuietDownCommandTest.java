@@ -92,7 +92,7 @@ public class CancelQuietDownCommandTest {
     @Issue("JENKINS-60266")
     @Test
     public void cancelQuietDownShouldSuccessWithConfigurePermission() throws Exception {
-        //GIVEN a user with CONFIGURE_JENKINS permission
+        //GIVEN a user with Jenkins.MANAGE permission
         //WHEN cancel quiet down is called
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
