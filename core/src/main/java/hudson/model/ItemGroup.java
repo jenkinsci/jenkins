@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.io.File;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.AccessDeniedException;
 
@@ -63,13 +64,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * @since TODO
      */
      default Collection<T> getItems(Predicate<T> pred) {
-         List<T> filteredItems = new ArrayList<>();
-         for (T item : getItems()) {
-             if (pred.test(item)) {
-                 filteredItems.add(item);
-             }
-         }
-         return filteredItems;
+         return getItems().stream()
+                          .filter(pred)
+                          .collect(Collectors.toList());
      }
 
     /**
