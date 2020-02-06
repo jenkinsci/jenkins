@@ -986,6 +986,14 @@ table.parameters > tbody:hover {
     cursor: pointer;
     top: 6px;
 }
+#buildHistoryPage .build-row-cell > div > .build-link {
+    max-height: 3em;
+    overflow-y: hidden;
+}
+#buildHistoryPage .build-row-cell > div.desc {
+    max-height: 5em;
+    overflow-y: hidden;
+}
 
 #buildHistoryPageNav {
   position: absolute;
