@@ -217,60 +217,6 @@ public class HudsonTest {
         assertNull("invalid primaryView", j.jenkins.getView(value));
     }
 
-    @Issue("JENKINS-60266")
-    @Test
-    public void globalConfigAllowedWithConfigurePermission() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
-
-        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        HtmlPage updated = j.submit(form);
-        assertEquals("User with Jenkins.MANAGE permission should be able to update global configuration",
-                     200, updated.getWebResponse().getStatusCode());
-    }
-
-    @Issue("JENKINS-60266")
-    @Test
-    public void someGlobalConfigurationIsNotDisplayedWithConfigurePermission() throws Exception {
-        //GIVEN a user with Jenkins.MANAGE permission
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
-
-        //WHEN the user goes to /configure page
-        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        String formText = form.asText();
-        //THEN items restricted to ADMINISTER only should not be displayed.
-        assertThat("Shouldn't be able to configure # of executors", formText, not(containsString("executors")));
-        assertThat("Shouldn't be able to configure Global properties", formText,
-                   not(containsString("Global properties")));
-        assertThat("Shouldn't be able to configure Administrative monitors", formText, not(containsString(
-                "Administrative "
-                + "monitors")));
-        assertThat("Shouldn't be able to configure Shell", formText, not(containsString("Shell")));
-    }
-
-    @Issue("JENKINS-60266")
-    @Test
-    public void someGlobalConfigCanNotBeModifiedWithConfigurePermission() throws Exception {
-        //GIVEN the Global Configuration Form, with some changes unsaved
-        int currentNumberExecutors = j.getInstance().getNumExecutors();
-        String shell = getShell();
-        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        form.getInputByName("_.numExecutors").setValueAttribute(""+(currentNumberExecutors+1));
-        form.getInputByName("_.shell").setValueAttribute("/fakeShell");
-
-        // WHEN a user with Jenkins.MANAGE permission only try to save those changes
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
-        j.submit(form);
-        // THEN the changes on fields forbidden to a Jenkins.MANAGE permission are not saved
-        assertEquals("shouldn't be allowed to change the number of executors", currentNumberExecutors, j.getInstance().getNumExecutors());
-        assertEquals("shouldn't be allowed to change the shell executable", shell, getShell());
-    }
-
     private String getShell() {
         Descriptor descriptorByName = j.getInstance().getDescriptorByName("hudson.tasks.Shell");
         return ((Shell.DescriptorImpl) descriptorByName).getShell();

@@ -31,11 +31,12 @@ import hudson.model.Node;
 import hudson.model.User;
 import hudson.tasks.Mailer;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
@@ -69,22 +70,23 @@ public class ReloadConfigurationCommandTest {
     }
 
     @Test
-    public void reloadConfigurationShouldFailWithoutAdministerOrConfigurePermission() throws Exception {
+    public void reloadConfigurationShouldFailWithoutAdministerOrManagePermission() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Overall/Manage permission"));
+        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
     }
 
-    @Issue("JENKINS-60266")
     @Test
-    public void reloadConfigurationShouldWorkWithConfigurePermission() throws Exception {
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toAuthenticated());
-        //Any reload configuration should work with Jenkins.MANAGE as well
-        this.reloadMasterConfig();
+    public void reloadConfigurationShouldFailWithoutAdministerPermission() throws Exception {
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
+        final CLICommandInvoker.Result result = command.invoke();
+
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
     }
 
     @Test
