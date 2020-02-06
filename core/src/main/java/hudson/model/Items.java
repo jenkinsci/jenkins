@@ -486,7 +486,7 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
-        return allItems(authentication, root, type, t->true);
+        return allItems(authentication, root, type, t -> true);
     }
 
     /**

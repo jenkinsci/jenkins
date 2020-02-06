@@ -1776,7 +1776,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
-        return getItems(t->true);
+        return getItems(t -> true);
     }
 
     /**
