@@ -36,8 +36,8 @@ a.page-header__brand-link {
 }
 
 .page-header__brand-image {
-    background: white;
-    height: 100%;
+    height: 32px;
+    height: 2rem;
     margin-right: 0.75rem;
 }
 
@@ -72,7 +72,8 @@ a.page-header__brand-link {
     }
 
     &:hover,
-    &:focus {
+    &:focus,
+    &.mouseIsOverMenuSelector {
         color: @header-link-color-active;
         background-color: @header-link-bg-classic-hover;
         text-decoration: underline;
@@ -98,7 +99,6 @@ a.page-header__brand-link {
         margin-left: 0.25rem;
     }
 }
-
 
 /* Search box */
 

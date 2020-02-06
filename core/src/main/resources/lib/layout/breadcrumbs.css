@@ -92,7 +92,6 @@
 }
 
 #breadcrumbs LI A {
-    text-transform: capitalize;
     cursor: pointer;
 }
 
