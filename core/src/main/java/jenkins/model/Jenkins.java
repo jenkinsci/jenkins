@@ -5286,6 +5286,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
+    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage", 
+            /* wrong message */Messages._Hudson_RunScriptsPermission_Description(), 
+            ADMINISTER, SystemProperties.getBoolean("jenkins.permission.manage.enabled", false), new PermissionScope[]{PermissionScope.JENKINS});
+    
+    public void exampleOfMethodCheckingPermission() {
+        if (Jenkins.MANAGE.enabled ? this.hasPermission(Jenkins.MANAGE) : this.hasPermission(Jenkins.ADMINISTER)) {
+            // do something with high permission requirement
+        }
+    }
+    
     /**
      * Urls that are always visible without READ permission.
      *
