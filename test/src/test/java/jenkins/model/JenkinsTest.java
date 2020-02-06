@@ -289,7 +289,7 @@ public class JenkinsTest {
         wc.goTo("foobar/zot");
 
         // and make sure this fails
-        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_FORBIDDEN);
+        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
