@@ -709,7 +709,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void doExitSuccessWithConfigurePermission() {
+    public void doExitSuccessWithManagePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "shutdown")
                 .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
@@ -718,7 +718,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void doSafeExitSuccessWithConfigurePermission() {
+    public void doSafeExitSuccessWithManagePermission() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "safe-shutdown")
                 .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();
