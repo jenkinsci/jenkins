@@ -104,6 +104,15 @@ public abstract class FingerprintFacet implements ExtensionPoint {
     }
 
     /**
+     * Returns whether Fingerprint deletion has been blocked by this Facet.
+     * Returns false by default. Override the default to block the deletion of the associated Fingerprint.
+     * @since TODO
+     */
+    public boolean isFingerprintDeletionBlocked() {
+        return false;
+    }
+
+    /**
      * Backdoor for {@link Fingerprint} to set itself to its facets.
      * Public only because this needs to be accessible to {@link Fingerprint}. Do not call this method directly.
      */
