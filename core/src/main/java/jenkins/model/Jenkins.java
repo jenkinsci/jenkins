@@ -182,6 +182,8 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -224,6 +226,7 @@ import org.jvnet.hudson.reactor.Task;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -5235,13 +5238,37 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Grants ability to configure any and all aspects of the Jenkins instance
      */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+
     /**
      * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
-     * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission
+     * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission.
+     *
+     * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
+     * be enabled with "jenkins.permission.manage.enabled" system property.
      */
-    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage", Messages._Hudson_ConfigureJenkins_Description(),ADMINISTER, PermissionScope.JENKINS);
+    public static final Permission MANAGE = initializeManagePermission();
+
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
+
+    /**
+     * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
+     * be enabled with "jenkins.permission.manage.enabled" system property. Must be set as startup property, it
+     * cannot be changed on runtime.
+     * @return ADMINISTER when disabled (default), new permission MANAGE when enabled.
+     */
+    private static Permission initializeManagePermission() {
+        if(SystemProperties.getBoolean("jenkins.permission.manage.enabled",false)) {
+
+            return new Permission(PERMISSIONS, "Manage",
+                           Messages._Hudson_ManageJenkins_Description(),
+                           ADMINISTER,
+                           true,
+                           new PermissionScope[]{PermissionScope.JENKINS});
+        } else {
+            return ADMINISTER;
+        }
+    }
 
     /**
      * Urls that are always visible without READ permission.

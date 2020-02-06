@@ -329,24 +329,6 @@ public class DisablePluginCommandTest {
         assertTrue("Only error NOT_DISABLED_DEPENDANTS in quiet mode", checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS));
     }
 
-    @Issue("JENKINS-60266")
-    @Test
-    @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void configuratorCanNotDisablePlugin() {
-
-        //GIVEN a user with Jenkins.MANAGE permission
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE).everywhere().to("configurator")
-        );
-
-        //WHEN trying to disable a plugin
-        assertThat(disablePluginsCLiCommandAs("configurator", "dependee"), failedWith(6));
-        //THEN it's refused and the plugin is not disabled.
-        assertPluginEnabled("dependee");
-    }
-
-
     /**
      * Disable a list of plugins using the CLI command.
      * @param user Username

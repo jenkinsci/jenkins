@@ -26,33 +26,35 @@ package hudson.cli;
 
 import java.net.InetSocketAddress;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
-
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import hudson.model.UpdateCenter;
+import jenkins.model.Jenkins;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
 
-public class InstallPluginCommandTest {
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+
+/**
+ * This tests can be merged into {@link InstallPluginCommandTest} when the system property {@code jenkins.permission
+ * .manage.enabled} is no longer supported
+ */
+public class InstallPluginCommandWithManageTest {
+
+    static {
+        // this happens before the Jenkins static fields are loaded
+        System.setProperty("jenkins.permission.manage.enabled", "true");
+    }
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
-
-    @Issue("JENKINS-41745")
-    @Test
-    public void fromStdin() throws Exception {
-        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
-        assertThat(new CLICommandInvoker(r, "install-plugin").
-                withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
-                invokeWithArgs("-deploy", "="),
-            succeeded());
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
-    }
 
     private void setupUpdateCenter() {
         try {
@@ -62,6 +64,26 @@ public class InstallPluginCommandTest {
         }
         InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
         assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
+    }
+
+    @Issue("JENKINS-60266")
+    @Test
+    public void configuratorCanNotInstallPlugin() throws Exception {
+        //Setup update center and authorization
+        setupUpdateCenter();
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(
+                "admin").grant(Jenkins.MANAGE).everywhere().to("configurator"));
+
+        String plugin = "git";
+
+        assertThat("User with Jenkins.MANAGE permission shouldn't be able to install a plugin fro an UC",
+                   new CLICommandInvoker(r, "install-plugin").asUser("configurator").invokeWithArgs(plugin),
+                   failedWith(6));
+
+        assertThat("Admin should be able to install a plugin from an UC",
+                   new CLICommandInvoker(r, "install-plugin").asUser("admin").invokeWithArgs(plugin),
+                   succeeded());
     }
 
 }
