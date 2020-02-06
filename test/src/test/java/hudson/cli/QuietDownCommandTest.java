@@ -83,7 +83,7 @@ public class QuietDownCommandTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void quietDownShouldSuccessWithConfigurePermission() throws Exception {
+    public void quietDownShouldSuccessWithManagePermission() throws Exception {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.MANAGE)
                 .invoke();

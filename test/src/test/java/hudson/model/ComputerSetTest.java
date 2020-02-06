@@ -87,16 +87,16 @@ public class ComputerSetTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void monitorDisplayedWithConfigurePermission() throws Exception {
-        //GIVEN a user with CONFIGURE permission
-        final String CONFIGURATOR = "configurator";
+    public void monitorDisplayedWithManagePermission() throws Exception {
+        //GIVEN a user with MANAGE permission
+        final String MANAGER = "manager";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(CONFIGURATOR));
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(MANAGER));
         //WHEN the user go to Monitors
         WebClient client = j.createWebClient();
-        HtmlPage page = client.withBasicCredentials(CONFIGURATOR).goTo("computer");
+        HtmlPage page = client.withBasicCredentials(MANAGER).goTo("computer");
         //THEN the user can see monitor information
         assertCanSeeMonitor(page, "Free Disk Space");
         assertCanSeeMonitor(page, "Free Swap Space");
@@ -127,15 +127,15 @@ public class ComputerSetTest {
      */
     @Issue("JENKINS-60266")
     @Test
-    public void configurationSuccessWithConfigurePermission() throws Exception {
-        final String CONFIGURATOR = "configurator";
+    public void configurationSuccessWithManagePermission() throws Exception {
+        final String MANAGER = "manager";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                                                   .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to(CONFIGURATOR));
+                                                   .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to(MANAGER));
 
         WebClient client = j.createWebClient();
-        HtmlForm form = client.login(CONFIGURATOR).goTo("computer/configure").getFormByName("config");
+        HtmlForm form = client.login(MANAGER).goTo("computer/configure").getFormByName("config");
         j.submit(form);
     }
 
