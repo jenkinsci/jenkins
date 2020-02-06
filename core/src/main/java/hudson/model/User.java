@@ -1036,7 +1036,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_LOADED)
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public static void scanAll() {
             for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
                 User user = new User(userId, userId);
