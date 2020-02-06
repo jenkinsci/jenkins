@@ -83,7 +83,7 @@ public class ReloadConfigurationCommandTest {
     public void reloadConfigurationShouldWorkWithConfigurePermission() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toAuthenticated());
-        //Any reload configuration should work with CONFIGURE_JENKINS as well
+        //Any reload configuration should work with Jenkins.MANAGE as well
         this.reloadMasterConfig();
     }
 

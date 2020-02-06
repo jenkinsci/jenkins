@@ -77,7 +77,7 @@ public class InstallPluginCommandTest {
 
         String plugin = "git";
 
-        assertThat("User with CONFIGURE permission shouldn't be able to install a plugin fro an UC",
+        assertThat("User with Jenkins.MANAGE permission shouldn't be able to install a plugin fro an UC",
                    new CLICommandInvoker(r, "install-plugin").asUser("configurator").invokeWithArgs(plugin),
                    failedWith(6));
 
