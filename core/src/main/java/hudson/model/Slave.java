@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
@@ -73,6 +74,7 @@ import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -155,9 +157,10 @@ public abstract class Slave extends Node implements Serializable {
     private transient volatile Set<Label> labels;
 
     /**
-     * Id of user which creates this agent {@link User}.
+     * Removed with no replacement.
      */
-    private String userId;
+    @Deprecated
+    private transient String userId;
 
     /**
      * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
@@ -204,13 +207,6 @@ public abstract class Slave extends Node implements Serializable {
         this.nodeProperties.replaceBy(nodeProperties);
          Slave node = (Slave) Jenkins.get().getNode(name);
 
-       if(node!=null){
-            this.userId= node.getUserId(); //agent has already existed
-        }
-       else{
-            User user = User.current();
-            userId = user!=null ? user.getId() : "anonymous";
-        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -225,13 +221,25 @@ public abstract class Slave extends Node implements Serializable {
      * Return id of user which created this agent
      *
      * @return id of user
+     *
+     * @deprecated Removed with no replacement
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * This method no longer does anything.
+     *
+     * @deprecated Removed with no replacement
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public void setUserId(String userId){
-        this.userId = userId;
     }
 
     public ComputerLauncher getLauncher() {
