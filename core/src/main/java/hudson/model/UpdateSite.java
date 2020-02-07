@@ -1049,11 +1049,12 @@ public class UpdateSite {
 
         /**
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
-         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         * This is set to restricted for now, since it is only being used by Jenkins UI or Restful API at the moment.
          *
          * @since 2.175
          */
         @Restricted(NoExternalUse.class)
+        @Exported
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
@@ -1136,7 +1137,7 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
