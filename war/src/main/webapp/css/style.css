@@ -396,7 +396,7 @@ pre.console {
   font-size: 12pt;
 }
 
-.not-applicable {
+.jenkins-not-applicable {
   color: darkgrey;
   font-style: italic;
 }
