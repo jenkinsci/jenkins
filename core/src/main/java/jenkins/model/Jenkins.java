@@ -5244,31 +5244,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission.
      *
      * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
-     * be enabled with "jenkins.permission.manage.enabled" system property.
+     * be enabled with "jenkins.security.ManagePermission" system property.
      */
-    public static final Permission MANAGE = initializeManagePermission();
+    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
+                                                           Messages._Hudson_ManageJenkins_Description(),
+                                                           ADMINISTER,
+                                                           Boolean.getBoolean("jenkins.security.ManagePermission"),
+                                                           new PermissionScope[]{PermissionScope.JENKINS});
 
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
-
-    /**
-     * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
-     * be enabled with "jenkins.permission.manage.enabled" system property. Must be set as startup property, it
-     * cannot be changed on runtime.
-     * @return ADMINISTER when disabled (default), new permission MANAGE when enabled.
-     */
-    private static Permission initializeManagePermission() {
-        if(SystemProperties.getBoolean("jenkins.permission.manage.enabled",false)) {
-
-            return new Permission(PERMISSIONS, "Manage",
-                           Messages._Hudson_ManageJenkins_Description(),
-                           ADMINISTER,
-                           true,
-                           new PermissionScope[]{PermissionScope.JENKINS});
-        } else {
-            return ADMINISTER;
-        }
-    }
 
     /**
      * Urls that are always visible without READ permission.
