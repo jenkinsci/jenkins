@@ -91,7 +91,7 @@ public class CancelQuietDownCommandTest {
 
     @Issue("JENKINS-60266")
     @Test
-    public void cancelQuietDownShouldSuccessWithConfigurePermission() throws Exception {
+    public void cancelQuietDownShouldSuccessWithManagePermission() throws Exception {
         //GIVEN a user with Jenkins.MANAGE permission
         //WHEN cancel quiet down is called
         final CLICommandInvoker.Result result = command
