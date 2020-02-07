@@ -24,19 +24,11 @@
 
 package hudson.cli;
 
-import java.net.InetSocketAddress;
-
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
-
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import hudson.model.UpdateCenter;
-
-import static hudson.cli.CLICommandInvoker.Matcher.*;
 
 public class InstallPluginCommandTest {
 
@@ -50,18 +42,8 @@ public class InstallPluginCommandTest {
         assertThat(new CLICommandInvoker(r, "install-plugin").
                 withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
                 invokeWithArgs("-deploy", "="),
-            succeeded());
+            CLICommandInvoker.Matcher.succeeded());
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
-    }
-
-    private void setupUpdateCenter() {
-        try {
-            r.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
-        } catch (Exception x) {
-            assumeNoException(x);
-        }
-        InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
-        assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
     }
 
 }

@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -41,7 +40,6 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +48,6 @@ import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -215,10 +212,5 @@ public class HudsonTest {
         value = "some bogus name";
         pv.set(j.jenkins, value);
         assertNull("invalid primaryView", j.jenkins.getView(value));
-    }
-
-    private String getShell() {
-        Descriptor descriptorByName = j.getInstance().getDescriptorByName("hudson.tasks.Shell");
-        return ((Shell.DescriptorImpl) descriptorByName).getShell();
     }
 }
