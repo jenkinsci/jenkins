@@ -161,7 +161,7 @@ public abstract class SidACL extends ACL {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
-    private final Cache<Authentication, PrincipalSid> principalSidCache = CacheBuilder.newBuilder()
+    private static final Cache<Authentication, PrincipalSid> principalSidCache = CacheBuilder.newBuilder()
             .maximumSize(200)
             .expireAfterWrite(60, TimeUnit.MINUTES)
             .build();
