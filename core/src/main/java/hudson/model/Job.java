@@ -403,7 +403,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Programmatically updates the next build number.
+     * Programatically updates the next build number.
      * 
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
@@ -1566,12 +1566,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
+        rss(req, rsp, " all builds", getBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+    }
+
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix,
+            RunList runs) throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(),
+                Run.FEED_ADAPTER, req, rsp);
     }
 
     /**

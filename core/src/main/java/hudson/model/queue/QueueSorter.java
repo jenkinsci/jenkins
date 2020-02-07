@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Singleton extension point for sorting buildable items
@@ -68,7 +68,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * {@link Queue#Queue(LoadBalancer)} is too early to do this
      */
-    @Initializer(after=JOB_CONFIG_ADAPTED)
+    @Initializer(after=JOB_LOADED)
     public static void installDefaultQueueSorter() {
         ExtensionList<QueueSorter> all = all();
         if (all.isEmpty())  return;

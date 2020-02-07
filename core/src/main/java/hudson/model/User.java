@@ -31,6 +31,7 @@ import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
@@ -871,11 +872,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
+        rss(req, rsp, " all builds", getBuilds(), Run.FEED_ADAPTER);
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
+        rss(req, rsp, " regression builds", getBuilds().regressionOnly(), Run.FEED_ADAPTER);
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -891,7 +892,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // historically these have been reported sorted by project name, we switched to the lazy iteration
         // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
         lastBuilds.sort((o1, o2) -> Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent()));
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
+        rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
+    }
+
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
+            throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
     }
 
     @Override
@@ -1036,7 +1042,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
+        @Initializer(after = InitMilestone.JOB_LOADED)
         public static void scanAll() {
             for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
                 User user = new User(userId, userId);

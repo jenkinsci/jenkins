@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -104,15 +103,11 @@ public abstract class ParameterDefinition implements
 
     private final String description;
 
-    public ParameterDefinition(@Nonnull String name) {
+    public ParameterDefinition(String name) {
         this(name, null);
     }
 
-    public ParameterDefinition(@Nonnull String name, String description) {
-        //Checking as pipeline does not enforce annotations
-        if (name == null) {
-            throw new IllegalArgumentException("Parameter name must be non-null");
-        }
+    public ParameterDefinition(String name, String description) {
         this.name = name;
         this.description = description;
     }
@@ -134,13 +129,11 @@ public abstract class ParameterDefinition implements
     }
     
     @Exported
-    @Nonnull
     public String getName() {
         return name;
     }
 
     @Exported
-    @CheckForNull
     public String getDescription() {
         return description;
     }
@@ -149,7 +142,6 @@ public abstract class ParameterDefinition implements
      * return parameter description, applying the configured MarkupFormatter for jenkins instance.
      * @since 1.521
      */
-    @CheckForNull
     public String getFormattedDescription() {
         try {
             return Jenkins.get().getMarkupFormatter().translate(description);
@@ -160,7 +152,6 @@ public abstract class ParameterDefinition implements
     }
 
     @Override
-    @Nonnull
     public ParameterDescriptor getDescriptor() {
         return (ParameterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

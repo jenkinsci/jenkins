@@ -63,6 +63,11 @@ public class CreateNodeCommand extends CLICommand {
             newNode.setNodeName(nodeName);
         }
 
+        if(newNode instanceof Slave) { //change userId too
+            User user = User.current();
+            ((Slave) newNode).setUserId(user==null ? "anonymous" : user.getId());
+        }
+
         if (jenkins.getNode(newNode.getNodeName()) != null) {
             throw new IllegalStateException("Node '" + newNode.getNodeName() + "' already exists");
         }

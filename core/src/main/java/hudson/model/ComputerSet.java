@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.verb.POST;
 
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -258,6 +258,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             String xml = Jenkins.XSTREAM.toXML(src);
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            if(result instanceof Slave){ //change userId too
+                User user = User.current();
+                ((Slave)result).setUserId(user==null ? "anonymous" : user.getId());
+             }
             result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
@@ -402,7 +406,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public static void initialize() {}
 
-    @Initializer(after= JOB_CONFIG_ADAPTED)
+    @Initializer(after= JOB_LOADED)
     public static void init() {
         // start monitoring nodes, although there's no hurry.
         Timer.get().schedule(new SafeTimerTask() {

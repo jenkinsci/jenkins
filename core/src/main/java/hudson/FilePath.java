@@ -59,7 +59,7 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 
-import java.io.BufferedInputStream;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -758,10 +758,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public enum TarCompression {
         NONE {
             public InputStream extract(InputStream in) {
-                return new BufferedInputStream(in);
+                return in;
             }
             public OutputStream compress(OutputStream out) {
-                return new BufferedOutputStream(out);
+                return out;
             }
         },
         GZIP {

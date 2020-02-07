@@ -78,6 +78,7 @@ public class CreateNodeCommandTest {
         final Slave updatedSlave = (Slave) j.jenkins.getNode("SlaveFromXML");
         assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
     }
 
     @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
@@ -95,6 +96,7 @@ public class CreateNodeCommandTest {
         final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
         assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
     }
 
     @Test public void createNodeSpecifyingDifferentNameExplicitly() throws Exception {
@@ -114,6 +116,7 @@ public class CreateNodeCommandTest {
         final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
         assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExist() throws Exception {

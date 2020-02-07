@@ -13,7 +13,6 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -38,19 +37,19 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String choices, String description) {
+    public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
         setChoicesText(choices);
         defaultValue = null;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String[] choices, String description) {
+    public ChoiceParameterDefinition(String name, String[] choices, String description) {
         super(name, description);
         this.choices = new ArrayList<>(Arrays.asList(choices));
         defaultValue = null;
     }
 
-    private ChoiceParameterDefinition(@Nonnull String name, @Nonnull List<String> choices, String defaultValue, String description) {
+    private ChoiceParameterDefinition(String name, List<String> choices, String defaultValue, String description) {
         super(name, description);
         this.choices = choices;
         this.defaultValue = defaultValue;
@@ -130,15 +129,8 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    @CheckForNull
     public StringParameterValue getDefaultParameterValue() {
-        if (defaultValue == null) {
-            if (choices.isEmpty()) {
-                return null;
-            }
-            return new StringParameterValue(getName(), choices.get(0), getDescription());
-        }
-        return new StringParameterValue(getName(), defaultValue, getDescription());
+        return new StringParameterValue(getName(), defaultValue == null ? choices.get(0) : defaultValue, getDescription());
     }
 
     private StringParameterValue checkValue(StringParameterValue value) {

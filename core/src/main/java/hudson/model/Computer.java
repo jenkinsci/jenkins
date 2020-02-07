@@ -79,7 +79,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -151,7 +150,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -1070,13 +1069,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns the {@link Node} description for this computer. Empty String if the {@link Node} is {@code null}.
+     * Returns the {@link Node} description for this computer
      */
     @Restricted(DoNotUse.class)
     @Exported
     public @Nonnull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : "";
+        return (node != null) ? node.getNodeDescription() : null;
     }
 
 
@@ -1089,7 +1088,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             public void run() {
                 synchronized (Computer.this) {
                     executors.remove(e);
-                    oneOffExecutors.remove(e);
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
@@ -1369,36 +1367,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 // UI
 //
 //
-    @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
+        rss(req, rsp, " all builds", getBuilds());
     }
 
-    @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
-
-    /**
-     * Retrieve the RSS feed for the last build for each project executed in this computer.
-     * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
-     * information about the node where the builds are executed for other sorts of projects such as Pipeline
-     * @since TODO
-     */
-    @Restricted(DoNotUse.class)
-    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        final List<Run> lastBuilds = new ArrayList<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            if (p.getLastBuild() != null) {
-                for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
-                    if (b.getBuiltOn() == getNode()) {
-                        lastBuilds.add(b);
-                        break;
-                    }
-                }
-            }
-        }
-        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds));
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
+                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
     }
 
     @RequirePOST
@@ -1591,21 +1569,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
         getLogText().doProgressText(req, rsp);
     }
-
-    @Override
-    @Restricted(NoExternalUse.class)
-    public Object getTarget() {
-        if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.READ);
-        }
-        return this;
-    }
-
-    /**
-     * Escape hatch for StaplerProxy-based access control
-     */
-    @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.
