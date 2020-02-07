@@ -59,14 +59,13 @@ public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableIm
      * @throws InterruptedException
      */
     public void apply(Job<? extends Job, ? extends Run> job) throws IOException, InterruptedException {
-        job.getBuilds().forEach(run -> {
+        for (Run<? extends Job, ? extends Run> run : job.getBuilds()) {
             try {
                 apply(run);
-            } catch (IOException|InterruptedException ex) {
-                // TODO should these actually be caught, or just thrown up to stop applying?
+            } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Failed to delete " + run.getFullDisplayName(), ex);
             }
-        });
+        }
     }
 
     /**
