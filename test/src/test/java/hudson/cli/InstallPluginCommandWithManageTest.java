@@ -43,14 +43,14 @@ import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 
 /**
- * This tests can be merged into {@link InstallPluginCommandTest} when the system property {@code jenkins.permission
- * .manage.enabled} is no longer supported
+ * This tests can be merged into {@link InstallPluginCommandTest} when the system property
+ * {@code jenkins.security.ManagePermission} is no longer supported
  */
 public class InstallPluginCommandWithManageTest {
 
     static {
         // this happens before the Jenkins static fields are loaded
-        System.setProperty("jenkins.permission.manage.enabled", "true");
+        System.setProperty("jenkins.security.ManagePermission", "true");
     }
 
     @Rule

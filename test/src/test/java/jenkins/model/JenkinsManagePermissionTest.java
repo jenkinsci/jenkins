@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 
 /**
- * As Jenkins.MANAGE can be enabled on startup with jenkins.permission.manage.enabled property, we need a test class
+ * As Jenkins.MANAGE can be enabled on startup with jenkins.security.ManagePermission property, we need a test class
  * with this property activated.
  */
 public class JenkinsManagePermissionTest {
@@ -37,7 +37,7 @@ public class JenkinsManagePermissionTest {
 
     static {
         // this happens before the Jenkins static fields are loaded
-        System.setProperty("jenkins.permission.manage.enabled", "true");
+        System.setProperty("jenkins.security.ManagePermission", "true");
     }
 
     // -------------------------
