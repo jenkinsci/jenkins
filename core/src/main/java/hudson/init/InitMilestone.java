@@ -43,7 +43,10 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder;
  *  <li>PLUGINS_PREPARED
  *  <li>PLUGINS_STARTED
  *  <li>EXTENSIONS_AUGMENTED
+ *  <li>SYSTEM_CONFIG_LOADED</li>
+ *  <li>SYSTEM_CONFIG_ADAPTED</li>
  *  <li>JOB_LOADED
+ *  <li>JOB_CONFIG_ADAPTED</li>
  *  <li>COMPLETED
  * </ol>
  * 
@@ -82,12 +85,31 @@ public enum InitMilestone implements Milestone {
      * By this milestone, all programmatically constructed extension point implementations
      * should be added.
      */
-    EXTENSIONS_AUGMENTED("Augmented all extensions"), // TODO nothing attains() this so when does it actually happen?
+    EXTENSIONS_AUGMENTED("Augmented all extensions"),
+
+    /**
+     * By this milestone, all the system configurations are loaded from file system
+     * @since TODO
+     */
+    SYSTEM_CONFIG_LOADED("System config loaded"),
+
+    /**
+     * By this milestone, the system configuration is adapted just in case any plugin (CasC might be an example) needs
+     * to update configuration files
+     * @since TODO
+     */
+    SYSTEM_CONFIG_ADAPTED("System config adapted"),
 
     /**
      * By this milestone, all jobs and their build records are loaded from disk.
      */
     JOB_LOADED("Loaded all jobs"),
+
+    /**
+     * By this milestone, any job configuration is adapted or updated just in case any plugin needs to update former/old configurations or init scripts
+     * @since TODO
+     */
+    JOB_CONFIG_ADAPTED("Configuration for all jobs updated"),
 
     /**
      * The very last milestone

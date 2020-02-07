@@ -586,10 +586,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient final Object tcpSlaveAgentListenerLock = new Object();
 
-    private transient UDPBroadcastThread udpBroadcastThread;
-
-    private transient DNSMultiCast dnsMultiCast;
-
     /**
      * List of registered {@link SCMListener}s.
      */
@@ -987,16 +983,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             save();
 
             launchTcpSlaveAgentListener();
-
-            if (UDPBroadcastThread.PORT != -1) {
-                try {
-                    udpBroadcastThread = new UDPBroadcastThread(this);
-                    udpBroadcastThread.start();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
-                }
-            }
-            dnsMultiCast = new DNSMultiCast(this);
 
             Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
                 @Override
@@ -3213,7 +3199,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<>());
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+        Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
                 loadConfig();
                 // if we are loading old data that doesn't have this field
@@ -3258,7 +3244,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
-        g.requires(JOB_LOADED).attains(COMPLETED).add("Finalizing set up",new Executable() {
+        g.requires(JOB_CONFIG_ADAPTED).attains(COMPLETED).add("Finalizing set up",new Executable() {
             public void run(Reactor session) throws Exception {
                 rebuildDependencyGraph();
 
@@ -3390,10 +3376,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             terminating = true;
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
-
-            _cleanUpShutdownUDPBroadcast(errors);
-
-            _cleanUpCloseDNSMulticast(errors);
 
             _cleanUpInterruptReloadThread(errors);
 
@@ -3534,44 +3516,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
         return pending;
-    }
-
-    private void _cleanUpShutdownUDPBroadcast(List<Throwable> errors) {
-        if(udpBroadcastThread!=null) {
-            LOGGER.log(Level.FINE, "Shutting down {0}", udpBroadcastThread.getName());
-            try {
-                udpBroadcastThread.shutdown();
-            } catch (OutOfMemoryError e) {
-                // we should just propagate this, no point trying to log
-                throw e;
-            } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
-                // safe to ignore and continue for this one
-            } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
-                // save for later
-                errors.add(e);
-            }
-        }
-    }
-
-    private void _cleanUpCloseDNSMulticast(List<Throwable> errors) {
-        if(dnsMultiCast!=null) {
-            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
-            try {
-                dnsMultiCast.close();
-            } catch (OutOfMemoryError e) {
-                // we should just propagate this, no point trying to log
-                throw e;
-            } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
-                // safe to ignore and continue for this one
-            } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
-                // save for later
-                errors.add(e);
-            }
-        }
     }
 
     private void _cleanUpInterruptReloadThread(List<Throwable> errors) {
