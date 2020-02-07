@@ -2,6 +2,7 @@ package hudson;
 
 
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 import hudson.remoting.FastPipedInputStream;
 import hudson.remoting.FastPipedOutputStream;
 import java.io.IOException;
@@ -33,12 +34,12 @@ public final class ChannelRule extends ExternalResource {
 
         Future<Channel> f1 = executors.submit(new Callable<Channel>() {
             public Channel call() throws Exception {
-                return new Channel("This side of the channel", executors, p1i, p2o);
+                return new ChannelBuilder("This side of the channel", executors).withMode(Channel.Mode.BINARY).build(p1i, p2o);
             }
         });
         Future<Channel> f2 = executors.submit(new Callable<Channel>() {
             public Channel call() throws Exception {
-                return new Channel("The other side of the channel", executors, p2i, p1o);
+                return new ChannelBuilder("The other side of the channel", executors).withMode(Channel.Mode.BINARY).build(p2i, p1o);
             }
         });
         french = f1.get();
