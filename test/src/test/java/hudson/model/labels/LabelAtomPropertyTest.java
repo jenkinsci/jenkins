@@ -23,21 +23,14 @@
  */
 package hudson.model.labels;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import jenkins.model.Jenkins;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -75,5 +68,4 @@ public class LabelAtomPropertyTest {
         assertEquals(1,foo.getProperties().size());
         j.assertEqualDataBoundBeans(old, foo.getProperties().get(LabelAtomPropertyImpl.class));
     }
-
 }
