@@ -13,23 +13,3 @@ template: |
   $CHANGES
   
   All contributors: $CONTRIBUTORS
-
-# Categories will be commented out, because we use YAML
-# Now we use categories only for sorting
-categories:
-  - title: Major BUGs and regressions
-    labels: 
-      - major-bug
-      - regression-fix
-  - title: Major RFE
-    label: major-rfe
-  - title: RFEs
-    label: rfe
-  - title: Bug fixes
-    label: bug
-  - title: Localization
-    label: localization
-  - title: Developer-facing changes (APIs, extensions, etc.)
-    label: developer
-  - title: Internal changes
-    label: internal
