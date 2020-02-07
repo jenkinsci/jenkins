@@ -23,7 +23,7 @@
  */
 package hudson.init.impl;
 
-import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import hudson.model.Messages;
@@ -37,7 +37,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class InitialUserContent {
-    @Initializer(after=JOB_LOADED)
+    @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) throws IOException {
         File userContentDir = new File(h.getRootDir(), "userContent");
         if(!userContentDir.exists()) {

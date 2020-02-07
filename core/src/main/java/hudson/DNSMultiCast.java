@@ -93,8 +93,6 @@ public class DNSMultiCast implements Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
-    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled");
-
     /**
      * Class that extends {@link JmDNSImpl} to add an abort method. Since {@link javax.jmdns.JmDNS#close()} might
      * make the instance hang during the shutdown, the abort method terminate uncleanly, but rapidly and
@@ -203,4 +201,5 @@ public class DNSMultiCast implements Closeable {
         }
 
     }
+    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled", true);
 }

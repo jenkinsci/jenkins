@@ -1143,11 +1143,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds().newBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly().newBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }
     
     public RunList getBuilds() {
@@ -1167,7 +1167,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if(lb!=null)    lastBuilds.add(lb);
             }
         }
-        RSS.rss(req, rsp, getDisplayName() + " last builds only", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     /**
