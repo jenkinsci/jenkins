@@ -69,7 +69,7 @@ THE SOFTWARE.
          onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          checked="${value ? 'true' : null}"
-         disabled="${displayOnlyMode?'true':null}"
+         disabled="${displayOnlyMode ? 'true' : null}"
   />
   <j:if test="${attrs.title!=null}">
     <label class="attach-previous"
