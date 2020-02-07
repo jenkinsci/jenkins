@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Render a single build history entry indicated by ${build}
+  Render a single build history entry indicated by ${build} (hudson.model.Build)
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
@@ -40,7 +40,11 @@ THE SOFTWARE.
         <a class="tip model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
-        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row">
+        <j:set var="linkTitleAttr" value=""/> 
+        <j:if test="${!build.building}">
+          <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
+        </j:if>
+        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
           <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
         </a>
         <j:if test="${build.building}">
