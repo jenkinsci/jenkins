@@ -39,6 +39,13 @@ public final class CaseInsensitiveComparator implements Comparator<String>, Seri
     public int compare(String lhs, String rhs) {
         return lhs.compareToIgnoreCase(rhs);
     }
+    
+    /**
+     * Enforce singleton pattern when serializing/deserializing
+     */
+    private Object readResolve() {
+        return INSTANCE;
+    }
 
     private static final long serialVersionUID = 1L;
 }
