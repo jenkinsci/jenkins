@@ -73,12 +73,10 @@ public abstract class SidACL extends ACL {
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
     protected Boolean _hasPermission(@Nonnull Authentication a, Permission permission) {
-        PrincipalSid principalSid;
-        try {
-            principalSid =  principalSidCache.get(a, () -> {return new PrincipalSid(a);});
-        } catch (ExecutionException e) {
-            LOGGER.log(SEVERE, "Failed to populate PrincipalSid Cache", e);
-            return false;
+        PrincipalSid principalSid =  principalSidCache.getIfPresent(a);
+        if (principalSid == null {
+            principalSid = new PrincipalSid(a);
+            principalSidCache.put(a, principalSid);
         }
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(principalSid, permission);
