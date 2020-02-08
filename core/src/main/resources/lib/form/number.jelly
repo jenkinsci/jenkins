@@ -81,9 +81,9 @@ THE SOFTWARE.
     <j:when test="${displayOnlyMode}">
       <j:choose>
         <j:when test="${empty(value)}">
-          <span class="not-applicable">N/A</span>
+          <span class="jenkins-not-applicable">N/A</span>
         </j:when>
-        <j:otherwise>${value}</j:otherwise>
+        <j:otherwise><span class="jenkins-readonly">${value}</span></j:otherwise>
       </j:choose>
     </j:when>
     <j:otherwise>

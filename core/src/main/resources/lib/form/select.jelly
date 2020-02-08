@@ -47,7 +47,7 @@ THE SOFTWARE.
     <st:attribute name="checkUrl">
       If specified, the value entered in this input field will be checked (via AJAX)
       against this URL, and errors will be rendered under the text field.
-
+    
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
@@ -62,21 +62,14 @@ THE SOFTWARE.
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
-
-  <j:choose>
-    <j:when test="${displayOnlyMode}">${value}</j:when>
-    <j:otherwise>
-      <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-                class="setting-input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
-                name="${attrs.name ?: '_.'+attrs.field}"
-                value="${value}"
-                ATTRIBUTES="${attrs}" EXCEPT="field clazz">
-        <j:if test="${value!=null}">
-          <option value="${value}">${value}</option>
-        </j:if>
-      </m:select>
-    </j:otherwise>
-  </j:choose>
-
+  <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+         class="setting-input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
+         name="${attrs.name ?: '_.'+attrs.field}"
+         value="${value}"
+         ATTRIBUTES="${attrs}" EXCEPT="field clazz">
+    <j:if test="${value!=null}">
+      <option value="${value}">${value}</option>
+    </j:if>
+  </m:select>
   <!-- TODO consider customizedFields -->
 </j:jelly>
