@@ -74,7 +74,7 @@ public abstract class SidACL extends ACL {
      */
     protected Boolean _hasPermission(@Nonnull Authentication a, Permission permission) {
         PrincipalSid principalSid =  principalSidCache.getIfPresent(a);
-        if (principalSid == null {
+        if (principalSid == null) {
             principalSid = new PrincipalSid(a);
             principalSidCache.put(a, principalSid);
         }
