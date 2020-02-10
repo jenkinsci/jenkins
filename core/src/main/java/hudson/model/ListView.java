@@ -214,7 +214,8 @@ public class ListView extends View implements DirectlyModifiableView {
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-        List<TopLevelItem> allItems;
+        Collection<ViewJobFilter> jobFilters = getJobFilters();
+        List<TopLevelItem> allItems = null;
         if (recurse) {
             allItems = parent.getAllItems(TopLevelItem.class);
             for (TopLevelItem item : allItems) {
@@ -229,7 +230,6 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
             }
         } else {
-            allItems = new ArrayList<>(parent.getItems());
             for (String name : names) {
                 try {
                     TopLevelItem i = parent.getItem(name);
@@ -240,18 +240,21 @@ public class ListView extends View implements DirectlyModifiableView {
                     //Ignore
                 }
             }
+            //Only call getItems if there is a pattern or we have Job Filters
             if (includePattern != null) {
+                allItems = new ArrayList<>(parent.getItems());
                 for (TopLevelItem item : allItems) {
                     String itemName = item.getRelativeNameFrom(parent);
                     if (includePattern.matcher(itemName).matches()) {
                         checkAddItem(statusFilter, items, item);
                     }
                 }
+            } else if(!jobFilters.isEmpty()) {
+                allItems = new ArrayList<>(parent.getItems());
             }
         }
 
         // check the filters
-        Iterable<ViewJobFilter> jobFilters = getJobFilters();
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
