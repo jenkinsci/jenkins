@@ -189,13 +189,13 @@ public class AtomicFileWriter extends Writer {
         try {
             // Try to make an atomic move.
             Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
+        } catch (IOException moveFailed) {
             // If it falls here that can mean many things. Either that the atomic move is not supported,
             // or something wrong happened. Anyway, let's try to be over-diagnosing
-            if (e instanceof AtomicMoveNotSupportedException) {
-                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", e);
+            if (moveFailed instanceof AtomicMoveNotSupportedException) {
+                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", moveFailed);
             } else {
-                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", e);
+                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", moveFailed);
             }
 
             if (destPath.toFile().exists()) {
@@ -204,19 +204,19 @@ public class AtomicFileWriter extends Writer {
 
             try {
                 Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e1) {
-                e.addSuppressed(e1);
+            } catch (IOException replaceFailed) {
+                replaceFailed.addSuppressed(moveFailed);
                 LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
                            new Path[]{tmpPath, destPath});
                 try {
                     Files.deleteIfExists(tmpPath);
-                } catch (IOException e2) {
-                    e1.addSuppressed(e2);
+                } catch (IOException deleteFailed) {
+                    replaceFailed.addSuppressed(deleteFailed);
                     LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
-                    throw e;
+                    throw replaceFailed;
                 }
 
-                throw e;
+                throw replaceFailed;
             }
         }
     }
