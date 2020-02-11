@@ -158,9 +158,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final long QUEUE_ID_UNKNOWN = -1;
 
     /**
-     * Target size limit for {@link #summary} and truncated {@link #description}.
+     * Target size limit for truncated {@link #description}s in the Build History Widget.
+     * Negative values will disable truncation, {@code 0} will enforce empty strings.
+     * The value has no effect if a new {@link #summary} field is defined.
+     * @since TODO
      */
-    private static final int SUMMARY_LIMIT = 100;
+    private static int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
     protected transient final @Nonnull JobT project;
 
@@ -237,7 +240,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * A short human-readable summary which is used on the main page, build history widgets and other locations.
      * It may use markup in a format defined by the {@link hudson.markup.MarkupFormatter}.
-     * The goal for this field is to keep the formatted text below the {@link #SUMMARY_LIMIT} symbols limit.
+     * The goal for this field is to keep the formatted text below the {@link #TRUNCATED_DESCRIPTION_LIMIT} symbols limit.
      */
     @CheckForNull
     protected volatile String summary;
@@ -700,11 +703,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * The method tries to take the HTML tags into account, but it is a best-effort attempt.
      * Also, the method will not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
      * @return The length-limited description.
-     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
      */
     @Deprecated
     public @Nonnull String getTruncatedDescription() {
-        final int maxDescrLength = 100;
+        if (TRUNCATED_DESCRIPTION_LIMIT < 0) { // disabled
+            return description;
+        }
+        if (TRUNCATED_DESCRIPTION_LIMIT == 0) { // Someone wants to suppress descriptions, why not?
+            return "";
+        }
+
+        final int maxDescrLength = TRUNCATED_DESCRIPTION_LIMIT;
         if (description == null || description.length() < maxDescrLength) {
             return description;
         }
