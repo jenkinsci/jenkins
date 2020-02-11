@@ -715,19 +715,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         final int maxDescrLength = TRUNCATED_DESCRIPTION_LIMIT;
-        if (description == null || description.length() < maxDescrLength) {
-            return description;
+        final String localDescription = description;
+        if (localDescription == null || localDescription.length() < maxDescrLength) {
+            return localDescription;
         }
 
         final String ending = "...";
-        final int sz = description.length(), maxTruncLength = maxDescrLength - ending.length();
+        final int sz = localDescription.length(), maxTruncLength = maxDescrLength - ending.length();
 
         boolean inTag = false;
         int displayChars = 0;
         int lastTruncatablePoint = -1;
 
         for (int i=0; i<sz; i++) {
-            char ch = description.charAt(i);
+            char ch = localDescription.charAt(i);
             if(ch == '<') {
                 inTag = true;
             } else if (ch == '>') {
@@ -744,7 +745,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
 
-        String truncDesc = description;
+        String truncDesc = localDescription;
 
         // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
