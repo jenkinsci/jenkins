@@ -71,9 +71,10 @@ THE SOFTWARE.
           </div>
         </j:if>
       </div>
-      <j:if test="${!empty build.description}">
+      <j:set var="buildSummary" value="${build.summary}"/>
+      <j:if test="${!empty buildSummary}">
         <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.summary)}"/>
+          <j:out value="${app.markupFormatter.translate(buildSummary)}"/>
         </div>
       </j:if>
       <div class="left-bar" />

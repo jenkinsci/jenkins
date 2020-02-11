@@ -2381,7 +2381,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void setSummary(@CheckForNull String summary) throws IOException {
         checkPermission(UPDATE);
-        this.description = description;
+        this.summary = summary;
         save();
     }
     
@@ -2401,7 +2401,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public synchronized void doSubmitSummary( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        setDescription(req.getParameter("summary"));
+        setSummary(req.getParameter("summary"));
         rsp.sendRedirect(".");  // go to the top page
     }
 
